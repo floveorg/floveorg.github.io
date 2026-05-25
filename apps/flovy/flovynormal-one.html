@@ -3551,7 +3551,7 @@ body:has(#tier-pop-open:checked) .tier-pop-rays{ display: flex; }
   white-space: nowrap;
 }
 .tier-pop-step:hover .tier-pop-label{ color: var(--accent-deep); }
-/* current tier — filled node (set statically; this file is the normal tier) */
+/* current tier — filled node (set statically; this file is the advanced tier) */
 .tier-pop-step--current .tier-pop-node{
   background: var(--accent);
   border-color: var(--accent-deep);
@@ -3563,11 +3563,16 @@ body:has(#tier-pop-open:checked) .tier-pop-rays{ display: flex; }
 /* Complexity bar: widen gap + draw connecting lines between consecutive steps. */
 .tier-pop-rays{ gap: 1.1rem; }
 .tier-pop-step{ position: relative; z-index: 1; }
+/* Connector line between consecutive nodes — wide ribbon that visibly
+   chains the nodes together. Reddish overrides for previous/current/
+   unlocked apply on top of this base layer (further below). */
 .tier-pop-step:not(:last-child)::after{
   content: ""; position: absolute;
-  top: 9px; left: 100%;
-  width: 1.1rem; height: 2px;
-  background: var(--line-strong);
+  top: 6px; left: 100%;
+  width: 1.4rem; height: 8px;
+  background: var(--ink-soft, #6a6a6a);
+  opacity: .55;
+  border-radius: 4px;
   z-index: 0;
 }
 /* Work-in-progress placeholders (advanced + super): dimmed at 40%. */
@@ -3604,15 +3609,16 @@ body:has(#tier-pop-open:checked) .tier-pop-rays{ display: flex; }
 .tier-pop-rays > li:nth-child(3) .tier-pop-node{ width: 14px; height: 14px; }
 .tier-pop-rays > li:nth-child(4) .tier-pop-node{ width: 17px; height: 17px; }
 .tier-pop-rays > li:nth-child(5) .tier-pop-node{ width: 20px; height: 20px; }
-/* keep the connector line aligned with each node's center */
-.tier-pop-rays > li:nth-child(1) .tier-pop-step::after{ top: 7px;   }
-.tier-pop-rays > li:nth-child(2) .tier-pop-step::after{ top: 8.5px; }
-.tier-pop-rays > li:nth-child(3) .tier-pop-step::after{ top: 10px;  }
-.tier-pop-rays > li:nth-child(4) .tier-pop-step::after{ top: 11.5px;}
+/* Per-node top adjust so the 8px line stays centred with each node's
+   smaller radius (nodes grow mini → super so each connector must sit
+   at the LEFT node's vertical centre). */
+.tier-pop-rays > li:nth-child(1) .tier-pop-step::after{ top: 0px;   }
+.tier-pop-rays > li:nth-child(2) .tier-pop-step::after{ top: 1.5px; }
+.tier-pop-rays > li:nth-child(3) .tier-pop-step::after{ top: 3px;   }
+.tier-pop-rays > li:nth-child(4) .tier-pop-step::after{ top: 4.5px; }
 /* Connector line inherits the node state — reddish from any passed
    step (including current and unlocked Advanced); pulses + splashes
-   in sync with the unlocked node so the bar reads as one continuous
-   affordance, not "node here, line there". */
+   in sync with the unlocked node. */
 .tier-pop-rays > li:has(~ li > .tier-pop-step--current) .tier-pop-step::after,
 .tier-pop-step--current::after,
 .tier-pop-step--wip.is-unlocked::after{
@@ -3634,30 +3640,38 @@ body:has(#tier-pop-open:checked) .tier-pop-rays{ display: flex; }
   100%{ box-shadow: 0 0 0 0   rgba(217, 70, 70, 0); }
 }
 
-/* reddish previous + current */
-.tier-pop-rays > li:has(~ li > .tier-pop-step--current) .tier-pop-node,
+/* PREVIOUS nodes (before the current tier): no "selected" look on the
+   node itself — only the surrounding step area gets a subtle reddish
+   tint, slightly more reddish than the future nodes to the right. */
+.tier-pop-rays > li:has(~ li > .tier-pop-step--current) > .tier-pop-step{
+  background: rgba(217, 70, 70, .12);
+  border-radius: 8px;
+}
+.tier-pop-rays > li:has(~ li > .tier-pop-step--current) .tier-pop-label{
+  color: rgba(178, 34, 34, .8);
+}
+
+/* CURRENT tier: full reddish node + bold label (only the active one
+   reads as "selected"). */
 .tier-pop-step--current .tier-pop-node{
   background: rgba(217, 70, 70, .85);
   border-color: rgba(178, 34, 34, .9);
-  /* drop the accent halo+scale that --current used to apply */
   box-shadow: none;
   transform: none;
 }
-.tier-pop-rays > li:has(~ li > .tier-pop-step--current) .tier-pop-label,
 .tier-pop-step--current .tier-pop-label{
   color: rgba(178, 34, 34, .95);
   font-weight: 700;
 }
 
-/* Unlocked Advanced — reddish halo around the entire clickable area; no
-   border/pressed look on the node. Overrides the earlier accent-based
-   .is-unlocked rule so the affordance feels inviting, not "selected". */
+/* UNLOCKED tiers (Advanced) — just an inviting reddish halo around the
+   clickable area. No extra border on the node (keeps the base
+   .tier-pop-node border so the node doesn't look "selected"). */
 .tier-pop-step--wip.is-unlocked{
   animation: tier-pop-step-aura-reddish 2.2s ease-in-out infinite;
 }
 .tier-pop-step--wip.is-unlocked .tier-pop-node{
   background: rgba(217, 70, 70, .85);
-  border-color: rgba(178, 34, 34, .9);
   box-shadow: none;
   transform: none;
 }
@@ -3669,8 +3683,6 @@ body:has(#tier-pop-open:checked) .tier-pop-rays{ display: flex; }
   0%, 100%{ box-shadow: 0 0 10px 2px rgba(217, 70, 70, .35); }
   50%{ box-shadow: 0 0 16px 6px rgba(217, 70, 70, .55); }
 }
-/* One-time splash when Advanced first unlocks. JS adds .just-unlocked,
-   removes it after 900ms — the keyframes run exactly once. */
 .tier-pop-step--wip.is-unlocked.just-unlocked .tier-pop-node{
   animation: tier-pop-splash .9s ease-out;
 }
@@ -3739,6 +3751,9 @@ body:has(#magic-open:checked):has(#d-armmore:checked) .labeler-list{ display: gr
   background: #ffffff;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 body:has(#d-menu:checked) .menu-list{ display: block; }
 /* No extra close rule needed: d-menu sits in the same radio group as step-0..5,
@@ -4611,19 +4626,6 @@ body:has(#all-pressed:checked) .step-panel:nth-of-type(6){ display: block; }
   letter-spacing: -.06em;
   vertical-align: baseline;
 }
-/* Subemojis picked from the "⋯ more" picker — rendered as their own
-   row at the bottom of the resume so the user sees what they've armed
-   beyond the rater axes themselves. */
-[data-flove-phrase] .flove-phrase-picked,
-.clause-magic .flove-phrase-picked{
-  display: block;
-  margin-top: .55em;
-  padding-top: .4em;
-  border-top: 1px dashed rgba(0, 0, 0, .08);
-  letter-spacing: .15em;
-  font-size: 1.05em;
-  text-align: center;
-}
 /* Heart icon in the resume — filled body, dim-but-warm red by default
    (.5 → .625, a 25% opacity bump so the red reads stronger) and full
    when the field's rater has clicks (the `.is-on` flag the renderer
@@ -4671,34 +4673,33 @@ body:has(#all-pressed:checked) .step-panel:nth-of-type(6){ display: block; }
   letter-spacing: -.06em;
 }
 
-/* Summary action row — tighter so the injected "Phrase" button fits on
-   the same row as Views + Insight + ✨ Magic. */
+/* Summary action row — tighter so Views + Insight + Magic + Copy fit
+   on one line. Buttons are 15% smaller than the .btn default. Copy is
+   pinned to the right side of the row. */
 .step-panel.is-summary .action-row{
-  gap: .3rem !important;
+  gap: .25rem !important;
   flex-wrap: nowrap;
 }
-.step-panel.is-summary .action-row .btn{
-  padding: .35rem .65rem;
-  font-size: .82rem;
+.step-panel.is-summary .action-row > .btn,
+.step-panel.is-summary .action-row > .insight-cycle .btn,
+.step-panel.is-summary .action-row .flove-phrase-btn{
+  height: 31px;
+  padding: 0 .47rem;
+  font-size: .7rem;
   white-space: nowrap;
 }
-.step-panel.is-summary .action-row .magic-btn-summary,
-.step-panel.is-summary .action-row .flove-phrase-btn,
-.step-panel.is-summary .action-row .views-btn,
-.step-panel.is-summary .action-row .insight-step{
-  padding: .3rem .6rem;
-  min-width: 0;
-}
 .step-panel.is-summary .action-row .flove-phrase-btn{ margin-left: 0; }
+.step-panel.is-summary .action-row > .copy-btn{ margin-left: auto; }
 
 /* Download button — louder. Filled gradient, soft glow, gentle pulse so
-   it reads as "the next thing to click" inside the Save drawer. */
+   it reads as "the next thing to click" inside the Save drawer. Width
+   + height owned by the .dl-btn rule below; this layer only adds the
+   visual emphasis. */
 .step-panel.is-summary .dl-btn{
   background: linear-gradient(135deg, var(--accent), var(--accent-deep)) !important;
   color: #fff !important;
   border-color: transparent !important;
   font-weight: 700;
-  padding: .55rem 1.1rem;
   border-radius: 999px;
   box-shadow:
     0 0 0 0 var(--accent-glow),
@@ -4808,12 +4809,12 @@ body:has(#who-plus-1:checked) .plus-add-wrap .plus-add::before{ content: "×"; }
 /* Independent extra-row rater — opacity bars match the main `.rate-step`
    stepping (1 light → 5 dark) so the new `rh-extra-N` etc. labels still
    visually fill the same way as the main set. */
-.rate-step[for$="-extra-1"]{ opacity: .5; background: transparent; }
-.rate-step[for$="-extra-2"]{ opacity: .6; background: rgba(220,0,0,.2); }
-.rate-step[for$="-extra-3"]{ opacity: .7; background: rgba(220,0,0,.4); }
-.rate-step[for$="-extra-4"]{ opacity: .8; background: rgba(220,0,0,.6); }
-.rate-step[for$="-extra-5"]{ opacity: .9; background: rgba(220,0,0,.8); }
-.rate-step[for$="-extra-0"]{ opacity: 1;  background: rgba(220,0,0,1); }
+.rate-step[for$="-extra-1"]{ opacity: 1; background: transparent; }
+.rate-step[for$="-extra-2"]{ opacity: 1; background: rgba(220,0,0,.2); }
+.rate-step[for$="-extra-3"]{ opacity: 1; background: rgba(220,0,0,.4); }
+.rate-step[for$="-extra-4"]{ opacity: 1; background: rgba(220,0,0,.6); }
+.rate-step[for$="-extra-5"]{ opacity: 1; background: rgba(220,0,0,.8); }
+.rate-step[for$="-extra-0"]{ opacity: 1; background: rgba(220,0,0,1); }
 
 /* ============================================================
    4. FORM SECTIONS — used in step panels (Want, etc.)
@@ -6654,32 +6655,38 @@ body:has(#rater-show-1:checked) .entry-row--main > .rater{ display: flex; }
 body:has(#rater-show-2:checked) .entry-row--extra{ grid-template-columns: 3fr 2fr; }
 body:has(#rater-show-2:checked) .entry-row--extra > .rater{ display: flex; }
 
-/* heart icon — empty/filled glyph swap. The heart is the rater toggle:
-   when its rater is open, the heart fills. Pure-CSS, no JS. */
+/* heart icon — empty outline by default, filled red on check. */
 .entry-tool--heart{
-  color: #b25d5d; /* heart red — 50% less saturated than the old #d33 */
-  font-size: 1.518rem; /* +15% on top of the previous 1.32rem (parent hearts) */
+  color: currentColor;
+  font-size: 1.518rem;
   border: 0 !important;
   background: transparent !important;
-  opacity: .625; /* default — 25% opacity bump over the old .5 so the red reads stronger */
-  transition: opacity .15s ease, color .15s ease, transform .15s ease;
+  opacity: 1;
+  transition: color .15s ease, transform .15s ease;
 }
 .entry-tool--heart:hover{
-  color: #b25d5d; /* heart red — 50% less saturated than the old #d33 */
+  color: var(--accent);
   border: 0 !important;
   background: transparent !important;
-  opacity: .75;
-  transform: scale(1.08);
+  transform: translateY(-15px) scale(1.08);
 }
-/* Always show the filled body — the inside-background reads as a warm
-   dim red by default (.625 opacity), snapping to full red when the
-   rater below is opened. */
-.entry-tool--heart::before{ content: "♥"; }
+.entry-tool--heart::before{ content: "♡"; }
 body:has(#rater-show-1:checked)  .entry-row--main .entry-field--main:not(.entry-field--extra) .entry-tool--heart,
 body:has(#rater-show-1e:checked) .entry-row--main .entry-field--extra .entry-tool--heart,
 body:has(#rater-show-2:checked)  .entry-row--extra .entry-tool--heart{
+  color: var(--accent);
   opacity: 1;
 }
+body:has(#rater-show-1:checked)  .entry-row--main .entry-field--main:not(.entry-field--extra) .entry-tool--heart::before,
+body:has(#rater-show-1e:checked) .entry-row--main .entry-field--extra .entry-tool--heart::before,
+body:has(#rater-show-2:checked)  .entry-row--extra .entry-tool--heart::before{
+  content: "♥";
+}
+
+/* Vertical lifts: magic + heart 15px, sub-bots 25px, rater 4 emojis 20px. */
+.entry-tool--heart{ transform: translateY(-15px); }
+.entry-magic{ transform: translateY(-8px); }
+.wizard-arms{ transform: translateY(-6px); }
 /* grid items must allow shrinking below intrinsic content width
    (textarea cols=100 + fieldset default min-width:min-content would
     otherwise force the columns to differ) */
@@ -6780,12 +6787,12 @@ body:has(#rater-emoji-open:checked) .rater-emoji-dropdown{ display: inline-flex;
    The `for` attribute always ends in -1..-5 (intensity) or -0 (full red).
    --click-scale grows 10% per click level (1.1 → 1.5) so the visible
    sub-heart and its inner emoji scale together up to the 5th step. */
-.rate-step[for$="-1"]{ opacity: .5; background: transparent;        --click-scale: 1.1; }
-.rate-step[for$="-2"]{ opacity: .6; background: rgba(220,0,0,.2);   --click-scale: 1.2; }
-.rate-step[for$="-3"]{ opacity: .7; background: rgba(220,0,0,.4);   --click-scale: 1.3; }
-.rate-step[for$="-4"]{ opacity: .8; background: rgba(220,0,0,.6);   --click-scale: 1.4; }
-.rate-step[for$="-5"]{ opacity: .9; background: rgba(220,0,0,.8);   --click-scale: 1.5; }
-.rate-step[for$="-0"]{ opacity: 1;  background: rgba(220,0,0,1); }
+.rate-step[for$="-1"]{ opacity: 1; background: transparent;        --click-scale: 1.1; }
+.rate-step[for$="-2"]{ opacity: 1; background: rgba(220,0,0,.2);   --click-scale: 1.2; }
+.rate-step[for$="-3"]{ opacity: 1; background: rgba(220,0,0,.4);   --click-scale: 1.3; }
+.rate-step[for$="-4"]{ opacity: 1; background: rgba(220,0,0,.6);   --click-scale: 1.4; }
+.rate-step[for$="-5"]{ opacity: 1; background: rgba(220,0,0,.8);   --click-scale: 1.5; }
+.rate-step[for$="-0"]{ opacity: 1; background: rgba(220,0,0,1); }
 
 /* + button under the first row + picker grid + 2nd row reveal */
 .rate-add-row{
@@ -7602,22 +7609,22 @@ body:has(input[name="topbar-labeler"]:not(#topbar-labeler-none):checked) .rater-
 .compass-wrap       { animation: flov-fly-left 2.5s var(--bounce) 3s forwards; }
 .page-slogan        {
   animation:
-    flov-typed     3s   steps(23, end) 4s forwards,
+    flov-typed     3s   steps(44, end) 4s forwards,
     flov-fade-down 2s   ease            18s forwards;
 }
 .page-slogan--mid   {
   animation:
-    flov-typed     2s   steps(44, end) 7.5s forwards,
+    flov-typed     2s   steps(26, end) 7.5s forwards,
     flov-fade-down 2s   ease            18s  forwards;
 }
 .page-slogan--2     {
   animation:
-    flov-typed     2s   steps(34, end) 10s forwards,
+    flov-typed     2s   steps(22, end) 10s forwards,
     flov-fade-down 2s   ease            18s forwards;
 }
 .page-slogan--emoji {
   animation:
-    flov-typed     2s   steps(53, end) 12.5s forwards,
+    flov-typed     2s   steps(31, end) 12.5s forwards,
     flov-fade-down 2s   ease            18s   forwards;
 }
 @keyframes flov-fade-down{
@@ -7638,6 +7645,7 @@ body:has(input[name="topbar-labeler"]:not(#topbar-labeler-none):checked) .rater-
   max-width: 90%;
   padding: 0 1rem;
   font: 400 .92rem/1.3 var(--font-display);
+  font-style: italic;
   color: var(--ink-soft);
   letter-spacing: .01em;
   text-align: center;
@@ -8094,20 +8102,24 @@ body:has(#insight-4:checked) .insight-step:nth-child(5){
   font-size: .7rem;
 }
 
-/* Subtab row — revealed when Views is toggled on, sits right below the
-   action-row. Chart renders below in .flove-viz-out. The "active view"
-   is the LAST one the user clicked (body[data-last-view]). */
+/* Subtab row — sits IMMEDIATELY below the action-row of Views/Insight/
+   Magic/Copy, with a -16px top margin so it tucks 8px above where the
+   .action-grid gap (.6rem ≈ 9.6px) would otherwise place it. Layout
+   space always reserved (visibility:hidden when Views is off) so
+   clicking Views never reflows the page. */
 .action-row--views{
-  display: none;
+  display: flex;
+  visibility: hidden;
   justify-content: flex-start;
   gap: .25rem;
-  margin-top: 4px;
+  margin: -16px 0 0 0;
+  min-height: 22px;
 }
-body:has(#views-open:checked) .action-row--views{ display: flex; }
+body:has(#views-open:checked) .action-row--views{ visibility: visible; }
 .action-row--views .view-pick{
-  height: 22px;
-  padding: 0 .5rem;
-  font-size: .75rem;
+  height: 22px !important;
+  padding: 0 .5rem !important;
+  font-size: .75rem !important;
   line-height: 1;
   border-radius: 6px;
 }
@@ -8117,16 +8129,91 @@ body:has(#view-axial:checked)    .view-pick[for="view-axial"],
 body:has(#view-spider:checked)   .view-pick[for="view-spider"]{
   background: var(--fill-pressed); color: #fff; border-color: var(--accent);
 }
-/* Views button stays highlighted while subtab row is open OR while any
-   chart view is marked. */
 body:has(#views-open:checked) .views-btn,
 body:has(#view-bars:checked, #view-vertical:checked, #view-axial:checked, #view-spider:checked) .views-btn{
   background: var(--fill-soft); border-color: var(--accent); color: var(--accent-deep);
 }
+
+/* ── Chart slot ──────────────────────────────────────────────────────
+   All four views (bars / vertical / axial / spider) render inside the
+   SAME .cssviz-out container, centered with a common max-width. When
+   no view is marked, the slot collapses (display:none); when a view is
+   marked, the chart appears and pushes Save/Share/Publish below it. */
+.cssviz-out{
+  margin-top: .85rem;
+  padding-top: .7rem;
+  border-top: 1px dashed rgba(0, 0, 0, .08);
+}
+body:not(:has(#view-bars:checked, #view-vertical:checked, #view-axial:checked, #view-spider:checked)) .cssviz-out{
+  display: none;
+}
+.cssviz{ display: none; max-width: 360px; margin: 0 auto; }
+body:has(#view-bars:checked) .cssviz--bars{ display: block; }
+body:has(#view-vertical:checked) .cssviz--vertical{
+  display: flex; align-items: flex-end; justify-content: space-around; gap: .7rem;
+}
+body:has(#view-vertical:checked) .cssviz--bars{ display: none; }
+.cssviz--svg{ text-align: center; }
+
+/* Picker emojis — sit INLINE inside each .clause output, next to the
+   end of the phrase text. JS (syncPickerToResume) writes the picked
+   glyphs here. contenteditable="false" on the element keeps both the
+   user and the browser from disturbing the JS-injected text. */
+.flove-phrase-picked{
+  display: inline;
+  margin-left: .35em;
+  letter-spacing: .15em;
+  white-space: pre-wrap;
+}
+body:has(#view-axial:checked) .cssviz--svg,
+body:has(#view-spider:checked) .cssviz--svg{ display: block; }
+/* When axial/spider is active and bars/vertical aren't, hide those too
+   to avoid double-rendering. */
+body:has(#view-axial:checked):not(:has(#view-bars:checked)):not(:has(#view-vertical:checked)) .cssviz--bars,
+body:has(#view-axial:checked):not(:has(#view-bars:checked)):not(:has(#view-vertical:checked)) .cssviz--vertical,
+body:has(#view-spider:checked):not(:has(#view-bars:checked)):not(:has(#view-vertical:checked)) .cssviz--bars,
+body:has(#view-spider:checked):not(:has(#view-bars:checked)):not(:has(#view-vertical:checked)) .cssviz--vertical{
+  display: none;
+}
+.cssbar{ display: flex; align-items: center; gap: .55rem; margin: .34rem 0; }
+.cssbar-emo{ width: 1.5em; text-align: center; font-size: 1.1rem; }
+.cssbar-trk{
+  position: relative; flex: 1; height: 10px;
+  background: rgba(0, 0, 0, .08); border-radius: 999px; overflow: hidden;
+}
+.cssbar-trk > i{
+  position: absolute; left: 0; top: 0; bottom: 0; width: 0;
+  background: var(--accent); transition: width .2s ease;
+}
+.csscol{ display: flex; flex-direction: column; align-items: center; gap: .35rem; }
+.csscol-trk{
+  position: relative; width: 14px; height: 104px;
+  background: rgba(0, 0, 0, .08); border-radius: 999px; overflow: hidden;
+}
+.csscol-trk > i{
+  position: absolute; left: 0; right: 0; bottom: 0; height: 0;
+  background: var(--accent); transition: height .2s ease;
+}
+body{ --fh: 0%; --ff: 0%; --fl: 0%; --ft: 0%; }
+body:has(#rh-1:checked){ --fh: 20%; } body:has(#rh-2:checked){ --fh: 40%; }
+body:has(#rh-3:checked){ --fh: 60%; } body:has(#rh-4:checked){ --fh: 80%; }
+body:has(#rh-5:checked){ --fh: 100%; }
+body:has(#rf-1:checked){ --ff: 20%; } body:has(#rf-2:checked){ --ff: 40%; }
+body:has(#rf-3:checked){ --ff: 60%; } body:has(#rf-4:checked){ --ff: 80%; }
+body:has(#rf-5:checked){ --ff: 100%; }
+body:has(#rl-1:checked){ --fl: 20%; } body:has(#rl-2:checked){ --fl: 40%; }
+body:has(#rl-3:checked){ --fl: 60%; } body:has(#rl-4:checked){ --fl: 80%; }
+body:has(#rl-5:checked){ --fl: 100%; }
+body:has(#rt-1:checked){ --ft: 20%; } body:has(#rt-2:checked){ --ft: 40%; }
+body:has(#rt-3:checked){ --ft: 60%; } body:has(#rt-4:checked){ --ft: 80%; }
+body:has(#rt-5:checked){ --ft: 100%; }
+.cssax--h .cssbar-trk > i{ width: var(--fh); } .cssax--h .csscol-trk > i{ height: var(--fh); }
+.cssax--f .cssbar-trk > i{ width: var(--ff); } .cssax--f .csscol-trk > i{ height: var(--ff); }
+.cssax--l .cssbar-trk > i{ width: var(--fl); } .cssax--l .csscol-trk > i{ height: var(--fl); }
+.cssax--t .cssbar-trk > i{ width: var(--ft); } .cssax--t .csscol-trk > i{ height: var(--ft); }
 /* The Views buttons never restyle the resume text — they only drive the
    data chart that flove.js renders into .flove-viz-out below the phrase. */
 
-/* Copy lives in its own row, centered, with extra breathing room above. */
 .copy-btn{ margin: 0; }
 .copy-hint-panel{
   display: none;
@@ -8338,15 +8425,15 @@ body:has(#cycle-pub:checked) .pub-wrap .go-btn{
    subs — it spans the full publish wrap width. */
 .pub-wrap   .cycle-row.pub-go-row{ left: 0; right: 0; }
 
-/* ── Download button — single full-row pill. Opacity reflects how many
-   formats (and whether App) the user has armed. Pure CSS additive math
-   via per-toggle custom properties summed in calc(). Height is +5px
-   over the cycle sub-buttons (30px vs 22px); width fills the row. ── */
-.download-bar{
-  display: flex !important;
+/* ── Download row — own row below Save/Share/Publish, spans the full
+   action-grid width. Opacity of the button reflects how many formats
+   (and whether App) the user has armed via additive CSS math. */
+.download-row{
+  display: flex;
   width: 100%;
-  gap: .25rem;
+  margin-top: .6rem;
 }
+.download-row .dl-btn{ flex: 1 1 0; }
 .dl-btn{
   --dl-base: 60;
   --dl-md: 0; --dl-jpg: 0; --dl-html: 0; --dl-csv: 0; --dl-xml: 0; --dl-json: 0;
@@ -8354,11 +8441,11 @@ body:has(#cycle-pub:checked) .pub-wrap .go-btn{
   flex: 1 1 0;
   min-width: 0;
   width: 100%;
-  height: 30px;
-  padding: 0 .6rem;
+  height: 36px;
+  padding: 0 .72rem;
   border-radius: 4px;
   font-weight: 700;
-  font-size: .72rem;
+  font-size: .86rem;
   letter-spacing: .03em;
   text-decoration: none;
   display: inline-flex;
@@ -8394,8 +8481,8 @@ body:has(#save-app:checked) .dl-btn .dl-app{ display: inline; }
 body:has(#cycle-save:checked)  .save-wrap  .cycle-row,
 body:has(#cycle-pub:checked)   .pub-wrap   .cycle-row,
 body:has(#cycle-share:checked) .share-wrap .cycle-row{ visibility: visible; }
-/* Single Download button also surfaces whenever a chart view is marked
-   — same affordance for both formats and views. */
+/* The single Download button also surfaces whenever a chart view is
+   marked — same affordance for both formats and views. */
 body:has(#view-bars:checked, #view-vertical:checked, #view-axial:checked, #view-spider:checked) .save-wrap .cycle-row.download-bar{
   visibility: visible;
 }
@@ -8893,6 +8980,34 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
   .ray, .labeler-sub, .magic-btn, .menu-btn{ width: 30px; height: 30px; }
   .magic-rays{ gap: .3rem; }
 }
+
+/* ── wizard inject-model override ─────────────────────────────
+   Bot text is injected directly into the user's default textarea
+   via flove.wizard (see flove.js). The pre-filled variant text-
+   areas remain in the DOM as a text-source for the wiring code,
+   but stay visually hidden. The default textarea always stays
+   visible so the user's typing is never hidden when a bot is
+   picked. The legacy inline preview strip (.entry-magic-inline)
+   is hidden for the same reason. */
+.entry-textareas .entry-textarea--default{
+  display: block !important;
+}
+.entry-textareas .entry-textarea:not(.entry-textarea--default){
+  display: none !important;
+}
+.entry-magic-inline{
+  display: none !important;
+}
+
+/* ── hearts: independent, no animations triggered by other parts ──
+   State-wise the three hearts (rater-show-1 / -1e / -2) are already
+   on independent checkboxes, so clicking one never toggles another.
+   The only thing left to guard against is animations triggered by
+   external state (labeler rays, anim-target-hearts), which used to
+   make hearts pulse/shimmer on unrelated clicks — disable them. */
+.entry-tool--heart{
+  animation: none !important;
+}
 </style>
 </head>
 <body>
@@ -9081,7 +9196,7 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
 <!-- More-emoji picker: one checkbox per cell so users can multi-select.
      pkr-6 (Wow 😮), pkr-7 (Smile 🙂), pkr-11 (Hands 🙌) and pkr-21 (Mind 🧠)
      are intentionally absent — the fixed row above already holds the
-     equivalent reactions (😊 😆 👏 🤔), so the picker doesn't repeat them. -->
+     equivalent reactions (😊 😆 😘 😈), so the picker doesn't repeat them. -->
 <input type="checkbox" id="pkr-1"  class="ctl"><input type="checkbox" id="pkr-2"  class="ctl">
 <input type="checkbox" id="pkr-3"  class="ctl"><input type="checkbox" id="pkr-4"  class="ctl">
 <input type="checkbox" id="pkr-5"  class="ctl">
@@ -9245,7 +9360,7 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
         </svg>
       </label>
       <div class="mode-buttons" role="group" aria-label="Display modes">
-        <label class="mode-btn" for="disp-none" title="Normal — tidy list" aria-label="Normal list" tabindex="0">
+        <label class="mode-btn" for="disp-none" title="List" aria-label="List" tabindex="0">
           <svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor">
             <circle cx="4" cy="6"  r="2.3"/><rect x="9" y="4.2"  width="13" height="3.6" rx="1.8"/>
             <circle cx="4" cy="12" r="2.3"/><rect x="9" y="10.2" width="13" height="3.6" rx="1.8"/>
@@ -9276,10 +9391,10 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
 
     <span class="topbar-spacer"></span>
 
-    <div class="page-slogan" aria-hidden="true">Now you can go for real</div>
-    <div class="page-slogan page-slogan--mid" aria-hidden="true">Enjoy it first in a more personal way</div>
-    <div class="page-slogan page-slogan--2" aria-hidden="true">Fill this single file form offline</div>
-    <div class="page-slogan page-slogan--emoji" aria-hidden="true">and save and share it in your own in the next page .</div>
+    <div class="page-slogan" aria-hidden="true">Glad you arrived here</div>
+    <div class="page-slogan page-slogan--mid" aria-hidden="true">where external files are being used</div>
+    <div class="page-slogan page-slogan--2" aria-hidden="true">to feature a bit more of love</div>
+    <div class="page-slogan page-slogan--emoji" aria-hidden="true">Enjoy!</div>
 
     <label class="app-toggle-btn topbar-btn" for="all-pressed" title="All" tabindex="0"><span class="t-en">All</span><span class="t-es">Todo</span></label>
 
@@ -9353,7 +9468,7 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
       <ul class="tier-pop-rays" role="menu" aria-label="flovy tiers">
         <li><a class="tier-pop-step" href="flovymini.html" title="Mini tier"><span class="tier-pop-node" aria-hidden="true"></span><span class="tier-pop-label"><span class="t-en">Mini</span><span class="t-es">Mini</span></span></a></li>
         <li><a class="tier-pop-step" href="flovybasic.html" title="Basic tier"><span class="tier-pop-node" aria-hidden="true"></span><span class="tier-pop-label"><span class="t-en">Basic</span><span class="t-es">Básico</span></span></a></li>
-        <li><a class="tier-pop-step" href="flovynormal.html" title="Normal tier"><span class="tier-pop-node" aria-hidden="true"></span><span class="tier-pop-label"><span class="t-en">Normal</span><span class="t-es">Normal</span></span></a></li>
+        <li><a class="tier-pop-step tier-pop-step--current" href="flovynormal.html" aria-current="page" title="Normal tier (current)"><span class="tier-pop-node" aria-hidden="true"></span><span class="tier-pop-label"><span class="t-en">Normal</span><span class="t-es">Normal</span></span></a></li>
         <li><a class="tier-pop-step tier-pop-step--wip" href="flovyadvanced.html" title="Advanced tier"><span class="tier-pop-node" aria-hidden="true"></span><span class="tier-pop-label"><span class="t-en">Advanced</span><span class="t-es">Avanzado</span></span></a></li>
         <li><a class="tier-pop-step tier-pop-step--wip" href="flovysuper.html" title="Super tier"><span class="tier-pop-node" aria-hidden="true"></span><span class="tier-pop-label"><span class="t-en">Super</span><span class="t-es">Súper</span></span></a></li>
       </ul>
@@ -9404,11 +9519,10 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
           </label>
         </li>
         <li class="menu-switch menu-switch--lang">
-          <label class="menu-switch-label menu-switch-label--drop" for="opt-lang" tabindex="0">
+          <label class="menu-switch-label menu-switch-label--drop" for="opt-lang" tabindex="0" aria-label="Languages">
             <span class="menu-switch-icon mi menu-switch-flag menu-switch-flag--en"><span class="t-en">🇬🇧</span><span class="t-es">🇪🇸</span></span>
-            <span class="menu-switch-name"><span class="t-en">Languages</span><span class="t-es">Idiomas</span></span>
+            <span class="menu-switch-name"><span class="t-en">English</span><span class="t-es">Español</span></span>
             <span class="menu-switch-state">
-              <span class="menu-switch-current"><span class="t-en">English</span><span class="t-es">Español</span></span>
               <span class="menu-switch-caret" aria-hidden="true">▾</span>
             </span>
           </label>
@@ -9530,7 +9644,7 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
   <label class="intro-close intro-close-tr" for="intro-open" aria-label="Close" tabindex="0">×</label>
 
   <p class="intro-lead">
-    <strong>FlovyNormal.html</strong> (this page) bundles all the JavaScript inline in one single self-contained file — no external files. <strong>FlovyAdvanced</strong> features a lightweight and clean HTML calling to external CSS and JS files (<a href="flovyadvanced.html">flovyadvanced.html</a>). <strong>FlovyBasic</strong> features advanced CSS in a single file, pure CSS with no JS (<a href="flovybasic.html">flovybasic.html</a>). <strong>FlovySuper</strong> publishes on Platforms — hooks on to backends (<a href="flovysuper.html">flovysuper.html</a>).
+    <strong>FlovyNormal.html</strong> (this page) features a lightweight and clean HTML calling to two external CSS and JS files. <strong>FlovyBasic</strong> features advanced CSS in a single file (<a href="flovybasic.html">flovybasic.html</a>). For the self-contained single-file JS variant, go to <a href="flovynormal-one.html">flovynormal-one.html</a>. <strong>FlovySuper</strong> publishes on Platforms — hooks on to backends (<a href="flovysuper.html">flovysuper.html</a>).
   </p>
 </section>
 
@@ -9670,20 +9784,20 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
               <label class="rate-step" for="rf-0">😆</label>
             </span>
             <span class="rate-cell rate-l">
-              <label class="rate-step" for="rl-1">👏</label>
-              <label class="rate-step" for="rl-2">👏</label>
-              <label class="rate-step" for="rl-3">👏</label>
-              <label class="rate-step" for="rl-4">👏</label>
-              <label class="rate-step" for="rl-5">👏</label>
-              <label class="rate-step" for="rl-0">👏</label>
+              <label class="rate-step" for="rl-1">😘</label>
+              <label class="rate-step" for="rl-2">😘</label>
+              <label class="rate-step" for="rl-3">😘</label>
+              <label class="rate-step" for="rl-4">😘</label>
+              <label class="rate-step" for="rl-5">😘</label>
+              <label class="rate-step" for="rl-0">😘</label>
             </span>
             <span class="rate-cell rate-t">
-              <label class="rate-step" for="rt-1">🤔</label>
-              <label class="rate-step" for="rt-2">🤔</label>
-              <label class="rate-step" for="rt-3">🤔</label>
-              <label class="rate-step" for="rt-4">🤔</label>
-              <label class="rate-step" for="rt-5">🤔</label>
-              <label class="rate-step" for="rt-0">🤔</label>
+              <label class="rate-step" for="rt-1">😈</label>
+              <label class="rate-step" for="rt-2">😈</label>
+              <label class="rate-step" for="rt-3">😈</label>
+              <label class="rate-step" for="rt-4">😈</label>
+              <label class="rate-step" for="rt-5">😈</label>
+              <label class="rate-step" for="rt-0">😈</label>
             </span>
           </div>
           <label class="rate-add-row" for="rater-addrow-1" title="More" aria-label="Show more emojis">⋯</label>
@@ -9924,26 +10038,49 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
   <section class="step-panel is-summary">
     <h2>✦ Summary</h2>
 
+    <!-- INSIGHT panels — Marc wants them ABOVE the phrase. One is
+         revealed per cycle state (1..4); state 0 = none. -->
+    <section class="insight-panel insight-1-content" aria-label="Insight 1">
+      <strong>💡 Who</strong> — who is involved, and at what distance?
+      <p>Map the people behind your clause: who is being addressed, who overhears, who is silent. The relations you can name are the ones you can tune.</p>
+    </section>
+    <section class="insight-panel insight-2-content" aria-label="Insight 2">
+      <strong>💡 What</strong> — what is being asked, offered or proposed?
+      <p>Read the verb of your clause. An ask, an offer, a description and a refusal each invite a different reply. Naming the move clarifies what you want back.</p>
+    </section>
+    <section class="insight-panel insight-3-content" aria-label="Insight 3">
+      <strong>💡 Where</strong> — where do the boundaries sit, and what is left uncertain?
+      <p>Underline the edges of your clause: time, place, depth, exclusivity. What stays ambiguous on purpose, and what would benefit from being said out loud?</p>
+    </section>
+    <section class="insight-panel insight-4-content" aria-label="Insight 4">
+      <strong>💡 Why</strong> — why does this framing matter?
+      <p>Ask what kind of relation your clause invites — playful, careful, open, contained. The form of the sentence is already half of the answer.</p>
+    </section>
+
     <!-- two clause variants: default + magic — magic checkbox swaps which is shown -->
-    <output class="clause clause-default" data-flove-phrase contenteditable="true" spellcheck="false" aria-label="Editable summary phrase">
+    <!-- Clauses no longer contenteditable: flove.js sin módulo render
+         para flovynormal, así que la frase es texto fijo. Sin
+         contenteditable el browser no normaliza ni hace strip de los
+         spans hijos que el JS inyecta (incluido .flove-phrase-picked,
+         que el script al final del body crea/actualiza). -->
+    <output class="clause clause-default" data-flove-phrase spellcheck="false" aria-label="Summary phrase">
       <span class="t-en">A summary of what you added will show up here. Add <code class="clause-code">&lt;script src="flove.js"&gt;&lt;/script&gt;</code> to your page to unlock all the options below.</span><span class="t-es">Un resumen de lo que has añadido aparecerá aquí. Añade <code class="clause-code">&lt;script src="flove.js"&gt;&lt;/script&gt;</code> a tu página para activar todas las opciones de abajo.</span>
       <br><br>
       <span class="t-en">Try it here in the menu by switching the navigation bar to Normal.</span><span class="t-es">Pruébalo aquí en el menú cambiando la barra de navegación a Normal.</span>
     </output>
-    <output class="clause clause-magic" contenteditable="true" spellcheck="false" aria-label="Editable magic phrase">
+    <output class="clause clause-magic" spellcheck="false" aria-label="Magic phrase">
       ✨ A magicked re-telling of the same details you added — warmer, looser, alive. Click <em>Phrase</em> to return to the original wording.
     </output>
 
-    <!-- Views: #views-open toggles the subtab row below. View checkboxes
-         multi-toggle (Plain removed). An inline tracker further down
-         records the last clicked view into body[data-last-view]. -->
-    <input type="checkbox" id="views-open" class="ctl">
-    <input type="checkbox" id="view-bars"     class="ctl">
-    <input type="checkbox" id="view-vertical" class="ctl">
-    <input type="checkbox" id="view-axial"    class="ctl">
-    <input type="checkbox" id="view-spider"   class="ctl">
-
     <div class="action-grid">
+      <!-- Views: #views-open toggles the subtab row below. View
+           checkboxes are multi-toggle (Plain removed). -->
+      <input type="checkbox" id="views-open" class="ctl">
+      <input type="checkbox" id="view-bars"     class="ctl">
+      <input type="checkbox" id="view-vertical" class="ctl">
+      <input type="checkbox" id="view-axial"    class="ctl">
+      <input type="checkbox" id="view-spider"   class="ctl">
+
       <div class="action-row">
         <label class="btn ghost views-btn" for="views-open" aria-haspopup="true" aria-label="Views"><span class="t-en">Views</span><span class="t-es">Vistas</span></label>
         <span class="insight-cycle">
@@ -9960,13 +10097,33 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
         <label class="btn ghost copy-btn" for="copy-hint" title="Copy" aria-label="How to copy the phrase" data-flove-copy="phrase"><span class="t-en">Copy</span><span class="t-es">Copiar</span></label>
       </div>
 
-      <!-- Subtab row — revealed when Views is on; the chart renders
-           below this row in .flove-viz-out (window.flove.viz). -->
+      <!-- Subtab row — sits IMMEDIATELY BELOW the action-row, no gap.
+           Layout space is always reserved (visibility:hidden when Views
+           is off) so clicking Views never reflows the page. -->
       <div class="action-row action-row--views" role="group" aria-label="Phrase view mode" data-active-view="plain">
         <label class="btn ghost view-pick" for="view-bars"     data-view="bars"     aria-label="Bars view"><span class="t-en">Bars</span><span class="t-es">Barras</span></label>
         <label class="btn ghost view-pick" for="view-vertical" data-view="vertical" aria-label="Vertical view"><span class="t-en">Vertical</span><span class="t-es">Vertical</span></label>
         <label class="btn ghost view-pick" for="view-axial"    data-view="axial"    aria-label="Axial view"><span class="t-en">Axial</span><span class="t-es">Axial</span></label>
         <label class="btn ghost view-pick" for="view-spider"   data-view="spider"   aria-label="Spider view"><span class="t-en">Spider</span><span class="t-es">Araña</span></label>
+      </div>
+
+      <!-- Chart for the marked view: pure-CSS bars / vertical AND a
+           JS-painted SVG slot for axial / spider. Reserved height so
+           toggling views never reflows the page. -->
+      <div class="cssviz-out" aria-hidden="true">
+        <div class="cssviz cssviz--bars">
+          <div class="cssbar cssax--h"><span class="cssbar-emo">😊</span><span class="cssbar-trk"><i></i></span></div>
+          <div class="cssbar cssax--f"><span class="cssbar-emo">😆</span><span class="cssbar-trk"><i></i></span></div>
+          <div class="cssbar cssax--l"><span class="cssbar-emo">😘</span><span class="cssbar-trk"><i></i></span></div>
+          <div class="cssbar cssax--t"><span class="cssbar-emo">😈</span><span class="cssbar-trk"><i></i></span></div>
+        </div>
+        <div class="cssviz cssviz--vertical">
+          <div class="csscol cssax--h"><span class="csscol-trk"><i></i></span><span class="cssbar-emo">😊</span></div>
+          <div class="csscol cssax--f"><span class="csscol-trk"><i></i></span><span class="cssbar-emo">😆</span></div>
+          <div class="csscol cssax--l"><span class="csscol-trk"><i></i></span><span class="cssbar-emo">😘</span></div>
+          <div class="csscol cssax--t"><span class="csscol-trk"><i></i></span><span class="cssbar-emo">😈</span></div>
+        </div>
+        <div class="cssviz cssviz--svg" aria-hidden="true"></div>
       </div>
 
       <div class="copy-hint-panel" role="status">
@@ -9989,12 +10146,6 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
               <label class="btn ghost" for="save-fmt-csv"  title="Csv"  data-fmt="csv">CSV</label>
               <label class="btn ghost" for="save-fmt-xml"  title="Xml"  data-fmt="xml">XML</label>
               <label class="btn ghost" for="save-fmt-json" title="Json" data-fmt="json">JSON</label>
-            </span>
-            <!-- Fixed-size download button. Opacity scales with selections:
-                 base 10%, +10% per format, +50% when App is on. flove.js will
-                 assemble the bundle once we wire it. -->
-            <span class="cycle-row download-bar">
-              <a class="btn ghost dl-btn" href="#" download="flovynormal-one" title="Download" data-flove-save="bundle"><span class="t-en">Download</span><span class="t-es">Descargar</span></a>
             </span>
             <!-- App destination — now positioned ABOVE the Save button and
                  permanently visible, so the destination can be picked
@@ -10230,25 +10381,14 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
         </div>
       </div>
 
-    </div>
+      <!-- Download row — own row below Save/Share/Publish, spans the
+           full action-grid width. Bundles whatever is marked (formats
+           + views) via the inline script at the bottom of body. -->
+      <div class="download-row">
+        <a class="btn ghost dl-btn" href="#" download="FlovyNormal" title="Download" data-flove-save="bundle"><span class="t-en">Download</span><span class="t-es">Descargar</span></a>
+      </div>
 
-    <!-- INSIGHT panels — one is revealed per cycle state (1..4); state 0 = none -->
-    <section class="insight-panel insight-1-content" aria-label="Insight 1">
-      <strong>💡 Who</strong> — who is involved, and at what distance?
-      <p>Map the people behind your clause: who is being addressed, who overhears, who is silent. The relations you can name are the ones you can tune.</p>
-    </section>
-    <section class="insight-panel insight-2-content" aria-label="Insight 2">
-      <strong>💡 What</strong> — what is being asked, offered or proposed?
-      <p>Read the verb of your clause. An ask, an offer, a description and a refusal each invite a different reply. Naming the move clarifies what you want back.</p>
-    </section>
-    <section class="insight-panel insight-3-content" aria-label="Insight 3">
-      <strong>💡 Where</strong> — where do the boundaries sit, and what is left uncertain?
-      <p>Underline the edges of your clause: time, place, depth, exclusivity. What stays ambiguous on purpose, and what would benefit from being said out loud?</p>
-    </section>
-    <section class="insight-panel insight-4-content" aria-label="Insight 4">
-      <strong>💡 Why</strong> — why does this framing matter?
-      <p>Ask what kind of relation your clause invites — playful, careful, open, contained. The form of the sentence is already half of the answer.</p>
-    </section>
+    </div>
 
   </section>
 
@@ -10515,6 +10655,8 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
   </div>
 </nav>
 
+<!-- Wired via <script src="flove.js"> for sound + summary actions. -->
+
 <script>
 /* ── compass · display-mode enhancer ───────────────────────────────
    Progressive enhancement over the pure-CSS compass. The radios +
@@ -10647,9 +10789,8 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
 })();
 </script>
 
-<!-- ── Floating arcade counters (bottom-left) — flove standard component.
-     Self-contained inline copy of window.flove.counters (the modular
-     flovynormal.html loads the same logic from ../flove.js). -->
+<!-- ── Floating arcade counters (bottom-left) ── flove standard component;
+     logic in ../flove.js → window.flove.counters. -->
 <style>
 .tier-iframe-overlay{ position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; }
   .tier-iframe-overlay[hidden]{ display: none; }
@@ -10730,8 +10871,9 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
     100%{ transform: scale(1); }
   }
   /* "You can now switch to Advanced" — appears alongside the counters
-     once the threshold is met; same reddish palette as the Advanced
-     halo so the user links the two affordances visually. */
+     once the threshold is met. The JS that flips the [hidden] attribute
+     lives in ../flove.js (window.flove.counters); the CSS hook is ready
+     here so once that module lands the affordance appears automatically. */
   .pc-advance-text{
     pointer-events: none;
     max-width: 11rem;
@@ -10772,152 +10914,497 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
     <span class="pc-label">Stars</span>
   </div>
 </div>
+
 <script>
-/* flove.counters — inline copy. Counting rules: click=any click bump;
-   selection=live count of hearts + emojis + labelers + wizards + filled
-   textareas; star=live count of filled textareas. */
-(function() {
-  function $$(sel) { return [].slice.call(document.querySelectorAll(sel)); }
-  var clicks = 0;
-  function visibleTextWritten(t) {
-    return t.offsetParent !== null && t.value && t.value.trim();
+/* Views tracker (lightweight) — records the LAST chart-view checkbox
+   the user toggled on into body[data-last-view] and mirrors it onto the
+   .views-panel[data-active-view]. flove.js (when it grows the views
+   module) will read this slug to render the matching chart. */
+(function(){
+  const VIEWS = ['bars', 'vertical', 'axial', 'spider'];
+  const mirror = () => {
+    document.querySelectorAll('[data-active-view]').forEach(p => {
+      p.dataset.activeView = document.body.dataset.lastView || 'plain';
+    });
+  };
+  mirror();
+  document.addEventListener('change', (ev) => {
+    const t = ev.target;
+    if (!t || !t.id || !t.id.startsWith('view-') || t.type !== 'checkbox') return;
+    const slug = t.id.slice(5);
+    if (VIEWS.indexOf(slug) === -1) return;
+    if (t.checked) document.body.dataset.lastView = slug;
+    else if (document.body.dataset.lastView === slug){
+      const next = VIEWS.find(v => v !== slug && document.getElementById('view-' + v)?.checked);
+      if (next) document.body.dataset.lastView = next;
+      else delete document.body.dataset.lastView;
+    }
+    mirror();
+  });
+})();
+</script>
+
+<script>
+/* ── Unified Download bundle (flovynormal) ────────────────────────────
+   On dl-btn click: build a ZIP with EXACTLY the marked save formats +
+   marked view SVGs. Nothing marked → no-op. One file → direct download.
+   Many files → FlovyNormal.zip. All filenames use "FlovyNormal" as the
+   base. Self-contained: copies the format generators, the SVG viz
+   functions (bars/vertical/axial/spider) and a tiny store-only ZIP
+   writer from flovynormal-one. Once flove.js grows a viz/save module,
+   this block can be removed in favour of window.flove.save(). */
+(function(){
+  if (window._floveNormalBundleBound) return;
+  window._floveNormalBundleBound = true;
+
+  const PAGE = 'FlovyNormal';
+  const ACCENT = '#d32f2f';
+  const FMT_IDS = {
+    txt:'save-fmt-txt', md:'save-fmt-md', jpg:'save-fmt-jpg',
+    html:'save-fmt-html', csv:'save-fmt-csv',
+    xml:'save-fmt-xml', json:'save-fmt-json'
+  };
+  const VIEW_LIST = ['bars', 'vertical', 'axial', 'spider'];
+
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
+  const esc = s => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+  function readPhrase(){
+    const c = document.querySelector('.clause-default');
+    return c ? (c.innerText || c.textContent || '').trim() : '';
   }
-  function countSelections() {
-    var n = 0;
-    n += $$('input[id^="rater-show-"]:checked').length;
-    n += $$('input[name^="rate-"]:checked:not([id$="-0"])').length;
-    /* Subemojis ticked from the "⋯ more" picker (the picker-cells next
-       to the 4 main raters) count as selections too. */
+  function readRaters(){
+    const list = [
+      { key: 'h', emoji: '😊' },
+      { key: 'f', emoji: '😆' },
+      { key: 'l', emoji: '😘' },
+      { key: 't', emoji: '😈' },
+    ];
+    return list.map(a => {
+      let n = 0;
+      for (let i = 1; i <= 5; i++){
+        if (document.getElementById('r' + a.key + '-' + i)?.checked){ n = i; break; }
+      }
+      return { ...a, n, max: 5 };
+    });
+  }
+  function pickedEmojis(){
+    return $$('.picker-cell[for]')
+      .filter(c => document.getElementById(c.getAttribute('for'))?.checked)
+      .map(c => c.textContent.trim())
+      .filter(Boolean);
+  }
+  function checkedFormats(){
+    return Object.keys(FMT_IDS).filter(k => document.getElementById(FMT_IDS[k])?.checked);
+  }
+  function checkedViews(){
+    return VIEW_LIST.filter(v => document.getElementById('view-' + v)?.checked);
+  }
+
+  /* ── Format generators (minimal — phrase + raters + picked emojis) ── */
+  function toTxt(){
+    const lines = [readPhrase(), ''];
+    readRaters().filter(r => r.n > 0).forEach(r => lines.push(`${r.emoji} ${r.n}/${r.max}`));
+    const p = pickedEmojis(); if (p.length) lines.push('', p.join(' '));
+    return lines.join('\n');
+  }
+  function toMd(){
+    let s = `# ${PAGE}\n\n${readPhrase()}\n\n`;
+    const r = readRaters().filter(x => x.n > 0);
+    if (r.length){ s += '## Raters\n'; r.forEach(x => s += `- ${x.emoji} ${x.n}/${x.max}\n`); }
+    const p = pickedEmojis();
+    if (p.length) s += `\n## Picked\n\n${p.join(' ')}\n`;
+    return s;
+  }
+  function toJson(){
+    return JSON.stringify({
+      phrase: readPhrase(),
+      raters: readRaters(),
+      picked: pickedEmojis(),
+    }, null, 2);
+  }
+  function toCsv(){
+    const head = 'emoji,key,n,max';
+    const rows = readRaters().map(r => `${r.emoji},${r.key},${r.n},${r.max}`);
+    return [head].concat(rows).join('\n');
+  }
+  function toXml(){
+    const r = readRaters(), p = pickedEmojis();
+    let s = `<?xml version="1.0" encoding="UTF-8"?>\n<flovynormal>\n`;
+    s += `  <phrase>${esc(readPhrase())}</phrase>\n  <raters>\n`;
+    r.forEach(x => s += `    <rater key="${x.key}" emoji="${esc(x.emoji)}" n="${x.n}" max="${x.max}"/>\n`);
+    s += `  </raters>\n  <picked>${esc(p.join(' '))}</picked>\n</flovynormal>\n`;
+    return s;
+  }
+  function toHtml(){
+    return `<!doctype html>\n<html><head><meta charset="utf-8"><title>${PAGE}</title>\n`
+      + `<style>body{font:14px/1.5 system-ui,sans-serif;max-width:640px;margin:2em auto;padding:1em}</style></head>\n`
+      + `<body><h1>${PAGE}</h1><pre>${esc(readPhrase())}</pre>\n<pre>${esc(toTxt())}</pre></body></html>`;
+  }
+
+  /* ── SVG view generators (bars/vertical/axial/spider) ── */
+  const SVG_R = 80;
+  function frac(a){ return a.max > 0 ? Math.max(0, Math.min(1, a.n / a.max)) : 0; }
+  function svgOpen(W, H, vb){
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${W}" height="${H}" style="font-family:sans-serif">`;
+  }
+  function svgBars(axes){
+    const n=axes.length, rowH=30, padT=14, padB=10;
+    const W=320, H=padT + n*rowH + padB, barX=116, barW=168;
+    let body = '';
+    axes.forEach((a,i) => {
+      const y = padT + i*rowH + rowH/2;
+      const fr = frac(a);
+      body += `<text x="12" y="${y+5}" font-size="15">${a.emoji}</text>`
+        + `<rect x="${barX}" y="${y-5}" width="${barW}" height="10" rx="5" fill="rgba(0,0,0,.08)"/>`
+        + `<rect x="${barX}" y="${y-5}" width="${(barW*fr).toFixed(1)}" height="10" rx="5" fill="${ACCENT}"/>`
+        + `<text x="${W-12}" y="${y+4}" font-size="11" fill="#333" text-anchor="end">${a.n}/${a.max}</text>`;
+    });
+    return svgOpen(W, H, `0 0 ${W} ${H}`) + body + '</svg>';
+  }
+  function svgVertical(axes){
+    const n=axes.length, W=320, H=168, colW=W/n, top=26, trackH=100, tw=13;
+    let body = '';
+    axes.forEach((a,i) => {
+      const cx = i*colW + colW/2;
+      const fh = trackH * frac(a);
+      body += `<text x="${cx}" y="${top-9}" font-size="11" fill="#333" text-anchor="middle">${a.n}</text>`
+        + `<rect x="${cx-tw/2}" y="${top}" width="${tw}" height="${trackH}" rx="6" fill="rgba(0,0,0,.08)"/>`
+        + `<rect x="${cx-tw/2}" y="${(top+trackH-fh).toFixed(1)}" width="${tw}" height="${fh.toFixed(1)}" rx="6" fill="${ACCENT}"/>`
+        + `<text x="${cx}" y="${top+trackH+22}" font-size="15" text-anchor="middle">${a.emoji}</text>`;
+    });
+    return svgOpen(W, H, `0 0 ${W} ${H}`) + body + '</svg>';
+  }
+  function axisDir(i, count){
+    const a = (-90 + i * (360/count)) * Math.PI / 180;
+    return { x: Math.cos(a), y: Math.sin(a) };
+  }
+  function radialSvg(inner){
+    const v = SVG_R + 34, S = v * 2;
+    return svgOpen(S, S, `${-v} ${-v} ${S} ${S}`) + inner + '</svg>';
+  }
+  function radialParts(axes){
+    let rings = '';
+    for (let k = 1; k <= 5; k++){
+      rings += `<circle cx="0" cy="0" r="${(SVG_R*k/5).toFixed(1)}" fill="none" stroke="${ACCENT}" stroke-opacity=".13"/>`;
+    }
+    const R = SVG_R + 21;
+    const labels = axes.map((a,i) => {
+      const d = axisDir(i, axes.length);
+      return `<text x="${(d.x*R).toFixed(1)}" y="${(d.y*R + 5).toFixed(1)}" text-anchor="middle" font-size="15">${a.emoji}</text>`;
+    }).join('');
+    return { rings, labels };
+  }
+  function svgAxial(axes){
+    const p = radialParts(axes);
+    const spokes = axes.map((a,i) => {
+      const d = axisDir(i, axes.length);
+      const len = SVG_R * frac(a);
+      return `<line x1="0" y1="0" x2="${(d.x*len).toFixed(1)}" y2="${(d.y*len).toFixed(1)}" stroke="${ACCENT}" stroke-width="8" stroke-linecap="round" stroke-opacity=".85"/>`;
+    }).join('');
+    return radialSvg(p.rings + spokes + `<circle cx="0" cy="0" r="3.5" fill="${ACCENT}"/>` + p.labels);
+  }
+  function svgSpider(axes){
+    const p = radialParts(axes);
+    const lines = axes.map((a,i) => {
+      const d = axisDir(i, axes.length);
+      return `<line x1="0" y1="0" x2="${(d.x*SVG_R).toFixed(1)}" y2="${(d.y*SVG_R).toFixed(1)}" stroke="${ACCENT}" stroke-opacity=".17"/>`;
+    }).join('');
+    const pts = axes.map((a,i) => {
+      const d = axisDir(i, axes.length), r = SVG_R * frac(a);
+      return `${(d.x*r).toFixed(1)},${(d.y*r).toFixed(1)}`;
+    }).join(' ');
+    const dots = axes.map((a,i) => {
+      const d = axisDir(i, axes.length), r = SVG_R * frac(a);
+      return `<circle cx="${(d.x*r).toFixed(1)}" cy="${(d.y*r).toFixed(1)}" r="3.2" fill="${ACCENT}"/>`;
+    }).join('');
+    return radialSvg(p.rings + lines + `<polygon points="${pts}" fill="${ACCENT}" fill-opacity=".22" stroke="${ACCENT}" stroke-width="1.5" stroke-linejoin="round"/>` + dots + p.labels);
+  }
+  function svgFor(view){
+    const axes = readRaters();
+    if (view === 'bars')     return svgBars(axes);
+    if (view === 'vertical') return svgVertical(axes);
+    if (view === 'axial')    return svgAxial(axes);
+    if (view === 'spider')   return svgSpider(axes);
+    return null;
+  }
+
+  /* ── Tiny store-only ZIP writer ── */
+  const CRC_TABLE = (() => {
+    const t = new Uint32Array(256);
+    for (let i = 0; i < 256; i++){
+      let c = i;
+      for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      t[i] = c >>> 0;
+    }
+    return t;
+  })();
+  function crc32(bytes){
+    let c = 0xFFFFFFFF;
+    for (let i = 0; i < bytes.length; i++) c = (c >>> 8) ^ CRC_TABLE[(c ^ bytes[i]) & 0xFF];
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  }
+  const enc = new TextEncoder();
+  function toBytes(data){
+    return data instanceof Uint8Array ? data
+      : (typeof data === 'string' ? enc.encode(data) : new Uint8Array(0));
+  }
+  function makeZip(files){
+    const parts = [];
+    const central = [];
+    let offset = 0;
+    files.forEach(f => {
+      const nameBytes = enc.encode(f.name);
+      const dataBytes = toBytes(f.data);
+      const crc = crc32(dataBytes);
+      const size = dataBytes.length;
+      const lh = new DataView(new ArrayBuffer(30));
+      lh.setUint32(0, 0x04034b50, true);
+      lh.setUint16(4, 20, true);  lh.setUint16(6, 0, true);
+      lh.setUint16(8, 0, true);   lh.setUint16(10, 0, true);
+      lh.setUint16(12, 0, true);  lh.setUint32(14, crc, true);
+      lh.setUint32(18, size, true); lh.setUint32(22, size, true);
+      lh.setUint16(26, nameBytes.length, true); lh.setUint16(28, 0, true);
+      parts.push(new Uint8Array(lh.buffer));
+      parts.push(nameBytes);
+      parts.push(dataBytes);
+      const cd = new DataView(new ArrayBuffer(46));
+      cd.setUint32(0, 0x02014b50, true);
+      cd.setUint16(4, 20, true);  cd.setUint16(6, 20, true);
+      cd.setUint16(8, 0, true);   cd.setUint16(10, 0, true);
+      cd.setUint16(12, 0, true);  cd.setUint16(14, 0, true);
+      cd.setUint32(16, crc, true);
+      cd.setUint32(20, size, true); cd.setUint32(24, size, true);
+      cd.setUint16(28, nameBytes.length, true);
+      cd.setUint16(30, 0, true);  cd.setUint16(32, 0, true);
+      cd.setUint16(34, 0, true);  cd.setUint16(36, 0, true);
+      cd.setUint32(38, 0, true);  cd.setUint32(42, offset, true);
+      central.push(new Uint8Array(cd.buffer));
+      central.push(nameBytes);
+      offset += 30 + nameBytes.length + size;
+    });
+    const cdStart = offset;
+    central.forEach(c => parts.push(c));
+    const cdSize = central.reduce((s, c) => s + c.length, 0);
+    const eocd = new DataView(new ArrayBuffer(22));
+    eocd.setUint32(0, 0x06054b50, true);
+    eocd.setUint16(4, 0, true);   eocd.setUint16(6, 0, true);
+    eocd.setUint16(8, files.length, true);
+    eocd.setUint16(10, files.length, true);
+    eocd.setUint32(12, cdSize, true); eocd.setUint32(16, cdStart, true);
+    eocd.setUint16(20, 0, true);
+    parts.push(new Uint8Array(eocd.buffer));
+    return new Blob(parts, { type: 'application/zip' });
+  }
+
+  function triggerDownload(filename, blob){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.style.display = 'none';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  function buildFmtFile(fmt){
+    switch (fmt){
+      case 'txt':  return { name: `${PAGE}.txt`,  data: toTxt(),  mime: 'text/plain;charset=utf-8' };
+      case 'md':   return { name: `${PAGE}.md`,   data: toMd(),   mime: 'text/markdown;charset=utf-8' };
+      case 'json': return { name: `${PAGE}.json`, data: toJson(), mime: 'application/json;charset=utf-8' };
+      case 'csv':  return { name: `${PAGE}.csv`,  data: toCsv(),  mime: 'text/csv;charset=utf-8' };
+      case 'xml':  return { name: `${PAGE}.xml`,  data: toXml(),  mime: 'application/xml;charset=utf-8' };
+      case 'html': return { name: `${PAGE}.html`, data: toHtml(), mime: 'text/html;charset=utf-8' };
+      /* jpg requires canvas rasterisation — skipped in this minimal
+         build; marking JPG silently bundles nothing for it. */
+      default: return null;
+    }
+  }
+  function buildViewFile(view){
+    const svg = svgFor(view);
+    if (!svg) return null;
+    return {
+      name: `${PAGE}-${view}.svg`,
+      data: '<?xml version="1.0" encoding="UTF-8"?>\n' + svg,
+      mime: 'image/svg+xml;charset=utf-8',
+    };
+  }
+
+  document.addEventListener('click', (ev) => {
+    const btn = ev.target.closest && ev.target.closest('.dl-btn[data-flove-save="bundle"]');
+    if (!btn) return;
+    ev.preventDefault();
+    ev.stopImmediatePropagation();
+    const files = [];
+    checkedFormats().forEach(f => { const x = buildFmtFile(f); if (x) files.push(x); });
+    checkedViews().forEach(v => { const x = buildViewFile(v); if (x) files.push(x); });
+    if (!files.length) return; // nothing marked → no-op
+    if (files.length === 1){
+      const f = files[0];
+      const blob = new Blob([f.data], { type: f.mime });
+      triggerDownload(f.name, blob);
+      return;
+    }
+    triggerDownload(`${PAGE}.zip`, makeZip(files));
+  }, true);
+
+  /* Live axial/spider render — paints svgFor(view) into the .cssviz--svg
+     slot whenever a radial view is checked or a rater changes. Bars +
+     Vertical are pure-CSS above and don't need this. */
+  function paintSvgSlot(){
+    const slot = document.querySelector('.cssviz--svg');
+    if (!slot) return;
+    const axial  = document.getElementById('view-axial')?.checked;
+    const spider = document.getElementById('view-spider')?.checked;
+    if (!axial && !spider){ slot.innerHTML = ''; return; }
+    /* Spider wins over axial (later in DOM order, same priority rule
+       as Vertical-over-Bars). */
+    slot.innerHTML = spider ? svgFor('spider') : svgFor('axial');
+  }
+  document.addEventListener('change', paintSvgSlot);
+  paintSvgSlot();
+
+  /* Expose svg generators so the future flove.js viz module can call
+     them. Same key shape used by flovynormal-one. */
+  window.flove = Object.assign(window.flove || {}, {
+    viz: Object.assign((window.flove && window.flove.viz) || {}, {
+      render: svgFor,
+      views: VIEW_LIST.slice(),
+    }),
+  });
+})();
+</script>
+
+<script>
+/* ── Floating counters (flovynormal) ──────────────────────────────────
+   flove.js doesn't ship a counter module yet, so this inline copy keeps
+   the chips alive in flovynormal. Counts:
+     · clicks    — any click anywhere on the page
+     · selections — rate-* radios (non-zero) + ⋯-more picker (pkr-*) +
+                    topbar-labeler + wizard choices + filled textareas
+     · stars     — filled textareas only
+   Toggling a pkr-* checkbox now updates #Selections AND the resume
+   picker row (pure-CSS, see .flove-phrase-picked rules in <style>). */
+(function(){
+  if (window._floveNormalCountersBound) return;
+  window._floveNormalCountersBound = true;
+
+  function $$(sel){ return Array.from(document.querySelectorAll(sel)); }
+  let clicks = 0;
+  function visibleTextWritten(t){ return t.offsetParent !== null && t.value && t.value.trim(); }
+  /* countSelections — count every "selection" the user has actively
+     armed, regardless of which UI panel is currently visible:
+       · subemojis from the ⋯-more picker (each pkr-* :checked = 1)
+       · non-zero rater radios (😊😆😘😈 levels)
+       · hearts (open the rater column)
+       · labelers, wizard choices
+       · filled text inputs (each visible textarea with content = 1)
+     Each pkr-* counts INDEPENDENTLY of the heart state — toggling a
+     heart off doesn't unmark anything, so the count for pkr-* stays
+     the same and Marc's "8 subemojis = 8" rule holds. */
+  function countSelections(){
+    let n = 0;
     n += $$('input[id^="pkr-"]:checked').length;
+    n += $$('input[name^="rate-"]:checked:not([id$="-0"])').length;
+    n += $$('input[id^="rater-show-"]:checked').length;
     n += $$('input[name="topbar-labeler"]:checked:not(#topbar-labeler-none)').length;
     n += $$('input[name^="wizard-choice-"]:checked:not([id*="-none"])').length;
     n += $$('textarea').filter(visibleTextWritten).length;
     return n;
   }
-  function countStars() {
-    return $$('textarea').filter(visibleTextWritten).length;
-  }
-  function paint(chipId, numId, pts, growthMax) {
-    var chip = document.getElementById(chipId);
-    var num  = document.getElementById(numId);
+  function countStars(){ return $$('textarea').filter(visibleTextWritten).length; }
+  function paint(chipId, numId, pts, growthMax){
+    const chip = document.getElementById(chipId);
+    const num  = document.getElementById(numId);
     if (!chip || !num) return;
     num.textContent = pts;
     chip.classList.toggle('is-empty', pts === 0);
     chip.style.setProperty('--col', Math.min(pts / growthMax, 1).toFixed(3));
   }
-  function pulse(chipId) {
-    var chip = document.getElementById(chipId);
+  function pulse(chipId){
+    const chip = document.getElementById(chipId);
     if (!chip) return;
     chip.classList.remove('pulse');
     void chip.offsetWidth;
     chip.classList.add('pulse');
   }
-  /* Gated tier-pop — unlock thresholds. */
-  var UNLOCK = {
-    advanced: { href: 'flovyadvanced.html', clicks: 20, selections: 10, stars: 2 },
+  const UNLOCK = {
+    advanced: { href: 'flovyadvanced.html', clicks: 20, selections: 5, stars: 2 },
   };
-  var unlocked = {};
-  function checkUnlocks() {
-    Object.keys(UNLOCK).forEach(function(tier){
+  const unlocked = {};
+  function checkUnlocks(){
+    Object.keys(UNLOCK).forEach(tier => {
       if (unlocked[tier]) return;
-      var t = UNLOCK[tier];
-      if (clicks >= t.clicks && countSelections() >= t.selections && countStars() >= t.stars) {
+      const t = UNLOCK[tier];
+      if (clicks >= t.clicks && countSelections() >= t.selections && countStars() >= t.stars){
         unlocked[tier] = true;
-        var step = document.querySelector('.tier-pop-step[href$="' + t.href + '"]');
-        if (step) {
+        const step = document.querySelector('.tier-pop-step[href$="' + t.href + '"]');
+        if (step){
           step.classList.add('is-unlocked');
-          /* One-time splash on first unlock; CSS animation runs once. */
           step.classList.add('just-unlocked');
-          setTimeout(function(){ step.classList.remove('just-unlocked'); }, 900);
+          setTimeout(() => step.classList.remove('just-unlocked'), 900);
         }
-        if (tier === 'advanced') {
-          var txt = document.getElementById('advanceText');
+        if (tier === 'advanced'){
+          const txt = document.getElementById('advanceText');
           if (txt) txt.hidden = false;
         }
       }
     });
   }
-  function showDlMessage(text, anchor) {
-    var toast = document.getElementById('unlockToast');
-    if (!toast) return;
-    toast.textContent = text;
-    toast.style.position = 'fixed';
-    toast.style.bottom = 'auto';
-    var btn = anchor || document.querySelector('.dl-btn');
-    var rect = btn && btn.getBoundingClientRect();
-    if (rect && rect.width > 0 && rect.height > 0) {
-      var top = rect.bottom + 8;
-      if (top + 50 > window.innerHeight) top = Math.max(8, rect.top - 50);
-      var left = Math.max(8, Math.min(rect.left, window.innerWidth - 320));
-      toast.style.left = left + 'px';
-      toast.style.top  = Math.max(8, top) + 'px';
-    } else {
-      toast.style.left = '18px';
-      toast.style.top  = 'auto';
-      toast.style.bottom = '290px';
-    }
-    toast.classList.add('is-on');
-    clearTimeout(toast._hideTimer);
-    toast._hideTimer = setTimeout(function(){ toast.classList.remove('is-on'); }, 5000);
+  function syncPickerToResume(){
+    const picked = $$('.picker-cell')
+      .filter(c => document.getElementById(c.getAttribute('for'))?.checked)
+      .map(c => c.textContent.trim())
+      .filter(Boolean);
+    const text = picked.length ? '  ' + picked.join(' ') : '';
+    /* Inject (or create on first run) a .flove-phrase-picked span at
+       the end of every .clause output. Robust against any browser /
+       script that might strip the span — we just re-add it. */
+    document.querySelectorAll('.clause').forEach(clause => {
+      let span = clause.querySelector(':scope > .flove-phrase-picked');
+      if (!span){
+        span = document.createElement('span');
+        span.className = 'flove-phrase-picked';
+        span.setAttribute('aria-live', 'polite');
+        clause.appendChild(span);
+      }
+      if (span.textContent !== text) span.textContent = text;
+    });
   }
-  document.addEventListener('click', function(e){
-    var btn = e.target.closest && e.target.closest('.dl-btn');
-    if (!btn) return;
-    var canGo = (clicks >= UNLOCK.advanced.clicks
-              && countSelections() >= UNLOCK.advanced.selections
-              && countStars() >= UNLOCK.advanced.stars);
-    showDlMessage(canGo
-      ? '🎉 You can now go to the next Level.'
-      : 'Increase your counters to get to the next Level', btn);
-  });
-  function openTierIframe(href) {
-    var overlay = document.getElementById('tierIframeOverlay');
-    if (!overlay) return;
-    var frame = overlay.querySelector('.tier-iframe-frame');
-    if (frame) frame.src = href;
-    overlay.hidden = false;
-    document.body.style.overflow = 'hidden';
-  }
-  function closeTierIframe() {
-    var overlay = document.getElementById('tierIframeOverlay');
-    if (!overlay) return;
-    overlay.hidden = true;
-    var frame = overlay.querySelector('.tier-iframe-frame');
-    if (frame) frame.src = '';
-    document.body.style.overflow = '';
-  }
-  document.addEventListener('click', function(e){
-    if (!e.target.closest) return;
-    var step = e.target.closest('.tier-pop-step--wip.is-unlocked');
-    if (step) {
-      e.preventDefault();
-      openTierIframe(step.getAttribute('href'));
-      return;
-    }
-    if (e.target.closest('.tier-iframe-close') || (e.target.matches && e.target.matches('.tier-iframe-backdrop'))) {
-      closeTierIframe();
-    }
-  });
-  document.addEventListener('keydown', function(e){
-    if (e.key === 'Escape') closeTierIframe();
-  });
-  function refresh() {
+  function refresh(){
     paint('chipClicks',     'pointsClicks',     clicks,            100);
     paint('chipSelections', 'pointsSelections', countSelections(), 100);
     paint('chipStars',      'pointsStars',      countStars(),      5);
     checkUnlocks();
+    syncPickerToResume();
   }
-  document.addEventListener('click',  function(){ clicks++; pulse('chipClicks'); refresh(); });
+  document.addEventListener('click',  () => { clicks++; pulse('chipClicks'); refresh(); });
   document.addEventListener('change', refresh);
-  document.addEventListener('input',  function(e){ if (e.target && e.target.tagName === 'TEXTAREA') refresh(); });
+  document.addEventListener('input',  ev => { if (ev.target && ev.target.tagName === 'TEXTAREA') refresh(); });
+  /* Explicit hooks on the ⋯-more picker cells AND their inputs — in
+     case the document-level 'change' listener gets short-circuited by
+     another handler somewhere up the tree. setTimeout 0 lets the label
+     toggle the checkbox first; then we re-count. Each pkr-* :checked
+     adds 1 to countSelections, independently of any heart state. */
+  document.querySelectorAll('.picker-cell').forEach(cell => {
+    cell.addEventListener('click', () => setTimeout(refresh, 0));
+  });
+  document.querySelectorAll('input[id^="pkr-"]').forEach(input => {
+    input.addEventListener('change', refresh);
+  });
+  /* Safety net: re-run refresh every 400ms regardless of events. Cheap
+     (queries are fast) and guarantees the counter + picker row never
+     drift out of sync if any event listener gets swallowed by another
+     script. (syncPickerToResume is called inside refresh, see above.) */
+  setInterval(refresh, 400);
   refresh();
   window.flove = Object.assign(window.flove || {}, {
     counters: {
-      refresh: refresh,
+      refresh,
       get clicks()     { return clicks; },
       get selections() { return countSelections(); },
       get stars()      { return countStars(); },
-      addClick: function(){ clicks++; pulse('chipClicks'); refresh(); },
+      addClick(){ clicks++; pulse('chipClicks'); refresh(); },
     },
   });
 })();
@@ -10936,156 +11423,5 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
   } catch(e) { /* */ }
 })();
 </script>
-
-<script>
-/* Views tracker — records the LAST chart-view checkbox the user toggled
-   on (slug: bars|vertical|axial|spider). currentView() in the resume
-   script reads body.dataset.lastView so the rendered chart matches the
-   user's most recent click, even with several views marked at once. The
-   "plain" checkbox clears the tracker (Plain is the no-chart fallback). */
-(function(){
-  const VIEWS = ['bars', 'vertical', 'axial', 'spider'];
-  const mirror = () => {
-    document.querySelectorAll('[data-active-view]').forEach(p => {
-      p.dataset.activeView = document.body.dataset.lastView || 'plain';
-    });
-  };
-  mirror();
-  document.addEventListener('change', (ev) => {
-    const t = ev.target;
-    if (!t || !t.id || !t.id.startsWith('view-') || t.type !== 'checkbox') return;
-    const slug = t.id.slice(5);
-    if (VIEWS.indexOf(slug) === -1) return;
-    if (t.checked) document.body.dataset.lastView = slug;
-    else if (document.body.dataset.lastView === slug){
-      /* Unchecking the active view → fall back to any other still-checked
-         viz (newest first by VIEWS order). */
-      const next = VIEWS.find(v => v !== slug && document.getElementById('view-' + v)?.checked);
-      if (next) document.body.dataset.lastView = next;
-      else delete document.body.dataset.lastView;
-    }
-    mirror();
-  });
-})();
-</script>
-
-<script>
-/* Unified Download — clicking the single .dl-btn (in save-wrap) bundles
-   any MARKED save-formats (TXT / MD / JPG / HTML / CSV / XML / JSON)
-   PLUS any MARKED chart views (Bars / Vertical / Axial / Spider, each
-   serialized as an .svg). Nothing marked → falls through to the legacy
-   bundle (everything). One item marked → single direct download. Multi
-   item → zip. All filenames use the page basename per Marc's rule. */
-(function(){
-  if (window._floveUnifiedDlBound) return;
-  window._floveUnifiedDlBound = true;
-
-  const FMT_IDS = {
-    txt:  'save-fmt-txt',
-    md:   'save-fmt-md',
-    jpg:  'save-fmt-jpg',
-    html: 'save-fmt-html',
-    csv:  'save-fmt-csv',
-    xml:  'save-fmt-xml',
-    json: 'save-fmt-json',
-  };
-  const VIEW_IDS = ['bars', 'vertical', 'axial', 'spider'];
-
-  function pageBase(){
-    return (location.pathname.split('/').pop() || 'flove').replace(/\.html$/, '');
-  }
-  function checkedFormats(){
-    return Object.keys(FMT_IDS).filter(k => document.getElementById(FMT_IDS[k])?.checked);
-  }
-  function checkedViews(){
-    return VIEW_IDS.filter(v => document.getElementById('view-' + v)?.checked);
-  }
-
-  async function buildFormatFile(fmt){
-    /* Reuse window.flove.viz + window.flove.collect when we can; for
-       formats handled by the inline save() dispatch we call into it. */
-    const root = undefined;
-    const f = (window.flove && window.flove.format) || null;
-    if (!f) return null;
-    const base = pageBase();
-    if (fmt === 'txt')  return { name: `${base}.txt`,  data: await f.txt(root)  };
-    if (fmt === 'md')   return { name: `${base}.md`,   data: await f.md(root)   };
-    if (fmt === 'csv')  return { name: `${base}.csv`,  data: await f.csv(root)  };
-    if (fmt === 'xml')  return { name: `${base}.xml`,  data: await f.xml(root)  };
-    if (fmt === 'json') return { name: `${base}.json`, data: await f.json(root) };
-    if (fmt === 'html') return { name: `${base}.html`, data: await f.html(root) };
-    if (fmt === 'jpg'){
-      const blob = await f.jpg(root);
-      return blob ? { name: `${base}.jpg`, data: blob } : null;
-    }
-    return null;
-  }
-  function buildViewFile(view){
-    const viz = window.flove && window.flove.viz;
-    if (!viz || typeof viz.svgFor !== 'function') return null;
-    const svg = viz.svgFor(view);
-    if (!svg) return null;
-    return {
-      name: `${pageBase()}-${view}.svg`,
-      data: '<?xml version="1.0" encoding="UTF-8"?>\n' + svg,
-    };
-  }
-
-  function downloadViewSvg(view){
-    /* Use window.flove.viz.render(view) (exposed by the resume IIFE)
-       to get the chart as an SVG string; wrap and download. */
-    const viz = window.flove && window.flove.viz;
-    if (!viz || typeof viz.render !== 'function') return;
-    const svg = viz.render(view);
-    if (!svg) return;
-    const blob = new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + svg], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${pageBase()}-${view}.svg`;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
-  }
-
-  function dispatchFmtSave(fmt){
-    /* The save() switch in the first IIFE handles txt/csv/xml/json/html/
-       jpg/zip directly. 'md' lives in the middle IIFE and is wired to
-       intercept [data-flove-save="md"] clicks — to reach it we
-       synthesise a hidden element with that attribute and click it. */
-    if (fmt === 'md'){
-      const tmp = document.createElement('a');
-      tmp.setAttribute('data-flove-save', 'md');
-      document.body.appendChild(tmp);
-      tmp.click();
-      tmp.remove();
-      return;
-    }
-    if (window.flove && typeof window.flove.save === 'function'){
-      window.flove.save(fmt);
-    }
-  }
-
-  document.addEventListener('click', (ev) => {
-    const btn = ev.target.closest && ev.target.closest('.dl-btn[data-flove-save="bundle"]');
-    if (!btn) return;
-    const fmts = checkedFormats();
-    const views = checkedViews();
-    /* Nothing marked → the legacy 'zip' fallback (everything).
-       Otherwise: trigger EXACTLY what the user armed — each format as
-       its own file + each view as its own .svg. */
-    if (!fmts.length && !views.length){
-      ev.preventDefault();
-      ev.stopImmediatePropagation();
-      if (window.flove && window.flove.save) window.flove.save('zip');
-      return;
-    }
-    ev.preventDefault();
-    ev.stopImmediatePropagation();
-    fmts.forEach(dispatchFmtSave);
-    views.forEach(downloadViewSvg);
-  }, true);
-})();
-</script>
-
 </body>
 </html>
