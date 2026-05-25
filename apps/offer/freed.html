@@ -893,15 +893,30 @@
   .inv-body .save-btn, .inv-body .share-btn, .inv-body .publish-btn{
     height: 28px; padding: 0 .55rem; font-size:.7rem; white-space:nowrap;
   }
-  body:not(:has(#cycle-save:checked))  .inv-body .save-wrap  .cycle-step--open,
-  body:not(:has(#cycle-pub:checked))   .inv-body .pub-wrap   .cycle-step--open,
-  body:not(:has(#cycle-share:checked)) .inv-body .share-wrap .cycle-step--open{ display:inline-flex; }
+  /* Show the "open" variant when the wrap is closed, the "close" variant
+     when it is open. Both signals are honoured (CSS-only via :has() and
+     JS-driven via .is-open) so cycles still work if :has() ever misfires. */
+  .inv-body .save-wrap  .cycle-step--open,
+  .inv-body .pub-wrap   .cycle-step--open,
+  .inv-body .share-wrap .cycle-step--open{ display:inline-flex; }
+  body:has(#cycle-save:checked)  .inv-body .save-wrap  .cycle-step--open,
+  body:has(#cycle-pub:checked)   .inv-body .pub-wrap   .cycle-step--open,
+  body:has(#cycle-share:checked) .inv-body .share-wrap .cycle-step--open,
+  .inv-body .save-wrap.is-open  .cycle-step--open,
+  .inv-body .pub-wrap.is-open   .cycle-step--open,
+  .inv-body .share-wrap.is-open .cycle-step--open{ display:none; }
   body:has(#cycle-save:checked)  .inv-body .save-wrap  .cycle-step--close,
   body:has(#cycle-pub:checked)   .inv-body .pub-wrap   .cycle-step--close,
-  body:has(#cycle-share:checked) .inv-body .share-wrap .cycle-step--close{ display:inline-flex; }
+  body:has(#cycle-share:checked) .inv-body .share-wrap .cycle-step--close,
+  .inv-body .save-wrap.is-open  .cycle-step--close,
+  .inv-body .pub-wrap.is-open   .cycle-step--close,
+  .inv-body .share-wrap.is-open .cycle-step--close{ display:inline-flex; }
   body:has(#cycle-save:checked)  .inv-body .save-btn,
   body:has(#cycle-pub:checked)   .inv-body .publish-btn,
-  body:has(#cycle-share:checked) .inv-body .share-btn{
+  body:has(#cycle-share:checked) .inv-body .share-btn,
+  .inv-body .save-wrap.is-open  .save-btn,
+  .inv-body .pub-wrap.is-open   .publish-btn,
+  .inv-body .share-wrap.is-open .share-btn{
     background: var(--fill-pressed); color:#fff; border-color: var(--accent);
   }
 
@@ -929,11 +944,16 @@
   .inv-body .share-wrap .cycle-row{ justify-content:center; }
   body:has(#cycle-save:checked)  .inv-body .save-wrap  .cycle-row,
   body:has(#cycle-pub:checked)   .inv-body .pub-wrap   .cycle-row,
-  body:has(#cycle-share:checked) .inv-body .share-wrap .cycle-row{ display:inline-flex; }
+  body:has(#cycle-share:checked) .inv-body .share-wrap .cycle-row,
+  .inv-body .save-wrap.is-open  .cycle-row,
+  .inv-body .share-wrap.is-open .cycle-row,
+  .inv-body .pub-wrap.is-open   .cycle-row{ display:inline-flex; }
   /* Schedule row is the exception — it only appears when Publish is open
      AND 0asis is the picked platform. */
-  body:has(#cycle-pub:checked) .inv-body .pub-wrap .cycle-row.pub-row--schedule{ display:none; }
-  body:has(#cycle-pub:checked):has(#pub-plat-0asis:checked) .inv-body .pub-wrap .cycle-row.pub-row--schedule{ display:inline-flex; }
+  body:has(#cycle-pub:checked) .inv-body .pub-wrap .cycle-row.pub-row--schedule,
+  .inv-body .pub-wrap.is-open .cycle-row.pub-row--schedule{ display:none; }
+  body:has(#cycle-pub:checked):has(#pub-plat-0asis:checked) .inv-body .pub-wrap .cycle-row.pub-row--schedule,
+  .inv-body .pub-wrap.is-open.plat-0asis .cycle-row.pub-row--schedule{ display:inline-flex; }
 
   /* Sub-row buttons — smaller, squared */
   .inv-body .cycle-row .btn{
@@ -1022,7 +1042,8 @@
     text-decoration: none;
     transition: max-width .3s ease, padding .3s ease, margin .3s ease, opacity .25s ease .05s;
   }
-  body:has(#cycle-pub:checked) .inv-body .pub-wrap .go-btn{
+  body:has(#cycle-pub:checked) .inv-body .pub-wrap .go-btn,
+  .inv-body .pub-wrap.is-open .go-btn{
     max-width: 6rem; padding: 0 .55rem; margin-left: .35rem;
     border-width: 1px; opacity: 1;
   }
@@ -2063,15 +2084,54 @@ em{color:#14503e}</style></head>
   });
 
   // ===== Mutually exclusive cycles (Save / Share / Publish) =====
-  // The radio group already enforces mutex via CSS. We add an outside-click
-  // closer (click the body away from .pub-wrap/.save-wrap/.share-wrap to
-  // reset to #cycle-none). Click inside any cycle keeps it open.
+  // We drive the open/close state with a JS class (.is-open) AND keep the
+  // radio :has() rules in CSS as a parallel signal — whichever one works
+  // first in the user's browser wins. The wraps are mutually exclusive.
+  const cycleWraps = { save: $(".save-wrap"), share: $(".share-wrap"), pub: $(".pub-wrap") };
+  function closeAllCycles(except){
+    Object.entries(cycleWraps).forEach(([k, w]) => { if (w && k !== except) w.classList.remove("is-open"); });
+    const none = $("#cycle-none"); if (none) none.checked = true;
+  }
+  function toggleCycle(key){
+    const w = cycleWraps[key]; if (!w) return;
+    const wasOpen = w.classList.contains("is-open");
+    closeAllCycles();
+    if (!wasOpen){
+      w.classList.add("is-open");
+      const r = $("#cycle-" + key); if (r) r.checked = true;
+    }
+  }
+  // Bind every cycle-step label to its key. cycle-step--open opens its
+  // wrap; cycle-step--close closes everything.
+  $$(".save-wrap .cycle-step, .share-wrap .cycle-step, .pub-wrap .cycle-step").forEach(lbl => {
+    lbl.addEventListener("click", e => {
+      e.preventDefault();   // we own the state — don't let the label also poke the hidden radio
+      e.stopPropagation();
+      const wrap = lbl.closest(".save-wrap, .share-wrap, .pub-wrap");
+      const key  = wrap.classList.contains("save-wrap") ? "save"
+                 : wrap.classList.contains("share-wrap") ? "share" : "pub";
+      if (lbl.classList.contains("cycle-step--close")) closeAllCycles();
+      else                                              toggleCycle(key);
+    });
+  });
+
+  // Outside-click closes any open cycle / hint / calendar.
   document.addEventListener("click", e => {
     if (e.target.closest(".save-wrap, .share-wrap, .pub-wrap, .insight-cycle, .views-btn, .action-row--views, .cssviz-out, .copy-btn, .copy-hint-panel, .pub-cal-panel, .magic-btn-summary, .plat-intro, .download-row")) return;
-    const none = $("#cycle-none"); if (none && !none.checked) none.checked = true;
+    closeAllCycles();
     const copyHint = $("#copy-hint"); if (copyHint && copyHint.checked) copyHint.checked = false;
     const calOpen = $("#pub-cal-open"); if (calOpen && calOpen.checked) calOpen.checked = false;
   });
+
+  // Keep .pub-wrap.plat-0asis class in sync with the 0asis radio so the
+  // schedule row reveal works even if :has() doesn't.
+  $$('input[name="pub-plat"]').forEach(r => {
+    r.addEventListener("change", () => {
+      cycleWraps.pub?.classList.toggle("plat-0asis", $("#pub-plat-0asis")?.checked);
+    });
+  });
+  // Same for the platform-set radios — clicking ＋ doesn't have a native
+  // change event when toggled by another label, but binding on change covers it.
 
   // ===== SHARE handlers =====
   $$('.share-sub[data-share]').forEach(btn => {
