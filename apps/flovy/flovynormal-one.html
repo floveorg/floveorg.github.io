@@ -2333,10 +2333,11 @@ ${cardBody(d)}
 
     const fields = gatherFieldTexts();
     const anyRater = readAllRaters().some(r => r.n > 0);
+    const picked = pickedEmojis();
 
-    if (!fields.length && !anyRater){
-      // Nothing typed yet, no rater clicks — keep the original placeholder
-      // text on first render so the hint stays.
+    if (!fields.length && !anyRater && !picked.length){
+      // Nothing typed yet, no rater clicks, no picker emojis — keep the
+      // original placeholder text on first render so the hint stays.
       if (ph.dataset.floveRendered === 'true') ph.innerHTML = '';
       return;
     }
@@ -2351,7 +2352,14 @@ ${cardBody(d)}
         return `<div class="flove-phrase-text">${heart}${note}${escMultiline(f.text)}${emos}</div>`;
       })
       .join('');
-    ph.innerHTML = phraseHtml;
+    // Subemojis from the "⋯ more" picker — extra selections the user
+    // armed for the 4 main raters. Show them as their own row in the
+    // summary, so the user sees what they've picked beyond the rater
+    // axes themselves.
+    const pickedRow = picked.length
+      ? `<div class="flove-phrase-picked" aria-label="Picked emojis">${picked.map(escHtml).join(' ')}</div>`
+      : '';
+    ph.innerHTML = phraseHtml + pickedRow;
     ph.dataset.floveRendered = 'true';
   }
 
@@ -4602,6 +4610,19 @@ body:has(#all-pressed:checked) .step-panel:nth-of-type(6){ display: block; }
   margin-left: .3em;
   letter-spacing: -.06em;
   vertical-align: baseline;
+}
+/* Subemojis picked from the "⋯ more" picker — rendered as their own
+   row at the bottom of the resume so the user sees what they've armed
+   beyond the rater axes themselves. */
+[data-flove-phrase] .flove-phrase-picked,
+.clause-magic .flove-phrase-picked{
+  display: block;
+  margin-top: .55em;
+  padding-top: .4em;
+  border-top: 1px dashed rgba(0, 0, 0, .08);
+  letter-spacing: .15em;
+  font-size: 1.05em;
+  text-align: center;
 }
 /* Heart icon in the resume — filled body, dim-but-warm red by default
    (.5 → .625, a 25% opacity bump so the red reads stronger) and full
@@ -10765,6 +10786,9 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
     var n = 0;
     n += $$('input[id^="rater-show-"]:checked').length;
     n += $$('input[name^="rate-"]:checked:not([id$="-0"])').length;
+    /* Subemojis ticked from the "⋯ more" picker (the picker-cells next
+       to the 4 main raters) count as selections too. */
+    n += $$('input[id^="pkr-"]:checked').length;
     n += $$('input[name="topbar-labeler"]:checked:not(#topbar-labeler-none)').length;
     n += $$('input[name^="wizard-choice-"]:checked:not([id*="-none"])').length;
     n += $$('textarea').filter(visibleTextWritten).length;
