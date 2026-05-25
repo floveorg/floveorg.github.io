@@ -84,38 +84,50 @@
   .spot-sub{color:var(--muted);font-size:.84rem}
 
   .hand{
-    display:flex;gap:14px;flex-wrap:wrap;justify-content:center;
-    padding:10px 4px 6px;perspective:900px;
+    display:flex;gap:0;flex-wrap:wrap;justify-content:center;
+    padding:18px 4px 6px;perspective:900px;
   }
+  .hand .pcard + .pcard{margin-left:-22px}
+  @media (max-width:680px){ .hand .pcard + .pcard{margin-left:-18px} }
+  @media (max-width:460px){ .hand .pcard + .pcard{margin-left:-14px} }
+  /* fan stacking: leftmost on top */
+  .hand .pcard{z-index:1}
+  .hand .pcard:nth-child(1){z-index:6}
+  .hand .pcard:nth-child(2){z-index:5}
+  .hand .pcard:nth-child(3){z-index:4}
+  .hand .pcard:nth-child(4){z-index:3}
+  .hand .pcard:nth-child(5){z-index:2}
+  .hand .pcard:hover, .hand .pcard:focus-within{z-index:10}
 
   /* ============== Playing card (horizontal spotlight) ============== */
   .pcard{
     position:relative;width:var(--card-w);min-height:var(--card-h);
-    display:grid;grid-template-rows:auto 1fr auto auto;
-    padding:8px 9px 6px;
-    background:linear-gradient(170deg,#1d1d2c 0%, #15151f 60%, #1a1426 100%);
-    border:1px solid #2a2a40;border-radius:12px;
-    box-shadow:0 8px 22px rgba(0,0,0,.4), inset 0 0 0 1px rgba(255,255,255,.025);
+    display:flex;flex-direction:column;justify-content:space-between;
+    padding:14px 10px 8px;
+    background:
+      radial-gradient(140% 80% at 50% 0%, rgba(255,255,255,.04), transparent 55%),
+      linear-gradient(170deg,#1d1d2c 0%, #15151f 60%, #1a1426 100%);
+    border:1px solid #2a2a40;border-radius:14px;
+    box-shadow:0 10px 26px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.025);
     cursor:grab;user-select:none;
     transition:transform .2s ease, box-shadow .25s ease, border-color .25s ease, opacity .2s ease;
   }
-  .pcard:hover{transform:translateY(-3px)}
+  .pcard:hover{transform:translateY(-8px)}
   .pcard.dragging{opacity:.35;cursor:grabbing}
-  .pcard.drag-over{border-color:var(--accent);box-shadow:0 0 0 2px rgba(255,47,214,.45), 0 8px 22px rgba(0,0,0,.4)}
-  .pcard .top, .pcard .bot{
-    display:flex;align-items:center;justify-content:space-between;
-    font:700 .72rem/1 system-ui,sans-serif;color:var(--muted);
-  }
-  .pcard .bot{transform:rotate(180deg)}
-  .pcard .corner-rank{
-    display:inline-grid;place-items:center;width:1.3rem;height:1.3rem;border-radius:50%;
-    font-size:.7rem;background:#1f1f2e;border:1px solid #2e2e44;color:var(--muted);
-  }
-  .pcard .corner-mark{font:700 .9rem/1 ui-serif,Georgia,serif;color:rgba(255,255,255,.18)}
+  .pcard.drag-over{border-color:var(--accent);box-shadow:0 0 0 2px rgba(255,47,214,.45), 0 10px 26px rgba(0,0,0,.45)}
   .pcard .name{
-    align-self:center;text-align:center;
-    font:600 .95rem/1.15 ui-serif,Georgia,serif;letter-spacing:.3px;
-    color:var(--ink);padding:6px 2px;
+    flex:1;display:grid;place-items:center;text-align:center;
+    font:600 .98rem/1.15 ui-serif,Georgia,serif;letter-spacing:.3px;
+    color:var(--ink);padding:4px 2px;overflow-wrap:anywhere;
+  }
+  .pcard::before{
+    content:"✺";position:absolute;top:6px;left:8px;
+    font:700 .78rem/1 ui-serif,Georgia,serif;color:rgba(255,255,255,.18);
+  }
+  .pcard::after{
+    content:"✺";position:absolute;bottom:6px;right:8px;
+    font:700 .78rem/1 ui-serif,Georgia,serif;color:rgba(255,255,255,.18);
+    transform:rotate(180deg);
   }
   .pcard .arrows{
     display:flex;justify-content:space-between;gap:4px;margin-top:4px;
@@ -129,23 +141,21 @@
   .pcard .arrows button:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent)}
   .pcard .arrows button:disabled{opacity:.25;cursor:not-allowed;transform:none}
 
-  /* medals on cards: by current position in .hand → :nth-child */
-  .hand .pcard:nth-child(1) .corner-rank{background:linear-gradient(135deg,#f7d17d,#caa256);color:#231807;border-color:#caa256}
-  .hand .pcard:nth-child(2) .corner-rank{background:linear-gradient(135deg,#d8dde8,#9aa1b3);color:#1a1d28;border-color:#9aa1b3}
-  .hand .pcard:nth-child(3) .corner-rank{background:linear-gradient(135deg,#d4945a,#a06734);color:#1a0e04;border-color:#a06734}
-  .hand .pcard:nth-child(4) .corner-rank{background:#26263a;color:var(--sky);border-color:#34344e}
-  .hand .pcard:nth-child(5) .corner-rank{background:#22222e;color:var(--plum);border-color:#2e2e44}
-  .hand .pcard:nth-child(1){border-color:rgba(247,209,125,.4);box-shadow:0 8px 22px rgba(247,209,125,.1), 0 0 0 1px rgba(247,209,125,.15) inset}
+  /* leftmost card subtly highlighted to mark "el primero" without showing numbers */
+  .hand .pcard:nth-child(1){border-color:rgba(247,209,125,.45);box-shadow:0 10px 26px rgba(247,209,125,.12), 0 0 0 1px rgba(247,209,125,.18) inset}
 
   /* drop indicator (between cards) — using outline on hovered card */
   .hand.dragging{cursor:grabbing}
 
-  /* ============== Por qué panel ============== */
-  .spot-actions{
-    display:flex;gap:.6rem;justify-content:space-between;align-items:center;
-    margin-top:1.1rem;flex-wrap:wrap;
+  /* ============== Por qué panel & actions ============== */
+  .pq-toggle-row{
+    display:flex;justify-content:center;align-items:center;
+    margin-top:1rem;
   }
-  .spot-actions .left, .spot-actions .right{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+  .spot-actions{
+    display:flex;gap:.6rem;justify-content:center;align-items:center;
+    margin-top:1rem;flex-wrap:wrap;
+  }
 
   .btn{
     appearance:none;border:0;cursor:pointer;
@@ -608,15 +618,8 @@
       </div>
       <div class="hand" id="hand"></div>
 
-      <div class="spot-actions">
-        <div class="left">
-          <button class="btn btn-soft" id="pq-toggle">
-            ${match ? '¿ Por qué (editar) ' : '¿ Por qué'}
-          </button>
-        </div>
-        <div class="right">
-          <button class="btn btn-primary" id="done-btn">Listo</button>
-        </div>
+      <div class="pq-toggle-row">
+        <button class="btn btn-soft" id="pq-toggle">${match ? '¿ Por qué (editar)' : '¿ Por qué'}</button>
       </div>
 
       <div class="pq-panel" id="pq-panel">
@@ -637,6 +640,10 @@
             <button class="btn btn-primary" id="pq-save">Guardar porqué</button>
           </div>
         </div>
+      </div>
+
+      <div class="spot-actions">
+        <button class="btn btn-primary" id="done-btn">Listo</button>
       </div>
     `;
 
@@ -691,15 +698,7 @@
       card.setAttribute('role','listitem');
       card.setAttribute('aria-label', `${deck.items[itemIdx]} · posición ${pos+1}`);
       card.innerHTML = `
-        <div class="top">
-          <span class="corner-rank">${pos+1}º</span>
-          <span class="corner-mark">✺</span>
-        </div>
         <div class="name">${escapeHTML(deck.items[itemIdx])}</div>
-        <div class="bot">
-          <span class="corner-rank">${pos+1}º</span>
-          <span class="corner-mark">✺</span>
-        </div>
         <div class="arrows">
           <button data-action="left"  ${pos===0 ? 'disabled':''} aria-label="Mueve a la izquierda" title="← una posición">←</button>
           <button data-action="right" ${pos===order.length-1 ? 'disabled':''} aria-label="Mueve a la derecha" title="una posición →">→</button>
@@ -753,7 +752,7 @@
     const last = lastPorQue(deck.id);
     status.textContent = match ? 'guardado para este orden' : (last ? 'había uno para otro orden' : 'sin guardar');
     const toggle = $spotlight.querySelector('#pq-toggle');
-    if (toggle) toggle.firstChild.nodeValue = match ? '¿ Por qué (editar) ' : '¿ Por qué';
+    if (toggle) toggle.firstChild.nodeValue = match ? '¿ Por qué (editar)' : '¿ Por qué';
   }
 
   function renderCTA(){
