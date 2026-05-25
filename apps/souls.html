@@ -248,6 +248,119 @@
   }
   .slide-dots button.is-on{ background:var(--app-accent); transform:scale(1.25); }
 
+  /* species tree (chips) */
+  .species-tree{ margin-top:1rem; display:grid; gap:.5rem; }
+  .cat-group{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    overflow:hidden;
+  }
+  .cat-group[open]{ background:var(--panel-strong) }
+  .cat-summary{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:.65rem .9rem;
+    cursor:pointer; list-style:none;
+    font-size:.95rem; color:var(--ink); letter-spacing:.02em;
+  }
+  .cat-summary::-webkit-details-marker{ display:none }
+  .cat-summary::after{
+    content:'›'; transition: transform .2s ease;
+    color:var(--ink-dim); font-size:1.2rem;
+  }
+  .cat-group[open] .cat-summary::after{ transform: rotate(90deg) }
+  .cat-count{
+    font-size:.7rem; color:var(--ink-dim); letter-spacing:.1em;
+    margin-left:auto; margin-right:.8rem;
+  }
+  .cat-chips{
+    display:flex; flex-wrap:wrap; gap:.35rem;
+    padding: 0 .9rem .85rem;
+  }
+  .chip{
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--ink-soft);
+    padding:.4rem .75rem;
+    border-radius:999px;
+    font:inherit; font-size:.88rem;
+    cursor:pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .chip:hover{ color:var(--ink); border-color:var(--app-accent-soft) }
+  .chip.is-on{
+    background:linear-gradient(135deg, var(--app-accent), var(--rose));
+    color:var(--app-ink-on-accent);
+    border-color:transparent; font-weight:600;
+  }
+
+  /* recap (previous picks) */
+  .recap{ margin: .2rem 0 1.1rem; }
+  .recap__btn{
+    appearance:none; cursor:pointer;
+    background:transparent;
+    border:1px dashed var(--line);
+    color:var(--ink-soft);
+    padding:.4rem .85rem;
+    border-radius:999px;
+    font:inherit; font-size:.82rem;
+    display:inline-flex; align-items:center; gap:.4rem;
+    transition: color .15s, border-color .15s;
+  }
+  .recap__btn:hover{ color:var(--ink); border-color:var(--app-accent-soft) }
+  .recap__btn::before{
+    content:'▾'; display:inline-block; transition: transform .2s ease;
+    font-size:.7em;
+  }
+  .recap.is-open .recap__btn::before{ transform: rotate(180deg) }
+  .recap__panel{
+    margin-top:.55rem;
+    padding:.7rem .85rem .85rem;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    display:none;
+  }
+  .recap.is-open .recap__panel{ display:block }
+  .recap__label{
+    font-size:.66rem; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--ink-dim); margin-top:.55rem;
+  }
+  .recap__label:first-child{ margin-top:0 }
+  .recap__group{ display:flex; flex-wrap:wrap; gap:.35rem; margin-top:.25rem; }
+  .recap__empty{ color:var(--ink-dim); font-size:.85rem; font-style:italic; }
+
+  /* time stats panel (save-form) */
+  .timestats{
+    margin: 1.1rem 0 .4rem;
+    padding: .85rem 1rem;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--moss);
+    border-radius: 14px;
+    color: var(--ink-soft);
+    font-size:.88rem;
+  }
+  .timestats__h{
+    font-size:.7rem; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--ink-dim); margin-bottom:.5rem;
+    display:flex; align-items:center; gap:.4rem;
+  }
+  .timestats__h::before{ content:'⏱'; font-size:1rem }
+  .timestats__row{
+    display:grid; gap:.3rem .9rem;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+  .timestats__row > div{ display:flex; justify-content:space-between; gap:.6rem }
+  .timestats__row b{ color:var(--ink); font-weight:600 }
+  .timestats__per{
+    margin-top:.6rem; padding-top:.55rem;
+    border-top:1px solid var(--line);
+    display:grid; gap:.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+  .timestats__per > div{ display:flex; justify-content:space-between; gap:.6rem; font-size:.84rem }
+
   /* recommendation tip (species / biosystem hints) */
   .tip-below{
     margin: .6rem 0 0;
@@ -620,6 +733,7 @@
       <input id="species" type="text" autocomplete="off" placeholder="leave empty to keep your animal" />
     </form>
     <p class="tip-below">Think narrower, not wider. <em>fox</em> → <em>fennec fox</em> · <em>tree</em> → <em>willow</em> · <em>bird</em> → <em>barn owl</em>.</p>
+    <div class="species-tree" id="s2SpeciesTree"></div>
     <div class="nav">
       <button class="btn ghost" type="button" data-go="s1-reveal">← Back</button>
       <button class="btn primary" type="button" data-next="s2-sq">Next →</button>
@@ -683,10 +797,22 @@
     <span class="step-tag">Stage 3 · A species, deeper</span>
     <h1>Another species — narrower again.</h1>
     <p class="hint">One step <em>below</em> <em><span class="mirror" data-mirror="species2-or">your previous creature</span></em>. Leave empty to keep it.</p>
+
+    <div class="recap" data-recap="s3-species">
+      <button type="button" class="recap__btn">Show my previous picks</button>
+      <div class="recap__panel">
+        <div class="recap__label">Stage 1 · animal</div>
+        <div class="recap__group" data-recap-group="animal"></div>
+        <div class="recap__label">Stage 2 · species</div>
+        <div class="recap__group" data-recap-group="species"></div>
+      </div>
+    </div>
+
     <form class="field" onsubmit="return false">
       <input id="s3Species" type="text" autocomplete="off" placeholder="leave empty to keep the previous one" />
     </form>
     <p class="tip-below">Narrower still. <em>dolphin</em> → <em>orca</em> · <em>oak</em> → <em>cork oak</em> · <em>spider</em> → <em>jumping spider</em>.</p>
+    <div class="species-tree" id="s3SpeciesTree"></div>
     <div class="nav">
       <button class="btn ghost" type="button" data-go="s2-reveal">← Back</button>
       <button class="btn primary" type="button" data-next="s3-sq">Next →</button>
@@ -710,6 +836,15 @@
     <span class="step-tag">Stage 3 · A channel</span>
     <h1>A sense, or a system.</h1>
     <p class="hint">Choose any one of the five senses <em>or</em> any of the eleven biological systems.</p>
+
+    <div class="recap" data-recap="s3-channel">
+      <button type="button" class="recap__btn">Show my previous channel</button>
+      <div class="recap__panel">
+        <div class="recap__label">Stage 2 · sense</div>
+        <div class="recap__group" data-recap-group="sense"></div>
+      </div>
+    </div>
+
     <div class="group-label">Senses</div>
     <div class="pick-grid" id="s3SensesPick"></div>
     <div class="group-label">Biological systems</div>
@@ -912,6 +1047,12 @@
       <button class="btn"         type="button" data-action="share">↗ Share</button>
     </div>
 
+    <div class="timestats" id="timeStats" hidden>
+      <div class="timestats__h">Time stats</div>
+      <div class="timestats__row" id="timeStatsRow"></div>
+      <div class="timestats__per" id="timeStatsPer"></div>
+    </div>
+
     <div class="nav">
       <button class="btn ghost" type="button" data-go="save-intro">← Back</button>
       <button class="btn ghost" type="button" data-action="keep-playing">↩ Keep playing</button>
@@ -947,7 +1088,7 @@
     { id:'taste',   label:'Taste',   icon:'👅', verb:'tasting'  },
     { id:'touch',   label:'Touch',   icon:'✋', verb:'touching' }
   ];
-  // bio systems — ordered. "nervous" is first; index defines the "below" filter.
+  // bio systems — ordered. "nervous" first, "reproductive" last; index defines the "below" filter.
   const BIO_SYSTEMS = [
     { id:'nervous',       label:'Nervous',       icon:'🧠', verb:'sensing'     },
     { id:'endocrine',     label:'Endocrine',     icon:'🧪', verb:'signalling'  },
@@ -955,12 +1096,26 @@
     { id:'respiratory',   label:'Respiratory',   icon:'🌬️', verb:'breathing'   },
     { id:'digestive',     label:'Digestive',     icon:'🍃', verb:'digesting'   },
     { id:'urinary',       label:'Urinary',       icon:'💧', verb:'filtering'   },
-    { id:'reproductive',  label:'Reproductive',  icon:'🌱', verb:'reproducing' },
     { id:'muscular',      label:'Muscular',      icon:'💪', verb:'moving'      },
     { id:'skeletal',      label:'Skeletal',      icon:'🦴', verb:'holding'     },
     { id:'integumentary', label:'Integumentary', icon:'🤝', verb:'touching'    },
-    { id:'immune',        label:'Immune',        icon:'🛡', verb:'defending'   }
+    { id:'immune',        label:'Immune',        icon:'🛡', verb:'defending'   },
+    { id:'reproductive',  label:'Reproductive',  icon:'🌱', verb:'reproducing' }
   ];
+  // species categories (popular naming)
+  const SPECIES_TREE = {
+    'Mammals':       ['fox','wolf','lion','bear','dolphin','whale','elephant','horse','cat','dog','mouse','deer'],
+    'Birds':         ['eagle','owl','sparrow','crow','swan','hummingbird','parrot','hawk','dove'],
+    'Reptiles':      ['snake','turtle','lizard','crocodile','chameleon','gecko','iguana'],
+    'Amphibians':    ['frog','toad','salamander','axolotl','newt'],
+    'Fish':          ['shark','tuna','koi','seahorse','salmon','eel'],
+    'Insects':       ['bee','butterfly','ant','dragonfly','firefly','mantis','beetle'],
+    'Spiders & kin': ['spider','scorpion'],
+    'Sea creatures': ['octopus','jellyfish','coral','starfish','sea urchin','squid'],
+    'Trees':         ['oak','willow','pine','baobab','cherry blossom','palm','birch'],
+    'Flowers':       ['rose','lotus','sunflower','lily','jasmine','orchid'],
+    'Fungi':         ['mushroom','mycelium','truffle']
+  };
   const MATTER_SCALE = [
     { id:'bacteria-virus', label:'Bacteria / virus', icon:'🦠' },
     { id:'crystal',         label:'Crystal',         icon:'💎' },
@@ -1014,15 +1169,28 @@
     // meta
     seenWelcome:false,
     fromReveal:'s1-reveal',
-    stars: { 1:false, 2:false, 3:false, 4:false, 5:false }
+    stars: { 1:false, 2:false, 3:false, 4:false, 5:false },
+    events: [] // hidden timer: { ts, kind:'pick'|'next'|'type', view, target }
   };
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
     if (saved && typeof saved === 'object') {
       Object.assign(state, saved);
-      if (!state.stars) state.stars = { 1:false, 2:false, 3:false, 4:false, 5:false };
+      if (!state.stars)  state.stars  = { 1:false, 2:false, 3:false, 4:false, 5:false };
+      if (!state.events) state.events = [];
     }
   } catch(_){}
+
+  // ── hidden timer ──
+  const logEvent = (kind, target) => {
+    const ev = { ts: Date.now(), kind, view: state.view, target: target || '' };
+    state.events.push(ev);
+    // soft cap to avoid storage bloat
+    if (state.events.length > 500) state.events.splice(0, state.events.length - 500);
+    persist();
+  };
+  // track first-character-typed-into-empty per field
+  const _wasNonEmpty = {};
   const persist = () => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(_){}
   };
@@ -1066,9 +1234,15 @@
     const el = document.getElementById(id);
     if (!el) return;
     el.value = state[id] || '';
+    _wasNonEmpty[id] = !!(el.value || '').trim();
     el.addEventListener('input', () => {
       state[id] = el.value;
+      const nowNonEmpty = !!el.value.trim();
+      if (nowNonEmpty && !_wasNonEmpty[id]) logEvent('type', id);
+      _wasNonEmpty[id] = nowNonEmpty;
       persist();
+      if (id === 'species'   && typeof syncS2Tree === 'function') syncS2Tree();
+      if (id === 's3Species' && typeof syncS3Tree === 'function') syncS3Tree();
       refreshGates();
       reflectMirrors();
       refreshCounters();
@@ -1097,6 +1271,7 @@
       b.innerHTML = `<span class="pick-icon" aria-hidden="true">${it.icon || '·'}</span><span class="pick-label">${it.label}</span>`;
       b.addEventListener('click', () => {
         setValue(it.id);
+        logEvent('pick', it.id);
         persist();
         sync();
         refreshGates();
@@ -1271,9 +1446,11 @@
     $$('.view').forEach(v => v.classList.toggle('is-on', v.dataset.view === viewId));
 
     // hooks per view
+    if (viewId === 's3-species') refreshRecapS3Species();
+    if (viewId === 's3-channel') refreshRecapS3Channel();
     if (viewId === 's4-matter')  renderBreadcrumb();
     if (viewId === 's4-bio')     buildS4Bio();
-    if (viewId === 'save-form')  renderPortrait();
+    if (viewId === 'save-form')  { renderPortrait(); renderTimeStats(); }
     if (/^s\d-reveal$/.test(viewId)){
       const sNum = +viewId.match(/s(\d)-reveal/)[1];
       if (!state.stars[sNum]){
@@ -1294,7 +1471,7 @@
     }
     window.scrollTo({ top:0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   };
-  $$('[data-next]').forEach(b => b.addEventListener('click', () => goTo(b.dataset.next)));
+  $$('[data-next]').forEach(b => b.addEventListener('click', () => { logEvent('next', b.dataset.next); goTo(b.dataset.next); }));
   $$('[data-go]'  ).forEach(b => b.addEventListener('click', () => goTo(b.dataset.go)));
 
   // ── slides (welcome) ───────────────────────────────────
@@ -1319,6 +1496,181 @@
   slideDotsEl.querySelectorAll('button').forEach(b => {
     b.addEventListener('click', () => setSlide(+b.dataset.goSlide));
   });
+
+  // ── species tree (chips) for stage 2 + stage 3 species pickers ──
+  function buildSpeciesTree(containerSel, targetId, stateKey){
+    const el = $(containerSel);
+    if (!el) return () => {};
+    el.innerHTML = '';
+    const chipById = new Map();
+    Object.entries(SPECIES_TREE).forEach(([cat, list]) => {
+      const det = document.createElement('details');
+      det.className = 'cat-group';
+      const sum = document.createElement('summary');
+      sum.className = 'cat-summary';
+      sum.innerHTML = `<span>${cat}</span><span class="cat-count">${list.length}</span>`;
+      const wrap = document.createElement('div');
+      wrap.className = 'cat-chips';
+      list.forEach(name => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'chip';
+        b.dataset.species = name;
+        b.textContent = name;
+        b.addEventListener('click', () => {
+          const inp = document.getElementById(targetId);
+          if (inp) inp.value = name;
+          state[stateKey] = name;
+          _wasNonEmpty[stateKey] = true;
+          logEvent('pick', stateKey + ':' + name);
+          persist();
+          syncTreeSelection();
+          refreshGates();
+          reflectMirrors();
+          refreshCounters();
+          pulseChip('chipSels');
+        });
+        wrap.appendChild(b);
+        chipById.set(name.toLowerCase(), b);
+      });
+      det.appendChild(sum);
+      det.appendChild(wrap);
+      el.appendChild(det);
+    });
+    function syncTreeSelection(){
+      const cur = (state[stateKey] || '').trim().toLowerCase();
+      chipById.forEach((b, name) => b.classList.toggle('is-on', name === cur));
+    }
+    syncTreeSelection();
+    return syncTreeSelection;
+  }
+  const syncS2Tree = buildSpeciesTree('#s2SpeciesTree', 'species',   'species');
+  const syncS3Tree = buildSpeciesTree('#s3SpeciesTree', 's3Species', 's3Species');
+
+  // ── recap panels (previous picks) ───────────────────────
+  function makeChip(label, onClick, isOn){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip' + (isOn ? ' is-on' : '');
+    b.textContent = label;
+    b.addEventListener('click', onClick);
+    return b;
+  }
+  function setupRecap(recapSel){
+    const wrap = $(recapSel);
+    if (!wrap) return () => {};
+    const btn = wrap.querySelector('.recap__btn');
+    const baseText = btn.textContent;
+    btn.addEventListener('click', () => {
+      const isOpen = wrap.classList.toggle('is-open');
+      btn.textContent = (isOpen ? 'Hide' : 'Show') + baseText.replace(/^(Show|Hide)/, '');
+    });
+    return () => fillRecap(wrap);
+  }
+  function fillRecap(wrap){
+    wrap.querySelectorAll('[data-recap-group]').forEach(g => {
+      const kind = g.dataset.recapGroup;
+      g.innerHTML = '';
+      if (kind === 'animal'){
+        const v = state.animal.trim();
+        if (v) g.appendChild(makeChip(v, () => {
+          const inp = $('#s3Species'); if (inp) inp.value = v;
+          state.s3Species = v; _wasNonEmpty.s3Species = true;
+          logEvent('pick', 's3Species:animal');
+          persist(); syncS3Tree(); refreshGates(); reflectMirrors(); refreshCounters(); pulseChip('chipSels');
+        }));
+        else g.appendChild(emptySpan());
+      } else if (kind === 'species'){
+        const v = state.species.trim();
+        if (v) g.appendChild(makeChip(v, () => {
+          const inp = $('#s3Species'); if (inp) inp.value = v;
+          state.s3Species = v; _wasNonEmpty.s3Species = true;
+          logEvent('pick', 's3Species:species');
+          persist(); syncS3Tree(); refreshGates(); reflectMirrors(); refreshCounters(); pulseChip('chipSels');
+        }));
+        else g.appendChild(emptySpan());
+      } else if (kind === 'sense'){
+        if (state.sense){
+          const obj = SENSES.find(x => x.id === state.sense);
+          if (obj) g.appendChild(makeChip(obj.icon + ' ' + obj.label, () => {
+            state.s3Channel = 'sense:' + state.sense;
+            logEvent('pick', 's3Channel:from-recap:' + state.sense);
+            persist(); refreshS3Channel(); refreshGates(); reflectMirrors(); refreshCounters(); pulseChip('chipSels');
+          }));
+        } else g.appendChild(emptySpan());
+      }
+    });
+  }
+  function emptySpan(){
+    const s = document.createElement('span');
+    s.className = 'recap__empty';
+    s.textContent = 'nothing yet';
+    return s;
+  }
+  const refreshRecapS3Species = setupRecap('[data-recap="s3-species"]');
+  const refreshRecapS3Channel = setupRecap('[data-recap="s3-channel"]');
+
+  // ── time stats render ───────────────────────────────────
+  function fmtDuration(ms){
+    if (!isFinite(ms) || ms < 0) return '—';
+    const s = Math.round(ms / 1000);
+    if (s < 60) return s + 's';
+    const m = Math.floor(s / 60), r = s % 60;
+    if (m < 60) return m + 'm ' + r + 's';
+    const h = Math.floor(m / 60); return h + 'h ' + (m % 60) + 'm';
+  }
+  function computeStats(){
+    const evs = state.events || [];
+    if (evs.length < 2){
+      return { count: evs.length, total:0, avg:0, median:0, min:0, max:0, perStage: {} };
+    }
+    const gaps = [];
+    for (let i = 1; i < evs.length; i++){
+      gaps.push(evs[i].ts - evs[i-1].ts);
+    }
+    const sorted = gaps.slice().sort((a,b)=>a-b);
+    const sum = gaps.reduce((a,b)=>a+b, 0);
+    const median = sorted.length % 2
+      ? sorted[(sorted.length-1)/2]
+      : (sorted[sorted.length/2 - 1] + sorted[sorted.length/2]) / 2;
+    // per-stage: gap is attributed to the stage of evs[i]
+    const perStage = {1:0, 2:0, 3:0, 4:0, 5:0};
+    const viewStage = v => {
+      const m = (v||'').match(/^s(\d)/);
+      return m ? +m[1] : 0;
+    };
+    for (let i = 1; i < evs.length; i++){
+      const s = viewStage(evs[i].view);
+      if (perStage[s] !== undefined) perStage[s] += evs[i].ts - evs[i-1].ts;
+    }
+    return {
+      count: evs.length,
+      total: evs[evs.length-1].ts - evs[0].ts,
+      avg: sum / gaps.length,
+      median,
+      min: Math.min(...gaps),
+      max: Math.max(...gaps),
+      perStage
+    };
+  }
+  function renderTimeStats(){
+    const wrap = $('#timeStats');
+    if (!wrap) return;
+    const st = computeStats();
+    if (st.count < 2){ wrap.hidden = true; return; }
+    wrap.hidden = false;
+    $('#timeStatsRow').innerHTML = `
+      <div><span>Total time</span><b>${fmtDuration(st.total)}</b></div>
+      <div><span>Selections</span><b>${st.count}</b></div>
+      <div><span>Average gap</span><b>${fmtDuration(st.avg)}</b></div>
+      <div><span>Median gap</span><b>${fmtDuration(st.median)}</b></div>
+      <div><span>Fastest gap</span><b>${fmtDuration(st.min)}</b></div>
+      <div><span>Slowest gap</span><b>${fmtDuration(st.max)}</b></div>
+    `;
+    $('#timeStatsPer').innerHTML = [1,2,3,4,5].map(n =>
+      `<div><span>Stage ${n}</span><b>${st.perStage[n] ? fmtDuration(st.perStage[n]) : '—'}</b></div>`
+    ).join('');
+  }
 
   // ── visual portrait grid ────────────────────────────────
   const STAGE_TITLES = ['1', '2', '3', '4', '5'];
@@ -1389,6 +1741,14 @@
     block('Stage 5 · particle', p ? p.label : '', [state.s5P1,state.s5P2,state.s5P3]);
     const im = immuneObj();
     block('Stage 5 · immune subsystem', im ? im.label : '', [state.s5I1,state.s5I2,state.s5I3]);
+    const st = computeStats();
+    if (st.count >= 2){
+      lines.push('');
+      lines.push('—');
+      lines.push(`Time · total ${fmtDuration(st.total)} · selections ${st.count} · avg ${fmtDuration(st.avg)} · median ${fmtDuration(st.median)}`);
+      const per = [1,2,3,4,5].map(n => `S${n}: ${st.perStage[n] ? fmtDuration(st.perStage[n]) : '—'}`).join(' · ');
+      lines.push('Time per stage · ' + per);
+    }
     return lines.join('\n').trim();
   };
 
@@ -1445,9 +1805,12 @@
     state.view = 'welcome'; state.slide = 0; state.seenWelcome = false;
     state.fromReveal = 's1-reveal';
     state.stars = { 1:false, 2:false, 3:false, 4:false, 5:false };
+    state.events = [];
     persist();
     textFieldIds.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    Object.keys(_wasNonEmpty).forEach(k => _wasNonEmpty[k] = false);
     refreshS3Channel(); syncSenses(); syncMatter(); buildS4Bio(); syncParticle(); syncImmune();
+    syncS2Tree(); syncS3Tree();
     setSlide(0);
     refreshGates();
     refreshCounters();
@@ -1510,6 +1873,7 @@
   setSlide(state.slide);
   refreshS3Channel();
   syncSenses(); syncMatter(); buildS4Bio(); syncParticle(); syncImmune();
+  syncS2Tree(); syncS3Tree();
   refreshGates();
   reflectMirrors();
   refreshCounters();
