@@ -4988,22 +4988,34 @@ body:has(#insight-4:checked) .insight-step:nth-child(5){
   box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .14);
 }
 
-/* Views row — opens as an ABSOLUTE strip below the Views button,
-   expanding rightwards in a single line. Position:absolute keeps the
-   strip out of flow so neighbouring buttons (Insight, Magic) don't get
-   pushed when the user toggles Views open. Checkboxes (not radios):
-   multi-toggle to mark several views for batch download. */
+/* Views panel — opens as an ABSOLUTE panel below the Views button.
+   Position:absolute keeps it out of flow so neighbouring buttons
+   (Insight, Magic) don't get pushed when Views toggles open. The panel
+   is a flex column: a single row of view checkboxes + Download on top,
+   and the chart (.cssviz-out) appearing right below once any chart view
+   is marked. Multi-toggle: each view is a checkbox; the Download button
+   is a stub here (flovybasic = pure HTML/CSS, no JS to bundle). */
 .views-wrap{ position: relative; display: inline-flex; align-items: center; }
 .views-btn{ position: relative; z-index: 5; }
 .views-popup{
   position: absolute;
-  top: calc(100% + 8px); left: 0;
+  top: calc(100% + 3px); left: 0;
   display: none;
-  flex-direction: row; flex-wrap: nowrap;
-  align-items: center; gap: .25rem;
-  white-space: nowrap;
+  flex-direction: column;
+  align-items: stretch;
+  gap: .35rem;
+  padding: .35rem;
+  background: rgba(255, 255, 255, .96);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  box-shadow: 0 8px 20px var(--ink-12);
   max-width: calc(100vw - 2rem);
   z-index: 5;
+}
+.views-row{
+  display: flex; flex-direction: row; flex-wrap: nowrap;
+  align-items: center; gap: .25rem;
+  white-space: nowrap;
 }
 body:has(#views-open:checked) .views-popup{ display: flex; }
 /* Click-outside collapse: full-viewport invisible label targets the open
@@ -5024,14 +5036,16 @@ body:has(#view-bars:checked) .views-btn,
 body:has(#view-vertical:checked) .views-btn{
   background: var(--fill-soft); border-color: var(--accent); color: var(--accent-deep);
 }
-/* Compact sub-buttons: smaller padding + font so the whole row fits
-   beside the Views button without overflowing the interface. Same
-   treatment applies to any future sub-button cluster that risks the
-   same overflow. */
+/* Compact sub-buttons: kill vertical padding (≈5px less per side) and
+   tighten font so the whole row fits beside the Views button without
+   overflowing. Same treatment applies to any future sub-button cluster
+   that risks the same overflow. */
 .views-popup .view-pick,
 .views-popup .views-download-btn{
-  padding: .25rem .5rem;
-  font-size: .8rem;
+  height: 22px;
+  padding: 0 .5rem;
+  font-size: .75rem;
+  line-height: 1;
   border-radius: 6px;
 }
 .views-popup .view-pick{ justify-content: flex-start; }
@@ -6965,34 +6979,32 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
       ✨ A magicked re-telling of the same details you added — warmer, looser, alive. Click <em>Phrase</em> to return to the original wording.
     </output>
 
-    <!-- Pure-CSS data visualization, shown BELOW the phrase. Bars and
-         Vertical chart the 4 rater axes; the fills are driven entirely by
-         :has() on the rater radios — no JS. Plain hides the chart. -->
-    <div class="cssviz-out" aria-hidden="true">
-      <div class="cssviz cssviz--bars">
-        <div class="cssbar cssax--h"><span class="cssbar-emo">😊</span><span class="cssbar-trk"><i></i></span></div>
-        <div class="cssbar cssax--f"><span class="cssbar-emo">😆</span><span class="cssbar-trk"><i></i></span></div>
-        <div class="cssbar cssax--l"><span class="cssbar-emo">👏</span><span class="cssbar-trk"><i></i></span></div>
-        <div class="cssbar cssax--t"><span class="cssbar-emo">🤔</span><span class="cssbar-trk"><i></i></span></div>
-      </div>
-      <div class="cssviz cssviz--vertical">
-        <div class="csscol cssax--h"><span class="csscol-trk"><i></i></span><span class="cssbar-emo">😊</span></div>
-        <div class="csscol cssax--f"><span class="csscol-trk"><i></i></span><span class="cssbar-emo">😆</span></div>
-        <div class="csscol cssax--l"><span class="csscol-trk"><i></i></span><span class="cssbar-emo">👏</span></div>
-        <div class="csscol cssax--t"><span class="csscol-trk"><i></i></span><span class="cssbar-emo">🤔</span></div>
-      </div>
-    </div>
-
     <div class="action-grid">
       <div class="action-row">
         <div class="views-wrap">
           <label class="btn ghost views-btn" for="views-open" aria-haspopup="true">👁 <span class="t-en">Views</span><span class="t-es">Vistas</span></label>
           <label class="views-overlay" for="views-open" aria-hidden="true" tabindex="-1"></label>
           <div class="views-popup" role="group" aria-label="Phrase view mode">
-            <label class="btn ghost view-pick" for="view-plain"    aria-label="Plain — no chart">📃 Plain</label>
-            <label class="btn ghost view-pick" for="view-bars"     aria-label="Bars view">▦ Bars</label>
-            <label class="btn ghost view-pick" for="view-vertical" aria-label="Vertical view">│ Vertical</label>
-            <label class="btn ghost views-download-btn" for="views-download" title="Download marked views" aria-label="Download marked views">⬇ <span class="t-en">Download</span><span class="t-es">Descargar</span></label>
+            <div class="views-row">
+              <label class="btn ghost view-pick" for="view-plain"    aria-label="Plain — no chart"><span class="t-en">Plain</span><span class="t-es">Plano</span></label>
+              <label class="btn ghost view-pick" for="view-bars"     aria-label="Bars view"><span class="t-en">Bars</span><span class="t-es">Barras</span></label>
+              <label class="btn ghost view-pick" for="view-vertical" aria-label="Vertical view"><span class="t-en">Vertical</span><span class="t-es">Vertical</span></label>
+              <a class="btn ghost views-download-btn dl-btn" href="#" download="flovybasic" title="Download marked views" aria-label="Download marked views"><span class="t-en">Download</span><span class="t-es">Descargar</span></a>
+            </div>
+            <div class="cssviz-out" aria-hidden="true">
+              <div class="cssviz cssviz--bars">
+                <div class="cssbar cssax--h"><span class="cssbar-emo">😊</span><span class="cssbar-trk"><i></i></span></div>
+                <div class="cssbar cssax--f"><span class="cssbar-emo">😆</span><span class="cssbar-trk"><i></i></span></div>
+                <div class="cssbar cssax--l"><span class="cssbar-emo">👏</span><span class="cssbar-trk"><i></i></span></div>
+                <div class="cssbar cssax--t"><span class="cssbar-emo">🤔</span><span class="cssbar-trk"><i></i></span></div>
+              </div>
+              <div class="cssviz cssviz--vertical">
+                <div class="csscol cssax--h"><span class="csscol-trk"><i></i></span><span class="cssbar-emo">😊</span></div>
+                <div class="csscol cssax--f"><span class="csscol-trk"><i></i></span><span class="cssbar-emo">😆</span></div>
+                <div class="csscol cssax--l"><span class="csscol-trk"><i></i></span><span class="cssbar-emo">👏</span></div>
+                <div class="csscol cssax--t"><span class="csscol-trk"><i></i></span><span class="cssbar-emo">🤔</span></div>
+              </div>
+            </div>
           </div>
         </div>
         <span class="insight-cycle">
