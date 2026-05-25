@@ -1790,7 +1790,8 @@ body:has(#all-pressed:checked) .step-panel:nth-of-type(6){ display: block; }
 }
 
 /* Summary action row — tighter so Views + Insight + Magic + Copy fit
-   on one line. Buttons are 15% smaller than the .btn default. */
+   on one line. Buttons are 15% smaller than the .btn default. Copy is
+   pinned to the right side of the row. */
 .step-panel.is-summary .action-row{
   gap: .25rem !important;
   flex-wrap: nowrap;
@@ -1804,6 +1805,7 @@ body:has(#all-pressed:checked) .step-panel:nth-of-type(6){ display: block; }
   white-space: nowrap;
 }
 .step-panel.is-summary .action-row .flove-phrase-btn{ margin-left: 0; }
+.step-panel.is-summary .action-row > .copy-btn{ margin-left: auto; }
 
 /* Download button — louder. Filled gradient, soft glow, gentle pulse so
    it reads as "the next thing to click" inside the Save drawer. Width
@@ -5216,16 +5218,16 @@ body:has(#insight-4:checked) .insight-step:nth-child(5){
   font-size: .7rem;
 }
 
-/* Subtab row — sits ONE ROW ABOVE the action-row. Always present in
-   layout (height + width reserved) so clicking Views never reflows the
-   page; only visibility flips. View pickers + active-view tracker
-   carry over from before. */
+/* Subtab row — sits IMMEDIATELY below the action-row of Views/Insight/
+   Magic/Copy, no gap. Layout space always reserved (visibility:hidden
+   when Views is off) so clicking Views never reflows the page; only
+   visibility flips. */
 .action-row--views{
   display: flex;
   visibility: hidden;
   justify-content: flex-start;
   gap: .25rem;
-  margin: 0 0 .25rem 0;
+  margin: 0;
   min-height: 22px;
 }
 body:has(#views-open:checked) .action-row--views{ visibility: visible; }
@@ -5248,25 +5250,25 @@ body:has(#view-bars:checked, #view-vertical:checked, #view-axial:checked, #view-
 }
 
 /* ── Chart slot ──────────────────────────────────────────────────────
-   Bars + Vertical: pure-CSS, fed by rater :has() rules. Axial +
-   Spider: painted by JS into .cssviz--svg below.
-   The container itself reserves a fixed minimum height so clicking
-   any view never makes the page jump. */
+   All four views (bars / vertical / axial / spider) render inside the
+   SAME .cssviz-out container, centered with a common max-width. When
+   no view is marked, the slot collapses (display:none); when a view is
+   marked, the chart appears and pushes Save/Share/Publish below it. */
 .cssviz-out{
-  min-height: 180px;
-  margin-top: .85rem; padding-top: .7rem;
+  margin-top: .85rem;
+  padding-top: .7rem;
   border-top: 1px dashed rgba(0, 0, 0, .08);
 }
-.cssviz{ display: none; }
+body:not(:has(#view-bars:checked, #view-vertical:checked, #view-axial:checked, #view-spider:checked)) .cssviz-out{
+  display: none;
+}
+.cssviz{ display: none; max-width: 360px; margin: 0 auto; }
 body:has(#view-bars:checked) .cssviz--bars{ display: block; }
 body:has(#view-vertical:checked) .cssviz--vertical{
   display: flex; align-items: flex-end; justify-content: space-around; gap: .7rem;
 }
 body:has(#view-vertical:checked) .cssviz--bars{ display: none; }
-.cssviz--svg{
-  max-width: 360px;
-  margin: 0 auto;
-}
+.cssviz--svg{ text-align: center; }
 
 /* Picker emojis row inside the resume — pure-CSS conditional display.
    Each ⋯-more cell's checkbox toggles its matching span, no JS needed.
@@ -5564,14 +5566,15 @@ body:has(#cycle-pub:checked) .pub-wrap .go-btn{
    subs — it spans the full publish wrap width. */
 .pub-wrap   .cycle-row.pub-go-row{ left: 0; right: 0; }
 
-/* ── Download button — full-row pill, 20% larger than the previous
-   30px (36px height, font-size .9rem). Opacity reflects how many
-   formats (and whether App) the user has armed via additive CSS math. */
-.download-bar{
-  display: flex !important;
+/* ── Download row — own row below Save/Share/Publish, spans the full
+   action-grid width. Opacity of the button reflects how many formats
+   (and whether App) the user has armed via additive CSS math. */
+.download-row{
+  display: flex;
   width: 100%;
-  gap: .25rem;
+  margin-top: .6rem;
 }
+.download-row .dl-btn{ flex: 1 1 0; }
 .dl-btn{
   --dl-base: 60;
   --dl-md: 0; --dl-jpg: 0; --dl-html: 0; --dl-csv: 0; --dl-xml: 0; --dl-json: 0;
@@ -7202,16 +7205,6 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
       <input type="checkbox" id="view-axial"    class="ctl">
       <input type="checkbox" id="view-spider"   class="ctl">
 
-      <!-- Subtab row — sits ONE ROW ABOVE the action-row. Reserved
-           layout space (always present, just visibility:hidden when
-           Views is off) so clicking Views never reflows the page. -->
-      <div class="action-row action-row--views" role="group" aria-label="Phrase view mode" data-active-view="plain">
-        <label class="btn ghost view-pick" for="view-bars"     data-view="bars"     aria-label="Bars view"><span class="t-en">Bars</span><span class="t-es">Barras</span></label>
-        <label class="btn ghost view-pick" for="view-vertical" data-view="vertical" aria-label="Vertical view"><span class="t-en">Vertical</span><span class="t-es">Vertical</span></label>
-        <label class="btn ghost view-pick" for="view-axial"    data-view="axial"    aria-label="Axial view"><span class="t-en">Axial</span><span class="t-es">Axial</span></label>
-        <label class="btn ghost view-pick" for="view-spider"   data-view="spider"   aria-label="Spider view"><span class="t-en">Spider</span><span class="t-es">Araña</span></label>
-      </div>
-
       <div class="action-row">
         <label class="btn ghost views-btn" for="views-open" aria-haspopup="true" aria-label="Views"><span class="t-en">Views</span><span class="t-es">Vistas</span></label>
         <span class="insight-cycle">
@@ -7226,6 +7219,16 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
           <span class="label-on"><span class="t-en">Phrase</span><span class="t-es">Frase</span></span>
         </label>
         <label class="btn ghost copy-btn" for="copy-hint" title="Copy" aria-label="How to copy the phrase" data-flove-copy="phrase"><span class="t-en">Copy</span><span class="t-es">Copiar</span></label>
+      </div>
+
+      <!-- Subtab row — sits IMMEDIATELY BELOW the action-row, no gap.
+           Layout space is always reserved (visibility:hidden when Views
+           is off) so clicking Views never reflows the page. -->
+      <div class="action-row action-row--views" role="group" aria-label="Phrase view mode" data-active-view="plain">
+        <label class="btn ghost view-pick" for="view-bars"     data-view="bars"     aria-label="Bars view"><span class="t-en">Bars</span><span class="t-es">Barras</span></label>
+        <label class="btn ghost view-pick" for="view-vertical" data-view="vertical" aria-label="Vertical view"><span class="t-en">Vertical</span><span class="t-es">Vertical</span></label>
+        <label class="btn ghost view-pick" for="view-axial"    data-view="axial"    aria-label="Axial view"><span class="t-en">Axial</span><span class="t-es">Axial</span></label>
+        <label class="btn ghost view-pick" for="view-spider"   data-view="spider"   aria-label="Spider view"><span class="t-en">Spider</span><span class="t-es">Araña</span></label>
       </div>
 
       <!-- Chart for the marked view: pure-CSS bars / vertical AND a
@@ -7267,12 +7270,6 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
               <label class="btn ghost" for="save-fmt-csv"  title="Csv"  data-fmt="csv">CSV</label>
               <label class="btn ghost" for="save-fmt-xml"  title="Xml"  data-fmt="xml">XML</label>
               <label class="btn ghost" for="save-fmt-json" title="Json" data-fmt="json">JSON</label>
-            </span>
-            <!-- Fixed-size download button. Opacity scales with selections:
-                 base 10%, +10% per format, +50% when App is on. flove.js will
-                 assemble the bundle once we wire it. -->
-            <span class="cycle-row download-bar">
-              <a class="btn ghost dl-btn" href="#" download="FlovyNormal" title="Download" data-flove-save="bundle"><span class="t-en">Download</span><span class="t-es">Descargar</span></a>
             </span>
             <!-- App destination — now positioned ABOVE the Save button and
                  permanently visible, so the destination can be picked
@@ -7506,6 +7503,13 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
             <p><span class="t-en">0asis is a Friend2Friend Groupware.</span><span class="t-es">0asis es un Groupware Amigo-a-Amigo.</span> <a class="modal-link" href="https://0asis.org/" target="_blank" rel="noopener">0asis.org</a></p>
           </div>
         </div>
+      </div>
+
+      <!-- Download row — own row below Save/Share/Publish, spans the
+           full action-grid width. Bundles whatever is marked (formats
+           + views) via the inline script at the bottom of body. -->
+      <div class="download-row">
+        <a class="btn ghost dl-btn" href="#" download="FlovyNormal" title="Download" data-flove-save="bundle"><span class="t-en">Download</span><span class="t-es">Descargar</span></a>
       </div>
 
     </div>
