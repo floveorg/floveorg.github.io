@@ -5219,15 +5219,15 @@ body:has(#insight-4:checked) .insight-step:nth-child(5){
 }
 
 /* Subtab row — sits IMMEDIATELY below the action-row of Views/Insight/
-   Magic/Copy, with a negative top margin so it tucks ~10px up under
-   the row above. Layout space always reserved (visibility:hidden when
-   Views is off) so clicking Views never reflows the page. */
+   Magic/Copy, with a -8px top margin so it tucks 8px up under the row
+   above. Layout space always reserved (visibility:hidden when Views is
+   off) so clicking Views never reflows the page. */
 .action-row--views{
   display: flex;
   visibility: hidden;
   justify-content: flex-start;
   gap: .25rem;
-  margin: -10px 0 0 0;
+  margin: -8px 0 0 0;
   min-height: 22px;
 }
 body:has(#views-open:checked) .action-row--views{ visibility: visible; }
@@ -5270,21 +5270,16 @@ body:has(#view-vertical:checked) .cssviz--vertical{
 body:has(#view-vertical:checked) .cssviz--bars{ display: none; }
 .cssviz--svg{ text-align: center; }
 
-/* Picker emojis row inside the resume — pure-CSS conditional display.
-   Each ⋯-more cell's checkbox toggles its matching span, no JS needed.
-   The container sits at the END of the clause; contenteditable=false on
-   the wrapper keeps it out of the user's typing flow. */
+/* Picker emojis inside the resume — pure-CSS conditional display.
+   The wrapper sits INLINE inside the .clause-default <output>, after
+   the phrase text. Each ⋯-more cell's checkbox toggles its matching
+   span via :has() — no JS for the resume side. */
 .flove-phrase-picked{
-  display: block;
-  margin-top: .55em;
-  padding-top: .4em;
-  border-top: 1px dashed rgba(0, 0, 0, .08);
-  letter-spacing: .15em;
-  font-size: 1.05em;
-  text-align: center;
-  min-height: 1.2em;
+  display: inline;
+  margin-left: .3em;
+  letter-spacing: .12em;
 }
-.flove-phrase-picked > span{ display: none; margin: 0 .1em; }
+.flove-phrase-picked > span{ display: none; margin: 0 .08em; }
 body:has(#pkr-1:checked)  .flove-phrase-picked > [data-pkr="1"],
 body:has(#pkr-2:checked)  .flove-phrase-picked > [data-pkr="2"],
 body:has(#pkr-3:checked)  .flove-phrase-picked > [data-pkr="3"],
@@ -7185,18 +7180,16 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
       <span class="t-en">A summary of what you added will show up here. Add <code class="clause-code">&lt;script src="flove.js"&gt;&lt;/script&gt;</code> to your page to unlock all the options below.</span><span class="t-es">Un resumen de lo que has añadido aparecerá aquí. Añade <code class="clause-code">&lt;script src="flove.js"&gt;&lt;/script&gt;</code> a tu página para activar todas las opciones de abajo.</span>
       <br><br>
       <span class="t-en">Try it here in the menu by switching the navigation bar to Normal.</span><span class="t-es">Pruébalo aquí en el menú cambiando la barra de navegación a Normal.</span>
+      <!-- Picker emojis (pure-CSS) — sit inline at the END of the
+           phrase text, inside the same box. Each ⋯-more cell's
+           checkbox toggles its matching span via :has(). -->
+      <span class="flove-phrase-picked">
+        <span data-pkr="1">❤</span><span data-pkr="2">⭐</span><span data-pkr="3">🔥</span><span data-pkr="4">✨</span><span data-pkr="5">😢</span><span data-pkr="8">😉</span><span data-pkr="9">😎</span><span data-pkr="10">😍</span><span data-pkr="12">🙏</span><span data-pkr="13">🎵</span><span data-pkr="14">☕</span><span data-pkr="15">💡</span><span data-pkr="16">🚀</span><span data-pkr="17">🌍</span><span data-pkr="18">🌙</span><span data-pkr="19">☀</span><span data-pkr="20">🌈</span><span data-pkr="22">👁</span><span data-pkr="23">👂</span><span data-pkr="24">🍵</span><span data-pkr="25">🌟</span>
+      </span>
     </output>
     <output class="clause clause-magic" contenteditable="true" spellcheck="false" aria-label="Editable magic phrase">
       ✨ A magicked re-telling of the same details you added — warmer, looser, alive. Click <em>Phrase</em> to return to the original wording.
     </output>
-
-    <!-- Picker emojis row (pure-CSS) — sits as its own row inside the
-         Summary section, right below the clause. Outside the
-         contenteditable so the browser can't move or strip it. Each
-         ⋯-more cell's checkbox toggles its matching span via :has(). -->
-    <div class="flove-phrase-picked" aria-hidden="true">
-      <span data-pkr="1">❤</span><span data-pkr="2">⭐</span><span data-pkr="3">🔥</span><span data-pkr="4">✨</span><span data-pkr="5">😢</span><span data-pkr="8">😉</span><span data-pkr="9">😎</span><span data-pkr="10">😍</span><span data-pkr="12">🙏</span><span data-pkr="13">🎵</span><span data-pkr="14">☕</span><span data-pkr="15">💡</span><span data-pkr="16">🚀</span><span data-pkr="17">🌍</span><span data-pkr="18">🌙</span><span data-pkr="19">☀</span><span data-pkr="20">🌈</span><span data-pkr="22">👁</span><span data-pkr="23">👂</span><span data-pkr="24">🍵</span><span data-pkr="25">🌟</span>
-    </div>
 
     <div class="action-grid">
       <!-- Views: #views-open toggles the subtab row below. View
@@ -8494,6 +8487,16 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
   document.addEventListener('click',  () => { clicks++; pulse('chipClicks'); refresh(); });
   document.addEventListener('change', refresh);
   document.addEventListener('input',  ev => { if (ev.target && ev.target.tagName === 'TEXTAREA') refresh(); });
+  /* Explicit hooks on the ⋯-more picker cells AND their inputs — in
+     case the document-level 'change' listener gets short-circuited by
+     another handler somewhere up the tree. setTimeout 0 lets the label
+     toggle the checkbox first; then we re-count. */
+  document.querySelectorAll('.picker-cell').forEach(cell => {
+    cell.addEventListener('click', () => setTimeout(refresh, 0));
+  });
+  document.querySelectorAll('input[id^="pkr-"]').forEach(input => {
+    input.addEventListener('change', refresh);
+  });
   refresh();
   window.flove = Object.assign(window.flove || {}, {
     counters: {
