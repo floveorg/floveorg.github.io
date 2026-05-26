@@ -603,41 +603,42 @@
   /* visual portrait grid (final) */
   .portrait-frame{
     margin:.6rem 0 1.4rem;
-    padding:1rem 1rem 1.2rem;
+    padding:.75rem .5rem 1rem;
     background:var(--panel);
     border:1px solid var(--line);
     border-radius:18px;
-    overflow-x:auto;
+    overflow-x: hidden;
   }
   .portrait-grid{
     display:grid;
-    grid-template-columns: repeat(5, minmax(150px, 1fr));
-    gap:.55rem;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap:.35rem;
   }
   .portrait-cell{
     background:var(--panel-strong);
     border:1px solid var(--line);
-    border-radius:12px;
-    padding:.65rem .7rem .75rem;
+    border-radius:10px;
+    padding:.45rem .4rem .55rem;
     border-top:3px solid var(--line);
+    min-width: 0; /* allow shrinking inside the grid track */
   }
   .portrait-cell .cell-stage{
-    font-size:.62rem; letter-spacing:.2em; text-transform:uppercase;
+    font-size:.58rem; letter-spacing:.18em; text-transform:uppercase;
     color:var(--ink-dim); margin-bottom:.15rem;
   }
   .portrait-cell .cell-kind{
-    font-size:.7rem; letter-spacing:.14em; text-transform:uppercase;
-    color:var(--ink-soft); margin-bottom:.35rem;
+    display:none; /* hidden — kind label removed per Marc's spec */
   }
   .portrait-cell .cell-title{
     font-family:'Cormorant Garamond', Georgia, serif;
-    font-size:1.05rem; font-weight:600;
-    margin:0 0 .4rem;
+    font-size:.95rem; font-weight:600;
+    margin:0 0 .3rem;
     word-break:break-word; line-height:1.15;
   }
-  .portrait-cell ul{ list-style:none; padding:0; margin:0; font-size:.82rem; }
+  .portrait-cell ul{ list-style:none; padding:0; margin:0; font-size:.74rem; }
   .portrait-cell li{
-    padding:.15rem 0; color:var(--ink-soft); line-height:1.4;
+    padding:.1rem 0; color:var(--ink-soft); line-height:1.35;
+    overflow-wrap:anywhere;
   }
   .portrait-cell li::before{ content:'· '; color:var(--ink-dim) }
   .portrait-cell li:empty{ display:none }
@@ -810,6 +811,42 @@
     .cta-row-split{ grid-template-columns: 1fr; gap: .45rem; }
     .cta-row-split > *{ justify-self: stretch }
   }
+
+  /* analyze button + reveal text (below Time Stats on save-form) */
+  .analyze-wrap{
+    display:flex; flex-direction:column; align-items:center;
+    margin: 1.2rem 0 .4rem;
+  }
+  .analyze-btn{
+    background:transparent;
+    border:1px solid var(--app-accent-soft);
+    color:var(--ink);
+    padding:.65rem 1.4rem;
+    font:inherit; font-weight:600; letter-spacing:.04em;
+    cursor:pointer;
+    transition: background .2s, border-color .2s, color .2s;
+  }
+  .analyze-btn:hover{ background:rgba(245,180,99,.12); border-color:var(--app-accent); }
+  .analyze-btn[aria-expanded="true"]{
+    background:rgba(245,180,99,.18); border-color:var(--app-accent);
+  }
+  .analyze-text{
+    width:100%;
+    margin-top:.8rem;
+    padding:1rem 1.1rem;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-left:3px solid var(--app-accent);
+    border-radius:14px;
+    color:var(--ink-soft);
+    font-size:.95rem; line-height:1.6;
+    animation: rise .35s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .analyze-text[hidden]{ display:none }
+  .analyze-text p{ margin:0 0 .6rem }
+  .analyze-text p:last-child{ margin:0 }
+  .analyze-text em{ color:var(--app-accent-soft); font-style:normal }
+  .analyze-text strong{ color:var(--ink); font-weight:600 }
 
   /* related-apps panel (shown on Keep-playing in save-intro) */
   .related-apps{
@@ -1065,7 +1102,7 @@
     </div>
     <div class="s2-anopt-inline" id="s2AnoptWrap" hidden>
       <form class="field" onsubmit="return false">
-        <input id="species" type="text" autocomplete="off" placeholder="(optional) an animal of that group" />
+        <input id="species" type="text" autocomplete="off" placeholder="name an animal of that group" required />
       </form>
     </div>
     <div class="nav">
@@ -1125,7 +1162,7 @@
     </div>
     <div class="s2-anopt-inline" id="s3AnoptWrap" hidden>
       <form class="field" onsubmit="return false">
-        <input id="s3Species" type="text" autocomplete="off" placeholder="(optional) an animal of that group" />
+        <input id="s3Species" type="text" autocomplete="off" placeholder="name an animal of that group" required />
       </form>
     </div>
     <div class="nav">
@@ -1374,6 +1411,11 @@
       <div class="timestats__per" id="timeStatsPer"></div>
       <div class="timestats__t-label">Click-by-click · time you took between each action</div>
       <div class="timestats__timeline" id="timeStatsTimeline"></div>
+    </div>
+
+    <div class="analyze-wrap">
+      <button class="btn analyze-btn" type="button" id="analyzeBtn" aria-expanded="false" aria-controls="analyzeText">⌖ Analyze</button>
+      <div class="analyze-text" id="analyzeText" hidden></div>
     </div>
 
     <div class="nav">
@@ -1749,7 +1791,7 @@
     wrap.hidden = false;
     const input = $(inputSel);
     if (input){
-      input.placeholder = `(optional) an animal of ${catName.toLowerCase()}`;
+      input.placeholder = `name an animal of ${catName.toLowerCase()}`;
       setTimeout(() => input.focus({preventScroll:true}), 80);
     }
   };
@@ -1759,7 +1801,7 @@
     if (catName){
       wrap.hidden = false;
       const input = $(inputSel);
-      if (input) input.placeholder = `(optional) an animal of ${catName.toLowerCase()}`;
+      if (input) input.placeholder = `name an animal of ${catName.toLowerCase()}`;
     } else {
       wrap.hidden = true;
     }
@@ -1788,6 +1830,61 @@
     $$('#s3AnimalName').forEach(el => el.textContent = a);
     $$('#s3FromCat2').forEach(el => el.textContent = c);
   };
+
+  // ── analyze (narrative read of the portrait) ──
+  function buildAnalysis(){
+    const a   = (state.animal||'').trim();
+    const col = (state.color||'').trim();
+    const aq  = [state.aq1,state.aq2,state.aq3].map(s => (s||'').trim()).filter(Boolean);
+    const cq  = [state.cq1,state.cq2,state.cq3].map(s => (s||'').trim()).filter(Boolean);
+    const sp2 = (state.species||state.s2Cat2||'').trim();
+    const sp3 = (state.s3Species||state.s3Cat||'').trim();
+    const sn  = SENSES.find(x => x.id === state.sense);
+    const ch  = s3ChannelObj();
+    const m   = matterObj(); const mLabel = (state.s4MatterSpecific||'').trim() || (m ? m.label : '');
+    const b4  = s4BioObj();
+    const p   = particleObj();
+    const im  = immuneObj();
+    const sn2 = [state.sn1,state.sn2,state.sn3].map(s => (s||'').trim()).filter(Boolean);
+    const ch3 = [state.s3C1,state.s3C2,state.s3C3].map(s => (s||'').trim()).filter(Boolean);
+
+    const list = arr => arr.length ? arr.join(', ') : '—';
+    const out = [];
+
+    if (a || col){
+      out.push(`<p><strong>Outer self.</strong> You arrived as a <em>${a || '—'}</em>${aq.length ? ' — offering ' + list(aq) : ''}. Drawn to <em>${col || '—'}</em>${cq.length ? ', you seek ' + list(cq) + ' in others' : ''}.</p>`);
+    }
+    if (sp2 || sn){
+      out.push(`<p><strong>Body &amp; sense.</strong> You'd inhabit a <em>${sp2 || '—'}</em>${sn ? ` and feel through <em>${sn.label.toLowerCase()}</em>` : ''}${sn2.length ? ` — ${sn.verb} ${list(sn2)}` : ''}.</p>`);
+    }
+    if (sp3 || ch){
+      out.push(`<p><strong>Deeper still.</strong> Narrower, a <em>${sp3 || '—'}</em>${ch ? `, lived through the <em>${ch.label.toLowerCase()}</em> ${ch.id === 'nervous' ? 'system' : (ch.verb ? 'channel' : 'channel')}` : ''}${ch3.length ? ` — carrying ${list(ch3)}` : ''}.</p>`);
+    }
+    if (mLabel || b4){
+      out.push(`<p><strong>Matter.</strong> Beneath form: <em>${mLabel || '—'}</em>${b4 ? `, threaded through the <em>${b4.label.toLowerCase()}</em> system` : ''}.</p>`);
+    }
+    if (p || im){
+      out.push(`<p><strong>Particle.</strong> At the smallest scale, a <em>${p ? p.label.toLowerCase() : '—'}</em>${im ? `, guarded by the <em>${im.label.toLowerCase()}</em> subsystem` : ''}.</p>`);
+    }
+    // closing reflection: cross-layer pattern
+    if (aq.length && cq.length){
+      out.push(`<p><strong>Read.</strong> What you <em>bring</em> (${list(aq)}) sits beside what you <em>look for</em> (${list(cq)}). The space between is where your portrait breathes.</p>`);
+    }
+    return out.join('') || '<p>Nothing to analyze yet — fill in more layers to see a read.</p>';
+  }
+  (function wireAnalyzeBtn(){
+    const btn = $('#analyzeBtn');
+    const panel = $('#analyzeText');
+    if (!btn || !panel) return;
+    btn.addEventListener('click', () => {
+      const open = panel.hidden;
+      if (open){
+        panel.innerHTML = buildAnalysis();
+      }
+      panel.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+    });
+  })();
 
   // ── related apps (shown by Keep-playing in save-intro) ──
   const RELATED_APPS_PRIMARY = [
@@ -1884,10 +1981,10 @@
       case 's1-color':  return !!state.color.trim();
       case 's1-cq':     return triplet('cq1','cq2','cq3');
       case 's2-species':return !!state.s2Cat1;
-      case 's2-cat2':   return !!state.s2Cat2;
+      case 's2-cat2':   return !!state.s2Cat2 && !!(state.species||'').trim();
       case 's2-sense':  return !!state.sense;
       case 's2-snq':    return triplet('sn1','sn2','sn3');
-      case 's3-species':return !!state.s3Cat;
+      case 's3-species':return !!state.s3Cat   && !!(state.s3Species||'').trim();
       case 's3-sq':     return triplet('s3Sp1','s3Sp2','s3Sp3');
       case 's3-channel':return !!state.s3Channel;
       case 's3-cq':     return triplet('s3C1','s3C2','s3C3');
