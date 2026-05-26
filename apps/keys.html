@@ -688,18 +688,52 @@
     opacity:1;
   }
   /* Time pill — rounded rectangle above the medal-style chips */
+  .pc-time{position:relative}
   .pc-time .pc-time-display{
+    appearance:none;cursor:pointer;
     padding:.42rem .8rem;border-radius:12px;
     background:linear-gradient(180deg,#2c3548,#202a3d);
-    border:1px solid #4a5a7a;
+    border:1px solid #4a5a7a;color:var(--sky);
     box-shadow:0 2px 8px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
     display:grid;place-items:center;min-width:74px;
+    transition:transform .12s ease, border-color .18s ease, box-shadow .18s ease;
   }
+  .pc-time .pc-time-display:hover{transform:translateY(-1px);border-color:var(--sky);box-shadow:0 4px 12px rgba(168,228,255,.18)}
   .pc-time .pc-time-num{
     font:700 1.05rem/1 ui-serif,Georgia,serif;
     color:var(--sky);text-shadow:0 0 8px rgba(168,228,255,.28);
     letter-spacing:.5px;font-variant-numeric:tabular-nums;
   }
+  .pc-time .pc-time-icon{font:500 1.3rem/1 system-ui,sans-serif;color:var(--sky);text-shadow:0 0 8px rgba(168,228,255,.3)}
+  /* Collapsed: icon only, no number, no label */
+  .pc-time.is-collapsed .pc-time-num{display:none}
+  .pc-time.is-collapsed .pc-label{display:none}
+  .pc-time.is-collapsed .pc-time-display{min-width:0;padding:.35rem .45rem}
+  /* Expanded: hide the icon, show the number */
+  .pc-time:not(.is-collapsed) .pc-time-icon{display:none}
+
+  /* Reassurance tooltip above the timer (shown 7s after expand) */
+  .pc-time-msg{
+    position:absolute;bottom:calc(100% + 10px);left:0;
+    width:max-content;max-width:230px;
+    padding:.55rem .8rem;border-radius:12px;
+    background:var(--panel);border:1px solid rgba(168,228,255,.4);
+    color:var(--ink);
+    font:600 .82rem/1.35 system-ui,sans-serif;letter-spacing:.1px;
+    box-shadow:0 8px 22px rgba(0,0,0,.4), 0 0 18px rgba(168,228,255,.1);
+    opacity:0;transform:translateY(6px);
+    transition:opacity .3s ease, transform .3s ease;
+    pointer-events:none;z-index:2;
+  }
+  .pc-time-msg::after{
+    content:"";position:absolute;bottom:-7px;left:18px;
+    width:12px;height:12px;
+    background:var(--panel);
+    border-right:1px solid rgba(168,228,255,.4);
+    border-bottom:1px solid rgba(168,228,255,.4);
+    transform:rotate(45deg);
+  }
+  .pc-time-msg.is-on{opacity:1;transform:translateY(0)}
   .pc-clicks .pc-badge{
     width:50px;height:50px;
     --c1:#fb923c;--c2:#ea580c;
@@ -922,8 +956,12 @@
 </div>
 
 <div class="float-counters" aria-live="polite">
-  <div class="pc pc-time is-empty" id="chipTime" title="Total elapsed time">
-    <div class="pc-time-display"><span class="pc-time-num" id="pointsTime">0:00</span></div>
+  <div class="pc pc-time is-empty is-collapsed" id="chipTime" title="Total elapsed time">
+    <div class="pc-time-msg" id="timeMsg">Don't feel it as a hurry, it's just a useful fact :)</div>
+    <button class="pc-time-display" type="button" id="timeToggle" aria-label="Show elapsed time">
+      <span class="pc-time-icon" aria-hidden="true">⏱</span>
+      <span class="pc-time-num" id="pointsTime">0:00</span>
+    </button>
     <span class="pc-label">Time</span>
   </div>
   <div class="pc pc-clicks is-empty" id="chipClicks" title="Total clicks">
@@ -1056,6 +1094,34 @@
 
   // ----- Elapsed-time timer (souls-style) -----
   let _liveTimerHandle = null;
+  let _timeMsgHandle = null;
+  // Default-collapsed: clicking the icon expands it and pops the
+  // reassurance message above for 7 seconds (then the message fades
+  // but the timer stays expanded until clicked again).
+  const _timeToggle = document.getElementById('timeToggle');
+  if (_timeToggle){
+    _timeToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const chip = document.getElementById('chipTime');
+      if (!chip) return;
+      const wasCollapsed = chip.classList.contains('is-collapsed');
+      chip.classList.toggle('is-collapsed');
+      _timeToggle.setAttribute('aria-label', wasCollapsed ? 'Hide elapsed time' : 'Show elapsed time');
+      if (wasCollapsed){
+        const msg = document.getElementById('timeMsg');
+        if (msg){
+          msg.classList.add('is-on');
+          clearTimeout(_timeMsgHandle);
+          _timeMsgHandle = setTimeout(() => msg.classList.remove('is-on'), 7000);
+        }
+      } else {
+        // Collapsing also dismisses the message immediately
+        const msg = document.getElementById('timeMsg');
+        if (msg) msg.classList.remove('is-on');
+        clearTimeout(_timeMsgHandle);
+      }
+    });
+  }
   function fmtLiveTimer(ms){
     if (!isFinite(ms) || ms < 0) return '0:00';
     const s = Math.floor(ms / 1000);
