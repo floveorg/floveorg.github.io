@@ -567,15 +567,16 @@
     position:relative;z-index:1;
   }
   .summary-pentads{margin-top:.6rem;flex-wrap:wrap}
-  /* When Analyze more is on, pairs lay out in 2 columns with 10px between them. */
+  /* When Analyze more is on, pairs lay out 3-per-row (Time, Space, Metaphysics)
+     and the remaining pair (Sectors+Economy) wraps onto a 2nd row next to the
+     standalone Service triad — both rows centered, 10px between every sibling. */
   .summary-triads.with-extras{
-    display:grid;
-    grid-template-columns:repeat(2,minmax(0,calc(var(--triad-block-w) * 2 + 4px)));
-    gap:var(--pair-gap);
-    justify-content:center;justify-items:center;align-items:start;
-  }
-  @media (max-width:560px){
-    .summary-triads.with-extras{grid-template-columns:minmax(0,calc(var(--triad-block-w) * 2 + 4px))}
+    display:flex;flex-wrap:wrap;gap:10px;
+    justify-content:center;align-items:flex-start;
+    /* Hard cap = 3 pairs + 2 gaps so the 4th item wraps to row 2 even on wide
+       viewports; flex-wrap takes over naturally on narrower screens. */
+    max-width:calc((var(--triad-block-w) * 2 + 4px) * 3 + 10px * 2 + 6px);
+    margin-left:auto;margin-right:auto;
   }
   /* All triads share the (widened) Ecological-fit width; pentads use their own width. */
   .summary-triads .deck-done.in-summary{
@@ -742,6 +743,9 @@
      30% wider than the standard summary block, with a 10px gap between
      the two pairs and a centered title + helper line. */
   .analyze-bars{
+    /* Perspective panel suppressed by request — kept in the DOM so existing
+       wiring still works, but never visible. */
+    display:none !important;
     margin-top:.8rem;padding:16px 18px 12px;
     border:1px solid var(--stroke);border-radius:14px;
     background:linear-gradient(180deg,rgba(168,228,255,.05),rgba(255,255,255,.015)),var(--fx);
@@ -855,11 +859,9 @@
     font-size:1rem;margin-right:2px;
   }
 
-  /* Analyze arrows overlay (3 horizontal arrows across the rows of ordinals) */
-  .analyze-arrows{
-    position:absolute;inset:0;pointer-events:none;z-index:2;
-    opacity:0;transition:opacity .3s ease;
-  }
+  /* Analyze arrows overlay (3 horizontal arrows across the rows of ordinals) —
+     suppressed by request: keep the structure, just never paint them. */
+  .analyze-arrows{display:none !important}
   .analyze-arrows.is-on{opacity:1}
   .analyze-arrows .arrow{
     position:absolute;left:8px;right:8px;height:0;
@@ -1537,9 +1539,9 @@
     <div class="summary-actions">
       <button class="btn btn-ghost btn-back" id="btn-summary-back" type="button">← Go back</button>
       <button class="btn btn-soft" id="btn-analyze" type="button">Analyze →</button>
-      <button class="btn btn-primary" id="btn-analyze-more-1" type="button" hidden>more</button>
-      <button class="btn btn-primary" id="btn-analyze-more-2" type="button" hidden>more</button>
-      <button class="btn btn-primary" id="btn-analyze-more-3" type="button" hidden>more</button>
+      <button class="btn btn-primary" id="btn-analyze-more-1" type="button" hidden>More</button>
+      <button class="btn btn-primary" id="btn-analyze-more-2" type="button" hidden>More</button>
+      <button class="btn btn-primary" id="btn-analyze-more-3" type="button" hidden>More</button>
     </div>
 
     <div class="analyze-bars" id="analyze-bars" hidden></div>
@@ -2309,9 +2311,9 @@
     _barsOn = false;
     [
       ['btn-analyze',          {text:'Analyze →', hidden:false}],
-      ['btn-analyze-more-1',   {text:'more',       hidden:true}],
-      ['btn-analyze-more-2',   {text:'more',       hidden:true}],
-      ['btn-analyze-more-3',   {text:'more',       hidden:true}],
+      ['btn-analyze-more-1',   {text:'More',       hidden:true}],
+      ['btn-analyze-more-2',   {text:'More',       hidden:true}],
+      ['btn-analyze-more-3',   {text:'More',       hidden:true}],
     ].forEach(([id, cfg]) => {
       const el = document.getElementById(id);
       if (!el) return;
@@ -3180,8 +3182,8 @@
       $btn2.hidden = false;
     } else {
       $panel.hidden = true;
-      $btn.textContent = 'more';
-      // Keep the second "more" visible once revealed; do not re-hide
+      $btn.textContent = 'More';
+      // Keep the second "More" visible once revealed; do not re-hide
     }
     renderStageLabel();
     if (_analyzeOn) requestAnimationFrame(positionAnalyzeArrows);
@@ -3308,22 +3310,18 @@
     stamp(yangPos, 'female');
   }
 
-  // 2nd "more" surfaces the keyword-picking instructions and reveals the
-  // timer/stats panel (which is hidden up to this click).
+  // 2nd "More" surfaces the keyword-picking instructions only — the time
+  // stats panel stays collapsed (default) and is revealed by the LAST More.
   function toggleAnalyzeMore2(){
     const $help = document.getElementById('keyword-help');
-    const $time = document.getElementById('time-stats');
     const $btn  = document.getElementById('btn-analyze-more-2');
     const showing = $help && !$help.hidden;
     if (showing){
       if ($help) $help.hidden = true;
-      if ($time) $time.hidden = true;
-      $btn.textContent = 'more';
+      $btn.textContent = 'More';
     } else {
       bumpAnalyzeLevel(3);
       if ($help) $help.hidden = false;
-      // Only unhide the time-stats if renderTimeStats actually populated it.
-      if ($time && $time.dataset.populated === '1') $time.hidden = false;
       $btn.textContent = 'Hide';
       const $btn3 = document.getElementById('btn-analyze-more-3');
       if ($btn3) $btn3.hidden = false;
@@ -3332,11 +3330,23 @@
   }
   document.getElementById('btn-analyze-more-2').addEventListener('click', toggleAnalyzeMore2);
 
-  // 3rd Analyze more: applies Yin/Yang marks across every key (was Finish).
+  // 3rd (last) More: reveals the Time Stats panel — the user's "first
+  // information" (total time + slow-deck hint) — and scrolls it into view.
+  // The inner "More details" (per-step/stage/deck) stays collapsed until the
+  // user clicks the toggle inside the panel.
   document.getElementById('btn-analyze-more-3').addEventListener('click', () => {
+    const $time = document.getElementById('time-stats');
+    if ($time && $time.dataset.populated === '1'){
+      $time.hidden = false;
+    }
+    // Yin/Yang stamping still applies so the user sees a richer summary.
     applyFinishIcons();
-    const cards = document.getElementById('summary-triads');
-    if (cards) cards.scrollIntoView({ behavior:'smooth', block:'start' });
+    if ($time && !$time.hidden){
+      $time.scrollIntoView({ behavior:'smooth', block:'start' });
+    } else {
+      const cards = document.getElementById('summary-triads');
+      if (cards) cards.scrollIntoView({ behavior:'smooth', block:'start' });
+    }
   });
 
   // ============== See more · related flove apps ==============
