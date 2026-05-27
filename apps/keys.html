@@ -31,6 +31,17 @@
   /* ============== Layout ============== */
   .wrap{max-width:1100px;margin:auto;padding:28px 18px 80px;display:grid;gap:22px}
   @media (max-width:520px){.wrap{padding:18px 12px 60px;gap:16px}}
+
+  /* Sticky play area: keeps spotlight + board visible while the page scrolls */
+  .play-area{
+    position:sticky;top:0;z-index:40;
+    display:grid;gap:14px;
+    padding:8px 0 12px;
+    background:
+      radial-gradient(1200px 700px at 85% -10%, #3a3a58 0%, transparent 55%),
+      radial-gradient(900px 600px at -10% 110%, #3a2548 0%, transparent 60%),
+      var(--bg);
+  }
   header h1{
     font:600 2rem/1.1 ui-serif,Georgia,serif;letter-spacing:.3px;margin:0;
     background:linear-gradient(135deg,var(--gold),var(--accent) 60%,var(--sky));
@@ -347,6 +358,13 @@
   }
   .deck-done li:first-child{margin-top:0}
   .deck-done li .nm{display:block;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .deck-done li a.nm{
+    color:inherit;text-decoration:none;
+    border-bottom:1px solid currentColor;
+    padding-bottom:1px;opacity:.92;
+    transition:opacity .15s ease, border-color .15s ease;
+  }
+  .deck-done li a.nm:hover{opacity:1;border-color:var(--accent);color:var(--accent)}
   /* z-stacking so the higher-ranked card sits on top */
   .deck-done li:nth-child(1){z-index:10}
   .deck-done li:nth-child(2){z-index:9}
@@ -413,25 +431,75 @@
     font:600 1.3rem/1.1 ui-serif,Georgia,serif;color:var(--gold);margin:0 0 .6rem;
   }
   .summary p{color:var(--muted);margin:0 0 1rem}
-  .summary-grid-wrap{position:relative;margin-top:.4rem}
+  .summary-grid-wrap{position:relative;margin-top:0}
   .summary-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));align-items:start;position:relative;z-index:1}
   .summary-actions{display:flex;gap:.7rem;justify-content:center;align-items:center;margin-top:1.2rem;flex-wrap:wrap}
 
-  /* Analyze "more": 1-100 bars (Subj/Obj, Mom/Gen) */
+  /* Summary 2-column layout — analyze sections on the left, cards on the right */
+  .summary-layout{
+    display:grid;gap:20px;
+    grid-template-columns:minmax(0,1fr);
+    margin-top:.4rem;
+  }
+  .summary-layout.has-analyze{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    align-items:start;
+  }
+  .summary-analyze-col{
+    display:none;flex-direction:column;gap:14px;min-width:0;
+  }
+  .summary-layout.has-analyze .summary-analyze-col{display:flex}
+  .summary-cards-col{
+    display:flex;flex-direction:column;gap:14px;min-width:0;
+  }
+  @media (max-width:760px){
+    .summary-layout.has-analyze{grid-template-columns:1fr}
+  }
+
+  /* Simplex CTA — invitation below the cards once pentads exist */
+  .simplex-cta{
+    margin-top:0;padding:12px 14px;
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+    border:1px dashed var(--stroke);border-radius:14px;
+    background:linear-gradient(180deg,rgba(168,228,255,.06),transparent);
+    text-align:center;
+  }
+  .simplex-cta[hidden]{display:none}
+  .simplex-cta p{margin:0;color:var(--muted);font-size:.92rem}
+  .simplex-cta a{text-decoration:none}
+
+  /* Finish + info block, appears after the Analyze more buttons */
+  .analyze-finish-wrap{
+    margin-top:1rem;
+    display:flex;flex-direction:column;align-items:center;gap:.8rem;
+    padding:14px 16px;border:1px dashed var(--stroke);border-radius:14px;
+    background:linear-gradient(180deg,rgba(250,220,146,.05),rgba(255,255,255,.015)),var(--panel);
+    text-align:center;
+  }
+  .analyze-finish-wrap[hidden]{display:none}
+  .analyze-finish-wrap .analyze-info{
+    margin:0;color:var(--muted);font-size:.9rem;max-width:55ch;line-height:1.5;
+  }
+
+  /* Analyze "more": two 1-100 bars side by side (Subj/Obj, Mom/Gen) */
   .analyze-bars{
-    margin-top:1.2rem;display:grid;gap:14px;
+    margin-top:0;display:grid;gap:14px;
+    grid-template-columns:repeat(2,minmax(0,1fr));
     padding:14px 16px;border:1px solid var(--stroke);border-radius:14px;
     background:linear-gradient(180deg,rgba(168,228,255,.05),rgba(255,255,255,.015)),var(--fx);
     animation:fadein .25s ease;
   }
   .analyze-bars[hidden]{display:none}
-  .ab-row{display:grid;gap:.5rem}
+  .ab-row{display:grid;gap:.5rem;min-width:0}
   .ab-poles{
     display:flex;justify-content:space-between;
     font:700 .72rem/1 system-ui,sans-serif;
-    color:var(--muted);letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink);letter-spacing:.14em;text-transform:uppercase;
   }
   .ab-poles b{color:var(--ink);font-weight:700}
+  @media (max-width:520px){
+    .analyze-bars{grid-template-columns:1fr}
+  }
   .ab-track{
     position:relative;height:24px;border-radius:999px;
     background:linear-gradient(90deg,rgba(0,247,167,.16),rgba(168,228,255,.16),rgba(255,95,220,.16));
@@ -514,12 +582,15 @@
   }
   .ad-deck li .ad-arrows button:hover{color:var(--accent);border-color:var(--accent)}
   .ad-deck li .ad-arrows button:disabled{opacity:.3;cursor:not-allowed}
-  .ad-deck li .gender-icon{
-    font-size:1rem;line-height:1;margin-left:.25rem;
+  .gender-icon{
+    font-size:2rem;line-height:1;
+    display:inline-block;vertical-align:middle;
+    margin-right:5px;
+    pointer-events:none;
     filter:drop-shadow(0 0 4px rgba(255,255,255,.3));
   }
-  .ad-deck li .gender-icon.female{color:#ed8aa6}
-  .ad-deck li .gender-icon.male{color:#7ea0ff}
+  .gender-icon.female{color:#ed8aa6}
+  .gender-icon.male{color:#7ea0ff}
   .analyze-decks-actions{
     display:flex;gap:.6rem;justify-content:center;margin-top:1rem;flex-wrap:wrap;
   }
@@ -1089,9 +1160,10 @@
     </div>
   </section>
 
-  <div class="spotlight" id="spotlight" aria-live="polite"></div>
-
-  <div class="board" id="board"></div>
+  <div class="play-area" id="play-area">
+    <div class="spotlight" id="spotlight" aria-live="polite"></div>
+    <div class="board" id="board"></div>
+  </div>
 
   <div class="stage-cta" id="stage-cta"></div>
 
@@ -1107,15 +1179,28 @@
     <h2>Keys closed</h2>
     <p>Here is the final order of your keys and their whys. Tap any tile to reopen and reorder, or tap a saved why to expand it.</p>
     <div class="summary-time" id="summary-time" hidden>Time · <b id="summary-time-val">—</b></div>
-    <div class="summary-grid-wrap">
-      <div class="summary-grid" id="summary-grid"></div>
-      <div class="analyze-arrows" id="analyze-arrows" aria-hidden="true">
-        <div class="arrow" data-kind="triad" data-row="0"></div>
-        <div class="arrow" data-kind="triad" data-row="1"></div>
-        <div class="arrow" data-kind="triad" data-row="2"></div>
-        <div class="arrow" data-kind="pentad" data-row="0"></div>
-        <div class="arrow" data-kind="pentad" data-row="2"></div>
-        <div class="arrow" data-kind="pentad" data-row="4"></div>
+
+    <div class="summary-layout" id="summary-layout">
+      <div class="summary-analyze-col" id="summary-analyze-col">
+        <div class="analyze-bars" id="analyze-bars" hidden></div>
+        <div class="analyze-decks" id="analyze-decks" hidden></div>
+      </div>
+      <div class="summary-cards-col">
+        <div class="summary-grid-wrap">
+          <div class="summary-grid" id="summary-grid"></div>
+          <div class="analyze-arrows" id="analyze-arrows" aria-hidden="true">
+            <div class="arrow" data-kind="triad" data-row="0"></div>
+            <div class="arrow" data-kind="triad" data-row="1"></div>
+            <div class="arrow" data-kind="triad" data-row="2"></div>
+            <div class="arrow" data-kind="pentad" data-row="0"></div>
+            <div class="arrow" data-kind="pentad" data-row="2"></div>
+            <div class="arrow" data-kind="pentad" data-row="4"></div>
+          </div>
+        </div>
+        <div class="simplex-cta" id="simplex-cta" hidden>
+          <p>Map these pentads into the simplex view.</p>
+          <a class="btn btn-soft" href="simplex.html">Open simplex →</a>
+        </div>
       </div>
     </div>
 
@@ -1125,10 +1210,12 @@
       <button class="btn btn-soft" id="btn-analyze-more-2" type="button" hidden>Analyze more</button>
     </div>
 
-    <div class="time-stats" id="time-stats" hidden></div>
+    <div class="analyze-finish-wrap" id="analyze-finish-wrap">
+      <p class="analyze-info">When you're done exploring, Finish marks each key with Yin (♀) and Yang (♂) according to where you placed them in Tao.</p>
+      <button class="btn btn-primary" id="btn-finish-final" type="button">Finish</button>
+    </div>
 
-    <div class="analyze-bars" id="analyze-bars" hidden></div>
-    <div class="analyze-decks" id="analyze-decks" hidden></div>
+    <div class="time-stats" id="time-stats" hidden></div>
   </div>
 
 </div>
@@ -1510,7 +1597,8 @@
     el.setAttribute('tabindex','0');
     el.title = 'tap to reopen';
     el.addEventListener('click', (e) => {
-      // Ignore clicks on interactive children (↑↓, expandable why, +why)
+      // Ignore clicks on interactive children (links, ↑↓, expandable why, +why)
+      if (e.target.closest('a')) return;
       if (e.target.closest('.pq-saved')) return;
       openDeck(deckIdx);
     });
@@ -1525,10 +1613,18 @@
     }
 
     // items as stacked card-like rows (gold/silver/bronze on positions 1-3 via CSS)
+    // In the summary view, triad words link out to flove.org/{word}.
+    const linkifyTriad = opts.inSummary && order.length === 3;
     const list = document.createElement('ol');
     order.forEach((itemIdx) => {
       const li = document.createElement('li');
-      li.innerHTML = `<span class="nm">${escapeHTML(deck.items[itemIdx])}</span>`;
+      const word = deck.items[itemIdx];
+      if (linkifyTriad){
+        const slug = encodeURIComponent(word.toLowerCase());
+        li.innerHTML = `<a class="nm" href="https://flove.org/${slug}" target="_blank" rel="noopener" title="open ${escapeHTML(word)} on flove.org">${escapeHTML(word)}</a>`;
+      } else {
+        li.innerHTML = `<span class="nm">${escapeHTML(word)}</span>`;
+      }
       list.appendChild(li);
     });
     el.appendChild(list);
@@ -1724,6 +1820,7 @@
       }
     });
     renderTimeStats();
+    updateSimplexCTA();
     renderStageLabel(); // light the 5th segment
     setTimeout(() => $summary.scrollIntoView({ behavior:'smooth', block:'start' }), 0);
   }
@@ -2041,7 +2138,7 @@
     $chooser.classList.toggle('active', mode === 'chooser');
     $prelude.classList.toggle('active', mode === 'prelude');
     const showMain = mode === 'main';
-    ['stage-progress','board','stage-cta'].forEach(id => {
+    ['play-area','stage-progress','stage-cta'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = showMain ? '' : 'none';
     });
@@ -2333,7 +2430,7 @@
       if (!li){ arr.style.display = 'none'; return; }
       arr.style.display = '';
       const liRect = li.getBoundingClientRect();
-      const top = (liRect.top + liRect.height/2) - wrapRect.top + 3;
+      const top = (liRect.top + liRect.height/2) - wrapRect.top + 6;
       arr.style.top = top + 'px';
     });
   }
@@ -2369,14 +2466,13 @@
     const $panel = document.getElementById('analyze-bars');
     $panel.innerHTML = BARS.map(b => `
       <div class="ab-row" data-bar="${b.id}">
-        <div class="ab-poles"><b>${b.leftLabel}</b><span>1</span><span>50</span><span>100</span><b>${b.rightLabel}</b></div>
+        <div class="ab-poles"><b>${b.leftLabel}</b><b>${b.rightLabel}</b></div>
         <div class="ab-track" id="${b.id}" role="slider" tabindex="0" aria-label="${b.leftLabel} to ${b.rightLabel}" aria-valuemin="1" aria-valuemax="100">
           <div class="ab-fill" style="display:none"></div>
           <div class="ab-node hidden"></div>
         </div>
-        <div class="ab-readout" id="${b.id}-out">click anywhere — 1st: node · 2nd: range · 3rd: reset to single node</div>
       </div>
-    `).join('') + `<div class="ab-hint">two clicks make a range · the third click resets to a single node</div>`;
+    `).join('');
     BARS.forEach(b => wireBar(b));
   }
 
@@ -2403,19 +2499,16 @@
     const $track = document.getElementById(b.id);
     const $node  = $track.querySelector('.ab-node');
     const $fill  = $track.querySelector('.ab-fill');
-    const $out   = document.getElementById(b.id + '-out');
     const s = barState[b.id];
     if (s.phase === 0){
       $node.classList.add('hidden');
       $fill.style.display = 'none';
-      $out.innerHTML = 'click anywhere — 1st: node · 2nd: range · 3rd: reset to single node';
       return;
     }
     if (s.phase === 1){
       $node.classList.remove('hidden');
       $node.style.left = s.p1 + '%';
       $fill.style.display = 'none';
-      $out.innerHTML = `node at <b>${s.p1}</b> — click again to mark a range`;
       return;
     }
     // phase 2 — range
@@ -2425,7 +2518,6 @@
     $fill.style.display = '';
     $fill.style.left = lo + '%';
     $fill.style.width = (hi - lo) + '%';
-    $out.innerHTML = `range <b>${lo}</b> → <b>${hi}</b> — click again to reset`;
   }
 
   let _barsOn = false;
@@ -2444,8 +2536,30 @@
       $btn.textContent = 'Analyze more';
       // Keep the second "Analyze more" visible once revealed; do not re-hide
     }
+    syncAnalyzeLayout();
   }
   document.getElementById('btn-analyze-more-1').addEventListener('click', toggleAnalyzeMore1);
+
+  // Switches the summary to a 2-column layout (analyze | cards) whenever any
+  // analyze panel is open, then reflows the arrow overlay since the cards
+  // column width changed.
+  function syncAnalyzeLayout(){
+    const layout = document.getElementById('summary-layout');
+    if (!layout) return;
+    const barsOpen  = !document.getElementById('analyze-bars').hidden;
+    const decksOpen = !document.getElementById('analyze-decks').hidden;
+    layout.classList.toggle('has-analyze', barsOpen || decksOpen);
+    if (_analyzeOn) requestAnimationFrame(positionAnalyzeArrows);
+  }
+
+  // Reveal the simplex CTA only when the summary actually contains pentads.
+  function updateSimplexCTA(){
+    const cta = document.getElementById('simplex-cta');
+    if (!cta) return;
+    const hasPentads = decksActiveSoFar(state.stageIdx)
+      .some(idx => state.done[DECKS[idx].id] && DECKS[idx].items.length === 5);
+    cta.hidden = !hasPentads;
+  }
 
   // ============== Analyze more #2: 3 new decks + Back/Finish ==============
   const EXTRA_DECKS = [
@@ -2461,11 +2575,10 @@
   function renderExtraDecks(){
     const $section = document.getElementById('analyze-decks');
     $section.innerHTML = `
-      <h3>Place these — Finish to mirror Yin/Yang to the other decks</h3>
+      <h3>Place these — Finish (below the cards) mirrors Yin/Yang to every key</h3>
       <div class="analyze-decks-grid" id="ad-grid"></div>
       <div class="analyze-decks-actions">
         <button class="btn btn-ghost" id="ad-back" type="button">← Back</button>
-        <button class="btn btn-primary" id="ad-finish" type="button">Finish</button>
       </div>
     `;
     const $grid = document.getElementById('ad-grid');
@@ -2482,8 +2595,8 @@
       _decksRevealed = false;
       document.getElementById('analyze-decks').hidden = true;
       document.getElementById('btn-analyze-more-2').textContent = 'Analyze more';
+      syncAnalyzeLayout();
     });
-    document.getElementById('ad-finish').addEventListener('click', applyFinishIcons);
   }
 
   function makeExtraDeck(d){
@@ -2544,21 +2657,26 @@
     });
     const stamp = (pos, kind) => {
       if (pos < 0) return;
-      // Stamp the same ordinal position in every other deck (summary + extras)
+      // Stamp the same ordinal position in every other deck (summary + extras).
+      // The icon sits inside the .nm element so it ends up immediately to the
+      // left of the word (and inherits anchor click for triad links).
       document.querySelectorAll('.deck-done.in-summary ol, .ad-deck ol').forEach(ol => {
         if (ol.closest('.ad-deck[data-deck-id="' + tao.id + '"]')) return; // skip Tao itself
         const li = ol.children[pos];
         if (!li) return;
         if (li.querySelector('.gender-icon.' + kind)) return;
+        const nm = li.querySelector('.nm');
+        if (!nm) return;
         const ic = document.createElement('span');
         ic.className = 'gender-icon ' + kind;
         ic.textContent = kind === 'female' ? '♀' : '♂';
         ic.title = kind === 'female' ? 'Yin (this ordinal)' : 'Yang (this ordinal)';
-        li.appendChild(ic);
+        nm.prepend(ic);
       });
     };
-    stamp(yinPos,  'female');
-    stamp(yangPos, 'male');
+    // Swap mapping: Yin → ♂ male, Yang → ♀ female
+    stamp(yinPos,  'male');
+    stamp(yangPos, 'female');
   }
 
   function toggleAnalyzeMore2(){
@@ -2573,8 +2691,17 @@
       $section.hidden = true;
       $btn.textContent = 'Analyze more';
     }
+    syncAnalyzeLayout();
   }
   document.getElementById('btn-analyze-more-2').addEventListener('click', toggleAnalyzeMore2);
+
+  // Summary-level Finish: applies Yin/Yang to every key, then scrolls back to
+  // the cards so the user sees the result.
+  document.getElementById('btn-finish-final').addEventListener('click', () => {
+    applyFinishIcons();
+    const cards = document.querySelector('.summary-cards-col') || document.getElementById('summary-grid');
+    if (cards) cards.scrollIntoView({ behavior:'smooth', block:'start' });
+  });
 
   // ============== Boot ==============
   initPrelude();
