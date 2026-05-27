@@ -10,9 +10,9 @@
     --fx:#3a3a52; --stroke:#4a4a66; --brand:#00f7a7; --accent:#ff5fdc;
     --gold:#fadc92; --silver:#dde2ec; --bronze:#dba066;
     --sky:#a8e4ff; --plum:#c7a4ff;
-    --slot-w: 140px;
+    --slot-w: 120px;
     --slot-h: 160px;
-    --card-w: 88px;
+    --card-w: 120px;
     --card-h: 126px;
   }
   *{box-sizing:border-box}
@@ -32,10 +32,11 @@
   .wrap{max-width:1100px;margin:auto;padding:28px 18px 80px;display:grid;gap:22px}
   @media (max-width:520px){.wrap{padding:18px 12px 60px;gap:16px}}
 
-  /* Sticky play area: keeps spotlight + board visible while the page scrolls */
+  /* Sticky play area: anchors the board at the top while the page scrolls.
+     The spotlight is positioned absolutely INSIDE this container so the
+     board stays put — it doesn't shift when a deck is tapped. */
   .play-area{
     position:sticky;top:0;z-index:40;
-    display:grid;gap:14px;
     padding:8px 0 12px;
     background:
       radial-gradient(1200px 700px at 85% -10%, #3a3a58 0%, transparent 55%),
@@ -85,9 +86,13 @@
   .onboard b{color:var(--sky);font-weight:600}
 
   /* ============== Spotlight (top, horizontal cards) ============== */
+  /* Absolute overlay above the board so the deck row stays anchored. */
   .spotlight{display:none}
   .spotlight.active{
-    display:block;margin:0 auto;width:100%;max-width:780px;
+    display:block;
+    position:absolute;top:8px;left:0;right:0;
+    margin:0 auto;width:calc(100% - 16px);max-width:780px;
+    z-index:5;
     background:
       linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02)),
       var(--panel);
@@ -139,8 +144,10 @@
   .pcard.drag-over{border-color:var(--accent);box-shadow:0 0 0 2px rgba(255,95,220,.45), 0 10px 26px rgba(0,0,0,.35)}
   .pcard .name{
     flex:1;display:grid;place-items:center;text-align:center;
-    font:600 .98rem/1.15 ui-serif,Georgia,serif;letter-spacing:.3px;
-    color:var(--ink);padding:4px 2px;overflow-wrap:anywhere;
+    font:600 .72rem/1.15 ui-serif,Georgia,serif;letter-spacing:.25px;
+    color:var(--ink);padding:4px 2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    max-width:100%;
   }
   .pcard::before{
     content:"✺";position:absolute;top:6px;left:8px;
@@ -347,10 +354,10 @@
   .deck-done li{
     flex:1;min-height:0;
     display:flex;align-items:center;justify-content:center;
-    padding:.32rem .45rem;border-radius:8px;
+    padding:.35rem .5rem;border-radius:8px;
     border:1px solid #50506a;
     background:linear-gradient(170deg,#3c3c54 0%,#2f2f44 100%);
-    font:600 .7rem/1.15 ui-serif,Georgia,serif;letter-spacing:.2px;
+    font:600 .82rem/1.15 ui-serif,Georgia,serif;letter-spacing:.25px;
     color:var(--ink);
     margin-top:-4px;position:relative;
     box-shadow:0 2px 5px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.05);
@@ -439,9 +446,15 @@
     position:relative;z-index:1;
   }
   .summary-pentads{margin-top:.6rem}
-  /* When Analyze more is on, pairs stack vertically — each pair on its own row */
+  /* When Analyze more is on, pairs lay out in 2 columns */
   .summary-triads.with-extras{
-    flex-direction:column;flex-wrap:nowrap;align-items:center;
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:14px;
+    justify-items:center;align-items:start;
+  }
+  @media (max-width:560px){
+    .summary-triads.with-extras{grid-template-columns:1fr}
   }
   .summary-actions{display:flex;gap:.7rem;justify-content:center;align-items:center;margin-top:1.2rem;flex-wrap:wrap}
 
@@ -1580,17 +1593,20 @@
     el.className = 'deck-done';
     if (opts.inSummary) el.classList.add('in-summary');
     el.dataset.deckId = deck.id;
-    // The whole tile is the reopen affordance now that titles are gone
-    el.setAttribute('role','button');
-    el.setAttribute('tabindex','0');
-    el.title = 'tap to reopen';
-    el.addEventListener('click', (e) => {
-      // Ignore clicks on interactive children (links, ↑↓, expandable why, +why)
-      if (e.target.closest('a')) return;
-      if (e.target.closest('.pq-saved')) return;
-      openDeck(deckIdx);
-    });
-    el.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' '){ e.preventDefault(); openDeck(deckIdx); } });
+    // Main decks in the summary are read-only — only the live board reopens
+    // them. Anchor links inside (.nm a → flove.org) and saved-why blocks
+    // still receive clicks normally.
+    if (!opts.inSummary){
+      el.setAttribute('role','button');
+      el.setAttribute('tabindex','0');
+      el.title = 'tap to reopen';
+      el.addEventListener('click', (e) => {
+        if (e.target.closest('a')) return;
+        if (e.target.closest('.pq-saved')) return;
+        openDeck(deckIdx);
+      });
+      el.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' '){ e.preventDefault(); openDeck(deckIdx); } });
+    }
 
     // Title is only shown in the Keys-closed summary, not on the live board
     if (opts.inSummary){
