@@ -69,7 +69,7 @@
   body[data-night="4"]{ --sky-top:#1f1740; --sky-bot:#0d0a1e; --veil-a:rgba(245,180,99,.07); --veil-b:rgba(237,138,166,.09); --veil-c:rgba(126,160,255,.16); }
   body[data-night="5"]{ --sky-top:#0d0820; --sky-bot:#040311; --veil-a:rgba(245,180,99,.05); --veil-b:rgba(237,138,166,.06); --veil-c:rgba(126,160,255,.18); }
 
-  body > *:not(.real-stars){ position:relative; z-index:1 }
+  body > *:not(.real-stars):not(.aurora){ position:relative; z-index:1 }
 
   /* "real" stars — star-glyphs with glow + twinkle, generated in JS.
      Appear from stage 2 (second background change) and multiply at 3 / 4 / 5. */
@@ -79,17 +79,16 @@
   }
   .real-stars .rs{
     position:absolute;
-    color:#fff;
+    color:#ffd866;
     line-height:1;
     transform:translate(-50%,-50%);
     opacity:0;
     transition: opacity 1.6s ease;
     text-shadow:
-      0 0 3px rgba(255,255,255,.95),
-      0 0 8px rgba(255,235,180,.6),
-      0 0 16px rgba(255,200,120,.35);
-    animation: rsTwinkle 4s ease-in-out infinite;
-    will-change: opacity, transform, filter;
+      0 0 3px rgba(255,220,100,.95),
+      0 0 8px rgba(255,200,60,.6),
+      0 0 16px rgba(255,180,40,.35);
+    will-change: opacity;
   }
   body[data-night="2"] .real-stars .rs[data-min="2"]{ opacity:1 }
   body[data-night="3"] .real-stars .rs[data-min="2"],
@@ -98,18 +97,24 @@
   body[data-night="4"] .real-stars .rs[data-min="3"],
   body[data-night="4"] .real-stars .rs[data-min="4"]{ opacity:1 }
   body[data-night="5"] .real-stars .rs{ opacity:1 }
-  @keyframes rsTwinkle{
-    0%,100%{ filter:brightness(.85); transform: translate(-50%,-50%) scale(1); }
-    50%    { filter:brightness(1.4);  transform: translate(-50%,-50%) scale(1.18); }
+
+  /* aurora (greenish, aurora-borealis hue) — fades in at stage 4, full at stage 5 */
+  .aurora{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    opacity:0; transition: opacity 1.6s ease;
+    background:
+      radial-gradient(80vmax 30vmax at 30% 0%,  rgba(110,230,150,.28) 0, transparent 60%),
+      radial-gradient(70vmax 28vmax at 70% 20%, rgba(80,210,180,.22)  0, transparent 60%),
+      radial-gradient(90vmax 35vmax at 50% -10%, rgba(140,245,165,.18) 0, transparent 65%);
+    mix-blend-mode: screen;
   }
-  @media (prefers-reduced-motion: reduce){ .real-stars .rs{ animation:none } }
+  body[data-night="4"] .aurora{ opacity:.55 }
+  body[data-night="5"] .aurora{ opacity:1 }
 
   /* flove-bar */
   .flove-bar{
-    background: rgba(13,10,24,.55);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
-    backdrop-filter: blur(14px) saturate(140%);
-    border-bottom:1px solid var(--line);
+    background: transparent;
+    border-bottom: 0;
     color:var(--ink);
   }
   .flove-bar button.flove-mark-btn,
@@ -176,8 +181,11 @@
   .progress li{
     width:28px; height:4px; border-radius:999px;
     background:rgba(255,255,255,.08);
+    cursor:pointer;
     transition: background .35s ease, transform .35s ease;
   }
+  .progress li:hover{ background:rgba(255,255,255,.18) }
+  .progress li.done:hover{ filter:brightness(1.1) }
   .progress li.done{ background:var(--app-accent-soft) }
   .progress li.current{
     background:linear-gradient(90deg, var(--app-accent), var(--rose));
@@ -382,10 +390,23 @@
   }
   .timestats__h{
     font-size:.7rem; letter-spacing:.18em; text-transform:uppercase;
-    color:var(--ink-dim); margin-bottom:.5rem;
+    color:var(--ink-dim);
     display:flex; align-items:center; gap:.4rem;
+    margin-bottom:0;
+    cursor:pointer; user-select:none;
   }
   .timestats__h::before{ content:'⏱'; font-size:1rem }
+  .timestats__h::after{
+    content:'›'; margin-left:auto;
+    font-size:1.1rem; color:var(--ink-dim);
+    transition: transform .2s ease;
+  }
+  .timestats.is-open .timestats__h{ margin-bottom:.5rem }
+  .timestats.is-open .timestats__h::after{ transform: rotate(90deg) }
+  .timestats:not(.is-open) .timestats__row,
+  .timestats:not(.is-open) .timestats__per,
+  .timestats:not(.is-open) .timestats__t-label,
+  .timestats:not(.is-open) .timestats__timeline{ display:none; }
   .timestats__row{
     display:grid; gap:.3rem .9rem;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -721,6 +742,43 @@
     margin-top: .6rem;
   }
 
+  /* cq-nest — after "three qualities of <colour>", clickable to nest a parent word */
+  .cq-nest{ margin: 1rem 0 0; }
+  .cq-nest__list{
+    display:flex; flex-wrap:wrap; gap:.55rem;
+  }
+  .cq-nest-item{
+    display:flex; flex-direction:column; gap:.35rem;
+    min-width:140px;
+  }
+  .cq-nest-input{
+    padding:.5rem .85rem;
+    background:var(--field);
+    border:1px solid var(--app-accent);
+    border-radius:12px;
+    color:var(--ink);
+    font:inherit; font-size:.9rem;
+    width:100%;
+  }
+  .cq-nest-input:focus{ outline:none; background:var(--field-focus); }
+  .cq-nest-input[hidden]{ display:none; }
+  .cq-nest-word{
+    appearance:none;
+    display:inline-flex; align-items:center; gap:.3rem;
+    padding:.45rem .85rem;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:999px;
+    color:var(--ink);
+    font:inherit; font-size:.92rem;
+    cursor:pointer;
+    transition: background .15s, border-color .15s;
+  }
+  .cq-nest-word:hover{ background:var(--panel-strong); border-color:var(--app-accent-soft); }
+  .cq-nest-parent{ color:var(--app-accent-soft); font-weight:600; }
+  .cq-nest-arrow{ color:var(--ink-dim); }
+  .cq-nest-sub{ color:var(--ink-soft); }
+
   /* end-of-stage row: Get results centered + Continue Stage X right */
   .cta-row-split{
     display: grid;
@@ -860,6 +918,7 @@
 <body data-night="0">
 
 <div class="real-stars" id="realStars" aria-hidden="true"></div>
+<div class="aurora" id="aurora" aria-hidden="true"></div>
 
 <nav class="flove-bar">
   <button class="flove-mark-btn" id="floveMarkBtn" type="button" aria-label="Back to flove">
@@ -923,7 +982,7 @@
     <h1>Think of an animal.</h1>
     <p class="hint">The first that comes to mind. Don't second-guess it.</p>
     <form class="field" onsubmit="return false">
-      <input id="animal" type="text" autocomplete="off" placeholder="e.g. fox, whale, owl…" />
+      <input id="animal" type="text" autocomplete="off" />
     </form>
     <div class="nav">
       <button class="btn ghost" type="button" data-go="welcome">← Back</button>
@@ -935,9 +994,9 @@
     <h1>Three words about that animal.</h1>
     <p class="hint">These describe what <em>you</em> bring to others.</p>
     <form class="triple" onsubmit="return false">
-      <input id="aq1" type="text" placeholder="quality 1" autocomplete="off" />
-      <input id="aq2" type="text" placeholder="quality 2" autocomplete="off" />
-      <input id="aq3" type="text" placeholder="quality 3" autocomplete="off" />
+      <input id="aq1" type="text" autocomplete="off" />
+      <input id="aq2" type="text" autocomplete="off" />
+      <input id="aq3" type="text" autocomplete="off" />
     </form>
     <div class="nav">
       <button class="btn ghost" type="button" data-go="s1-animal">← Back</button>
@@ -949,7 +1008,7 @@
     <h1>Now a colour.</h1>
     <p class="hint">Any colour you want — write it freely.</p>
     <form class="field" onsubmit="return false">
-      <input id="color" type="text" autocomplete="off" placeholder="e.g. indigo, ochre, sea green…" />
+      <input id="color" type="text" autocomplete="off" />
     </form>
     <div class="nav">
       <button class="btn ghost" type="button" data-go="s1-aq">← Back</button>
@@ -958,13 +1017,17 @@
   </section>
   <section class="view" data-view="s1-cq" data-stage="1">
     <span class="step-tag">Stage 1 · What you seek</span>
-    <h1>Three qualities of that colour.</h1>
+    <h1>Three qualities of <span class="mirror" data-mirror="color-name">that colour</span>.</h1>
     <p class="hint">These describe what you'd like to find in others.</p>
     <form class="triple" onsubmit="return false">
-      <input id="cq1" type="text" placeholder="quality 1" autocomplete="off" />
-      <input id="cq2" type="text" placeholder="quality 2" autocomplete="off" />
-      <input id="cq3" type="text" placeholder="quality 3" autocomplete="off" />
+      <input id="cq1" type="text" autocomplete="off" />
+      <input id="cq2" type="text" autocomplete="off" />
+      <input id="cq3" type="text" autocomplete="off" />
     </form>
+    <div class="cq-nest" id="cqNestSection">
+      <div class="group-label">Your three words</div>
+      <div class="cq-nest__list" id="cqNestList"></div>
+    </div>
     <div class="nav">
       <button class="btn ghost" type="button" data-go="s1-color">← Back</button>
       <button class="btn primary" type="button" data-next="s2-species" data-advance-stage="1" disabled>Next Stage: Species &amp; Sense →</button>
@@ -1022,7 +1085,7 @@
     </div>
     <div class="s2-anopt-inline" id="s2AnoptWrap" hidden>
       <form class="field" onsubmit="return false">
-        <input id="species" type="text" autocomplete="off" placeholder="name an animal of that group" required />
+        <input id="species" type="text" autocomplete="off" required />
       </form>
     </div>
     <div class="nav">
@@ -1045,9 +1108,9 @@
     <h1>Three things <em><span class="mirror" data-mirror="species-or">your creature</span></em> is <span class="mirror" data-mirror="sense-verb">sensing</span>.</h1>
     <p class="hint">Picture it now. What does the world feel like, from inside?</p>
     <form class="triple" onsubmit="return false">
-      <input id="sn1" type="text" placeholder="thing 1" autocomplete="off" />
-      <input id="sn2" type="text" placeholder="thing 2" autocomplete="off" />
-      <input id="sn3" type="text" placeholder="thing 3" autocomplete="off" />
+      <input id="sn1" type="text" autocomplete="off" />
+      <input id="sn2" type="text" autocomplete="off" />
+      <input id="sn3" type="text" autocomplete="off" />
     </form>
     <div class="nav">
       <button class="btn ghost" type="button" data-go="s2-sense">← Back</button>
@@ -1082,7 +1145,7 @@
     </div>
     <div class="s2-anopt-inline" id="s3AnoptWrap" hidden>
       <form class="field" onsubmit="return false">
-        <input id="s3Species" type="text" autocomplete="off" placeholder="name an animal of that group" required />
+        <input id="s3Species" type="text" autocomplete="off" required />
       </form>
     </div>
     <div class="nav">
@@ -1095,9 +1158,9 @@
     <h1>Three things from <em><span class="mirror" data-mirror="species3-or">it</span></em>.</h1>
     <p class="hint">Gestures, instincts, textures, ways of being.</p>
     <form class="triple" onsubmit="return false">
-      <input id="s3Sp1" type="text" placeholder="thing 1" autocomplete="off" />
-      <input id="s3Sp2" type="text" placeholder="thing 2" autocomplete="off" />
-      <input id="s3Sp3" type="text" placeholder="thing 3" autocomplete="off" />
+      <input id="s3Sp1" type="text" autocomplete="off" />
+      <input id="s3Sp2" type="text" autocomplete="off" />
+      <input id="s3Sp3" type="text" autocomplete="off" />
     </form>
     <div class="nav">
       <button class="btn ghost" type="button" data-go="s3-species">← Back</button>
@@ -1124,9 +1187,9 @@
     <h1>Three things <em><span class="mirror" data-mirror="species3-or">it</span></em> is <span class="mirror" data-mirror="s3channel-verb">sensing</span>.</h1>
     <p class="hint">From the inside of that channel — what does the world become?</p>
     <form class="triple" onsubmit="return false">
-      <input id="s3C1" type="text" placeholder="thing 1" autocomplete="off" />
-      <input id="s3C2" type="text" placeholder="thing 2" autocomplete="off" />
-      <input id="s3C3" type="text" placeholder="thing 3" autocomplete="off" />
+      <input id="s3C1" type="text" autocomplete="off" />
+      <input id="s3C2" type="text" autocomplete="off" />
+      <input id="s3C3" type="text" autocomplete="off" />
     </form>
     <div class="nav">
       <button class="btn ghost" type="button" data-go="s3-channel">← Back</button>
@@ -1163,7 +1226,7 @@
     <div class="pick-grid" id="matterPick"></div>
     <div class="s2-anopt-inline" id="s4MatterAnoptWrap" hidden>
       <form class="field" onsubmit="return false">
-        <input id="s4MatterSpecific" type="text" autocomplete="off" placeholder="(optional) a specific matter" />
+        <input id="s4MatterSpecific" type="text" autocomplete="off" />
       </form>
     </div>
     <div class="nav">
@@ -1176,9 +1239,9 @@
     <h1>Three things about it.</h1>
     <p class="hint">What does it carry? What does it look for? What's it made of?</p>
     <form class="triple" onsubmit="return false">
-      <input id="s4M1" type="text" placeholder="thing 1" autocomplete="off" />
-      <input id="s4M2" type="text" placeholder="thing 2" autocomplete="off" />
-      <input id="s4M3" type="text" placeholder="thing 3" autocomplete="off" />
+      <input id="s4M1" type="text" autocomplete="off" />
+      <input id="s4M2" type="text" autocomplete="off" />
+      <input id="s4M3" type="text" autocomplete="off" />
     </form>
     <div class="nav">
       <button class="btn ghost" type="button" data-go="s4-matter">← Back</button>
@@ -1200,9 +1263,9 @@
     <h1>Three things <em><span class="mirror" data-mirror="matter-name">your matter</span></em> is <span class="mirror" data-mirror="s4-bio-verb">doing</span>.</h1>
     <p class="hint">What it does, what it carries, the rhythm it keeps.</p>
     <form class="triple" onsubmit="return false">
-      <input id="s4B1" type="text" placeholder="thing 1" autocomplete="off" />
-      <input id="s4B2" type="text" placeholder="thing 2" autocomplete="off" />
-      <input id="s4B3" type="text" placeholder="thing 3" autocomplete="off" />
+      <input id="s4B1" type="text" autocomplete="off" />
+      <input id="s4B2" type="text" autocomplete="off" />
+      <input id="s4B3" type="text" autocomplete="off" />
     </form>
     <div class="nav">
       <button class="btn ghost" type="button" data-go="s4-bio">← Back</button>
@@ -1243,9 +1306,9 @@
     <h1>Three things about it.</h1>
     <p class="hint">Even a particle has gestures — pick three.</p>
     <form class="triple" onsubmit="return false">
-      <input id="s5P1" type="text" placeholder="thing 1" autocomplete="off" />
-      <input id="s5P2" type="text" placeholder="thing 2" autocomplete="off" />
-      <input id="s5P3" type="text" placeholder="thing 3" autocomplete="off" />
+      <input id="s5P1" type="text" autocomplete="off" />
+      <input id="s5P2" type="text" autocomplete="off" />
+      <input id="s5P3" type="text" autocomplete="off" />
     </form>
     <div class="nav">
       <button class="btn ghost" type="button" data-go="s5-particle">← Back</button>
@@ -1267,9 +1330,9 @@
     <h1>Three things from this subsystem.</h1>
     <p class="hint">What does it sense, defend, remember?</p>
     <form class="triple" onsubmit="return false">
-      <input id="s5I1" type="text" placeholder="thing 1" autocomplete="off" />
-      <input id="s5I2" type="text" placeholder="thing 2" autocomplete="off" />
-      <input id="s5I3" type="text" placeholder="thing 3" autocomplete="off" />
+      <input id="s5I1" type="text" autocomplete="off" />
+      <input id="s5I2" type="text" autocomplete="off" />
+      <input id="s5I3" type="text" autocomplete="off" />
     </form>
     <div class="nav">
       <button class="btn ghost" type="button" data-go="s5-immune">← Back</button>
@@ -1305,6 +1368,10 @@
         <button class="btn primary" type="button" data-go="save-form" id="getResultsBtn">Get results</button>
       </div>
     </div>
+    <div class="nav">
+      <button class="btn ghost" type="button" id="saveIntroBack">← Back</button>
+      <span></span>
+    </div>
   </section>
 
   <section class="view" data-view="save-form">
@@ -1326,7 +1393,7 @@
     </div>
 
     <div class="timestats" id="timeStats" hidden>
-      <div class="timestats__h">Time stats</div>
+      <div class="timestats__h" title="Enter" role="button" tabindex="0" aria-expanded="false">Time stats</div>
       <div class="timestats__row" id="timeStatsRow"></div>
       <div class="timestats__per" id="timeStatsPer"></div>
       <div class="timestats__t-label">Click-by-click · time you took between each action</div>
@@ -1463,8 +1530,11 @@
     // meta
     seenWelcome:false,
     fromReveal:'s1-reveal',
+    preSaveView:'',
     stars: { 1:false, 2:false, 3:false, 4:false, 5:false },
-    events: [] // hidden timer: { ts, kind:'pick'|'next'|'type', view, target }
+    events: [], // hidden timer: { ts, kind:'pick'|'next'|'type', view, target }
+    // colour-quality nesting (each cq word can get a parent word above it)
+    cqNest: { cq1:'', cq2:'', cq3:'' }
   };
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
@@ -1472,6 +1542,7 @@
       Object.assign(state, saved);
       if (!state.stars)  state.stars  = { 1:false, 2:false, 3:false, 4:false, 5:false };
       if (!state.events) state.events = [];
+      if (!state.cqNest) state.cqNest = { cq1:'', cq2:'', cq3:'' };
       // migrate: s3 channel no longer accepts senses (removed) and "nervous" is locked.
       if (typeof state.s3Channel === 'string'){
         if (state.s3Channel.startsWith('sense:') || state.s3Channel === 'bio:nervous'){
@@ -1543,6 +1614,7 @@
       persist();
       if (id === 'species'   && typeof syncS2Tree === 'function') syncS2Tree();
       if (id === 's3Species' && typeof syncS3Tree === 'function') syncS3Tree();
+      if (id === 'cq1' || id === 'cq2' || id === 'cq3') renderCqNest();
       refreshGates();
       reflectMirrors();
       refreshCounters();
@@ -1617,27 +1689,17 @@
     }, true);
   })();
   // matter anopt — inline text field for specific matter (e.g. "quartz" if matter=crystal)
-  const showMatterAnopt = (label) => {
+  const showMatterAnopt = (_label) => {
     const wrap = $('#s4MatterAnoptWrap');
     if (!wrap) return;
     wrap.hidden = false;
     const input = $('#s4MatterSpecific');
-    if (input){
-      input.placeholder = `(optional) a specific ${label.toLowerCase()}`;
-      setTimeout(() => input.focus({preventScroll:true}), 80);
-    }
+    if (input) setTimeout(() => input.focus({preventScroll:true}), 80);
   };
   const toggleMatterAnopt = () => {
     const wrap = $('#s4MatterAnoptWrap');
     if (!wrap) return;
-    const m = matterObj();
-    if (m){
-      wrap.hidden = false;
-      const input = $('#s4MatterSpecific');
-      if (input) input.placeholder = `(optional) a specific ${m.label.toLowerCase()}`;
-    } else {
-      wrap.hidden = true;
-    }
+    wrap.hidden = !matterObj();
   };
   const syncMatter    = renderPicker('#matterPick',   MATTER_SCALE, () => state.s4Matter,   v => state.s4Matter = v,
                           (id) => { const m = MATTER_SCALE.find(x => x.id === id); showMatterAnopt(m ? m.label : 'matter'); });
@@ -1705,26 +1767,17 @@
   }
 
   // inline anopt input — shown after a category pick (and on view enter if already picked)
-  const showAnoptInline = (wrapSel, inputSel, catName) => {
+  const showAnoptInline = (wrapSel, inputSel, _catName) => {
     const wrap = $(wrapSel);
     if (!wrap) return;
     wrap.hidden = false;
     const input = $(inputSel);
-    if (input){
-      input.placeholder = `name an animal of ${catName.toLowerCase()}`;
-      setTimeout(() => input.focus({preventScroll:true}), 80);
-    }
+    if (input) setTimeout(() => input.focus({preventScroll:true}), 80);
   };
-  const toggleAnoptInline = (wrapSel, inputSel, catName) => {
+  const toggleAnoptInline = (wrapSel, _inputSel, catName) => {
     const wrap = $(wrapSel);
     if (!wrap) return;
-    if (catName){
-      wrap.hidden = false;
-      const input = $(inputSel);
-      if (input) input.placeholder = `name an animal of ${catName.toLowerCase()}`;
-    } else {
-      wrap.hidden = true;
-    }
+    wrap.hidden = !catName;
   };
 
   const syncS2Cat1 = buildCatPicker('#s2CatList1', 's2Cat1', null);
@@ -1806,6 +1859,33 @@
     });
   })();
 
+  // wire collapsible Time stats header (collapsed by default)
+  (function wireTimeStatsToggle(){
+    const wrap = $('#timeStats');
+    const h    = wrap && wrap.querySelector('.timestats__h');
+    if (!wrap || !h) return;
+    const toggle = () => {
+      const open = wrap.classList.toggle('is-open');
+      h.setAttribute('aria-expanded', String(open));
+    };
+    h.addEventListener('click', toggle);
+    h.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+    });
+  })();
+
+  // wire save-intro Back button (returns to the view the user paused from)
+  (function wireSaveIntroBack(){
+    const btn = $('#saveIntroBack');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      const target = state.preSaveView && state.preSaveView !== 'save-intro'
+        ? state.preSaveView
+        : (state.fromReveal || 's1-reveal');
+      goTo(target);
+    });
+  })();
+
   // ── related apps (shown by Keep-playing in save-intro) ──
   const RELATED_APPS_PRIMARY = [
     { name:'Sensy',   sub:'the five senses',    icon:'👁',  href:'sensy.html' },
@@ -1876,6 +1956,7 @@
     const im = immuneObj();
     const fill = (sel, val) => $$(sel).forEach(el => el.textContent = val);
     fill('[data-mirror="animal-or"]',   state.animal.trim() || 'your animal');
+    fill('[data-mirror="color-name"]',  state.color.trim() || 'that colour');
     fill('[data-mirror="species-or"]',  speciesName() || 'your creature');
     fill('[data-mirror="species2-or"]', speciesName() || 'your previous creature');
     fill('[data-mirror="species3-or"]', species2Name() || 'your creature');
@@ -1891,6 +1972,67 @@
     fill('[data-mirror="immune-name"]', im ? im.label.toLowerCase() : 'the subsystem');
     refreshS2Display();
   };
+
+  // ── cq-nest (Stage 1 · what you seek — click a word to nest a parent above it) ──
+  const escapeHtml = (s) => String(s).replace(/[&<>"']/g, c => (
+    { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]
+  ));
+  function renderCqNest(){
+    const wrap = $('#cqNestList');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    if (!state.cqNest) state.cqNest = { cq1:'', cq2:'', cq3:'' };
+    ['cq1','cq2','cq3'].forEach(k => {
+      const word = (state[k] || '').trim();
+      if (!word) return;
+
+      const item = document.createElement('div');
+      item.className = 'cq-nest-item';
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'cq-nest-input';
+      input.value = (state.cqNest[k] || '');
+      input.hidden = !input.value.trim();
+      input.dataset.key = k;
+      input.autocomplete = 'off';
+
+      const wordBtn = document.createElement('button');
+      wordBtn.type = 'button';
+      wordBtn.className = 'cq-nest-word';
+
+      const paint = () => {
+        const p = (state.cqNest[k] || '').trim();
+        if (p){
+          wordBtn.innerHTML =
+            `<span class="cq-nest-parent">${escapeHtml(p)}</span>` +
+            `<span class="cq-nest-arrow">›</span>` +
+            `<span class="cq-nest-sub">${escapeHtml(word)}</span>`;
+        } else {
+          wordBtn.textContent = word;
+        }
+      };
+      paint();
+
+      input.addEventListener('input', () => {
+        state.cqNest[k] = input.value;
+        persist();
+        paint();
+      });
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+      });
+
+      wordBtn.addEventListener('click', () => {
+        input.hidden = !input.hidden;
+        if (!input.hidden) setTimeout(() => input.focus({preventScroll:true}), 50);
+      });
+
+      item.appendChild(input);
+      item.appendChild(wordBtn);
+      wrap.appendChild(item);
+    });
+  }
 
   // ── gating per view ─────────────────────────────────────
   const triplet = (...keys) => keys.some(k => (state[k]||'').trim().length > 0);
@@ -1950,8 +2092,14 @@
       const sNum = +view.dataset.view.match(/s(\d)-reveal/)[1];
       stageLabelEl.innerHTML = `Stage <b>${sNum}</b> of 5 · results`;
       progressEl.innerHTML = '';
-      [1,2,3,4].forEach(() => {
-        const li = document.createElement('li'); li.className = 'done'; progressEl.appendChild(li);
+      const revealList = STAGE_VIEWS[sNum] || [];
+      revealList.forEach((vId) => {
+        const li = document.createElement('li');
+        li.className = 'done';
+        li.dataset.view = vId;
+        li.title = `Go to ${vId}`;
+        li.addEventListener('click', () => goTo(vId));
+        progressEl.appendChild(li);
       });
       return;
     }
@@ -1959,10 +2107,13 @@
     const list = STAGE_VIEWS[stage] || [];
     const idx = list.indexOf(view.dataset.view);
     progressEl.innerHTML = '';
-    list.forEach((_, i) => {
+    list.forEach((vId, i) => {
       const li = document.createElement('li');
+      li.dataset.view = vId;
+      li.title = `Go to ${vId}`;
       if (i < idx) li.classList.add('done');
       else if (i === idx) li.classList.add('current');
+      li.addEventListener('click', () => goTo(vId));
       progressEl.appendChild(li);
     });
   };
@@ -1992,12 +2143,10 @@
         s.textContent = glyphs[Math.floor(rnd() * glyphs.length)];
         s.style.left = (2 + rnd() * 96).toFixed(2) + '%';
         s.style.top  = (2 + rnd() * 96).toFixed(2) + '%';
-        // brighter stars early; smaller/denser ones later
-        const baseSize = b.min === 2 ? 16 : b.min === 3 ? 13 : b.min === 4 ? 11 : 9;
-        const size = baseSize + rnd() * 6;
+        // brighter stars early; smaller/denser ones later (sizes reduced ×3, static)
+        const baseSize = b.min === 2 ? 16/3 : b.min === 3 ? 13/3 : b.min === 4 ? 11/3 : 9/3;
+        const size = baseSize + rnd() * 2;
         s.style.fontSize = size.toFixed(1) + 'px';
-        s.style.animationDelay    = (rnd() * 5).toFixed(2) + 's';
-        s.style.animationDuration = (3 + rnd() * 5).toFixed(2) + 's';
         frag.appendChild(s);
       }
     });
@@ -2034,6 +2183,7 @@
     $$('.view').forEach(v => v.classList.toggle('is-on', v.dataset.view === viewId));
 
     // hooks per view
+    if (viewId === 's1-cq')      renderCqNest();
     if (viewId === 's2-species') { syncS2Cat1(); refreshS2Display(); }
     if (viewId === 's2-cat2')    {
       syncS2Cat2(); refreshS2Display();
@@ -2467,6 +2617,7 @@
           pulseChip('chipStars');
         }
         if (sN) state.fromReveal = `s${sN}-reveal`;
+        state.preSaveView = state.view;
         persist();
         goTo('save-intro');
       } else if (action === 'keep-playing'){
@@ -2491,6 +2642,7 @@
     state.fromReveal = 's1-reveal';
     state.stars = { 1:false, 2:false, 3:false, 4:false, 5:false };
     state.events = [];
+    state.cqNest = { cq1:'', cq2:'', cq3:'' };
     persist();
     textFieldIds.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     Object.keys(_wasNonEmpty).forEach(k => _wasNonEmpty[k] = false);
@@ -2567,6 +2719,7 @@
   refreshGates();
   reflectMirrors();
   refreshCounters();
+  renderCqNest();
   goTo(state.view);
   updateNightStage();
 })();
