@@ -404,14 +404,15 @@
   }
   .timestats__h{
     font-size:.7rem; letter-spacing:.18em; text-transform:uppercase;
-    color:var(--ink-dim);
-    display:flex; align-items:center; gap:.4rem;
+    color:var(--ink);
+    display:flex; align-items:center; justify-content:center; gap:.4rem;
     margin-bottom:0;
     cursor:pointer; user-select:none;
+    text-align:center;
   }
   .timestats__h::before{ content:'⏱'; font-size:1rem }
   .timestats__h::after{
-    content:'›'; margin-left:auto;
+    content:'›';
     font-size:1.1rem; color:var(--ink-dim);
     transition: transform .2s ease;
   }
@@ -476,6 +477,8 @@
   .pick-btn.is-on .pick-icon{ filter:none }
   .pick-btn.is-locked{ opacity:.4; cursor:not-allowed; }
   .pick-btn.is-locked:hover{ background:var(--panel); }
+  /* "Integumentary" is the longest system label — shrink it 30% so it fits */
+  .pick-btn[data-value="integumentary"] .pick-label{ font-size: .595rem; }
 
   /* two-row picker layout (e.g. stage 3 bio) */
   .pick-grid.two-rows{
@@ -1125,7 +1128,7 @@
   </section>
   <section class="view" data-view="s2-cat2" data-stage="2">
     <span class="step-tag">Stage 2 · Narrower</span>
-    <h1>Pick another — narrower.</h1>
+    <h1>Pick yet another specie.</h1>
     <p class="hint">Choose one below your first. Optionally name an animal of that group.</p>
     <div class="s2-intro-grid">
       <div class="s2-animal-card">
@@ -1145,6 +1148,20 @@
     </div>
     <div class="nav">
       <button class="btn ghost" type="button" data-go="s2-species">← Back</button>
+      <button class="btn primary" type="button" data-next="s2-sq" disabled>Next →</button>
+    </div>
+  </section>
+  <section class="view" data-view="s2-sq" data-stage="2">
+    <span class="step-tag">Stage 2 · About this creature</span>
+    <h1>Three things from <em><span class="mirror" data-mirror="species-or">your creature</span></em>.</h1>
+    <p class="hint">Gestures, instincts, textures, ways of being.</p>
+    <form class="triple" onsubmit="return false">
+      <input id="sp1" type="text" autocomplete="off" />
+      <input id="sp2" type="text" autocomplete="off" />
+      <input id="sp3" type="text" autocomplete="off" />
+    </form>
+    <div class="nav">
+      <button class="btn ghost" type="button" data-go="s2-cat2">← Back</button>
       <button class="btn primary" type="button" data-next="s2-sense" disabled>Next →</button>
     </div>
   </section>
@@ -1154,7 +1171,7 @@
     <p class="hint">The one that feels closest to <em><span class="mirror" data-mirror="species-or">your creature</span></em> right now.</p>
     <div class="pick-grid" id="sensesPick"></div>
     <div class="nav">
-      <button class="btn ghost" type="button" data-go="s2-cat2">← Back</button>
+      <button class="btn ghost" type="button" data-go="s2-sq">← Back</button>
       <button class="btn primary" type="button" data-next="s2-snq" disabled>Next →</button>
     </div>
   </section>
@@ -2111,6 +2128,7 @@
       case 's1-refine': return true;
       case 's2-species':return !!state.s2Cat1;
       case 's2-cat2':   return !!state.s2Cat2 && !!(state.species||'').trim();
+      case 's2-sq':     return triplet('sp1','sp2','sp3');
       case 's2-sense':  return !!state.sense;
       case 's2-snq':    return triplet('sn1','sn2','sn3');
       case 's3-species':return !!state.s3Cat   && !!(state.s3Species||'').trim();
@@ -2143,7 +2161,7 @@
   const progressEl = $('#progress');
   const STAGE_VIEWS = {
     1: ['s1-animal','s1-aq','s1-color','s1-cq','s1-refine'],
-    2: ['s2-species','s2-cat2','s2-sense','s2-snq'],
+    2: ['s2-species','s2-cat2','s2-sq','s2-sense','s2-snq'],
     3: ['s3-species','s3-sq','s3-channel','s3-cq'],
     4: ['s4-matter','s4-mq','s4-bio','s4-bq'],
     5: ['s5-particle','s5-pq','s5-immune','s5-iq']
@@ -2579,7 +2597,7 @@
       { kind:'Animal',   title: state.animal,    items:[state.aq1, state.aq2, state.aq3], nestKeys:['aq1','aq2','aq3'], nest:'aqNest' },
       { kind:'Species',
         title: (state.species || state.s2Cat2 || state.s2Cat1 || '').trim(),
-        items:[state.s2Cat1, state.s2Cat2, state.species] },
+        items:[state.sp1, state.sp2, state.sp3] },
       { kind:'Species',
         title: (state.s3Species || state.s3Cat || '').trim(),
         items:[state.s3Sp1, state.s3Sp2, state.s3Sp3] },
@@ -2651,7 +2669,7 @@
     block('Stage 1 · animal',  state.animal,  [state.aq1,state.aq2,state.aq3]);
     block('Stage 1 · colour',  state.color,   [state.cq1,state.cq2,state.cq3]);
     const s2Title = (state.species || state.s2Cat2 || state.s2Cat1 || '').trim();
-    block('Stage 2 · species', s2Title, [state.s2Cat1, state.s2Cat2, state.species]);
+    block('Stage 2 · species', s2Title, [state.sp1, state.sp2, state.sp3]);
     const senseObj = SENSES.find(x => x.id === state.sense);
     block('Stage 2 · sense',   senseObj ? senseObj.label : '', [state.sn1,state.sn2,state.sn3]);
     const s3Title = (state.s3Species || state.s3Cat || '').trim();
