@@ -32,11 +32,13 @@
   .wrap{max-width:1100px;margin:auto;padding:28px 18px 80px;display:grid;gap:22px}
   @media (max-width:520px){.wrap{padding:18px 12px 60px;gap:16px}}
 
-  /* Sticky play area: anchors the board at the top while the page scrolls.
-     The spotlight is positioned absolutely INSIDE this container so the
-     board stays put — it doesn't shift when a deck is tapped. */
+  /* Sticky play area: a reserved slot for the reordering view on top, the
+     board below in a fixed area. Spotlight is a normal-flow child whose
+     min-height pre-allocates space so the board doesn't shift when a deck
+     is tapped — empty space sits up there by default. */
   .play-area{
     position:sticky;top:0;z-index:40;
+    display:flex;flex-direction:column;gap:14px;
     padding:8px 0 12px;
     background:
       radial-gradient(1200px 700px at 85% -10%, #3a3a58 0%, transparent 55%),
@@ -85,14 +87,15 @@
   }
   .onboard b{color:var(--sky);font-weight:600}
 
-  /* ============== Spotlight (top, horizontal cards) ============== */
-  /* Absolute overlay above the board so the deck row stays anchored. */
-  .spotlight{display:none}
-  .spotlight.active{
+  /* ============== Spotlight (reserved reordering slot) ============== */
+  /* Always rendered so its min-height pre-allocates space above the board.
+     Visible chrome (panel background / border / shadow) only when .active. */
+  .spotlight{
     display:block;
-    position:absolute;top:8px;left:0;right:0;
     margin:0 auto;width:calc(100% - 16px);max-width:780px;
-    z-index:5;
+    min-height:320px;
+  }
+  .spotlight.active{
     background:
       linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02)),
       var(--panel);
@@ -102,6 +105,8 @@
                0 0 80px rgba(255,95,220,.1);
     animation:pop .25s ease;
   }
+  @media (max-width:680px){ .spotlight{min-height:280px} }
+  @media (max-width:460px){ .spotlight{min-height:220px} }
   @keyframes pop{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
 
   .spot-head{
@@ -471,8 +476,8 @@
   .wrap.summary-mode .stage-cta,
   .wrap.summary-mode .stage-progress{display:none !important}
 
-  /* Triad pair: an extra-deck (Tao / Confluence / Future) sitting to the
-     left of its corresponding triad inside the summary grid. */
+  /* Triad pair: an extra-deck (Metaphysics / Space / Time / Sectors) sitting
+     to the left of its corresponding triad inside the summary grid. */
   .triad-pair{
     display:flex;gap:8px;align-items:stretch;
   }
@@ -554,8 +559,8 @@
     text-align:center;opacity:.7;
   }
 
-  /* Extra decks (Future/Tao/Confluence): rendered inline next to their
-     matching triad inside the summary grid (see .triad-pair). */
+  /* Extra decks (Time / Metaphysics / Space / Sectors): rendered inline next
+     to their matching triad inside the summary grid (see .triad-pair). */
   .ad-deck{
     background:linear-gradient(180deg,#363650,#2e2e44);
     border:1px solid var(--stroke);border-radius:14px;
@@ -1210,7 +1215,7 @@
     </div>
 
     <div class="analyze-finish-wrap" id="analyze-finish-wrap">
-      <p class="analyze-info">When you're done exploring, Finish marks each key with Yin (♀) and Yang (♂) according to where you placed them in Tao.</p>
+      <p class="analyze-info">When you're done exploring, Finish marks each key with Yin (♀) and Yang (♂) according to where you placed them in Metaphysics.</p>
       <button class="btn btn-primary" id="btn-finish-final" type="button">Finish</button>
     </div>
 
@@ -1247,7 +1252,7 @@
   const DECKS = [
     { id:'t1', title:'Philosophy',  items:['Joy','Love','Wisdom'] },
     { id:'t2', title:'Psicosocial', items:['Local','Personal','Social'] },
-    { id:'t3', title:'Journalism',  items:['Gift','Lend','Exchange'] },
+    { id:'t3', title:'Service',     items:['Gift','Lend','Exchange'] },
     { id:'t4', title:'Economy',     items:['Artisan','Ecological','Offer'] },
     { id:'t5', title:'Journalism',  items:['Why','What','How'] },
     { id:'p1', title:'Senses',    items:['Taste','Smell','Hearing','Touch','Sight'] },
@@ -2603,9 +2608,9 @@
   // Rendered INLINE inside the summary grid, each as the left half of a
   // .triad-pair next to its matching triad — see EXTRA_PAIR + renderSummaryGrid.
   const EXTRA_DECKS = [
-    { id:'x1', title:'Future',     items:['Future','Past','Present'] },
-    { id:'x2', title:'Tao',        items:['Tao','Yang','Yin'] },
-    { id:'x3', title:'Confluence', items:['Confluence','Macro','Micro'] },
+    { id:'x1', title:'Time',        items:['Future','Past','Present'] },
+    { id:'x2', title:'Metaphysics', items:['Tao','Yang','Yin'] },
+    { id:'x3', title:'Space',       items:['Confluence','Macro','Micro'] },
     { id:'x4', title:'Sectors',    items:['Mining','Manufacture','Service'] },
   ];
   const extraOrders = {};
@@ -2659,8 +2664,8 @@
     _finishApplied = true;
     // Wipe any previous icons across summary decks + extra decks
     document.querySelectorAll('.gender-icon').forEach(n => n.remove());
-    // Find Yin/Yang positions in the Tao deck
-    const tao = EXTRA_DECKS.find(d => d.title === 'Tao');
+    // Find Yin/Yang positions in the Metaphysics deck (x2)
+    const tao = EXTRA_DECKS.find(d => d.id === 'x2');
     if (!tao) return;
     const ord = extraOrders[tao.id];
     let yinPos = -1, yangPos = -1;
