@@ -692,24 +692,49 @@
     min-height:200px;
   }
 
-  /* Play-more button — surfaced after the last "More" click. Sits as a
-     small floating chip on the divider line between the groups display and
-     the time stats, horizontally centered. */
+  /* Play-more button — surfaced after the last "More" click. Sits below the
+     groups section (no divider chrome), 2x the standard button size, with a
+     recalling pulse that calls the user's attention to it. */
   .play-more-wrap{
-    position:relative;display:flex;justify-content:center;
-    margin:1.4rem 0 .4rem;
-    border-top:1px dashed var(--stroke);
-    padding-top:0;height:0;
+    display:flex;justify-content:center;
+    margin:2rem 0 1.2rem;
   }
   .play-more-wrap[hidden]{display:none}
   .play-more-btn{
-    transform:translateY(-50%);
     background:linear-gradient(135deg,var(--sky),var(--accent));
     color:#1a1a28;border:0;
+    padding:1.4rem 2.2rem;
+    font:800 1.25rem/1 system-ui,sans-serif;letter-spacing:.5px;
+    border-radius:999px;
     box-shadow:0 8px 22px rgba(168,228,255,.25), 0 0 0 1px rgba(255,255,255,.18) inset;
-    font-weight:700;letter-spacing:.4px;
+    animation:playMoreCall 1.6s ease-in-out infinite;
   }
-  .play-more-btn:hover{transform:translateY(-50%) translateY(-1px);box-shadow:0 12px 28px rgba(168,228,255,.32)}
+  .play-more-btn:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(168,228,255,.42)}
+  @keyframes playMoreCall{
+    0%,100%{ box-shadow:0 8px 22px rgba(168,228,255,.25), 0 0 0 0 rgba(255,95,220,.45), 0 0 0 1px rgba(255,255,255,.18) inset; transform:translateY(0) scale(1) }
+    50%    { box-shadow:0 14px 34px rgba(168,228,255,.45), 0 0 0 14px rgba(255,95,220,0),  0 0 0 1px rgba(255,255,255,.18) inset; transform:translateY(-3px) scale(1.04) }
+  }
+  /* Stop the recalling pulse once free-play is engaged — keep the button
+     present but quiet. */
+  .summary.free-play .play-more-btn{animation:none}
+  /* "Click me" recalling effect surfaced on every group item the first time
+     Play more is clicked. Each item wiggles + glows for ~1.6s, with a small
+     stagger so they ripple across the row. */
+  @keyframes clickMeCall{
+    0%,100%{ transform:scale(1);            box-shadow:0 2px 5px rgba(0,0,0,.25), 0 0 0 0 rgba(255,95,220,.4) }
+    25%    { transform:scale(1.06) rotate(-1.2deg); box-shadow:0 6px 16px rgba(0,0,0,.3),  0 0 0 6px rgba(255,95,220,.25) }
+    50%    { transform:scale(1.08) rotate(1.2deg);  box-shadow:0 8px 22px rgba(0,0,0,.32), 0 0 0 12px rgba(255,95,220,.08) }
+    75%    { transform:scale(1.04) rotate(-.6deg);  box-shadow:0 6px 16px rgba(0,0,0,.3),  0 0 0 6px rgba(255,95,220,.18) }
+  }
+  .summary.click-me-call .deck-done.in-summary li,
+  .summary.click-me-call .ad-deck li{
+    animation:clickMeCall 1.6s ease-in-out;
+    cursor:pointer;
+  }
+  .summary.click-me-call .deck-done.in-summary li:nth-child(2),
+  .summary.click-me-call .ad-deck li:nth-child(2){animation-delay:.15s}
+  .summary.click-me-call .deck-done.in-summary li:nth-child(3),
+  .summary.click-me-call .ad-deck li:nth-child(3){animation-delay:.3s}
   /* Free-play state: strip medal palette from every summary deck so the user
      can freely re-rank cards without the gold/silver/bronze visual loading. */
   .summary.free-play .deck-done li,
@@ -834,8 +859,12 @@
     letter-spacing:.4px;
   }
   .ab-grid{
-    display:grid;gap:10px;
-    grid-template-columns:repeat(2,minmax(0,1fr));
+    display:grid;
+    grid-template-columns:1fr;
+    /* One bar per row + an extra row of breathing space between them. A bar
+       row (poles + track) is about 60px tall, so gap = 60px gives a full
+       row of additional separation. */
+    gap:60px;
   }
   .ab-help{
     margin:.9rem 0 0;text-align:center;
@@ -849,7 +878,7 @@
   }
   .ab-poles b{color:var(--ink);font-weight:700}
   @media (max-width:520px){
-    .ab-grid{grid-template-columns:1fr}
+    .ab-grid{gap:48px}
   }
   .ab-track{
     position:relative;height:24px;border-radius:999px;
@@ -966,6 +995,101 @@
     font:700 .68rem/1.4 system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;
   }
   .insights-empty{color:var(--muted);text-align:center;font-size:.86rem;padding:.4rem 0}
+
+  /* Second play — surfaced once a parallel perspective is added. Shows every
+     completed deck as a closed face-down card with up/down arrows + DnD
+     reordering, then a Finish button below. After finishing, the summary
+     highlights any deck whose position changed under the new perspective. */
+  .second-play{
+    margin:1rem auto 0;max-width:760px;
+    padding:14px 16px;border-radius:14px;
+    border:1px solid rgba(255,95,220,.35);
+    background:linear-gradient(180deg,rgba(255,95,220,.06),rgba(255,255,255,.02)),var(--fx);
+    animation:fadein .25s ease;
+  }
+  .second-play[hidden]{display:none}
+  .second-play .sp-title{
+    margin:0 0 .3rem;text-align:center;
+    font:600 1.05rem/1.2 ui-serif,Georgia,serif;color:var(--accent);letter-spacing:.3px;
+  }
+  .second-play .sp-help{
+    margin:0 0 .9rem;text-align:center;
+    color:var(--muted);font-size:.86rem;
+  }
+  .sp-decks{
+    display:flex;flex-wrap:wrap;gap:14px;justify-content:center;
+    padding:8px 0;
+  }
+  .sp-item{
+    display:flex;flex-direction:column;align-items:center;gap:.4rem;
+    width:120px;
+  }
+  .sp-item.dragging{opacity:.4}
+  .sp-item .sp-deck{
+    position:relative;width:120px;height:140px;
+    cursor:grab;user-select:none;
+    transition:transform .15s ease;
+  }
+  .sp-item .sp-deck:active{cursor:grabbing}
+  .sp-item:hover .sp-deck{transform:translateY(-3px)}
+  .sp-item .sp-deck.drag-over{outline:2px solid var(--accent);outline-offset:6px;border-radius:14px}
+  .sp-deck .sp-back{
+    position:absolute;left:50%;top:50%;
+    width:calc(100% - 22px);height:calc(100% - 30px);
+    border-radius:14px;
+    background:
+      repeating-linear-gradient(45deg,
+        rgba(255,255,255,.06) 0 6px, transparent 6px 12px),
+      linear-gradient(160deg,#4a3a6e 0%,#3a2a52 55%,#46285c 100%);
+    border:1px solid #5a4a7a;
+    box-shadow:0 10px 24px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.06);
+  }
+  .sp-deck .sp-back-1{transform:translate(-50%,-50%) rotate(-2deg) translateY(4px)}
+  .sp-deck .sp-back-2{transform:translate(-50%,-50%) rotate(1deg) translateY(2px)}
+  .sp-deck .sp-back-3{transform:translate(-50%,-50%) rotate(-.5deg)}
+  .sp-deck .sp-mark{
+    position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;
+    text-align:center;padding:.4rem;
+    font:700 .9rem/1.05 ui-serif,Georgia,serif;letter-spacing:.4px;
+    color:transparent;
+    background:linear-gradient(135deg,var(--gold),var(--accent) 60%,var(--sky));
+    -webkit-background-clip:text;background-clip:text;
+    text-shadow:0 4px 12px rgba(0,0,0,.4);
+    text-transform:uppercase;
+  }
+  .sp-arrows{
+    display:flex;gap:6px;align-items:center;
+  }
+  .sp-arrows button{
+    width:1.8rem;height:1.8rem;border-radius:8px;
+    background:#3a3a52;border:1px solid #5a5a76;color:var(--ink);
+    font:700 .9rem/1 system-ui,sans-serif;cursor:pointer;padding:0;
+    display:grid;place-items:center;
+    transition:transform .12s ease, border-color .18s ease, color .18s ease;
+  }
+  .sp-arrows button:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent)}
+  .sp-arrows button:disabled{opacity:.25;cursor:not-allowed;transform:none}
+  .sp-pos{
+    font:700 .7rem/1 system-ui,sans-serif;color:var(--muted);
+    letter-spacing:.1em;text-transform:uppercase;min-width:1.3rem;text-align:center;
+  }
+  .sp-actions{
+    display:flex;justify-content:center;margin-top:1rem;
+  }
+  /* Highlight on a summary deck whose position changed between the original
+     play and the second play. */
+  .summary .deck-done.in-summary.is-moved{
+    outline:2px solid var(--accent);outline-offset:3px;
+    box-shadow:0 0 18px rgba(255,95,220,.35), 0 10px 24px rgba(0,0,0,.3) !important;
+  }
+  .summary .deck-done.in-summary.is-moved::before{
+    content:"moved";position:absolute;top:-10px;left:50%;transform:translateX(-50%);
+    background:var(--accent);color:#1a1a28;
+    padding:.1rem .45rem;border-radius:999px;
+    font:800 .62rem/1 system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;
+    z-index:5;
+  }
+  .summary .deck-done.in-summary{position:relative}
 
   /* Extra decks (Time / Metaphysics / Space / Sectors): rendered inline next
      to their matching triad inside the summary grid (see .triad-pair). */
@@ -1926,6 +2050,15 @@
 
     <div class="insights-panel" id="insights-panel" hidden></div>
 
+    <section class="second-play" id="second-play" hidden>
+      <h3 class="sp-title">Second play — reorder the groups</h3>
+      <p class="sp-help">Re-rank every group from this new perspective. Use ↑ ↓ or drag the closed decks.</p>
+      <div class="sp-decks" id="sp-decks"></div>
+      <div class="sp-actions">
+        <button class="btn btn-primary" id="sp-finish-btn" type="button">Finish second play →</button>
+      </div>
+    </section>
+
     <div class="analyze-bars" id="analyze-bars" hidden></div>
 
     <div class="summary-triads-wrap">
@@ -1938,13 +2071,14 @@
     </div>
 
     <div class="summary-pentads" id="summary-pentads"></div>
+
+    <div class="play-more-wrap" id="play-more-wrap" hidden>
+      <button class="btn play-more-btn" id="btn-play-more" type="button">Play more</button>
+    </div>
+
     <div class="simplex-cta" id="simplex-cta" hidden>
       <p>Map these pentads into the simplex view.</p>
       <a class="btn btn-soft" href="simplex.html">Open simplex →</a>
-    </div>
-
-    <div class="play-more-wrap" id="play-more-wrap" hidden>
-      <button class="btn btn-soft play-more-btn" id="btn-play-more" type="button">Play more</button>
     </div>
 
     <div class="time-stats" id="time-stats" hidden></div>
@@ -2406,6 +2540,9 @@
     const el = document.createElement('div');
     el.className = 'deck-done';
     if (opts.inSummary) el.classList.add('in-summary');
+    if (opts.inSummary && typeof movedDeckIds === 'function' && movedDeckIds().has(deck.id)){
+      el.classList.add('is-moved');
+    }
     el.dataset.deckId = deck.id;
     // Main decks in the summary are read-only — only the live board reopens
     // them. Anchor links inside (.nm a → flove.org) and saved-why blocks
@@ -2759,6 +2896,12 @@
     parallelRows.length = 0;
     _insightsOpen = false;
     updateInsightsBtn();
+    // Reset second-play state too — comes back fresh every summary entry.
+    secondPlayOrder = null;
+    secondPlayFinished = false;
+    const $secPlay = document.getElementById('second-play');
+    if ($secPlay) $secPlay.hidden = true;
+    updatePlusBtn();
     removeFinishIcons();
     const $arrowsOverlay = document.getElementById('analyze-arrows');
     if ($arrowsOverlay) $arrowsOverlay.classList.remove('is-on');
@@ -3674,12 +3817,22 @@
   }
 
   function addParallelRow(){
+    // Hard cap at ONE parallel perspective — no third row.
+    if (parallelRows.length >= 1) return;
     const idx = parallelRows.length;
     const states = {};
-    BARS.forEach(b => { states[b.id] = { p1:null, p2:null }; });
+    BARS.forEach(b => { states[b.id] = { phase:0, p1:null, p2:null }; });
     parallelRows.push({ idx, states });
     renderParallelRows();
+    renderSecondPlay();
+    updatePlusBtn();
     updateInsightsBtn();
+  }
+
+  function updatePlusBtn(){
+    const $btn = document.getElementById('ab-plus-btn');
+    if (!$btn) return;
+    $btn.style.display = (parallelRows.length >= 1) ? 'none' : '';
   }
 
   function renderParallelRows(){
@@ -3691,7 +3844,7 @@
       block.className = 'ab-parallel-block';
       block.dataset.row = String(rowI);
       const grid = document.createElement('div');
-      grid.className = 'ab-grid ab-grid-free';
+      grid.className = 'ab-grid';
       BARS.forEach(b => {
         const trackId = `bar-free-${rowI}-${b.id}`;
         const cell = document.createElement('div');
@@ -3699,7 +3852,7 @@
         cell.dataset.bar = b.id;
         cell.innerHTML = `
           <div class="ab-poles"><b>${b.leftLabel}</b><b>${b.rightLabel}</b></div>
-          <div class="ab-track ab-track-free" id="${trackId}" role="slider" tabindex="0" aria-label="${b.leftLabel} to ${b.rightLabel}" aria-valuemin="1" aria-valuemax="100">
+          <div class="ab-track" id="${trackId}" role="slider" tabindex="0" aria-label="${b.leftLabel} to ${b.rightLabel}" aria-valuemin="1" aria-valuemax="100">
             <div class="ab-fill" style="display:none"></div>
             <div class="ab-node hidden"></div>
           </div>
@@ -3716,32 +3869,32 @@
       block.querySelector('[data-act="remove"]').addEventListener('click', () => {
         parallelRows.splice(rowI, 1);
         renderParallelRows();
+        renderSecondPlay();
+        updatePlusBtn();
         updateInsightsBtn();
       });
-      BARS.forEach(b => wireFreeBar(`bar-free-${rowI}-${b.id}`, row.states[b.id]));
+      BARS.forEach(b => {
+        wireCycleBar(`bar-free-${rowI}-${b.id}`, row.states[b.id]);
+      });
     });
   }
 
-  // Free-reorder bar: drag or click-and-drag anywhere on the track sets the
-  // range freely — no phase cycle. A short tap (no drag) commits a single
-  // point; a drag commits a range from down-position to up-position.
-  function wireFreeBar(trackId, s){
+  // Click-cycle bar (parameterised): 1st click → single point, 2nd → range,
+  // 3rd → reset to single point. Mirrors wireBar/paintBar but operates on a
+  // passed-in state object so parallel rows can reuse the exact behaviour
+  // of the default bars.
+  function wireCycleBar(trackId, s){
     const $track = document.getElementById(trackId);
     if (!$track) return;
-    const pctFromEvent = (e) => {
-      const rect = $track.getBoundingClientRect();
-      const x = (e.clientX || (e.touches && e.touches[0] && e.touches[0].clientX) || 0) - rect.left;
-      return Math.max(1, Math.min(100, Math.round((x / rect.width) * 100)));
-    };
     const paint = () => {
       const $node = $track.querySelector('.ab-node');
       const $fill = $track.querySelector('.ab-fill');
-      if (s.p1 == null){
+      if (s.phase === 0){
         $node.classList.add('hidden');
         $fill.style.display = 'none';
         return;
       }
-      if (s.p2 == null || s.p1 === s.p2){
+      if (s.phase === 1){
         $node.classList.remove('hidden');
         $node.style.left = s.p1 + '%';
         $fill.style.display = 'none';
@@ -3754,35 +3907,20 @@
       $fill.style.left = lo + '%';
       $fill.style.width = (hi - lo) + '%';
     };
-    let dragging = false;
-    let startP = null;
-    $track.addEventListener('pointerdown', e => {
-      $track.setPointerCapture(e.pointerId);
-      dragging = true;
-      startP = pctFromEvent(e);
-      s.p1 = startP;
-      s.p2 = startP;
-      paint();
-    });
-    $track.addEventListener('pointermove', e => {
-      if (!dragging) return;
-      s.p2 = pctFromEvent(e);
-      paint();
-    });
-    const endDrag = (e) => {
-      if (!dragging) return;
-      dragging = false;
-      const endP = pctFromEvent(e);
-      if (Math.abs(endP - startP) < 2){
-        s.p1 = endP; s.p2 = null;
+    $track.addEventListener('click', (e) => {
+      const rect = $track.getBoundingClientRect();
+      const x = (e.clientX || (e.touches && e.touches[0] && e.touches[0].clientX) || 0) - rect.left;
+      const pct = Math.max(1, Math.min(100, Math.round((x / rect.width) * 100)));
+      if (s.phase === 0){
+        s.phase = 1; s.p1 = pct; s.p2 = null;
+      } else if (s.phase === 1){
+        s.phase = 2; s.p2 = pct;
       } else {
-        s.p2 = endP;
+        s.phase = 1; s.p1 = pct; s.p2 = null;
       }
       paint();
       updateInsightsBtn();
-    };
-    $track.addEventListener('pointerup',     endDrag);
-    $track.addEventListener('pointercancel', endDrag);
+    });
     paint();
   }
 
@@ -3903,6 +4041,35 @@
         }
       });
     });
+    // Contrast hints from the second play (group reordering).
+    if (secondPlayFinished && secondPlayOrder){
+      const orig = originalGroupOrder();
+      const tag = 'Second play';
+      const movedItems = [];
+      secondPlayOrder.forEach((deckIdx, pos) => {
+        const origPos = orig.indexOf(deckIdx);
+        if (origPos === -1 || origPos === pos) return;
+        movedItems.push({
+          title: DECKS[deckIdx].title,
+          from: origPos + 1,
+          to: pos + 1,
+          delta: pos - origPos,
+        });
+      });
+      if (movedItems.length === 0){
+        items.push({ tag, text:`Same ranking under the new perspective — the order of your groups held up.` });
+      } else {
+        movedItems.forEach(m => {
+          const dir = m.delta > 0 ? 'down' : 'up';
+          items.push({ tag, text:`<b>${escapeHTML(m.title)}</b> moved ${dir} from position ${m.from} to ${m.to} under the new perspective.` });
+        });
+        // Highlight the biggest shift as a top-level read.
+        const top = movedItems.slice().sort((a,b) => Math.abs(b.delta) - Math.abs(a.delta))[0];
+        if (Math.abs(top.delta) >= 2){
+          items.push({ tag, text:`Biggest shift: <b>${escapeHTML(top.title)}</b> — ${Math.abs(top.delta)} spots. Worth asking why this perspective reshapes that one most.` });
+        }
+      }
+    }
     return items;
   }
   function renderInsightsPanel(){
@@ -3951,6 +4118,129 @@
     updateInsightsBtn();
   });
 
+  // ============== Second play: reorder all completed groups ==============
+  // Surfaced once a parallel perspective is added (parallelRows.length ≥ 1).
+  // Shows every completed deck as a closed face-down card with ↑ ↓ arrows
+  // and drag-and-drop reordering. On Finish, the order is stored as
+  // secondPlayOrder and the summary highlights any deck whose position
+  // shifted vs the original.
+  let secondPlayOrder = null;       // [deckIdx, …] in user-reordered order
+  let secondPlayFinished = false;
+  let _spDrag = null;
+
+  function originalGroupOrder(){
+    const seen = new Set();
+    const out = [];
+    // Triads in the original display order
+    TRIAD_DISPLAY_ORDER.forEach(idx => {
+      if (state.done[DECKS[idx].id] && !seen.has(idx)){
+        seen.add(idx); out.push(idx);
+      }
+    });
+    // Pentads in deck index order (positions 5..9)
+    [5,6,7,8,9].forEach(idx => {
+      if (state.done[DECKS[idx].id] && !seen.has(idx)){
+        seen.add(idx); out.push(idx);
+      }
+    });
+    return out;
+  }
+
+  function renderSecondPlay(){
+    const $sec = document.getElementById('second-play');
+    if (!$sec) return;
+    const eligible = parallelRows.length >= 1 && !secondPlayFinished;
+    $sec.hidden = !eligible;
+    if (!eligible) return;
+    if (!secondPlayOrder) secondPlayOrder = originalGroupOrder();
+    const $decks = document.getElementById('sp-decks');
+    $decks.innerHTML = '';
+    secondPlayOrder.forEach((deckIdx, pos) => {
+      const item = document.createElement('div');
+      item.className = 'sp-item';
+      item.dataset.pos = String(pos);
+      item.setAttribute('draggable', 'true');
+      const deck = DECKS[deckIdx];
+      const title = escapeHTML(deck.title);
+      item.innerHTML = `
+        <div class="sp-deck" aria-label="${title} (closed)">
+          <div class="sp-back sp-back-1"></div>
+          <div class="sp-back sp-back-2"></div>
+          <div class="sp-back sp-back-3"></div>
+          <div class="sp-mark">${title}</div>
+        </div>
+        <span class="sp-pos">#${pos + 1}</span>
+        <div class="sp-arrows">
+          <button data-act="up"   ${pos === 0 ? 'disabled' : ''} aria-label="Move up"   title="up">↑</button>
+          <button data-act="down" ${pos === secondPlayOrder.length - 1 ? 'disabled' : ''} aria-label="Move down" title="down">↓</button>
+        </div>
+      `;
+      item.querySelector('[data-act="up"]').addEventListener('click', () => spMove(pos, -1));
+      item.querySelector('[data-act="down"]').addEventListener('click', () => spMove(pos, +1));
+      item.addEventListener('dragstart', e => {
+        _spDrag = { pos };
+        e.dataTransfer.effectAllowed = 'move';
+        try { e.dataTransfer.setData('text/plain', String(pos)); } catch(_){}
+        item.classList.add('dragging');
+      });
+      item.addEventListener('dragend', () => {
+        item.classList.remove('dragging');
+        document.querySelectorAll('.sp-item.drag-over').forEach(n => n.classList.remove('drag-over'));
+        _spDrag = null;
+      });
+      item.addEventListener('dragover', e => {
+        if (!_spDrag) return;
+        e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+        item.classList.add('drag-over');
+      });
+      item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+      item.addEventListener('drop', e => {
+        e.preventDefault();
+        item.classList.remove('drag-over');
+        if (!_spDrag) return;
+        const src = _spDrag.pos;
+        if (src === pos) return;
+        const [moved] = secondPlayOrder.splice(src, 1);
+        secondPlayOrder.splice(pos, 0, moved);
+        _spDrag = null;
+        renderSecondPlay();
+      });
+      $decks.appendChild(item);
+    });
+  }
+
+  function spMove(pos, delta){
+    const to = pos + delta;
+    if (to < 0 || to >= secondPlayOrder.length) return;
+    [secondPlayOrder[pos], secondPlayOrder[to]] = [secondPlayOrder[to], secondPlayOrder[pos]];
+    renderSecondPlay();
+  }
+
+  function finishSecondPlay(){
+    secondPlayFinished = true;
+    renderSecondPlay();
+    // Re-render summary so .is-moved highlights are applied to decks that
+    // shifted between the original arrangement and secondPlayOrder.
+    renderSummaryGrid();
+    // Auto-open Insights so the user sees the contrast hints right away.
+    _insightsOpen = true;
+    updateInsightsBtn();
+    const $p = document.getElementById('insights-panel');
+    if ($p) setTimeout(() => $p.scrollIntoView({ behavior:'smooth', block:'start' }), 0);
+  }
+
+  function movedDeckIds(){
+    if (!secondPlayFinished || !secondPlayOrder) return new Set();
+    const orig = originalGroupOrder();
+    const moved = new Set();
+    secondPlayOrder.forEach((deckIdx, pos) => {
+      if (orig[pos] !== deckIdx) moved.add(DECKS[deckIdx].id);
+    });
+    return moved;
+  }
+
+  document.getElementById('sp-finish-btn').addEventListener('click', finishSecondPlay);
+
   // Reveal the simplex CTA only when the summary actually contains pentads.
   function updateSimplexCTA(){
     const cta = document.getElementById('simplex-cta');
@@ -3984,7 +4274,13 @@
     _playMoreOn = !_playMoreOn;
     $summary.classList.toggle('free-play', _playMoreOn);
     renderPlayMoreBtn();
-    if (_playMoreOn) wireFreePlayHandlers();
+    if (_playMoreOn){
+      // One-shot "click me click me" call on every group item to invite the
+      // user to start re-ranking. Removed after the animation finishes.
+      $summary.classList.add('click-me-call');
+      setTimeout(() => $summary.classList.remove('click-me-call'), 1700);
+      wireFreePlayHandlers();
+    }
   }
   // Click-to-swap: first card click selects, second click swaps with the
   // selected one. Scoped per-deck so the user can rearrange any group.
