@@ -1165,6 +1165,17 @@
      proportions as the other ad-decks; each row is either an input (empty)
      or a saved note with edit / remove controls. */
   .ad-deck-custom .ad-title{color:var(--sky)}
+  .ad-title-editable{
+    cursor:text;outline:none;
+    padding:.15rem .35rem;border-radius:6px;
+    border:1px dashed transparent;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .ad-title-editable:hover{border-color:rgba(168,228,255,.3);background:rgba(168,228,255,.05)}
+  .ad-title-editable.is-editing,
+  .ad-title-editable:focus{
+    border-color:var(--sky);background:rgba(168,228,255,.1);
+  }
   .ad-deck-custom li.notes-slot{
     flex:1;display:flex;align-items:center;justify-content:space-between;gap:.3rem;
     padding:.35rem .4rem;
@@ -2889,7 +2900,7 @@
     }
     // Tear down free-play state on summary re-entry.
     _playMoreOn = false;
-    _fpSelected = null;
+    if (typeof _fpSelectedWords !== 'undefined') _fpSelectedWords.clear();
     $summary.classList.remove('free-play');
     renderPlayMoreBtn();
     // Reset parallel perspectives + insights so the panel comes back clean.
@@ -4273,52 +4284,50 @@
   function togglePlayMore(){
     _playMoreOn = !_playMoreOn;
     $summary.classList.toggle('free-play', _playMoreOn);
-    renderPlayMoreBtn();
     if (_playMoreOn){
+      // Play more goes one-way: the button itself hides after activation —
+      // multiselect mode stays on until the user moves to See more.
+      const $wrap = document.getElementById('play-more-wrap');
+      if ($wrap) $wrap.hidden = true;
       // One-shot "click me click me" call on every group item to invite the
-      // user to start re-ranking. Removed after the animation finishes.
+      // user to pick the ones that resonate. Removed after the animation
+      // finishes.
       $summary.classList.add('click-me-call');
       setTimeout(() => $summary.classList.remove('click-me-call'), 1700);
       wireFreePlayHandlers();
+    } else {
+      renderPlayMoreBtn();
     }
   }
-  // Click-to-swap: first card click selects, second click swaps with the
-  // selected one. Scoped per-deck so the user can rearrange any group.
-  let _fpSelected = null;
+  // Multiselect: each click toggles whether a card is selected. The set of
+  // selected words drives the "more apps" surfaced via the See more "+"
+  // button — those apps point to flove.org/{word} for every selected key.
+  const _fpSelectedWords = new Set();
   function wireFreePlayHandlers(){
-    document.querySelectorAll('.summary.free-play .deck-done.in-summary').forEach(deck => {
+    document.querySelectorAll('.summary.free-play .deck-done.in-summary, .summary.free-play .ad-deck').forEach(deck => {
       const id = deck.dataset.deckId;
       if (!id) return;
       const lis = deck.querySelectorAll('ol > li');
       lis.forEach((li, idx) => {
         if (li.dataset.fpWired === '1') return;
         li.dataset.fpWired = '1';
+        // Hydrate the selected state on re-render
+        const nm = li.querySelector('.nm');
+        const word = nm ? nm.textContent.trim() : (li.dataset.word || '');
+        if (word && _fpSelectedWords.has(word)) li.classList.add('fp-selected');
         li.addEventListener('click', (e) => {
           if (!_playMoreOn) return;
           if (e.target.closest('a')) { e.preventDefault(); }
           e.stopPropagation();
-          if (!_fpSelected){
-            _fpSelected = { deckId: id, idx };
-            li.classList.add('fp-selected');
-            return;
-          }
-          if (_fpSelected.deckId !== id){
-            document.querySelectorAll('.fp-selected').forEach(n => n.classList.remove('fp-selected'));
-            _fpSelected = { deckId: id, idx };
-            li.classList.add('fp-selected');
-            return;
-          }
-          if (_fpSelected.idx === idx){
+          const w = (li.querySelector('.nm')?.textContent || li.dataset.word || '').trim();
+          if (!w) return;
+          if (_fpSelectedWords.has(w)){
+            _fpSelectedWords.delete(w);
             li.classList.remove('fp-selected');
-            _fpSelected = null;
-            return;
+          } else {
+            _fpSelectedWords.add(w);
+            li.classList.add('fp-selected');
           }
-          const order = state.orders[id];
-          [order[_fpSelected.idx], order[idx]] = [order[idx], order[_fpSelected.idx]];
-          _fpSelected = null;
-          renderSummaryGrid();
-          // Re-wire after re-render
-          requestAnimationFrame(wireFreePlayHandlers);
         });
       });
     });
@@ -4333,14 +4342,16 @@
     { id:'x2', title:'Metaphysics', items:['Tao','Yang','Yin'] },
     { id:'x3', title:'Space',       items:['Confluence','Macro','Micro'] },
     { id:'x4', title:'Sectors',    items:['Mining','Manufacture','Service'] },
-    // Notes (x5): a user-editable placeholder paired with Service so the
-    // standalone Service triad now sits inside a triad-pair like every other
-    // triad — same width, same height. Each row is empty by default; the
-    // user types text + saves/removes it.
-    { id:'x5', title:'Notes',       items:['','',''], custom:true },
+    // Custom group (x5): user-editable placeholder paired with Service so
+    // the standalone Service triad now sits inside a triad-pair like every
+    // other triad — same width, same height. The title and each row start
+    // as "new group" / "new item" and become editable on click.
+    { id:'x5', title:'new group',   items:['','',''], custom:true },
   ];
-  // Saved text per Notes slot (idx 0..2). null = empty placeholder.
+  // Saved text per custom slot (idx 0..2). null = empty placeholder.
   const notesState = [null, null, null];
+  // Editable title for the custom (x5) extra deck. Defaults to "new group".
+  let notesTitle = 'new group';
   const extraOrders = {};
   EXTRA_DECKS.forEach(d => { extraOrders[d.id] = d.items.map((_,i)=>i); });
   let _finishApplied = false;
@@ -4370,6 +4381,7 @@
     el.className = 'ad-deck' + (extraOpen[d.id] ? '' : ' ad-deck-closed');
     if (d.custom) el.classList.add('ad-deck-custom');
     el.dataset.deckId = d.id;
+    const titleFor = (deck) => deck.custom ? notesTitle : deck.title;
     if (!extraOpen[d.id]){
       el.setAttribute('role', 'button');
       el.setAttribute('tabindex', '0');
@@ -4378,7 +4390,7 @@
         <div class="ad-back ad-back-1"></div>
         <div class="ad-back ad-back-2"></div>
         <div class="ad-back ad-back-3"></div>
-        <div class="ad-closed-title">${escapeHTML(d.title)}</div>
+        <div class="ad-closed-title">${escapeHTML(titleFor(d))}</div>
       `;
       const open = (e) => {
         e.stopPropagation();
@@ -4389,17 +4401,37 @@
       el.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' '){ e.preventDefault(); open(e); } });
       return el;
     }
+    if (d.custom){
+      // Editable title (click to rename, Enter to commit).
+      const t = document.createElement('div');
+      t.className = 'ad-title ad-title-editable';
+      t.contentEditable = 'true';
+      t.spellcheck = false;
+      t.textContent = notesTitle;
+      t.title = 'click to rename';
+      t.addEventListener('focus', () => t.classList.add('is-editing'));
+      t.addEventListener('blur',  () => {
+        t.classList.remove('is-editing');
+        const v = t.textContent.trim();
+        notesTitle = v || 'new group';
+        t.textContent = notesTitle;
+      });
+      t.addEventListener('keydown', e => {
+        if (e.key === 'Enter'){ e.preventDefault(); t.blur(); }
+      });
+      el.appendChild(t);
+      const list = document.createElement('ol');
+      el.appendChild(list);
+      paintNotesDeck(el);
+      return el;
+    }
     const t = document.createElement('div');
     t.className = 'ad-title';
     t.textContent = d.title;
     el.appendChild(t);
     const list = document.createElement('ol');
     el.appendChild(list);
-    if (d.custom){
-      paintNotesDeck(el);
-    } else {
-      paintExtraDeck(d, el);
-    }
+    paintExtraDeck(d, el);
     return el;
   }
 
@@ -4415,9 +4447,9 @@
       li.className = 'notes-slot' + (val == null ? ' notes-empty' : ' notes-saved');
       if (val == null){
         li.innerHTML = `
-          <input type="text" class="notes-input" placeholder="add a note…" aria-label="Note ${idx+1}" />
+          <input type="text" class="notes-input" placeholder="new item" aria-label="Item ${idx+1}" />
           <span class="notes-actions">
-            <button class="notes-save" data-act="save" aria-label="Save note" title="save">✓</button>
+            <button class="notes-save" data-act="save" aria-label="Save item" title="save">✓</button>
           </span>
         `;
         const $inp  = li.querySelector('.notes-input');
@@ -4436,8 +4468,8 @@
         li.innerHTML = `
           <span class="nm notes-text">${escapeHTML(val)}</span>
           <span class="notes-actions">
-            <button class="notes-edit"   data-act="edit"   aria-label="Edit note"   title="edit">✎</button>
-            <button class="notes-remove" data-act="remove" aria-label="Remove note" title="remove">✕</button>
+            <button class="notes-edit"   data-act="edit"   aria-label="Edit item"   title="edit">✎</button>
+            <button class="notes-remove" data-act="remove" aria-label="Remove item" title="remove">✕</button>
           </span>
         `;
         li.querySelector('[data-act="edit"]').addEventListener('click', e => {
@@ -4566,6 +4598,13 @@
       $btn.textContent = 'More';
     } else {
       bumpAnalyzeLevel(4);
+      // Gender icons live inside Time (x1) and Sectors (x4) ad-decks and are
+      // derived from Yin/Yang positions in Metaphysics (x2). All three are
+      // closed-by-default after the previous redesign, so opening them is a
+      // pre-requisite for anything to be visible. Re-render the grid so the
+      // opened decks paint their items, then stamp the icons + alt arrows.
+      ['x1','x2','x4'].forEach(id => { extraOpen[id] = true; });
+      renderSummaryGrid();
       applyFinishIcons();
       $btn.textContent = 'Hide genders';
       const $btn3 = document.getElementById('btn-analyze-more-3');
@@ -4715,10 +4754,30 @@
     if ($help) $help.hidden = !open;
     $btn.textContent = open ? 'Hide apps' : 'See more';
   });
+  // Replace the fixed RELATED_MORE 6-app reveal with apps derived from the
+  // user's Play more multiselect: each selected word becomes an app card
+  // pointing at flove.org/{word}. Falls back to the original fixed list if
+  // nothing was selected (so the "+" still does something useful).
+  function renderSelectedAppsRow(){
+    const $row6 = document.getElementById('related-row-6');
+    if (!$row6) return;
+    if (_fpSelectedWords && _fpSelectedWords.size > 0){
+      const words = Array.from(_fpSelectedWords);
+      $row6.innerHTML = words.map(w => {
+        const slug = encodeURIComponent(w.toLowerCase());
+        return `<a class="related-app" href="https://flove.org/${slug}" target="_blank" rel="noopener" title="open ${escapeHTML(w)} on flove.org">${escapeHTML(w)}</a>`;
+      }).join('');
+    } else {
+      $row6.innerHTML = RELATED_MORE
+        .map(a => `<a class="related-app" href="${a.href}">${a.label}</a>`)
+        .join('');
+    }
+  }
   document.getElementById('btn-related-plus').addEventListener('click', () => {
     const $row6 = document.getElementById('related-row-6');
     const $btn  = document.getElementById('btn-related-plus');
     const open  = $row6.hidden;
+    if (open) renderSelectedAppsRow();
     $row6.hidden = !open;
     $btn.textContent = open ? '−' : '+';
     $btn.setAttribute('aria-label', open ? 'show fewer apps' : 'show more apps');
