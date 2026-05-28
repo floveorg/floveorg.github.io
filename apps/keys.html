@@ -585,8 +585,9 @@
     display:flex;flex-wrap:wrap;gap:10px;
     justify-content:center;align-items:flex-start;
     /* Hard cap = 3 pairs + 2 gaps so the 4th item wraps to row 2 even on wide
-       viewports; flex-wrap takes over naturally on narrower screens. */
-    max-width:calc((var(--triad-block-w) * 2 + 10px) * 3 + 10px * 2 + 6px);
+       viewports; flex-wrap takes over naturally on narrower screens. Pairs
+       are 10% wider now (extras get +20% flex). */
+    max-width:calc((var(--triad-block-w) * 2.2 + 10px) * 3 + 10px * 2 + 6px);
     margin-left:auto;margin-right:auto;
   }
   /* All triads share the (widened) Ecological-fit width; pentads use their own width. */
@@ -683,22 +684,26 @@
 
   /* Triad pair: an extra-deck (Metaphysics / Space / Time / Sectors) sitting
      to the left of its corresponding triad inside the summary grid. The pair
-     width is exactly two triad blocks plus the inner gap, so a pair looks the
-     same width as two stand-alone triads side-by-side. */
+     is 10% wider than two triad blocks so the extras can be rendered 20%
+     wider than their paired triad while keeping the triad at its canonical
+     fit-Ecological width. */
   .triad-pair{
     display:flex;gap:10px;align-items:stretch;
-    width:calc(var(--triad-block-w) * 2 + 10px);
+    width:calc(var(--triad-block-w) * 2.2 + 10px);
   }
   .triad-pair > .ad-deck,
   .triad-pair > .deck-done{
-    flex:1 1 0;min-width:0;width:auto;
+    min-width:0;width:auto;
     padding:6px 3px;
   }
+  /* Extras get 20% more flex than the triad → render 1.2× wider. */
+  .triad-pair > .ad-deck   { flex:1.2 1 0; }
+  .triad-pair > .deck-done { flex:1   1 0; }
   /* When the extras are revealed, the standalone Service triad (no pair)
      stretches to match the width AND height of a triad-pair so the grid
      reads as a uniform block of "groups" — none narrower than the rest. */
   .summary-triads.with-extras > .deck-done.in-summary{
-    width:calc(var(--triad-block-w) * 2 + 10px);
+    width:calc(var(--triad-block-w) * 2.2 + 10px);
     min-height:200px;
   }
 
@@ -2820,19 +2825,12 @@
     }
 
     // items as stacked card-like rows (gold/silver/bronze on positions 1-3 via CSS)
-    // In the summary view, triad words link out to flove.org/{word}.
-    const linkifyTriad = opts.inSummary && order.length === 3;
     const list = document.createElement('ol');
     order.forEach((itemIdx) => {
       const li = document.createElement('li');
       const word = deck.items[itemIdx];
       li.dataset.word = word;
-      if (linkifyTriad){
-        const slug = encodeURIComponent(word.toLowerCase());
-        li.innerHTML = `<a class="nm" href="https://flove.org/${slug}" target="_blank" rel="noopener" title="open ${escapeHTML(word)} on flove.org">${escapeHTML(word)}</a>`;
-      } else {
-        li.innerHTML = `<span class="nm">${escapeHTML(word)}</span>`;
-      }
+      li.innerHTML = `<span class="nm">${escapeHTML(word)}</span>`;
       list.appendChild(li);
     });
     el.appendChild(list);
