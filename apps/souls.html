@@ -1013,6 +1013,108 @@
   }
   .timestats__t-row b{ color:var(--ink); font-weight:600 }
   .timestats__t-row .t-delta{ color:var(--app-accent-soft); font-weight:600 }
+
+  /* ─── Colour picker swatch (s1-color) ─────────────────── */
+  .color-picker-wrap{
+    flex:0 0 auto;
+    display:inline-flex; align-items:stretch;
+  }
+  .color-picker-wrap input[type="color"]{
+    appearance:none; -webkit-appearance:none; -moz-appearance:none;
+    width:3rem; min-height:100%;
+    padding:0; margin:0;
+    border:1px solid var(--line);
+    background:var(--field);
+    border-radius:14px;
+    cursor:pointer; overflow:hidden;
+    transition: border-color .2s ease, background .2s ease;
+  }
+  .color-picker-wrap input[type="color"]::-webkit-color-swatch-wrapper{ padding:.35rem }
+  .color-picker-wrap input[type="color"]::-webkit-color-swatch{ border:0; border-radius:10px }
+  .color-picker-wrap input[type="color"]::-moz-color-swatch{ border:0; border-radius:10px }
+  .color-picker-wrap input[type="color"]:hover{ border-color:var(--app-accent-soft) }
+  .color-picker-wrap input[type="color"]:focus{ outline:none; border-color:var(--app-accent); background:var(--field-focus) }
+
+  /* ─── Magic cloud trigger + bubble cloud ──────────────── */
+  .magic-row{
+    display:flex; align-items:center; gap:.6rem;
+    margin: .8rem 0 .2rem;
+  }
+  .magic-trigger{
+    appearance:none; cursor:pointer;
+    width:2.2rem; height:2.2rem;
+    border-radius:50%;
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--ink);
+    display:inline-flex; align-items:center; justify-content:center;
+    font:inherit; font-size:1.05rem; line-height:1;
+    transition: background .2s ease, border-color .2s ease, transform .35s ease, color .2s ease;
+  }
+  .magic-trigger:hover{
+    background:rgba(255,255,255,.06);
+    border-color:var(--app-accent-soft);
+    color:var(--app-accent-soft);
+  }
+  .magic-trigger[aria-expanded="true"]{
+    background:rgba(245,180,99,.16);
+    border-color:var(--app-accent);
+    color:var(--app-accent);
+    transform: rotate(20deg);
+  }
+  .magic-label{
+    font-size:.7rem; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--ink-dim);
+  }
+
+  @property --bubble-rot { syntax:'<angle>'; inherits:false; initial-value: 0deg }
+
+  .magic-cloud{
+    position:relative;
+    width:100%;
+    height:320px;
+    margin: .3rem 0 1rem;
+    border:1px dashed var(--line);
+    border-radius:18px;
+    overflow:hidden;
+    background:
+      radial-gradient(60vmax 40vmax at 50% 110%, rgba(245,180,99,.05) 0, transparent 60%),
+      rgba(255,255,255,.02);
+  }
+  .magic-cloud[hidden]{ display:none }
+  .magic-cloud .bubble{
+    position:absolute;
+    display:inline-flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:.1rem;
+    padding:.45rem .7rem .5rem;
+    min-width:2.6rem;
+    border:2px solid transparent;
+    border-radius:999px;
+    background:
+      linear-gradient(rgba(20,14,30,.55), rgba(20,14,30,.55)) padding-box,
+      conic-gradient(from var(--bubble-rot, 0deg),
+        rgba(255,140,180,.90), rgba(255,200,130,.90), rgba(255,240,150,.90),
+        rgba(170,235,180,.90), rgba(150,220,255,.90), rgba(195,170,255,.90),
+        rgba(255,140,180,.90)) border-box;
+    color:var(--ink);
+    pointer-events:none;
+    opacity:0;
+    box-shadow:
+      0 0 10px rgba(255,200,160,.18),
+      inset 0 6px 9px rgba(255,255,255,.22),
+      inset 0 -4px 6px rgba(0,0,0,.18);
+    text-shadow: 0 1px 2px rgba(0,0,0,.45);
+    animation: bubbleSpin 8s linear infinite;
+  }
+  .magic-cloud .bubble .b-icon{ font-size:1.2rem; line-height:1 }
+  .magic-cloud .bubble .b-label{
+    font-size:.58rem; letter-spacing:.04em;
+    color:var(--ink); opacity:.88;
+  }
+  @keyframes bubbleSpin{ to { --bubble-rot: 360deg } }
+  @media (prefers-reduced-motion: reduce){
+    .magic-cloud .bubble{ animation:none; opacity:1 }
+  }
 </style>
 </head>
 <body data-night="0">
@@ -1110,6 +1212,9 @@
     <p class="hint">Any colour you want — write it freely.</p>
     <form class="field" onsubmit="return false">
       <input id="color" type="text" autocomplete="off" />
+      <span class="color-picker-wrap" title="Pick a colour">
+        <input id="colorPicker" type="color" aria-label="Pick a colour" value="#f5b463" />
+      </span>
     </form>
     <div class="nav">
       <button class="btn ghost" type="button" data-go="s1-aq">← Back</button>
@@ -1265,6 +1370,11 @@
         <input id="s3Species" type="text" autocomplete="off" required />
       </form>
     </div>
+    <div class="magic-row">
+      <button type="button" class="magic-trigger" data-magic-cloud="species3" aria-expanded="false" aria-controls="speciesMagicCloud" title="Float a bubble cloud of creatures">✨</button>
+      <span class="magic-label">A bubble cloud of creatures</span>
+    </div>
+    <div class="magic-cloud" id="speciesMagicCloud" hidden aria-live="polite"></div>
     <div class="nav">
       <button class="btn ghost" type="button" data-go="s2-reveal">← Back</button>
       <button class="btn primary" type="button" data-next="s3-sq" disabled>Next →</button>
@@ -1345,6 +1455,11 @@
         <input id="s4MatterSpecific" type="text" autocomplete="off" />
       </form>
     </div>
+    <div class="magic-row">
+      <button type="button" class="magic-trigger" data-magic-cloud="matter" aria-expanded="false" aria-controls="matterMagicCloud" title="Float a bubble cloud of matter">✨</button>
+      <span class="magic-label">A bubble cloud of matter</span>
+    </div>
+    <div class="magic-cloud" id="matterMagicCloud" hidden aria-live="polite"></div>
     <div class="nav">
       <button class="btn ghost" type="button" data-go="s3-reveal">← Back</button>
       <button class="btn primary" type="button" data-next="s4-mq" disabled>Next →</button>
@@ -1414,6 +1529,11 @@
     <div class="tier-preview" id="s5SpeciesPreview" aria-hidden="true"></div>
     <div class="tier-preview" id="s5MatterPreview" aria-hidden="true"></div>
     <div class="pick-grid" id="particlePick"></div>
+    <div class="magic-row">
+      <button type="button" class="magic-trigger" data-magic-cloud="particle" aria-expanded="false" aria-controls="particleMagicCloud" title="Float a bubble cloud of particles">✨</button>
+      <span class="magic-label">A bubble cloud of particles</span>
+    </div>
+    <div class="magic-cloud" id="particleMagicCloud" hidden aria-live="polite"></div>
     <div class="nav">
       <button class="btn ghost" type="button" data-go="s4-reveal">← Back</button>
       <button class="btn primary" type="button" data-next="s5-pq" disabled>Next →</button>
@@ -2536,6 +2656,7 @@
     const isForward = order.indexOf(viewId) > order.indexOf(state.view);
     if (isForward && !viewValid(state.view)) return;
     state.view = viewId; persist();
+    if (typeof closeAllMagicClouds === 'function') closeAllMagicClouds();
     $$('.view').forEach(v => v.classList.toggle('is-on', v.dataset.view === viewId));
 
     // hooks per view
@@ -3243,6 +3364,224 @@
     paintChip('chipSels',  'numSels',  countSelections(), 30);
     paintChip('chipStars', 'numStars', countStars(),       5);
   }
+
+  // ── colour picker swatch → #color text field ────────────
+  (function wireColorPicker(){
+    const picker = $('#colorPicker');
+    const input  = $('#color');
+    if (!picker || !input) return;
+    picker.addEventListener('input', () => {
+      input.value = picker.value;
+      input.dispatchEvent(new Event('input', { bubbles:true }));
+    });
+  })();
+
+  // ── magic bubble clouds (s3-species, s4-matter, s5-particle) ──
+  const ANIMAL_ICONS = {
+    fox:'🦊', wolf:'🐺', lion:'🦁', bear:'🐻', dolphin:'🐬', whale:'🐋',
+    elephant:'🐘', horse:'🐎', cat:'🐈', dog:'🐕', mouse:'🐁', deer:'🦌',
+    eagle:'🦅', owl:'🦉', sparrow:'🐦', crow:'🐦‍⬛', swan:'🦢', hummingbird:'🐦',
+    parrot:'🦜', hawk:'🦅', dove:'🕊',
+    snake:'🐍', turtle:'🐢', lizard:'🦎', crocodile:'🐊', chameleon:'🦎',
+    gecko:'🦎', iguana:'🦎',
+    frog:'🐸', toad:'🐸', salamander:'🦎', axolotl:'🐸', newt:'🦎',
+    shark:'🦈', tuna:'🐟', koi:'🐠', seahorse:'🐠', salmon:'🐟', eel:'🐟',
+    bee:'🐝', butterfly:'🦋', ant:'🐜', dragonfly:'🪰', firefly:'✨',
+    mantis:'🦗', beetle:'🪲',
+    spider:'🕷', scorpion:'🦂',
+    octopus:'🐙', jellyfish:'🪼', coral:'🪸', starfish:'⭐',
+    'sea urchin':'🌟', squid:'🦑',
+    oak:'🌳', willow:'🌳', pine:'🌲', baobab:'🌳', 'cherry blossom':'🌸',
+    palm:'🌴', birch:'🌳',
+    rose:'🌹', lotus:'🪷', sunflower:'🌻', lily:'🌷', jasmine:'🌼', orchid:'🌸',
+    mushroom:'🍄', mycelium:'🌿', truffle:'🍄'
+  };
+  // ~2 per category → ~22 bubbles
+  const SPECIES_CLOUD = Object.values(SPECIES_TREE)
+    .flatMap(arr => arr.slice(0, 2))
+    .map(name => ({ id:name, label:name, icon: ANIMAL_ICONS[name] || '·' }));
+  const MATTER_CLOUD = [
+    { id:'bacteria',  label:'Bacteria',  icon:'🦠' },
+    { id:'virus',     label:'Virus',     icon:'🧫' },
+    { id:'algae',     label:'Algae',     icon:'🌿' },
+    { id:'quartz',    label:'Quartz',    icon:'💎' },
+    { id:'amethyst',  label:'Amethyst',  icon:'🔮' },
+    { id:'salt',      label:'Salt',      icon:'❄' },
+    { id:'protein',   label:'Protein',   icon:'🧬' },
+    { id:'dna',       label:'DNA',       icon:'🧬' },
+    { id:'lipid',     label:'Lipid',     icon:'⚗' },
+    { id:'water',     label:'Water',     icon:'💧' },
+    { id:'co2',       label:'CO₂',       icon:'☁' },
+    { id:'methane',   label:'Methane',   icon:'⚗' },
+    { id:'hydrogen',  label:'Hydrogen',  icon:'⚛' },
+    { id:'oxygen',    label:'Oxygen',    icon:'⚛' },
+    { id:'carbon',    label:'Carbon',    icon:'⚛' },
+    { id:'iron',      label:'Iron',      icon:'⚛' }
+  ];
+  const PARTICLE_CLOUD = PARTICLES.slice();
+  const CLOUD_REGISTRY = {
+    species3: { selector:'#speciesMagicCloud',  items:SPECIES_CLOUD  },
+    matter:   { selector:'#matterMagicCloud',   items:MATTER_CLOUD   },
+    particle: { selector:'#particleMagicCloud', items:PARTICLE_CLOUD }
+  };
+  const cloudState = new Map(); // key → { el, raf, physics:Map<el,{x,y,w,h,vx,vy}>, started }
+  const randVel = () => (Math.random() - 0.5) * 0.22;
+
+  function buildCloud(key){
+    if (cloudState.has(key)) return cloudState.get(key);
+    const def = CLOUD_REGISTRY[key];
+    if (!def) return null;
+    const el = document.querySelector(def.selector);
+    if (!el) return null;
+    el.innerHTML = '';
+    const physics = new Map();
+    def.items.forEach(it => {
+      const b = document.createElement('span');
+      b.className = 'bubble';
+      b.innerHTML =
+        `<span class="b-icon" aria-hidden="true">${it.icon || '·'}</span>` +
+        `<span class="b-label">${it.label}</span>`;
+      el.appendChild(b);
+      physics.set(b, { x:50, y:110, w:10, h:10, vx:0, vy:0 });
+    });
+    const entry = { el, raf:0, physics, started:false };
+    cloudState.set(key, entry);
+    return entry;
+  }
+
+  function stepCloud(key){
+    const e = cloudState.get(key);
+    if (!e) return;
+    if (e.el.hidden){ e.raf = 0; return; }
+    const rect = e.el.getBoundingClientRect();
+    if (!rect.width || !rect.height){ e.raf = 0; return; } // view hidden
+    const items = [];
+    e.physics.forEach((it, el) => {
+      const r = el.getBoundingClientRect();
+      it.w = (r.width  / rect.width)  * 100;
+      it.h = (r.height / rect.height) * 100;
+      items.push({ el, it });
+    });
+    for (const { it } of items){
+      it.x += it.vx;
+      it.y += it.vy;
+      if (it.x < 0)            { it.x = 0;          it.vx =  Math.abs(it.vx); }
+      if (it.x + it.w > 100)   { it.x = 100 - it.w; it.vx = -Math.abs(it.vx); }
+      if (it.y < 0)            { it.y = 0;          it.vy =  Math.abs(it.vy); }
+      if (it.y + it.h > 100)   { it.y = 100 - it.h; it.vy = -Math.abs(it.vy); }
+    }
+    for (let i = 0; i < items.length; i++){
+      const a = items[i].it;
+      for (let j = i + 1; j < items.length; j++){
+        const b = items[j].it;
+        if (a.x < b.x + b.w && a.x + a.w > b.x &&
+            a.y < b.y + b.h && a.y + a.h > b.y){
+          const dx = Math.min(a.x + a.w - b.x, b.x + b.w - a.x);
+          const dy = Math.min(a.y + a.h - b.y, b.y + b.h - a.y);
+          if (dx < dy){
+            const push = dx / 2;
+            if (a.x < b.x){ a.x -= push; b.x += push; }
+            else          { a.x += push; b.x -= push; }
+            const t = a.vx; a.vx = b.vx; b.vx = t;
+          } else {
+            const push = dy / 2;
+            if (a.y < b.y){ a.y -= push; b.y += push; }
+            else          { a.y += push; b.y -= push; }
+            const t = a.vy; a.vy = b.vy; b.vy = t;
+          }
+        }
+      }
+    }
+    for (const { el, it } of items){
+      el.style.left = it.x.toFixed(2) + '%';
+      el.style.top  = it.y.toFixed(2) + '%';
+    }
+    e.raf = requestAnimationFrame(() => stepCloud(key));
+  }
+
+  function openCloud(key, trigger){
+    const e = buildCloud(key);
+    if (!e) return;
+    e.el.hidden = false;
+    trigger?.setAttribute('aria-expanded', 'true');
+    requestAnimationFrame(() => {
+      const rect = e.el.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      const chips = [...e.physics.keys()];
+      const cols = Math.max(1, Math.ceil(Math.sqrt(chips.length)));
+      const rows = Math.max(1, Math.ceil(chips.length / cols));
+      const colDen = Math.max(1, cols - 1);
+      const rowDen = Math.max(1, rows - 1);
+      const order = chips.map((_,i)=>i);
+      for (let i = order.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+      chips.forEach((b, i) => {
+        const r = b.getBoundingClientRect();
+        const w = (r.width  / rect.width)  * 100;
+        const h = (r.height / rect.height) * 100;
+        const slot = order[i];
+        const hx = +(4 + (slot % cols)        / colDen * Math.max(1, 92 - w)).toFixed(2);
+        const hy = +(6 + Math.floor(slot/cols)/ rowDen * Math.max(1, 86 - h)).toFixed(2);
+        const it = e.physics.get(b);
+        it.x = hx; it.y = 110; it.w = w; it.h = h;
+        it.vx = randVel(); it.vy = randVel();
+        b.style.transition = '';
+        b.style.left = hx + '%';
+        b.style.top  = '110%';
+        b.style.opacity = '0';
+        // stagger the rise — coming from down upwards
+        // eslint-disable-next-line no-loop-func
+        setTimeout(() => {
+          b.style.transition = 'top 1s cubic-bezier(.2,.8,.2,1), opacity .7s ease-out';
+          b.style.top = hy + '%';
+          b.style.opacity = '1';
+          it.y = hy;
+        }, 30 + i * 55);
+      });
+      // hand off to physics once the last bubble has risen
+      const settleAt = 30 + chips.length * 55 + 1050;
+      setTimeout(() => {
+        if (e.el.hidden) return;
+        chips.forEach(b => { b.style.transition = ''; });
+        if (!e.raf && !matchMedia('(prefers-reduced-motion: reduce)').matches){
+          e.raf = requestAnimationFrame(() => stepCloud(key));
+        }
+      }, settleAt);
+    });
+  }
+
+  function closeCloud(key, trigger){
+    const e = cloudState.get(key);
+    const def = CLOUD_REGISTRY[key];
+    if (!def) return;
+    const el = document.querySelector(def.selector);
+    if (!el) return;
+    if (e && e.raf){ cancelAnimationFrame(e.raf); e.raf = 0; }
+    el.hidden = true;
+    trigger?.setAttribute('aria-expanded', 'false');
+  }
+
+  function toggleMagicCloud(key, trigger){
+    const def = CLOUD_REGISTRY[key];
+    if (!def) return;
+    const el = document.querySelector(def.selector);
+    if (!el) return;
+    if (el.hidden) openCloud(key, trigger);
+    else           closeCloud(key, trigger);
+  }
+  function closeAllMagicClouds(){
+    Object.keys(CLOUD_REGISTRY).forEach(k => {
+      const el = document.querySelector(CLOUD_REGISTRY[k].selector);
+      if (!el || el.hidden) return;
+      const trig = document.querySelector(`.magic-trigger[data-magic-cloud="${k}"]`);
+      closeCloud(k, trig);
+    });
+  }
+  $$('.magic-trigger').forEach(btn => {
+    btn.addEventListener('click', () => toggleMagicCloud(btn.dataset.magicCloud, btn));
+  });
 
   // ── boot · reload always returns to the welcome view (data is kept) ──
   state.view = 'welcome';
