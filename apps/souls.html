@@ -1451,7 +1451,19 @@
     transform: scale(1.12);
   }
   .magic-add[data-level="1"]{ background: rgba(245,180,99,.22) }
-  .magic-add[data-level="2"]{ background: rgba(237,138,166,.22); border-color: var(--rose); color: var(--rose) }
+  .magic-add[data-level="2"]{
+    /* max level reached — kept visible but visually quietened.
+       Clicks at this level fire the "no more icons" toast. */
+    background: rgba(255,255,255,.04);
+    border-color: var(--line);
+    color: var(--ink-dim);
+    opacity: .55;
+  }
+  .magic-add[data-level="2"]:hover{
+    background: rgba(255,255,255,.06);
+    color: var(--ink-soft);
+    transform: scale(1.02);
+  }
 
   @property --bubble-rot { syntax:'<angle>'; inherits:false; initial-value: 0deg }
 
@@ -1492,6 +1504,21 @@
     animation: bubbleSpin 8s linear infinite;
   }
   .magic-cloud .bubble .b-icon{ font-size:1.45rem; line-height:1 }
+  /* Filler bubbles (used to pad to >=10 at max level): cooler, dimmer
+     so the real "available" icons read as distinct. */
+  .magic-cloud .bubble.is-filler{
+    background:
+      linear-gradient(rgba(20,14,30,.55), rgba(20,14,30,.55)) padding-box,
+      conic-gradient(from var(--bubble-rot, 0deg),
+        rgba(120,140,170,.55), rgba(110,130,170,.55),
+        rgba(140,140,180,.55), rgba(120,140,170,.55)) border-box;
+    opacity: .55;
+    box-shadow:
+      0 0 6px rgba(120,140,170,.18),
+      inset 0 4px 7px rgba(255,255,255,.10),
+      inset 0 -3px 5px rgba(0,0,0,.18);
+  }
+  .magic-cloud .bubble.is-filler .b-icon{ opacity: .8 }
   @keyframes bubbleSpin{ to { --bubble-rot: 360deg } }
 
   /* Splash effect — bubbles pop outward then fade when category changes */
@@ -3584,11 +3611,11 @@
   // ── toast ──
   const toast = $('#toast');
   let toastT = null;
-  const flash = msg => {
+  const flash = (msg, ms) => {
     toast.textContent = msg;
     toast.classList.add('is-on');
     clearTimeout(toastT);
-    toastT = setTimeout(() => toast.classList.remove('is-on'), 1800);
+    toastT = setTimeout(() => toast.classList.remove('is-on'), ms || 1800);
   };
 
   // ── actions ──
@@ -4235,19 +4262,30 @@
     }
     return [];
   }
-  // 4 progressive levels (0 = initial, 1-3 = each + click)
+  // 3 progressive levels — amounts shown after each click
+  const CLOUD_LEVEL_AMOUNTS = [5, 15, 30];
+  const CLOUD_MAX_LEVEL = CLOUD_LEVEL_AMOUNTS.length - 1; // = 2
+  const CLOUD_MIN_PADDED = 10;
   function activeCloudItems(key){
     const full = fullCloudItems(key);
-    if (full.length <= 4) return full.slice();
-    const fractions = [0.32, 0.55, 0.78, 1.0];
-    const lvl = Math.max(0, Math.min(3, cloudExpandLevel[key] | 0));
-    const count = Math.max(3, Math.ceil(full.length * fractions[lvl]));
-    return full.slice(0, count);
+    const lvl = Math.max(0, Math.min(CLOUD_MAX_LEVEL, cloudExpandLevel[key] | 0));
+    const target = CLOUD_LEVEL_AMOUNTS[lvl];
+    const items = full.slice(0, Math.min(target, full.length));
+    // At max level, pad to ≥10 with desaturated "filler" bubbles when
+    // the category doesn't have enough icons of its own.
+    if (lvl === CLOUD_MAX_LEVEL && items.length < CLOUD_MIN_PADDED && full.length > 0){
+      const need = CLOUD_MIN_PADDED - items.length;
+      for (let i = 0; i < need; i++){
+        const src = full[i % full.length];
+        items.push({ ...src, id: `${src.id}__filler_${i}`, _filler: true });
+      }
+    }
+    return items;
   }
 
   function makeBubbleEl(it){
     const b = document.createElement('span');
-    b.className = 'bubble';
+    b.className = 'bubble' + (it._filler ? ' is-filler' : '');
     b.dataset.itemId = it.id;
     b.title = it.label; // hover keeps the name discoverable
     b.innerHTML = `<span class="b-icon" aria-hidden="true">${it.icon || '·'}</span>`;
@@ -4274,11 +4312,9 @@
     const btn = document.querySelector(`.magic-add[data-magic-add="${key}"]`);
     if (!btn) return;
     const lvl = cloudExpandLevel[key] | 0;
-    const full = fullCloudItems(key);
-    const active = activeCloudItems(key);
     btn.dataset.level = String(lvl);
-    // hide when nothing more to add
-    btn.hidden = (lvl >= 3) || (active.length >= full.length);
+    // Always visible while the cloud is open — dimmed at max via CSS
+    btn.hidden = false;
   }
   function hideAddBtn(key){
     const btn = document.querySelector(`.magic-add[data-magic-add="${key}"]`);
@@ -4424,7 +4460,11 @@
     const e = cloudState.get(key);
     if (!e) return;
     const cur = cloudExpandLevel[key] | 0;
-    if (cur >= 3){ syncAddBtn(key); return; }
+    if (cur >= CLOUD_MAX_LEVEL){
+      flash('No more icons available for now :)', 5000);
+      syncAddBtn(key);
+      return;
+    }
     cloudExpandLevel[key] = cur + 1;
 
     const have = new Set();
