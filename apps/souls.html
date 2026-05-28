@@ -309,6 +309,17 @@
   }
   .slide-dots button.is-on{ background:var(--app-accent); transform:scale(1.25); }
 
+  /* ── language switch (en default, es when #ui-lang-es is checked) ── */
+  .ui-lang-ctl{ position:absolute; opacity:0; pointer-events:none; width:0; height:0; }
+  .t-es{ display:none; }
+  body:has(#ui-lang-es:checked) .t-en{ display:none; }
+  body:has(#ui-lang-es:checked) .t-es{ display:inline; }
+  /* keep block displays correct for headings/paragraphs */
+  body:has(#ui-lang-es:checked) h1.t-es,
+  body:has(#ui-lang-es:checked) h2.t-es,
+  body:has(#ui-lang-es:checked) p.t-es,
+  body:has(#ui-lang-es:checked) div.t-es{ display:block; }
+
   /* customize panel (slide 3) */
   .customize-wrap{ margin-top:1rem; display:flex; flex-direction:column; align-items:flex-start; gap:.6rem; }
   .customize-btn[aria-expanded="true"]{
@@ -364,29 +375,52 @@
   }
   .cust-switch input{ position:absolute; opacity:0; width:0; height:0; }
   .cust-switch-track{
-    width:2.4rem; height:1.3rem;
+    /* 2× wider + 50% bigger than the original (was 2.4rem × 1.3rem) */
+    width:7.2rem; height:1.95rem;
     background:var(--field);
     border:1px solid var(--line);
     border-radius:999px;
     position:relative;
     transition: background .2s, border-color .2s;
+    display:flex; align-items:center;
   }
   .cust-switch-thumb{
-    position:absolute; top:50%; left:.18rem;
+    position:absolute; top:50%; left:.27rem;
     transform:translateY(-50%);
-    width:.95rem; height:.95rem;
+    width:1.42rem; height:1.42rem;
     border-radius:50%;
     background:var(--ink-soft);
-    transition: left .2s, background .2s;
+    transition: left .25s cubic-bezier(.2,.8,.2,1), background .25s;
+    z-index:2;
+  }
+  .cust-switch-text{
+    position:absolute; top:50%; transform:translateY(-50%);
+    font: 700 .68rem/1 'Inter', system-ui, sans-serif;
+    letter-spacing:.16em;
+    pointer-events:none;
+    z-index:1;
+    transition: opacity .2s;
+  }
+  .cust-switch-on{
+    left:.85rem;
+    color:var(--app-ink-on-accent);
+    opacity:0;
+  }
+  .cust-switch-off{
+    right:.85rem;
+    color:var(--ink-dim);
+    opacity:1;
   }
   .cust-switch input:checked + .cust-switch-track{
     background:linear-gradient(135deg, var(--app-accent), var(--rose));
     border-color:transparent;
   }
   .cust-switch input:checked + .cust-switch-track .cust-switch-thumb{
-    left: calc(100% - 1.13rem);
+    left: calc(100% - 1.69rem);
     background:#fff;
   }
+  .cust-switch input:checked + .cust-switch-track .cust-switch-on{ opacity:1; }
+  .cust-switch input:checked + .cust-switch-track .cust-switch-off{ opacity:0; }
   .cust-tell-bar{
     display:flex; flex-wrap:wrap; gap:.35rem;
   }
@@ -407,6 +441,113 @@
     border-color:transparent; font-weight:600;
   }
   .cust-actions{ display:flex; justify-content:flex-end; margin-top:.2rem; }
+
+  /* private-mode download button (revealed when Private is checked) */
+  .cust-download{
+    margin: -.2rem 0 .2rem 1.6rem;
+    animation: rise .25s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .cust-download[hidden]{ display:none }
+  .cust-download-btn{
+    display:inline-flex; align-items:center; gap:.4rem;
+    text-decoration:none;
+  }
+
+  /* language list (flovynormal-style) */
+  .cust-lang-list{
+    list-style:none; padding:0; margin:.2rem 0 0;
+    display:flex; flex-wrap:wrap; gap:.35rem;
+  }
+  .cust-lang-list li{ display:flex; }
+  .cust-lang-list label{
+    display:inline-flex; align-items:center; gap:.45rem;
+    padding:.4rem .8rem;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--ink-soft);
+    border-radius:999px;
+    font:inherit; font-size:.88rem;
+    cursor:pointer;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .cust-lang-list label:hover{ color:var(--ink); border-color:var(--app-accent-soft); }
+  .cust-lang-list .lang-flag{ font-size:1.05rem; line-height:1; }
+  body:has(#ui-lang-en:checked) .cust-lang-list label[for="ui-lang-en"],
+  body:has(#ui-lang-es:checked) .cust-lang-list label[for="ui-lang-es"]{
+    background:linear-gradient(135deg, var(--app-accent), var(--rose));
+    color:var(--app-ink-on-accent);
+    border-color:transparent;
+    font-weight:600;
+  }
+  .cust-lang-more label{
+    color:var(--ink-dim);
+    border-style:dashed;
+  }
+
+  /* new-language modal */
+  .newlanguage-modal{
+    position:fixed; inset:0; z-index:200;
+    display:none; align-items:center; justify-content:center;
+    padding:1rem;
+  }
+  body:has(#new-language-modal:checked) .newlanguage-modal{ display:flex; }
+  .newlanguage-backdrop{
+    position:absolute; inset:0;
+    background:rgba(8,5,20,.78);
+    backdrop-filter: blur(4px);
+    cursor:pointer;
+  }
+  .newlanguage-frame{
+    position:relative;
+    background:linear-gradient(180deg, #1a1024, #0d0a18);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:1.3rem 1.4rem 1.2rem;
+    max-width: 480px; width:100%;
+    color:var(--ink);
+    box-shadow: 0 12px 40px rgba(0,0,0,.5);
+    animation: rise .3s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .newlanguage-close{
+    position:absolute; top:.6rem; right:.7rem;
+    width:1.9rem; height:1.9rem;
+    display:grid; place-items:center;
+    cursor:pointer;
+    color:var(--ink-dim); font-size:1.2rem;
+    border-radius:999px;
+    transition: color .15s, background .15s;
+  }
+  .newlanguage-close:hover{ color:var(--ink); background:rgba(255,255,255,.06); }
+  .newlanguage-h{
+    margin: 0 0 .4rem;
+    font-family:'Cormorant Garamond', Georgia, serif;
+    font-weight:600; font-size:1.4rem;
+    color:var(--app-accent);
+  }
+  .newlanguage-sub{
+    margin: 0 0 1rem;
+    color:var(--ink-soft); font-size:.95rem;
+  }
+  .newlanguage-list{
+    list-style:none; padding:0; margin:0;
+    display:grid; gap:.4rem;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+  .newlanguage-list button{
+    appearance:none; cursor:pointer;
+    background:var(--panel);
+    border:1px solid var(--line);
+    color:var(--ink);
+    padding:.6rem .8rem;
+    border-radius:12px;
+    font:inherit; font-size:.92rem;
+    text-align:left;
+    transition: background .15s, border-color .15s;
+  }
+  .newlanguage-list button:hover{
+    background:var(--panel-strong);
+    border-color:var(--app-accent-soft);
+  }
 
   /* species tree (chips) */
   .species-tree{ margin-top:1rem; display:grid; gap:.5rem; }
@@ -1648,8 +1789,32 @@
 </head>
 <body data-night="0">
 
+<!-- language switch (visually hidden radios; .t-en/.t-es spans toggle via :has) -->
+<input type="radio" name="uiLang" id="ui-lang-en" class="ui-lang-ctl" checked>
+<input type="radio" name="uiLang" id="ui-lang-es" class="ui-lang-ctl">
+<!-- add-language modal trigger -->
+<input type="checkbox" id="new-language-modal" class="ui-lang-ctl">
+
 <div class="real-stars" id="realStars" aria-hidden="true"></div>
 <div class="aurora" id="aurora" aria-hidden="true"></div>
+
+<!-- new-language modal (placeholder, opens from the + in the customize panel) -->
+<div class="newlanguage-modal" role="dialog" aria-modal="true" aria-label="Add a language">
+  <label class="newlanguage-backdrop" for="new-language-modal" aria-label="Close"></label>
+  <div class="newlanguage-frame">
+    <label class="newlanguage-close" for="new-language-modal" title="Close" aria-label="Close" tabindex="0">×</label>
+    <h2 class="newlanguage-h"><span class="t-en">Translate Souls into another language</span><span class="t-es">Traducir Souls a otro idioma</span></h2>
+    <p class="newlanguage-sub"><span class="t-en">Help bring Souls to a new language. Pick one to start translating.</span><span class="t-es">Ayuda a llevar Souls a un nuevo idioma. Elige uno para empezar a traducir.</span></p>
+    <ul class="newlanguage-list">
+      <li><button type="button" data-lang="fr">🇫🇷 Français</button></li>
+      <li><button type="button" data-lang="pt">🇵🇹 Português</button></li>
+      <li><button type="button" data-lang="ca">🏴 Català</button></li>
+      <li><button type="button" data-lang="de">🇩🇪 Deutsch</button></li>
+      <li><button type="button" data-lang="it">🇮🇹 Italiano</button></li>
+      <li><button type="button" data-lang="other">…</button></li>
+    </ul>
+  </div>
+</div>
 
 <nav class="flove-bar">
   <button class="flove-mark-btn" id="floveMarkBtn" type="button" aria-label="Back to flove">
@@ -1682,50 +1847,64 @@
     <div class="slides" id="slides">
       <article class="slide is-on" data-slide="0">
         <div class="slide-icon">✺</div>
-        <h2 id="welcomeTitle">Many special things only happens once</h2>
+        <h2 id="welcomeTitle"><span class="t-en">Many special things only happens once</span><span class="t-es">Muchas cosas especiales sólo ocurren una vez</span></h2>
       </article>
       <article class="slide" data-slide="1">
         <div class="slide-icon">✦</div>
-        <h2>Here we invite you to play with Souls<br>in a very special way</h2>
-        <p>Prepare yourself well</p>
-        <p>Get into a comfy environtment</p>
+        <h2><span class="t-en">Here we invite you to play with Souls<br>in a very special way</span><span class="t-es">Aquí te invitamos a jugar a Souls<br>de una manera muy especial</span></h2>
+        <p><span class="t-en">Prepare yourself well</span><span class="t-es">Prepárate bien</span></p>
+        <p><span class="t-en">Get into a comfy environtment</span><span class="t-es">Ponte en un entorno cómodo</span></p>
       </article>
       <article class="slide" data-slide="2">
         <div class="slide-icon">❉</div>
-        <h2>An extreme intimacy</h2>
-        <p>and a high potential worth for you and others</p>
-        <p>We provide and recommend</p>
+        <h2><span class="t-en">An extreme intimacy</span><span class="t-es">Una intimidad extrema</span></h2>
+        <p><span class="t-en">and a high potential worth for you and others</span><span class="t-es">y un alto valor potencial para ti y para otros</span></p>
+        <p><span class="t-en">We provide and recommend</span><span class="t-es">Ofrecemos y recomendamos</span></p>
         <div class="customize-wrap">
-          <button class="btn ghost customize-btn" type="button" id="customizeBtn" aria-expanded="false" aria-controls="customizePanel">⚙ Customize</button>
+          <button class="btn ghost customize-btn" type="button" id="customizeBtn" aria-expanded="false" aria-controls="customizePanel"><span class="t-en">⚙ Customize</span><span class="t-es">⚙ Personalizar</span></button>
           <div class="customize-panel" id="customizePanel" hidden>
             <div class="cust-group">
               <label class="cust-radio">
                 <input type="radio" name="custMode" value="private">
-                <span class="cust-radio-label"><b>Private</b> · Play Souls completely privately in your device and upload results later</span>
+                <span class="cust-radio-label"><b><span class="t-en">Private</span><span class="t-es">Privado</span></b> · <span class="t-en">Play Souls completely privately in your device and upload results later</span><span class="t-es">Juega a Souls de forma totalmente privada en tu dispositivo y sube los resultados después</span></span>
               </label>
+              <div class="cust-download" id="custDownload" hidden>
+                <a class="btn primary cust-download-btn" id="custDownloadBtn" href="souls.html" download="souls.html">
+                  <span class="t-en">↓ Download Souls app</span><span class="t-es">↓ Descargar la app Souls</span>
+                </a>
+              </div>
               <label class="cust-radio">
                 <input type="radio" name="custMode" value="open" checked>
-                <span class="cust-radio-label"><b>Open</b> · Play it directly here and publish it in more private or public ways at the end. <em>(Default)</em></span>
+                <span class="cust-radio-label"><b><span class="t-en">Open</span><span class="t-es">Abierto</span></b> · <span class="t-en">Play it directly here and publish it in more private or public ways at the end.</span><span class="t-es">Juega directamente aquí y publícalo de formas más privadas o públicas al final.</span> <em>(<span class="t-en">Default</span><span class="t-es">Por defecto</span>)</em></span>
               </label>
             </div>
             <div class="cust-group cust-row">
-              <span class="cust-label">Listen</span>
-              <label class="cust-switch">
+              <span class="cust-label"><span class="t-en">Listen</span><span class="t-es">Escuchar</span></span>
+              <label class="cust-switch" aria-label="Listen toggle">
                 <input type="checkbox" id="custListen">
-                <span class="cust-switch-track"><span class="cust-switch-thumb"></span></span>
+                <span class="cust-switch-track">
+                  <span class="cust-switch-text cust-switch-on"><span class="t-en">ON</span><span class="t-es">SÍ</span></span>
+                  <span class="cust-switch-text cust-switch-off"><span class="t-en">OFF</span><span class="t-es">NO</span></span>
+                  <span class="cust-switch-thumb"></span>
+                </span>
               </label>
             </div>
             <div class="cust-group">
-              <div class="cust-label">Tell</div>
+              <div class="cust-label"><span class="t-en">Tell</span><span class="t-es">Contar</span></div>
               <div class="cust-tell-bar" id="custTellBar" role="radiogroup" aria-label="Tell mode">
-                <button type="button" class="cust-tell-opt is-on" data-tell="text" role="radio" aria-checked="true">Text</button>
-                <button type="button" class="cust-tell-opt" data-tell="audio" role="radio" aria-checked="false">Audio</button>
-                <button type="button" class="cust-tell-opt" data-tell="video" role="radio" aria-checked="false">Video</button>
-                <button type="button" class="cust-tell-opt" data-tell="perform" role="radio" aria-checked="false">Perform</button>
+                <button type="button" class="cust-tell-opt is-on" data-tell="text" role="radio" aria-checked="true"><span class="t-en">Text</span><span class="t-es">Texto</span></button>
+                <button type="button" class="cust-tell-opt" data-tell="audio" role="radio" aria-checked="false"><span class="t-en">Audio</span><span class="t-es">Audio</span></button>
+                <button type="button" class="cust-tell-opt" data-tell="video" role="radio" aria-checked="false"><span class="t-en">Video</span><span class="t-es">Vídeo</span></button>
+                <button type="button" class="cust-tell-opt" data-tell="perform" role="radio" aria-checked="false"><span class="t-en">Perform</span><span class="t-es">Actuar</span></button>
               </div>
             </div>
-            <div class="cust-actions">
-              <button class="btn primary" type="button" id="customizeReadyBtn">I'm ready →</button>
+            <div class="cust-group">
+              <div class="cust-label"><span class="t-en">Language</span><span class="t-es">Idioma</span></div>
+              <ul class="cust-lang-list" role="menu" aria-label="Language">
+                <li><label for="ui-lang-en" tabindex="0"><span class="lang-flag">🇬🇧</span><span class="t-en">English</span><span class="t-es">Inglés</span></label></li>
+                <li><label for="ui-lang-es" tabindex="0"><span class="lang-flag">🇪🇸</span><span class="t-en">Spanish</span><span class="t-es">Español</span></label></li>
+                <li class="cust-lang-more"><label for="new-language-modal" id="custLangPlus" tabindex="0" title="Add a language" aria-label="Add a language"><span class="lang-flag">＋</span><span class="t-en">Add a language</span><span class="t-es">Añadir un idioma</span></label></li>
+              </ul>
             </div>
           </div>
         </div>
@@ -1737,8 +1916,8 @@
       <button type="button" aria-label="Slide 3" data-go-slide="2"></button>
     </div>
     <div class="nav">
-      <button class="btn ghost" type="button" id="slidePrev" disabled>← Back</button>
-      <button class="btn primary" type="button" id="slideNext">Next →</button>
+      <button class="btn ghost" type="button" id="slidePrev" disabled><span class="t-en">← Back</span><span class="t-es">← Atrás</span></button>
+      <button class="btn primary" type="button" id="slideNext"><span class="t-en">Next →</span><span class="t-es">Siguiente →</span></button>
     </div>
   </section>
 
@@ -2385,7 +2564,7 @@
     // meta
     seenWelcome:false,
     // customize panel (slide 3)
-    custMode:'open', custListen:false, custTell:'text',
+    custMode:'open', custListen:false, custTell:'text', uiLang:'en',
     fromReveal:'s1-reveal',
     preSaveView:'',
     stars: { 1:false, 2:false, 3:false, 4:false, 5:false },
@@ -3159,9 +3338,9 @@
       stageLabelEl.innerHTML = `Stage <b>${curStage}</b> of 5`;
     }
 
-    // stage-level bar: 5 dots, click jumps to start of stage
+    // stage-level bar: 3 dots (stages 4 and 5 hidden from the intro progress)
     progressEl.innerHTML = '';
-    [1,2,3,4,5].forEach(sNum => {
+    [1,2,3].forEach(sNum => {
       const startView = STAGE_STARTS[sNum];
       const li = document.createElement('li');
       li.dataset.view  = startView;
@@ -3321,7 +3500,10 @@
     slidesEl.querySelectorAll('.slide').forEach(s => s.classList.toggle('is-on', +s.dataset.slide === state.slide));
     slideDotsEl.querySelectorAll('button').forEach((b, j) => b.classList.toggle('is-on', j === state.slide));
     slidePrev.disabled = state.slide === 0;
-    slideNext.textContent = state.slide === slideCount - 1 ? "I'm ready →" : 'Next →';
+    const last = state.slide === slideCount - 1;
+    slideNext.innerHTML = last
+      ? '<span class="t-en">I&rsquo;m ready &rarr;</span><span class="t-es">Listo &rarr;</span>'
+      : '<span class="t-en">Next &rarr;</span><span class="t-es">Siguiente &rarr;</span>';
   };
   slidePrev.addEventListener('click', () => setSlide(state.slide - 1));
   slideNext.addEventListener('click', () => {
@@ -3337,23 +3519,48 @@
   (function wireCustomize(){
     const btn   = $('#customizeBtn');
     const panel = $('#customizePanel');
-    const ready = $('#customizeReadyBtn');
     if (!btn || !panel) return;
     btn.addEventListener('click', () => {
       const open = panel.hidden;
       panel.hidden = !open;
       btn.setAttribute('aria-expanded', String(open));
     });
-    // mode radios → state.custMode
+    // mode radios → state.custMode; Private reveals the download button
+    const dl = $('#custDownload');
+    const refreshDl = () => {
+      if (dl) dl.hidden = state.custMode !== 'private';
+    };
     document.querySelectorAll('input[name="custMode"]').forEach(r => {
       r.addEventListener('change', () => {
-        if (r.checked) { state.custMode = r.value; persist(); }
+        if (r.checked) { state.custMode = r.value; persist(); refreshDl(); }
       });
     });
-    // listen switch → state.custListen
+    refreshDl();
+    // tiny chime when Listen flips ON — WebAudio, gated by a user gesture
+    let audioCtx = null;
+    const playListenOnChime = () => {
+      try{
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        const t = audioCtx.currentTime;
+        // two-note rising chime: 660 Hz → 990 Hz, soft triangle
+        [{f:660, t0:0,   dur:.18}, {f:990, t0:.10, dur:.22}].forEach(({f, t0, dur}) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, t + t0);
+          gain.gain.setValueAtTime(0, t + t0);
+          gain.gain.linearRampToValueAtTime(0.16, t + t0 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t + t0 + dur);
+          osc.connect(gain).connect(audioCtx.destination);
+          osc.start(t + t0); osc.stop(t + t0 + dur + 0.05);
+        });
+      } catch(_){}
+    };
+    // listen switch → state.custListen + chime on turn-on
     const listen = $('#custListen');
     if (listen) listen.addEventListener('change', () => {
       state.custListen = !!listen.checked; persist();
+      if (listen.checked) playListenOnChime();
     });
     // tell bar → state.custTell
     document.querySelectorAll('.cust-tell-opt').forEach(opt => {
@@ -3365,9 +3572,11 @@
         state.custTell = opt.dataset.tell; persist();
       });
     });
-    if (ready) ready.addEventListener('click', () => {
-      state.seenWelcome = true; persist();
-      goTo('s1-animal');
+    // language radios → state.uiLang
+    document.querySelectorAll('input[name="uiLang"]').forEach(r => {
+      r.addEventListener('change', () => {
+        if (r.checked) { state.uiLang = r.id === 'ui-lang-es' ? 'es' : 'en'; persist(); }
+      });
     });
   })();
 
