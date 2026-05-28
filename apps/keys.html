@@ -594,6 +594,32 @@
   .triad-pair .ad-deck li{
     padding:.35rem 2px;
   }
+  /* 25% bigger word labels across summary triad / pentad / extras decks —
+     except for "Ecological" and "Manufacture" (the two longest words, kept
+     at the original size so they keep fitting their slot). */
+  .summary-triads .deck-done.in-summary li,
+  .summary-pentads .deck-done.in-summary li,
+  .triad-pair .ad-deck li{
+    font-size:1.025rem;
+  }
+  .summary-triads .deck-done.in-summary li:nth-child(1),
+  .summary-pentads .deck-done.in-summary li:nth-child(1),
+  .triad-pair .ad-deck li:nth-child(1){
+    font-size:1.15rem;
+  }
+  .summary-triads .deck-done.in-summary li:nth-child(3),
+  .summary-pentads .deck-done.in-summary li:nth-child(3),
+  .triad-pair .ad-deck li:nth-child(3){
+    font-size:1.025rem;
+  }
+  /* Keep these two longest words at the original size — they would overflow
+     their slot if scaled up. */
+  .summary-triads .deck-done.in-summary li[data-word="Ecological"],
+  .triad-pair .ad-deck li[data-word="Ecological"],
+  .summary-triads .deck-done.in-summary li[data-word="Manufacture"],
+  .triad-pair .ad-deck li[data-word="Manufacture"]{
+    font-size:.82rem !important;
+  }
   /* On narrow viewports allow the triads row to wrap so it still fits */
   @media (max-width:520px){
     .summary-triads{flex-wrap:wrap;gap:6px}
@@ -657,6 +683,57 @@
   .triad-pair > .deck-done{
     flex:1 1 0;min-width:0;width:auto;
     padding:6px 3px;
+  }
+  /* When the extras are revealed, the standalone Service triad (no pair)
+     stretches to match the width AND height of a triad-pair so the grid
+     reads as a uniform block of "groups" — none narrower than the rest. */
+  .summary-triads.with-extras > .deck-done.in-summary{
+    width:calc(var(--triad-block-w) * 2 + 10px);
+    min-height:200px;
+  }
+
+  /* Play-more button — surfaced after the last "More" click. Sits as a
+     small floating chip on the divider line between the groups display and
+     the time stats, horizontally centered. */
+  .play-more-wrap{
+    position:relative;display:flex;justify-content:center;
+    margin:1.4rem 0 .4rem;
+    border-top:1px dashed var(--stroke);
+    padding-top:0;height:0;
+  }
+  .play-more-wrap[hidden]{display:none}
+  .play-more-btn{
+    transform:translateY(-50%);
+    background:linear-gradient(135deg,var(--sky),var(--accent));
+    color:#1a1a28;border:0;
+    box-shadow:0 8px 22px rgba(168,228,255,.25), 0 0 0 1px rgba(255,255,255,.18) inset;
+    font-weight:700;letter-spacing:.4px;
+  }
+  .play-more-btn:hover{transform:translateY(-50%) translateY(-1px);box-shadow:0 12px 28px rgba(168,228,255,.32)}
+  /* Free-play state: strip medal palette from every summary deck so the user
+     can freely re-rank cards without the gold/silver/bronze visual loading. */
+  .summary.free-play .deck-done li,
+  .summary.free-play .ad-deck li{
+    background:linear-gradient(170deg,#3c3c54 0%,#2f2f44 100%) !important;
+    border:1px solid #50506a !important;
+    box-shadow:0 2px 5px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.05) !important;
+    color:var(--ink) !important;
+    font-weight:600 !important;
+    text-shadow:none !important;
+    opacity:1 !important;
+  }
+  /* In free-play, summary deck items become tappable (re-orderable) — switch
+     the cursor + invite a subtle lift on hover. */
+  .summary.free-play .deck-done.in-summary li{
+    cursor:grab;
+    transition:transform .15s ease, border-color .15s ease;
+  }
+  .summary.free-play .deck-done.in-summary li:hover{
+    transform:translateY(-1px);
+    border-color:var(--sky) !important;
+  }
+  .summary.free-play .deck-done.in-summary li.fp-selected{
+    outline:2px solid var(--accent);outline-offset:1px;
   }
 
   /* Simplex CTA — invitation below the pentads results, horizontally centered */
@@ -813,6 +890,39 @@
     padding:8px 7px;display:flex;flex-direction:column;gap:5px;
     min-height:200px;
   }
+  /* Closed (stacked) variant: rendered as a face-down deck with the group
+     title written across its center. Tap / Enter reveals the open list. */
+  .ad-deck-closed{
+    position:relative;cursor:pointer;
+    padding:0;background:transparent;border:0;
+    transition:transform .18s ease;
+  }
+  .ad-deck-closed:hover{transform:translateY(-3px)}
+  .ad-deck-closed:focus-visible{outline:2px solid var(--sky);outline-offset:4px;border-radius:14px}
+  .ad-deck-closed .ad-back{
+    position:absolute;left:50%;top:50%;
+    width:calc(100% - 14px);height:calc(100% - 22px);
+    border-radius:14px;
+    background:
+      repeating-linear-gradient(45deg,
+        rgba(255,255,255,.06) 0 6px, transparent 6px 12px),
+      linear-gradient(160deg,#4a3a6e 0%,#3a2a52 55%,#46285c 100%);
+    border:1px solid #5a4a7a;
+    box-shadow:0 10px 24px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.06);
+  }
+  .ad-deck-closed .ad-back-1{transform:translate(-50%,-50%) rotate(-2deg) translateY(4px)}
+  .ad-deck-closed .ad-back-2{transform:translate(-50%,-50%) rotate(1deg) translateY(2px)}
+  .ad-deck-closed .ad-back-3{transform:translate(-50%,-50%) rotate(-.5deg)}
+  .ad-deck-closed .ad-closed-title{
+    position:absolute;inset:0;display:grid;place-items:center;
+    text-align:center;padding:.6rem;
+    font:700 1rem/1.1 ui-serif,Georgia,serif;letter-spacing:.5px;
+    color:transparent;
+    background:linear-gradient(135deg,var(--gold),var(--accent) 60%,var(--sky));
+    -webkit-background-clip:text;background-clip:text;
+    text-shadow:0 4px 12px rgba(0,0,0,.4);
+    text-transform:uppercase;
+  }
   .ad-title{
     font:600 .72rem/1 ui-serif,Georgia,serif;
     color:var(--gold);letter-spacing:.4px;
@@ -833,7 +943,7 @@
   .ad-deck li:nth-child(2){z-index:9}
   .ad-deck li:nth-child(3){z-index:8}
   .ad-deck li .nm{flex:1;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .ad-deck li .ad-arrows{display:flex;gap:3px}
+  .ad-deck li .ad-arrows{display:flex;gap:3px;align-items:center}
   .ad-deck li .ad-arrows button{
     width:1.5rem;height:1.5rem;border-radius:6px;
     background:#3a3a52;border:1px solid #5a5a76;color:var(--ink);
@@ -842,6 +952,28 @@
   }
   .ad-deck li .ad-arrows button:hover{color:var(--accent);border-color:var(--accent)}
   .ad-deck li .ad-arrows button:disabled{opacity:.3;cursor:not-allowed}
+  /* Companion ("alt") arrow rendered next to the actual one in the Time and
+     Sectors extras (paired with Journalism / Economy). Different colour,
+     slightly larger / glowier, but non-interactive — purely decorative. */
+  .ad-deck li .ad-arrows .alt-arrow{
+    display:inline-grid;place-items:center;
+    width:1.6rem;height:1.6rem;border-radius:6px;
+    background:linear-gradient(135deg,rgba(168,228,255,.25),rgba(255,95,220,.18));
+    border:1px solid var(--sky);color:var(--sky);
+    font:800 .95rem/1 system-ui,sans-serif;
+    box-shadow:0 0 10px rgba(168,228,255,.4), inset 0 0 6px rgba(168,228,255,.25);
+    text-shadow:0 0 6px rgba(168,228,255,.6);
+    pointer-events:none;
+  }
+  /* The "actual" arrow alongside the alt one in those highlighted pairs gets
+     a slightly different accent so the two read as a related-but-distinct
+     pair (different colour, both highlighted a bit more). */
+  .ad-deck li .ad-arrows .alt-arrow + button{
+    border-color:var(--gold);color:var(--gold);
+    background:linear-gradient(135deg,rgba(250,220,146,.18),rgba(255,95,220,.1));
+    box-shadow:0 0 8px rgba(250,220,146,.35);
+    text-shadow:0 0 4px rgba(250,220,146,.5);
+  }
   /* Gender markers sit pinned to the LEFT edge of each card (absolute) so the
      word can keep centering normally in the remaining space. 50% larger than
      the previous inline version. */
@@ -1140,9 +1272,6 @@
     transition:border-color .15s ease, background .15s ease;
   }
   .pool.drag-over{border-color:var(--accent);background:rgba(255,95,220,.14)}
-  .pool:empty::after{
-    content:"all placed";color:var(--muted);font-size:.85rem;align-self:center;padding:8px;
-  }
   @media (max-width:520px){.pool{gap:5px;padding:8px}.minicard{padding:.32rem .5rem;font-size:.74rem}}
 
   /* 5 group containers — sized to fit the longest word "Ecological" with 5px padding */
@@ -1591,11 +1720,15 @@
         <span>abstract</span><span class="arrow"></span><span>concrete</span>
       </div>
       <div class="axis-row" id="prelude-axis" aria-label="Order the groups from abstract to concrete"></div>
-      <div class="prelude-status" id="prelude-status">drag them or use ← → to order from most abstract (left) to most concrete (right)</div>
+      <div class="prelude-status" id="prelude-status"></div>
+      <div class="stars-block empty" id="prelude-stars-b" aria-live="polite">
+        <div class="count"><span class="label">Correct:</span> <span class="num" id="prelude-stars-b-num">0</span> / 5</div>
+        <div class="icons" id="prelude-stars-b-icons"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
+      </div>
       <div class="prelude-actions">
+        <button class="btn btn-ghost btn-back" id="prelude-back-b" type="button">← Back</button>
         <button class="btn btn-primary" id="prelude-check-order" type="button">Check order</button>
-        <button class="btn btn-soft" id="prelude-continue" type="button">Continue to stage 1 →</button>
-        <button class="btn btn-ghost" id="prelude-skip-b" type="button">Skip step 0 →</button>
+        <button class="btn btn-primary" id="prelude-continue" type="button" hidden>Continue to stage 1 →</button>
       </div>
     </div>
   </section>
@@ -1653,10 +1786,14 @@
       <a class="btn btn-soft" href="simplex.html">Open simplex →</a>
     </div>
 
+    <div class="play-more-wrap" id="play-more-wrap" hidden>
+      <button class="btn btn-soft play-more-btn" id="btn-play-more" type="button">Play more</button>
+    </div>
+
     <div class="time-stats" id="time-stats" hidden></div>
 
     <div class="summary-bottom-actions">
-      <button class="btn btn-soft" id="btn-see-more" type="button">See more</button>
+      <button class="btn btn-soft" id="btn-see-more" type="button" hidden>See more</button>
     </div>
 
     <p class="see-more-help" id="see-more-help" hidden>
@@ -1754,6 +1891,7 @@
     preludeStars: null,          // null until first Check; else 0..5
     preludeAxisOrder: [0,1,2,3,4], // current order of the 5 group-indices in axis row
     preludeAxisChecked: null,    // null, 'ok', or 'wrong'
+    preludeAxisStars: null,      // null until first Check; else 0..5 — count of correct positions in phase B
     preludeGroupToDeck: [null,null,null,null,null], // groupIdx → deckIdx after Phase A
     preludeDrag: null,           // {kind:'mini'|'gcard', from, name|groupIdx}
     // ----- Counters & timer -----
@@ -1878,9 +2016,19 @@
     }
   }
   function stopTimer(){
-    if (state.t0 && !state.tEnd){
+    if (state.t0){
+      // Always refresh tEnd so a 2nd "See results" (e.g. after the embedded
+      // pentads flow) shows the cumulative time, not just the time at the
+      // first summary entry.
       state.tEnd = Date.now();
       if (_liveTimerHandle){ clearInterval(_liveTimerHandle); _liveTimerHandle = null; }
+      paintLiveTimer();
+    }
+  }
+  function resumeTimer(){
+    if (state.t0 && state.tEnd){
+      state.tEnd = null;
+      if (!_liveTimerHandle) _liveTimerHandle = setInterval(paintLiveTimer, 1000);
       paintLiveTimer();
     }
   }
@@ -2023,6 +2171,23 @@
       s.classList.toggle('current', i === cur);
     });
     $progress.setAttribute('aria-valuenow', String(cur + 1));
+    // "See more" only appears once every segment of the stage-progress bar is
+    // filled (i.e. the user has clicked through every Analyze "More" step).
+    const $smBtn = document.getElementById('btn-see-more');
+    if ($smBtn){
+      const allDone = isSummary && cur >= 5;
+      if (allDone){
+        $smBtn.hidden = false;
+      } else {
+        $smBtn.hidden = true;
+        const $rel = document.getElementById('related-apps');
+        const $help = document.getElementById('see-more-help');
+        if ($rel) $rel.hidden = true;
+        if ($help) $help.hidden = true;
+        $smBtn.textContent = 'See more';
+      }
+    }
+    if (typeof renderPlayMoreBtn === 'function') renderPlayMoreBtn();
   }
 
   function renderBoard(){
@@ -2114,6 +2279,7 @@
     order.forEach((itemIdx) => {
       const li = document.createElement('li');
       const word = deck.items[itemIdx];
+      li.dataset.word = word;
       if (linkifyTriad){
         const slug = encodeURIComponent(word.toLowerCase());
         li.innerHTML = `<a class="nm" href="https://flove.org/${slug}" target="_blank" rel="noopener" title="open ${escapeHTML(word)} on flove.org">${escapeHTML(word)}</a>`;
@@ -2422,6 +2588,15 @@
       if (el) el.hidden = true;
     });
     _timeStatsOn = false;
+    // Re-close every extras "tap to reveal" deck on summary re-entry.
+    if (typeof extraOpen !== 'undefined'){
+      Object.keys(extraOpen).forEach(k => { extraOpen[k] = false; });
+    }
+    // Tear down free-play state on summary re-entry.
+    _playMoreOn = false;
+    _fpSelected = null;
+    $summary.classList.remove('free-play');
+    renderPlayMoreBtn();
     removeFinishIcons();
     const $arrowsOverlay = document.getElementById('analyze-arrows');
     if ($arrowsOverlay) $arrowsOverlay.classList.remove('is-on');
@@ -2840,6 +3015,7 @@
     state.preludePhase = 'A';
     state.preludeAxisOrder = shuffle([0,1,2,3,4]);
     state.preludeAxisChecked = null;
+    state.preludeAxisStars = null;
   }
 
   // Unified UI mode: 'intro' | 'chooser' | 'prelude' | 'main'
@@ -2863,7 +3039,21 @@
     renderGroups();
     renderStars();
     updateCheckBtn();
-    if (state.preludePhase === 'B') renderAxis();
+    if (state.preludePhase === 'B'){
+      renderAxis();
+      renderStarsB();
+      const $cont = document.getElementById('prelude-continue');
+      const $chk  = document.getElementById('prelude-check-order');
+      const $sts  = document.getElementById('prelude-status');
+      if (state.preludeAxisChecked !== 'ok'){
+        if ($cont) $cont.hidden = true;
+        if ($chk)  $chk.hidden  = false;
+        if ($sts){ $sts.textContent = ''; $sts.className = 'prelude-status'; }
+      } else {
+        if ($cont) $cont.hidden = false;
+        if ($chk)  $chk.hidden  = true;
+      }
+    }
   }
 
   function renderPool(){
@@ -3088,10 +3278,16 @@
         const [moved] = arr.splice(src.from, 1);
         arr.splice(pos, 0, moved);
         state.preludeAxisChecked = null;
+        state.preludeAxisStars = null;
         renderAxis();
+        renderStarsB();
         const $status = document.getElementById('prelude-status');
-        $status.textContent = 'order changed · check again';
+        $status.textContent = '';
         $status.className = 'prelude-status';
+        const $cont = document.getElementById('prelude-continue');
+        const $chk  = document.getElementById('prelude-check-order');
+        if ($cont) $cont.hidden = true;
+        if ($chk)  $chk.hidden  = false;
       };
       $axis.appendChild(card);
     });
@@ -3103,10 +3299,34 @@
     const arr = state.preludeAxisOrder;
     [arr[pos], arr[to]] = [arr[to], arr[pos]];
     state.preludeAxisChecked = null;
+    state.preludeAxisStars = null;
     renderAxis();
+    renderStarsB();
     const $status = document.getElementById('prelude-status');
-    $status.textContent = 'order changed · check again';
+    $status.textContent = '';
     $status.className = 'prelude-status';
+    const $cont = document.getElementById('prelude-continue');
+    const $chk  = document.getElementById('prelude-check-order');
+    if ($cont) $cont.hidden = true;
+    if ($chk)  $chk.hidden  = false;
+  }
+
+  function renderStarsB(){
+    const $block = document.getElementById('prelude-stars-b');
+    const $icons = document.getElementById('prelude-stars-b-icons');
+    const $num   = document.getElementById('prelude-stars-b-num');
+    if (!$block) return;
+    if (state.preludeAxisStars == null){
+      $block.classList.add('empty');
+      return;
+    }
+    $block.classList.remove('empty');
+    if ($num) $num.textContent = String(state.preludeAxisStars);
+    // Light up N stars from the left — does NOT indicate which positions were
+    // correct, just the count of matches.
+    Array.from($icons.children).forEach((sp, i) => {
+      sp.classList.toggle('lit', i < state.preludeAxisStars);
+    });
   }
 
   function comprobarB(){
@@ -3116,22 +3336,24 @@
     const ok = current.every((d, i) => d === expected[i]);
     const $status = document.getElementById('prelude-status');
     const $cont   = document.getElementById('prelude-continue');
+    const $check  = document.getElementById('prelude-check-order');
     if (ok){
       state.preludeAxisChecked = 'ok';
-      $status.textContent = 'exact! abstract → concrete. you can continue now.';
+      state.preludeAxisStars = 5;
+      $status.textContent = "Well done, you've done it!";
       $status.className = 'prelude-status ok';
-      // Full-colour primary CTA only when the abstract→concrete order is correct.
-      $cont.classList.remove('btn-soft');
-      $cont.classList.add('btn-primary');
+      if ($cont)  $cont.hidden  = false;
+      if ($check) $check.hidden = true;
     } else {
       state.preludeAxisChecked = 'wrong';
       const hits = current.filter((d, i) => d === expected[i]).length;
-      $status.textContent = `almost · ${hits}/5 in place · keep moving`;
-      $status.className = 'prelude-status almost';
-      // Muted state while the answer isn't right yet — still clickable to skip.
-      $cont.classList.remove('btn-primary');
-      $cont.classList.add('btn-soft');
+      state.preludeAxisStars = hits;
+      $status.textContent = '';
+      $status.className = 'prelude-status';
+      if ($cont)  $cont.hidden  = true;
+      if ($check) $check.hidden = false;
     }
+    renderStarsB();
     renderAxis();
   }
 
@@ -3147,12 +3369,23 @@
   // Wire prelude buttons (once)
   document.getElementById('prelude-check').addEventListener('click', () => comprobarA());
   document.getElementById('prelude-skip').addEventListener('click', () => finishPrelude());
-  document.getElementById('prelude-skip-b').addEventListener('click', () => finishPrelude());
   document.getElementById('prelude-check-order').addEventListener('click', () => comprobarB());
   document.getElementById('prelude-continue').addEventListener('click', () => finishPrelude());
   // Back button (phase A): step 0 has no prior step, so back returns to chooser.
   document.getElementById('prelude-back').addEventListener('click', () => {
     setUIMode('chooser');
+  });
+  // Back button (phase B): return to phase A so the user can re-group.
+  const $bbBtn = document.getElementById('prelude-back-b');
+  if ($bbBtn) $bbBtn.addEventListener('click', () => {
+    state.preludePhase = 'A';
+    state.preludeAxisChecked = null;
+    state.preludeAxisStars = null;
+    const $contBtn = document.getElementById('prelude-continue');
+    const $chkBtn  = document.getElementById('prelude-check-order');
+    if ($contBtn) $contBtn.hidden = true;
+    if ($chkBtn)  $chkBtn.hidden  = false;
+    renderPrelude();
   });
 
   // ============== Analyze: 3 arrows across the rows ==============
@@ -3190,21 +3423,15 @@
     const btn      = document.getElementById('btn-analyze');
     overlay.classList.toggle('is-on', _analyzeOn);
     btn.textContent = _analyzeOn ? 'Hide arrows' : 'Analyze →';
+    // "Hide …" variants render as a plain ghost button (uncoloured) — only
+    // the active "open" action (Analyze →) keeps the accent fill.
+    btn.classList.toggle('btn-soft',  !_analyzeOn);
+    btn.classList.toggle('btn-ghost',  _analyzeOn);
     if (_analyzeOn){
       if (extrasBtn) extrasBtn.hidden = false;
-    } else {
-      // Collapse the rest of the cascade so the user re-enters cleanly.
-      _extrasOn = false;
-      state.showExtras = false;
-      $summary.classList.remove('swap-design');
-      renderSummaryGrid();
-      ['btn-analyze-extras','btn-analyze-more-1','btn-analyze-more-2','btn-analyze-more-3'].forEach(id => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.hidden = true;
-        el.textContent = 'More';
-      });
     }
+    // Hiding arrows must NOT collapse the rest of the cascade — leave the
+    // subsequent "More / Hide …" buttons exactly as the user left them.
     updateSilverArrows();
     renderStageLabel();
     if (_analyzeOn) requestAnimationFrame(positionAnalyzeArrows);
@@ -3228,6 +3455,8 @@
     } else {
       $btn.textContent = 'More';
     }
+    $btn.classList.toggle('btn-primary', !_extrasOn);
+    $btn.classList.toggle('btn-ghost',    _extrasOn);
     renderSummaryGrid();
     updateSilverArrows();
     renderStageLabel();
@@ -3330,6 +3559,8 @@
       $btn.textContent = 'More';
       // Keep the second "More" visible once revealed; do not re-hide
     }
+    $btn.classList.toggle('btn-primary', !_barsOn);
+    $btn.classList.toggle('btn-ghost',    _barsOn);
     renderStageLabel();
     if (_analyzeOn) requestAnimationFrame(positionAnalyzeArrows);
   }
@@ -3341,6 +3572,77 @@
     if (!cta) return;
     cta.hidden = $pentads.children.length === 0;
   }
+
+  // Play-more reveal + free-play toggle. Becomes available once the user has
+  // clicked through every analyze "More" step (analyzeLevel ≥ 5, stage bar
+  // fully filled). On click, strips the medal palette and enables clickable
+  // re-ranking inside every summary deck.
+  let _playMoreOn = false;
+  function renderPlayMoreBtn(){
+    const $wrap = document.getElementById('play-more-wrap');
+    const $btn  = document.getElementById('btn-play-more');
+    if (!$wrap || !$btn) return;
+    const eligible = (state.analyzeLevel || 0) >= 5;
+    $wrap.hidden = !eligible;
+    if (!eligible){
+      // Always tear down free-play if the user backed out.
+      if (_playMoreOn){
+        _playMoreOn = false;
+        $summary.classList.remove('free-play');
+      }
+      $btn.textContent = 'Play more';
+    } else {
+      $btn.textContent = _playMoreOn ? 'Stop playing' : 'Play more';
+    }
+  }
+  function togglePlayMore(){
+    _playMoreOn = !_playMoreOn;
+    $summary.classList.toggle('free-play', _playMoreOn);
+    renderPlayMoreBtn();
+    if (_playMoreOn) wireFreePlayHandlers();
+  }
+  // Click-to-swap: first card click selects, second click swaps with the
+  // selected one. Scoped per-deck so the user can rearrange any group.
+  let _fpSelected = null;
+  function wireFreePlayHandlers(){
+    document.querySelectorAll('.summary.free-play .deck-done.in-summary').forEach(deck => {
+      const id = deck.dataset.deckId;
+      if (!id) return;
+      const lis = deck.querySelectorAll('ol > li');
+      lis.forEach((li, idx) => {
+        if (li.dataset.fpWired === '1') return;
+        li.dataset.fpWired = '1';
+        li.addEventListener('click', (e) => {
+          if (!_playMoreOn) return;
+          if (e.target.closest('a')) { e.preventDefault(); }
+          e.stopPropagation();
+          if (!_fpSelected){
+            _fpSelected = { deckId: id, idx };
+            li.classList.add('fp-selected');
+            return;
+          }
+          if (_fpSelected.deckId !== id){
+            document.querySelectorAll('.fp-selected').forEach(n => n.classList.remove('fp-selected'));
+            _fpSelected = { deckId: id, idx };
+            li.classList.add('fp-selected');
+            return;
+          }
+          if (_fpSelected.idx === idx){
+            li.classList.remove('fp-selected');
+            _fpSelected = null;
+            return;
+          }
+          const order = state.orders[id];
+          [order[_fpSelected.idx], order[idx]] = [order[idx], order[_fpSelected.idx]];
+          _fpSelected = null;
+          renderSummaryGrid();
+          // Re-wire after re-render
+          requestAnimationFrame(wireFreePlayHandlers);
+        });
+      });
+    });
+  }
+  document.getElementById('btn-play-more').addEventListener('click', togglePlayMore);
 
   // ============== Extras (Tao / Future / Confluence) ==============
   // Rendered INLINE inside the summary grid, each as the left half of a
@@ -3369,10 +3671,35 @@
     $summary.classList.toggle('show-silver-arrows', on);
   }
 
+  // Tracks which extras have been opened by the user. Starts closed by
+  // default — every extra ad-deck renders as a stacked "tap to reveal" pile
+  // with its title centered, and switches to the open list on tap.
+  const extraOpen = {};
+  EXTRA_DECKS.forEach(d => { extraOpen[d.id] = false; });
+
   function makeExtraDeck(d){
     const el = document.createElement('div');
-    el.className = 'ad-deck';
+    el.className = 'ad-deck' + (extraOpen[d.id] ? '' : ' ad-deck-closed');
     el.dataset.deckId = d.id;
+    if (!extraOpen[d.id]){
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      el.title = 'tap to reveal';
+      el.innerHTML = `
+        <div class="ad-back ad-back-1"></div>
+        <div class="ad-back ad-back-2"></div>
+        <div class="ad-back ad-back-3"></div>
+        <div class="ad-closed-title">${escapeHTML(d.title)}</div>
+      `;
+      const open = (e) => {
+        e.stopPropagation();
+        extraOpen[d.id] = true;
+        renderSummaryGrid();
+      };
+      el.addEventListener('click', open);
+      el.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' '){ e.preventDefault(); open(e); } });
+      return el;
+    }
     const t = document.createElement('div');
     t.className = 'ad-title';
     t.textContent = d.title;
@@ -3389,12 +3716,21 @@
     const order = extraOrders[d.id];
     order.forEach((itemIdx, pos) => {
       const li = document.createElement('li');
+      li.dataset.word = d.items[itemIdx];
       // First item only shows ↓, last only shows ↑. Middle items have neither.
       const isFirst = pos === 0;
       const isLast  = pos === order.length - 1;
+      // For Time (x1, paired with Journalism) and Sectors (x4, paired with
+      // Economy) we also render a sibling "alt" arrow on top of the actual
+      // one — different colour, slightly more highlighted (see §gender-pair).
+      const pairHighlight = (d.id === 'x1' || d.id === 'x4');
+      const altArrow = (sym) => `<span class="alt-arrow" aria-hidden="true">${sym}</span>`;
       const arrowHTML =
-        isFirst ? `<button data-act="down" aria-label="down">↓</button>` :
-        isLast  ? `<button data-act="up"   aria-label="up">↑</button>` : '';
+        isFirst
+          ? `${pairHighlight ? altArrow('↓') : ''}<button data-act="down" aria-label="down">↓</button>`
+          : isLast
+          ? `${pairHighlight ? altArrow('↑') : ''}<button data-act="up"   aria-label="up">↑</button>`
+          : '';
       li.innerHTML = `
         <span class="nm">${escapeHTML(d.items[itemIdx])}</span>
         <span class="ad-arrows">${arrowHTML}</span>
@@ -3437,25 +3773,18 @@
       if (tao.items[itemIdx] === 'Yin')  yinPos  = pos;
       if (tao.items[itemIdx] === 'Yang') yangPos = pos;
     });
-    // Stamp only on the LEFT element of each row:
-    //   • In a .triad-pair, the LEFT is the .ad-deck (extra) — icon goes there.
-    //     The .deck-done (right) is left clean to avoid duplicates.
-    //   • A standalone triad/pentad (no pair) is itself the "left" → it gets the icon.
+    // Stamp ONLY on the Journalism and Economy "groups" — i.e. the Time (x1)
+    // and Sectors (x4) extras (the left half of their respective pairs).
+    // Every other deck stays clean.
+    const GENDER_DECK_IDS = new Set(['x1','x4']);
     const stamp = (pos, kind) => {
       if (pos < 0) return;
       const targets = [];
-      // Pairs: only the left (.ad-deck), skip Tao itself
       document.querySelectorAll('.triad-pair').forEach(pair => {
         const left = pair.querySelector('.ad-deck');
         if (!left) return;
-        if (left.dataset.deckId === tao.id) return; // skip Tao
+        if (!GENDER_DECK_IDS.has(left.dataset.deckId)) return;
         const ol = left.querySelector('ol');
-        if (ol) targets.push(ol);
-      });
-      // Standalone summary decks (not inside a .triad-pair)
-      document.querySelectorAll('.deck-done.in-summary').forEach(dd => {
-        if (dd.closest('.triad-pair')) return;
-        const ol = dd.querySelector('ol');
         if (ol) targets.push(ol);
       });
       targets.forEach(ol => {
@@ -3491,6 +3820,8 @@
       const $btn3 = document.getElementById('btn-analyze-more-3');
       if ($btn3) $btn3.hidden = false;
     }
+    $btn.classList.toggle('btn-primary', !_finishApplied);
+    $btn.classList.toggle('btn-ghost',    _finishApplied);
     renderStageLabel();
   }
   document.getElementById('btn-analyze-more-2').addEventListener('click', toggleAnalyzeMore2);
@@ -3512,11 +3843,21 @@
         $time.hidden = false;
         _timeStatsOn = true;
         $btn.textContent = 'Hide stats';
+        bumpAnalyzeLevel(5);
+        renderStageLabel();
+        renderPlayMoreBtn();
         $time.scrollIntoView({ behavior:'smooth', block:'start' });
       } else {
-        // Nothing measurable to show — keep button as-is.
+        // Nothing measurable to show — but still count this as "last more"
+        // for progression so the stage bar can fill and the Play more / See
+        // more flow can proceed.
+        bumpAnalyzeLevel(5);
+        renderStageLabel();
+        renderPlayMoreBtn();
       }
     }
+    $btn.classList.toggle('btn-primary', !_timeStatsOn);
+    $btn.classList.toggle('btn-ghost',    _timeStatsOn);
   });
 
   // ============== See more · related flove apps ==============
@@ -3590,6 +3931,10 @@
     const body = document.getElementById('etc-body');
     body.hidden = true;
     btn.setAttribute('aria-expanded', 'false');
+    // Resume the timer + reopen step1 so pentads time accumulates into the
+    // same step bucket and the total time keeps ticking.
+    resumeTimer();
+    startStep('step1');
     // Jump to stage 2 (pentads · center) and exit summary mode
     state.stageIdx = 2;
     startStage(2);
