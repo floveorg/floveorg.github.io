@@ -2020,12 +2020,12 @@
       <button class="opt opt-sm adventure" id="chooser-adventure" type="button">
         <span class="tag">more</span>
         <h3>More adventure</h3>
-        <div class="desc">Every deck gets 1 empty slot — name it before you order.</div>
+        <div class="desc">The middle item of every deck is blank — name it before you order.</div>
       </button>
       <button class="opt opt-sm creative" id="chooser-creative" type="button">
-        <span class="tag">more</span>
-        <h3>More creative</h3>
-        <div class="desc">Every deck gets 2 empty slots — name them before you order.</div>
+        <span class="tag">super</span>
+        <h3>Super Creative</h3>
+        <div class="desc">The last two items of every deck are blank — name them before you order.</div>
       </button>
     </div>
   </section>
@@ -2189,19 +2189,28 @@
     { id:'p4', title:'Pathologies', items:['Mythomania','Hypergamy','Masochism','Hybristophilia','Sadism'] },
     { id:'p5', title:'Elements',  items:['Water','Air','Fire','Plasma','Earth'] },
   ];
-  // Snapshot of the canonical item count so adventure/creative modes can
-  // append empty slots without losing track of where the originals end.
-  DECKS.forEach(d => { d.baseLen = d.items.length; });
+  // Snapshot of the canonical items so adventure / super-creative modes can
+  // SUBSTITUTE specific positions with blanks (not append) and we can still
+  // restore the originals when the user switches back to normal mode.
+  DECKS.forEach(d => { d.originalItems = d.items.slice(); });
 
-  // Apply a game-mode that augments every deck with N empty slots the user
-  // has to name before they can play. modes: 'normal' (0), 'adventure' (1),
-  // 'creative' (2). Re-callable: strips any previously-appended blanks first.
+  // Apply a game-mode that replaces specific items with blanks the user has
+  // to name before they can play — without changing the deck length:
+  //   • normal           — every item from the canonical list
+  //   • adventure        — middle item replaced with a blank
+  //   • creative ("super creative") — last two items replaced with blanks
   function applyGameMode(mode){
     state.gameMode = mode;
-    const extras = mode === 'adventure' ? 1 : mode === 'creative' ? 2 : 0;
     DECKS.forEach(d => {
-      while (d.items.length > d.baseLen) d.items.pop();
-      for (let i = 0; i < extras; i++) d.items.push('');
+      // Restore from snapshot in place (keep the same array reference).
+      d.originalItems.forEach((v, i) => { d.items[i] = v; });
+      if (mode === 'adventure'){
+        d.items[Math.floor(d.items.length / 2)] = '';
+      } else if (mode === 'creative'){
+        const n = d.items.length;
+        d.items[n - 1] = '';
+        d.items[n - 2] = '';
+      }
       state.orders[d.id] = d.items.map((_,i) => i);
     });
   }
