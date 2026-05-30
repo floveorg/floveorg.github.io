@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>✺ flove · Puzzy — Explain</title>
+  <link rel="stylesheet" href="../../flove.css">
+  <style>
+    :root{
+      /* flove identity overrides — Puzzy: violet accent, teal flourish, on a deep canvas */
+      --app-accent:        #8d89ff;
+      --app-accent-soft:   #c9c6ff;
+      --app-ink-on-accent: #0b0b14;
+
+      /* Puzzy local palette (dark) */
+      --bg:#0b0b0f; --panel:#11131a; --ink:#e9eaf2; --muted:#a3a7b4;
+      --line:#1e2133; --field:#13162a; --accent2:#70f0d3;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--ink);
+      background:
+        radial-gradient(1000px 700px at 110% -10%, rgba(141,137,255,.16), transparent 60%),
+        radial-gradient(800px 600px at -10% 120%, rgba(112,240,211,.12), transparent 50%),
+        var(--bg);
+      font-family:var(--flove-font-ui); letter-spacing:.2px;
+    }
+
+    /* i18n — pure CSS (§13.2) */
+    .t-es{ display:none }
+    body:has(#ui-lang-es:checked) .t-en{ display:none }
+    body:has(#ui-lang-es:checked) .t-es{ display:inline }
+
+    /* language toggle inside the flove-bar */
+    .lang{ display:inline-flex; gap:2px; margin-left:auto }
+    .lang input{ position:absolute; opacity:0; pointer-events:none }
+    .lang label{
+      font-size:11px; font-weight:600; letter-spacing:.4px; padding:3px 9px;
+      border-radius:var(--flove-radius-pill); cursor:pointer; color:var(--muted);
+      border:1px solid transparent;
+    }
+    #ui-lang-en:checked ~ label[for=ui-lang-en],
+    #ui-lang-es:checked ~ label[for=ui-lang-es]{
+      color:var(--app-ink-on-accent); background:var(--app-accent); border-color:var(--app-accent);
+    }
+
+    /* header */
+    .top{ max-width:980px; margin:1.4rem auto .4rem; padding:0 1rem }
+    .top h1{
+      margin:.2rem 0; font-size:1.9rem; letter-spacing:.5px;
+      background:linear-gradient(180deg,#fff,#cfc9ff);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    .lede{ color:var(--muted); margin:.2rem 0 0 }
+
+    /* depth control (restored — original CSS gated packs on these but the
+       radios were missing from the markup, so nothing ever showed) */
+    .depth{
+      max-width:980px; margin:1rem auto 0; padding:.6rem .7rem;
+      display:flex; gap:.5rem; flex-wrap:wrap; align-items:center;
+      border:1px dashed var(--line); border-radius:var(--flove-radius);
+      background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.02));
+    }
+    .depth__lead{ color:var(--muted); font-size:.85rem; margin-right:.2rem }
+    .depth input{ position:absolute; opacity:0; pointer-events:none }
+    .depth label{
+      border:1px solid var(--line); border-radius:var(--flove-radius-pill);
+      padding:.35rem .8rem; cursor:pointer; font-size:.9rem;
+      background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+      transition:border-color var(--flove-fast), box-shadow var(--flove-fast);
+    }
+    #lvl1:checked + label, #lvl2:checked + label,
+    #lvl3:checked + label, #lvl4:checked + label{
+      border-color:var(--app-accent); box-shadow:0 0 12px rgba(141,137,255,.45);
+      color:#fff;
+    }
+
+    /* progressive reveal — show packs up to the chosen depth */
+    .shell{ max-width:980px; margin:.8rem auto 4rem; padding:0 1rem; display:grid; gap:1rem }
+    .pack{
+      border:1px solid var(--line); border-radius:var(--flove-radius);
+      padding:1rem 1.1rem;
+      background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+      animation:fade .25s var(--flove-ease) both;
+    }
+    @keyframes fade{ from{opacity:0; transform:translateY(.25rem)} to{opacity:1; transform:none} }
+    body:has(#lvl1:checked) .pack--2,
+    body:has(#lvl1:checked) .pack--3,
+    body:has(#lvl1:checked) .pack--4{ display:none }
+    body:has(#lvl2:checked) .pack--3,
+    body:has(#lvl2:checked) .pack--4{ display:none }
+    body:has(#lvl3:checked) .pack--4{ display:none }
+
+    .pack h2{ margin:.1rem 0 .8rem; font-size:1.05rem; letter-spacing:.6px; color:var(--accent2) }
+    .pack h3{ margin:1rem 0 .5rem; font-size:.95rem; letter-spacing:.6px; color:var(--app-accent) }
+
+    /* fields */
+    .field{ display:block }
+    .lbl{ display:block; font-weight:600; font-size:.9rem; margin:0 0 .3rem; color:var(--muted) }
+    input[type=text], textarea, select{
+      width:100%; background:var(--field); color:var(--ink);
+      border:1px solid var(--line); border-radius:var(--flove-radius-sm);
+      padding:.6rem .7rem; font:inherit;
+    }
+    textarea{ resize:vertical }
+    input[type=text]:focus, textarea:focus, select:focus{
+      outline:none; border-color:var(--app-accent);
+      box-shadow:0 0 0 3px rgba(141,137,255,.18);
+    }
+    .grid{ display:grid; gap:.7rem }
+    .grid--two{ grid-template-columns:repeat(2,minmax(0,1fr)) }
+    @media (max-width:760px){ .grid--two{ grid-template-columns:1fr } }
+
+    /* chips / choice bars */
+    fieldset.field{ border:1px solid var(--line); border-radius:var(--flove-radius-sm); padding:.7rem .8rem; margin:0 0 .7rem }
+    legend.lbl{ padding:0 .35rem }
+    .chips{ display:flex; gap:.4rem; flex-wrap:wrap }
+    .chips label, .bar__choices label{
+      display:inline-flex; align-items:center; gap:.35rem; cursor:pointer;
+      padding:.3rem .6rem; border-radius:var(--flove-radius-pill);
+      background:#171a2e; border:1px solid var(--line);
+      transition:border-color var(--flove-fast), background var(--flove-fast);
+    }
+    .chips label:hover, .bar__choices label:hover{ border-color:var(--app-accent) }
+    .chips input, .bar__choices input{ accent-color:var(--app-accent) }
+    .bar__scale{ color:var(--muted); font-size:.85rem; margin:.2rem 0 .3rem }
+    .bar__choices{ display:flex; gap:.5rem; flex-wrap:wrap }
+
+    /* formalise funnel */
+    .funnel{ display:grid; gap:.6rem }
+    .funnel__band{
+      background:conic-gradient(from -45deg at 15% 50%, rgba(141,137,255,.14), transparent 30%), #15182b;
+      border:1px solid var(--line); border-radius:var(--flove-radius-sm); padding:.6rem .7rem;
+    }
+    .funnel .tag{
+      display:inline-block; font-weight:700; color:var(--app-accent);
+      background:#0f1120; border:1px solid var(--line);
+      border-radius:var(--flove-radius-pill); padding:.15rem .6rem; margin-bottom:.4rem; font-size:.8rem;
+    }
+    .evidence{ border:1px dashed var(--line); border-radius:var(--flove-radius-sm); padding:.7rem; background:var(--field) }
+
+    /* know more */
+    .output{ max-width:980px; margin:0 auto 5rem; padding:0 1rem }
+    .output summary{ cursor:pointer; color:var(--muted) }
+    .output__box{ border:1px solid var(--line); border-radius:var(--flove-radius-sm); padding:.7rem; background:#111426; margin-top:.5rem }
+    .output a{ color:var(--accent2) }
+  </style>
+</head>
+<body>
+  <!-- language radios (drive the pure-CSS i18n) -->
+  <nav class="flove-bar flove-bar--dark">
+    <a class="flove-home" href="../../index.html">← <span class="t-en">Apps</span><span class="t-es">Apps</span></a>
+    <span class="flove-mark flove-asterism" aria-hidden="true">✺</span>
+    <span class="flove-app-name">Puzzy</span>
+    <span class="flove-tag">Explain</span>
+    <span class="lang">
+      <input type="radio" name="ui-lang" id="ui-lang-en" checked>
+      <input type="radio" name="ui-lang" id="ui-lang-es">
+      <label for="ui-lang-en">EN</label>
+      <label for="ui-lang-es">ES</label>
+    </span>
+  </nav>
+
+  <header class="top">
+    <h1>Fuzzy Wise</h1>
+    <p class="lede"><span class="t-en">Define anything deeply — pick how far you want to go.</span><span class="t-es">Define cualquier cosa en profundidad — elige hasta dónde quieres llegar.</span></p>
+  </header>
+
+  <!-- depth selector -->
+  <div class="depth">
+    <span class="depth__lead"><span class="t-en">Depth</span><span class="t-es">Profundidad</span></span>
+    <input type="radio" name="depth" id="lvl1"><label for="lvl1"><span class="t-en">Essential</span><span class="t-es">Esencial</span></label>
+    <input type="radio" name="depth" id="lvl2"><label for="lvl2"><span class="t-en">Perspective</span><span class="t-es">Perspectiva</span></label>
+    <input type="radio" name="depth" id="lvl3"><label for="lvl3"><span class="t-en">Explain</span><span class="t-es">Explicar</span></label>
+    <input type="radio" name="depth" id="lvl4" checked><label for="lvl4"><span class="t-en">Formalise</span><span class="t-es">Formalizar</span></label>
+  </div>
+
+  <main class="shell">
+    <!-- PACK 1 · ESSENTIAL -->
+    <section class="pack pack--1">
+      <label class="field">
+        <input type="text" placeholder="Name an OBJECT here — e.g. True Love, Bike, Oxymorons…">
+      </label>
+    </section>
+
+    <!-- PACK 2 · PERSPECTIVE + FOCUS -->
+    <section class="pack pack--2">
+      <h2><span class="t-en">Perspective</span><span class="t-es">Perspectiva</span></h2>
+
+      <fieldset class="field">
+        <legend class="lbl"><span class="t-en">Prism</span><span class="t-es">Prisma</span></legend>
+        <div class="chips">
+          <label><input type="checkbox"> <span class="t-en">Subjective</span><span class="t-es">Subjetivo</span></label>
+          <label><input type="checkbox"> <span class="t-en">Objective</span><span class="t-es">Objetivo</span></label>
+          <label><input type="checkbox"> <span class="t-en">Momentual</span><span class="t-es">Momentual</span></label>
+          <label><input type="checkbox"> <span class="t-en">General</span><span class="t-es">General</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="field">
+        <legend class="lbl"><span class="t-en">Tone</span><span class="t-es">Tono</span></legend>
+        <div class="chips">
+          <label><input type="checkbox"> <span class="t-en">Normal</span><span class="t-es">Normal</span></label>
+          <label><input type="checkbox"> <span class="t-en">Funny</span><span class="t-es">Divertido</span></label>
+          <label><input type="checkbox"> <span class="t-en">Formal</span><span class="t-es">Formal</span></label>
+          <label><input type="checkbox"> <span class="t-en">Trivial</span><span class="t-es">Trivial</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="field">
+        <legend class="lbl"><span class="t-en">Teleological background</span><span class="t-es">Trasfondo teleológico</span></legend>
+        <div class="bar__choices">
+          <label><input type="checkbox" name="cont"> <span class="t-en">Experimental</span><span class="t-es">Experimental</span></label>
+          <label><input type="checkbox" name="cont"> <span class="t-en">Random</span><span class="t-es">Aleatorio</span></label>
+          <label><input type="checkbox" name="cont"> <span class="t-en">Fine</span><span class="t-es">Fino</span></label>
+          <label><input type="checkbox" name="cont"> <span class="t-en">Fatal</span><span class="t-es">Fatal</span></label>
+        </div>
+      </fieldset>
+
+      <h3><span class="t-en">Focus</span><span class="t-es">Enfoque</span></h3>
+
+      <fieldset class="field">
+        <legend class="lbl"><span class="t-en">Field</span><span class="t-es">Campo</span></legend>
+        <div class="chips">
+          <label><input type="checkbox"> <span class="t-en">Metaphysics</span><span class="t-es">Metafísica</span></label>
+          <label><input type="checkbox"> <span class="t-en">Science</span><span class="t-es">Ciencia</span></label>
+          <label><input type="checkbox"> <span class="t-en">Biology</span><span class="t-es">Biología</span></label>
+          <label><input type="checkbox"> <span class="t-en">Psychology</span><span class="t-es">Psicología</span></label>
+          <label><input type="checkbox"> <span class="t-en">Sociology</span><span class="t-es">Sociología</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="field">
+        <legend class="lbl"><span class="t-en">Time span</span><span class="t-es">Lapso temporal</span></legend>
+        <div class="bar__choices">
+          <label><input type="checkbox" name="time"> <span class="t-en">Past</span><span class="t-es">Pasado</span></label>
+          <label><input type="checkbox" name="time"> <span class="t-en">Present</span><span class="t-es">Presente</span></label>
+          <label><input type="checkbox" name="time"> <span class="t-en">Future</span><span class="t-es">Futuro</span></label>
+          <label><input type="checkbox" name="time"> <span class="t-en">Short</span><span class="t-es">Corto</span></label>
+          <label><input type="checkbox" name="time"> <span class="t-en">Mid</span><span class="t-es">Medio</span></label>
+          <label><input type="checkbox" name="time"> <span class="t-en">Long</span><span class="t-es">Largo</span></label>
+        </div>
+      </fieldset>
+    </section>
+
+    <!-- PACK 3 · EXPLAIN -->
+    <section class="pack pack--3">
+      <h2><span class="t-en">Explain</span><span class="t-es">Explicar</span></h2>
+      <div class="grid grid--two">
+        <label class="field"><textarea rows="2" placeholder="PHRASE that defines it"></textarea></label>
+        <label class="field"><input type="text" placeholder="RELATE it to something else"></label>
+        <label class="field"><textarea rows="2" placeholder="WHY is it important"></textarea></label>
+        <label class="field"><textarea rows="2" placeholder="WHAT special properties does it have"></textarea></label>
+        <label class="field"><textarea rows="2" placeholder="HOW does it work"></textarea></label>
+        <label class="field"><textarea rows="2" placeholder="WHO / WHERE / WHEN"></textarea></label>
+      </div>
+    </section>
+
+    <!-- PACK 4 · FORMALISE -->
+    <section class="pack pack--4">
+      <h2><span class="t-en">Formalise</span><span class="t-es">Formalizar</span></h2>
+      <div class="funnel">
+        <div class="funnel__band">
+          <span class="tag"><span class="t-en">Axiom</span><span class="t-es">Axioma</span></span>
+          <textarea rows="2" placeholder="Axiom"></textarea>
+        </div>
+
+        <div class="evidence">
+          <div class="grid grid--two">
+            <label class="field">
+              <span class="lbl"><span class="t-en">Kind</span><span class="t-es">Tipo</span></span>
+              <select>
+                <option>Actual</option><option>Past</option><option>Case study</option><option>Review</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="lbl"><span class="t-en">Sources</span><span class="t-es">Fuentes</span></span>
+              <input type="text" placeholder="Sources">
+            </label>
+          </div>
+          <label class="field">
+            <span class="lbl"><span class="t-en">Evidence</span><span class="t-es">Evidencia</span></span>
+            <textarea rows="3" placeholder="Write EVIDENCE(s) here"></textarea>
+          </label>
+        </div>
+
+        <div class="funnel__band">
+          <span class="tag"><span class="t-en">Prediction</span><span class="t-es">Predicción</span></span>
+          <textarea rows="2" placeholder="Prediction"></textarea>
+        </div>
+        <div class="funnel__band">
+          <span class="tag"><span class="t-en">Proposal</span><span class="t-es">Propuesta</span></span>
+          <textarea rows="2" placeholder="Proposal"></textarea>
+        </div>
+        <div class="funnel__band">
+          <span class="tag"><span class="t-en">Challenge</span><span class="t-es">Reto</span></span>
+          <textarea rows="2" placeholder="Challenge"></textarea>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <details class="output">
+    <summary><span class="t-en">Know more</span><span class="t-es">Saber más</span></summary>
+    <div class="output__box">
+      <span class="t-en">Visit</span><span class="t-es">Visita</span> <a href="https://flove.org">flove.org</a>
+    </div>
+  </details>
+</body>
+</html>
