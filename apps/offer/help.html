@@ -339,6 +339,27 @@
   }
   .stepper .step.is-active .num{ background: rgba(255,255,255,.25); color: #fff }
 
+  /* ── Row toggle (Asuntos / Wizards) — CSS-only via <details> ─── */
+  .row-toggle{ margin: 0 0 14px; text-align: left; }
+  .row-toggle > summary{
+    list-style: none; cursor: pointer;
+    display: inline-flex; align-items: center;
+    padding: 8px 14px;
+    border: 1px solid var(--line-strong);
+    background: #fff; color: var(--ink-soft);
+    border-radius: var(--radius-pill);
+    font: 600 .82rem/1 var(--font-ui);
+    transition: all var(--fast);
+    margin-bottom: 8px;
+  }
+  .row-toggle > summary::-webkit-details-marker{ display: none }
+  .row-toggle > summary::marker{ content: '' }
+  .row-toggle > summary:hover{ border-color: var(--accent); color: var(--accent-deep) }
+  .row-toggle[open] > summary{ border-color: var(--accent); color: var(--accent-deep) }
+  /* Reset row margins inside .row-toggle so the wrapper owns spacing */
+  .row-toggle > .stepper,
+  .row-toggle > .filter-buttons{ margin: 0 }
+
   /* Bot filter chips — multi-select (checkboxes) */
   .bot-filter{ margin: 0 0 18px }
   .bot-filter input[type=checkbox]{ position:absolute; opacity:0; width:1px; height:1px; pointer-events:none }
@@ -952,13 +973,16 @@
   </form>
 
   <!-- Stepper (blocks of questions) -->
-  <nav class="stepper" id="stepper" aria-label="Bloques de preguntas">
-    <button type="button" class="step" data-block="1">Confianza</button>
-    <button type="button" class="step" data-block="2">Bienes</button>
-    <button type="button" class="step" data-block="3">Legal &amp; datos</button>
-    <button type="button" class="step" data-block="4">Tu oferta</button>
-    <button type="button" class="step is-active" data-block="all">Todos</button>
-  </nav>
+  <details class="row-toggle" id="toggle-asuntos" open>
+    <summary>Asuntos</summary>
+    <nav class="stepper" id="stepper" aria-label="Bloques de preguntas">
+      <button type="button" class="step" data-block="1">Confianza</button>
+      <button type="button" class="step" data-block="2">Bienes</button>
+      <button type="button" class="step" data-block="3">Legal &amp; datos</button>
+      <button type="button" class="step" data-block="4">Tu oferta</button>
+      <button type="button" class="step is-active" data-block="all">Todos</button>
+    </nav>
+  </details>
 
   <!-- Bot filter (CSS-driven, multi-select) -->
   <section class="bot-filter">
@@ -970,15 +994,18 @@
     <input type="checkbox" id="f-fairy">
     <input type="checkbox" id="f-mine">
 
-    <nav class="filter-buttons" aria-label="Filtrar por bot (multi)">
-      <label for="f-juanito"  class="chip juanito"  data-personality="🤝,⚖️,📊">Juanito</label>
-      <label for="f-maripuri" class="chip maripuri" data-personality="💝,🤲,☀️">Mari Puri</label>
-      <label for="f-uxia"     class="chip uxia"     data-personality="😊,🌱,🌈">Uxía</label>
-      <label for="f-encarna"  class="chip encarna"  data-personality="🕉️,🌌,🙏">Encarna</label>
-      <label for="f-fairy"    class="chip fairy"    data-personality="✨,🧚,🦄">Fairy</label>
-      <label for="f-mine"     class="chip mine" id="chipMine" data-personality="🔥,💫,🎯"><span id="chipMineLabel">Tú</span></label>
-      <button type="button" class="chip chip-add" id="addBotChip" title="Añadir un nuevo bot" aria-label="Añadir un nuevo bot">＋</button>
-    </nav>
+    <details class="row-toggle" id="toggle-wizards" open>
+      <summary>Wizards</summary>
+      <nav class="filter-buttons" aria-label="Filtrar por bot (multi)">
+        <label for="f-juanito"  class="chip juanito"  data-personality="🤝,⚖️,📊">Juanito</label>
+        <label for="f-maripuri" class="chip maripuri" data-personality="💝,🤲,☀️">Mari Puri</label>
+        <label for="f-uxia"     class="chip uxia"     data-personality="😊,🌱,🌈">Uxía</label>
+        <label for="f-encarna"  class="chip encarna"  data-personality="🕉️,🌌,🙏">Encarna</label>
+        <label for="f-fairy"    class="chip fairy"    data-personality="✨,🧚,🦄">Fairy</label>
+        <label for="f-mine"     class="chip mine" id="chipMine" data-personality="🔥,💫,🎯"><span id="chipMineLabel">Tú</span></label>
+        <button type="button" class="chip chip-add" id="addBotChip" title="Añadir un nuevo bot" aria-label="Añadir un nuevo bot">＋</button>
+      </nav>
+    </details>
 
     <div class="qa-wrap">
 
