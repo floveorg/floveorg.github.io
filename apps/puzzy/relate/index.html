@@ -75,22 +75,22 @@
     /* STAGE */
     .stage{
       position:relative; border:1px solid var(--line); border-radius:18px; overflow:hidden;
-      background:radial-gradient(90% 65% at 50% 40%, rgba(141,137,255,.05), transparent 70%);
+      background:radial-gradient(90% 65% at 28% 40%, rgba(141,137,255,.05), transparent 70%);
       min-height:calc(100dvh - 88px);
     }
     .grid-overlay{ position:absolute; inset:0; pointer-events:none; opacity:.22;
       background:
         linear-gradient(0deg, rgba(141,137,255,.10) 1px, transparent 1px) 0 0/40px 40px,
         linear-gradient(90deg, rgba(141,137,255,.10) 1px, transparent 1px) 0 0/40px 40px;
-      mask: radial-gradient(120% 85% at 50% 48%, #000 65%, transparent 100%);
+      mask: radial-gradient(120% 85% at 28% 48%, #000 65%, transparent 100%);
     }
     .rings{ position:absolute; inset:0; pointer-events:none;
       background:
-        radial-gradient(circle at 50% 50%, transparent 0 160px, rgba(112,240,211,.10) 160px 164px, transparent 170px 100%),
-        radial-gradient(circle at 50% 50%, transparent 0 260px, rgba(141,137,255,.10) 260px 264px, transparent 270px 100%),
-        radial-gradient(circle at 50% 50%, transparent 0 360px, rgba(112,240,211,.08) 360px 364px, transparent 370px 100%);
+        radial-gradient(circle at 28% 50%, transparent 0 160px, rgba(112,240,211,.10) 160px 164px, transparent 170px 100%),
+        radial-gradient(circle at 28% 50%, transparent 0 260px, rgba(141,137,255,.10) 260px 264px, transparent 270px 100%),
+        radial-gradient(circle at 28% 50%, transparent 0 360px, rgba(112,240,211,.08) 360px 364px, transparent 370px 100%);
     }
-    .center-label{ position:absolute; left:50%; top:50%; translate:-50% -50%; text-align:center; pointer-events:none; z-index:2 }
+    .center-label{ position:absolute; left:28%; top:50%; translate:-50% -50%; text-align:center; pointer-events:none; z-index:2 }
     .center-label h1{ margin:0; font-size:30px; letter-spacing:.4px;
       background:linear-gradient(180deg,#fff,#cfc9ff); -webkit-background-clip:text; background-clip:text; color:transparent }
     .center-label p{ margin:8px 0 0; color:var(--muted); font-size:12px }
@@ -160,6 +160,45 @@
     .meta{ font-size:12px; color:var(--app-accent-soft) }
     .meta .k{ color:var(--muted) }
 
+    /* ===== add-branch flow: + FAB (bottom-right) + panel ===== */
+    .add-fab{
+      position:absolute; right:16px; bottom:16px; z-index:7;
+      width:54px; height:54px; border-radius:var(--flove-radius-pill);
+      border:none; cursor:pointer; font-size:30px; line-height:0; color:var(--app-ink-on-accent);
+      background:linear-gradient(180deg, var(--app-accent), #6f6bff);
+      box-shadow:0 12px 30px rgba(141,137,255,.45);
+      transition:transform var(--flove-fast), box-shadow var(--flove-fast);
+    }
+    .add-fab:hover{ transform:translateY(-2px) scale(1.05); box-shadow:0 16px 38px rgba(141,137,255,.55) }
+    .add-panel{
+      position:absolute; right:16px; bottom:80px; z-index:8; width:min(300px, calc(100% - 32px));
+      background:#0e1124; border:1px solid var(--line); border-radius:16px; padding:12px;
+      box-shadow:0 22px 70px rgba(0,0,0,.6); display:none;
+    }
+    .add-panel.open{ display:block; animation:branchPop .18s var(--flove-ease) both }
+    @keyframes branchPop{ from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
+    .add-rel{ display:flex; flex-direction:column; gap:6px; margin-bottom:10px }
+    .add-rel label{ display:flex; gap:8px; align-items:center; font-size:13px; color:var(--app-accent-soft); cursor:pointer }
+    .add-rel input{ accent-color:var(--app-accent) }
+    .add-row{ display:flex; gap:6px; align-items:center }
+    .add-row input[type=text]{ flex:1; min-width:0; padding:8px 10px; border-radius:10px; border:1px solid var(--line); background:var(--field); color:var(--ink) }
+    .add-mic, .add-save{ padding:8px 10px; border-radius:10px; border:1px solid var(--line); background:#0d1022; color:var(--ink); cursor:pointer }
+    .add-save{ border-color:var(--app-accent); background:var(--app-accent); color:var(--app-ink-on-accent); font-weight:600 }
+    .add-mic.rec{ background:#fb7185; border-color:#fb7185; color:#fff }
+
+    /* branch pills along the relation spokes (replace the old floating boxes) */
+    #branchLayer{ position:absolute; inset:0; pointer-events:none; z-index:3 }
+    .branch{ position:absolute; transform:translate(-50%,-50%); pointer-events:auto; cursor:pointer;
+      display:flex; flex-direction:column; align-items:center; gap:4px }
+    .branch-dot{ width:14px; height:14px; border-radius:50%; background:var(--accent2);
+      border:2px solid #0b0b14; box-shadow:0 0 0 3px rgba(112,240,211,.18); transition:transform var(--flove-fast) }
+    .branch:hover .branch-dot{ transform:scale(1.18) }
+    .branch.selected .branch-dot{ background:var(--app-accent); box-shadow:0 0 0 4px rgba(141,137,255,.3) }
+    .branch-text{ display:none; max-width:170px; font-size:12px; color:var(--ink); background:#0e1124;
+      border:1px solid var(--app-accent); border-radius:10px; padding:6px 9px;
+      box-shadow:0 10px 30px rgba(0,0,0,.5); text-align:center; word-break:break-word }
+    .branch.selected .branch-text{ display:block }
+
     /* responsive */
     @media (max-width:1100px){ .app{ grid-template-columns: 68px 1fr } .stream{ display:none } }
   </style>
@@ -200,6 +239,22 @@
         </defs>
       </svg>
       <div id="nodeBadges"></div>
+      <div id="branchLayer"></div>
+
+      <!-- add-branch FAB (bottom-right, distinct from the media bar) -->
+      <button id="addFab" class="add-fab" aria-label="Add content as a branch" title="Add a branch">+</button>
+      <div id="addPanel" class="add-panel" role="dialog" aria-label="Add content as a branch">
+        <div class="add-rel">
+          <label><input type="radio" name="rel" value="different" checked> <span class="t-en">Different</span><span class="t-es">Diferente</span></label>
+          <label><input type="radio" name="rel" value="complementary"> <span class="t-en">Complementary</span><span class="t-es">Complementario</span></label>
+          <label><input type="radio" name="rel" value="unrelated"> <span class="t-en">Unrelated</span><span class="t-es">No relacionado</span></label>
+        </div>
+        <div class="add-row">
+          <input id="addText" type="text" placeholder="Add content…">
+          <button id="micBtn" class="add-mic" type="button" title="Dictate" aria-label="Dictate">🎤</button>
+          <button id="saveBtn" class="add-save" type="button"><span class="t-en">Save</span><span class="t-es">Guardar</span></button>
+        </div>
+      </div>
     </section>
 
     <!-- CONTENT STREAM -->
@@ -266,7 +321,7 @@
   const activeMedia = new Set();
 
   /* ========================= ENGINE ========================= */
-  const W=1200, H=800, CX=W/2, CY=H/2, centerR=34;
+  const W=1200, H=800, CX=340, CY=H/2, centerR=34;   /* CX shifted left → mind-map hugs the media bar */
   const svg = document.getElementById('mindmap');
   const badgesLayer = document.getElementById('nodeBadges');
   const cards = document.getElementById('cards');
@@ -282,9 +337,19 @@
   function el(tag, props={}, children=[]){ const n=document.createElement(tag); Object.assign(n, props); (children||[]).forEach(c=>n.appendChild(c)); return n }
   function escapeHTML(s){ return s.replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' }[m])) }
 
+  // distance from (cx,cy) along angle a (rad) to the viewBox edge
+  function maxRadiusToBox(cx,cy,a){
+    const cos=Math.cos(a), sin=Math.sin(a); let r=Infinity;
+    if(cos>1e-6) r=Math.min(r,(W-cx)/cos); else if(cos<-1e-6) r=Math.min(r,-cx/cos);
+    if(sin>1e-6) r=Math.min(r,(H-cy)/sin); else if(sin<-1e-6) r=Math.min(r,-cy/sin);
+    return r;
+  }
   function layoutAngles(nodes){
     const n = nodes.length; const step = 360/n; const offset = -90;
-    nodes.forEach((nd,i)=>{ if(nd.angle==null) nd.angle = offset + i*step; if(nd.dist==null) nd.dist = 240 + (i%3)*30; });
+    nodes.forEach((nd,i)=>{
+      if(nd.angle==null) nd.angle = offset + i*step;
+      nd.dist = 0.92 * maxRadiusToBox(CX, CY, deg2rad(nd.angle));   // stretch every line to the outer extreme
+    });
   }
 
   function pathCurve(ax,ay,bx,by){
@@ -316,52 +381,20 @@
     DATA.nodes.forEach((n, i)=> drawNode(n, {x:CX,y:CY,depth:0,idx:i}));
     updateStatsVisibility();
     updateMediaBadges();
+    requestAnimationFrame(placeBadges);
+    setTimeout(placeBadges, 80);
   }
 
-  /* Draw node + inline label; children on demand */
+  /* Draw ONLY the relation line (axis). Inline category labels and floating
+     boxes were removed by request — meaning now lives on the added branches. */
   function drawNode(node, ctx){
     const angle = deg2rad(node.angle), r = node.dist;
-    const [x,y] = polar(ctx.x, ctx.y, r, angle);
-
-    // Path
-    const path = document.createElementNS(NS,'path');
+    const [x,y] = polar(ctx.x, ctx.y, r, angle);          // line endpoint (outer extreme)
     const id = genId(node, ctx);
+    const path = document.createElementNS(NS,'path');
     setAttrs(path,{ id:`p-${id}`, d: pathCurve(ctx.x,ctx.y,x,y), class:'link' });
     svg.appendChild(path);
-
-    // Inline label along the path (title + faint summary)
-    const text = document.createElementNS(NS,'text');
-    setAttrs(text,{ class:'labelText' });
-    const textPath = document.createElementNS(NS,'textPath');
-    setAttrs(textPath, { href:`#p-${id}`, startOffset:'50%', 'text-anchor':'middle' });
-    const name = node.title || 'Untitled';
-    const summary = node.summary ? `  —  ${node.summary}` : '';
-    textPath.innerHTML = `${escapeHTML(name)}<tspan>${escapeHTML(summary)}</tspan>`;
-    text.appendChild(textPath);
-    svg.appendChild(text);
-
-    // Badge (hover summary + media icons + compact stats + add input)
-    const badge = makeBadge(node, x, y, id);
-    badgesLayer.appendChild(badge);
-
-    nodesIndex.set(id, { node, x, y, ctx, badge });
-
-    // Transparent hit area around the label so clicking near it also toggles
-    const hit = document.createElementNS(NS,'rect');
-    setAttrs(hit,{ class:'labelHit', rx:10 });
-    svg.appendChild(hit);
-    requestAnimationFrame(()=>{
-      try{
-        const bb = text.getBBox(); const pad = 16;
-        setAttrs(hit,{ x:bb.x-pad, y:bb.y-pad, width:bb.width+2*pad, height:bb.height+2*pad });
-      }catch(_){}
-    });
-
-    // Click on the label (text or its surroundings) collapses/expands the node
-    const onClick = ()=> toggleCollapse(id);
-    text.style.cursor = 'pointer';
-    text.addEventListener('click', onClick);
-    hit.addEventListener('click', onClick);
+    nodesIndex.set(id, { node, x, y, ctx });
   }
 
   function genId(node, ctx){ return `${ctx.depth}-${ctx.idx}-${(node.title||'node').toLowerCase().replace(/\s+/g,'-')}` }
@@ -547,6 +580,94 @@
   function docIcon(color="#c9c6ff",w=22,h=22){ return `<svg viewBox="0 0 24 24" width="${w}" height="${h}" fill="none" stroke="${color}"><path d="M7 3h7l5 5v13H7z"></path><path d="M14 3v6h6"></path><path d="M9 13h8M9 17h8"></path></svg>`}
   function linkIcon(color="#c9c6ff",w=22,h=22){ return `<svg viewBox="0 0 24 24" width="${w}" height="${h}" fill="none" stroke="${color}"><path d="M10 14l-2 2a4 4 0 0 1-6-3 4 4 0 0 1 1.17-2.83l3-3A4 4 0 0 1 12 8"></path><path d="M14 10l2-2a4 4 0 1 1 5.66 5.66l-3 3A4 4 0 0 1 12 16"></path></svg>`}
   function statsIcon(color="#c9c6ff",w=22,h=22){ return `<svg viewBox="0 0 24 24" width="${w}" height="${h}" fill="none" stroke="${color}"><rect x="4" y="10" width="4" height="8" rx="1"></rect><rect x="10" y="6" width="4" height="12" rx="1"></rect><rect x="16" y="12" width="4" height="6" rx="1"></rect></svg>`}
+
+  /* Map SVG coords → stage pixels (shared by every HTML overlay) */
+  function svgToPx(X,Y){
+    const ctm = svg.getScreenCTM(); if(!ctm) return [0,0];
+    const box = svg.getBoundingClientRect();
+    const p=svg.createSVGPoint(); p.x=X; p.y=Y; const s=p.matrixTransform(ctm);
+    return [s.x-box.left, s.y-box.top];
+  }
+  function placeBadges(){       // places the center word + the branch pills on their nodes
+    const cl = document.querySelector('.center-label');
+    if(cl){ const [cx,cy] = svgToPx(CX,CY); cl.style.left = cx+'px'; cl.style.top = cy+'px'; }
+    placeBranches();
+  }
+  window.addEventListener('resize', placeBadges);
+
+  /* ========================= ADD-BRANCH FLOW (+ FAB) ========================= */
+  const REL = {
+    different:     { label:'Different',     angle:150 },
+    complementary: { label:'Complementary', angle:-80 },
+    unrelated:     { label:'Unrelated',     angle: 55 }
+  };
+  const branches = [];          // { id, rel, text }
+  let selectedBranch = null;
+  const branchLayer = document.getElementById('branchLayer');
+
+  function addBranch(rel, text){
+    if(!REL[rel] || !text.trim()) return;
+    const b = { id:'b'+branches.length, rel, text:text.trim() };
+    branches.push(b);
+    selectedBranch = b.id;       // show the freshly-added branch
+    renderBranches();
+  }
+
+  function renderBranches(){
+    branchLayer.innerHTML = '';
+    const perRel = {};
+    branches.forEach(b=>{
+      if(perRel[b.rel]==null) perRel[b.rel]=0;
+      const i = perRel[b.rel]++;
+      const a = deg2rad((REL[b.rel]||REL.different).angle);
+      const D = 0.92 * maxRadiusToBox(CX, CY, a);
+      const d = Math.min(D*0.9, D*(0.30 + 0.16*i));   // stack branches outward along the spoke
+      const [sx,sy] = polar(CX, CY, d, a);
+      const pill = el('div',{ className:'branch'+(selectedBranch===b.id?' selected':'') });
+      pill.dataset.sx = sx; pill.dataset.sy = sy;
+      pill.appendChild(el('div',{ className:'branch-dot' }));
+      pill.appendChild(el('div',{ className:'branch-text', textContent:b.text }));
+      pill.addEventListener('click', ()=>{ selectedBranch = (selectedBranch===b.id ? null : b.id); renderBranches(); });
+      branchLayer.appendChild(pill);
+    });
+    placeBranches();
+  }
+
+  function placeBranches(){
+    [...branchLayer.children].forEach(pill=>{
+      const [px,py] = svgToPx(parseFloat(pill.dataset.sx), parseFloat(pill.dataset.sy));
+      pill.style.left = px+'px'; pill.style.top = py+'px';
+    });
+  }
+
+  /* panel wiring */
+  const fab = document.getElementById('addFab');
+  const panel = document.getElementById('addPanel');
+  const addText = document.getElementById('addText');
+  const micBtn = document.getElementById('micBtn');
+  const saveBtn = document.getElementById('saveBtn');
+
+  fab.addEventListener('click', ()=>{ panel.classList.toggle('open'); if(panel.classList.contains('open')) addText.focus(); });
+  saveBtn.addEventListener('click', ()=>{
+    const sel = panel.querySelector('input[name="rel"]:checked');
+    addBranch(sel ? sel.value : 'different', addText.value);
+    addText.value=''; panel.classList.remove('open');
+  });
+  addText.addEventListener('keydown', e=>{ if(e.key==='Enter') saveBtn.click(); });
+
+  /* mic — Web Speech API when available, graceful no-op otherwise */
+  micBtn.addEventListener('click', ()=>{
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR){ addText.placeholder = 'Mic not supported — type instead'; return; }
+    const rec = new SR();
+    rec.lang = document.querySelector('#ui-lang-es:checked') ? 'es-ES' : 'en-US';
+    rec.interimResults = false;
+    micBtn.classList.add('rec');
+    rec.onresult = e=>{ addText.value = (addText.value+' '+e.results[0][0].transcript).trim(); };
+    rec.onend = ()=> micBtn.classList.remove('rec');
+    rec.onerror = ()=> micBtn.classList.remove('rec');
+    try{ rec.start(); }catch(_){ micBtn.classList.remove('rec'); }
+  });
 
   /* GO */
   render();
