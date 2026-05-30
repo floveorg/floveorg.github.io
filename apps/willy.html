@@ -231,7 +231,10 @@
   .axis-square.is-minimal .dropzone.over{ border-color:var(--accent); background:rgba(77,208,225,.10) }
 
   /* ── axis square ────────────────────────────────────────────── */
-  .axis-wrap{ width:100% }
+  .axis-wrap{
+    width:100%; max-width:50%;
+    margin:0 auto;
+  }
   .axis-square{
     position:relative; width:100%; aspect-ratio:1/1;
     border-radius:var(--radius); overflow:hidden;
@@ -507,6 +510,8 @@
     .axis-panel{ order:2 }
     .words-panel{ order:1 }
     .word-grid{ grid-template-columns:repeat(3, minmax(0,1fr)) }
+    /* On mobile drop the 50% cap so the axis is usable */
+    .axis-wrap{ max-width:80%; }
   }
   @media (max-width: 560px){
     .word-grid{ grid-template-columns:repeat(2, minmax(0,1fr)) }
@@ -1099,6 +1104,50 @@
     } else if (list){
       e.preventDefault();
       list.appendChild(dragged);
+      capturePlacements();
+      savePlacements();
+    }
+  });
+
+  // ── click-to-place / click-to-unplace ───────────────────────
+  // Click on a chip in a word list → drop it into the FIRST EMPTY zone
+  // of the active layer (DOM order from the template).
+  // Click on a chip already inside a zone → return it to its word list
+  // (re-render keeps the canonical list order).
+  document.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    // Ignore chip clicks bubbling from drag-end (no real click fires after
+    // a successful drag, but guard against edge cases).
+    if (chip.classList.contains('is-dragging')) return;
+    // Ignore clicks on group-titles / button children
+    if (e.target.closest('.group-title')) return;
+
+    const inList = chip.closest('#wills-list, #virtuesin-list');
+    const inZone = chip.closest('.dropzone');
+
+    if (inList){
+      // Place into the first empty zone of the active layer
+      const kind  = (chipKind(chip) === 'wills') ? 'wills' : 'virtue';
+      const set   = state[kind].active;
+      const layer = state.layers[kind][set];
+      if (!layer) return;
+      // First .dropzone without a .chip inside, in document order
+      const emptyZone = $$('.dropzone', layer).find(z => !z.querySelector('.chip'));
+      if (!emptyZone){
+        toast('No empty zones — drag to displace');
+        return;
+      }
+      emptyZone.appendChild(chip);
+      emptyZone.classList.remove('empty');
+      capturePlacements();
+      savePlacements();
+    } else if (inZone){
+      // Unplace: drop the chip, re-render its list (keeps canonical order)
+      inZone.classList.add('empty');
+      chip.remove();
+      if (chipKind(chip) === 'wills') renderWillsList();
+      else                            renderVirtuesList();
       capturePlacements();
       savePlacements();
     }
