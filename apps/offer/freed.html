@@ -443,6 +443,12 @@
   #decl:has(#curse:checked) .s-curse,
   #decl:has(#curse-detail:not(:placeholder-shown)) .s-curse-detail,
   #decl:has(#time-span:valid) .s-span{ display:inline }
+  /* "I wish it to cause goodness in the…" intro only shows once a
+     wish (Past/Present/Future/Eternity) or scope (World/Universe/
+     Nature/Humanity) has actually been chosen. */
+  #decl:has(#wish-past:checked, #wish-concrete:checked, #wish-abstract:checked,
+            #wish-eternity:checked, #scope-world:checked, #scope-universe:checked,
+            #scope-nature:checked, #scope-humanity:checked) .s-wish-intro{ display:inline }
   /* Tag selections in the declaration */
   #decl:has(#tag-regular:checked)  .s-tag-regular,
   #decl:has(#tag-abundant:checked) .s-tag-abundant,
@@ -608,6 +614,7 @@
   }
   .section-btn .sb-icon{ width:28px; height:28px; color: var(--accent); transition: color var(--fast) }
   .section-btn .sb-icon svg{ width:100%; height:100%; display:block }
+  #decl:has(#sec-for:checked) .section-btn[data-sec="for"],
   #decl:has(#sec-1:checked)   .section-btn[data-sec="1"],
   #decl:has(#sec-2:checked)   .section-btn[data-sec="2"],
   #decl:has(#sec-3:checked)   .section-btn[data-sec="3"],
@@ -616,6 +623,7 @@
     background: linear-gradient(180deg, var(--accent), var(--accent-deep));
     box-shadow: 0 10px 22px -8px var(--accent-glow);
   }
+  #decl:has(#sec-for:checked) .section-btn[data-sec="for"] .sb-icon,
   #decl:has(#sec-1:checked) .section-btn[data-sec="1"] .sb-icon,
   #decl:has(#sec-2:checked) .section-btn[data-sec="2"] .sb-icon,
   #decl:has(#sec-3:checked) .section-btn[data-sec="3"] .sb-icon,
@@ -623,11 +631,41 @@
 
   /* only the active section's card is shown */
   #decl > .card{ display:none }
+  #decl:has(#sec-for:checked) > .card[data-sec="for"],
   #decl:has(#sec-1:checked) > .card[data-sec="1"],
   #decl:has(#sec-2:checked) > .card[data-sec="2"],
   #decl:has(#sec-3:checked) > .card[data-sec="3"],
   #decl:has(#sec-4:checked) > .card[data-sec="4"],
   #decl:has(#sec-all:checked) > .card{ display:block }
+
+  /* ===== Reasons section (data-sec="for") — Because / For chip columns ===== */
+  .for-grid{
+    display:grid; gap:16px;
+    grid-template-columns:1fr 1fr; align-items:start;
+  }
+  @media (max-width:600px){ .for-grid{ grid-template-columns:1fr } }
+  .for-col-title{
+    text-align:left; margin:0 0 12px;
+    font-family:var(--font-display); font-weight:600;
+    font-size:1.6rem; color:var(--accent-deep);
+  }
+  .reasons-cloud{ display:flex; flex-wrap:wrap; gap:8px; align-content:flex-start }
+  .reason-chip{
+    display:inline-flex; align-items:center; gap:7px;
+    padding: 7px 13px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-pill);
+    background:#fff; color: var(--ink);
+    font: 600 .82rem/1.2 var(--font-ui);
+    cursor:pointer;
+    transition: all var(--fast);
+  }
+  .reason-chip:hover{ border-color: var(--accent); color: var(--accent-deep) }
+  .reason-chip input{ position:absolute; opacity:0; pointer-events:none; width:0; height:0 }
+  .reason-chip:has(:checked){
+    background: var(--accent-soft); border-color: var(--accent); color: var(--accent-deep);
+  }
+  .reasons-cloud:has(:checked) .reason-chip:not(:has(:checked)){ opacity:.5 }
 
   /* ===== Tag area below the title (3 tiers, nested + reveals) ===== */
   .tag-toggle{ position:absolute; opacity:0; pointer-events:none; width:1px; height:1px }
@@ -1283,6 +1321,7 @@
 
   <form id="decl" autocomplete="off">
 
+    <input type="radio" name="secnav" id="sec-for" class="secnav-radio" checked>
     <input type="radio" name="secnav" id="sec-1"   class="secnav-radio">
     <input type="radio" name="secnav" id="sec-2"   class="secnav-radio">
     <input type="radio" name="secnav" id="sec-3"   class="secnav-radio">
@@ -1290,17 +1329,47 @@
     <input type="radio" name="secnav" id="sec-all" class="secnav-radio">
 
     <div class="section-buttons">
+      <label class="section-btn" for="sec-for" data-sec="for">Reasons<span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21C12 21 4 16.5 4 9.7 4 6.7 6 5 8 5c2 0 4 2 4 2s2-2 4-2c2 0 4 1.7 4 4.7C20 16.5 12 21 12 21Z"/></svg></span></label>
       <label class="section-btn" for="sec-1" data-sec="1">Thing<span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5 21 7v10l-9 4.5L3 17V7z"/><path d="M3 7l9 4.5L21 7M12 11.5V21.5"/></svg></span></label>
       <label class="section-btn" for="sec-2" data-sec="2">Farewell<span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13V5a1 1 0 0 1 1-1h8l7 7-9 9z"/><circle cx="8.5" cy="8.5" r="1.5"/></svg></span></label>
       <label class="section-btn" for="sec-3" data-sec="3">Wishes<span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.7 6.2.7-4.6 4.2 1.3 6.1L12 16.9 6.5 19.7l1.3-6.1L3.2 9.4l6.2-.7z"/></svg></span></label>
       <label class="section-btn" for="sec-4" data-sec="4">Beware<span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2z"/><path d="M12 10v4.5M12 17.2v.3"/></svg></span></label>
     </div>
 
+    <section class="card" data-sec="for">
+      <div class="for-grid">
+        <div class="for-col">
+          <h3 class="for-col-title">Because</h3>
+          <div class="reasons-cloud">
+            <label class="reason-chip"><input type="checkbox" name="reason"> I have plenty</label>
+            <label class="reason-chip"><input type="checkbox" name="reason"> it's just sitting there</label>
+            <label class="reason-chip"><input type="checkbox" name="reason"> I won't miss it</label>
+            <label class="reason-chip"><input type="checkbox" name="reason"> someone helped me once</label>
+            <label class="reason-chip"><input type="checkbox" name="reason"> it's fair</label>
+            <label class="reason-chip"><input type="checkbox" name="reason"> kindness should circulate</label>
+            <label class="reason-chip"><input type="checkbox" name="reason"> I'm passing it on</label>
+            <label class="reason-chip"><input type="checkbox" name="reason"> it'd go unused otherwise</label>
+          </div>
+        </div>
+        <div class="for-col">
+          <h3 class="for-col-title">For</h3>
+          <div class="reasons-cloud">
+            <label class="reason-chip"><input type="checkbox" name="reason"> giving better</label>
+            <label class="reason-chip"><input type="checkbox" name="reason"> connecting</label>
+            <label class="reason-chip"><input type="checkbox" name="reason"> less waste</label>
+            <label class="reason-chip"><input type="checkbox" name="reason"> better for the planet</label>
+            <label class="reason-chip"><input type="checkbox" name="reason"> building community</label>
+            <label class="reason-chip"><input type="checkbox" name="reason"> to free is to multiply</label>
+            <label class="reason-chip"><input type="checkbox" name="reason"> things gain stories when shared</label>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="card" data-sec="1">
       <div class="row-2">
         <div class="sec1-left">
           <div class="inline-decl">
-            <span class="freed-text">I freed my</span>
             <input id="thing-name" type="text" placeholder="e.g., bicycle, photo album, old loom">
             <div class="title-tools">
               <button type="button" class="ta-tool ta-mic" data-mic-for="thing-name" title="Voice input" aria-label="Voice input"><i class="fas fa-microphone"></i></button>
@@ -1318,27 +1387,24 @@
             <div class="tag-row">
               <label class="tag-btn"><input type="checkbox" id="tag-regular">regular</label>
               <label class="tag-btn"><input type="checkbox" id="tag-abundant">abundant</label>
+              <label class="tag-btn"><input type="checkbox" id="tag-new">new</label>
+              <label class="tag-btn"><input type="checkbox" id="tag-eco">eco</label>
+              <label class="tag-btn"><input type="checkbox" id="tag-local">local</label>
               <label class="tag-plus" for="tags-more2" title="More tags">+</label>
             </div>
             <div class="tag-tier3">
               <div class="tag-row">
-                <label class="tag-btn"><input type="checkbox" id="tag-new">new</label>
                 <label class="tag-btn"><input type="checkbox" id="tag-used">used</label>
                 <label class="tag-btn"><input type="checkbox" id="tag-vintage">vintage</label>
                 <label class="tag-btn"><input type="checkbox" id="tag-handmade">handmade</label>
-                <label class="tag-btn"><input type="checkbox" id="tag-eco">eco</label>
-              </div>
-              <div class="tag-row">
                 <label class="tag-btn"><input type="checkbox" id="tag-rare">rare</label>
                 <label class="tag-btn"><input type="checkbox" id="tag-fragile">fragile</label>
                 <label class="tag-btn"><input type="checkbox" id="tag-heavy">heavy</label>
                 <label class="tag-btn"><input type="checkbox" id="tag-tiny">tiny</label>
-                <label class="tag-btn"><input type="checkbox" id="tag-local">local</label>
               </div>
             </div>
           </div>
           <div class="where-row" style="margin-top:10px">
-            <button type="button" class="map-btn" id="mapBtn" aria-label="Pick on map"><i class="fas fa-map-location-dot"></i> Map</button>
             <input id="where" type="text" placeholder="Where">
             <select id="time-span" class="span-select" required>
               <option value="" selected>When</option>
@@ -1350,10 +1416,11 @@
               <option>long ago</option>
               <option>timeless</option>
             </select>
+            <button type="button" class="map-btn" id="mapBtn" aria-label="Pick on map"><i class="fas fa-map-location-dot"></i> Map</button>
           </div>
         </div>
         <div class="ta-field ta-fill">
-          <textarea id="thing-desc" placeholder="Description — tell us more about it…"></textarea>
+          <textarea id="thing-desc" placeholder="Description"></textarea>
           <div class="ta-bottom-tools">
             <button type="button" class="ta-tool opt-magic" data-magic-for="thing-desc" title="Magic" aria-label="Magic">✦</button>
             <button type="button" class="ta-tool ta-mic" data-mic-for="thing-desc" title="Voice input" aria-label="Voice input"><i class="fas fa-microphone"></i></button>
@@ -1468,11 +1535,6 @@
            when something inside the Invitation is active. -->
       <input class="ctl" type="checkbox" id="magic-toggle">
       <input class="ctl" type="checkbox" id="copy-hint">
-      <input class="ctl" type="checkbox" id="views-open">
-      <input class="ctl" type="checkbox" id="view-bars">
-      <input class="ctl" type="checkbox" id="view-vertical">
-      <input class="ctl" type="checkbox" id="view-axial">
-      <input class="ctl" type="checkbox" id="view-spider">
       <input class="ctl" type="radio" name="insight" id="insight-0" checked>
       <input class="ctl" type="radio" name="insight" id="insight-1">
       <input class="ctl" type="radio" name="insight" id="insight-2">
@@ -1548,7 +1610,7 @@
         <span class="seg s-own-notme"> I am <strong>no longer the owner</strong>.</span>
         <span class="seg s-own-ours"> It is <strong>common — ours</strong>.</span>
         <span class="seg s-own-ours-strong"> It is <strong>globally owned — from everyone!</strong></span>
-        I wish it to cause goodness in the
+        <span class="seg s-wish-intro"> I wish it to cause goodness in the</span>
         <span class="seg s-past"><strong>Past</strong></span>
         <span class="seg s-concrete"><strong>Present</strong></span>
         <span class="seg s-abstract"><strong>Future</strong></span>
@@ -1568,9 +1630,8 @@
 
       <div class="action-grid">
 
-        <!-- TOP ACTION-ROW · Views / Insight / Magic / Copy -->
+        <!-- TOP ACTION-ROW · Insight / Magic / Copy -->
         <div class="action-row">
-          <label class="btn ghost views-btn" for="views-open" aria-label="Views">Views</label>
           <span class="insight-cycle">
             <label class="btn ghost insight-step" for="insight-1" aria-label="Show insight 1">Insight</label>
             <label class="btn ghost insight-step" for="insight-2" aria-label="Show insight 2">Insight · 1/4</label>
@@ -1583,33 +1644,6 @@
             <span class="label-on">Phrase</span>
           </label>
           <label class="btn ghost copy-btn" for="copy-hint" title="Copy" aria-label="How to copy the phrase">Copy</label>
-        </div>
-
-        <!-- VIEWS SUBTAB · only visible while Views is open -->
-        <div class="action-row action-row--views" role="group" aria-label="Phrase view mode">
-          <label class="btn ghost view-pick" for="view-bars"     data-view="bars"     aria-label="Bars view">Bars</label>
-          <label class="btn ghost view-pick" for="view-vertical" data-view="vertical" aria-label="Vertical view">Vertical</label>
-          <label class="btn ghost view-pick" for="view-axial"    data-view="axial"    aria-label="Axial view">Axial</label>
-          <label class="btn ghost view-pick" for="view-spider"   data-view="spider"   aria-label="Spider view">Spider</label>
-        </div>
-
-        <!-- Chart slot — pure-CSS bars / vertical plus an SVG placeholder.
-             freed has no h/f/l/t rater data, so the tracks render empty;
-             the affordance is preserved so the buttons feel "on". -->
-        <div class="cssviz-out" aria-hidden="true">
-          <div class="cssviz cssviz--bars">
-            <div class="cssbar cssax--h"><span class="cssbar-emo">😊</span><span class="cssbar-trk"><i></i></span></div>
-            <div class="cssbar cssax--f"><span class="cssbar-emo">😆</span><span class="cssbar-trk"><i></i></span></div>
-            <div class="cssbar cssax--l"><span class="cssbar-emo">😘</span><span class="cssbar-trk"><i></i></span></div>
-            <div class="cssbar cssax--t"><span class="cssbar-emo">😈</span><span class="cssbar-trk"><i></i></span></div>
-          </div>
-          <div class="cssviz cssviz--vertical">
-            <div class="csscol cssax--h"><span class="csscol-trk"><i></i></span><span class="cssbar-emo">😊</span></div>
-            <div class="csscol cssax--f"><span class="csscol-trk"><i></i></span><span class="cssbar-emo">😆</span></div>
-            <div class="csscol cssax--l"><span class="csscol-trk"><i></i></span><span class="cssbar-emo">😘</span></div>
-            <div class="csscol cssax--t"><span class="csscol-trk"><i></i></span><span class="cssbar-emo">😈</span></div>
-          </div>
-          <div class="cssviz cssviz--svg" aria-hidden="true"><em>· axial / spider view ·</em></div>
         </div>
 
         <div class="copy-hint-panel" role="status">
