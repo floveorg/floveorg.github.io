@@ -1075,6 +1075,29 @@
       color: #fff;
     }
     /* ── 8 ascending Worthy bars ─────────────────────────────────── */
+    /* inline preference 1–5 bar — revealed beside the title on click */
+    .sel-name--pref { cursor: pointer; }
+    .sel-name--pref:hover { color: #2b7a4b; }
+    .pref-bars {
+      display: none; align-items: flex-end; gap: 3px; margin: 0 4px 0 8px;
+      flex-shrink: 0;
+    }
+    .sel-item.is-pref-open .pref-bars { display: inline-flex; }
+    .pref-bar {
+      width: 7px; padding: 0; cursor: pointer;
+      border: 1px solid #b2d6b8; border-radius: 2px 2px 0 0;
+      background: #e2f3e2; font-family: inherit;
+      transition: background .15s, border-color .15s, opacity .15s;
+    }
+    .pref-bar:hover { border-color: #2b7a4b; }
+    .pref-bar.is-selected { background: #2b7a4b; border-color: #2b7a4b; }
+    .pref-bars:has(.pref-bar.is-selected) .pref-bar:not(.is-selected) { opacity: 0.45; }
+    .pref-bar:nth-child(1) { height: 9px; }
+    .pref-bar:nth-child(2) { height: 12px; }
+    .pref-bar:nth-child(3) { height: 15px; }
+    .pref-bar:nth-child(4) { height: 18px; }
+    .pref-bar:nth-child(5) { height: 21px; }
+
     .worthy-bars {
       display: none;
       align-items: flex-end;
@@ -2675,7 +2698,7 @@
     const itemState = {};
     function stateKey(name, type) { return `${type}::${name}`; }
     function ensureItemState(key) {
-      if (!itemState[key]) itemState[key] = { shareable: false, much: false, maybe: false, unlikely: false, very: false, notes: [], worthy: null, worthyOpen: false, offerOpen: false };
+      if (!itemState[key]) itemState[key] = { shareable: false, much: false, maybe: false, unlikely: false, very: false, notes: [], worthy: null, worthyOpen: false, offerOpen: false, pref: null, prefOpen: false };
       return itemState[key];
     }
 
@@ -2733,10 +2756,13 @@
       }
 
       return `
-        <div class="sel-item${type === 'have' && st.worthyOpen ? ' is-worthy-open' : ''}">
+        <div class="sel-item${type === 'have' && st.worthyOpen ? ' is-worthy-open' : ''}${type === 'have' && st.prefOpen ? ' is-pref-open' : ''}">
           <div class="sel-row">
             ${iconHtml(name)}
-            <span class="sel-name">${escapeHtml(name)}</span>
+            <span class="sel-name${type === 'have' ? ' sel-name--pref' : ''}"${type === 'have' ? ` data-key="${keyAttr}" title="Click to set preference 1–5"` : ''}>${escapeHtml(name)}</span>
+            ${type === 'have' ? `<span class="pref-bars" role="group" aria-label="Preference 1 to 5">
+              ${[1,2,3,4,5].map(n => `<button type="button" class="pref-bar${st.pref === n ? ' is-selected' : ''}" data-key="${keyAttr}" data-p="${n}" aria-label="Preference ${n}/5" title="${n}/5"></button>`).join('')}
+            </span>` : ''}
             ${pillsHtml}
           </div>
           <div class="sel-notes">${notesHtml}</div>
@@ -2894,6 +2920,31 @@
           st[val] = !st[val];
           sp.setAttribute('aria-pressed', String(st[val]));
         }
+        return;
+      }
+      // Preference: clicking a HAVE item's title toggles its inline 1–5 bar
+      const pname = e.target.closest('.sel-name--pref');
+      if (pname) {
+        e.stopPropagation();
+        const key = pname.dataset.key;
+        const st = ensureItemState(key);
+        st.prefOpen = !st.prefOpen;
+        const card = pname.closest('.sel-item');
+        if (card) card.classList.toggle('is-pref-open', st.prefOpen);
+        return;
+      }
+      // Preference bar — set the level (or clear if pressing the same one)
+      const pbar = e.target.closest('.pref-bar');
+      if (pbar) {
+        e.stopPropagation();
+        const key = pbar.dataset.key;
+        const n = parseInt(pbar.dataset.p, 10);
+        const st = ensureItemState(key);
+        st.pref = (st.pref === n) ? null : n;
+        const bars = pbar.closest('.pref-bars');
+        bars.querySelectorAll('.pref-bar').forEach(b => {
+          b.classList.toggle('is-selected', parseInt(b.dataset.p, 10) === st.pref);
+        });
         return;
       }
       // Worthy button — toggle the 8 worthy bars below
