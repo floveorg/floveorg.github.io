@@ -2214,9 +2214,10 @@
       lab.className = 'inv-bubble-label';
       lab.textContent = name;   // title shown below the icon when checked
       b.appendChild(lab);
-      let st = currentRowState(row);
-      if (!st) { setRowState(row, 'have'); st = 'have'; }  // newly revealed → Have-green by default
-      b.dataset.state = st;
+      // bubbles start unchecked (icon only) — clicking cycles the state:
+      // 1× Have-green · 2× Wish-blue · 3× Want · 4× Need · 5× Reset
+      const st = currentRowState(row);
+      if (st) b.dataset.state = st;
       b.addEventListener('click', () => {
         const idx = STATE_CYCLE.indexOf(currentRowState(row));
         const next = STATE_CYCLE[(idx + 1) % STATE_CYCLE.length];
