@@ -287,9 +287,16 @@
       width: 100%; text-align: center;
       color: #6a8aa3; font-size: 0.85rem; padding: 1rem 0;
     }
+    /* The cloud grows with its content (flex-wrap) so the area expands as
+       more bubbles are revealed — it is never crammed. Bubbles are loaded
+       in batches as you scroll (see #bubbleSentinel) and each one rises up
+       from below with a staggered delay. */
     .bubble-cloud {
       display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+      align-content: flex-start;
+      transition: min-height 0.3s ease;
     }
+    .bubble-sentinel { height: 1px; width: 100%; }
     .inv-bubble {
       width: 50px; height: 50px; border-radius: 50%;
       display: inline-flex; align-items: center; justify-content: center;
@@ -297,11 +304,24 @@
       background: radial-gradient(circle at 32% 28%, #fff 0%, #f0f6fc 70%, #e3eef7 100%);
       color: #1e4a6b; font-size: 1.25rem; cursor: pointer; position: relative;
       box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.9), 0 2px 5px rgba(0, 0, 0, 0.08);
-      transition: transform 0.15s, background 0.2s, border-color 0.2s, color 0.2s;
-      animation: inv-bubble-float 4s ease-in-out infinite;
-      animation-delay: calc(var(--bi, 0) * 0.12s);
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      opacity: 0;
+      animation:
+        inv-bubble-in 0.7s cubic-bezier(0.22, 0.9, 0.35, 1.05) both,
+        inv-bubble-float 4s ease-in-out infinite;
+      animation-delay:
+        calc(var(--ri, 0) * 0.06s),
+        calc(var(--ri, 0) * 0.06s + 0.7s);
     }
-    .inv-bubble:hover { transform: scale(1.1); border-color: var(--app-accent); }
+    .inv-bubble:hover {
+      transform: scale(1.1); border-color: var(--app-accent);
+      animation-play-state: paused;   /* pause the float so hover scale shows */
+    }
+    @keyframes inv-bubble-in {
+      0%   { opacity: 0; transform: translateY(46px) scale(0.5); }
+      60%  { opacity: 1; transform: translateY(-5px) scale(1.06); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
     @keyframes inv-bubble-float {
       0%, 100% { transform: translateY(0); }
       50%      { transform: translateY(-4px); }
@@ -311,7 +331,7 @@
     .inv-bubble[data-state="want"] { background: #d18e1a; color: #fff; border-color: #d18e1a; }
     .inv-bubble[data-state="need"] { background: #c7362b; color: #fff; border-color: #c7362b; }
     @media (prefers-reduced-motion: reduce) {
-      .inv-bubble { animation: none; }
+      .inv-bubble { animation: none; opacity: 1; }
     }
 
     /* table */
@@ -2154,14 +2174,59 @@
       return 'fas ' + (cat ? cat.icon : 'fa-shapes');
     }
 
+    // Bubbles load in batches: an initial set fills the area, then scrolling
+    // down (the sentinel entering view) reveals the next batch — so the cloud
+    // is never crammed and grows only as far as you scroll.
+    const BUBBLE_BATCH = 14;
+    let bubbleRows = [];   // rows for the current category selection
+    let bubbleShown = 0;   // how many bubbles rendered so far
+    let bubbleObserver = null;
+
+    function makeBubble(row, riseIndex) {
+      const name = row.querySelector('.col-item')?.textContent.trim() || '';
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'inv-bubble';
+      b.style.setProperty('--ri', riseIndex);
+      b.title = name;
+      b.setAttribute('aria-label', name);
+      b.innerHTML = `<i class="${rowIconClass(row)}" aria-hidden="true"></i>`;
+      const st = currentRowState(row);
+      if (st) b.dataset.state = st;
+      b.addEventListener('click', () => {
+        const idx = STATE_CYCLE.indexOf(currentRowState(row));
+        const next = STATE_CYCLE[(idx + 1) % STATE_CYCLE.length];
+        setRowState(row, next);
+        if (next) b.dataset.state = next; else b.removeAttribute('data-state');
+      });
+      return b;
+    }
+
+    function appendBubbleBatch() {
+      const cloud = bubbleView.querySelector('.bubble-cloud');
+      if (!cloud) return;
+      const start = bubbleShown;
+      const end = Math.min(bubbleRows.length, start + BUBBLE_BATCH);
+      for (let i = start; i < end; i++) {
+        cloud.appendChild(makeBubble(bubbleRows[i], i - start));  // stagger per batch
+      }
+      bubbleShown = end;
+      // keep the sentinel at the very bottom so it re-triggers as we scroll
+      const sentinel = bubbleView.querySelector('.bubble-sentinel');
+      if (sentinel) bubbleView.appendChild(sentinel);
+      if (bubbleShown >= bubbleRows.length && bubbleObserver) bubbleObserver.disconnect();
+    }
+
     function renderBubbles() {
       if (!bubbleView) return;
-      const rows = getRows().filter(r => {
+      if (bubbleObserver) { bubbleObserver.disconnect(); }
+      bubbleRows = getRows().filter(r => {
         const catClass = Array.from(r.classList).find(c => c.startsWith('cat-'));
         const cat = categories.find(c => c.class === catClass);
         return cat && selectedCats.has(cat.id);
       });
-      if (!rows.length) {
+      bubbleShown = 0;
+      if (!bubbleRows.length) {
         bubbleView.innerHTML = '<p class="bubble-hint">Pick one or more categories above to see their things as bubbles. Tap a bubble: 1× Have · 2× Wish · 3× Want · 4× Need.</p>';
         return;
       }
@@ -2172,27 +2237,24 @@
         '<span><i class="dot want"></i>3× Want</span>' +
         '<span><i class="dot need"></i>4× Need</span>' +
         '</div>';
-      bubbleView.innerHTML = legend + '<div class="bubble-cloud"></div>';
-      const cloud = bubbleView.querySelector('.bubble-cloud');
-      rows.forEach((row, i) => {
-        const name = row.querySelector('.col-item')?.textContent.trim() || '';
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'inv-bubble';
-        b.style.setProperty('--bi', (i * 7) % 21);
-        b.title = name;
-        b.setAttribute('aria-label', name);
-        b.innerHTML = `<i class="${rowIconClass(row)}" aria-hidden="true"></i>`;
-        const st = currentRowState(row);
-        if (st) b.dataset.state = st;
-        b.addEventListener('click', () => {
-          const idx = STATE_CYCLE.indexOf(currentRowState(row));
-          const next = STATE_CYCLE[(idx + 1) % STATE_CYCLE.length];
-          setRowState(row, next);
-          if (next) b.dataset.state = next; else b.removeAttribute('data-state');
-        });
-        cloud.appendChild(b);
-      });
+      bubbleView.innerHTML = legend + '<div class="bubble-cloud"></div><div class="bubble-sentinel" id="bubbleSentinel"></div>';
+      appendBubbleBatch();
+      // Reveal more whenever the bottom sentinel scrolls into view. rootMargin
+      // pre-loads slightly early; it loads just enough to fill the viewport,
+      // then waits for the next scroll.
+      const sentinel = bubbleView.querySelector('#bubbleSentinel');
+      if (sentinel && 'IntersectionObserver' in window) {
+        bubbleObserver = new IntersectionObserver((entries) => {
+          if (!multiMode) return;
+          if (entries.some(en => en.isIntersecting) && bubbleShown < bubbleRows.length) {
+            appendBubbleBatch();
+          }
+        }, { root: null, rootMargin: '160px 0px' });
+        bubbleObserver.observe(sentinel);
+      } else {
+        // no IO support → just render everything
+        while (bubbleShown < bubbleRows.length) appendBubbleBatch();
+      }
     }
 
     function setMultiMode(on) {
@@ -2206,6 +2268,7 @@
         syncTabActive();
         renderBubbles();
       } else {
+        if (bubbleObserver) bubbleObserver.disconnect();
         filterByCategory(activeCat);  // restore the normal filtered table
       }
     }
