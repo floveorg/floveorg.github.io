@@ -1290,10 +1290,30 @@ body:not(:has(#topbar-collapsed:checked)) .topbar-inner > .tier-pop,
 body:not(:has(#topbar-collapsed:checked)) .topbar-inner > .labeler-slogan{
   display: none;
 }
-body:has(#topbar-collapsed:checked) .settings-btn{
-  color: var(--accent-deep);
-  border-color: var(--accent);
+/* Settings ⚙ button — default · hover/active · checked(expanded) states */
+.settings-btn{
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink-soft);
+  transition: var(--btn-trans), transform .25s var(--bounce);
 }
+.settings-btn svg{ transition: transform .4s var(--bounce); }
+.settings-btn:hover{
+  border-color: var(--accent);
+  color: var(--accent-deep);
+  background: var(--fill-soft);
+  box-shadow: 0 6px 16px var(--accent-glow);
+}
+.settings-btn:hover svg{ transform: rotate(45deg); }
+.settings-btn:active{ transform: scale(.9); }
+/* checked = topbar expanded: filled accent, white gear, rotated open */
+body:has(#topbar-collapsed:checked) .settings-btn{
+  background: var(--grad-active);
+  border-color: var(--accent-deep);
+  color: #fff;
+  box-shadow: 0 6px 16px var(--accent-glow);
+}
+body:has(#topbar-collapsed:checked) .settings-btn svg{ transform: rotate(90deg); }
 body:has(#sound-mini:checked)     .menu-nav-step[for="sound-mini"]     .menu-nav-node,
 body:has(#sound-basic:checked)    .menu-nav-step[for="sound-basic"]    .menu-nav-node,
 body:has(#sound-normal:checked)   .menu-nav-step[for="sound-normal"]   .menu-nav-node,
@@ -4942,20 +4962,15 @@ body:has(input[name="topbar-labeler"]:not(#topbar-labeler-none):checked) .rater-
   to  { clip-path: inset(0 0 0 0); }
 }
 
-/* opacity:0 starting state on the elements that fade in */
-.mark-link,
-.title-label,
-.compass-wrap,
-.app-toggle-btn,
-.magic-wrap,
-.top-menu,
+/* opacity:0 starting state on the elements that fade in.
+   NOTE: the topbar buttons are intentionally excluded — they appear
+   immediately (no entrance delay), and keeping a retained transform on
+   .top-menu would trap the fixed-positioned menu inside it. */
 .step-panels,
 .path{ opacity: 0; }
 .page-slogan{ clip-path: inset(0 100% 0 0); }
 
-.mark-link          { animation: flov-fly-left 1s var(--bounce) 1s forwards; }
-.title-label          { animation: flov-fly-left-title 2s var(--bounce) 2s forwards; }
-.compass-wrap       { animation: flov-fly-left 2.5s var(--bounce) 3s forwards; }
+/* topbar buttons: no entrance animation / delay — visible immediately */
 .page-slogan        {
   animation:
     flov-typed     3s   steps(44, end) 4s forwards,
@@ -4982,9 +4997,8 @@ body:has(input[name="topbar-labeler"]:not(#topbar-labeler-none):checked) .rater-
 }
 .step-panels        { animation: flov-fly-up 3s var(--bounce) 20s forwards; }
 .path            { animation: flov-fly-up 3s var(--bounce) 20s forwards; }
-.app-toggle-btn,
-.magic-wrap,
-.top-menu           { animation: flov-fly-left 5s var(--bounce) 8s forwards; }
+/* .app-toggle-btn / .magic-wrap / .top-menu — no entrance animation: they
+   appear instantly and leave no transform that would trap the fixed menu. */
 
 /* slogan — absolutely centered in the topbar; second line sits 2 rows below */
 .page-slogan{
@@ -9109,13 +9123,22 @@ body:has(#insight-4:checked) .insight-4-content{ display: block; }
     if (raf){ cancelAnimationFrame(raf); raf = null; }
     clearInterval(revealTimer);
   }
-  document.addEventListener('change', (e) => {
-    const t = e.target;
-    if (!t) return;
-    if (t.id === 'magic-open' || t.id === 'd-armmore' || t.id === 'd-none' || t.name === 'topdrop'){
+  // Robust open/close detection: watch the list's own visibility rather than
+  // guessing the right inputs — when the CSS reveals it (display:block) it
+  // intersects the viewport and we start; when it hides again we stop.
+  if ('IntersectionObserver' in window){
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(en => {
+        if (en.isIntersecting && en.boundingClientRect.width > 1) start();
+        else stop();
+      });
+    }, { threshold: 0.01 });
+    io.observe(list);
+  } else {
+    document.addEventListener('change', () => {
       setTimeout(() => { isOpen() ? start() : stop(); }, 0);
-    }
-  });
+    });
+  }
 })();
 </script>
 
