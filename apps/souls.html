@@ -837,7 +837,18 @@
   .timestats:not(.is-open) .timestats__row,
   .timestats:not(.is-open) .timestats__per,
   .timestats:not(.is-open) .timestats__t-label,
-  .timestats:not(.is-open) .timestats__timeline{ display:none; }
+  .timestats:not(.is-open) .timestats__timeline,
+  .timestats:not(.is-open) .timestats__insights-btn,
+  .timestats:not(.is-open) .timestats__insights{ display:none; }
+  .timestats__insights-btn{ margin-top:.7rem; }
+  .timestats__insights{
+    margin-top:.6rem; padding-top:.55rem;
+    border-top:1px solid var(--line);
+    color:var(--ink-soft); font-size:.86rem; line-height:1.55;
+    animation: rise .3s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .timestats__insights[hidden]{ display:none; }
+  .timestats__insights em{ color:var(--app-accent-soft); font-style:normal; }
   .timestats__row{
     display:grid; gap:.3rem .9rem;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -1322,6 +1333,22 @@
 
   /* centered summary heading */
   .summary-title{ text-align:center; }
+  /* summary: two columns — table on the left, time stats + insight phrase on the right */
+  .summary-cols{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:.9rem;
+    align-items:start;
+    margin:.6rem 0 1.4rem;
+  }
+  .summary-col{ min-width:0; }
+  .summary-col--side{ display:grid; gap:.8rem; align-content:start; }
+  .summary-col .portrait-frame,
+  .summary-col .timestats,
+  .summary-col .insight-panel{ margin:0; }
+  @media (max-width: 720px){
+    .summary-cols{ grid-template-columns: 1fr; }
+  }
   /* insight panel — the 5 analyses revealed by the Insight button */
   .insight-panel{
     width:100%;
@@ -2509,20 +2536,28 @@
     <h1 class="summary-title">Summary</h1>
     <p class="hint">First answers in <em>warm</em>, second answers in <em>rose</em>. <span class="pill-tag">cloud sync coming soon</span></p>
 
-    <div class="portrait-frame">
-      <div class="portrait-grid portrait-row-1" id="portraitRow1"></div>
-      <div class="portrait-grid portrait-row-2" id="portraitRow2"></div>
-    </div>
+    <div class="summary-cols">
+      <div class="summary-col summary-col--main">
+        <div class="portrait-frame">
+          <div class="portrait-grid portrait-row-1" id="portraitRow1"></div>
+          <div class="portrait-grid portrait-row-2" id="portraitRow2"></div>
+        </div>
+      </div>
 
-    <div class="timestats" id="timeStats" hidden>
-      <div class="timestats__h" title="Enter" role="button" tabindex="0" aria-expanded="false">Time stats</div>
-      <div class="timestats__row" id="timeStatsRow"></div>
-      <div class="timestats__per" id="timeStatsPer"></div>
-      <div class="timestats__t-label">Click-by-click · time you took between each action</div>
-      <div class="timestats__timeline" id="timeStatsTimeline"></div>
-    </div>
+      <div class="summary-col summary-col--side">
+        <div class="timestats" id="timeStats" hidden>
+          <div class="timestats__h" title="Enter" role="button" tabindex="0" aria-expanded="false">Time stats</div>
+          <div class="timestats__row" id="timeStatsRow"></div>
+          <div class="timestats__per" id="timeStatsPer"></div>
+          <div class="timestats__t-label">Click-by-click · time you took between each action</div>
+          <div class="timestats__timeline" id="timeStatsTimeline"></div>
+          <button class="btn ghost timestats__insights-btn" id="timeInsightBtn" type="button">💡 Insights</button>
+          <div class="timestats__insights" id="timeInsightText" hidden></div>
+        </div>
 
-    <div class="insight-panel" id="insightPanel" hidden></div>
+        <div class="insight-panel" id="insightPanel" hidden></div>
+      </div>
+    </div>
 
     <div class="result-actions action-grid">
       <div class="action-row">
@@ -2570,7 +2605,6 @@
     </div>
 
     <div class="related-apps" id="relatedApps" hidden>
-      <div class="related-apps__label">Apps related to Souls</div>
       <div class="related-apps__grid" id="relatedAppsGrid"></div>
       <button class="related-apps__more" type="button" id="relatedAppsMoreBtn" aria-expanded="false" aria-controls="relatedAppsExtra">+</button>
       <div class="related-apps__extra" id="relatedAppsExtra" hidden></div>
@@ -3356,6 +3390,52 @@
     });
   })();
 
+  // Insights button inside Time stats — 3 different suggestions about the
+  // numbers below; clicks 1·2·3 reveal each in turn, click 4 resets and the
+  // loop starts again.
+  function timeStatSuggestions(){
+    const st = computeStats();
+    if (st.count < 2) return [];
+    const stageNames = ['Stage 1','Stage 2','Stage 3','Stage 4','Stage 5'];
+    const stages = [1,2,3,4,5].filter(n => st.perStage[n] > 0);
+    let longest = stages[0], shortest = stages[0];
+    stages.forEach(n => {
+      if (st.perStage[n] > st.perStage[longest])  longest  = n;
+      if (st.perStage[n] < st.perStage[shortest]) shortest = n;
+    });
+    const pace = st.avg < 4000 ? 'a brisk, instinctive rhythm'
+               : st.avg < 12000 ? 'a steady, considered pace'
+               : 'a slow, contemplative pace';
+    const swing = st.max > st.median * 3
+      ? 'one answer clearly made you stop and think'
+      : 'your pace stayed fairly even throughout';
+    return [
+      `In all you spent <em>${fmtDuration(st.total)}</em> across <em>${st.count}</em> choices, pausing about <em>${fmtDuration(st.avg)}</em> between each — ${pace}.`,
+      `Your quickest answer arrived in <em>${fmtDuration(st.min)}</em>, the slowest took <em>${fmtDuration(st.max)}</em>, with the middle of your pace near <em>${fmtDuration(st.median)}</em> — ${swing}.`,
+      longest === shortest
+        ? `Every layer drew a similar amount of time from you — a balanced descent.`
+        : `<em>${stageNames[longest-1]}</em> held you longest (<em>${fmtDuration(st.perStage[longest])}</em>), while <em>${stageNames[shortest-1]}</em> flew by (<em>${fmtDuration(st.perStage[shortest])}</em>).`
+    ];
+  }
+  let timeInsightStep = 0; // 0 = none shown; 1·2·3 = suggestion shown; cycles mod 4
+  (function wireTimeInsightsBtn(){
+    const btn  = $('#timeInsightBtn');
+    const text = $('#timeInsightText');
+    if (!btn || !text) return;
+    btn.addEventListener('click', () => {
+      timeInsightStep = (timeInsightStep + 1) % 4; // 1,2,3,then 0 (reset), loop
+      if (timeInsightStep === 0){
+        text.hidden = true;
+        text.innerHTML = '';
+        return;
+      }
+      const tips = timeStatSuggestions();
+      const tip = tips[timeInsightStep - 1] || '—';
+      text.innerHTML = `<p>${tip}</p>`;
+      text.hidden = false;
+    });
+  })();
+
   // wire save-intro Back button (returns to the view the user paused from)
   (function wireSaveIntroBack(){
     const btn = $('#saveIntroBack');
@@ -3370,17 +3450,17 @@
 
   // ── related apps (shown by Keep-playing in save-intro) ──
   const RELATED_APPS_PRIMARY = [
-    { name:'Sensy',   sub:'the five senses',    icon:'👁',  href:'sensy.html' },
-    { name:'Profily', sub:'my inner figure',  icon:'✺',  href:'profily.html' },
-    { name:'Hoty',    sub:'personality colours', icon:'❉', href:'hoty.html' }
+    { name:'Profily',   sub:'my inner figure',  icon:'✺',  href:'profily.html' },
+    { name:'Inventary', sub:'what you hold',    icon:'🎒', href:'inventary.html' },
+    { name:'Rewardy',   sub:"what you've earned", icon:'🏆', href:'rewardy.html' }
   ];
   const RELATED_APPS_EXTRA = [
-    { name:'Goddy',     sub:'archetypes',        icon:'⚘',  href:'goddy.html' },
-    { name:'Crumbly',   sub:'inner crumbles',    icon:'✦',  href:'crumbly.html' },
-    { name:'Lovy',      sub:'love in five keys', icon:'❤',  href:'lovy.html' },
-    { name:'Realy',     sub:'what feels real',   icon:'◆',  href:'realy.html' },
-    { name:'Trusty',    sub:'whom you trust',    icon:'⌬',  href:'trusty.html' },
-    { name:'Hacky',  sub:'parts of you',      icon:'✺',  href:'hacky.html' }
+    { name:'Astry',  sub:'your stars',       icon:'✦',  href:'astry.html' },
+    { name:'Daty',   sub:'your data',        icon:'🗂', href:'daty.html' },
+    { name:'Maty',   sub:'your matters',     icon:'◈',  href:'maty.html' },
+    { name:'Trusty', sub:'whom you trust',   icon:'⌬',  href:'trusty.html' },
+    { name:'Hacky',  sub:'parts of you',     icon:'⚡', href:'hacky.html' },
+    { name:'Realy',  sub:'what feels real',  icon:'◆',  href:'realy.html' }
   ];
   function makeAppCard(app){
     const a = document.createElement('a');
@@ -4265,6 +4345,10 @@
     $('#timeStatsPer').innerHTML = [1,2,3,4,5].map(n =>
       `<div><span>Stage ${n}</span><b>${st.perStage[n] ? fmtDuration(st.perStage[n]) : '—'}</b></div>`
     ).join('');
+    // reset the Insights cycle each time the stats are re-rendered
+    timeInsightStep = 0;
+    const tiText = $('#timeInsightText');
+    if (tiText){ tiText.hidden = true; tiText.innerHTML = ''; }
     renderTimeline();
   }
 
