@@ -783,9 +783,9 @@
   .summary-sec > summary{
     list-style:none;cursor:pointer;
     padding:.85rem 1rem;
-    font:600 1.05rem/1.2 ui-serif,Georgia,serif;
+    font:600 1.1rem/1.2 ui-serif,Georgia,serif;
     color:var(--gold);letter-spacing:.4px;
-    display:flex;align-items:center;gap:.5rem;
+    display:flex;align-items:center;justify-content:center;gap:.5rem;  /* centred title */
     transition:background .15s ease, color .15s ease;
   }
   .summary-sec > summary::-webkit-details-marker{display:none}
@@ -797,14 +797,72 @@
   .summary-sec > summary:hover{background:rgba(250,220,146,.06);color:var(--ink)}
   .summary-body{padding:0 1rem 1rem;color:var(--ink)}
   .summary-body h3{
-    margin:.7rem 0 .35rem;
+    margin:.9rem 0 .4rem;text-align:center;
     font:600 .85rem/1 ui-serif,Georgia,serif;
     color:var(--sky);text-transform:uppercase;letter-spacing:.6px;
   }
-  .summary-body ul{margin:.2rem 0 .6rem;padding-left:1.2rem;color:var(--muted);font-size:.92rem}
-  .summary-body ul li{margin-bottom:3px}
-  .summary-body ul li b{color:var(--ink);font-weight:600}
-  .summary-body .empty-line{color:var(--muted);font-style:italic;font-size:.88rem;margin:.3rem 0 .6rem}
+  .summary-body .empty-line{color:var(--muted);font-style:italic;font-size:.88rem;margin:.3rem 0 .6rem;text-align:center}
+
+  /* ---- summary tables ---- */
+  .sum-table{
+    width:100%;border-collapse:collapse;margin:.2rem 0 .4rem;
+    font:500 .84rem/1.3 system-ui,sans-serif;
+  }
+  .sum-table th,.sum-table td{
+    border:1px solid var(--stroke);padding:.4rem .55rem;text-align:center;
+  }
+  .sum-table thead th{
+    background:rgba(255,255,255,.06);color:var(--sky);
+    font-weight:700;text-transform:uppercase;letter-spacing:.4px;font-size:.74rem;
+  }
+  .sum-table tbody th{
+    background:rgba(250,220,146,.08);color:var(--gold);font-weight:700;
+    white-space:nowrap;text-align:left;
+  }
+  .sum-table td{color:var(--ink)}
+  .sum-table td.dim{color:var(--muted)}
+  .sum-table td.top{background:rgba(0,247,167,.1);font-weight:600}
+  .sum-table-wrap{overflow-x:auto}
+
+  /* ---- progressive Analyze ---- */
+  .analyze-row{display:flex;flex-direction:column;align-items:center;gap:7px;margin:1rem 0 .2rem}
+  .analyze-sub{display:flex;gap:5px}
+  .analyze-sub .aseg{
+    width:26px;height:5px;border-radius:999px;background:rgba(255,255,255,.1);
+    transition:background .3s ease, transform .25s ease;
+  }
+  .analyze-sub .aseg.done{background:linear-gradient(90deg,var(--gold),var(--brand))}
+  .analysis{
+    margin:.6rem 0;padding:.7rem .8rem;
+    border:1px solid var(--stroke);border-radius:12px;
+    background:linear-gradient(180deg,rgba(255,255,255,.03),transparent);
+    animation:fadein .25s ease;
+  }
+  .analysis[hidden]{display:none}
+  .analysis h4{
+    margin:0 0 .5rem;text-align:center;
+    font:700 .82rem/1 ui-serif,Georgia,serif;color:var(--accent);
+    text-transform:uppercase;letter-spacing:.5px;
+  }
+  .analysis .note{color:var(--muted);font-size:.82rem;text-align:center;margin:.4rem 0 0}
+
+  /* ---- see more + related apps ---- */
+  .summary-bottom-actions{display:flex;justify-content:center;margin-top:1rem}
+  .related-apps{
+    display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:.8rem;
+    animation:fadein .25s ease;
+  }
+  .related-apps[hidden]{display:none}
+  .related-card{
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    min-width:84px;padding:.7rem .8rem;border-radius:14px;
+    border:1px solid var(--stroke);background:rgba(255,255,255,.04);
+    color:var(--ink);text-decoration:none;
+    transition:transform .15s ease, border-color .2s ease, background .2s ease;
+  }
+  .related-card:hover{transform:translateY(-2px);border-color:var(--accent);background:rgba(255,95,220,.08)}
+  .related-card .rc-mark{font:700 1.3rem/1 ui-serif,Georgia,serif;color:var(--gold)}
+  .related-card .rc-name{font:600 .82rem/1 system-ui,sans-serif}
 
   /* ============== Floating arcade counters (bottom-left) ============== */
   .float-counters{
@@ -853,6 +911,16 @@
   }
   .pc.pulse .pc-badge{animation:ptPop .42s cubic-bezier(.2,1.6,.4,1)}
   @keyframes ptPop{0%{transform:scale(1)}45%{transform:scale(1.16)}100%{transform:scale(1)}}
+
+  /* elapsed-time chip (souls/keys-style) */
+  .pc-time .pc-time-display{
+    display:flex;align-items:center;gap:5px;
+    background:#3a3a52;border:1px solid var(--stroke);
+    padding:7px 12px;border-radius:999px;cursor:default;color:var(--ink);
+    filter:drop-shadow(0 2px 6px rgba(0,0,0,.45));
+  }
+  .pc-time .pc-time-icon{font-size:1rem}
+  .pc-time .pc-time-num{font:800 1rem/1 Georgia,serif;color:var(--sky)}
 </style>
 </head>
 <body>
@@ -1025,12 +1093,47 @@
       <div id="summary-fivys"></div>
       <h3>Fields</h3>
       <div id="summary-fields"></div>
+
+      <!-- progressive analyses: Ordinals → Perspective → Timer -->
+      <div class="analyze-row">
+        <button class="btn btn-soft" id="btn-analyze" type="button">Analyze ▸</button>
+        <div class="analyze-sub" id="analyze-sub" aria-hidden="true">
+          <span class="aseg"></span><span class="aseg"></span><span class="aseg"></span>
+        </div>
+      </div>
+      <div class="analysis" id="analysis-ordinals" hidden>
+        <h4>Ordinals</h4>
+        <div class="sum-table-wrap" id="ord-table"></div>
+        <p class="note">Read across a row to see what each fivy placed at that position.</p>
+      </div>
+      <div class="analysis" id="analysis-perspective" hidden>
+        <h4>Perspective</h4>
+        <div class="sum-table-wrap" id="persp-table"></div>
+        <p class="note">Each lens you have open ranks the same five positions its own way.</p>
+      </div>
+      <div class="analysis" id="analysis-timer" hidden>
+        <h4>Timer</h4>
+        <div class="sum-table-wrap" id="timer-table"></div>
+        <p class="note">Not a race — just a useful fact about the play.</p>
+      </div>
+
+      <div class="summary-bottom-actions">
+        <button class="btn btn-soft" id="btn-see-more" type="button" hidden>See more</button>
+      </div>
+      <div class="related-apps" id="related-apps" hidden></div>
     </div>
   </details>
 
 </div>
 
 <div class="float-counters" aria-live="polite">
+  <div class="pc pc-time is-empty" id="chipTime" title="Total elapsed time">
+    <div class="pc-time-display">
+      <span class="pc-time-icon" aria-hidden="true">⏱</span>
+      <span class="pc-time-num" id="pointsTime">0:00</span>
+    </div>
+    <span class="pc-label">Time</span>
+  </div>
   <div class="pc pc-clicks is-empty" id="chipClicks" title="Total clicks">
     <div class="pc-badge"><span class="pc-num" id="pointsClicks">0</span></div>
     <span class="pc-label">Clicks</span>
@@ -1355,6 +1458,7 @@
 
   // ============== Fields stage (simplex) ==============
   function enterFields(){
+    if (!timer.tFields) timer.tFields = Date.now();   // split decks-time vs fields-time
     $stage.style.display = 'none';
     $fields.classList.add('active');
     renderNested();   // the decks just settled in stage 1 become toggle buttons here
@@ -1372,6 +1476,28 @@
       s.classList.toggle('current', i === cur);
     });
     $progress.setAttribute('aria-valuenow', String(cur + 1));
+  }
+
+  // ============== Elapsed timer ==============
+  const timer = { t0:0, tFields:0, handle:null };
+  const fmtTime = ms => {
+    const s = Math.max(0, Math.floor(ms/1000));
+    return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
+  };
+  function paintTime(){
+    if (!timer.t0) return;
+    const num = document.getElementById('pointsTime');
+    if (num) num.textContent = fmtTime(Date.now() - timer.t0);
+    const chip = document.getElementById('chipTime');
+    if (chip) chip.classList.remove('is-empty');
+    const tt = document.getElementById('analysis-timer');     // keep the Timer analysis live
+    if (tt && !tt.hidden) renderTimerTable();
+  }
+  function startTimer(){
+    if (timer.t0) return;                 // already running
+    timer.t0 = Date.now();
+    paintTime();
+    timer.handle = setInterval(paintTime, 1000);
   }
 
   // ============== Intro slider (3 slides → Go play) ==============
@@ -1432,6 +1558,7 @@
     $introSlider.classList.add('hidden');
     $stage.style.display = '';
     $summarySec.style.display = '';
+    startTimer();
     window.scrollTo({ top:0, behavior:'smooth' });
   }
   function backToIntro(){
@@ -1771,37 +1898,124 @@
     btn.addEventListener('click', () => applyToggle(btn.dataset.toggle));
   });
 
-  // ----- Summary content -----
+  // ----- Summary content (tables + progressive analyses) -----
+  const ORD = ['1st','2nd','3rd','4th','5th'];
+  const settledDecks = () => DECKS.filter(d => state.done[d.id]);
+  const deckRanked   = d => state.orders[d.id].map(i => d.items[i]);
+  function filledFields(){
+    const out = [];
+    Object.keys(SIMPLEX).forEach(id => { if (SIMPLEX[id].saved) out.push({ label:SIMPLEX[id].label, items:SIMPLEX[id].items }); });
+    customCats.forEach(c => out.push({ label:c.label, items:c.items }));
+    return out;
+  }
+  // build a <table> from a left header, column headers, and rows {label, cells:[{v,cls}]}
+  function tableHTML(headLeft, cols, rows){
+    const thead = `<thead><tr><th>${escapeHTML(headLeft)}</th>${cols.map(c=>`<th>${escapeHTML(c)}</th>`).join('')}</tr></thead>`;
+    const tbody = '<tbody>' + rows.map(r =>
+      `<tr><th>${escapeHTML(r.label)}</th>${r.cells.map(c=>`<td${c.cls?` class="${c.cls}"`:''}>${escapeHTML(c.v)||'·'}</td>`).join('')}</tr>`
+    ).join('') + '</tbody>';
+    return `<table class="sum-table">${thead}${tbody}</table>`;
+  }
+
   function paintSummary(){
+    // base recap tables
     const $sp = document.getElementById('summary-fivys');
     const $sf = document.getElementById('summary-fields');
-    if (!$sp || !$sf) return;
-
-    // Fivys (the 4 keys-style decks)
-    const fivyDone = DECKS.filter(d => state.done[d.id]);
-    if (fivyDone.length === 0){
-      $sp.innerHTML = '<div class="empty-line">No fivys ordered yet.</div>';
-    } else {
-      $sp.innerHTML = fivyDone.map(d => {
-        const order = state.orders[d.id];
-        const words = order.map(i => escapeHTML(d.items[i])).join(' · ');
-        return `<ul><li><b>${escapeHTML(d.title)}:</b> ${words}</li></ul>`;
-      }).join('');
+    if ($sp){
+      const decks = settledDecks();
+      $sp.innerHTML = decks.length
+        ? tableHTML('Fivy', ORD, decks.map(d => ({ label:d.title, cells:deckRanked(d).map(v=>({v})) })))
+        : '<div class="empty-line">No fivys ordered yet.</div>';
     }
-
-    // Fields (filled categories)
-    const filled = [];
-    Object.keys(SIMPLEX).forEach(id => { if (SIMPLEX[id].saved) filled.push({ id, label:SIMPLEX[id].label, items:SIMPLEX[id].items }); });
-    customCats.forEach(c => filled.push({ id:c.id, label:c.label, items:c.items }));
-    if (filled.length === 0){
-      $sf.innerHTML = '<div class="empty-line">No fields filled yet.</div>';
-    } else {
-      $sf.innerHTML = '<ul>' + filled.map(f => {
-        const words = f.items.filter(Boolean).map(w => escapeHTML(w)).join(' · ');
-        return `<li><b>${escapeHTML(f.label)}:</b> ${words}</li>`;
-      }).join('') + '</ul>';
+    if ($sf){
+      const fields = filledFields();
+      $sf.innerHTML = fields.length
+        ? tableHTML('Field', ORD, fields.map(f => ({ label:f.label, cells:f.items.map(v=>({v:v||''})) })))
+        : '<div class="empty-line">No fields filled yet.</div>';
     }
+    renderOrdinals();
+    renderPerspective();
+    renderTimerTable();
   }
+
+  // Ordinals: transpose — rows are positions, columns are every source.
+  function renderOrdinals(){
+    const $t = document.getElementById('ord-table');
+    if (!$t) return;
+    const sources = [
+      ...settledDecks().map(d => ({ label:d.title, ranked:deckRanked(d) })),
+      ...filledFields().map(f => ({ label:f.label, ranked:f.items })),
+    ];
+    $t.innerHTML = sources.length
+      ? tableHTML('Rank', sources.map(s=>s.label),
+          ORD.map((lbl,r) => ({ label:lbl, cells:sources.map(s=>({ v:s.ranked[r]||'' })) })))
+      : '<div class="empty-line">Nothing to rank yet.</div>';
+  }
+
+  // Perspective: the lenses currently open on the simplex (rank × lens), top row lit.
+  function renderPerspective(){
+    const $t = document.getElementById('persp-table');
+    if (!$t) return;
+    const lenses = stackOrder().map(getSource).filter(s => s && s.items.some(Boolean));
+    $t.innerHTML = lenses.length
+      ? tableHTML('Rank', lenses.map(s=>s.label),
+          ORD.map((lbl,r) => ({ label:lbl, cells:lenses.map(s=>({ v:s.items[r]||'', cls:r===0?'top':'' })) })))
+      : '<div class="empty-line">Open a field or deck to compare lenses.</div>';
+  }
+
+  function renderTimerTable(){
+    const $t = document.getElementById('timer-table');
+    if (!$t) return;
+    const now = Date.now();
+    const total  = timer.t0 ? now - timer.t0 : 0;
+    const decks  = timer.t0 ? (timer.tFields ? timer.tFields - timer.t0 : now - timer.t0) : 0;
+    const fields = timer.tFields ? now - timer.tFields : 0;
+    $t.innerHTML = tableHTML('Phase', ['Time'], [
+      { label:'Total',  cells:[{ v:fmtTime(total) }] },
+      { label:'Decks',  cells:[{ v:fmtTime(decks) }] },
+      { label:'Fields', cells:[{ v:fmtTime(fields) }] },
+    ]);
+  }
+
+  // ----- Progressive Analyze → See more -----
+  const ANALYSES = ['analysis-ordinals','analysis-perspective','analysis-timer'];
+  let analyzeStep = 0;
+  const $btnAnalyze = document.getElementById('btn-analyze');
+  const $analyzeSub = document.getElementById('analyze-sub');
+  const $btnSeeMore = document.getElementById('btn-see-more');
+  const $related    = document.getElementById('related-apps');
+  function revealAnalyze(){
+    if (analyzeStep >= ANALYSES.length) return;
+    const el = document.getElementById(ANALYSES[analyzeStep]);
+    el.hidden = false;
+    $analyzeSub.children[analyzeStep].classList.add('done');
+    analyzeStep++;
+    if (analyzeStep < ANALYSES.length){
+      $btnAnalyze.textContent = `Analyze · ${analyzeStep}/${ANALYSES.length} ▸`;
+    } else {
+      $btnAnalyze.hidden = true;     // every analysis revealed
+      $btnSeeMore.hidden = false;    // unlock See more
+    }
+    el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+  $btnAnalyze.addEventListener('click', revealAnalyze);
+
+  const RELATED = [
+    { href:'keys.html',  mark:'⬠', name:'keys'  },
+    { href:'sensy.html', mark:'✺', name:'sensy' },
+    { href:'lovy.html',  mark:'♥', name:'lovy'  },
+    { href:'daty.html',  mark:'◷', name:'daty'  },
+  ];
+  $btnSeeMore.addEventListener('click', () => {
+    if (!$related.children.length){
+      $related.innerHTML = RELATED.map(a =>
+        `<a class="related-card" href="${a.href}"><span class="rc-mark">${a.mark}</span><span class="rc-name">${escapeHTML(a.name)}</span></a>`
+      ).join('');
+    }
+    $related.hidden = false;
+    $btnSeeMore.hidden = true;
+    $related.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  });
 
   // ----- Initial paint -----
   renderNested();
