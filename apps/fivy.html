@@ -597,7 +597,7 @@
   }
   .cat-save:hover{transform:translateY(-1px);color:#1a1a28}
   .cat-add[hidden],.cat-save[hidden]{display:none !important}
-  .cats.is-editing .cat:not(.cat-save):not(.cat-add):not(.is-editing){opacity:.3;pointer-events:none}
+  /* while editing a category, the others keep their place + stay active (Social stays shown) */
   .cats .cat.is-editing{
     opacity:1;outline:2px dashed var(--accent);outline-offset:2px;
   }
@@ -1079,9 +1079,13 @@
       card.setAttribute('aria-label', `${deck.items[itemIdx]} · position ${pos+1}`);
       const isFirst = pos === 0;
       const isLast  = pos === order.length - 1;
+      const leftArrow  = `<button data-action="left"  aria-label="Move left"  title="← one position">←</button>`;
+      const rightArrow = `<button data-action="right" aria-label="Move right" title="one position →">→</button>`;
+      // middle cards (2,3,4) get both arrows; ends get only the valid direction
       const arrowHTML =
-        isFirst ? `<button data-action="right" aria-label="Move right" title="one position →">→</button>` :
-        isLast  ? `<button data-action="left"  aria-label="Move left"  title="← one position">←</button>` : '';
+        isFirst ? rightArrow :
+        isLast  ? leftArrow  :
+        (leftArrow + rightArrow);
       card.innerHTML = `
         <div class="name">${escapeHTML(deck.items[itemIdx])}</div>
         <div class="arrows">${arrowHTML}</div>
@@ -1348,6 +1352,7 @@
     $cats.classList.remove('is-editing');
     document.querySelectorAll('#cats .cat.is-editing').forEach(b => b.classList.remove('is-editing'));
     rebuildNodes();
+    paintSummary();
   }
 
   function renderEditInputs(){
@@ -1361,6 +1366,7 @@
       inp.maxLength = 28;
       inp.addEventListener('input', e => {
         editingDraft.items[rank] = e.target.value;
+        liveStore();      // persist as you type — a complete five surfaces in the lists
         paintList();
       });
       inp.addEventListener('keydown', e => {
@@ -1369,6 +1375,26 @@
       });
       node.appendChild(inp);
     });
+  }
+
+  // Live-store the in-progress fields into an existing category (no Save needed).
+  // When all five are filled the category is marked complete, joins the shown set,
+  // and therefore surfaces in the list displays / summary. Does NOT rebuild the
+  // nodes (would drop input focus) — only updates data + the list/summary/buttons.
+  function liveStore(){
+    if (!editingId || editingId === 'new') return;
+    const c = getCat(editingId);
+    if (!c) return;
+    const wasComplete = c.items.every(v => (v||'').trim());
+    c.items = editingDraft.items.slice();
+    const nowComplete = c.items.every(v => (v||'').trim());
+    c.saved = nowComplete;
+    const oi = catOrder.indexOf(editingId);
+    if (nowComplete && oi === -1) catOrder.push(editingId);
+    if (!nowComplete && oi !== -1) catOrder.splice(oi, 1);
+    if (nowComplete && !wasComplete) bumpCounter('stars');
+    paintShow();      // reflect button is-on state (safe: leaves the inputs intact)
+    paintSummary();
   }
 
   function commitSave(){
@@ -1412,20 +1438,12 @@
     if (e.key === 'Escape'){ e.preventDefault(); exitEdit(); }
   });
 
-  // ----- Cat clicks -----
+  // ----- Cat clicks: each button expands / collapses its 5 fields in the nodes -----
   document.querySelectorAll('#cats .cat:not(.cat-add):not(.cat-save)').forEach(btn => {
     btn.addEventListener('click', () => {
-      if (editingId) return;
       const cid = btn.dataset.cat;
-      if (!isFilled(cid)){
-        enterEdit(cid);
-        return;
-      }
-      const idx = catOrder.indexOf(cid);
-      if (idx === -1){ catOrder.push(cid); bumpCounter('selections'); }
-      else catOrder.splice(idx, 1);
-      paintShow();
-      paintSummary();
+      if (editingId === cid){ exitEdit(); return; }   // click again → hide the fields
+      enterEdit(cid);                                   // expand 5 fields (pre-filled) in the nodes
     });
   });
 
