@@ -12,34 +12,35 @@
       --app-accent-soft:   #c9c6ff;
       --app-ink-on-accent: #0b0b14;
 
-      /* Puzzy local palette (dark) */
-      --bg:#0b0b0f; --panel:#11131a; --ink:#e9eaf2; --muted:#a3a7b4;
-      --line:#1e2133; --field:#13162a; --accent2:#70f0d3;
+      /* Puzzy local palette (greyer, neutral canvas) */
+      --bg:#16171c; --panel:#1c1e25; --ink:#e9eaf2; --muted:#9a9eaa;
+      --line:#2c2f39; --field:#23252d; --accent2:#70f0d3;
 
-      /* Confluence rainbow per column — re-tinted to ride the Puzzy
-         violet→teal axis, with a warm centre so column 4 still reads
-         as the "confluence" focus */
-      --c1:#8d89ff; /* violet (app accent) */
-      --c2:#9d7bf0; /* violet-indigo */
-      --c3:#b58bd6; /* magenta-soft */
-      --c4:#70f0d3; /* teal (confluence centre, accent2) */
-      --c5:#6fd6e6; /* cyan */
-      --c6:#7ab0f0; /* sky */
-      --c7:#8d89ff; /* violet (mirror of c1) */
+      /* Confluence by column — GREY at the edges, colour intensifying toward
+         the centre so column 4 reads as the vertical confluence focus.
+         (cols 1-2 / 6-7 grey · 3-5 coloured · 4 = teal confluence centre) */
+      --c1:#565a68; /* grey */
+      --c2:#6a6790; /* grey-violet */
+      --c3:#8d89ff; /* violet (app accent) */
+      --c4:#70f0d3; /* teal — confluence centre (accent2) */
+      --c5:#74d6e6; /* cyan */
+      --c6:#5f7796; /* grey-blue */
+      --c7:#565a68; /* grey (mirror of c1) */
 
-      /* Ink on the coloured buttons (all readable dark ink-on-accent) */
-      --g1:var(--app-ink-on-accent); --g2:var(--app-ink-on-accent);
-      --g3:var(--app-ink-on-accent); --g4:var(--app-ink-on-accent);
-      --g5:var(--app-ink-on-accent); --g6:var(--app-ink-on-accent);
-      --g7:var(--app-ink-on-accent);
+      /* Ink per button: light ink on the dark grey edges, dark ink on the
+         bright coloured centre columns. */
+      --g1:var(--ink); --g2:var(--ink);
+      --g3:var(--app-ink-on-accent); --g4:var(--app-ink-on-accent); --g5:var(--app-ink-on-accent);
+      --g6:var(--ink); --g7:var(--ink);
     }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0; color:var(--ink);
       background:
-        radial-gradient(1000px 700px at 110% -10%, rgba(141,137,255,.16), transparent 60%),
-        radial-gradient(800px 600px at -10% 120%, rgba(112,240,211,.12), transparent 50%),
+        radial-gradient(900px 650px at 50% -10%, rgba(112,240,211,.10), transparent 55%),
+        radial-gradient(1000px 700px at 110% -10%, rgba(141,137,255,.06), transparent 60%),
+        radial-gradient(800px 600px at -10% 120%, rgba(112,240,211,.05), transparent 50%),
         var(--bg);
       font-family:var(--flove-font-ui); letter-spacing:.2px;
     }
@@ -147,6 +148,22 @@
     .list.len-7 > li:nth-child(5){ grid-column:5/6; --col:var(--c5); --fg:var(--g5); }
     .list.len-7 > li:nth-child(6){ grid-column:6/7; --col:var(--c6); --fg:var(--g6); }
     .list.len-7 > li:nth-child(7){ grid-column:7/8; --col:var(--c7); --fg:var(--g7); }
+
+    /* ---------- Confluence centre: push the column-4 buttons forward ----------
+       (odd lengths land an item on column 4; even lengths skip the centre) */
+    .list.len-1 > li:nth-child(1),
+    .list.len-3 > li:nth-child(2),
+    .list.len-5 > li:nth-child(3),
+    .list.len-7 > li:nth-child(4){
+      position:relative; z-index:2;
+      transform:scale(1.1);
+      font-size:1.2rem;
+      box-shadow:
+        0 0 0 2px var(--accent2),
+        0 0 22px rgba(112,240,211,.45),
+        0 16px 32px rgba(0,0,0,.5);
+      filter:saturate(1.15) brightness(1.06);
+    }
 
     /* ---------- Controls (node bar · Top · Create) ---------- */
     .controls{ max-width:1100px; margin:1.4rem auto .2rem; padding:0 1rem; display:flex; flex-direction:column; gap:16px; }
