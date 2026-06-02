@@ -474,19 +474,17 @@
   .fields.active{display:block;animation:fadein .25s ease}
 
   /* Fields lower area: two columns — buttons | toolbar */
-  .fields-lower{
-    display:grid;grid-template-columns:1fr 200px;gap:16px;align-items:start;
+  /* Fields: [toolbar | main]; main = cat row · subs row · square stacked */
+  .fields-grid{
+    display:grid;grid-template-columns:190px 1fr;gap:16px;align-items:start;
     max-width:760px;margin:0 auto;
   }
-  @media (max-width:640px){.fields-lower{grid-template-columns:1fr}}
-  .cats-col{min-width:0;display:flex;flex-direction:column;align-items:center}
-  .cats{display:flex;flex-direction:column;gap:8px;align-items:center;padding:8px 4px;margin:0}
-  .cat-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-  /* deck sub-button rows (above / below the category rows) */
+  @media (max-width:640px){.fields-grid{grid-template-columns:1fr}}
+  .fields-main{min-width:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+  .cats{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:4px;margin:0}
+  /* deck sub-buttons in one row, only for the categories you click */
   .cat-subs{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;padding:0 4px}
   .cat-subs:empty{display:none}
-  #cat-subs-top{margin-bottom:6px}
-  #cat-subs-bottom{margin:6px 0 8px}
   .cat{
     display:inline-flex;align-items:center;gap:5px;
     padding:6px 14px;border-radius:999px;
@@ -1112,36 +1110,8 @@
   <!-- Stage 1: Fields (simplex) -->
   <section class="fields" id="fields" aria-label="Fields">
 
-    <!-- two columns ABOVE the square: [cat buttons in two rows + sub-buttons] | [List/Cycle/Confluence] -->
-    <div class="fields-lower">
-      <div class="cats-col">
-        <!-- subs of the FIRST-row buttons sit above them -->
-        <div class="cat-subs" id="cat-subs-top"></div>
-
-        <nav class="cats" aria-label="Categories" id="cats">
-          <div class="cat-row">
-            <button class="cat cat-rb-r" data-cat="cat-r" type="button">Metas</button>
-            <button class="cat cat-rb-o" data-cat="cat-o" type="button">Sci</button>
-            <button class="cat cat-rb-g" data-cat="cat-g" type="button">Lang</button>
-          </div>
-          <div class="cat-row">
-            <button class="cat cat-rb-y" data-cat="cat-y" type="button">Bio</button>
-            <button class="cat cat-rb-b" data-cat="cat-b" type="button">Psico</button>
-            <button class="cat cat-rb-i" data-cat="cat-i" type="button">Social</button>
-            <button class="cat cat-add" id="btn-add-cat" type="button" aria-label="Add a new fivy" title="Add a new fivy">+</button>
-            <button class="cat cat-save" id="btn-save-cat" type="button" hidden>Save</button>
-          </div>
-        </nav>
-
-        <!-- subs of the SECOND-row buttons sit below them -->
-        <div class="cat-subs" id="cat-subs-bottom"></div>
-
-        <div class="cat-title-row" id="cat-title-row">
-          <input id="cat-title-input" type="text" placeholder="Title of your fivy…" maxlength="32"/>
-        </div>
-
-        <div class="saved-customs" id="saved-customs"></div>
-      </div>
+    <!-- left: List/Cycle/Confluence · right: one button row + subs + square -->
+    <div class="fields-grid">
 
       <aside class="toolbar">
         <div class="buttons">
@@ -1172,10 +1142,31 @@
           </ol>
         </aside>
       </aside>
-    </div>
 
-    <!-- square below the two columns -->
-    <div class="square-dock">
+      <div class="fields-main">
+        <!-- one row of category buttons -->
+        <nav class="cats" aria-label="Categories" id="cats">
+          <button class="cat cat-rb-r" data-cat="cat-r" type="button">Metas</button>
+          <button class="cat cat-rb-o" data-cat="cat-o" type="button">Sci</button>
+          <button class="cat cat-rb-y" data-cat="cat-y" type="button">Bio</button>
+          <button class="cat cat-rb-g" data-cat="cat-g" type="button">Lang</button>
+          <button class="cat cat-rb-b" data-cat="cat-b" type="button">Psico</button>
+          <button class="cat cat-rb-i" data-cat="cat-i" type="button">Social</button>
+          <button class="cat cat-add" id="btn-add-cat" type="button" aria-label="Add a new fivy" title="Add a new fivy">+</button>
+          <button class="cat cat-save" id="btn-save-cat" type="button" hidden>Save</button>
+        </nav>
+
+        <!-- sub-buttons in one row, shown only for the categories you click -->
+        <div class="cat-subs" id="cat-subs"></div>
+
+        <div class="cat-title-row" id="cat-title-row">
+          <input id="cat-title-input" type="text" placeholder="Title of your fivy…" maxlength="32"/>
+        </div>
+
+        <div class="saved-customs" id="saved-customs"></div>
+
+        <!-- square below the buttons -->
+        <div class="square-dock">
       <section class="square" id="square">
         <svg class="edges" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
           <defs>
@@ -1205,7 +1196,9 @@
         <div class="node n4"><div class="rank-badge">4</div><div class="items" data-rank="3"></div></div>
         <div class="node n5"><div class="rank-badge">5</div><div class="items" data-rank="4"></div></div>
       </section>
-    </div>
+        </div>
+      </div><!-- /fields-main -->
+    </div><!-- /fields-grid -->
 
   </section>
 
@@ -1285,10 +1278,6 @@
     renderCTA();
     updateDeckProgress();
     updateStep4();
-    // keep the go-back put: hide it while a deck is open so the spotlight
-    // expanding above the board can't shove it around.
-    const dbr = document.getElementById('decks-back-row');
-    if (dbr) dbr.style.display = state.openDeckIdx === null ? '' : 'none';
   }
 
   // Sub progress bar: fills left→right, one more segment per deck settled.
@@ -1750,8 +1739,6 @@
   // p3 (Social, ex-Powers) has no parent → not shown as a sub-button.
   const DECK_PARENT = { p1:'cat-y', p2:'cat-y', p4:'cat-o' };  // Senses,Flavors→Bio · Elements→Sci
   const deckColor = did => CAT_COLOR[DECK_PARENT[did]] || DECK_COLOR[did];
-  // which row each category button sits in (row 1 → subs above, row 2 → subs below)
-  const CAT_ROW = { 'cat-r':1, 'cat-o':1, 'cat-g':1, 'cat-y':2, 'cat-b':2, 'cat-i':2 };
 
   const customCats = [];                          // [{id,label,items:[5],starred}]
   const activeSets = ['cat-i'];                   // toggled sets shown in the square (Social by default)
@@ -1896,6 +1883,7 @@
       if (lastSet === id) lastSet = activeSets[activeSets.length - 1] || null;
     }
     renderNodes();
+    renderNested();   // reveal/hide each parent's sub-buttons as it's clicked
     paintSummary();
   }
 
@@ -1926,17 +1914,17 @@
     if ($title) $title.textContent = title;
   }
 
-  // ----- Sub-buttons: each settled deck, coloured by its parent. Subs of
-  //       first-row parents sit above the buttons; second-row parents, below. -----
+  // ----- Sub-buttons: one row, showing only the subs of the categories you've
+  //       clicked (active). Each is coloured by its parent. -----
   function renderNested(){
-    const top = document.getElementById('cat-subs-top');
-    const bot = document.getElementById('cat-subs-bottom');
-    if (!top || !bot) return;
-    top.innerHTML = ''; bot.innerHTML = '';
+    const subs = document.getElementById('cat-subs');
+    if (!subs) return;
+    subs.innerHTML = '';
     DECKS.forEach(d => {
       if (!state.done[d.id]) return;          // only decks the player actually settled
       const parent = DECK_PARENT[d.id];
       if (!parent) return;                    // Social/Powers has no sub-button here
+      if (!activeSets.includes(parent)) return;   // shown only on click of the parent
       const b = document.createElement('button');
       b.className = 'deck-btn is-child';
       b.type = 'button';
@@ -1944,7 +1932,7 @@
       b.style.setProperty('--c', deckColor(d.id));   // same colour as its parent category
       b.textContent = d.title;
       b.addEventListener('click', () => toggleSet('deck:' + d.id));
-      (CAT_ROW[parent] === 1 ? top : bot).appendChild(b);
+      subs.appendChild(b);
     });
     paintShow();
   }
