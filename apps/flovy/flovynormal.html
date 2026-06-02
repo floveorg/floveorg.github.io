@@ -327,8 +327,8 @@ body:has(#ray-none:checked)     .slogan-none{ display: inline; }
 .field-wrap{ display: flex; align-items: flex-start; gap: .5rem; margin-bottom: 1.6rem; }
 .field-wrap .entry-field{ flex: 1; min-width: 0; padding-bottom: 1.4rem; }
 .field-side{ display: flex; flex-direction: column; gap: .45rem; flex-shrink: 0; }
-.entry-actions{ display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
-.entry-actions .add-btn{ margin-left: auto; }
+.entry-actions{ display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+.entry-actions .add-btn{ margin-left: 0; }   /* Add sits right after the counters */
 .tool-btn{
   display: inline-flex; align-items: center; justify-content: center;
   width: 32px; height: 32px; border-radius: 50%;
@@ -375,7 +375,8 @@ body:has(#rate-more1:checked) .rate-x1{ display: flex; }
 /* second ＋ appears below the 20-list, then disappears once the 30-list opens */
 body:has(#rate-more1:checked) .rate-more2-btn{ display: inline-flex; }
 body:has(#rate-more2:checked)  .rate-more2-btn{ display: none; }
-body:has(#rate-more2:checked) .rate-x2{ display: flex; }
+/* the 30-list needs BOTH open, so the × (collapsing the first) hides it too */
+body:has(#rate-more1:checked):has(#rate-more2:checked) .rate-x2{ display: flex; }
 .rate-chip{
   display: inline-flex; align-items: center; justify-content: center;
   width: 26px; height: 26px; border-radius: 50%; font-size: .95rem;
@@ -383,7 +384,7 @@ body:has(#rate-more2:checked) .rate-x2{ display: flex; }
   transition: transform var(--fast), background var(--fast);
 }
 .rate-chip:hover{ background: var(--fill-soft); transform: translateY(-1px); }
-.rate-chip.picked{ transform: scale(1.3); }    /* selected — grows, no fill */
+.rate-chip.picked{ transform: scale(1.2); background: rgba(var(--accent-rgb),.18); }   /* selected — slight red tone */
 .rate-more{
   display: inline-flex; align-items: center; justify-content: center;
   width: 22px; height: 22px; border-radius: 50%; align-self: center;
@@ -1119,6 +1120,9 @@ body:has(#newwiz-open:checked)   .modal-overlay--wiz{ display: flex; animation: 
   fillRateSet('.rate-base', REACT_BASE);
   fillRateSet('.rate-x1',   REACT_X1);
   fillRateSet('.rate-x2',   REACT_X2);
+  /* collapsing the first list (×) also collapses the second */
+  var more1 = document.getElementById('rate-more1'), more2 = document.getElementById('rate-more2');
+  if(more1 && more2){ more1.addEventListener('change', function(){ if(!more1.checked) more2.checked = false; }); }
 
   /* ---- live summary: field text + the selections made ---- */
   var phraseEl = document.querySelector('.summary-phrase'),
