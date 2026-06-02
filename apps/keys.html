@@ -3221,15 +3221,29 @@
   #stage4 .list > li.ph{ outline:none; min-width:0; }
   #stage4 .list > li.ph:empty::before{ content:attr(data-ph); opacity:.5; font-weight:600; }
   #stage4 .list > li.ph:focus{ box-shadow:0 0 0 3px var(--app-accent-soft), 0 10px 22px rgba(0,0,0,.35); }
-  /* Stage-4 summary */
-  #stage4 .s4-summary{ margin:2rem auto 1rem; padding:1.2rem 1.2rem; border:1px solid var(--line); border-radius:18px; background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02)); }
-  #stage4 .s4-summary > summary{ cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:center; gap:.5rem; }
-  #stage4 .s4-summary > summary::-webkit-details-marker{ display:none }
-  #stage4 .s4-summary > summary::after{ content:"▾"; color:var(--muted); font-size:.8rem; transition:transform .2s ease }
-  #stage4 .s4-summary[open] > summary::after{ transform:rotate(180deg) }
-  #stage4 .s4-summary h3{ margin:0; text-align:center; font:600 1.2rem/1.1 ui-serif,Georgia,serif; color:var(--gold) }
-  #stage4 .s4-clause{ display:block; margin-top:.9rem; padding:1rem; min-height:3rem; white-space:pre-wrap; border-radius:12px; background:var(--field); border:1px solid var(--line); color:var(--ink); line-height:1.6; }
-  #stage4 .s4-clause:empty::before{ content:attr(data-empty); color:var(--muted); }
+  /* Per-row Save (shown once every cell is filled) → saved row shows ↑/↓ + ✕ */
+  #stage4 .s4-entry .crow-save{
+    display:none; margin:.5rem auto 0; padding:.4rem 1.1rem; cursor:pointer;
+    border-radius:999px; border:1px solid var(--accent2); background:transparent;
+    color:var(--accent2); font-weight:700; font-size:.8rem;
+  }
+  #stage4 .s4-entry.fillable .crow-save{ display:block; }
+  #stage4 .s4-entry.saved .crow-save{ display:none; }
+  #stage4 .cr-del{ display:none; }
+  #stage4 .s4-entry.saved .cr-dup{ display:none; }
+  #stage4 .s4-entry.saved .cr-del{ display:grid; color:#ff8a8a; }
+  #stage4 .s4-entry.saved .cr-del:hover{ border-color:#ff8a8a; color:#ff8a8a; }
+  #stage4 #s4-saved:empty{ display:none; }
+  /* Stage-4 (Confluences) phrase, surfaced inside the main keys summary */
+  .s4-summary-out{ margin:1.2rem auto; max-width:560px; }
+  .s4-summary-out[hidden]{ display:none; }
+  .s4-summary-out h3{ margin:0 0 .5rem; text-align:center; font:600 1.1rem/1.1 ui-serif,Georgia,serif; color:var(--gold); }
+  .s4-summary-out .s4-clause{
+    display:block; padding:1rem; min-height:2.5rem; white-space:pre-wrap;
+    border-radius:12px; background:var(--fx); border:1px solid var(--stroke);
+    color:var(--ink); line-height:1.6;
+  }
+  .s4-summary-out .s4-clause:empty::before{ content:"—"; color:var(--muted); }
   /* End actions */
   #stage4 .stage4-end{ display:flex; justify-content:center; gap:12px; margin:1.4rem 0 2rem; }
   #stage4 .stage4-end[hidden]{ display:none }
@@ -3890,6 +3904,12 @@
       </div>
     </section>
 
+    <!-- Stage 4 (Confluences) phrase, surfaced into this main summary. -->
+    <div class="s4-summary-out" id="s4-summary-out" hidden>
+      <h3>✦ Confluences</h3>
+      <output class="s4-clause" id="s4-clause" data-flove-phrase spellcheck="false"></output>
+    </div>
+
     <!-- Continue to Stage 4 — sits two rows above the See more button. -->
     <div class="stage4-cta">
       <button class="btn btn-primary" id="btn-stage4" type="button">Continue to Stage 4 →</button>
@@ -3924,6 +3944,7 @@
     </div>
 
     <div class="s4-board">
+      <div class="rows" id="s4-saved"></div>
       <div class="rows" id="s4-rows"></div>
       <div class="favs" id="s4-favs">
         <ul class="list len-1"><li>Organism</li></ul>
@@ -3938,12 +3959,6 @@
         <ul class="list len-7"><li>Adrenal</li><li>Gonads</li><li>Pancreas</li><li>Thymus</li><li>Thyroid</li><li>Pituitary</li><li>Hypothalamus</li></ul>
       </div>
     </div>
-
-    <details class="s4-summary" id="s4-summary-details">
-      <summary><h3>✦ Summary</h3></summary>
-      <output class="s4-clause" id="s4-clause" data-flove-phrase spellcheck="false"
-              data-empty="Pick sizes, press Create, and fill the cells — your phrase grows here."></output>
-    </details>
 
     <div class="stage4-end" id="s4-end" hidden>
       <button class="btn btn-back" id="s4-back" type="button">← Go back</button>
@@ -4373,13 +4388,14 @@
     // The main (parent) bar always shows exactly three bars.
     const PARENT = 3;
     if (isSummary){
-      // Parent: all three filled, the last one marked current (results).
-      let ph = '';
-      for (let i = 0; i < PARENT; i++) ph += seg(i === PARENT - 1 ? 'current' : 'done');
+      // Parent: stages 1-3 done, plus a 4th bar that fills once the Stage-4
+      // board holds its first created row.
+      let ph = seg('done') + seg('done') + seg('done')
+             + seg(state.s4HasRows ? 'current' : '');
       $parent.innerHTML = ph;
-      // Sub: 1 at landing, +1 per touched Analyze/More section, +1 once the
-      // Stage-4 board holds at least one row of each type (3 · 5 · 7).
-      const subCount = 1 + touchedSections.size + (state.s4ExtraStep ? 1 : 0);
+      // Sub: 1 at landing, +1 per touched Analyze/More section, +1 for each
+      // Stage-4 row type (3 / 5 / 7) whose first row has been created.
+      const subCount = 1 + touchedSections.size + (state.s4TypesCount || 0);
       let sh = '';
       for (let i = 0; i < subCount; i++) sh += seg('done');
       $sub.innerHTML = sh;
@@ -8330,21 +8346,25 @@
     const stage4    = document.getElementById('stage4');
     const btnStage4 = document.getElementById('btn-stage4');
     if (!stage4 || !btnStage4) return;
+    const s4board  = stage4.querySelector('.s4-board');
+    const s4saved  = document.getElementById('s4-saved');
     const s4rows   = document.getElementById('s4-rows');
     const s4create = document.getElementById('s4-create');
     const s4anim   = document.getElementById('s4-anim');
     const s4top    = document.getElementById('s4-top');
     const s4clause = document.getElementById('s4-clause');
+    const s4out    = document.getElementById('s4-summary-out');
     const s4end    = document.getElementById('s4-end');
     const s4back   = document.getElementById('s4-back');
     const s4next   = document.getElementById('s4-next');
-    const s4det    = document.getElementById('s4-summary-details');
     const PH = '…';
-    const madeTypes = new Set();   // which row sizes (3/5/7) have been created
+
+    const allEntries = () => Array.from(stage4.querySelectorAll('.s4-entry'));
 
     function makeRow(n){
-      const crow = document.createElement('div');
-      crow.className = 'crow'; crow.dataset.len = n;
+      const entry = document.createElement('div');
+      entry.className = 's4-entry'; entry.dataset.len = n;
+      const crow = document.createElement('div'); crow.className = 'crow';
       const ul = document.createElement('ul');
       ul.className = 'list len-' + n;
       ul.setAttribute('aria-label', 'New list with ' + n + ' items');
@@ -8358,25 +8378,44 @@
       side.innerHTML =
           '<button class="cr-up"   type="button" title="Move up"   aria-label="Move up">↑</button>'
         + '<button class="cr-down" type="button" title="Move down" aria-label="Move down">↓</button>'
-        + '<button class="cr-dup"  type="button" title="Duplicate" aria-label="Duplicate this row">＋</button>';
+        + '<button class="cr-dup"  type="button" title="Duplicate" aria-label="Duplicate this row">＋</button>'
+        + '<button class="cr-del"  type="button" title="Delete"    aria-label="Delete this row">✕</button>';
       crow.appendChild(ul); crow.appendChild(side);
-      return crow;
+      const save = document.createElement('button');
+      save.type = 'button'; save.className = 'crow-save'; save.textContent = 'Save';
+      entry.appendChild(crow); entry.appendChild(save);
+      return entry;
     }
-    function rowText(crow){
-      return Array.from(crow.querySelectorAll('.list > li'))
+    function rowText(entry){
+      return Array.from(entry.querySelectorAll('.list > li'))
         .map(li => (li.textContent || '').trim() || PH).join(' · ');
     }
-    function updateSummary(){
-      s4clause.textContent = Array.from(s4rows.querySelectorAll('.crow'))
-        .map(c => '[ ' + rowText(c) + ' ]').join('\n');
+    function allFilled(entry){
+      return Array.from(entry.querySelectorAll('.list > li'))
+        .every(li => (li.textContent || '').trim() !== '');
     }
-    // Go-back / Next only appear once Top is checked or a row exists.
-    function refreshEnd(){ s4end.hidden = !(s4top.checked || s4rows.children.length > 0); }
-    // Add a step to the topbar bar once one of each 3/5/7 row exists.
-    function refreshProgressStep(){
-      const all = madeTypes.has(3) && madeTypes.has(5) && madeTypes.has(7);
-      if (!!state.s4ExtraStep !== all){
-        state.s4ExtraStep = all;
+    // A Save button shows below a row once every cell is filled (until saved).
+    function refreshFillable(){
+      allEntries().forEach(en => {
+        if (en.classList.contains('saved')) return;
+        en.classList.toggle('fillable', allFilled(en));
+      });
+    }
+    function updateSummary(){
+      const txt = allEntries().map(en => '[ ' + rowText(en) + ' ]').join('\n');
+      if (s4clause) s4clause.textContent = txt;
+      if (s4out) s4out.hidden = !txt;
+    }
+    // Go-back / Next show only once Top is checked or a row exists.
+    function refreshEnd(){ s4end.hidden = !(s4top.checked || allEntries().length > 0); }
+    // Parent bar gains a 4th segment once any row exists; sub bar grows by one
+    // for each row type (3 / 5 / 7) whose first row has been created.
+    function refreshProgress(){
+      const lens = new Set(allEntries().map(en => parseInt(en.dataset.len, 10)));
+      const cnt  = [3, 5, 7].filter(t => lens.has(t)).length;
+      const has  = lens.size > 0;
+      if (state.s4TypesCount !== cnt || state.s4HasRows !== has){
+        state.s4TypesCount = cnt; state.s4HasRows = has;
         if (typeof renderStageLabel === 'function') renderStageLabel();
       }
     }
@@ -8386,19 +8425,32 @@
         .map(cb => parseInt(cb.value, 10)).sort((a, b) => a - b);
       if (!nums.length) return;
       const frag = document.createDocumentFragment();
-      nums.forEach(n => { frag.appendChild(makeRow(n)); madeTypes.add(n); });
+      nums.forEach(n => frag.appendChild(makeRow(n)));
       s4rows.prepend(frag);
-      updateSummary(); refreshEnd(); refreshProgressStep();
+      updateSummary(); refreshFillable(); refreshEnd(); refreshProgress();
     });
-    s4rows.addEventListener('click', function(e){
+
+    // Row controls + per-row Save, delegated across the whole board.
+    s4board.addEventListener('click', function(e){
       const btn = e.target.closest('button'); if (!btn) return;
-      const crow = btn.closest('.crow'); if (!crow) return;
-      if (btn.classList.contains('cr-up')){ const p = crow.previousElementSibling; if (p) s4rows.insertBefore(crow, p); }
-      else if (btn.classList.contains('cr-down')){ const nx = crow.nextElementSibling; if (nx) s4rows.insertBefore(nx, crow); }
-      else if (btn.classList.contains('cr-dup')){ crow.after(crow.cloneNode(true)); }
-      updateSummary();
+      const entry = btn.closest('.s4-entry'); if (!entry) return;
+      const zone = entry.parentElement;
+      if (btn.classList.contains('cr-up')){
+        const p = entry.previousElementSibling; if (p) zone.insertBefore(entry, p);
+      } else if (btn.classList.contains('cr-down')){
+        const nx = entry.nextElementSibling; if (nx) zone.insertBefore(nx, entry);
+      } else if (btn.classList.contains('cr-dup')){
+        entry.after(entry.cloneNode(true)); refreshFillable();
+      } else if (btn.classList.contains('crow-save')){
+        // Save: lift the row above (into the saved zone), swap ＋ for ✕.
+        entry.classList.add('saved'); entry.classList.remove('fillable');
+        s4saved.appendChild(entry);
+      } else if (btn.classList.contains('cr-del')){
+        entry.remove(); refreshProgress();
+      }
+      updateSummary(); refreshEnd();
     });
-    s4rows.addEventListener('input', updateSummary);
+    s4board.addEventListener('input', function(){ refreshFillable(); updateSummary(); });
     s4top.addEventListener('change', refreshEnd);
     s4anim.addEventListener('click', function(){
       const on = !stage4.classList.contains('is-animating');
@@ -8418,15 +8470,16 @@
       const sum = document.getElementById('summary');
       if (sum) sum.scrollIntoView({ behavior:'smooth', block:'start' });
     });
-    // Next → open the summary table, scroll to it, and run the confluence wave.
+    // Next → surface the phrase in the main summary, run the wave, scroll there.
     s4next.addEventListener('click', function(){
       updateSummary();
-      if (s4det) s4det.open = true;
+      if (s4out) s4out.hidden = false;
       if (!stage4.classList.contains('is-animating')){
         stage4.classList.add('is-animating');
         s4anim.setAttribute('aria-pressed', 'true');
       }
-      if (s4det) s4det.scrollIntoView({ behavior:'smooth', block:'start' });
+      const sum = document.getElementById('summary');
+      if (sum) sum.scrollIntoView({ behavior:'smooth', block:'start' });
     });
 
     updateSummary();
