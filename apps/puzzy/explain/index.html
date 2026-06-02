@@ -73,7 +73,13 @@
     }
     .stepnav-node{
       position:relative; flex:1 1 0; max-width:190px;
-      display:flex; justify-content:center; padding:0 .3rem; cursor:pointer;
+      display:flex; flex-direction:column; align-items:center; gap:.45rem;
+      padding:0 .3rem; cursor:pointer;
+    }
+    /* node title — hidden by default; shown only for the current + earlier steps */
+    .stepnav-label{
+      display:none; font-size:.72rem; font-weight:600; letter-spacing:.4px;
+      color:var(--muted); white-space:nowrap;
     }
     /* connector line between adjacent nodes */
     .stepnav-node:not(:last-child)::after{
@@ -120,6 +126,23 @@
     body:has(#step-4:checked) .stepnav-node[for=step-3]::after{
       background:var(--app-accent);
     }
+
+    /* titles: show the current step's + every earlier (done) step's */
+    body:has(#step-1:checked) .stepnav-node[for=step-1] .stepnav-label,
+    body:has(#step-2:checked) .stepnav-node[for=step-2] .stepnav-label,
+    body:has(#step-3:checked) .stepnav-node[for=step-3] .stepnav-label,
+    body:has(#step-4:checked) .stepnav-node[for=step-4] .stepnav-label,
+    body:has(#step-2:checked) .stepnav-node[for=step-1] .stepnav-label,
+    body:has(#step-3:checked) .stepnav-node[for=step-1] .stepnav-label,
+    body:has(#step-3:checked) .stepnav-node[for=step-2] .stepnav-label,
+    body:has(#step-4:checked) .stepnav-node[for=step-1] .stepnav-label,
+    body:has(#step-4:checked) .stepnav-node[for=step-2] .stepnav-label,
+    body:has(#step-4:checked) .stepnav-node[for=step-3] .stepnav-label{ display:block }
+    /* the active step's title takes the accent tint */
+    body:has(#step-1:checked) .stepnav-node[for=step-1] .stepnav-label,
+    body:has(#step-2:checked) .stepnav-node[for=step-2] .stepnav-label,
+    body:has(#step-3:checked) .stepnav-node[for=step-3] .stepnav-label,
+    body:has(#step-4:checked) .stepnav-node[for=step-4] .stepnav-label{ color:var(--app-accent-soft) }
 
     /* centred Back / Next — only the active step's pair shows */
     .step-controls{ display:flex; justify-content:center }
@@ -204,6 +227,101 @@
     }
     .evidence{ border:1px dashed var(--line); border-radius:var(--flove-radius-sm); padding:.7rem; background:var(--field) }
 
+    /* ── step 1 · Wise line + mode toggle ─────────────────────── */
+    .wise-line{ display:flex; align-items:center; gap:.7rem; flex-wrap:wrap }
+    .wise-word{
+      font-size:1.5rem; font-weight:700; letter-spacing:.5px;
+      background:linear-gradient(180deg,#fff,#cfc9ff);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    .wise-line input[type=text]{ flex:1; min-width:220px }
+    .mode-toggle{ display:flex; gap:.5rem; margin-top:1.1rem; flex-wrap:wrap }
+    .mode-btn{
+      display:inline-flex; align-items:center; cursor:pointer; user-select:none;
+      padding:.5rem 1.1rem; border-radius:var(--flove-radius-pill); font-weight:600; color:var(--ink);
+      background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02)); border:1px solid var(--line);
+      transition:border-color var(--flove-fast), background var(--flove-fast), box-shadow var(--flove-fast), color var(--flove-fast);
+    }
+    .mode-btn input{ position:absolute; width:1px; height:1px; opacity:0; pointer-events:none }
+    .mode-btn:hover{ border-color:var(--app-accent) }
+    .mode-btn:has(input:checked){
+      background:var(--app-accent); color:var(--app-ink-on-accent); border-color:var(--app-accent);
+      box-shadow:0 0 10px rgba(141,137,255,.35);
+    }
+
+    /* ── perspective · vertical progress rail beside the sub-sections ── */
+    .persp{ display:grid; grid-template-columns:auto 1fr; gap:1rem; align-items:stretch }
+    .rail{ display:flex; flex-direction:column; align-items:center; padding:.2rem 0 }
+    .rail-node{ position:relative; flex:1 1 0; display:flex; flex-direction:column; align-items:center; min-height:64px }
+    .rail-node:not(:last-child)::after{
+      content:""; position:absolute; top:14px; left:50%; transform:translateX(-50%);
+      width:2px; height:100%; background:var(--line); transition:background var(--flove-fast);
+    }
+    .rail-dot{
+      width:14px; height:14px; border-radius:50%; z-index:1;
+      background:var(--panel); border:2px solid var(--line);
+      transition:background var(--flove-fast), border-color var(--flove-fast), box-shadow var(--flove-fast);
+    }
+    .rail-tag{ font-size:.62rem; font-weight:600; letter-spacing:.3px; color:var(--muted); margin-top:.3rem }
+    .persp-body{ min-width:0 }
+    .persp-body fieldset.field:last-child{ margin-bottom:0 }
+    /* mark a rail node "filled" when its section has any selection */
+    .persp:has(.persp-sec--prism input:checked) .rail--prism .rail-dot,
+    .persp:has(.persp-sec--tone  input:checked) .rail--tone  .rail-dot,
+    .persp:has(.persp-sec--teleo input:checked) .rail--teleo .rail-dot,
+    .persp:has(.persp-sec--field input:checked) .rail--field .rail-dot,
+    .persp:has(.persp-sec--time  input:checked) .rail--time  .rail-dot{
+      background:var(--app-accent); border-color:var(--app-accent); box-shadow:0 0 0 3px rgba(141,137,255,.22);
+    }
+    .persp:has(.persp-sec--prism input:checked) .rail--prism .rail-tag,
+    .persp:has(.persp-sec--tone  input:checked) .rail--tone  .rail-tag,
+    .persp:has(.persp-sec--teleo input:checked) .rail--teleo .rail-tag,
+    .persp:has(.persp-sec--field input:checked) .rail--field .rail-tag,
+    .persp:has(.persp-sec--time  input:checked) .rail--time  .rail-tag{ color:var(--app-accent-soft) }
+    .persp:has(.persp-sec--prism input:checked) .rail--prism::after,
+    .persp:has(.persp-sec--tone  input:checked) .rail--tone::after,
+    .persp:has(.persp-sec--teleo input:checked) .rail--teleo::after,
+    .persp:has(.persp-sec--field input:checked) .rail--field::after{ background:var(--app-accent) }
+    @media (max-width:560px){
+      .persp{ grid-template-columns:1fr }
+      .rail{ flex-direction:row; padding:0 0 .7rem }
+      .rail-node{ min-height:0; flex-direction:row; gap:.3rem }
+      .rail-node:not(:last-child)::after{ top:8px; left:auto; right:-50%; width:100%; height:2px; transform:none }
+    }
+
+    /* ── explainers · capital toggles that reveal their field ──── */
+    .explainers{ display:flex; flex-direction:column; gap:.7rem }
+    .xpl-btn{
+      display:inline-flex; align-items:center; cursor:pointer; user-select:none;
+      padding:.4rem .9rem; border-radius:var(--flove-radius-pill); font-weight:700; letter-spacing:.4px; font-size:.85rem;
+      background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02)); border:1px solid var(--line); color:var(--ink);
+      transition:border-color var(--flove-fast), background var(--flove-fast), box-shadow var(--flove-fast), color var(--flove-fast);
+    }
+    .xpl-btn input{ position:absolute; width:1px; height:1px; opacity:0; pointer-events:none }
+    .xpl-btn:hover{ border-color:var(--app-accent) }
+    .xpl:has(.xpl-btn input:checked) .xpl-btn{
+      background:var(--app-accent); color:var(--app-ink-on-accent); border-color:var(--app-accent); box-shadow:0 0 10px rgba(141,137,255,.35);
+    }
+    .xpl-field{ display:none; margin-top:.5rem }
+    .xpl:has(.xpl-btn input:checked) .xpl-field{ display:block; animation:fade .25s var(--flove-ease) both }
+
+    /* ── summary · shown when "Make a form" is on; holds the download ── */
+    .summary{ display:none; max-width:980px; margin:0 auto 2.4rem; padding:0 1rem }
+    body:has(#mode-form:checked) .summary{ display:block }
+    .summary__box{
+      border:1px solid var(--line); border-radius:var(--flove-radius); padding:1.1rem 1.2rem;
+      background:linear-gradient(180deg,rgba(141,137,255,.08),rgba(255,255,255,.02));
+    }
+    .summary__box h2{ margin:.1rem 0 .3rem; font-size:1.05rem; letter-spacing:.6px; color:var(--accent2) }
+    .summary__box p{ margin:0 0 .9rem; color:var(--muted); font-size:.9rem }
+    .dl-btn{
+      display:inline-flex; align-items:center; gap:.5rem; cursor:pointer; border:0;
+      border-radius:var(--flove-radius-pill); padding:.6rem 1.3rem; font:inherit; font-weight:700;
+      background:var(--app-accent); color:var(--app-ink-on-accent);
+      transition:box-shadow var(--flove-fast), transform var(--flove-fast);
+    }
+    .dl-btn:hover{ box-shadow:0 0 16px rgba(141,137,255,.5); transform:translateY(-1px) }
+
     /* know more */
     .output{ max-width:980px; margin:0 auto 5rem; padding:0 1rem }
     .output summary{ cursor:pointer; color:var(--muted) }
@@ -237,89 +355,118 @@
   <main class="shell">
     <!-- PACK 1 · ESSENTIAL -->
     <section class="pack pack--1">
-      <h2><span class="t-en">Essential</span><span class="t-es">Esencial</span></h2>
-      <label class="field">
-        <span class="lbl"><span class="t-en">Object</span><span class="t-es">Objeto</span></span>
-        <input type="text" autofocus placeholder="Name an OBJECT here — e.g. True Love, Bike, Oxymorons…">
-      </label>
+      <div class="wise-line">
+        <span class="wise-word">Wise</span>
+        <input type="text" autofocus placeholder="Something here">
+      </div>
+      <div class="mode-toggle" role="group" aria-label="Mode">
+        <label class="mode-btn"><input type="checkbox" id="mode-define" checked> <span class="t-en">Define</span><span class="t-es">Definir</span></label>
+        <label class="mode-btn"><input type="checkbox" id="mode-form"> <span class="t-en">Make a form</span><span class="t-es">Crear formulario</span></label>
+      </div>
     </section>
 
-    <!-- PACK 2 · PERSPECTIVE + FOCUS -->
+    <!-- PACK 2 · PERSPECTIVE + FOCUS — sub-sections with a vertical rail -->
     <section class="pack pack--2">
-      <h2><span class="t-en">Perspective</span><span class="t-es">Perspectiva</span></h2>
-
-      <fieldset class="field">
-        <legend class="lbl"><span class="t-en">Prism</span><span class="t-es">Prisma</span></legend>
-        <div class="chips">
-          <label><input type="checkbox"> <span class="t-en">Subjective</span><span class="t-es">Subjetivo</span></label>
-          <label><input type="checkbox"> <span class="t-en">Objective</span><span class="t-es">Objetivo</span></label>
-          <label><input type="checkbox"> <span class="t-en">Momentual</span><span class="t-es">Momentual</span></label>
-          <label><input type="checkbox"> <span class="t-en">General</span><span class="t-es">General</span></label>
+      <div class="persp">
+        <div class="rail" aria-hidden="true">
+          <span class="rail-node rail--prism"><span class="rail-dot"></span><span class="rail-tag">Prism</span></span>
+          <span class="rail-node rail--tone"><span class="rail-dot"></span><span class="rail-tag">Tone</span></span>
+          <span class="rail-node rail--teleo"><span class="rail-dot"></span><span class="rail-tag">Teleo</span></span>
+          <span class="rail-node rail--field"><span class="rail-dot"></span><span class="rail-tag">Field</span></span>
+          <span class="rail-node rail--time"><span class="rail-dot"></span><span class="rail-tag">Time</span></span>
         </div>
-      </fieldset>
 
-      <fieldset class="field">
-        <legend class="lbl"><span class="t-en">Tone</span><span class="t-es">Tono</span></legend>
-        <div class="chips">
-          <label><input type="checkbox"> <span class="t-en">Normal</span><span class="t-es">Normal</span></label>
-          <label><input type="checkbox"> <span class="t-en">Funny</span><span class="t-es">Divertido</span></label>
-          <label><input type="checkbox"> <span class="t-en">Formal</span><span class="t-es">Formal</span></label>
-          <label><input type="checkbox"> <span class="t-en">Trivial</span><span class="t-es">Trivial</span></label>
+        <div class="persp-body">
+          <fieldset class="field persp-sec persp-sec--prism">
+            <legend class="lbl"><span class="t-en">Prism</span><span class="t-es">Prisma</span></legend>
+            <div class="chips">
+              <label><input type="checkbox"> <span class="t-en">Subjective</span><span class="t-es">Subjetivo</span></label>
+              <label><input type="checkbox"> <span class="t-en">Objective</span><span class="t-es">Objetivo</span></label>
+              <label><input type="checkbox"> <span class="t-en">Momentual</span><span class="t-es">Momentual</span></label>
+              <label><input type="checkbox"> <span class="t-en">General</span><span class="t-es">General</span></label>
+            </div>
+          </fieldset>
+
+          <fieldset class="field persp-sec persp-sec--tone">
+            <legend class="lbl"><span class="t-en">Tone</span><span class="t-es">Tono</span></legend>
+            <div class="chips">
+              <label><input type="checkbox"> <span class="t-en">Normal</span><span class="t-es">Normal</span></label>
+              <label><input type="checkbox"> <span class="t-en">Funny</span><span class="t-es">Divertido</span></label>
+              <label><input type="checkbox"> <span class="t-en">Formal</span><span class="t-es">Formal</span></label>
+              <label><input type="checkbox"> <span class="t-en">Trivial</span><span class="t-es">Trivial</span></label>
+            </div>
+          </fieldset>
+
+          <fieldset class="field persp-sec persp-sec--teleo">
+            <legend class="lbl"><span class="t-en">Teleological background</span><span class="t-es">Trasfondo teleológico</span></legend>
+            <div class="bar__choices">
+              <label><input type="checkbox" name="cont"> <span class="t-en">Experimental</span><span class="t-es">Experimental</span></label>
+              <label><input type="checkbox" name="cont"> <span class="t-en">Random</span><span class="t-es">Aleatorio</span></label>
+              <label><input type="checkbox" name="cont"> <span class="t-en">Fine</span><span class="t-es">Fino</span></label>
+              <label><input type="checkbox" name="cont"> <span class="t-en">Fatal</span><span class="t-es">Fatal</span></label>
+            </div>
+          </fieldset>
+
+          <h3><span class="t-en">Focus</span><span class="t-es">Enfoque</span></h3>
+
+          <fieldset class="field persp-sec persp-sec--field">
+            <legend class="lbl"><span class="t-en">Field</span><span class="t-es">Campo</span></legend>
+            <div class="chips">
+              <label><input type="checkbox"> <span class="t-en">Metaphysics</span><span class="t-es">Metafísica</span></label>
+              <label><input type="checkbox"> <span class="t-en">Science</span><span class="t-es">Ciencia</span></label>
+              <label><input type="checkbox"> <span class="t-en">Biology</span><span class="t-es">Biología</span></label>
+              <label><input type="checkbox"> <span class="t-en">Psychology</span><span class="t-es">Psicología</span></label>
+              <label><input type="checkbox"> <span class="t-en">Sociology</span><span class="t-es">Sociología</span></label>
+            </div>
+          </fieldset>
+
+          <fieldset class="field persp-sec persp-sec--time">
+            <legend class="lbl"><span class="t-en">Time span</span><span class="t-es">Lapso temporal</span></legend>
+            <div class="bar__choices">
+              <label><input type="checkbox" name="time"> <span class="t-en">Past</span><span class="t-es">Pasado</span></label>
+              <label><input type="checkbox" name="time"> <span class="t-en">Present</span><span class="t-es">Presente</span></label>
+              <label><input type="checkbox" name="time"> <span class="t-en">Future</span><span class="t-es">Futuro</span></label>
+              <label><input type="checkbox" name="time"> <span class="t-en">Short</span><span class="t-es">Corto</span></label>
+              <label><input type="checkbox" name="time"> <span class="t-en">Mid</span><span class="t-es">Medio</span></label>
+              <label><input type="checkbox" name="time"> <span class="t-en">Long</span><span class="t-es">Largo</span></label>
+            </div>
+          </fieldset>
         </div>
-      </fieldset>
-
-      <fieldset class="field">
-        <legend class="lbl"><span class="t-en">Teleological background</span><span class="t-es">Trasfondo teleológico</span></legend>
-        <div class="bar__choices">
-          <label><input type="checkbox" name="cont"> <span class="t-en">Experimental</span><span class="t-es">Experimental</span></label>
-          <label><input type="checkbox" name="cont"> <span class="t-en">Random</span><span class="t-es">Aleatorio</span></label>
-          <label><input type="checkbox" name="cont"> <span class="t-en">Fine</span><span class="t-es">Fino</span></label>
-          <label><input type="checkbox" name="cont"> <span class="t-en">Fatal</span><span class="t-es">Fatal</span></label>
-        </div>
-      </fieldset>
-
-      <h3><span class="t-en">Focus</span><span class="t-es">Enfoque</span></h3>
-
-      <fieldset class="field">
-        <legend class="lbl"><span class="t-en">Field</span><span class="t-es">Campo</span></legend>
-        <div class="chips">
-          <label><input type="checkbox"> <span class="t-en">Metaphysics</span><span class="t-es">Metafísica</span></label>
-          <label><input type="checkbox"> <span class="t-en">Science</span><span class="t-es">Ciencia</span></label>
-          <label><input type="checkbox"> <span class="t-en">Biology</span><span class="t-es">Biología</span></label>
-          <label><input type="checkbox"> <span class="t-en">Psychology</span><span class="t-es">Psicología</span></label>
-          <label><input type="checkbox"> <span class="t-en">Sociology</span><span class="t-es">Sociología</span></label>
-        </div>
-      </fieldset>
-
-      <fieldset class="field">
-        <legend class="lbl"><span class="t-en">Time span</span><span class="t-es">Lapso temporal</span></legend>
-        <div class="bar__choices">
-          <label><input type="checkbox" name="time"> <span class="t-en">Past</span><span class="t-es">Pasado</span></label>
-          <label><input type="checkbox" name="time"> <span class="t-en">Present</span><span class="t-es">Presente</span></label>
-          <label><input type="checkbox" name="time"> <span class="t-en">Future</span><span class="t-es">Futuro</span></label>
-          <label><input type="checkbox" name="time"> <span class="t-en">Short</span><span class="t-es">Corto</span></label>
-          <label><input type="checkbox" name="time"> <span class="t-en">Mid</span><span class="t-es">Medio</span></label>
-          <label><input type="checkbox" name="time"> <span class="t-en">Long</span><span class="t-es">Largo</span></label>
-        </div>
-      </fieldset>
+      </div>
     </section>
 
-    <!-- PACK 3 · EXPLAINERS -->
+    <!-- PACK 3 · EXPLAINERS — each capital is a toggle that reveals its field -->
     <section class="pack pack--3">
-      <h2><span class="t-en">Explainers</span><span class="t-es">Explicadores</span></h2>
-      <div class="grid grid--two">
-        <label class="field"><textarea rows="2" placeholder="PHRASE that defines it"></textarea></label>
-        <label class="field"><input type="text" placeholder="RELATE it to something else"></label>
-        <label class="field"><textarea rows="2" placeholder="WHY is it important"></textarea></label>
-        <label class="field"><textarea rows="2" placeholder="WHAT special properties does it have"></textarea></label>
-        <label class="field"><textarea rows="2" placeholder="HOW does it work"></textarea></label>
-        <label class="field"><textarea rows="2" placeholder="WHO / WHERE / WHEN"></textarea></label>
+      <div class="explainers">
+        <div class="xpl">
+          <label class="xpl-btn"><input type="checkbox"> PHRASE</label>
+          <div class="xpl-field"><textarea rows="2" placeholder="PHRASE that defines it"></textarea></div>
+        </div>
+        <div class="xpl">
+          <label class="xpl-btn"><input type="checkbox"> RELATE</label>
+          <div class="xpl-field"><input type="text" placeholder="RELATE it to something else"></div>
+        </div>
+        <div class="xpl">
+          <label class="xpl-btn"><input type="checkbox"> WHY</label>
+          <div class="xpl-field"><textarea rows="2" placeholder="WHY is it important"></textarea></div>
+        </div>
+        <div class="xpl">
+          <label class="xpl-btn"><input type="checkbox"> WHAT</label>
+          <div class="xpl-field"><textarea rows="2" placeholder="WHAT special properties does it have"></textarea></div>
+        </div>
+        <div class="xpl">
+          <label class="xpl-btn"><input type="checkbox"> HOW</label>
+          <div class="xpl-field"><textarea rows="2" placeholder="HOW does it work"></textarea></div>
+        </div>
+        <div class="xpl">
+          <label class="xpl-btn"><input type="checkbox"> WHO / WHERE / WHEN</label>
+          <div class="xpl-field"><textarea rows="2" placeholder="WHO / WHERE / WHEN"></textarea></div>
+        </div>
       </div>
     </section>
 
     <!-- PACK 4 · FORMALISE -->
     <section class="pack pack--4">
-      <h2><span class="t-en">Formalise</span><span class="t-es">Formalizar</span></h2>
       <div class="funnel">
         <div class="funnel__band">
           <textarea rows="2" placeholder="Axiom"></textarea>
@@ -358,10 +505,10 @@
   <!-- stepper (below) — dots + centred Back/Next, no section titles -->
   <nav class="step-footer" aria-label="Steps">
     <div class="stepnav">
-      <label class="stepnav-node" for="step-1" tabindex="0"><span class="stepnav-dot" aria-hidden="true">1</span></label>
-      <label class="stepnav-node" for="step-2" tabindex="0"><span class="stepnav-dot" aria-hidden="true">2</span></label>
-      <label class="stepnav-node" for="step-3" tabindex="0"><span class="stepnav-dot" aria-hidden="true">3</span></label>
-      <label class="stepnav-node" for="step-4" tabindex="0"><span class="stepnav-dot" aria-hidden="true">4</span></label>
+      <label class="stepnav-node" for="step-1" tabindex="0"><span class="stepnav-dot" aria-hidden="true">1</span><span class="stepnav-label"><span class="t-en">Essential</span><span class="t-es">Esencial</span></span></label>
+      <label class="stepnav-node" for="step-2" tabindex="0"><span class="stepnav-dot" aria-hidden="true">2</span><span class="stepnav-label"><span class="t-en">Perspective</span><span class="t-es">Perspectiva</span></span></label>
+      <label class="stepnav-node" for="step-3" tabindex="0"><span class="stepnav-dot" aria-hidden="true">3</span><span class="stepnav-label"><span class="t-en">Explainers</span><span class="t-es">Explicadores</span></span></label>
+      <label class="stepnav-node" for="step-4" tabindex="0"><span class="stepnav-dot" aria-hidden="true">4</span><span class="stepnav-label"><span class="t-en">Formalise</span><span class="t-es">Formalizar</span></span></label>
     </div>
     <div class="step-controls">
       <div class="step-ctl step-ctl--1">
@@ -381,11 +528,106 @@
     </div>
   </nav>
 
+  <!-- summary — appears when "Make a form" is selected; holds the download -->
+  <section class="summary" aria-live="polite">
+    <div class="summary__box">
+      <h2><span class="t-en">Make a form</span><span class="t-es">Crear formulario</span></h2>
+      <p><span class="t-en">Downloads a standalone HTML form containing only the buttons &amp; fields you filled in.</span><span class="t-es">Descarga un formulario HTML independiente con solo los botones y campos que rellenaste.</span></p>
+      <button type="button" id="dl-form" class="dl-btn">⬇ <span class="t-en">Download form</span><span class="t-es">Descargar formulario</span></button>
+    </div>
+  </section>
+
   <details class="output">
     <summary><span class="t-en">Know more</span><span class="t-es">Saber más</span></summary>
     <div class="output__box">
       <span class="t-en">Visit</span><span class="t-es">Visita</span> <a href="https://flove.org">flove.org</a>
     </div>
   </details>
+
+  <script>
+  /* The only JS in this app — it lives here because "Make a form" must read
+     the filled controls and emit a downloadable file, which pure CSS can't do.
+     Everything else (stepper, reveals, toggles, rail) stays pure CSS. */
+  (function(){
+    var def  = document.getElementById('mode-define');
+    var form = document.getElementById('mode-form');
+
+    /* mode toggle — multiselect but never empty: re-check whatever was just
+       turned off if it would leave nothing selected. */
+    function guard(just){ if(!def.checked && !form.checked){ just.checked = true; } }
+    def.addEventListener('change', function(){ guard(def); });
+    form.addEventListener('change', function(){ guard(form); });
+
+    function esc(s){ return String(s).replace(/[&<>"]/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+    function en(el){ var s = el && el.querySelector('.t-en'); return (s ? s.textContent : (el ? el.textContent : '')).trim(); }
+
+    function buildFields(){
+      var out = [];
+      // 1 · object
+      var obj = document.querySelector('.pack--1 input[type=text]');
+      if(obj && obj.value.trim()) out.push(text('Object', obj.value.trim()));
+      // 2 · perspective — selected buttons per sub-section
+      document.querySelectorAll('.pack--2 fieldset.persp-sec').forEach(function(fs){
+        var picks = [].slice.call(fs.querySelectorAll('input:checked')).map(function(i){ return en(i.parentElement); });
+        if(picks.length) out.push(choice(en(fs.querySelector('legend')), picks));
+      });
+      // 3 · explainers — only revealed + filled
+      document.querySelectorAll('.pack--3 .xpl').forEach(function(x){
+        var on = x.querySelector('.xpl-btn input');
+        var ctl = x.querySelector('textarea, input[type=text]');
+        if(on && on.checked && ctl && ctl.value.trim()){
+          out.push(text(x.querySelector('.xpl-btn').textContent.trim(), ctl.value.trim()));
+        }
+      });
+      // 4 · formalise — any filled field
+      document.querySelectorAll('.pack--4 textarea, .pack--4 input[type=text]').forEach(function(c){
+        if(c.value.trim()) out.push(text(c.getAttribute('placeholder') || 'Field', c.value.trim()));
+      });
+      var sel = document.querySelector('.pack--4 select');
+      if(sel && sel.value) out.push(text('Kind', sel.value));
+      return out;
+    }
+
+    function text(label, val){
+      var ctl = val.length > 60
+        ? '<textarea rows="2">' + esc(val) + '</textarea>'
+        : '<input type="text" value="' + esc(val) + '">';
+      return '    <label class="f"><span>' + esc(label) + '</span>' + ctl + '</label>';
+    }
+    function choice(label, arr){
+      return '    <fieldset class="f"><legend>' + esc(label) + '</legend>' +
+             arr.map(function(v){ return '<label class="c"><input type="checkbox" checked> ' + esc(v) + '</label>'; }).join('') +
+             '</fieldset>';
+    }
+
+    function template(object, body){
+      return '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n' +
+        '<meta name="viewport" content="width=device-width,initial-scale=1">\n' +
+        '<title>Puzzy form — ' + esc(object || 'untitled') + '</title>\n<style>\n' +
+        'body{font-family:system-ui,sans-serif;max-width:680px;margin:2rem auto;padding:0 1rem;background:#0b0b0f;color:#e9eaf2;line-height:1.5}\n' +
+        'h1{color:#8d89ff;font-size:1.4rem}\n.f{display:block;margin:1rem 0}\n.f>span,legend{display:block;font-weight:600;color:#a3a7b4;margin-bottom:.35rem}\n' +
+        'input[type=text],textarea{width:100%;padding:.55rem .7rem;border-radius:8px;border:1px solid #1e2133;background:#13162a;color:#e9eaf2;font:inherit}\n' +
+        'fieldset{border:1px solid #1e2133;border-radius:8px;padding:.6rem .8rem}\n.c{display:inline-block;margin:.15rem .5rem .15rem 0}\n' +
+        'button{margin-top:1.2rem;padding:.6rem 1.3rem;border:0;border-radius:999px;background:#8d89ff;color:#0b0b14;font-weight:700;cursor:pointer}\n' +
+        '</style>\n</head>\n<body>\n<h1>✺ ' + esc(object || 'Puzzy form') + '</h1>\n' +
+        '<form onsubmit="event.preventDefault();var d={};this.querySelectorAll(\'input,textarea\').forEach(function(i){if(i.type===\'checkbox\'){if(i.checked)(d[i.closest(\'fieldset\').querySelector(\'legend\').textContent]=d[i.closest(\'fieldset\').querySelector(\'legend\').textContent]||[]).push(i.parentElement.textContent.trim())}else if(i.value)d[i.previousElementSibling?i.previousElementSibling.textContent:\'field\']=i.value;});console.log(d);alert(\'Submitted — data logged to console.\');">\n' +
+        body + '\n    <button type="submit">Submit</button>\n</form>\n</body>\n</html>\n';
+    }
+
+    document.getElementById('dl-form').addEventListener('click', function(){
+      var fields = buildFields();
+      if(!fields.length){ alert('Fill in at least one button or field first.'); return; }
+      var obj = document.querySelector('.pack--1 input[type=text]');
+      var html = template(obj ? obj.value.trim() : '', fields.join('\n'));
+      var blob = new Blob([html], {type:'text/html'});
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = 'puzzy-form.html';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    });
+  })();
+  </script>
 </body>
 </html>
