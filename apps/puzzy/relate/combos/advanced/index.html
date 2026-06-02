@@ -151,8 +151,9 @@
     .systems-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:.4rem }
     .lcard-system{ padding:.3rem .25rem; gap:.12rem }
     .lcard-system .lc-title{ font-size:.58rem; padding:.03rem .2rem }
-    .lcard-system .lc-verb{ font-size:.66rem; padding:.12rem .35rem }
-    .lcard-system .lc-cycle{ width:1.15rem; height:1.15rem; font-size:.8rem }
+    /* systems: verb + plus buttons rendered 2× bigger */
+    .lcard-system .lc-verb{ font-size:1.32rem; padding:.24rem .7rem }
+    .lcard-system .lc-cycle{ width:2.3rem; height:2.3rem; font-size:1.6rem }
 
     /* emotions framing the systems: top row, asides, bottom row */
     .frame{ display:grid; gap:.7rem }
@@ -175,6 +176,14 @@
       background:linear-gradient(180deg,var(--accent2),var(--app-accent));
       color:var(--app-ink-on-accent); border-color:var(--app-accent);
     }
+    /* "Add" → "Add more": compact, pill-shaped, more button-like (~50% smaller) */
+    .add-btn{
+      padding:.3rem .7rem; font-size:.78rem; font-weight:800;
+      border-radius:var(--flove-radius-pill); justify-self:start;
+    }
+    .add-btn .ab-more{ display:none }
+    .add-btn.added .ab-first{ display:none }
+    .add-btn.added .ab-more{ display:inline }
 
     /* chips for custom values */
     .chips{ display:flex; flex-wrap:wrap; gap:.45rem; margin-top:.6rem }
@@ -252,6 +261,9 @@
 
     /* footer actions (JS-driven) */
     .footer-actions{ display:flex; gap:.6rem; flex-wrap:wrap }
+    /* the download-form row is centred, and its button is 50% bigger */
+    .footer-actions.center{ justify-content:center }
+    .mega-btn.download-form{ padding:1.05rem 1.65rem; font-size:1.25rem; border-color:var(--accent2) }
     .mega-btn{
       text-decoration:none; display:inline-flex; align-items:center; justify-content:center;
       gap:.55rem; padding:.7rem 1.1rem; border-radius:var(--flove-radius-sm); border:1px solid var(--line);
@@ -333,9 +345,12 @@
     <section class="card">
       <div class="inputline">
         <div class="ghost">
-          <input id="seedInput" placeholder="Add your keywords here">
+          <input id="seedInput" placeholder="Add keywords">
         </div>
-        <button id="addMoreBtn" class="btn" aria-label="Add more custom value"><span class="t-en">Add more</span><span class="t-es">Añadir más</span></button>
+        <button id="addMoreBtn" class="btn add-btn" aria-label="Add custom value">
+          <span class="ab-first"><span class="t-en">Add</span><span class="t-es">Añadir</span></span>
+          <span class="ab-more"><span class="t-en">Add more</span><span class="t-es">Añadir más</span></span>
+        </button>
         <button id="sensesPlus" class="field-plus" type="button" aria-label="Show senses list">+</button>
       </div>
       <div id="customTokens" class="chips" aria-live="polite"></div>
@@ -420,8 +435,8 @@
 
     <!-- ACTIONS (now JS-driven) -->
     <section class="card">
-      <div class="footer-actions" style="margin-bottom:.6rem">
-        <button id="downloadFormBtn" class="mega-btn"><span class="t-en">Download my combos form</span><span class="t-es">Descargar mi formulario de combos</span></button>
+      <div class="footer-actions center" style="margin-bottom:.6rem">
+        <button id="downloadFormBtn" class="mega-btn download-form"><span class="t-en">Download my combos form</span><span class="t-es">Descargar mi formulario de combos</span></button>
       </div>
       <div class="footer-actions">
         <button id="saveBtn" class="mega-btn save"><span class="t-en">Save</span><span class="t-es">Guardar</span></button>
@@ -516,11 +531,15 @@
       return true;
     }
 
-    addMoreBtn.addEventListener('click', () => addCustomToken(seedInput.value));
+    function doAdd() {
+      addCustomToken(seedInput.value);
+      addMoreBtn.classList.add('added');   // "Add" → "Add more" after the first add
+    }
+    addMoreBtn.addEventListener('click', doAdd);
     seedInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
-        addCustomToken(seedInput.value);
+        doAdd();
       }
     });
 
@@ -533,7 +552,7 @@
     const langEs = document.getElementById('ui-lang-es');
     const langEn = document.getElementById('ui-lang-en');
     function syncPlaceholder() {
-      seedInput.placeholder = langEs.checked ? 'Añade tus palabras clave aquí' : 'Add your keywords here';
+      seedInput.placeholder = langEs.checked ? 'Añade palabras' : 'Add keywords';
     }
     langEs.addEventListener('change', syncPlaceholder);
     langEn.addEventListener('change', syncPlaceholder);
