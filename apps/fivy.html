@@ -96,10 +96,6 @@
     background:linear-gradient(90deg,var(--brand),var(--accent));
     box-shadow:0 0 8px rgba(255,95,220,.4);transform:scaleY(1.4);
   }
-  /* analyze adds a filled bar to the main bar + a growing sub bar (accent tone) */
-  .stage-progress .seg.an.done,
-  .deck-progress .dseg.an.done{background:linear-gradient(90deg,var(--accent),var(--plum))}
-  .deck-progress .dseg.an{animation:fadein .25s ease}
   @media (max-width:460px){
     .stage-progress{padding:3px 6px;gap:3px}
     .stage-progress .seg{width:16px;height:3px}
@@ -474,13 +470,13 @@
   .fields.active{display:block;animation:fadein .25s ease}
 
   /* Fields lower area: two columns — buttons | toolbar */
-  /* Fields: [toolbar | main]; main = cat row · subs row · square stacked */
+  /* Fields: [compact toolbar | main]; the square fills the rest of the width */
   .fields-grid{
-    display:grid;grid-template-columns:190px 1fr;gap:16px;align-items:start;
-    max-width:760px;margin:0 auto;
+    display:grid;grid-template-columns:138px 1fr;gap:14px;align-items:start;
+    max-width:840px;margin:0 auto;
   }
-  @media (max-width:640px){.fields-grid{grid-template-columns:1fr}}
-  .fields-main{min-width:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+  @media (max-width:560px){.fields-grid{grid-template-columns:1fr}}
+  .fields-main{min-width:0;display:flex;flex-direction:column;align-items:stretch;gap:8px}
   .cats{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:4px;margin:0}
   /* deck sub-buttons in one row, only for the categories you click */
   .cat-subs{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;padding:0 4px}
@@ -517,26 +513,25 @@
   }
 
   .toolbar{
-    display:flex;flex-direction:column;gap:12px;
-    background:rgba(255,255,255,.05);
-    border:1px solid var(--stroke);border-radius:16px;
-    padding:12px;align-self:start;
-  }
-  .toolbar .buttons{display:flex;flex-direction:column;gap:8px}
-  .tbtn{
-    display:grid;grid-template-columns:28px 1fr auto;
-    align-items:center;gap:10px;
+    display:flex;flex-direction:column;gap:8px;
     background:rgba(255,255,255,.05);
     border:1px solid var(--stroke);border-radius:12px;
-    padding:9px 12px;cursor:pointer;user-select:none;color:var(--ink);
+    padding:8px;align-self:start;
+  }
+  .toolbar .buttons{display:flex;flex-direction:column;gap:6px}
+  .tbtn{
+    display:grid;grid-template-columns:1fr auto;
+    align-items:center;gap:6px;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--stroke);border-radius:9px;
+    padding:5px 8px;cursor:pointer;user-select:none;color:var(--ink);
     transition:transform .12s ease, border-color .2s ease, background .15s ease;
   }
   .tbtn:hover{transform:translateY(-1px);border-color:#6a6a86}
   .tbtn.is-on{background:rgba(168,228,255,.1);border-color:var(--sky)}
-  .tbtn .icon{font-size:16px}
-  .tbtn .btn-text{font-weight:700;font-size:14px}
+  .tbtn .btn-text{font-weight:600;font-size:.82rem}
   .tbtn .state-indicator{
-    inline-size:10px;block-size:10px;border-radius:50%;
+    inline-size:9px;block-size:9px;border-radius:50%;
     border:2px solid #5a5a76;background:#2f2f44;
   }
   .tbtn[data-toggle="list"].is-on .state-indicator{background:radial-gradient(circle at 40% 40%,#c9efff,#6dd0ff);box-shadow:0 0 12px rgba(109,208,255,.7)}
@@ -545,22 +540,22 @@
 
   .linear-list{
     background:rgba(255,255,255,.05);
-    border:1px solid var(--stroke);border-radius:12px;
-    padding:10px;max-height:40vh;overflow:auto;
+    border:1px solid var(--stroke);border-radius:10px;
+    padding:7px;max-height:40vh;overflow:auto;
   }
   .linear-list[hidden]{display:none}
   .linear-list .ll-title{
-    font:700 .82rem/1.1 ui-serif,Georgia,serif;
-    color:var(--gold);letter-spacing:.4px;text-transform:uppercase;
-    text-align:center;margin:0 0 8px;min-height:1em;
+    font:700 .72rem/1.1 ui-serif,Georgia,serif;
+    color:var(--gold);letter-spacing:.3px;text-transform:uppercase;
+    text-align:center;margin:0 0 6px;min-height:1em;
   }
   .linear-list .ll-title:empty::before{content:"—";opacity:.35}
-  .linear-list ol{margin:0;padding-left:1.2rem;display:grid;gap:.45rem}
+  .linear-list ol{margin:0;padding-left:1rem;display:grid;gap:.3rem}
   .linear-list li{
     background:rgba(255,255,255,.05);
     border:1px solid var(--stroke);
-    border-radius:10px;
-    padding:.5rem .6rem;font-size:13px;
+    border-radius:8px;
+    padding:.28rem .42rem;font-size:.72rem;
     transform-origin:left center;
     transition:transform .25s ease;
     color:var(--ink);
@@ -598,13 +593,12 @@
 
   .square{
     position:relative;aspect-ratio:1/1;
-    width:min(96%, calc(min(85%,520px) * var(--grow,1)));
+    width:100%;                       /* fill all the width left by the toolbar */
     background:radial-gradient(100% 100% at 50% 50%, rgba(255,255,255,.08) 0%, rgba(255,255,255,.02) 70%);
     border:1px solid var(--stroke);
     border-radius:22px;
     box-shadow:0 18px 50px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05);
     overflow:hidden;padding:10px;
-    transition:width .35s cubic-bezier(.2,1,.3,1);
   }
 
   /* ---- Deck sub-buttons (stage-1 fivys), shown below the category rows ---- */
@@ -843,14 +837,7 @@
   .sum-table td.top{background:rgba(0,247,167,.1);font-weight:600}
   .sum-table-wrap{overflow-x:auto}
 
-  /* ---- progressive Analyze ---- */
-  .analyze-row{display:flex;flex-direction:column;align-items:center;gap:7px;margin:1rem 0 .2rem}
-  .analyze-sub{display:flex;gap:5px}
-  .analyze-sub .aseg{
-    width:26px;height:5px;border-radius:999px;background:rgba(255,255,255,.1);
-    transition:background .3s ease, transform .25s ease;
-  }
-  .analyze-sub .aseg.done{background:linear-gradient(90deg,var(--gold),var(--brand))}
+  /* ---- analyses (shown directly) ---- */
   .analysis{
     margin:.6rem 0;padding:.7rem .8rem;
     border:1px solid var(--stroke);border-radius:12px;
@@ -1068,31 +1055,25 @@
 
     <!-- Analyze sits above the decks; appears once all four decks are settled -->
     <div class="analyze-panel" id="analyze-panel" hidden>
-      <div class="analyze-row">
-        <button class="btn btn-soft" id="btn-analyze" type="button">Analyze ▸</button>
-        <div class="analyze-sub" id="analyze-sub" aria-hidden="true">
-          <span class="aseg"></span><span class="aseg"></span><span class="aseg"></span>
-        </div>
-      </div>
-      <div class="analysis" id="analysis-ordinals" hidden>
+      <div class="analysis" id="analysis-ordinals">
         <h4>Ordinals</h4>
         <div class="ord-decks" id="ord-decks"></div>
         <p class="note">Arrows show the order within each selected deck, top to bottom.</p>
       </div>
-      <div class="analysis" id="analysis-perspective" hidden>
+      <div class="analysis" id="analysis-perspective">
         <h4>Perspective</h4>
         <div class="persp-above" id="persp-above"></div>
         <div class="ord-decks" id="persp-decks"></div>
         <div class="persp-below" id="persp-below"></div>
         <p class="note">Add your perspective above, then re-pick the items below the decks.</p>
       </div>
-      <div class="analysis" id="analysis-timer" hidden>
+      <div class="analysis" id="analysis-timer">
         <h4>Timer</h4>
         <div class="sum-table-wrap" id="timer-table"></div>
         <p class="note">Not a race — just a useful fact about the play.</p>
       </div>
       <div class="summary-bottom-actions">
-        <button class="btn btn-soft" id="btn-see-more" type="button" hidden>Related apps</button>
+        <button class="btn btn-soft" id="btn-see-more" type="button">Related apps</button>
       </div>
       <div class="related-apps" id="related-apps" hidden></div>
     </div>
@@ -1116,17 +1097,14 @@
       <aside class="toolbar">
         <div class="buttons">
           <button class="tbtn" data-toggle="list" type="button" title="Show linear list of titles">
-            <span class="icon">📋</span>
             <span class="btn-text">List</span>
             <span class="state-indicator"></span>
           </button>
           <button class="tbtn" data-toggle="cycle" type="button" title="Cycle 1→2→3→4→5→1 loop">
-            <span class="icon">♻️</span>
             <span class="btn-text">Cycle</span>
             <span class="state-indicator"></span>
           </button>
           <button class="tbtn" data-toggle="confluence" type="button" title="Confluence: arrows flowing into 1">
-            <span class="icon">🌀</span>
             <span class="btn-text">Confluence</span>
             <span class="state-indicator"></span>
           </button>
@@ -1400,7 +1378,6 @@
         </div>
       </div>
       <div class="spot-actions">
-        <button class="btn btn-ghost btn-back" id="spot-back" type="button">← Go back</button>
         <button class="btn btn-soft" id="pq-toggle" type="button">${match ? 'Why (edit)' : 'Why'}</button>
         <button class="btn btn-primary" id="done-btn" type="button">Done</button>
       </div>
@@ -1412,12 +1389,6 @@
     const $toggle = $spotlight.querySelector('#pq-toggle');
     if (state.porQuePanelOpen){ $panel.classList.add('active'); $toggle.classList.add('is-open'); }
 
-    $spotlight.querySelector('#spot-back').addEventListener('click', () => {
-      state.openDeckIdx = null;     // close the deck, back to the board (without settling it)
-      state.porQuePanelOpen = false;
-      state.porQueDraft = '';
-      render();
-    });
     $spotlight.querySelector('#done-btn').addEventListener('click', () => doneDeck(deckIdx));
     $toggle.addEventListener('click', () => {
       state.porQuePanelOpen = !state.porQuePanelOpen;
@@ -1571,22 +1542,6 @@
       s.classList.toggle('current', i === cur);
     });
     $progress.setAttribute('aria-valuenow', String(cur + 1));
-  }
-
-  // Analyze: first click drops one filled bar into the main progress bar; every
-  // click adds one more segment to the sub bar below it.
-  let analyzeMainAdded = false;
-  function bumpAnalyzeProgress(){
-    if (!analyzeMainAdded){
-      analyzeMainAdded = true;
-      $progress.querySelectorAll('.seg').forEach(s => { s.classList.add('done'); s.classList.remove('current'); });
-      const seg = document.createElement('div');
-      seg.className = 'seg an done';
-      $progress.appendChild(seg);
-    }
-    const sub = document.createElement('span');
-    sub.className = 'dseg an done';
-    $deckProg.appendChild(sub);
   }
 
   // ============== Elapsed timer ==============
@@ -2137,29 +2092,9 @@
     ]);
   }
 
-  // ----- Progressive Analyze → See more -----
-  const ANALYSES = ['analysis-ordinals','analysis-perspective','analysis-timer'];
-  let analyzeStep = 0;
-  const $btnAnalyze = document.getElementById('btn-analyze');
-  const $analyzeSub = document.getElementById('analyze-sub');
+  // ----- Analyses are shown directly (no Analyze button) → See more -----
   const $btnSeeMore = document.getElementById('btn-see-more');
   const $related    = document.getElementById('related-apps');
-  function revealAnalyze(){
-    if (analyzeStep >= ANALYSES.length) return;
-    const el = document.getElementById(ANALYSES[analyzeStep]);
-    el.hidden = false;
-    $analyzeSub.children[analyzeStep].classList.add('done');
-    bumpAnalyzeProgress();     // main bar gains a bar; sub bar grows each click
-    analyzeStep++;
-    if (analyzeStep < ANALYSES.length){
-      $btnAnalyze.textContent = `Analyze · ${analyzeStep}/${ANALYSES.length} ▸`;
-    } else {
-      $btnAnalyze.hidden = true;     // every analysis revealed
-      $btnSeeMore.hidden = false;    // unlock See more
-    }
-    el.scrollIntoView({ behavior:'smooth', block:'nearest' });
-  }
-  $btnAnalyze.addEventListener('click', revealAnalyze);
 
   // Related apps: 3 shown first, then ＋ reveals 6 more.
   const RELATED_MAIN = [
