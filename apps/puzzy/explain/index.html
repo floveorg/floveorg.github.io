@@ -32,18 +32,117 @@
     body:has(#ui-lang-es:checked) .t-en{ display:none }
     body:has(#ui-lang-es:checked) .t-es{ display:inline }
 
-    /* language toggle inside the flove-bar */
-    .lang{ display:inline-flex; gap:2px; margin-left:auto }
-    .lang input{ position:absolute; opacity:0; pointer-events:none }
-    .lang label{
-      font-size:11px; font-weight:600; letter-spacing:.4px; padding:3px 9px;
-      border-radius:var(--flove-radius-pill); cursor:pointer; color:var(--muted);
-      border:1px solid transparent;
+    /* state controls — hidden inputs that drive the pure-CSS behaviours */
+    .ctl{ position:fixed; top:0; left:0; width:1px; height:1px; opacity:0; pointer-events:none; margin:0 }
+
+    /* ── TOPBAR · flovynormal standard (no tier switcher) ───────── */
+    .topbar{
+      position:sticky; top:0; z-index:20;
+      background:rgba(17,19,26,.82); border-bottom:1px solid var(--line);
+      backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
     }
-    #ui-lang-en:checked ~ label[for=ui-lang-en],
-    #ui-lang-es:checked ~ label[for=ui-lang-es]{
-      color:var(--app-ink-on-accent); background:var(--app-accent); border-color:var(--app-accent);
+    .topbar-inner{
+      position:relative; max-width:980px; margin:0 auto;
+      display:flex; align-items:center; gap:.5rem; padding:.6rem 1rem;
     }
+    .mark{
+      font-size:1.6rem; line-height:1; color:var(--app-accent); cursor:pointer; user-select:none;
+      filter:drop-shadow(0 0 8px rgba(141,137,255,.45)); transition:transform var(--flove-fast);
+    }
+    .mark:hover{ transform:scale(1.08) }
+    .mark .mk{ display:none } .mark .mk-default{ display:inline }
+    body:has([name=ray]:checked:not(#ray-none)) .mark .mk-default{ display:none }
+    body:has(#ray-formal:checked)   .mark .mk-formal{ display:inline }
+    body:has(#ray-informal:checked) .mark .mk-informal{ display:inline }
+    body:has(#ray-hotter:checked)   .mark .mk-hotter{ display:inline }
+    .title-wrap{ display:flex; align-items:baseline; gap:.5rem; min-width:0 }
+    .title{
+      font-weight:700; font-size:1.2rem; letter-spacing:.3px; cursor:pointer;
+      background:linear-gradient(90deg,#fff,var(--app-accent-soft));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    .title-tag{ font-size:.85rem; color:var(--muted); white-space:nowrap }
+    .title-mood{ font-size:.85rem; color:var(--app-accent-soft); white-space:nowrap }
+    .title-mood>span{ display:none }
+    body:has(#ray-formal:checked)   .tm-formal,
+    body:has(#ray-informal:checked) .tm-informal,
+    body:has(#ray-hotter:checked)   .tm-hotter{ display:inline }
+    .topbar-spacer{ flex:1 }
+    .topbar-btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      width:34px; height:34px; border-radius:50%; border:0; background:transparent;
+      color:var(--ink); cursor:pointer; font-size:1.2rem;
+      transition:background var(--flove-fast), color var(--flove-fast), transform var(--flove-fast);
+    }
+    .topbar-btn:hover, .topbar-btn:focus-visible{ background:rgba(141,137,255,.18); outline:none }
+
+    /* magic labelers — ✨ reveals a 3-chip personality row */
+    .magic-wrap{ position:relative; display:inline-flex; align-items:center; gap:.3rem; flex-shrink:0 }
+    .magic-btn{ color:var(--app-accent); font-size:1.4rem }
+    body:has(#magic-open:checked) .magic-btn{ background:var(--app-accent); color:var(--app-ink-on-accent) }
+    .rays{
+      display:flex; align-items:center; gap:.25rem;
+      max-width:0; overflow:hidden; opacity:0; pointer-events:none;
+      transition:max-width .35s var(--flove-ease), opacity .2s var(--flove-ease);
+    }
+    body:has(#magic-open:checked) .rays{ max-width:240px; opacity:1; pointer-events:auto }
+    .ray{
+      display:inline-flex; align-items:center; justify-content:center;
+      width:30px; height:30px; border-radius:50%; font-size:1rem; line-height:1;
+      cursor:pointer; user-select:none; background:transparent; border:0; color:inherit;
+      transition:transform var(--flove-fast), background var(--flove-fast);
+    }
+    .ray:hover{ background:rgba(141,137,255,.18); transform:translateY(-1px) }
+    body:has(#ray-formal:checked)   .ray[for=ray-formal],
+    body:has(#ray-informal:checked) .ray[for=ray-informal],
+    body:has(#ray-hotter:checked)   .ray[for=ray-hotter]{ transform:scale(1.3) }
+    .ray-add{ color:var(--app-accent); font-size:1.1rem }
+    .labeler-reset{ color:var(--muted); font-size:1.05rem }
+
+    /* menu button + overlay + panel */
+    .menu-btn{ width:34px; height:34px; border-radius:10px; font-size:1.2rem; flex-shrink:0 }
+    .menu-overlay{ position:fixed; inset:0; z-index:8; opacity:0; pointer-events:none; transition:opacity var(--flove-fast) }
+    body:has(#m:checked) .menu-overlay{ opacity:1; pointer-events:auto }
+    .menu-panel{
+      position:absolute; top:calc(100% + .5rem); left:1rem;
+      width:250px; max-width:calc(100vw - 2rem); margin:0; padding:.45rem; list-style:none;
+      background:var(--panel); border:1px solid var(--line); border-radius:var(--flove-radius);
+      box-shadow:0 18px 40px rgba(0,0,0,.55); z-index:12;
+      opacity:0; transform:translateY(-6px); pointer-events:none;
+      transition:opacity var(--flove-fast), transform var(--flove-fast);
+    }
+    body:has(#m:checked) .menu-panel{ opacity:1; transform:none; pointer-events:auto }
+    .menu-row{
+      display:flex; align-items:center; gap:.6rem; padding:.5rem .55rem; border-radius:10px;
+      color:var(--ink); font-size:.92rem; text-decoration:none; cursor:pointer; transition:background var(--flove-fast);
+    }
+    .menu-row:hover{ background:rgba(141,137,255,.12) }
+    .menu-row .mi{ font-size:1.05rem; color:var(--app-accent-soft); width:1.3em; text-align:center }
+    .menu-divider{ height:1px; margin:.3rem .4rem; background:var(--line) }
+    .menu-lang{ display:flex; align-items:center; gap:.6rem; padding:.5rem .55rem; border-radius:10px; cursor:pointer; transition:background var(--flove-fast) }
+    .menu-lang:hover{ background:rgba(141,137,255,.12) }
+    .menu-lang .mi{ font-size:1.05rem; color:var(--app-accent-soft); width:1.3em; text-align:center }
+    .menu-lang-cur{ font-weight:600; font-size:.92rem; color:var(--ink) }
+    .lang-caret{ margin-left:auto; color:var(--muted); transition:transform var(--flove-fast) }
+    body:has(#lang-more:checked) .lang-caret{ transform:rotate(180deg) }
+    .menu-lang-others{ display:none; flex-direction:column; padding:.1rem .4rem .3rem }
+    body:has(#lang-more:checked) .menu-lang-others{ display:flex }
+    .menu-sub{ display:flex; align-items:center; gap:.5rem; padding:.42rem .6rem; border-radius:8px; font-size:.9rem; color:var(--muted); cursor:pointer; transition:background var(--flove-fast) }
+    .menu-sub:hover{ background:rgba(141,137,255,.12) }
+    .menu-sub .lang-check{ margin-left:auto; color:var(--app-accent); font-weight:700; opacity:0 }
+    body:has(#ui-lang-en:checked) .menu-sub[for=ui-lang-en],
+    body:has(#ui-lang-es:checked) .menu-sub[for=ui-lang-es]{ color:var(--app-accent-soft); font-weight:700 }
+    body:has(#ui-lang-en:checked) .menu-sub[for=ui-lang-en] .lang-check,
+    body:has(#ui-lang-es:checked) .menu-sub[for=ui-lang-es] .lang-check{ opacity:1 }
+
+    /* About info box — drops below the topbar */
+    .about-box{ display:none; max-width:980px; margin:0 auto; padding:.8rem 1rem 0 }
+    body:has(#about-open:checked) .about-box{ display:block; animation:fade .3s var(--flove-ease) both }
+    .about-inner{ position:relative; padding:1rem 1.1rem; border:1px solid var(--line); border-radius:var(--flove-radius); background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02)) }
+    .about-inner h2{ margin:0 0 .4rem; font-size:1.05rem; color:var(--accent2) }
+    .about-inner p{ margin:0; font-size:.92rem; line-height:1.55; color:var(--muted) }
+    .about-close{ position:absolute; top:.5rem; right:.5rem; width:28px; height:28px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; color:var(--muted); cursor:pointer }
+    .about-close:hover{ background:rgba(141,137,255,.12) }
 
     /* background veil — brightens one notch with every step completed */
     .bg-veil{
@@ -59,6 +158,18 @@
     body:has(#step-4:checked) .bg-veil{ opacity:1 }
     body:has(#step-5:checked) .bg-veil{ opacity:1 }
 
+    /* ── title echo — the entered title, shown centred on every later step ── */
+    .title-echo{ display:none; max-width:980px; margin:1rem auto -.2rem; padding:0 1rem; text-align:center }
+    .title-echo b{
+      font-size:1.5rem; font-weight:700; letter-spacing:.5px;
+      background:linear-gradient(180deg,#fff,var(--app-accent-soft));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    body:has(#step-2:checked) .title-echo,
+    body:has(#step-3:checked) .title-echo,
+    body:has(#step-4:checked) .title-echo,
+    body:has(#step-5:checked) .title-echo{ display:block; animation:fade .3s var(--flove-ease) both }
+
     /* ── stepper · standard flove stepnav (§13) — lives at the BOTTOM,
        dots only (no section titles). Earlier steps read as "done", the
        current as "active". Pure CSS, no JS. */
@@ -67,7 +178,10 @@
     .step-footer{
       max-width:980px; margin:.4rem auto 3rem; padding:0 1rem;
       display:flex; flex-direction:column; align-items:center; gap:1.1rem;
+      transition:transform var(--flove-medium) var(--flove-ease);
     }
+    /* on step 2 the whole stepper nudges 15px down */
+    body:has(#step-2:checked) .step-footer{ transform:translateY(15px) }
     .stepnav{
       display:flex; align-items:flex-start; justify-content:center; gap:0;
       width:100%; max-width:560px;
@@ -174,10 +288,26 @@
     body:has(#step-2:checked) .stepnav-node[for=step-5] .stepnav-dot,
     body:has(#step-3:checked) .stepnav-node[for=step-5] .stepnav-dot{ opacity:.4 }
 
-    /* perspective sub-steps mirrored INTO node 2 of the main stepper:
-       a HORIZONTAL row of bigger dots running rightward from under the
-       Perspective node toward step 5 (top-right). Slots are reserved
-       (visibility) so filled ones pop in at a stable spot. */
+    /* ── STEP 1 GATE — text is mandatory before reaching step 2.
+       The Wise field uses a placeholder, so :placeholder-shown == empty. */
+    body:has(.wise-line input[type=text]:placeholder-shown) .step-ctl--1 .step-btn--next{
+      opacity:.4; pointer-events:none;
+    }
+    body:has(.wise-line input[type=text]:placeholder-shown) .stepnav-node[for=step-2]{ pointer-events:none }
+    /* hint shown on step 1 while the field is still empty */
+    .need-text{ display:none; margin:.9rem 0 0; font-size:.85rem; color:var(--app-accent-soft) }
+    body:has(#step-1:checked):has(.wise-line input[type=text]:placeholder-shown) .need-text{ display:block }
+    /* once text exists, node 2 of the stepper celebrates (effect on the field-2 node) */
+    body:has(#step-1:checked):has(.wise-line input[type=text]:not(:placeholder-shown)) .stepnav-node[for=step-2] .stepnav-dot{
+      border-color:var(--app-accent); color:var(--app-accent);
+      animation:node-ready 1.4s var(--flove-ease) infinite;
+    }
+    @keyframes node-ready{
+      0%,100%{ box-shadow:0 0 0 0 rgba(141,137,255,0); transform:scale(1) }
+      50%{ box-shadow:0 0 0 7px rgba(141,137,255,.28); transform:scale(1.12) }
+    }
+
+    /* perspective sub-steps mirrored INTO node 2 of the main stepper */
     .substeps{
       position:absolute; left:50%; top:calc(100% + .5rem);
       display:flex; align-items:flex-start; gap:3.4rem; pointer-events:none;
@@ -192,8 +322,7 @@
     body:has(.persp-sec--time  input:checked) .sub--time{ visibility:visible }
     @media (max-width:620px){ .substeps{ display:none } }
 
-    /* centred Back / Next — only the active step's pair shows; nudged 10px
-       down so they clear the perspective sub-steps mirrored under node 2 */
+    /* centred Back / Next — only the active step's pair shows */
     .step-controls{ display:flex; justify-content:center; margin-top:10px }
     .step-ctl{ display:none; gap:.6rem; align-items:center; justify-content:center }
     body:has(#step-1:checked) .step-ctl--1,
@@ -247,13 +376,28 @@
     }
     .grid{ display:grid; gap:.7rem }
     .grid--two{ grid-template-columns:repeat(2,minmax(0,1fr)) }
-    @media (max-width:760px){ .grid--two{ grid-template-columns:1fr } }
+    .grid--three{ grid-template-columns:repeat(3,minmax(0,1fr)) }
+    @media (max-width:760px){ .grid--two{ grid-template-columns:1fr } .grid--three{ grid-template-columns:1fr } }
+
+    /* textarea toolbar — 🎤 dictate + ＋ add another, bottom-right of every textarea */
+    .ta-wrap{ position:relative }
+    .ta-wrap + .ta-wrap{ margin-top:.6rem }
+    .ta-wrap textarea{ padding-bottom:2.3rem }
+    .ta-tools{ position:absolute; right:.45rem; bottom:.45rem; display:flex; gap:.3rem; z-index:2 }
+    .ta-tool{
+      display:inline-flex; align-items:center; justify-content:center;
+      width:26px; height:26px; border-radius:50%; border:1px solid var(--line);
+      background:var(--panel); color:var(--app-accent-soft); font-size:.85rem; cursor:pointer;
+      transition:background var(--flove-fast), border-color var(--flove-fast), transform var(--flove-fast);
+    }
+    .ta-tool:hover{ border-color:var(--app-accent); transform:translateY(-1px) }
+    .ta-tool.mic-live{ background:var(--app-accent); color:var(--app-ink-on-accent); animation:mic-pulse 1.3s ease-in-out infinite }
+    @keyframes mic-pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(141,137,255,.4) } 50%{ box-shadow:0 0 0 6px rgba(141,137,255,0) } }
 
     /* chips / choice bars */
     fieldset.field{ border:1px solid var(--line); border-radius:var(--flove-radius-sm); padding:.7rem .8rem; margin:0 0 .7rem }
     legend.lbl{ padding:0 .35rem }
     .chips{ display:flex; gap:.4rem; flex-wrap:wrap }
-    /* the inputs are hidden — the whole label is the (toggle) button */
     .chips input, .bar__choices input{ position:absolute; width:1px; height:1px; opacity:0; pointer-events:none }
     .chips label, .bar__choices label{
       display:inline-flex; align-items:center; cursor:pointer; user-select:none;
@@ -286,7 +430,6 @@
       -webkit-background-clip:text; background-clip:text; color:transparent;
     }
     .wise-line input[type=text]{ flex:1; min-width:200px }
-    /* mode toggles sit to the RIGHT of the field (wrap under it on narrow) */
     .mode-toggle{ display:flex; gap:.5rem; flex:0 0 auto; flex-wrap:wrap }
     .mode-btn{
       display:inline-flex; align-items:center; cursor:pointer; user-select:none;
@@ -300,7 +443,6 @@
       background:var(--app-accent); color:var(--app-ink-on-accent); border-color:var(--app-accent);
       box-shadow:0 0 10px rgba(141,137,255,.35);
     }
-    /* transient note shown for 5s when "Create form" is clicked (JS toggles .is-on) */
     .form-hint{
       display:none; margin:.9rem 0 0; padding:.6rem .8rem;
       border:1px dashed var(--line); border-radius:var(--flove-radius-sm);
@@ -309,10 +451,8 @@
     }
     .form-hint.is-on{ display:block; animation:fade .25s var(--flove-ease) both }
 
-    /* ── perspective · vertical SUB-STEPPER — one sub-section at a time,
-       navigated by the rail dots (parallel to the main stepper, downward) ── */
+    /* ── perspective · vertical SUB-STEPPER ─────────────────────── */
     .persp{ display:grid; grid-template-columns:auto 1fr; gap:1.2rem; align-items:start }
-    /* vertical sub-stepper on the left — spaced dots, no connector lines */
     .rail{ display:flex; flex-direction:column; align-items:center; padding:.2rem 0 }
     .rail-node{
       position:relative; flex:0 0 auto; min-height:46px; min-width:64px; cursor:pointer;
@@ -323,14 +463,12 @@
       background:var(--panel); border:2px solid var(--line);
       transition:background var(--flove-fast), border-color var(--flove-fast), box-shadow var(--flove-fast), transform var(--flove-fast);
     }
-    /* titles: tight 1px margin, ~20% smaller, one line; hidden until the dot is reached */
     .rail-tag{ display:none; font-size:.5rem; font-weight:600; letter-spacing:.2px; color:var(--muted); margin-top:1px; white-space:nowrap }
     .rail-node:hover .rail-dot{ border-color:var(--app-accent) }
     .rail-node:focus-visible{ outline:none }
     .rail-node:focus-visible .rail-dot{ box-shadow:0 0 0 3px rgba(141,137,255,.4) }
     .persp-body{ min-width:0 }
 
-    /* one sub-section visible at a time */
     .persp-sec{ display:none; animation:fade .25s var(--flove-ease) both }
     .persp:has(#psub-1:checked) .persp-sec--prism,
     .persp:has(#psub-2:checked) .persp-sec--tone,
@@ -338,7 +476,6 @@
     .persp:has(#psub-4:checked) .persp-sec--field,
     .persp:has(#psub-5:checked) .persp-sec--time{ display:block; margin-bottom:0 }
 
-    /* "filled" — any sub-section that has a selection (persists while hidden) */
     .persp:has(.persp-sec--prism input:checked) .rail--prism .rail-dot,
     .persp:has(.persp-sec--tone  input:checked) .rail--tone  .rail-dot,
     .persp:has(.persp-sec--teleo input:checked) .rail--teleo .rail-dot,
@@ -352,7 +489,6 @@
     .persp:has(.persp-sec--field input:checked) .rail--field .rail-tag,
     .persp:has(.persp-sec--time  input:checked) .rail--time  .rail-tag{ color:var(--app-accent-soft) }
 
-    /* active sub-step — current section's dot (declared last → wins over "filled") */
     .persp:has(#psub-1:checked) .rail--prism .rail-dot,
     .persp:has(#psub-2:checked) .rail--tone  .rail-dot,
     .persp:has(#psub-3:checked) .rail--teleo .rail-dot,
@@ -362,7 +498,6 @@
       transform:scale(1.12); box-shadow:0 0 0 4px rgba(141,137,255,.22);
     }
 
-    /* titles shown only for the current sub-step + earlier (visited) ones */
     .persp:has(#psub-1:checked) .rail--prism .rail-tag,
     .persp:has(#psub-2:checked) .rail--prism .rail-tag,
     .persp:has(#psub-2:checked) .rail--tone  .rail-tag,
@@ -379,7 +514,6 @@
     .persp:has(#psub-5:checked) .rail--field .rail-tag,
     .persp:has(#psub-5:checked) .rail--time  .rail-tag{ display:block }
 
-    /* sequential — only the next sub-step (plus current/earlier) is clickable */
     .persp:has(#psub-1:checked) .rail--teleo,
     .persp:has(#psub-1:checked) .rail--field,
     .persp:has(#psub-1:checked) .rail--time,
@@ -393,7 +527,6 @@
     .persp:has(#psub-2:checked) .rail--time  .rail-dot,
     .persp:has(#psub-3:checked) .rail--time  .rail-dot{ opacity:.4 }
 
-    /* perspective Back / Next — below the visible options */
     .psub-controls{ margin-top:1.1rem }
     .psub-ctl{ display:none; gap:.6rem; align-items:center }
     .persp:has(#psub-1:checked) .psub-ctl--1,
@@ -424,39 +557,216 @@
     .xpl-field{ display:none; margin-top:.5rem }
     .xpl:has(.xpl-btn input:checked) .xpl-field{ display:block; animation:fade .25s var(--flove-ease) both }
 
-    /* ── summary step · holds the "Make a form" action ─────────── */
-    .summary-lede{ margin:0 0 1rem; color:var(--muted); font-size:.92rem }
+    /* ── summary step ──────────────────────────────────────────── */
+    .summary-lede{ margin:1rem 0 .6rem; color:var(--muted); font-size:.92rem }
+    .summary-box{
+      padding:1.1rem 1.2rem 1.3rem; border:1px solid var(--line); border-radius:var(--flove-radius);
+      background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+    }
+    /* the rendered list of every input added so far */
+    .sum-row{ display:flex; gap:.7rem; padding:.45rem 0; border-bottom:1px solid var(--line) }
+    .sum-row:last-child{ border-bottom:0 }
+    .sum-k{ flex:0 0 32%; max-width:32%; font-weight:600; font-size:.85rem; color:var(--app-accent-soft) }
+    .sum-v{ flex:1; min-width:0; color:var(--ink); white-space:pre-wrap; word-break:break-word }
+    .summary-empty{ color:var(--muted); font-size:.9rem }
+    .clause-magic{ display:none; color:var(--ink); line-height:1.6 }
+    body:has(#magic-toggle:checked) .clause-default{ display:none }
+    body:has(#magic-toggle:checked) .clause-magic{ display:block; animation:fade .25s var(--flove-ease) both }
+
+    /* insights — ONE cycling button: none→who→what→where→why→none */
+    .insight-cycle .insight-step{ display:none }
+    body:has(#insight-none:checked)  .insight-step--0,
+    body:has(#insight-who:checked)   .insight-step--1,
+    body:has(#insight-what:checked)  .insight-step--2,
+    body:has(#insight-where:checked) .insight-step--3,
+    body:has(#insight-why:checked)   .insight-step--4{ display:inline-flex }
+    .insight-panel{
+      display:none; margin-top:.7rem; padding:.7rem .8rem; border-left:3px solid var(--app-accent);
+      background:rgba(141,137,255,.10); border-radius:0 10px 10px 0; font-size:.9rem; line-height:1.5; color:var(--ink);
+      animation:fade .25s var(--flove-ease) both;
+    }
+    .insight-panel strong{ color:var(--app-accent-soft) }
+    body:has(#insight-who:checked)   .insight-panel--who,
+    body:has(#insight-what:checked)  .insight-panel--what,
+    body:has(#insight-where:checked) .insight-panel--where,
+    body:has(#insight-why:checked)   .insight-panel--why{ display:block }
+
+    /* action row — Insight·Magic·Copy (left) · Save·Share·Publish (right) */
+    .summary-actions{ display:flex; flex-direction:column; gap:.8rem; margin-top:1rem }
+    .actions-left{ display:flex; flex-wrap:wrap; gap:.5rem }
+    .actions-right{ display:flex; flex-wrap:wrap; justify-content:flex-end; gap:.5rem }
+    .btn-ghost{
+      display:inline-flex; align-items:center; gap:.35rem;
+      padding:.42rem .95rem; border:1px solid var(--line); border-radius:var(--flove-radius-pill);
+      background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));
+      font:inherit; font-size:.85rem; font-weight:600; color:var(--ink); cursor:pointer;
+      transition:border-color var(--flove-fast), background var(--flove-fast), color var(--flove-fast);
+    }
+    .btn-ghost:hover{ border-color:var(--app-accent); color:var(--app-accent-soft) }
+    body:has(#magic-toggle:checked) .magic-summary-btn{ background:var(--app-accent); color:var(--app-ink-on-accent); border-color:var(--app-accent) }
+    .magic-summary-btn .l-on{ display:none }
+    body:has(#magic-toggle:checked) .magic-summary-btn .l-off{ display:none }
+    body:has(#magic-toggle:checked) .magic-summary-btn .l-on{ display:inline }
+
+    .act-cell{ position:relative; display:inline-flex }
+    .act-pop{
+      position:absolute; top:calc(100% + .35rem); right:0; display:none; gap:.3rem; flex-wrap:nowrap;
+      margin:0; padding:.2rem; list-style:none; background:var(--panel); border:1px solid var(--line);
+      border-radius:10px; box-shadow:0 12px 30px rgba(0,0,0,.5); white-space:nowrap; z-index:6;
+    }
+    .act-cell--publish .act-pop{ top:auto; bottom:calc(100% + .35rem) }
+    body:has(#share-open:checked)   .act-cell--share   .act-pop,
+    body:has(#save-open:checked)    .act-cell--save    .act-pop,
+    body:has(#publish-open:checked) .act-cell--publish .act-pop{ display:flex }
+    .act-pop a, .act-pop label{
+      display:flex; align-items:center; gap:.5rem; padding:.4rem .55rem; border-radius:8px;
+      font-size:.85rem; color:var(--ink); text-decoration:none; cursor:pointer;
+    }
+    .act-pop a:hover, .act-pop label:hover{ background:rgba(141,137,255,.12) }
+    body:has(#share-open:checked)   .share-btn,
+    body:has(#save-open:checked)    .save-btn,
+    body:has(#publish-open:checked) .publish-btn{ border-color:var(--app-accent); color:var(--app-accent-soft) }
+
     .dl-btn{
-      display:inline-flex; align-items:center; gap:.5rem; cursor:pointer; border:0;
+      display:inline-flex; align-items:center; gap:.5rem; cursor:pointer; border:0; margin-top:1.1rem;
       border-radius:var(--flove-radius-pill); padding:.6rem 1.3rem; font:inherit; font-weight:700;
       background:var(--app-accent); color:var(--app-ink-on-accent);
       transition:box-shadow var(--flove-fast), transform var(--flove-fast);
     }
     .dl-btn:hover{ box-shadow:0 0 16px rgba(141,137,255,.5); transform:translateY(-1px) }
 
+    /* ── modal · New label ─────────────────────────────────────── */
+    .modal-overlay{
+      position:fixed; inset:0; z-index:40; display:none; align-items:center; justify-content:center; padding:1rem;
+      background:rgba(0,0,0,.55); backdrop-filter:blur(2px);
+    }
+    body:has(#newlabel-open:checked) .modal-overlay{ display:flex; animation:fade .25s var(--flove-ease) both }
+    .modal{
+      position:relative; z-index:1; width:320px; max-width:100%; padding:1.2rem 1.1rem;
+      background:var(--panel); border:1px solid var(--line); border-radius:var(--flove-radius); box-shadow:0 24px 60px rgba(0,0,0,.6);
+    }
+    .modal-head{ display:flex; align-items:center; margin:0 0 .8rem; font-weight:700; font-size:1.05rem; color:var(--ink) }
+    .modal-close{ margin-left:auto; width:28px; height:28px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; color:var(--muted); cursor:pointer }
+    .modal-close:hover{ background:rgba(141,137,255,.12) }
+    .modal .field-label{ display:block; font-size:.78rem; font-weight:600; color:var(--muted); margin:.6rem 0 .25rem }
+    .modal-actions{ display:flex; justify-content:flex-end; gap:.5rem; margin-top:1rem }
+
     /* know more */
     .output{ max-width:980px; margin:0 auto 5rem; padding:0 1rem }
     .output summary{ cursor:pointer; color:var(--muted) }
     .output__box{ border:1px solid var(--line); border-radius:var(--flove-radius-sm); padding:.7rem; background:#111426; margin-top:.5rem }
     .output a{ color:var(--accent2) }
+
+    @media (prefers-reduced-motion: reduce){
+      *, *::before, *::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important }
+    }
   </style>
 </head>
 <body>
   <div class="bg-veil" aria-hidden="true"></div>
 
-  <!-- language radios (drive the pure-CSS i18n) -->
-  <nav class="flove-bar flove-bar--dark">
-    <a class="flove-home" href="../../index.html">← <span class="t-en">Apps</span><span class="t-es">Apps</span></a>
-    <span class="flove-mark flove-asterism" aria-hidden="true">✺</span>
-    <span class="flove-app-name">Puzzy</span>
-    <span class="flove-tag">Explain</span>
-    <span class="lang">
-      <input type="radio" name="ui-lang" id="ui-lang-en" checked>
-      <input type="radio" name="ui-lang" id="ui-lang-es">
-      <label for="ui-lang-en">EN</label>
-      <label for="ui-lang-es">ES</label>
-    </span>
-  </nav>
+  <!-- ── state controls (drive the pure-CSS behaviours) ─────────── -->
+  <input type="checkbox" id="m"          class="ctl"><!-- menu -->
+  <input type="checkbox" id="about-open" class="ctl"><!-- about box -->
+  <input type="checkbox" id="lang-more"  class="ctl"><!-- language dropdown -->
+  <input type="radio" name="ui-lang" id="ui-lang-en" class="ctl" checked>
+  <input type="radio" name="ui-lang" id="ui-lang-es" class="ctl">
+  <!-- magic labelers: 3 personalities + none -->
+  <input type="checkbox" id="magic-open" class="ctl">
+  <input type="radio" name="ray" id="ray-none"     class="ctl" checked>
+  <input type="radio" name="ray" id="ray-formal"   class="ctl">
+  <input type="radio" name="ray" id="ray-informal" class="ctl">
+  <input type="radio" name="ray" id="ray-hotter"   class="ctl">
+  <input type="checkbox" id="newlabel-open" class="ctl"><!-- new-label modal -->
+  <!-- summary extras -->
+  <input type="checkbox" id="magic-toggle" class="ctl">
+  <input type="radio" name="insight" id="insight-none"  class="ctl" checked>
+  <input type="radio" name="insight" id="insight-who"   class="ctl">
+  <input type="radio" name="insight" id="insight-what"  class="ctl">
+  <input type="radio" name="insight" id="insight-where" class="ctl">
+  <input type="radio" name="insight" id="insight-why"   class="ctl">
+  <input type="checkbox" id="share-open"   class="ctl">
+  <input type="checkbox" id="save-open"    class="ctl">
+  <input type="checkbox" id="publish-open" class="ctl">
+
+  <!-- ── TOPBAR · flovynormal standard (no tier switcher) ───────── -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <label class="mark" for="m" title="Menu" aria-label="Menu" tabindex="0">
+        <span class="mk mk-default">✺</span>
+        <span class="mk mk-formal">🎩</span>
+        <span class="mk mk-informal">👋</span>
+        <span class="mk mk-hotter">🔥</span>
+      </label>
+      <div class="title-wrap">
+        <label class="title" for="m" title="Puzzy — Explain" tabindex="0">Puzzy</label>
+        <span class="title-tag">Explain</span>
+        <span class="title-mood" aria-hidden="true">
+          <span class="tm-formal">· formal</span>
+          <span class="tm-informal">· informal</span>
+          <span class="tm-hotter">· hotter</span>
+        </span>
+      </div>
+
+      <span class="topbar-spacer"></span>
+
+      <!-- magic labelers -->
+      <div class="magic-wrap">
+        <div class="rays" role="radiogroup" aria-label="Personality (label)">
+          <label class="ray labeler-reset" for="ray-none" title="Reset" aria-label="Reset labeler" tabindex="0">↺</label>
+          <label class="ray" for="ray-formal"   title="Formal"   aria-label="Formal"   tabindex="0">🎩</label>
+          <label class="ray" for="ray-informal" title="Informal" aria-label="Informal" tabindex="0">👋</label>
+          <label class="ray" for="ray-hotter"   title="Hotter"   aria-label="Hotter"   tabindex="0">🔥</label>
+          <label class="ray ray-add topbar-btn" for="newlabel-open" title="New label" aria-label="Add a label" tabindex="0" style="width:30px;height:30px">＋</label>
+        </div>
+        <label class="magic-btn topbar-btn" for="magic-open" title="Magic labels" aria-label="Magic labels" tabindex="0">✨</label>
+      </div>
+
+      <!-- menu button -->
+      <label class="menu-btn topbar-btn" for="m" title="Menu" aria-label="Open menu" tabindex="0">☰</label>
+
+      <!-- menu panel -->
+      <ul class="menu-panel" role="menu" aria-label="Menu">
+        <li><label class="menu-row" for="about-open" tabindex="0" role="menuitem">
+          <span class="mi">✺</span><span class="t-en">About Puzzy</span><span class="t-es">Acerca de Puzzy</span>
+        </label></li>
+        <li class="menu-divider" role="separator" aria-hidden="true"></li>
+        <li><label class="menu-lang" for="lang-more" tabindex="0" role="button" aria-label="Language">
+          <span class="mi">🌐</span>
+          <span class="menu-lang-cur"><span class="t-en">English</span><span class="t-es">Español</span></span>
+          <span class="lang-caret" aria-hidden="true">▾</span>
+        </label></li>
+        <li class="menu-lang-others" role="radiogroup" aria-label="Choose language">
+          <label class="menu-sub" for="ui-lang-en" tabindex="0">🇬🇧 English <span class="lang-check" aria-hidden="true">✓</span></label>
+          <label class="menu-sub" for="ui-lang-es" tabindex="0">🇪🇸 Español <span class="lang-check" aria-hidden="true">✓</span></label>
+        </li>
+        <li class="menu-divider" role="separator" aria-hidden="true"></li>
+        <li><a class="menu-row" href="../../index.html" role="menuitem">
+          <span class="mi">←</span><span class="t-en">Apps</span><span class="t-es">Apps</span>
+        </a></li>
+        <li><a class="menu-row" href="https://flove.org" target="_blank" rel="noopener" role="menuitem">
+          <span class="mi">✺</span><span class="t-en">Flove home</span><span class="t-es">Inicio de flove</span>
+        </a></li>
+      </ul>
+    </div>
+  </header>
+
+  <label class="menu-overlay" for="m" aria-hidden="true"></label>
+
+  <!-- About info box -->
+  <section class="about-box" role="region" aria-label="About Puzzy">
+    <div class="about-inner">
+      <label class="about-close" for="about-open" tabindex="0" aria-label="Close">×</label>
+      <h2><span class="t-en">About Puzzy · Explain</span><span class="t-es">Acerca de Puzzy · Explain</span></h2>
+      <p>
+        <span class="t-en">Explain walks an idea from a single word to a sharable form: name it, set its perspective, unfold the explainers, formalise the argument, then review and download.</span>
+        <span class="t-es">Explain lleva una idea desde una palabra hasta un formulario compartible: nómbrala, fija su perspectiva, despliega los explicadores, formaliza el argumento y luego revisa y descarga.</span>
+      </p>
+    </div>
+  </section>
+
+  <!-- title echo — the entered title, centred on every later step -->
+  <div class="title-echo" aria-live="polite"><b id="title-echo-text"></b></div>
 
   <!-- step radios (drive the pure-CSS stepper) -->
   <input type="radio" name="step" id="step-1" class="step-radio" checked>
@@ -470,7 +780,7 @@
     <section class="pack pack--1">
       <div class="wise-line">
         <span class="wise-word">Wise</span>
-        <input type="text" autofocus placeholder="Something here">
+        <input type="text" id="wise-input" autofocus placeholder="Something here">
         <div class="mode-toggle" role="group" aria-label="Mode">
           <label class="mode-btn"><input type="checkbox" id="mode-define" checked> <span class="t-en">Define</span><span class="t-es">Definir</span></label>
           <label class="mode-btn"><input type="checkbox" id="mode-form"> <span class="t-en">Create form</span><span class="t-es">Crear formulario</span></label>
@@ -480,12 +790,15 @@
         <span class="t-en">You'll get a standalone HTML form with only the buttons &amp; fields you filled — ready to download, reuse and share.</span>
         <span class="t-es">Obtendrás un formulario HTML independiente con solo los botones y campos que rellenaste — listo para descargar, reutilizar y compartir.</span>
       </p>
+      <p class="need-text" role="status" aria-live="polite">
+        <span class="t-en">✺ Add some text above to unlock the next step.</span>
+        <span class="t-es">✺ Escribe algo arriba para desbloquear el siguiente paso.</span>
+      </p>
     </section>
 
     <!-- PACK 2 · PERSPECTIVE + FOCUS — sub-sections with a vertical rail -->
     <section class="pack pack--2">
       <div class="persp">
-        <!-- sub-step radios drive the vertical sub-stepper -->
         <input type="radio" name="psub" id="psub-1" class="step-radio" checked>
         <input type="radio" name="psub" id="psub-2" class="step-radio">
         <input type="radio" name="psub" id="psub-3" class="step-radio">
@@ -579,7 +892,8 @@
       </div>
     </section>
 
-    <!-- PACK 3 · EXPLAINERS — each capital is a toggle that reveals its field -->
+    <!-- PACK 3 · EXPLAINERS — each capital is a toggle that reveals its field.
+         Clicking a field turns its inline prompt into editable text. -->
     <section class="pack pack--3">
       <div class="explainers">
         <div class="xpl">
@@ -609,13 +923,15 @@
       </div>
     </section>
 
-    <!-- PACK 4 · FORMALISE -->
+    <!-- PACK 4 · FORMALISE — two columns, then three columns -->
     <section class="pack pack--4">
-      <div class="funnel">
+      <div class="grid grid--two">
+        <!-- column A · Axiom -->
         <div class="funnel__band">
-          <textarea rows="2" placeholder="Axiom"></textarea>
+          <span class="lbl"><span class="t-en">Axiom</span><span class="t-es">Axioma</span></span>
+          <textarea rows="3" placeholder="Axiom"></textarea>
         </div>
-
+        <!-- column B · Kind + Evidence -->
         <div class="evidence">
           <div class="grid grid--two">
             <label class="field">
@@ -629,27 +945,88 @@
             </label>
           </div>
           <label class="field">
-            <textarea rows="3" placeholder="Write EVIDENCE(s) here"></textarea>
+            <span class="lbl"><span class="t-en">Evidence</span><span class="t-es">Evidencia</span></span>
+            <textarea rows="3" placeholder="Evidence"></textarea>
           </label>
         </div>
+      </div>
 
+      <!-- Prediction · Proposal · Challenge — three columns -->
+      <div class="grid grid--three" style="margin-top:.7rem">
         <div class="funnel__band">
-          <textarea rows="2" placeholder="Prediction"></textarea>
+          <span class="lbl"><span class="t-en">Prediction</span><span class="t-es">Predicción</span></span>
+          <textarea rows="3" placeholder="Prediction"></textarea>
         </div>
         <div class="funnel__band">
-          <textarea rows="2" placeholder="Proposal"></textarea>
+          <span class="lbl"><span class="t-en">Proposal</span><span class="t-es">Propuesta</span></span>
+          <textarea rows="3" placeholder="Proposal"></textarea>
         </div>
         <div class="funnel__band">
-          <textarea rows="2" placeholder="Challenge"></textarea>
+          <span class="lbl"><span class="t-en">Challenge</span><span class="t-es">Reto</span></span>
+          <textarea rows="3" placeholder="Challenge"></textarea>
         </div>
       </div>
     </section>
 
-    <!-- PACK 5 · SUMMARY -->
+    <!-- PACK 5 · SUMMARY — every input + a flovynormal summary section -->
     <section class="pack pack--5">
       <h2><span class="t-en">Summary</span><span class="t-es">Resumen</span></h2>
-      <p class="summary-lede"><span class="t-en">Make a downloadable HTML form from only the buttons &amp; fields you filled in.</span><span class="t-es">Crea un formulario HTML descargable solo con los botones y campos que rellenaste.</span></p>
-      <button type="button" id="dl-form" class="dl-btn">⬇ <span class="t-en">Make a form</span><span class="t-es">Crear formulario</span></button>
+      <div class="summary-box">
+        <div class="clause clause-default" id="summary-list">
+          <p class="summary-empty"><span class="t-en">A summary of everything you added shows up here.</span><span class="t-es">Aquí aparece un resumen de todo lo que añadiste.</span></p>
+        </div>
+        <div class="clause clause-magic" id="summary-magic"></div>
+
+        <div class="insight-panel insight-panel--who"><strong><span class="t-en">Who</span><span class="t-es">Quién</span></strong> — <span class="t-en">who is involved, and at what distance?</span><span class="t-es">¿quién está implicado, y a qué distancia?</span></div>
+        <div class="insight-panel insight-panel--what"><strong><span class="t-en">What</span><span class="t-es">Qué</span></strong> — <span class="t-en">what is being claimed, predicted or proposed?</span><span class="t-es">¿qué se afirma, se predice o se propone?</span></div>
+        <div class="insight-panel insight-panel--where"><strong><span class="t-en">Where</span><span class="t-es">Dónde</span></strong> — <span class="t-en">where do the boundaries and the evidence sit?</span><span class="t-es">¿dónde están los límites y la evidencia?</span></div>
+        <div class="insight-panel insight-panel--why"><strong><span class="t-en">Why</span><span class="t-es">Por qué</span></strong> — <span class="t-en">why does this framing matter?</span><span class="t-es">¿por qué importa este encuadre?</span></div>
+
+        <div class="summary-actions">
+          <span class="actions-left">
+            <span class="insight-cycle" aria-label="Insights">
+              <label class="btn-ghost insight-step insight-step--0" for="insight-who"   tabindex="0">💡 <span class="t-en">Insight</span><span class="t-es">Insight</span></label>
+              <label class="btn-ghost insight-step insight-step--1" for="insight-what"  tabindex="0">💡 <span class="t-en">Insight</span><span class="t-es">Insight</span></label>
+              <label class="btn-ghost insight-step insight-step--2" for="insight-where" tabindex="0">💡 <span class="t-en">Insight</span><span class="t-es">Insight</span></label>
+              <label class="btn-ghost insight-step insight-step--3" for="insight-why"   tabindex="0">💡 <span class="t-en">Insight</span><span class="t-es">Insight</span></label>
+              <label class="btn-ghost insight-step insight-step--4" for="insight-none"  tabindex="0">💡 <span class="t-en">Insight</span><span class="t-es">Insight</span></label>
+            </span>
+            <label class="btn-ghost magic-summary-btn" for="magic-toggle" aria-label="Toggle magic phrase">
+              <span class="l-off">✨ <span class="t-en">Magic</span><span class="t-es">Magia</span></span>
+              <span class="l-on"><span class="t-en">Plain</span><span class="t-es">Texto</span></span>
+            </label>
+            <button type="button" class="btn-ghost" id="copy-btn"><span class="t-en">Copy</span><span class="t-es">Copiar</span></button>
+          </span>
+          <span class="actions-right">
+            <span class="act-cell act-cell--save">
+              <ul class="act-pop" aria-label="Save as">
+                <li><a href="#" data-noop><span>📄</span> .txt</a></li>
+                <li><a href="#" data-noop><span>📝</span> .md</a></li>
+                <li><a href="#" data-noop><span>🖼️</span> .jpg</a></li>
+              </ul>
+              <label class="btn-ghost save-btn" for="save-open" tabindex="0"><span class="t-en">Save</span><span class="t-es">Guardar</span></label>
+            </span>
+            <span class="act-cell act-cell--share">
+              <ul class="act-pop" aria-label="Share to">
+                <li><a href="mailto:?subject=Puzzy&body=From%20Puzzy%20Explain"><span>✉️</span><span class="t-en">Email</span><span class="t-es">Correo</span></a></li>
+                <li><label for="share-open"><span>🔗</span><span class="t-en">Copy link</span><span class="t-es">Copiar enlace</span></label></li>
+              </ul>
+              <label class="btn-ghost share-btn" for="share-open" tabindex="0"><span class="t-en">Share</span><span class="t-es">Compartir</span></label>
+            </span>
+            <span class="act-cell act-cell--publish">
+              <ul class="act-pop" aria-label="Publish to">
+                <li><a href="mailto:publish@flove.org?subject=Wizy"><span>🤖</span> Wizy</a></li>
+                <li><a href="mailto:publish@flove.org?subject=Reddit"><span>👽</span> Reddit</a></li>
+                <li><a href="mailto:publish@flove.org?subject=Nety"><span>🌴</span> Nety</a></li>
+              </ul>
+              <label class="btn-ghost publish-btn" for="publish-open" tabindex="0"><span class="t-en">Publish</span><span class="t-es">Publicar</span></label>
+            </span>
+          </span>
+        </div>
+
+        <p class="summary-lede"><span class="t-en">Make a downloadable HTML form from only the buttons &amp; fields you filled in.</span><span class="t-es">Crea un formulario HTML descargable solo con los botones y campos que rellenaste.</span></p>
+        <button type="button" id="dl-form" class="dl-btn">⬇ <span class="t-en">Download my form</span><span class="t-es">Descargar mi formulario</span></button>
+      </div>
     </section>
   </main>
 
@@ -692,21 +1069,42 @@
     </div>
   </details>
 
+  <!-- ── modal · New label ─────────────────────────────────────── -->
+  <div class="modal-overlay">
+    <label class="modal-overlay-catch" for="newlabel-open" aria-hidden="true" style="position:absolute;inset:0"></label>
+    <div class="modal" role="dialog" aria-modal="true" aria-label="New label">
+      <h2 class="modal-head"><span class="t-en">New label</span><span class="t-es">Nueva etiqueta</span>
+        <label class="modal-close" for="newlabel-open" tabindex="0" aria-label="Close">×</label>
+      </h2>
+      <label class="field-label"><span class="t-en">Name</span><span class="t-es">Nombre</span></label>
+      <input type="text" placeholder="e.g. cosy" maxlength="40">
+      <label class="field-label"><span class="t-en">Emoji</span><span class="t-es">Emoji</span></label>
+      <input type="text" placeholder="🌙" maxlength="4">
+      <div class="modal-actions">
+        <label class="btn-ghost" for="newlabel-open" tabindex="0"><span class="t-en">Cancel</span><span class="t-es">Cancelar</span></label>
+        <label class="dl-btn" for="newlabel-open" tabindex="0" style="margin:0">＋ <span class="t-en">Save</span><span class="t-es">Guardar</span></label>
+      </div>
+    </div>
+  </div>
+
   <script>
-  /* The only JS in this app — it lives here because "Make a form" must read
-     the filled controls and emit a downloadable file, which pure CSS can't do.
-     Everything else (stepper, reveals, toggles, rail) stays pure CSS. */
+  /* ============================================================
+     Puzzy · Explain — the form needs a little JS for things CSS
+     can't do: echo the title, turn inline prompts into editable
+     text, the per-textarea 🎤/＋ tools, the live summary, and the
+     "Download my form" emitter. Stepper, reveals, toggles, rails,
+     labelers and popovers all stay pure CSS.
+     ============================================================ */
   (function(){
     var def  = document.getElementById('mode-define');
     var form = document.getElementById('mode-form');
 
-    /* mode toggle — multiselect but never empty: re-check whatever was just
-       turned off if it would leave nothing selected. */
+    /* mode toggle — multiselect but never empty */
     function guard(just){ if(!def.checked && !form.checked){ just.checked = true; } }
     def.addEventListener('change', function(){ guard(def); });
     form.addEventListener('change', function(){ guard(form); });
 
-    /* clicking "Create form" shows the what-you'll-get note below, for 5s */
+    /* clicking "Create form" shows the what-you'll-get note for 5s */
     var hint = document.getElementById('form-hint'), hintTimer;
     form.addEventListener('change', function(){
       if(form.checked && hint){
@@ -719,34 +1117,153 @@
     function esc(s){ return String(s).replace(/[&<>"]/g, function(c){
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
     function en(el){ var s = el && el.querySelector('.t-en'); return (s ? s.textContent : (el ? el.textContent : '')).trim(); }
+    function esOn(){ var es = document.getElementById('ui-lang-es'); return es && es.checked; }
 
-    function buildFields(){
-      var out = [];
-      // 1 · object
-      var obj = document.querySelector('.pack--1 input[type=text]');
-      if(obj && obj.value.trim()) out.push(text('Object', obj.value.trim()));
-      // 2 · perspective — selected buttons per sub-section
-      document.querySelectorAll('.pack--2 fieldset.persp-sec').forEach(function(fs){
-        var picks = [].slice.call(fs.querySelectorAll('input:checked')).map(function(i){ return en(i.parentElement); });
-        if(picks.length) out.push(choice(en(fs.querySelector('legend')), picks));
-      });
-      // 3 · explainers — only revealed + filled
-      document.querySelectorAll('.pack--3 .xpl').forEach(function(x){
-        var on = x.querySelector('.xpl-btn input');
-        var ctl = x.querySelector('textarea, input[type=text]');
-        if(on && on.checked && ctl && ctl.value.trim()){
-          out.push(text(x.querySelector('.xpl-btn').textContent.trim(), ctl.value.trim()));
+    /* ── title echo — mirror the Wise field into the centred banner ── */
+    var wise = document.getElementById('wise-input');
+    var echo = document.getElementById('title-echo-text');
+    function syncTitle(){ if(echo) echo.textContent = wise.value.trim(); }
+    wise.addEventListener('input', syncTitle);
+    syncTitle();
+
+    /* ── inline prompt → editable text on click (step 3 explainers) ──
+       clicking an empty field drops its placeholder text in, ready to edit */
+    document.querySelectorAll('.pack--3 .xpl-field textarea, .pack--3 .xpl-field input[type=text]').forEach(function(f){
+      f.addEventListener('focus', function(){
+        if(!f.value){
+          f.value = f.getAttribute('placeholder') || '';
+          /* select it so the next keystroke can overwrite the suggestion */
+          try{ f.select(); }catch(e){}
+          f.dispatchEvent(new Event('input', {bubbles:true}));
         }
       });
-      // 4 · formalise — any filled field
-      document.querySelectorAll('.pack--4 textarea, .pack--4 input[type=text]').forEach(function(c){
-        if(c.value.trim()) out.push(text(c.getAttribute('placeholder') || 'Field', c.value.trim()));
+    });
+
+    /* ── per-textarea tools: 🎤 dictate + ＋ add another field ──────── */
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    function wireMic(btn, ta){
+      btn.addEventListener('click', function(){
+        if(btn._rec){ btn._rec.stop(); return; }
+        if(!SR){ alert(esOn() ? 'El navegador no admite dictado por voz.' : 'Speech recognition is not supported in this browser.'); return; }
+        var rec = new SR();
+        rec.continuous = true; rec.interimResults = true;
+        rec.lang = esOn() ? 'es-ES' : 'en-US';
+        var baseVal = ta.value;
+        rec.onresult = function(e){
+          var fin = '', intr = '';
+          for(var i = e.resultIndex; i < e.results.length; i++){
+            var t = e.results[i][0].transcript;
+            if(e.results[i].isFinal) fin += t; else intr += t;
+          }
+          if(fin) baseVal = (baseVal && !/\s$/.test(baseVal) ? baseVal + ' ' : baseVal) + fin.trim();
+          ta.value = intr ? (baseVal && !/\s$/.test(baseVal) ? baseVal + ' ' : baseVal) + intr : baseVal;
+          ta.dispatchEvent(new Event('input', {bubbles:true}));
+        };
+        rec.onend = function(){ btn._rec = null; btn.classList.remove('mic-live'); };
+        rec.onerror = function(){ btn._rec = null; btn.classList.remove('mic-live'); };
+        btn._rec = rec; btn.classList.add('mic-live');
+        try{ rec.start(); }catch(e){ btn._rec = null; btn.classList.remove('mic-live'); }
       });
-      var sel = document.querySelector('.pack--4 select');
-      if(sel && sel.value) out.push(text('Kind', sel.value));
+    }
+    function wireWrap(wrap){
+      var ta   = wrap.querySelector('textarea');
+      var mic  = wrap.querySelector('.ta-mic');
+      var plus = wrap.querySelector('.ta-plus');
+      if(mic && ta) wireMic(mic, ta);
+      if(plus) plus.addEventListener('click', function(){
+        var clone = wrap.cloneNode(true);
+        var cta = clone.querySelector('textarea');
+        if(cta){ cta.value = ''; cta.removeAttribute('id'); }
+        wrap.parentNode.insertBefore(clone, wrap.nextSibling);
+        wireWrap(clone);
+        if(cta) cta.focus();
+        renderSummary(); updateMagic();
+      });
+    }
+    function enhanceTextareas(){
+      document.querySelectorAll('.pack--3 textarea, .pack--4 textarea').forEach(function(ta){
+        if(ta.closest('.ta-wrap')) return;
+        var wrap = document.createElement('div'); wrap.className = 'ta-wrap';
+        ta.parentNode.insertBefore(wrap, ta); wrap.appendChild(ta);
+        var tools = document.createElement('div'); tools.className = 'ta-tools';
+        tools.innerHTML =
+          '<button type="button" class="ta-tool ta-mic" title="Dictate" aria-label="Dictate">🎤</button>' +
+          '<button type="button" class="ta-tool ta-plus" title="Add another" aria-label="Add another field">＋</button>';
+        wrap.appendChild(tools);
+        wireWrap(wrap);
+      });
+    }
+    enhanceTextareas();
+
+    /* ── collect everything the user added (one source of truth) ───── */
+    function collect(){
+      var out = [];
+      if(wise && wise.value.trim()) out.push({k:'Object', v:wise.value.trim()});
+      document.querySelectorAll('.pack--2 fieldset.persp-sec').forEach(function(fs){
+        var picks = [].slice.call(fs.querySelectorAll('input:checked')).map(function(i){ return en(i.parentElement); });
+        if(picks.length) out.push({k:en(fs.querySelector('legend')), vs:picks});
+      });
+      document.querySelectorAll('.pack--3 .xpl').forEach(function(x){
+        var on = x.querySelector('.xpl-btn input');
+        if(on && on.checked){
+          x.querySelectorAll('.xpl-field textarea, .xpl-field input[type=text]').forEach(function(ctl){
+            if(ctl.value.trim()) out.push({k:x.querySelector('.xpl-btn').textContent.trim(), v:ctl.value.trim()});
+          });
+        }
+      });
+      document.querySelectorAll('.pack--4 textarea, .pack--4 input[type=text]').forEach(function(c){
+        if(c.value.trim()) out.push({k:c.getAttribute('placeholder') || 'Field', v:c.value.trim()});
+      });
+      document.querySelectorAll('.pack--4 select').forEach(function(sel){
+        if(sel.value) out.push({k:'Kind', v:sel.value});
+      });
       return out;
     }
 
+    /* ── live summary: list every input + a "magic" woven re-telling ── */
+    var listEl  = document.getElementById('summary-list');
+    var magicEl = document.getElementById('summary-magic');
+    function renderSummary(){
+      if(!listEl) return;
+      var items = collect();
+      if(!items.length){
+        listEl.innerHTML = '<p class="summary-empty">' +
+          (esOn() ? 'Aquí aparece un resumen de todo lo que añadiste.' : 'A summary of everything you added shows up here.') +
+          '</p>';
+        return;
+      }
+      listEl.innerHTML = items.map(function(it){
+        var val = it.vs ? it.vs.join(', ') : it.v;
+        return '<div class="sum-row"><span class="sum-k">' + esc(it.k) + '</span><span class="sum-v">' + esc(val) + '</span></div>';
+      }).join('');
+    }
+    function updateMagic(){
+      if(!magicEl) return;
+      var items = collect();
+      if(!items.length){ magicEl.textContent = ''; return; }
+      var obj = items[0].k === 'Object' ? items[0].v : '';
+      var rest = items.filter(function(it){ return it.k !== 'Object'; })
+                      .map(function(it){ return it.vs ? it.vs.join(' / ') : it.v; });
+      magicEl.textContent = '✨ ' + (obj ? '“' + obj + '” ' : '') +
+        (esOn() ? '— tejido a partir de: ' : '— woven from: ') + rest.join(' · ');
+    }
+
+    /* refresh on any input/selection anywhere (covers cloned fields too) */
+    document.addEventListener('input', function(){ renderSummary(); updateMagic(); });
+    document.addEventListener('change', function(){ renderSummary(); updateMagic(); });
+    renderSummary(); updateMagic();
+
+    /* ── Copy — plain-text dump of the summary ─────────────────────── */
+    var copyBtn = document.getElementById('copy-btn');
+    if(copyBtn) copyBtn.addEventListener('click', function(){
+      var items = collect();
+      var txt = items.map(function(it){ return it.k + ': ' + (it.vs ? it.vs.join(', ') : it.v); }).join('\n');
+      if(navigator.clipboard && txt){ navigator.clipboard.writeText(txt); }
+      var old = copyBtn.textContent; copyBtn.textContent = esOn() ? '¡Copiado!' : 'Copied!';
+      setTimeout(function(){ copyBtn.textContent = old; }, 1500);
+    });
+
+    /* ── Download my form — emit a standalone HTML form ────────────── */
     function text(label, val){
       var ctl = val.length > 60
         ? '<textarea rows="2">' + esc(val) + '</textarea>'
@@ -758,7 +1275,9 @@
              arr.map(function(v){ return '<label class="c"><input type="checkbox" checked> ' + esc(v) + '</label>'; }).join('') +
              '</fieldset>';
     }
-
+    function buildFields(){
+      return collect().map(function(it){ return it.vs ? choice(it.k, it.vs) : text(it.k, it.v); });
+    }
     function template(object, body){
       return '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n' +
         '<meta name="viewport" content="width=device-width,initial-scale=1">\n' +
@@ -772,12 +1291,10 @@
         '<form onsubmit="event.preventDefault();var d={};this.querySelectorAll(\'input,textarea\').forEach(function(i){if(i.type===\'checkbox\'){if(i.checked)(d[i.closest(\'fieldset\').querySelector(\'legend\').textContent]=d[i.closest(\'fieldset\').querySelector(\'legend\').textContent]||[]).push(i.parentElement.textContent.trim())}else if(i.value)d[i.previousElementSibling?i.previousElementSibling.textContent:\'field\']=i.value;});console.log(d);alert(\'Submitted — data logged to console.\');">\n' +
         body + '\n    <button type="submit">Submit</button>\n</form>\n</body>\n</html>\n';
     }
-
     document.getElementById('dl-form').addEventListener('click', function(){
       var fields = buildFields();
-      if(!fields.length){ alert('Fill in at least one button or field first.'); return; }
-      var obj = document.querySelector('.pack--1 input[type=text]');
-      var html = template(obj ? obj.value.trim() : '', fields.join('\n'));
+      if(!fields.length){ alert(esOn() ? 'Rellena al menos un campo primero.' : 'Fill in at least one button or field first.'); return; }
+      var html = template(wise ? wise.value.trim() : '', fields.join('\n'));
       var blob = new Blob([html], {type:'text/html'});
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
