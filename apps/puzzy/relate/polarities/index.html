@@ -122,19 +122,53 @@
     .tune-intro small{ display:block; color:var(--muted); font-weight:400; font-size:.82rem; margin-top:.35rem }
 
     /* 1–5 rating bars — two columns, generously spaced down the page */
-    .bars{ display:grid; gap:2.4rem 20px; grid-template-columns:repeat(2,1fr) }
-    @media (max-width:720px){ .bars{ grid-template-columns:1fr } }
-
-    /* collapsed lenses behind one resuming title */
-    .more-bars{ margin-top:1.6rem }
-    .more-sum{
-      cursor:pointer; list-style:none; display:flex; align-items:baseline; gap:10px;
-      color:var(--ink); font-weight:600; padding:.2rem 0; flex-wrap:wrap;
+    /* two columns with a 30px void column down the middle */
+    .bars{ display:grid; gap:2.4rem 0; grid-template-columns:1fr 30px 1fr }
+    .bars > *{ grid-column:1 }
+    .bars > *:nth-child(2n){ grid-column:3 }
+    @media (max-width:720px){
+      .bars{ grid-template-columns:1fr }
+      .bars > *, .bars > *:nth-child(2n){ grid-column:auto }
     }
-    .more-sum::-webkit-details-marker{ display:none }
-    .more-sum strong{ color:var(--accent2) }
-    .more-list{ color:var(--muted); font-weight:400; font-size:.85rem }
-    .more-bars[open] .more-sum{ margin-bottom:1.4rem }
+
+    /* More raters */
+    .raters-zone{ text-align:center; margin-top:1.8rem }
+    .btn-md{
+      display:inline-flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;
+      font-size:1rem; font-weight:700; letter-spacing:.2px; padding:.6rem 1.1rem;
+      border-radius:var(--flove-radius-sm); border:1px solid var(--app-accent);
+      color:var(--ink); background:transparent;
+    }
+    .btn-md:hover{ background:rgba(141,137,255,.12) }
+    .raters{ margin-top:1.1rem; text-align:left }
+    .rater-btns{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:1.4rem }
+    .rater-btn{
+      display:inline-flex; align-items:center; gap:6px; cursor:pointer; font-size:.84rem;
+      padding:.36rem .7rem; border-radius:var(--flove-radius-pill);
+      border:1px solid var(--line); background:#13162a; color:var(--ink);
+    }
+    .rater-btn:hover{ border-color:var(--app-accent) }
+    .rater-btn.on{ border-color:var(--accent2); color:var(--accent2); box-shadow:0 0 8px rgba(112,240,211,.3) }
+    .rater-x{ color:var(--muted); font-weight:700; padding:0 2px; border-radius:50% }
+    .rater-x:hover{ color:#ff6b8b }
+
+    /* make-your-own bar (the first one shown) */
+    .creator{
+      border:1px dashed var(--app-accent); border-radius:var(--flove-radius);
+      background:#0f1120; padding:1rem 1.1rem; margin-bottom:1.6rem;
+    }
+    .creator-head{ color:var(--accent2); font-weight:600; font-size:.88rem; margin-bottom:.7rem }
+    .creator-inputs{ display:flex; gap:10px; margin-bottom:1.1rem; flex-wrap:wrap }
+    .creator-in{
+      flex:1; min-width:120px; background:var(--field); border:1px solid var(--line);
+      color:var(--ink); border-radius:var(--flove-radius-sm); padding:.5rem .65rem; font:inherit;
+    }
+    .creator-in:focus{ outline:none; border-color:var(--app-accent); box-shadow:0 0 0 3px rgba(141,137,255,.18) }
+    .rater-save{
+      margin-top:1rem; cursor:pointer; font-size:.85rem; font-weight:700; color:var(--app-ink-on-accent);
+      border:1px solid var(--app-accent); border-radius:var(--flove-radius-sm); padding:.45rem .9rem;
+      background:linear-gradient(180deg,var(--app-accent-soft),var(--app-accent));
+    }
     /* pole titles sit ABOVE the track, each centered over its extreme node */
     .ends{ position:relative; height:1.25em; margin-bottom:.4rem }
     .end{
@@ -172,8 +206,14 @@
     .go-wrap{ text-align:center; margin-top:1.5rem }
     /* generated opposite fields — two columns */
     .opp-out{ display:none; margin-top:1.3rem }
-    .opp-out.show{ display:grid; gap:1rem 20px; grid-template-columns:repeat(2,1fr); align-items:start }
-    @media (max-width:720px){ .opp-out.show{ grid-template-columns:1fr } }
+    .opp-out.show{ display:grid; gap:1rem 0; grid-template-columns:1fr 30px 1fr; align-items:start }
+    .opp-out.show > *{ grid-column:1 }
+    .opp-out.show > *:nth-child(2n){ grid-column:3 }
+    .opp-out.show > .opp-empty{ grid-column:1 / -1 }
+    @media (max-width:720px){
+      .opp-out.show{ grid-template-columns:1fr }
+      .opp-out.show > *, .opp-out.show > *:nth-child(2n){ grid-column:auto }
+    }
     .opp{
       border:1px solid var(--line); border-radius:var(--flove-radius-sm);
       background:#0f1120; padding:.8rem .85rem;
@@ -397,12 +437,20 @@
           </small>
         </p>
 
-        <!-- primary two bars; the rest collapse behind one resuming title -->
+        <!-- all polarities, in their original order -->
         <div class="bars" id="bars"></div>
-        <details class="more-bars">
-          <summary class="more-sum"><span class="chev"></span> <span id="moreSumLabel"></span></summary>
-          <div class="bars" id="barsMore"></div>
-        </details>
+
+        <!-- More raters: reveal 12 extra rating bars + a make-your-own bar -->
+        <div class="raters-zone">
+          <button type="button" class="btn-md" id="moreRaters">
+            <span class="t-en">＋ More raters</span><span class="t-es">＋ Más raters</span>
+          </button>
+          <div class="raters" id="raters" hidden>
+            <div class="rater-btns" id="raterBtns"></div>
+            <div class="creator-wrap" id="creatorWrap"></div>
+            <div class="bars extra-bars" id="extraBars"></div>
+          </div>
+        </div>
 
         <div class="go-wrap">
           <button type="button" class="btn-xl" id="go"><span class="t-en">Go</span><span class="t-es">Adelante</span> →</button>
@@ -446,14 +494,18 @@
       f.append(e,s); return f;
     }
     const region = (p,lo,hi,lang)=> lo===hi ? p[lang][lo-1] : p[lang][lo-1]+' → '+p[lang][hi-1];
+    const isES = ()=> document.getElementById('ui-lang-es').checked;
 
-    /* ---- build the bars ---- */
-    /* show only Similar–Different (0) and Important–Trivial (3); collapse the rest */
-    const PRIMARY = new Set([0, 3]);
-    const barsEl = document.getElementById('bars');
-    const barsMoreEl = document.getElementById('barsMore');
+    /* ---- bars: a reusable builder so base + extra + custom all share code ---- */
+    const barsEl     = document.getElementById('bars');
+    const extraBarsEl= document.getElementById('extraBars');
+    const raterBtnsEl= document.getElementById('raterBtns');
     const barEls = [];
-    PAIRS.forEach((p,i)=>{
+
+    /* register a new pair so render()/opposite()/Go pick it up by index */
+    function registerBar(p){ const i = PAIRS.length; PAIRS.push(p); state.push({a:null,b:null}); return i; }
+
+    function buildBar(p,i){
       const bar = el('div','bar');
       const ends = el('div','ends');
       const l = el('span','end l'); l.append(bi(p.en[0], p.es[0]));
@@ -462,10 +514,8 @@
       const track = el('div','track');
       const fill = el('div','fill'); track.appendChild(fill);
       for(let n=1;n<=5;n++){
-        const node = el('button','node');
-        node.type='button';
-        node.style.left = pos(n)+'%';
-        node.dataset.n = n;
+        const node = el('button','node'); node.type='button';
+        node.style.left = pos(n)+'%'; node.dataset.n = n;
         node.setAttribute('aria-label', p.en[n-1]);
         track.appendChild(node);
       }
@@ -474,24 +524,113 @@
         const rect = track.getBoundingClientRect();
         const pct = (ev.clientX - rect.left) / rect.width * 100;
         let n = Math.round((pct - 4) / 23) + 1;
-        n = Math.max(1, Math.min(5, n));
-        pick(i, n);
+        pick(i, Math.max(1, Math.min(5, n)));
       });
       bar.append(ends, track);
-      bar._fill = fill;
+      bar._fill = fill; bar._ends = ends;
       barEls[i] = bar;
-      (PRIMARY.has(i) ? barsEl : barsMoreEl).appendChild(bar);
-    });
+      return bar;
+    }
 
-    /* one title that resumes the collapsed lenses */
-    const collapsed = PAIRS.filter((_,i)=>!PRIMARY.has(i));
-    const lab = document.getElementById('moreSumLabel');
-    const strong = el('strong');
-    strong.append(bi(collapsed.length+' more polarities', collapsed.length+' polaridades más'));
-    const list = el('span','more-list');
-    list.append(bi(collapsed.map(p=>p.en[0]+'–'+p.en[4]).join(' · '),
-                   collapsed.map(p=>p.es[0]+'–'+p.es[4]).join(' · ')));
-    lab.append(strong, document.createTextNode(' '), list);
+    /* the 8 base polarities, in their original order */
+    PAIRS.forEach((p,i)=> barsEl.appendChild(buildBar(p,i)));
+
+    /* build a 5-step pair from two poles (generic hidden middles) */
+    function makePair(aEn,bEn,aEs,bEs){
+      return { en:[aEn,'toward '+aEn,'balanced','toward '+bEn,bEn],
+               es:[aEs,'hacia '+aEs,'equilibrado','hacia '+bEs,bEs] };
+    }
+
+    /* 12 extra rating bars, revealed by "More raters" */
+    const PRESETS = [
+      {en:['Open','Closed'],es:['Abierto','Cerrado']},      {en:['Simple','Complex'],es:['Simple','Complejo']},
+      {en:['Fast','Slow'],es:['Rápido','Lento']},           {en:['Local','Global'],es:['Local','Global']},
+      {en:['Risky','Safe'],es:['Arriesgado','Seguro']},     {en:['Old','New'],es:['Viejo','Nuevo']},
+      {en:['Private','Public'],es:['Privado','Público']},    {en:['Light','Heavy'],es:['Ligero','Pesado']},
+      {en:['Order','Chaos'],es:['Orden','Caos']},           {en:['Theory','Practice'],es:['Teoría','Práctica']},
+      {en:['Individual','Collective'],es:['Individual','Colectivo']}, {en:['Question','Answer'],es:['Pregunta','Respuesta']},
+    ];
+
+    /* a button shows/hides its bar below; deletable ones (saved) carry an × */
+    function toggleExtra(btn){
+      if(btn._idx != null){
+        state[btn._idx].removed = true;
+        if(barEls[btn._idx]) barEls[btn._idx].remove();
+        btn._idx = null; btn.classList.remove('on');
+      } else {
+        const i = registerBar(btn._pair);
+        extraBarsEl.appendChild(buildBar(btn._pair, i));
+        btn._idx = i; btn.classList.add('on');
+      }
+    }
+    function makeRaterBtn(label, pair, deletable){
+      const btn = el('button','rater-btn'); btn.type='button';
+      btn._pair = pair; btn._idx = null;
+      btn.append(bi(label.en, label.es));
+      if(deletable){ const x = el('span','rater-x'); x.textContent='×'; x.title='Delete'; btn.append(x); }
+      btn.addEventListener('click', e=>{
+        if(e.target.classList.contains('rater-x')){ deleteSaved(btn); return; }
+        toggleExtra(btn);
+      });
+      return btn;
+    }
+
+    /* saved custom bars persist in localStorage */
+    const LS_KEY = 'puzzy-polarities-custom';
+    function loadSaved(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)) || []; }catch(e){ return []; } }
+    function persistSaved(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(saved)); }catch(e){} }
+    let saved = loadSaved();
+    function addSavedBtn(rec){
+      const btn = makeRaterBtn({en:rec.a+'–'+rec.b, es:rec.a+'–'+rec.b}, makePair(rec.a,rec.b,rec.a,rec.b), true);
+      btn._rec = rec; raterBtnsEl.appendChild(btn);
+    }
+    function deleteSaved(btn){
+      if(btn._idx != null){ state[btn._idx].removed = true; if(barEls[btn._idx]) barEls[btn._idx].remove(); }
+      if(btn._rec){ saved = saved.filter(r=>r!==btn._rec); persistSaved(); }
+      btn.remove();
+    }
+
+    /* populate the panel: 12 presets, then any saved customs */
+    PRESETS.forEach(pr=> raterBtnsEl.appendChild(
+      makeRaterBtn({en:pr.en[0]+'–'+pr.en[1], es:pr.es[0]+'–'+pr.es[1]},
+                   makePair(pr.en[0],pr.en[1],pr.es[0],pr.es[1]), false)));
+    saved.forEach(addSavedBtn);
+
+    /* the first bar in the panel: make your own, then save it to the list */
+    function buildCreator(){
+      const i = registerBar(makePair('A','B','A','B'));
+      const wrap = el('div','creator');
+      const head = el('div','creator-head');
+      head.append(bi('New bar — name both poles, rate it, then save it',
+                     'Barra nueva — nombra ambos polos, califícala y guárdala'));
+      const row = el('div','creator-inputs');
+      const inA = el('input','creator-in'); inA.placeholder = isES() ? 'Polo A' : 'Pole A';
+      const inB = el('input','creator-in'); inB.placeholder = isES() ? 'Polo B' : 'Pole B';
+      row.append(inA, inB);
+      const bar = buildBar(PAIRS[i], i);
+      const endL = bar.querySelector('.end.l'), endR = bar.querySelector('.end.r');
+      const sync = ()=>{
+        const a = inA.value.trim() || 'A', b = inB.value.trim() || 'B';
+        PAIRS[i] = makePair(a,b,a,b);
+        endL.textContent = a; endR.textContent = b;
+      };
+      inA.addEventListener('input', sync); inB.addEventListener('input', sync);
+      const save = el('button','rater-save'); save.type='button';
+      save.append(bi('＋ Save to list', '＋ Guardar en la lista'));
+      save.addEventListener('click', ()=>{
+        const a = inA.value.trim(), b = inB.value.trim();
+        if(!a || !b) return;
+        const rec = {a,b}; saved.push(rec); persistSaved(); addSavedBtn(rec);
+        inA.value=''; inB.value=''; sync();
+      });
+      wrap.append(head, row, bar, save);
+      return wrap;
+    }
+    document.getElementById('creatorWrap').appendChild(buildCreator());
+
+    /* More raters: reveal the panel */
+    const ratersEl = document.getElementById('raters');
+    document.getElementById('moreRaters').addEventListener('click', ()=>{ ratersEl.hidden = !ratersEl.hidden; });
 
     /* ---- selection state machine: 1 click = point, 2 clicks = region ---- */
     function pick(i,n){
@@ -592,8 +731,6 @@
       return wrap;
     }
 
-    const isES = ()=> document.getElementById('ui-lang-es').checked;
-
     /* ---- magic wizard, à la flovyadvanced: a per-field bot that pre-fills
        the textarea with a stylistic variant, cycling phrasings on re-click ---- */
     const BOTS = [
@@ -648,7 +785,7 @@
       let any=false;
       PAIRS.forEach((p,i)=>{
         const s = state[i];
-        if(s.a===null) return;
+        if(s.removed || s.a===null) return;
         any=true;
         const o = opposite(p,s);
         const choseEn = s.b===null ? p.en[s.a-1] : region(p,s.a,s.b,'en');
