@@ -64,6 +64,22 @@
 
   .about-ctl{ position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
 
+  /* ── progress bar (stages + steps of the game) ──────────────── */
+  .progress{ display:flex; align-items:center; gap:8px; margin-left:6px; }
+  .prog-sep{ color:var(--ink-dim); font-size:.8rem; opacity:.6; }
+  .prog-step{ display:flex; flex-direction:column; gap:3px; min-width:92px; }
+  .prog-step .lab{
+    display:flex; justify-content:space-between; gap:8px;
+    font:600 .6rem/1 var(--font-ui); letter-spacing:.07em; text-transform:uppercase; color:var(--ink-dim);
+  }
+  .prog-step .lab .ct{ color:var(--ink); font-weight:700; }
+  .prog-step .meter{ height:5px; border-radius:var(--radius-pill); background:rgba(255,255,255,.12); overflow:hidden; }
+  .prog-step .meter i{ display:block; height:100%; width:0; border-radius:var(--radius-pill); background:var(--accent); transition:width .25s cubic-bezier(.2,.8,.2,1); }
+  .prog-step.sub .meter i{ background:var(--nerve); }
+  .prog-step.done .meter i{ background:var(--success); }
+  .prog-step.done .lab,
+  .prog-step.done .lab .ct{ color:var(--success); }
+
   /* ── About panel ─────────────────────────────────────────────── */
   .about-backdrop{ position:fixed; inset:0; z-index:30; background:rgba(0,0,0,.35); display:none; cursor:default; }
   body:has(#about-toggle:checked) .about-backdrop{ display:block }
@@ -83,18 +99,18 @@
   .about-panel ol{ margin:.4rem 0 0; padding-left:1.2rem; color:var(--ink-dim); font-size:.86rem; line-height:1.6; }
   .about-panel ol b{ color:var(--ink); font-weight:600; }
 
-  /* ── layout: left dock · deck · board · right dock ──────────── */
+  /* ── layout: deck · board (subsystems now live inside the board) ── */
   .layout{
     position:relative;
     display:grid;
-    grid-template-columns:170px 200px 1fr 170px;
+    grid-template-columns:200px 1fr;
     gap:16px; align-items:stretch;
     max-width:1280px; margin:0 auto; padding:18px 16px 60px;
   }
   .panel{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:12px; }
 
-  /* ── systems deck (left-middle) ─────────────────────────────── */
-  .deck-col{ grid-column:2; display:flex; flex-direction:column; justify-content:center; }
+  /* ── systems deck (left) ────────────────────────────────────── */
+  .deck-col{ grid-column:1; display:flex; flex-direction:column; justify-content:center; }
   .deck-toggle{
     display:flex; align-items:center; justify-content:center; gap:.45rem;
     width:100%; padding:14px 12px; cursor:pointer;
@@ -113,16 +129,8 @@
   /* collapsed by default — the single Systems card is the only thing shown */
   body.deck-open .deck-toggle{ display:none; }
 
-  /* small handle to re-collapse, shown only while open, pinned above the fan */
-  .deck-caret{ display:none; }
-  body.deck-open .deck-caret{
-    display:inline-flex; align-self:center; align-items:center; gap:.3rem;
-    margin-bottom:8px; flex:0 0 auto;
-    padding:4px 12px; border-radius:var(--radius-pill);
-    background:#0f1320; border:1px solid var(--line); color:var(--ink-dim);
-    font:600 .72rem/1 var(--font-ui); cursor:pointer; white-space:nowrap;
-  }
-  .deck-caret:hover{ border-color:var(--accent); color:var(--accent); }
+  /* re-collapse handle is hidden — the deck stays open once fanned */
+  .deck-caret{ display:none !important; }
 
   /* the open fan: 5 up · 1 centre · 5 down — fills the column height of the others */
   .deck{ display:none; }
@@ -149,13 +157,20 @@
   .card:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
 
   /* ── board (center) ─────────────────────────────────────────── */
-  .board{ grid-column:3; display:flex; flex-direction:column; align-items:center; gap:10px; }
-  /* three vertical columns of cards, side by side: 5 · 1(centre) · 5 */
-  .board-grid{ display:flex; justify-content:center; align-items:stretch; gap:30px; }
-  /* each row of cards now stacks vertically into a column */
-  .row-slots{ display:flex; flex-direction:column; gap:10px; }
-  /* the lone middle slot centres vertically → in line with the 3rd card of the side columns */
-  .row-slots.single{ justify-content:center; }
+  .board{ grid-column:2; display:flex; flex-direction:column; align-items:center; gap:10px; }
+  /* 5 horizontal rows × 3 columns: left slot · middle (reason, +centre slot) · right slot */
+  .board-grid{
+    display:grid;
+    grid-template-columns:96px minmax(220px,300px) 96px;
+    grid-auto-rows:minmax(92px, auto);
+    justify-content:center; align-items:center;
+    column-gap:28px; row-gap:14px;
+  }
+  /* middle cell of each row: stacks the (optional) centre slot above its reason */
+  .mid-cell{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:8px; width:100%; min-height:92px;
+  }
 
   .slot{
     position:relative;
@@ -178,7 +193,9 @@
   .slot .card{
     width:100%; height:100%; cursor:pointer;
     flex-direction:column; gap:.35rem; text-align:center; padding:6px;
+    background:transparent; border-color:transparent;   /* cards read as transparent in the slot */
   }
+  .slot .card:hover{ border-color:var(--accent); }
   .slot .card .lbl{ white-space:normal; line-height:1.1; font-size:.8rem; }
 
 
@@ -191,16 +208,25 @@
   .subbadge.nerve{ background:rgba(179,136,255,.18); border-color:var(--nerve); color:var(--nerve); }
   .subbadge.immune{ background:rgba(105,240,174,.16); border-color:var(--immune); color:var(--immune); }
 
-  /* ── reasons under a filled row ─────────────────────────────── */
-  .reasons{ display:none; flex-direction:column; gap:8px; align-items:center; margin:2px 0 10px; }
+  /* ── reasons in the middle column, aligned to a complete left+right pair ── */
+  .reasons{ display:none; flex-direction:column; gap:6px; align-items:center; width:100%; margin:0; }
   .reasons.show{ display:flex; }
-  .reason-cap{ font:700 .66rem/1 var(--font-ui); letter-spacing:.12em; text-transform:uppercase; color:var(--ink-dim); }
+  /* the smiley toggle — the reason field stays collapsed behind it by default */
+  .reason-flag{
+    width:30px; height:30px; border-radius:50%; display:grid; place-items:center;
+    background:#0f1320; border:1px solid var(--line); cursor:pointer;
+    font:400 1.05rem/1 var(--font-ui); padding:0;
+    transition:border-color var(--fast), transform var(--fast);
+  }
+  .reason-flag:hover{ border-color:var(--accent); transform:translateY(-1px); }
+  .reason-flag.has{ border-color:var(--success); }
+  .reason-flag:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
   .reason-saved{
     display:flex; align-items:center; gap:.5rem;
-    width:min(560px, 100%); padding:8px 12px;
+    width:100%; padding:7px 10px;
     background:#0f1622; border:1px solid var(--chip-border);
     border-left:3px solid var(--accent); border-radius:var(--radius-sm);
-    color:var(--ink); font-size:.88rem;
+    color:var(--ink); font-size:.82rem;
   }
   .reason-saved .txt{ flex:1; }
   .reason-saved .del{
@@ -209,21 +235,21 @@
   }
   .reason-saved .del:hover{ color:var(--accent-2); background:rgba(255,138,101,.12); }
   .reason-composer{
-    display:flex; align-items:center; gap:8px;
-    width:min(560px, 100%);
+    display:flex; align-items:center; gap:6px;
+    width:100%;
   }
   .reason-composer input{
-    flex:1; text-align:center;
-    padding:10px 14px; border-radius:var(--radius-pill);
+    flex:1; min-width:0; text-align:center;
+    padding:8px 12px; border-radius:var(--radius-pill);
     background:#0d1018; border:1px solid var(--line); color:var(--ink);
-    font:500 .9rem/1 var(--font-ui);
+    font:500 .85rem/1 var(--font-ui);
   }
   .reason-composer input::placeholder{ color:var(--ink-dim); }
   .reason-composer input:focus{ outline:2px solid var(--accent); outline-offset:0; border-color:transparent; }
   .icon-btn{
-    flex:0 0 auto; width:40px; height:40px; display:grid; place-items:center;
+    flex:0 0 auto; width:34px; height:34px; display:grid; place-items:center;
     border:1px solid var(--line); background:#0f1320; color:var(--ink);
-    border-radius:50%; cursor:pointer; font-size:1rem;
+    border-radius:50%; cursor:pointer; font-size:.95rem;
     transition:border-color var(--fast), color var(--fast), filter var(--fast);
   }
   .icon-btn:hover{ border-color:var(--accent); color:var(--accent); }
@@ -232,33 +258,92 @@
   @keyframes pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(255,138,101,.4) } 50%{ box-shadow:0 0 0 6px rgba(255,138,101,0) } }
   .icon-btn.save{ border-color:var(--success); color:var(--success); }
 
-  /* ── subsystem reveal buttons ───────────────────────────────── */
-  .board-actions{ display:none; justify-content:center; gap:12px; margin-top:14px; flex-wrap:wrap; }
-  .board-actions.show{ display:flex; }
-  .sub-reveal{
-    padding:11px 18px; cursor:pointer; border-radius:var(--radius-pill);
-    font:700 .85rem/1 var(--font-ui); letter-spacing:.02em;
-    border:1px solid; background:transparent;
-    transition:filter var(--fast), transform var(--fast), background var(--fast);
+  /* ── parent highlight: Immune & Nervous become clickable once all placed ── */
+  .slot.is-parent{ cursor:pointer; }
+  .slot.parent-immune{
+    border-color:var(--immune);
+    box-shadow:0 0 0 2px rgba(105,240,174,.45), 0 0 14px rgba(105,240,174,.35);
+    animation:glow-im 1.8s ease-in-out infinite;
   }
-  .sub-reveal:hover{ transform:translateY(-1px); }
-  .sub-reveal.nerve{ border-color:var(--nerve); color:var(--nerve); }
-  .sub-reveal.nerve[aria-pressed="true"]{ background:rgba(179,136,255,.16); }
-  .sub-reveal.immune{ border-color:var(--immune); color:var(--immune); }
-  .sub-reveal.immune[aria-pressed="true"]{ background:rgba(105,240,174,.14); }
+  .slot.parent-nerve{
+    border-color:var(--nerve);
+    box-shadow:0 0 0 2px rgba(179,136,255,.45), 0 0 14px rgba(179,136,255,.35);
+    animation:glow-ne 1.8s ease-in-out infinite;
+  }
+  @keyframes glow-im{ 0%,100%{ box-shadow:0 0 0 2px rgba(105,240,174,.45), 0 0 10px rgba(105,240,174,.3) } 50%{ box-shadow:0 0 0 2px rgba(105,240,174,.65), 0 0 18px rgba(105,240,174,.5) } }
+  @keyframes glow-ne{ 0%,100%{ box-shadow:0 0 0 2px rgba(179,136,255,.45), 0 0 10px rgba(179,136,255,.3) } 50%{ box-shadow:0 0 0 2px rgba(179,136,255,.65), 0 0 18px rgba(179,136,255,.5) } }
 
-  /* ── subsystem docks (left = immune, right = nervous) ───────── */
-  .sub-dock{ display:none; flex-direction:column; gap:8px; align-self:center; }
-  .sub-dock.show{ display:flex; }
-  .sub-dock-left{ grid-column:1; }
-  .sub-dock-right{ grid-column:4; }
-  .sub-dock h3{
-    margin:0 0 2px; font:700 .68rem/1.2 var(--font-ui);
-    letter-spacing:.12em; text-transform:uppercase;
+  /* parent gets a stronger ring while its subtabs are fanned out */
+  .slot.parent-open{ animation:none; filter:brightness(1.08); }
+  .slot.parent-immune.parent-open{ box-shadow:0 0 0 3px var(--immune), 0 0 20px rgba(105,240,174,.6); }
+  .slot.parent-nerve.parent-open{ box-shadow:0 0 0 3px var(--nerve), 0 0 20px rgba(179,136,255,.6); }
+
+  /* ── subsystem chips: fan out beside the parent card, pointing to the centre ── */
+  .sub-chips{
+    position:absolute; top:50%; transform:translateY(-50%); z-index:7;
+    display:flex; flex-direction:column; gap:5px;
   }
-  .sub-dock-left h3{ color:var(--immune); }
-  .sub-dock-right h3{ color:var(--nerve); }
-  .sub-dock .hint{ margin:0 0 4px; font-size:.7rem; color:var(--ink-dim); line-height:1.4; }
+  .sub-chips.side-right{ left:calc(100% + 8px); align-items:flex-start; }
+  .sub-chips.side-left { right:calc(100% + 8px); align-items:flex-end;  }
+  .sub-chips .sub-card{ padding:5px 9px; font-size:.74rem; white-space:nowrap; }
+
+  /* ── verb editor: the field opens where the + is (lower edge of the card) ── */
+  .verb-add{
+    position:absolute; bottom:-9px; left:50%; transform:translateX(-50%); z-index:4;
+    width:18px; height:18px; padding:0; border-radius:50%; display:grid; place-items:center;
+    border:1px solid var(--accent-deep); background:var(--panel); color:var(--accent);
+    font:700 .85rem/1 var(--font-ui); cursor:pointer;
+  }
+  .verb-add:hover{ border-color:var(--accent); filter:brightness(1.1); }
+  .slot.verb-open .verb-add{ display:none; }
+  .verb-edit{ display:none; position:absolute; bottom:4px; left:5px; right:5px; z-index:5; }
+  .slot.verb-open .verb-edit{ display:block; }
+  .verb-edit input{
+    width:100%; text-align:center; padding:4px 6px; border-radius:6px;
+    background:#0d1018; border:1px solid var(--accent); color:var(--ink);
+    font:500 .68rem/1.1 var(--font-ui);
+  }
+  .verb-edit input:focus{ outline:none; }
+  .verb-save{
+    display:none; position:absolute; bottom:3px; left:calc(100% + 6px); z-index:6;
+    width:26px; height:26px; padding:0; border-radius:50%; place-items:center;
+    border:1px solid var(--success); background:var(--panel); color:var(--success);
+    font-size:.8rem; cursor:pointer;
+  }
+  .slot.verb-open .verb-save{ display:grid; }
+  .verb-save:hover{ filter:brightness(1.15); }
+
+  /* saved verbs, centred on the card; a +N opens the full list below */
+  .verb-list{
+    position:absolute; left:4px; right:4px; top:56%; z-index:3;
+    display:flex; flex-wrap:wrap; gap:3px; justify-content:center; align-items:center;
+  }
+  .verb-chip{
+    font:600 .56rem/1.2 var(--font-ui); padding:1px 6px; border-radius:var(--radius-pill);
+    background:rgba(77,208,225,.16); border:1px solid var(--accent-deep); color:var(--accent);
+    max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .verb-more{
+    font:700 .56rem/1 var(--font-ui); padding:1px 5px; border-radius:var(--radius-pill);
+    background:var(--accent); border:1px solid var(--accent); color:#001018; cursor:pointer;
+  }
+  .verb-all{
+    display:none; position:absolute; top:calc(100% + 6px); left:50%; transform:translateX(-50%); z-index:8;
+    min-width:96px; max-width:160px; padding:6px; border-radius:var(--radius-sm);
+    background:var(--panel); border:1px solid var(--chip-border); box-shadow:0 8px 20px rgba(0,0,0,.45);
+    flex-direction:column; gap:4px;
+  }
+  .slot.verbs-expanded .verb-all{ display:flex; }
+  .verb-all .verb-row{
+    display:flex; align-items:center; gap:6px; justify-content:space-between;
+    font:500 .68rem/1.2 var(--font-ui); color:var(--ink);
+  }
+  .verb-all .verb-row .del{ border:0; background:transparent; color:var(--ink-dim); cursor:pointer; font-size:.85rem; }
+  .verb-all .verb-row .del:hover{ color:var(--accent-2); }
+
+  /* the centre (6th) card shows its system emoji under the name */
+  .sys-emoji{ font-size:1.15rem; line-height:1; }
+
   .sub-card{
     display:flex; align-items:center; gap:.45rem;
     padding:8px 11px; cursor:pointer; user-select:none;
@@ -278,6 +363,21 @@
   .links line{ stroke-width:2; }
   .links .lbl-bg{ fill:var(--bg); opacity:.85; }
   .links text{ font:700 .62rem/1 var(--font-ui); }
+
+  /* ── next-stage gate button ─────────────────────────────────── */
+  .next-btn{
+    display:none; margin-top:18px;
+    padding:14px 34px; cursor:pointer; border-radius:var(--radius-pill);
+    border:1px solid var(--accent); color:#001018;
+    background:linear-gradient(150deg, var(--accent), var(--accent-deep));
+    font:700 1rem/1 var(--font-ui); letter-spacing:.02em;
+    box-shadow:0 8px 22px rgba(77,208,225,.35);
+    animation:nextpulse 1.8s ease-in-out infinite;
+    transition:transform var(--fast), filter var(--fast);
+  }
+  .next-btn.show{ display:inline-block; }
+  .next-btn:hover{ transform:translateY(-1px); filter:brightness(1.06); }
+  @keyframes nextpulse{ 0%,100%{ box-shadow:0 8px 22px rgba(77,208,225,.3) } 50%{ box-shadow:0 8px 30px rgba(77,208,225,.55) } }
 
   /* ── reset ──────────────────────────────────────────────────── */
   .resetbar{ grid-column:1 / -1; display:flex; justify-content:center; margin-top:6px; }
@@ -304,9 +404,12 @@
     .deck{ display:flex; flex-direction:row; flex-wrap:wrap; }
     body:not(.deck-open) .deck{ display:none; }
     .board{ grid-column:1; }
-    .sub-dock-left, .sub-dock-right{ grid-column:1; flex-direction:row; flex-wrap:wrap; }
-    .board-grid{ gap:14px; }
+    .board-grid{ grid-template-columns:80px minmax(150px,1fr) 80px; column-gap:12px; row-gap:12px; }
+    .prog-step{ min-width:64px; }
     .links{ display:none; }
+  }
+  @media (max-width:620px){
+    .progress{ display:none; }
   }
 </style>
 </head>
@@ -332,6 +435,7 @@
     <circle cx="50" cy="50" r="6" fill="url(#g-pracsys)"/>
   </svg>
   <span class="flove-app-name">pracsys</span>
+  <div class="progress" id="progress" aria-label="Game progress"></div>
   <span class="flove-spacer"></span>
   <label class="about-btn" for="about-toggle" role="button" tabindex="0" aria-controls="about-panel" title="About">About</label>
   <a class="flove-home" href="index.html" aria-label="Back to flove launcher">← flove</a>
@@ -345,21 +449,15 @@
   <ol>
     <li>Tap the <b>Systems</b> card on the left to fan the eleven systems open (five up, five down, alphabetical).</li>
     <li><b>Click</b> a system to drop it into the next free placeholder — or <b>drag</b> it where you want. Click a placed one to send it back.</li>
-    <li>When a whole row is full, write a <b>reason</b> for it. Save it, delete it, add another below.</li>
-    <li>Once all eleven are placed, reveal the <b>subsystems</b>: four nervous (right) and four immune (left). Place each on a different system to thread a labelled line across the body.</li>
+    <li>When a row's <b>left and right</b> systems are both placed (and when the centre one is), a <b>smiley</b> appears in the middle. Click it to open the <b>reason</b> field; it collapses again once you save.</li>
+    <li>Once all eleven are placed, press <b>Next stage</b> — this locks the placements (no more sending cards back) and makes the <b>Immune</b> and <b>Nervous</b> systems glow. Click one to fan its <b>subsystems</b> out as chips beside it (toward the centre), then click a subsystem and a system to thread a labelled line. Threaded subsystems leave the fan; remove one via its badge on the slot.</li>
+    <li>Each placed system has a <b>+</b> on its lower edge — click it to add a <b>verb</b> to that system. Watch the <b>progress bar</b> in the top bar fill as you complete each stage.</li>
   </ol>
 </aside>
 
 <main class="layout" id="layout">
 
-  <!-- left: immune subsystem dock -->
-  <aside class="sub-dock sub-dock-left" id="immuneDock">
-    <h3>Immune · 4</h3>
-    <p class="hint">Click one, then click a system to thread it. Not its own home.</p>
-    <div id="immuneList"></div>
-  </aside>
-
-  <!-- left-middle: systems deck (collapsed by default; fans 5·1·5 when opened) -->
+  <!-- left: systems deck (collapsed by default; fans 5·1·5 when opened) -->
   <div class="deck-col">
     <button class="deck-toggle" id="deckToggle" aria-expanded="false">
       <span class="caret">▸</span>
@@ -374,30 +472,13 @@
     </div>
   </div>
 
-  <!-- center: board -->
+  <!-- center: board — 5 rows, each: left slot · middle (reason + centre slot) · right slot -->
   <section class="board" id="board">
-    <div class="board-grid">
-      <div class="row-slots"        id="rowSlots0"></div>
-      <div class="row-slots single" id="rowSlots1"></div>
-      <div class="row-slots"        id="rowSlots2"></div>
-    </div>
+    <div class="board-grid" id="boardGrid"></div>
 
-    <div class="reasons" data-reasons="0"></div>
-    <div class="reasons" data-reasons="1"></div>
-    <div class="reasons" data-reasons="2"></div>
-
-    <div class="board-actions" id="subBtns">
-      <button class="sub-reveal nerve"  id="revealNerve"  aria-pressed="false">Nervous subsystems ▸</button>
-      <button class="sub-reveal immune" id="revealImmune" aria-pressed="false">◂ Immune subsystems</button>
-    </div>
+    <!-- stage-1 → stage-2 gate: appears once all are placed -->
+    <button class="next-btn" id="nextBtn">Next stage&nbsp;→</button>
   </section>
-
-  <!-- right: nervous subsystem dock -->
-  <aside class="sub-dock sub-dock-right" id="nervousDock">
-    <h3>Nervous · 4</h3>
-    <p class="hint">Click one, then click a system to thread it. Not its own home.</p>
-    <div id="nervousList"></div>
-  </aside>
 
   <div class="resetbar">
     <button class="reset-btn" id="resetBtn">Clear board</button>
@@ -443,19 +524,32 @@
   ];
   // a subsystem may not land on its own parent system
   const HOME_OF = { nerve:'nervous', immune:'immune' };
+  const TOTAL_SUBS = NERVOUS_SUBS.length + IMMUNE_SUBS.length;   // 8
 
-  // 11 slots laid out 5 / 1 / 5 across three rows
-  const ROW_LAYOUT = [5, 1, 5];
+  // 11 slots: 5 in the left column (s0–s4), 1 centre (s5), 5 in the right column (s6–s10)
+  // A "row" is a horizontal pair: left s{r} + right s{6+r}, r = 0..4. s5 lives in row 2's centre.
+  const N_ROWS = 5;
+  const CENTRE_ROW = 2;
   const SLOT_PH = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI'];
+  const leftSlotId  = r => 's' + r;          // s0..s4
+  const rightSlotId = r => 's' + (6 + r);    // s6..s10
+  const CENTRE_SLOT = 's5';
+
+  // reason keys: 0..4 = horizontal pairs, 'c' = the centre slot (s5) on its own
+  const REASON_KEYS = ['0','1','2','3','4','c'];
+  const freshReasons = () => ({ 0:[], 1:[], 2:[], 3:[], 4:[], c:[] });
 
   // ── state ───────────────────────────────────────────────────
   const state = {
-    placed:  {},          // slotId -> systemId
-    reasons: [[], [], []],// per row: array of saved strings
-    subs:    {},          // subId  -> { kind, slotId }
+    placed:  {},                  // slotId -> systemId
+    reasons: freshReasons(),      // reason key -> array of saved strings
+    subs:    {},                  // subId  -> { kind, slotId }
+    verbs:   {},                  // slotId -> array of saved verbs
+    frozen:  false,               // stage 2: placements locked, parents highlighted
     nerveOpen:false, immuneOpen:false
   };
-  let armedSub = null;    // currently click-armed subsystem id
+  let armedSub = null;            // currently click-armed subsystem id
+  const openReasons = new Set();  // which reason fields are expanded (ephemeral UI)
 
   // ── build the deck (system cards) ───────────────────────────
   function makeCard(sys){
@@ -483,21 +577,40 @@
     $('#deckCount').textContent = SYSTEMS.length - placedSet.size;
   }
 
-  // ── build the board slots ───────────────────────────────────
+  // ── build the board slots (5 rows × [left · middle · right]) ──
+  function makeSlot(id, row){
+    const slot = document.createElement('div');
+    slot.className = 'slot';
+    slot.dataset.slot = id;
+    slot.dataset.row  = row;
+    slot.dataset.ph   = SLOT_PH[+id.slice(1)];
+    return slot;
+  }
   function buildSlots(){
-    let n = 0;
-    ROW_LAYOUT.forEach((count, row) => {
-      const host = $('#rowSlots' + row);
-      host.innerHTML = '';
-      for (let i = 0; i < count; i++, n++){
-        const slot = document.createElement('div');
-        slot.className = 'slot';
-        slot.dataset.slot = 's' + n;
-        slot.dataset.row  = row;
-        slot.dataset.ph   = SLOT_PH[n];
-        host.appendChild(slot);
+    const grid = $('#boardGrid');
+    grid.innerHTML = '';
+    for (let r = 0; r < N_ROWS; r++){
+      // left slot
+      grid.appendChild(makeSlot(leftSlotId(r), r));
+      // middle cell: the centre system slot (row 2 only), its own reason, then this pair's reason
+      const mid = document.createElement('div');
+      mid.className = 'mid-cell';
+      mid.dataset.midrow = r;
+      if (r === CENTRE_ROW){
+        mid.appendChild(makeSlot(CENTRE_SLOT, r));
+        const cReasons = document.createElement('div');
+        cReasons.className = 'reasons';
+        cReasons.dataset.reasons = 'c';
+        mid.appendChild(cReasons);
       }
-    });
+      const reasons = document.createElement('div');
+      reasons.className = 'reasons';
+      reasons.dataset.reasons = r;
+      mid.appendChild(reasons);
+      grid.appendChild(mid);
+      // right slot
+      grid.appendChild(makeSlot(rightSlotId(r), r));
+    }
   }
   const slotEl  = id => $(`.slot[data-slot="${id}"]`);
   const allSlots = () => $$('.slot');
@@ -506,9 +619,78 @@
   function fillSlot(slot, sysId){
     const card = makeCard(SYS[sysId]);
     card.classList.remove('draggable');
+    // the centre (6th) card shows its emoji under the system name
+    if (slot.dataset.slot === CENTRE_SLOT){
+      const em = document.createElement('span');
+      em.className = 'sys-emoji'; em.textContent = SYS[sysId].icon;
+      card.appendChild(em);
+    }
     slot.appendChild(card);
     slot.classList.add('filled');
+    buildVerbUI(slot);
     ensureBadgeHost(slot);
+  }
+  // the "+ verb" editor that lives on every placed card
+  function buildVerbUI(slot){
+    const list = document.createElement('div');
+    list.className = 'verb-list';
+    slot.appendChild(list);
+    const all = document.createElement('div');
+    all.className = 'verb-all';
+    slot.appendChild(all);
+    const add = document.createElement('button');
+    add.type = 'button'; add.className = 'verb-add'; add.title = 'Add a verb'; add.textContent = '+';
+    slot.appendChild(add);
+    const edit = document.createElement('div');
+    edit.className = 'verb-edit';
+    edit.innerHTML = `<input type="text" placeholder="Add verb" aria-label="Add a verb">`;
+    slot.appendChild(edit);
+    const sv = document.createElement('button');
+    sv.type = 'button'; sv.className = 'verb-save'; sv.title = 'Save verb'; sv.textContent = '✓';
+    slot.appendChild(sv);
+    edit.querySelector('input').addEventListener('keydown', e => { if (e.key === 'Enter') saveVerb(slot); });
+    renderVerbChips(slot);
+  }
+  function renderVerbChips(slot){
+    const list = slot.querySelector('.verb-list');
+    const all  = slot.querySelector('.verb-all');
+    if (!list || !all) return;
+    const verbs = state.verbs[slot.dataset.slot] || [];
+    list.innerHTML = ''; all.innerHTML = '';
+    if (!verbs.length){ slot.classList.remove('verbs-expanded'); return; }
+
+    // centred summary: the first verb, plus a +N opener when there's more
+    const chip = document.createElement('span');
+    chip.className = 'verb-chip'; chip.textContent = verbs[0]; chip.title = verbs[0];
+    list.appendChild(chip);
+    if (verbs.length > 1){
+      const more = document.createElement('button');
+      more.type = 'button'; more.className = 'verb-more';
+      more.textContent = '+' + (verbs.length - 1);
+      more.title = 'Show all verbs';
+      list.appendChild(more);
+    }
+
+    // the full list, shown below the card when expanded
+    verbs.forEach((v, i) => {
+      const row = document.createElement('div');
+      row.className = 'verb-row';
+      row.innerHTML = `<span class="vtxt"></span><button class="del" data-i="${i}" title="Remove" aria-label="Remove verb">✕</button>`;
+      row.querySelector('.vtxt').textContent = v;
+      all.appendChild(row);
+    });
+  }
+  function saveVerb(slot){
+    const inp = slot.querySelector('.verb-edit input');
+    if (inp){
+      const v = inp.value.trim();
+      if (v){
+        (state.verbs[slot.dataset.slot] ||= []).push(v);
+        renderVerbChips(slot); save();
+      }
+      inp.value = '';
+    }
+    slot.classList.remove('verb-open');   // collapse whether or not a verb was added
   }
   function ensureBadgeHost(slot){
     if (!slot.querySelector('.subbadges')){
@@ -541,64 +723,80 @@
       if (state.subs[subId].slotId === sid) removeSub(subId, true);
     });
     delete state.placed[sid];
-    slot.classList.remove('filled');
+    delete state.verbs[sid];
+    slot.classList.remove('filled', 'verb-open');
     slot.innerHTML = '';
     renderDeck();
     afterChange();
   }
 
-  // ── reasons: shown once a whole row is full ─────────────────
-  function rowSlotIds(row){
-    return allSlots().filter(s => +s.dataset.row === row).map(s => s.dataset.slot);
-  }
+  // ── reasons: a smiley toggle in the middle; the field stays collapsed by default ──
+  // pair r is "full" when its left + right are placed; the centre 'c' shows when s5 is placed.
   function rowFull(row){
-    return rowSlotIds(row).every(id => state.placed[id]);
+    return !!state.placed[leftSlotId(row)] && !!state.placed[rightSlotId(row)];
   }
-  function renderReasons(row){
-    const host = $(`.reasons[data-reasons="${row}"]`);
+  function reasonVisible(key){
+    return key === 'c' ? !!state.placed[CENTRE_SLOT] : rowFull(+key);
+  }
+  function renderReasons(key){
+    const host = $(`.reasons[data-reasons="${key}"]`);
+    if (!host) return;
     host.innerHTML = '';
-    if (!rowFull(row)){ host.classList.remove('show'); return; }
+    if (!reasonVisible(key)){ host.classList.remove('show'); openReasons.delete(key); return; }
     host.classList.add('show');
 
-    const COL_NAME = ['Left column', 'Centre', 'Right column'];
-    const cap = document.createElement('div');
-    cap.className = 'reason-cap';
-    cap.textContent = `Reasons · ${COL_NAME[row]}`;
-    host.appendChild(cap);
+    const list = state.reasons[key];
+
+    // the smiley toggle — always shown; happier once a reason is saved
+    const flag = document.createElement('button');
+    flag.type = 'button';
+    flag.className = 'reason-flag' + (list.length ? ' has' : '');
+    flag.textContent = list.length ? '😊' : '🙂';
+    flag.title = key === 'c' ? 'Reason for the centre system' : 'Reason for this pair';
+    flag.addEventListener('click', () => {
+      if (openReasons.has(key)) openReasons.delete(key);
+      else { openReasons.clear(); openReasons.add(key); }   // one reason open at a time
+      renderAllReasons();
+    });
+    host.appendChild(flag);
+
+    if (!openReasons.has(key)) return;   // collapsed → only the smiley shows
 
     // saved reasons (deletable)
-    state.reasons[row].forEach((txt, i) => {
+    list.forEach((txt, i) => {
       const line = document.createElement('div');
       line.className = 'reason-saved';
       line.innerHTML = `<span class="txt"></span><button class="del" title="Delete reason" aria-label="Delete reason">✕</button>`;
       line.querySelector('.txt').textContent = txt;
       line.querySelector('.del').addEventListener('click', () => {
-        state.reasons[row].splice(i, 1);
-        save(); renderReasons(row);
+        list.splice(i, 1);
+        save(); renderReasons(key);
       });
       host.appendChild(line);
     });
 
-    // active composer (add another below)
+    // active composer
     const comp = document.createElement('div');
     comp.className = 'reason-composer';
     comp.innerHTML = `
-      <input type="text" placeholder="Why this row, this order? Write a reason…" aria-label="Reason for row ${row+1}">
+      <input type="text" placeholder="${key === 'c' ? 'Why this centre?' : 'Why this pair?'}" aria-label="Reason">
       <button class="icon-btn mic"  title="Dictate (speech-to-text)" aria-label="Dictate">🎤</button>
       <button class="icon-btn save" title="Save reason" aria-label="Save reason">💾</button>`;
     const input = comp.querySelector('input');
     const saveReason = () => {
       const v = input.value.trim();
       if (!v){ toast('Write a reason first'); input.focus(); return; }
-      state.reasons[row].push(v);
-      save(); renderReasons(row);
+      list.push(v);
+      openReasons.delete(key);   // collapse back to the smiley after saving
+      save(); renderReasons(key);
     };
     comp.querySelector('.save').addEventListener('click', saveReason);
     input.addEventListener('keydown', e => { if (e.key === 'Enter') saveReason(); });
     comp.querySelector('.mic').addEventListener('click', e => startDictation(e.currentTarget, input));
     host.appendChild(comp);
+    input.focus();
   }
-  function renderAllReasons(){ ROW_LAYOUT.forEach((_, r) => renderReasons(r)); }
+  function renderAllReasons(){ REASON_KEYS.forEach(renderReasons); }
 
   // ── speech-to-text (graceful fallback) ──────────────────────
   let recog = null;
@@ -631,16 +829,30 @@
     b.innerHTML = `<span class="lbl">${sub.label}</span>`;
     return b;
   }
-  function renderSubDock(kind){
-    const list = kind === 'nerve' ? $('#nervousList') : $('#immuneList');
+  // chips fan toward the centre: right of a left-column parent, left of a right-column one
+  function subSide(slot){
+    const n = +slot.dataset.slot.slice(1);
+    if (n >= 6 && n <= 10) return 'left';   // right column → chips on the left
+    return 'right';                         // left column (and centre) → chips on the right
+  }
+  function renderSubChips(kind){
+    $$(`.sub-chips[data-kind="${kind}"]`).forEach(el => el.remove());
+    const parent = slotOfSystem(HOME_OF[kind]);
+    const open = kind === 'immune' ? state.immuneOpen : state.nerveOpen;
+    if (!parent){ return; }
+    parent.classList.toggle('parent-open', !!open);
+    if (!open) return;
+    const box = document.createElement('div');
+    box.className = `sub-chips side-${subSide(parent)}`;
+    box.dataset.kind = kind;
     const defs = kind === 'nerve' ? NERVOUS_SUBS : IMMUNE_SUBS;
-    list.innerHTML = '';
     defs.forEach(s => {
+      if (state.subs[s.id]) return;          // already threaded → hidden from the fan
       const c = makeSubCard(s, kind);
-      if (state.subs[s.id]) c.classList.add('is-placed');
       if (armedSub === s.id) c.classList.add('is-armed');
-      list.appendChild(c);
+      box.appendChild(c);
     });
+    parent.appendChild(box);
   }
   const subDef = (kind, id) => (kind === 'nerve' ? NERVOUS_SUBS : IMMUNE_SUBS).find(s => s.id === id);
 
@@ -656,14 +868,14 @@
     }
     state.subs[subId] = { kind, slotId: slot.dataset.slot };
     armedSub = null;
-    renderBadges(); renderSubDock(kind); save(); drawLinks();
+    renderBadges(); renderSubChips(kind); renderProgress(); save(); drawLinks();
     return true;
   }
   function removeSub(subId, silent){
     const rec = state.subs[subId];
     if (!rec) return;
     delete state.subs[subId];
-    renderBadges(); renderSubDock(rec.kind);
+    renderBadges(); renderSubChips(rec.kind); renderProgress();
     if (!silent){ save(); drawLinks(); }
   }
   function renderBadges(){
@@ -680,20 +892,18 @@
     });
   }
 
-  // ── connector lines (right/left source → slot) ──────────────
+  // ── connector lines (parent system card → threaded slot) ────
   function anchorRect(el){ return el.getBoundingClientRect(); }
   function drawLinks(){
     const svg = $('#links');
     svg.innerHTML = '';
     Object.entries(state.subs).forEach(([subId, rec]) => {
       const slot = slotEl(rec.slotId); if (!slot) return;
-      const src = (rec.kind === 'nerve' ? $('#nervousList') : $('#immuneList'))
-                    .querySelector(`.sub-card[data-sub="${subId}"]`);
-      if (!src) return;
-      const a = anchorRect(src), b = anchorRect(slot);
-      // start from inner edge of the dock card, end at slot centre
-      const x1 = rec.kind === 'nerve' ? a.left  : a.right;
-      const y1 = a.top + a.height/2;
+      const parent = slotOfSystem(HOME_OF[rec.kind]); if (!parent) return;
+      const a = anchorRect(parent), b = anchorRect(slot);
+      // from the parent card's centre to the threaded slot's centre
+      const x1 = a.left + a.width/2;
+      const y1 = a.top  + a.height/2;
       const x2 = b.left + b.width/2;
       const y2 = b.top  + b.height/2;
       const colour = rec.kind === 'nerve' ? getCSS('--nerve') : getCSS('--immune');
@@ -721,32 +931,76 @@
   }
   function getCSS(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
 
-  // ── flow: reveal subsystem buttons when all 11 placed ───────
+  // ── flow: stage 1 = place freely · "Next" freezes & opens the subsystem stage ──
   function allPlaced(){ return Object.keys(state.placed).length === SYSTEMS.length; }
   function afterChange(){
     renderBadges();
     renderAllReasons();
-    $('#subBtns').classList.toggle('show', allPlaced());
-    if (!allPlaced()){
-      // hide docks + clear stray subs if board no longer complete
-      closeDocks();
+    // parents glow only in stage 2 (after Next is pressed)
+    allSlots().forEach(s => s.classList.remove('is-parent','parent-immune','parent-nerve','parent-open'));
+    if (state.frozen){
+      const im = slotOfSystem('immune');  if (im) im.classList.add('is-parent','parent-immune');
+      const ne = slotOfSystem('nervous'); if (ne) ne.classList.add('is-parent','parent-nerve');
+      // re-anchor any open chip fans (the parent slot may have moved)
+      renderSubChips('immune'); renderSubChips('nerve');
+    } else {
+      closeDocks();   // still in stage 1 → no subtabs
     }
+    // "Next stage" shows once everything is placed, until it is pressed
+    $('#nextBtn').classList.toggle('show', allPlaced() && !state.frozen);
+    // Clear board disappears once placements are frozen
+    $('#resetBtn').style.display = state.frozen ? 'none' : '';
+    renderProgress();
     drawLinks();
     save();
   }
   function closeDocks(){
     state.nerveOpen = state.immuneOpen = false;
-    $('#nervousDock').classList.remove('show');
-    $('#immuneDock').classList.remove('show');
-    $('#revealNerve').setAttribute('aria-pressed','false');
-    $('#revealImmune').setAttribute('aria-pressed','false');
+    $$('.sub-chips').forEach(el => el.remove());
+    $$('.parent-open').forEach(el => el.classList.remove('parent-open'));
+    armedSub = null;
+  }
+  // click a glowing parent → fan / fold its subtab chips beside the card
+  function toggleSubGroup(kind){
+    if (kind === 'immune') state.immuneOpen = !state.immuneOpen;
+    else                   state.nerveOpen  = !state.nerveOpen;
+    renderSubChips(kind);
+    armedSub = null;
+    save(); drawLinks();
+  }
+
+  // ── progress bar: Systems → (all placed) Subsystems → (all threaded) Complete ──
+  function renderProgress(){
+    const host = $('#progress'); if (!host) return;
+    host.innerHTML = '';
+    const placedCount = Object.keys(state.placed).length;
+    const subCount    = Object.keys(state.subs).length;
+
+    const steps = [{ lab:'Systems', cur:placedCount, max:SYSTEMS.length, cls:'' }];
+    if (state.frozen) steps.push({ lab:'Subsystems', cur:subCount, max:TOTAL_SUBS, cls:'sub' });
+    if (state.frozen && subCount === TOTAL_SUBS) steps.push({ lab:'Complete', cur:1, max:1, cls:'' });
+
+    steps.forEach((st, i) => {
+      if (i > 0){
+        const sep = document.createElement('span');
+        sep.className = 'prog-sep'; sep.textContent = '›';
+        host.appendChild(sep);
+      }
+      const done = st.cur >= st.max;
+      const el = document.createElement('div');
+      el.className = 'prog-step' + (st.cls ? ' ' + st.cls : '') + (done ? ' done' : '');
+      const pct = Math.round(st.cur / st.max * 100);
+      el.innerHTML = `<span class="lab">${st.lab} <span class="ct">${st.cur}/${st.max}</span></span>`
+                   + `<span class="meter"><i style="width:${pct}%"></i></span>`;
+      host.appendChild(el);
+    });
   }
 
   // ── persistence ─────────────────────────────────────────────
   function save(){
     try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      placed:state.placed, reasons:state.reasons, subs:state.subs,
-      nerveOpen:state.nerveOpen, immuneOpen:state.immuneOpen
+      placed:state.placed, reasons:state.reasons, subs:state.subs, verbs:state.verbs,
+      frozen:state.frozen, nerveOpen:state.nerveOpen, immuneOpen:state.immuneOpen
     })); }catch(_){}
   }
   // (no restore on load — each reload starts with a clean, unplaced board)
@@ -761,6 +1015,7 @@
       e.dataTransfer.effectAllowed = 'move';
       e.dataTransfer.setData('text/plain', dragSys);
     } else if (sysCard && sysCard.closest('.slot')){
+      if (state.frozen){ e.preventDefault(); return; }   // placements locked
       dragSys = sysCard.dataset.sys; dragSys = '@'+sysCard.closest('.slot').dataset.slot; // move-from-slot
       sysCard.classList.add('is-dragging');
       e.dataTransfer.effectAllowed = 'move';
@@ -817,13 +1072,38 @@
 
   // ── click-to-place (willy.html pattern) ─────────────────────
   document.addEventListener('click', e => {
+    // verb editor: open/close the field
+    const vAdd = e.target.closest('.verb-add');
+    if (vAdd){
+      const slot = vAdd.closest('.slot');
+      const open = slot.classList.toggle('verb-open');
+      if (open){ const inp = slot.querySelector('.verb-edit input'); if (inp) inp.focus(); }
+      return;
+    }
+    // verb editor: save
+    const vSave = e.target.closest('.verb-save');
+    if (vSave){ saveVerb(vSave.closest('.slot')); return; }
+    // verb "+N": expand / collapse the full list below the card
+    const vMore = e.target.closest('.verb-more');
+    if (vMore){ vMore.closest('.slot').classList.toggle('verbs-expanded'); return; }
+    // verb row delete (inside the expanded list)
+    const vDel = e.target.closest('.verb-all .del');
+    if (vDel){
+      const slot = vDel.closest('.slot');
+      (state.verbs[slot.dataset.slot] || []).splice(+vDel.dataset.i, 1);
+      renderVerbChips(slot); save();
+      return;
+    }
+    // clicks inside the verb input / list shouldn't bubble into place/unplace
+    if (e.target.closest('.verb-edit') || e.target.closest('.verb-all')) return;
+
     // arming / placing subsystems
     const subCard = e.target.closest('.sub-card');
     if (subCard){
       const id = subCard.dataset.sub;
       if (state.subs[id]){ removeSub(id); return; }       // already threaded → pull back
       armedSub = (armedSub === id) ? null : id;
-      renderSubDock(subCard.dataset.kind);
+      renderSubChips(subCard.dataset.kind);
       toast(armedSub ? 'Now click a system to thread it' : '');
       return;
     }
@@ -834,7 +1114,7 @@
       placeSub(armedSub, kind, slot);
       return;
     }
-    // system cards: deck → first empty slot; placed → back to deck
+    // system cards: deck → first empty slot; placed → unplace (or, once complete, a parent fans its subtabs)
     const card = e.target.closest('.card[data-sys]');
     if (!card || card.classList.contains('is-dragging')) return;
     if (card.closest('#deck')){
@@ -842,9 +1122,28 @@
       if (!empty){ toast('Board is full — click a placed system to free it'); return; }
       placeSystem(card.dataset.sys, empty);
     } else if (card.closest('.slot')){
-      unplaceSystem(card.closest('.slot'));
+      const cslot = card.closest('.slot');
+      if (state.frozen){
+        // placements are locked; only the glowing parents stay interactive
+        if (cslot.classList.contains('is-parent')){
+          const sys = state.placed[cslot.dataset.slot];
+          toggleSubGroup(sys === 'immune' ? 'immune' : 'nerve');
+        }
+        return;
+      }
+      unplaceSystem(cslot);
     }
   });
+
+  // ── click anywhere else collapses open reason / verb fields ──
+  // capture phase so it runs before the smiley/verb listeners re-render their own nodes
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.reasons') && openReasons.size){
+      openReasons.clear(); renderAllReasons();
+    }
+    $$('.slot.verb-open').forEach(s => { if (!s.contains(e.target)) s.classList.remove('verb-open'); });
+    $$('.slot.verbs-expanded').forEach(s => { if (!s.contains(e.target)) s.classList.remove('verbs-expanded'); });
+  }, true);
 
   // ── deck open / collapse ────────────────────────────────────
   function setDeckOpen(open){
@@ -854,28 +1153,18 @@
   $('#deckToggle').addEventListener('click', () => setDeckOpen(true));
   $('#deckCaret').addEventListener('click',  () => setDeckOpen(false));
 
-  // ── subsystem reveal buttons ────────────────────────────────
-  $('#revealNerve').addEventListener('click', () => {
-    if (!allPlaced()){ toast('Place all eleven systems first'); return; }
-    state.nerveOpen = !state.nerveOpen;
-    $('#nervousDock').classList.toggle('show', state.nerveOpen);
-    $('#revealNerve').setAttribute('aria-pressed', state.nerveOpen ? 'true':'false');
-    if (state.nerveOpen) renderSubDock('nerve');
-    save(); drawLinks();
-  });
-  $('#revealImmune').addEventListener('click', () => {
-    if (!allPlaced()){ toast('Place all eleven systems first'); return; }
-    state.immuneOpen = !state.immuneOpen;
-    $('#immuneDock').classList.toggle('show', state.immuneOpen);
-    $('#revealImmune').setAttribute('aria-pressed', state.immuneOpen ? 'true':'false');
-    if (state.immuneOpen) renderSubDock('immune');
-    save(); drawLinks();
+  // ── next stage: freeze placements, drop Clear board, light up the parents ──
+  $('#nextBtn').addEventListener('click', () => {
+    if (!allPlaced() || state.frozen) return;
+    state.frozen = true;
+    afterChange();
+    toast('Placements locked — click Immune or Nervous to thread subsystems');
   });
 
   // ── reset ───────────────────────────────────────────────────
   $('#resetBtn').addEventListener('click', () => {
-    state.placed = {}; state.reasons = [[],[],[]]; state.subs = {};
-    armedSub = null;
+    state.placed = {}; state.reasons = freshReasons(); state.subs = {}; state.verbs = {};
+    state.frozen = false; armedSub = null; openReasons.clear();
     try{ localStorage.removeItem(STORAGE_KEY); }catch(_){}
     buildSlots(); renderDeck(); closeDocks(); afterChange();
     toast('Board cleared');
