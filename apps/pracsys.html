@@ -234,6 +234,8 @@
     font:400 1.05rem/1 var(--font-ui); padding:0;
     transition:border-color var(--fast), transform var(--fast);
   }
+  /* the centre's flag (its system emoji) reads at double size */
+  .reason-flag.centre-flag{ width:60px; height:60px; font-size:2.1rem; }
   .reason-flag:hover{ border-color:var(--accent); transform:translateY(-1px); }
   .reason-flag.has{ border-color:var(--success); }
   .reason-flag:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
@@ -364,8 +366,8 @@
   .verb-all .verb-row .del{ border:0; background:transparent; color:var(--ink-dim); cursor:pointer; font-size:.85rem; }
   .verb-all .verb-row .del:hover{ color:var(--accent-2); }
 
-  /* right-column placed cards show the system icon on the card itself, from
-     stage 2 (it overwrites the otherwise-hidden card icon) */
+  /* right-column placed cards show the system icon on the card itself
+     (it overwrites the otherwise-hidden card icon) */
   body.show-emojis .slot.col-right .card .card-ico{ display:block; font-size:1.2rem; }
 
   .sub-card{
@@ -493,8 +495,8 @@
   <p class="subtitle">The eleven biological systems from <b>souls</b>, laid out as a living body you arrange by hand.</p>
   <ol>
     <li><b>Stage 1 · Place.</b> Tap the <b>Systems</b> card to fan the eleven open, then click or drag each into a placeholder. Click a placed one to send it back. When all are down, press <b>Next stage</b> — this locks the placements and removes Clear board.</li>
-    <li><b>Stage 2 · Reasons.</b> Each right-column system shows its <b>icon</b> on its card. Where a row's left+right (or the centre) are placed, a <b>smiley</b> appears in the middle — click it to write a <b>reason</b>; it collapses on save. Once you've written one, <b>Next</b> appears beside <b>Back</b>.</li>
-    <li><b>Stage 3 · Verbs.</b> A <b>+</b> shows on each card's lower edge — click it to add a <b>verb</b>; saved verbs sit centred (a <b>+N</b> opens the full list). Once you've added one, <b>Next</b> reveals the subsystems.</li>
+    <li><b>Stage 2 · Reasons.</b> Where a row's left+right (or the centre) are placed, a <b>smiley</b> appears in the middle — click it to write a <b>reason</b>; it collapses on save. The centre's flag is its own <b>system emoji</b>, double size. Once you've written one, <b>Next</b> appears beside <b>Back</b>.</li>
+    <li><b>Stage 3 · Verbs.</b> Each right-column system now shows its <b>icon</b> on its card. A <b>+</b> shows on each card's lower edge — click it to add a <b>verb</b>; saved verbs sit centred (a <b>+N</b> opens the full list). Once you've added one, <b>Next</b> reveals the subsystems.</li>
     <li><b>Stage 4 · Subsystems.</b> The <b>Immune</b> and <b>Nervous</b> systems glow; click one to fan its subsystems out as chips — to the right if the parent sits in the left column, to the left if it's on the right, above if it's the centre. Click a subsystem and a system to thread a labelled line. Threaded ones leave the fan; click the line's label to unthread it. The reasons + emojis collapse under a <b>Reasons</b> toggle and verbs under a <b>Verbs</b> toggle. The <b>progress bar</b> tracks every stage.</li>
   </ol>
 </aside>
@@ -826,7 +828,14 @@
     const flag = document.createElement('button');
     flag.type = 'button';
     flag.className = 'reason-flag' + (list.length ? ' has' : '');
-    flag.textContent = list.length ? '😊' : '🙂';
+    if (key === 'c'){
+      // the centre's flag is the centre system's own emoji, at double size
+      const sysId = state.placed[CENTRE_SLOT];
+      flag.textContent = sysId ? SYS[sysId].icon : (list.length ? '😊' : '🙂');
+      flag.classList.add('centre-flag');
+    } else {
+      flag.textContent = list.length ? '😊' : '🙂';
+    }
     flag.title = key === 'c' ? 'Reason for the centre system' : 'Reason for this pair';
     flag.addEventListener('click', () => {
       if (openReasons.has(key)) openReasons.delete(key);
@@ -1016,8 +1025,9 @@
     // toggle is on (collapsed by default)
     const verbsVisible = state.stage === 3 || (state.stage >= 4 && state.verbsShown);
     document.body.classList.toggle('show-verbs', verbsVisible);
-    // emojis appear from stage 2; in stage 4 they collapse under the Reasons toggle
-    const emojisVisible = state.stage >= 2 && (state.stage < 4 || state.reasonsShown);
+    // system icons appear from stage 3 (not the reasons stage); in stage 4 they
+    // collapse under the Reasons toggle
+    const emojisVisible = state.stage === 3 || (state.stage >= 4 && state.reasonsShown);
     document.body.classList.toggle('show-emojis', emojisVisible);
     // parents glow only in stage 4
     allSlots().forEach(s => s.classList.remove('is-parent','parent-immune','parent-nerve','parent-open'));
