@@ -178,7 +178,8 @@
   .slot.centre-spine{
     width:84px; height:auto; min-height:100%; align-self:stretch; z-index:0;
     justify-self:center;
-    border-style:solid; border-color:var(--accent-deep); background:transparent;
+    /* no highlight while empty — reads like the other dashed placeholders */
+    background:transparent;
   }
   .slot.centre-spine.filled{
     border-color:var(--accent); background:transparent;
@@ -294,20 +295,16 @@
   .slot.parent-immune.parent-open{ box-shadow:0 0 0 3px var(--immune), 0 0 20px rgba(105,240,174,.6); }
   .slot.parent-nerve.parent-open{ box-shadow:0 0 0 3px var(--nerve), 0 0 20px rgba(179,136,255,.6); }
 
-  /* ── subsystem chips: fan out beside the parent card, pointing to the centre ── */
-  /* subsystem items fan DOWNWARD from the two bottom corners (below the square) */
-  /* mirrors .board-grid columns so the fans sit exactly under V (left) and XI (right) */
-  .sub-flow{
-    display:none;
-    grid-template-columns:96px minmax(220px,300px) 96px;
-    justify-content:center; column-gap:28px; margin-top:10px;
-  }
-  .sub-flow.show{ display:grid; }
+  /* ── subsystem chips: the fan anchors to its PARENT slot, by the parent's
+        column — left column → fan right · right column → fan left · centre → fan above ── */
+  .sub-flow{ display:none; }      /* legacy bottom dock — now just parks closed lists */
   .sub-col{ display:none; flex-direction:column; gap:6px; }
   .sub-col.show{ display:flex; }
-  .sub-col.immune{ grid-column:1; align-items:flex-start; }   /* under the bottom-left corner (V) */
-  .sub-col.nerve { grid-column:3; align-items:flex-end;   }   /* under the bottom-right corner (XI) */
   .sub-col .sub-card{ padding:5px 10px; font-size:.76rem; white-space:nowrap; }
+  .slot > .sub-col{ position:absolute; z-index:7; }
+  .slot > .sub-col.dir-right{ left:calc(100% + 10px); top:0;  align-items:flex-start; }
+  .slot > .sub-col.dir-left { right:calc(100% + 10px); top:0;  align-items:flex-end;   }
+  .slot > .sub-col.dir-above{ bottom:calc(100% + 10px); left:50%; transform:translateX(-50%); align-items:center; }
 
   /* ── verb editor: the field opens where the + is (lower edge of the card) ── */
   /* the + and saved verbs only appear in stage 3 (after the verbs Next) */
@@ -367,6 +364,13 @@
   }
   .verb-all .verb-row .del{ border:0; background:transparent; color:var(--ink-dim); cursor:pointer; font-size:.85rem; }
   .verb-all .verb-row .del:hover{ color:var(--accent-2); }
+
+  /* system emoji strip — to the right of the right column, top-down, from stage 2 */
+  .slot .sys-emoji{
+    display:none; position:absolute; left:calc(100% + 8px); top:50%; transform:translateY(-50%);
+    font-size:1.2rem; line-height:1; z-index:3; pointer-events:none;
+  }
+  body.show-emojis .slot.filled .sys-emoji{ display:block; }
 
   .sub-card{
     display:flex; align-items:center; gap:.45rem;
@@ -493,9 +497,9 @@
   <p class="subtitle">The eleven biological systems from <b>souls</b>, laid out as a living body you arrange by hand.</p>
   <ol>
     <li><b>Stage 1 · Place.</b> Tap the <b>Systems</b> card to fan the eleven open, then click or drag each into a placeholder. Click a placed one to send it back. When all are down, press <b>Next stage</b> — this locks the placements and removes Clear board.</li>
-    <li><b>Stage 2 · Reasons.</b> Where a row's left+right (or the centre) are placed, a <b>smiley</b> appears in the middle — click it to write a <b>reason</b>; it collapses on save. Once you've written one, <b>Next</b> appears beside <b>Back</b>.</li>
+    <li><b>Stage 2 · Reasons.</b> Each right-column system shows its <b>emoji</b> in a strip down the right edge. Where a row's left+right (or the centre) are placed, a <b>smiley</b> appears in the middle — click it to write a <b>reason</b>; it collapses on save. Once you've written one, <b>Next</b> appears beside <b>Back</b>.</li>
     <li><b>Stage 3 · Verbs.</b> A <b>+</b> shows on each card's lower edge — click it to add a <b>verb</b>; saved verbs sit centred (a <b>+N</b> opens the full list). Once you've added one, <b>Next</b> reveals the subsystems.</li>
-    <li><b>Stage 4 · Subsystems.</b> The <b>Immune</b> and <b>Nervous</b> systems glow; click one to fan its subsystems out as chips beside it, then click a subsystem and a system to thread a labelled line. Threaded ones leave the fan; remove via the slot badge. The <b>progress bar</b> tracks every stage.</li>
+    <li><b>Stage 4 · Subsystems.</b> The <b>Immune</b> and <b>Nervous</b> systems glow; click one to fan its subsystems out as chips — to the right if the parent sits in the left column, to the left if it's on the right, above if it's the centre. Click a subsystem and a system to thread a labelled line. Threaded ones leave the fan; remove via the slot badge. The reasons + emojis collapse under a <b>Reasons</b> toggle and verbs under a <b>Verbs</b> toggle. The <b>progress bar</b> tracks every stage.</li>
   </ol>
 </aside>
 
@@ -529,7 +533,10 @@
     <!-- stage-1 → stage-2 gate: appears once all are placed -->
     <button class="next-btn" id="nextBtn">Next stage&nbsp;→</button>
 
-    <!-- stage-4 toggle for the verb + icons on the cards -->
+    <!-- stage-4 toggles: collapse the reasons + emojis, and the verbs -->
+    <button class="verb-toggle" id="reasonToggle" aria-pressed="false">
+      <span class="tplus">+</span><span>Reasons</span>
+    </button>
     <button class="verb-toggle" id="verbToggle" aria-pressed="false">
       <span class="tplus">+</span><span>Verbs</span>
     </button>
@@ -603,7 +610,8 @@
     subs:    {},                  // subId  -> { kind, slotId }
     verbs:   {},                  // slotId -> array of saved verbs
     stage:   1,                   // 1 place · 2 reasons · 3 verbs · 4 subsystems
-    verbsShown:false,             // stage-4 toggle for the verb + icons
+    verbsShown:false,             // stage-4 toggle for the verbs
+    reasonsShown:false,           // stage-4 toggle for the reasons + emojis
     nerveOpen:false, immuneOpen:false
   };
   // stage 2+ locks placements; helpers for the "Next" gates
@@ -693,6 +701,13 @@
     card.classList.remove('draggable');
     slot.appendChild(card);
     slot.classList.add('filled');
+    // emoji to the right of the right-column slots (s6–s10) — a top-down strip
+    const n = +slot.dataset.slot.slice(1);
+    if (n >= 6 && n <= 10){
+      const em = document.createElement('span');
+      em.className = 'sys-emoji'; em.textContent = SYS[sysId].icon;
+      slot.appendChild(em);
+    }
     buildVerbUI(slot);
     ensureBadgeHost(slot);
   }
@@ -803,6 +818,7 @@
   }
   function reasonVisible(key){
     if (state.stage < 2) return false;          // reasons open only from stage 2
+    if (state.stage >= 4 && !state.reasonsShown) return false;   // collapsed under the Reasons toggle
     return key === 'c' ? !!state.placed[CENTRE_SLOT] : rowFull(+key);
   }
   function renderReasons(key){
@@ -896,7 +912,13 @@
     b.innerHTML = `<span class="lbl">${sub.label}</span>`;
     return b;
   }
-  // subsystem chips fan DOWNWARD from the bottom corners: immune at bottom-left, nervous at bottom-right
+  // which way the fan opens, from the parent slot's column
+  function subDir(slot){
+    const id = slot.dataset.slot;
+    if (id === CENTRE_SLOT) return 'above';                 // middle column → above
+    return (+id.slice(1) <= 4) ? 'right' : 'left';          // left col → right · right col → left
+  }
+  // the fan anchors to its parent slot and opens by that slot's column
   function renderSubChips(kind){
     const col  = kind === 'nerve' ? $('#nervousList') : $('#immuneList');
     const open = kind === 'immune' ? state.immuneOpen : state.nerveOpen;
@@ -904,7 +926,10 @@
     if (parent) parent.classList.toggle('parent-open', !!open);
     col.innerHTML = '';
     col.classList.toggle('show', !!open);
-    if (open){
+    col.classList.remove('dir-left','dir-right','dir-above');
+    if (open && parent){
+      col.classList.add('dir-' + subDir(parent));
+      parent.appendChild(col);                 // anchor the fan inside its parent slot
       const defs = kind === 'nerve' ? NERVOUS_SUBS : IMMUNE_SUBS;
       defs.forEach(s => {
         if (state.subs[s.id]) return;          // already threaded → hidden from the fan
@@ -912,8 +937,9 @@
         if (armedSub === s.id) c.classList.add('is-armed');
         col.appendChild(c);
       });
+    } else {
+      $('#subFlow').appendChild(col);          // park it back when closed
     }
-    $('#subFlow').classList.toggle('show', state.immuneOpen || state.nerveOpen);
   }
   const subDef = (kind, id) => (kind === 'nerve' ? NERVOUS_SUBS : IMMUNE_SUBS).find(s => s.id === id);
 
@@ -1001,6 +1027,9 @@
     // toggle is on (collapsed by default)
     const verbsVisible = state.stage === 3 || (state.stage >= 4 && state.verbsShown);
     document.body.classList.toggle('show-verbs', verbsVisible);
+    // emojis appear from stage 2; in stage 4 they collapse under the Reasons toggle
+    const emojisVisible = state.stage >= 2 && (state.stage < 4 || state.reasonsShown);
+    document.body.classList.toggle('show-emojis', emojisVisible);
     // parents glow only in stage 4
     allSlots().forEach(s => s.classList.remove('is-parent','parent-immune','parent-nerve','parent-open'));
     if (state.stage >= 4){
@@ -1019,7 +1048,10 @@
     if (state.stage === 2)      next2.hidden = !hasAnyReason();
     else if (state.stage === 3) next2.hidden = !hasAnyVerb();
     else                        next2.hidden = true;   // stage 4: no further Next
-    // stage-4 verb toggle
+    // stage-4 toggles: Reasons (reasons + emojis) then Verbs
+    const rt = $('#reasonToggle');
+    rt.classList.toggle('show', state.stage === 4);
+    rt.setAttribute('aria-pressed', state.reasonsShown ? 'true' : 'false');
     const vt = $('#verbToggle');
     vt.classList.toggle('show', state.stage === 4);
     vt.setAttribute('aria-pressed', state.verbsShown ? 'true' : 'false');
@@ -1029,16 +1061,19 @@
   }
   function goStage(n){
     state.stage = Math.max(1, Math.min(4, n));
-    if (state.stage === 4) state.verbsShown = false;   // verbs collapsed by default in stage 4
+    if (state.stage === 4){ state.verbsShown = false; state.reasonsShown = false; }   // both collapsed by default in stage 4
     if (state.stage < 4) closeDocks();
     afterChange();
   }
   function closeDocks(){
     state.nerveOpen = state.immuneOpen = false;
     const il = $('#immuneList'), nl = $('#nervousList'), sf = $('#subFlow');
-    if (il){ il.innerHTML = ''; il.classList.remove('show'); }
-    if (nl){ nl.innerHTML = ''; nl.classList.remove('show'); }
-    if (sf) sf.classList.remove('show');
+    [il, nl].forEach(c => {
+      if (!c) return;
+      c.innerHTML = '';
+      c.classList.remove('show','dir-left','dir-right','dir-above');
+      if (sf) sf.appendChild(c);                 // park back out of any parent slot
+    });
     $$('.parent-open').forEach(el => el.classList.remove('parent-open'));
     armedSub = null;
   }
@@ -1255,6 +1290,10 @@
   // stage-4: toggle the verb + icons across all cards
   $('#verbToggle').addEventListener('click', () => {
     state.verbsShown = !state.verbsShown;
+    afterChange();
+  });
+  $('#reasonToggle').addEventListener('click', () => {
+    state.reasonsShown = !state.reasonsShown;
     afterChange();
   });
 
