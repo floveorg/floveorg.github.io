@@ -178,12 +178,10 @@
   .slot.centre-spine{
     width:84px; height:auto; min-height:100%; align-self:stretch; z-index:0;
     justify-self:center;
-    border-style:solid; border-color:var(--accent-deep);
-    background:linear-gradient(180deg, rgba(77,208,225,.10), rgba(179,136,255,.08));
+    border-style:solid; border-color:var(--accent-deep); background:transparent;
   }
   .slot.centre-spine.filled{
-    border-color:var(--accent);
-    background:linear-gradient(180deg, rgba(77,208,225,.16), rgba(179,136,255,.12));
+    border-color:var(--accent); background:transparent;
     box-shadow:0 0 0 1px var(--accent-deep) inset;
   }
   .slot.centre-spine .card{ justify-content:center; }
@@ -197,16 +195,11 @@
     width:96px; height:92px;             /* portrait — vertical placeholders */
     display:flex; align-items:center; justify-content:center;
     border:2px dashed var(--faint); border-radius:var(--radius-sm);
-    background:rgba(255,255,255,.02);
+    background:transparent;              /* no background in the square */
     transition:border-color var(--fast), background var(--fast);
   }
-  .slot::after{
-    content:attr(data-ph); position:absolute; color:var(--ink-dim);
-    font:600 .68rem/1 var(--font-ui); letter-spacing:.1em; text-transform:uppercase;
-    opacity:.5; pointer-events:none;
-  }
-  .slot.filled::after{ content:none; }
-  .slot.filled{ border-style:solid; border-color:var(--chip-border); background:var(--chip-placed); }
+  .slot::after{ content:none; }          /* no placeholder numbers */
+  .slot.filled{ border-style:solid; border-color:var(--chip-border); background:transparent; }
   .slot.over{ border-color:var(--accent); background:rgba(77,208,225,.10); }
   .slot.sub-ok{ border-color:var(--accent); box-shadow:0 0 0 2px rgba(77,208,225,.25) inset; }
   .slot.sub-no{ border-color:var(--accent-2); }
@@ -302,13 +295,19 @@
   .slot.parent-nerve.parent-open{ box-shadow:0 0 0 3px var(--nerve), 0 0 20px rgba(179,136,255,.6); }
 
   /* ── subsystem chips: fan out beside the parent card, pointing to the centre ── */
-  .sub-chips{
-    position:absolute; top:50%; transform:translateY(-50%); z-index:7;
-    display:flex; flex-direction:column; gap:5px;
+  /* subsystem items fan DOWNWARD from the two bottom corners (below the square) */
+  /* mirrors .board-grid columns so the fans sit exactly under V (left) and XI (right) */
+  .sub-flow{
+    display:none;
+    grid-template-columns:96px minmax(220px,300px) 96px;
+    justify-content:center; column-gap:28px; margin-top:10px;
   }
-  .sub-chips.side-right{ left:calc(100% + 8px); align-items:flex-start; }
-  .sub-chips.side-left { right:calc(100% + 8px); align-items:flex-end;  }
-  .sub-chips .sub-card{ padding:5px 9px; font-size:.74rem; white-space:nowrap; }
+  .sub-flow.show{ display:grid; }
+  .sub-col{ display:none; flex-direction:column; gap:6px; }
+  .sub-col.show{ display:flex; }
+  .sub-col.immune{ grid-column:1; align-items:flex-start; }   /* under the bottom-left corner (V) */
+  .sub-col.nerve { grid-column:3; align-items:flex-end;   }   /* under the bottom-right corner (XI) */
+  .sub-col .sub-card{ padding:5px 10px; font-size:.76rem; white-space:nowrap; }
 
   /* ── verb editor: the field opens where the + is (lower edge of the card) ── */
   /* the + and saved verbs only appear in stage 3 (after the verbs Next) */
@@ -368,13 +367,6 @@
   }
   .verb-all .verb-row .del{ border:0; background:transparent; color:var(--ink-dim); cursor:pointer; font-size:.85rem; }
   .verb-all .verb-row .del:hover{ color:var(--accent-2); }
-
-  /* system emoji — revealed in stage 2, shown to the right of the right-column cards */
-  .slot .sys-emoji{
-    display:none; position:absolute; left:calc(100% + 6px); top:50%; transform:translateY(-50%);
-    font-size:1.2rem; line-height:1; z-index:3; pointer-events:none;
-  }
-  body.show-emojis .slot.filled .sys-emoji{ display:block; }
 
   .sub-card{
     display:flex; align-items:center; gap:.45rem;
@@ -501,7 +493,7 @@
   <p class="subtitle">The eleven biological systems from <b>souls</b>, laid out as a living body you arrange by hand.</p>
   <ol>
     <li><b>Stage 1 · Place.</b> Tap the <b>Systems</b> card to fan the eleven open, then click or drag each into a placeholder. Click a placed one to send it back. When all are down, press <b>Next stage</b> — this locks the placements and removes Clear board.</li>
-    <li><b>Stage 2 · Reasons.</b> Each card reveals its <b>emoji</b> (to its right). Where a row's left+right (or the centre) are placed, a <b>smiley</b> appears in the middle — click it to write a <b>reason</b>; it collapses on save. Once you've written one, <b>Next</b> appears beside <b>Back</b>.</li>
+    <li><b>Stage 2 · Reasons.</b> Where a row's left+right (or the centre) are placed, a <b>smiley</b> appears in the middle — click it to write a <b>reason</b>; it collapses on save. Once you've written one, <b>Next</b> appears beside <b>Back</b>.</li>
     <li><b>Stage 3 · Verbs.</b> A <b>+</b> shows on each card's lower edge — click it to add a <b>verb</b>; saved verbs sit centred (a <b>+N</b> opens the full list). Once you've added one, <b>Next</b> reveals the subsystems.</li>
     <li><b>Stage 4 · Subsystems.</b> The <b>Immune</b> and <b>Nervous</b> systems glow; click one to fan its subsystems out as chips beside it, then click a subsystem and a system to thread a labelled line. Threaded ones leave the fan; remove via the slot badge. The <b>progress bar</b> tracks every stage.</li>
   </ol>
@@ -527,6 +519,12 @@
   <!-- center: board — 5 rows, each: left slot · middle (reason + centre slot) · right slot -->
   <section class="board" id="board">
     <div class="board-grid" id="boardGrid"></div>
+
+    <!-- subsystem items fan downward from the two bottom corners; this grows the board -->
+    <div class="sub-flow" id="subFlow">
+      <div class="sub-col immune" id="immuneList"></div>
+      <div class="sub-col nerve"  id="nervousList"></div>
+    </div>
 
     <!-- stage-1 → stage-2 gate: appears once all are placed -->
     <button class="next-btn" id="nextBtn">Next stage&nbsp;→</button>
@@ -604,7 +602,7 @@
     reasons: freshReasons(),      // reason key -> array of saved strings
     subs:    {},                  // subId  -> { kind, slotId }
     verbs:   {},                  // slotId -> array of saved verbs
-    stage:   1,                   // 1 place · 2 emojis+reasons · 3 verbs · 4 subsystems
+    stage:   1,                   // 1 place · 2 reasons · 3 verbs · 4 subsystems
     verbsShown:false,             // stage-4 toggle for the verb + icons
     nerveOpen:false, immuneOpen:false
   };
@@ -695,13 +693,6 @@
     card.classList.remove('draggable');
     slot.appendChild(card);
     slot.classList.add('filled');
-    // emoji badge only to the right of the right-column cards (s6–s10), revealed in stage 2
-    const n = +slot.dataset.slot.slice(1);
-    if (n >= 6 && n <= 10){
-      const em = document.createElement('span');
-      em.className = 'sys-emoji'; em.textContent = SYS[sysId].icon;
-      slot.appendChild(em);
-    }
     buildVerbUI(slot);
     ensureBadgeHost(slot);
   }
@@ -905,30 +896,24 @@
     b.innerHTML = `<span class="lbl">${sub.label}</span>`;
     return b;
   }
-  // chips fan toward the centre: right of a left-column parent, left of a right-column one
-  function subSide(slot){
-    const n = +slot.dataset.slot.slice(1);
-    if (n >= 6 && n <= 10) return 'left';   // right column → chips on the left
-    return 'right';                         // left column (and centre) → chips on the right
-  }
+  // subsystem chips fan DOWNWARD from the bottom corners: immune at bottom-left, nervous at bottom-right
   function renderSubChips(kind){
-    $$(`.sub-chips[data-kind="${kind}"]`).forEach(el => el.remove());
-    const parent = slotOfSystem(HOME_OF[kind]);
+    const col  = kind === 'nerve' ? $('#nervousList') : $('#immuneList');
     const open = kind === 'immune' ? state.immuneOpen : state.nerveOpen;
-    if (!parent){ return; }
-    parent.classList.toggle('parent-open', !!open);
-    if (!open) return;
-    const box = document.createElement('div');
-    box.className = `sub-chips side-${subSide(parent)}`;
-    box.dataset.kind = kind;
-    const defs = kind === 'nerve' ? NERVOUS_SUBS : IMMUNE_SUBS;
-    defs.forEach(s => {
-      if (state.subs[s.id]) return;          // already threaded → hidden from the fan
-      const c = makeSubCard(s, kind);
-      if (armedSub === s.id) c.classList.add('is-armed');
-      box.appendChild(c);
-    });
-    parent.appendChild(box);
+    const parent = slotOfSystem(HOME_OF[kind]);
+    if (parent) parent.classList.toggle('parent-open', !!open);
+    col.innerHTML = '';
+    col.classList.toggle('show', !!open);
+    if (open){
+      const defs = kind === 'nerve' ? NERVOUS_SUBS : IMMUNE_SUBS;
+      defs.forEach(s => {
+        if (state.subs[s.id]) return;          // already threaded → hidden from the fan
+        const c = makeSubCard(s, kind);
+        if (armedSub === s.id) c.classList.add('is-armed');
+        col.appendChild(c);
+      });
+    }
+    $('#subFlow').classList.toggle('show', state.immuneOpen || state.nerveOpen);
   }
   const subDef = (kind, id) => (kind === 'nerve' ? NERVOUS_SUBS : IMMUNE_SUBS).find(s => s.id === id);
 
@@ -1007,14 +992,13 @@
   }
   function getCSS(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
 
-  // ── flow: 1 place · 2 emojis+reasons · 3 verbs · 4 subsystems ──
+  // ── flow: 1 place · 2 reasons · 3 verbs · 4 subsystems ──
   function allPlaced(){ return Object.keys(state.placed).length === SYSTEMS.length; }
   function afterChange(){
     renderBadges();
     renderAllReasons();
-    // per-stage reveals: emojis from stage 2; verbs always in stage 3,
-    // but in stage 4 only when the toggle is on (collapsed by default)
-    document.body.classList.toggle('show-emojis', state.stage >= 2);
+    // per-stage reveals: verbs always in stage 3, but in stage 4 only when the
+    // toggle is on (collapsed by default)
     const verbsVisible = state.stage === 3 || (state.stage >= 4 && state.verbsShown);
     document.body.classList.toggle('show-verbs', verbsVisible);
     // parents glow only in stage 4
@@ -1051,11 +1035,14 @@
   }
   function closeDocks(){
     state.nerveOpen = state.immuneOpen = false;
-    $$('.sub-chips').forEach(el => el.remove());
+    const il = $('#immuneList'), nl = $('#nervousList'), sf = $('#subFlow');
+    if (il){ il.innerHTML = ''; il.classList.remove('show'); }
+    if (nl){ nl.innerHTML = ''; nl.classList.remove('show'); }
+    if (sf) sf.classList.remove('show');
     $$('.parent-open').forEach(el => el.classList.remove('parent-open'));
     armedSub = null;
   }
-  // click a glowing parent → fan / fold its subtab chips beside the card
+  // click a glowing parent → fan / fold its subtab chips at the bottom corner
   function toggleSubGroup(kind){
     if (kind === 'immune') state.immuneOpen = !state.immuneOpen;
     else                   state.nerveOpen  = !state.nerveOpen;
@@ -1252,7 +1239,7 @@
   $('#deckCaret').addEventListener('click',  () => setDeckOpen(false));
 
   // ── stage navigation ────────────────────────────────────────
-  // stage 1 → 2: lock placements, drop Clear board, reveal the emojis
+  // stage 1 → 2: lock placements, drop Clear board, open the reasons stage
   $('#nextBtn').addEventListener('click', () => {
     if (state.stage !== 1 || !allPlaced()) return;
     goStage(2);
