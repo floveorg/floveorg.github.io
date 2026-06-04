@@ -226,6 +226,9 @@
     padding:4px 4px 4px;perspective:900px;
   }
   .hand .pcard + .pcard{margin-left:-22px}
+  .hand.custom{flex-wrap:wrap;justify-content:center}
+  .hand.custom .pcard + .pcard{margin-left:8px}   /* editable cards: spread out, no overlap */
+  .hand.custom .pcard{cursor:default}
   @media (max-width:680px){.hand .pcard + .pcard{margin-left:-18px}}
   @media (max-width:460px){.hand .pcard + .pcard{margin-left:-14px}}
   .hand .pcard{z-index:1}
@@ -258,6 +261,21 @@
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
     max-width:100%;
   }
+  /* editable name input on the blank fifth deck's cards */
+  .pcard .pcard-input{
+    flex:1;width:100%;min-width:0;text-align:center;
+    font:600 .9rem/1.15 ui-serif,Georgia,serif;
+    color:var(--ink);background:rgba(0,0,0,.22);
+    border:1px solid #6a6a8c;border-radius:8px;padding:6px 4px;
+  }
+  .pcard .pcard-input:focus{outline:none;border-color:var(--accent)}
+  /* title input above the fifth deck's hand */
+  .deck-title-input{
+    display:block;margin:0 auto 10px;width:min(320px,80%);text-align:center;
+    font:700 1rem/1.2 ui-serif,Georgia,serif;color:var(--ink);
+    background:rgba(0,0,0,.22);border:1px solid #6a6a8c;border-radius:10px;padding:8px 12px;
+  }
+  .deck-title-input:focus{outline:none;border-color:var(--accent)}
   .pcard::before{
     content:"✺";position:absolute;top:6px;left:8px;
     font:700 .78rem/1 ui-serif,Georgia,serif;color:rgba(255,255,255,.18);
@@ -337,14 +355,22 @@
   /* ============== Board ============== */
   .board{
     display:grid;gap:14px;
-    grid-template-columns:repeat(4,minmax(0,1fr));
+    grid-template-columns:repeat(5,minmax(0,1fr));
     align-items:start;justify-items:center;
     min-height:calc(var(--slot-h) + 16px);
     padding:14px 6px;
     border:1px dashed var(--stroke);border-radius:18px;
     background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);
   }
-  @media (max-width:560px){.board{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  body.embed .board{grid-template-columns:repeat(4,minmax(0,1fr))}   /* embed keeps the 4-deck flow */
+  @media (max-width:680px){.board{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  @media (max-width:460px){.board{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  /* reserved last space for the fifth deck until the first four are settled */
+  .slot.locked{
+    width:100%;min-height:var(--slot-h);display:flex;align-items:center;justify-content:center;
+    border:1px dashed var(--stroke);border-radius:14px;opacity:.4;
+    color:var(--muted);font:700 .85rem/1 system-ui,sans-serif;
+  }
   .slot{width:100%;display:flex;justify-content:center;align-items:flex-start}
   .slot.placeholder{
     width:var(--slot-w);min-height:var(--slot-h);
@@ -505,6 +531,9 @@
     opacity:1;
     box-shadow:0 0 0 2px rgba(255,255,255,.22), 0 4px 12px rgba(0,0,0,.25);
   }
+  /* the settled fifth deck's own category button, tinted by its colour */
+  .cat-group[data-fifth] .cat{border-color:var(--c)}
+  .cat-group[data-fifth] .cat.is-on{box-shadow:0 0 0 2px var(--c), 0 4px 12px rgba(0,0,0,.25)}
 
   /* square sits at the top of Fields (not pinned — pinning hid the button rows
      behind its tall background sheet) */
@@ -857,6 +886,20 @@
   }
   .summary-body .empty-line{color:var(--muted);font-style:italic;font-size:.88rem;margin:.3rem 0 .6rem;text-align:center}
 
+  /* Fields-stage time stats */
+  .sum-stats{display:flex;gap:1.4rem;justify-content:center;flex-wrap:wrap;margin:.5rem 0 .2rem}
+  .ss-item{display:flex;flex-direction:column;align-items:center;gap:2px}
+  .ss-item .ss-k{font:600 .66rem/1 system-ui,sans-serif;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+  .ss-item .ss-v{font:700 1.05rem/1 system-ui,sans-serif;color:var(--ink)}
+  .ss-item.ss-hi .ss-v{color:var(--sky)}
+
+  /* last-selected square snapshot (read-only) */
+  .sum-snapshot{display:flex;justify-content:center;margin:.3rem 0 .6rem}
+  .sum-snapshot .square{pointer-events:none}
+
+  /* related apps sit two rows below the nav buttons */
+  #related-wrap .related-apps:not([hidden]){margin-top:2.4rem}
+
   /* ---- summary tables ---- */
   .sum-table{
     width:100%;border-collapse:collapse;margin:.2rem 0 .4rem;
@@ -893,8 +936,7 @@
   }
   .analysis .note{color:var(--muted);font-size:.82rem;text-align:center;margin:.4rem 0 0}
 
-  /* ---- see more + related apps ---- */
-  .summary-bottom-actions{display:flex;justify-content:center;margin-top:1rem}
+  /* ---- related apps ---- */
   .related-apps{
     display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:.8rem;
     animation:fadein .25s ease;
@@ -1042,7 +1084,125 @@
   body.embed .summary-sec,
   body.embed .analyze-panel{ display:none !important; }
   body.embed{ background:transparent; }
+
+  /* ===== ✦ summary actions (ported from flovyadvanced; Views omitted) ===== */
+  .summary-actions{ margin-top:1.1rem; }
+  .ctl{ position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+  .summary-actions .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:.3rem;
+    height:31px; padding:0 .55rem; border-radius:8px;
+    border:1px solid var(--stroke); background:transparent; color:var(--muted);
+    font:600 .72rem/1 system-ui,sans-serif; cursor:pointer; white-space:nowrap;
+    text-decoration:none; transition:background .15s ease,color .15s ease,border-color .15s ease;
+  }
+  .summary-actions .btn:hover{ color:var(--ink); border-color:var(--accent); }
+  .summary-actions .btn.solid{ background:var(--accent); color:#260a1f; border-color:var(--accent); }
+
+  /* generated phrase */
+  .summary-actions .clause{
+    display:block; margin:.4rem auto .7rem; max-width:560px; padding:.6rem .85rem;
+    border:1px solid var(--stroke); border-radius:12px; background:rgba(255,255,255,.03);
+    color:var(--ink); font:500 .95rem/1.5 ui-serif,Georgia,serif; text-align:center;
+  }
+  .summary-actions .clause-magic{ display:none; }
+  body:has(#magic-toggle:checked) .summary-actions .clause-default{ display:none; }
+  body:has(#magic-toggle:checked) .summary-actions .clause-magic{ display:block; }
+  .magic-btn-summary .label-on{ display:none; }
+  body:has(#magic-toggle:checked) .magic-btn-summary .label-off{ display:none; }
+  body:has(#magic-toggle:checked) .magic-btn-summary .label-on{ display:inline; }
+  body:has(#magic-toggle:checked) .summary-actions .magic-btn-summary{ background:var(--accent); color:#260a1f; border-color:var(--accent); }
+
+  /* insight cycle (0 empty + 4 texts) */
+  .insight-cycle{ display:inline-flex; position:relative; }
+  .insight-step{ display:none !important; }
+  body:has(#insight-0:checked) .insight-step:nth-child(1),
+  body:has(#insight-1:checked) .insight-step:nth-child(2),
+  body:has(#insight-2:checked) .insight-step:nth-child(3),
+  body:has(#insight-3:checked) .insight-step:nth-child(4),
+  body:has(#insight-4:checked) .insight-step:nth-child(5){ display:inline-flex !important; }
+  body:has(#insight-1:checked) .insight-step:nth-child(2),
+  body:has(#insight-2:checked) .insight-step:nth-child(3),
+  body:has(#insight-3:checked) .insight-step:nth-child(4),
+  body:has(#insight-4:checked) .insight-step:nth-child(5){ background:var(--accent); color:#260a1f; border-color:var(--accent); }
+  .insight-panel{ display:none; max-width:560px; margin:.2rem auto .6rem; padding:.6rem .85rem; border-radius:10px; border:1px dashed var(--stroke); background:rgba(199,164,255,.08); color:var(--ink); font-size:.86rem; line-height:1.5; text-align:center; }
+  .insight-panel .insight-text{ display:none; }
+  body:has(#insight-1:checked) .insight-panel,
+  body:has(#insight-2:checked) .insight-panel,
+  body:has(#insight-3:checked) .insight-panel,
+  body:has(#insight-4:checked) .insight-panel{ display:block; }
+  body:has(#insight-1:checked) .insight-panel .insight-text:nth-child(1),
+  body:has(#insight-2:checked) .insight-panel .insight-text:nth-child(2),
+  body:has(#insight-3:checked) .insight-panel .insight-text:nth-child(3),
+  body:has(#insight-4:checked) .insight-panel .insight-text:nth-child(4){ display:block; }
+
+  /* copy */
+  .copy-hint-panel{ display:none; max-width:560px; margin:.2rem auto .6rem; padding:.6rem .85rem; border-radius:10px; background:rgba(0,0,0,.18); border:1px dashed var(--stroke); color:var(--muted); font-size:.82rem; line-height:1.5; text-align:center; }
+  .copy-hint-panel kbd{ display:inline-block; padding:1px 6px; margin:0 1px; font:600 .76rem/1 system-ui,sans-serif; background:var(--panel); border:1px solid var(--stroke); border-bottom-width:2px; border-radius:4px; color:var(--ink); }
+  body:has(#copy-hint:checked) .copy-hint-panel{ display:block; }
+  body:has(#copy-hint:checked) .summary-actions .copy-btn{ background:var(--accent); color:#260a1f; border-color:var(--accent); }
+
+  /* rows */
+  .summary-actions .action-row{ display:flex; flex-wrap:wrap; gap:.5rem; justify-content:center; margin:.3rem 0; }
+  .summary-actions .action-row.right{ justify-content:space-between; align-items:flex-start; padding:calc(25px + .35rem) 0; flex-wrap:nowrap; gap:.35rem; }
+
+  /* save / share / publish cycles */
+  .save-wrap,.share-wrap,.pub-wrap{ position:relative; display:inline-flex; flex-direction:column; }
+  .save-wrap{ align-items:flex-start; }
+  .share-wrap{ align-items:center; }
+  .pub-wrap{ align-items:flex-end; }
+  .cycle-trigger{ position:relative; display:inline-flex; align-items:center; }
+  .cycle-step{ display:none !important; }
+  .summary-actions .save-btn,.summary-actions .share-btn,.summary-actions .publish-btn{ height:28px; }
+  body:not(:has(#cycle-save:checked))  .save-wrap  .cycle-step--open,
+  body:not(:has(#cycle-pub:checked))   .pub-wrap   .cycle-step--open,
+  body:not(:has(#cycle-share:checked)) .share-wrap .cycle-step--open{ display:inline-flex !important; }
+  body:has(#cycle-save:checked)  .save-wrap  .cycle-step--close,
+  body:has(#cycle-pub:checked)   .pub-wrap   .cycle-step--close,
+  body:has(#cycle-share:checked) .share-wrap .cycle-step--close{ display:inline-flex !important; }
+  body:has(#cycle-save:checked)  .summary-actions .save-btn,
+  body:has(#cycle-share:checked) .summary-actions .share-btn,
+  body:has(#cycle-pub:checked)   .summary-actions .publish-btn{ background:var(--accent); color:#260a1f; border-color:var(--accent); }
+
+  .cycle-row{ position:absolute; display:inline-flex; flex-wrap:nowrap; gap:.25rem; white-space:nowrap; visibility:hidden; }
+  .cycle-row.below{ top:calc(100% + .35rem); }
+  .save-wrap  .cycle-row{ left:0; justify-content:flex-start; }
+  .pub-wrap   .cycle-row{ right:0; justify-content:flex-end; }
+  .share-wrap .cycle-row{ left:50%; transform:translateX(-50%); justify-content:center; }
+  .cycle-row .btn{ height:22px; padding:0 .5rem; font-size:.72rem; border-radius:6px; }
+  body:has(#cycle-save:checked)  .save-wrap  .cycle-row,
+  body:has(#cycle-share:checked) .share-wrap .cycle-row,
+  body:has(#cycle-pub:checked)   .pub-wrap   .cycle-row{ visibility:visible; }
+
+  /* platform slider */
+  .plat-row{ align-items:center; gap:.25rem; }
+  .plat-viewport{ --plat-set-w:13.5rem; overflow:hidden; width:var(--plat-set-w); }
+  .plat-track{ display:flex; flex-wrap:nowrap; transition:transform .35s ease; }
+  .plat-set{ display:inline-flex; flex:0 0 var(--plat-set-w); width:var(--plat-set-w); gap:.25rem; }
+  .plat-set .btn{ flex:1 1 0; min-width:0; }
+  body:has(#pub-plat-set-1:checked) .plat-track{ transform:translateX(calc(-1 * var(--plat-set-w))); }
+  body:has(#pub-plat-set-2:checked) .plat-track{ transform:translateX(calc(-2 * var(--plat-set-w))); }
+  .plat-nav{ display:none; align-items:center; justify-content:center; width:22px; height:25px; border:1px solid var(--stroke); border-radius:4px; background:rgba(255,255,255,.06); cursor:pointer; font-size:.95rem; color:var(--muted); user-select:none; }
+  .plat-nav:hover{ background:var(--accent); color:#260a1f; border-color:var(--accent); }
+  body:has(#pub-plat-set-0:checked) .plat-nav[data-when-set="0"],
+  body:has(#pub-plat-set-1:checked) .plat-nav[data-when-set="1"],
+  body:has(#pub-plat-set-2:checked) .plat-nav[data-when-set="2"]{ display:inline-flex; }
+  body:has(#pub-plat-nety:checked) [for="pub-plat-nety"],
+  body:has(#pub-plat-reddit:checked) [for="pub-plat-reddit"],
+  body:has(#pub-plat-x:checked) [for="pub-plat-x"],
+  body:has(#pub-plat-masto:checked) [for="pub-plat-masto"],
+  body:has(#pub-plat-bsky:checked) [for="pub-plat-bsky"],
+  body:has(#pub-plat-threads:checked) [for="pub-plat-threads"],
+  body:has(#pub-plat-tumblr:checked) [for="pub-plat-tumblr"],
+  body:has(#pub-plat-medium:checked) [for="pub-plat-medium"],
+  body:has(#pub-plat-wizy:checked) [for="pub-plat-wizy"]{ background:var(--accent); color:#260a1f; border-color:var(--accent); }
+
+  /* inline Go beside Publish */
+  .pub-wrap .go-btn{ max-width:0; padding:0; margin:0; border-width:0; opacity:0; overflow:hidden; height:28px; transition:max-width .3s ease,padding .3s ease,margin .3s ease,opacity .25s ease; }
+  body:has(#cycle-pub:checked) .pub-wrap .go-btn{ max-width:7rem; padding:0 .55rem; margin-left:.35rem; border-width:1px; opacity:1; }
+  @media (max-width:560px){ .summary-actions .action-row.right{ flex-direction:column; align-items:center; gap:1.4rem; } }
 </style>
+<!-- generic summary actions (save/share/collect) — wires the data-flove-* buttons below -->
+<script src="flove.js" defer></script>
 </head>
 <body>
 
@@ -1063,12 +1223,13 @@
       <span class="brand-caret" aria-hidden="true">▾</span>
     </button>
     <div class="progress-stack">
-      <div class="stage-progress" id="stage-progress" role="progressbar" aria-valuemin="1" aria-valuemax="2" aria-valuenow="1">
+      <div class="stage-progress" id="stage-progress" role="progressbar" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1">
         <div class="seg current"></div>
+        <div class="seg"></div>
         <div class="seg"></div>
       </div>
       <div class="deck-progress" id="deck-progress" aria-label="decks settled">
-        <span class="dseg"></span><span class="dseg"></span><span class="dseg"></span><span class="dseg"></span>
+        <span class="dseg"></span><span class="dseg"></span><span class="dseg"></span><span class="dseg"></span><span class="dseg"></span>
       </div>
     </div>
     <div class="topbar-spacer"></div>
@@ -1225,22 +1386,137 @@
     <div class="stage-cta" id="stage-cta"></div>
   </div>
 
+  <!-- summary-action state inputs live OUTSIDE the collect root so they aren't
+       picked up as fields; labels reference them by id and the :has() CSS is global -->
+  <input type="checkbox" id="magic-toggle" class="ctl">
+  <input type="checkbox" id="copy-hint" class="ctl">
+  <input type="radio" name="insight" id="insight-0" class="ctl" checked>
+  <input type="radio" name="insight" id="insight-1" class="ctl">
+  <input type="radio" name="insight" id="insight-2" class="ctl">
+  <input type="radio" name="insight" id="insight-3" class="ctl">
+  <input type="radio" name="insight" id="insight-4" class="ctl">
+  <input type="radio" name="cycle" id="cycle-none" class="ctl" checked>
+  <input type="radio" name="cycle" id="cycle-save" class="ctl">
+  <input type="radio" name="cycle" id="cycle-share" class="ctl">
+  <input type="radio" name="cycle" id="cycle-pub" class="ctl">
+  <input type="radio" name="pub-plat-set" id="pub-plat-set-0" class="ctl" checked>
+  <input type="radio" name="pub-plat-set" id="pub-plat-set-1" class="ctl">
+  <input type="radio" name="pub-plat-set" id="pub-plat-set-2" class="ctl">
+  <input type="checkbox" id="pub-plat-nety"    class="ctl">
+  <input type="checkbox" id="pub-plat-reddit"  class="ctl">
+  <input type="checkbox" id="pub-plat-x"       class="ctl">
+  <input type="checkbox" id="pub-plat-masto"   class="ctl">
+  <input type="checkbox" id="pub-plat-bsky"    class="ctl">
+  <input type="checkbox" id="pub-plat-threads" class="ctl">
+  <input type="checkbox" id="pub-plat-tumblr"  class="ctl">
+  <input type="checkbox" id="pub-plat-medium"  class="ctl">
+  <input type="checkbox" id="pub-plat-wizy"    class="ctl">
+
   <!-- Summary is its own (final) stage — shown only when navigated to -->
   <details class="summary-sec" id="summary-sec" open>
     <summary>✦ Summary</summary>
-    <div class="summary-body" id="summary-body">
+    <div class="summary-body" id="summary-body" data-flove-root data-flove-title="My fivys">
       <h3>Fivys</h3>
       <div class="sum-table-wrap" id="summary-fivys"></div>
+      <!-- Fields-stage time stats -->
+      <div class="sum-stats" id="summary-stats"></div>
+      <!-- Last selected display (square snapshot: cycle/confluence arrows, no list) -->
+      <h3>Last selected</h3>
+      <div class="sum-snapshot" id="summary-snapshot"></div>
+
+      <!-- ✦ standard flove summary actions (ported from flovyadvanced; Views omitted) -->
+      <div class="summary-actions">
+        <output class="clause clause-default" data-flove-phrase id="fivy-phrase" spellcheck="false" aria-label="Summary phrase"></output>
+        <output class="clause clause-magic" id="fivy-phrase-magic" spellcheck="false" aria-label="Magic phrase"></output>
+        <div class="insight-panel" id="fivy-insight" role="status"></div>
+
+        <!-- row 1: Insight · Magic/Phrase · Copy -->
+        <div class="action-row">
+          <span class="insight-cycle">
+            <label class="btn ghost insight-step" for="insight-1">Insight</label>
+            <label class="btn ghost insight-step" for="insight-2">Insight · 1/4</label>
+            <label class="btn ghost insight-step" for="insight-3">Insight · 2/4</label>
+            <label class="btn ghost insight-step" for="insight-4">Insight · 3/4</label>
+            <label class="btn ghost insight-step" for="insight-0">Insight · 4/4</label>
+          </span>
+          <label class="btn ghost magic-btn-summary" for="magic-toggle">
+            <span class="label-off">Magic</span><span class="label-on">Phrase</span>
+          </label>
+          <label class="btn ghost copy-btn" for="copy-hint" data-flove-copy="phrase">Copy</label>
+        </div>
+        <div class="copy-hint-panel" role="status">Select the phrase above (triple-click selects it all), then press <kbd>Ctrl</kbd>+<kbd>C</kbd> on Windows/Linux or <kbd>⌘</kbd>+<kbd>C</kbd> on Mac to copy it.</div>
+
+        <!-- row 2: Save · Share · Publish -->
+        <div class="action-row right">
+          <span class="cycle-wrap save-wrap">
+            <span class="cycle-trigger">
+              <label class="btn ghost save-btn cycle-step cycle-step--open"  for="cycle-save">💾 Save</label>
+              <label class="btn ghost save-btn cycle-step cycle-step--close" for="cycle-none">💾 Save</label>
+              <span class="cycle-row below">
+                <button type="button" class="btn ghost" data-flove-save="txt">TXT</button>
+                <button type="button" class="btn ghost" data-flove-save="md">MD</button>
+                <button type="button" class="btn ghost" data-flove-save="csv">CSV</button>
+                <button type="button" class="btn ghost" data-flove-save="json">JSON</button>
+                <button type="button" class="btn ghost" data-flove-save="xml">XML</button>
+                <button type="button" class="btn ghost" data-flove-save="html">HTML</button>
+                <button type="button" class="btn ghost" data-flove-save="jpg">JPG</button>
+              </span>
+            </span>
+          </span>
+
+          <span class="cycle-wrap share-wrap">
+            <span class="cycle-trigger">
+              <label class="btn ghost share-btn cycle-step cycle-step--open"  for="cycle-share" data-flove-share>📤 Share</label>
+              <label class="btn ghost share-btn cycle-step cycle-step--close" for="cycle-none">📤 Share</label>
+              <span class="cycle-row below">
+                <button type="button" class="btn ghost share-sub" data-flove-print title="Print">🖨 Print</button>
+                <button type="button" class="btn ghost share-sub" data-flove-share-menu="mobile" title="Share with a mobile app">📱 Mobile</button>
+                <button type="button" class="btn ghost share-sub" data-flove-share-menu title="Share menu (all apps)">🌐 Apps</button>
+                <a class="btn ghost share-sub" href="mailto:?subject=My%20fivys&body=%E2%80%94%20fivy" title="Send by email">📧 Email</a>
+              </span>
+            </span>
+          </span>
+
+          <div class="cycle-wrap pub-wrap">
+            <span class="cycle-trigger">
+              <label class="btn ghost publish-btn cycle-step cycle-step--open"  for="cycle-pub">📨 Publish</label>
+              <label class="btn ghost publish-btn cycle-step cycle-step--close" for="cycle-none">📨 Publish</label>
+              <button type="button" class="btn solid go-btn" id="fivy-pub-go" title="Go">✈ Go</button>
+              <span class="cycle-row below plat-row">
+                <span class="plat-viewport"><span class="plat-track">
+                  <span class="plat-set">
+                    <label class="btn ghost" for="pub-plat-nety"   title="Nety">Nety</label>
+                    <label class="btn ghost" for="pub-plat-reddit" title="Reddit">Reddit</label>
+                    <label class="btn ghost" for="pub-plat-x"      title="X">X</label>
+                  </span>
+                  <span class="plat-set">
+                    <label class="btn ghost" for="pub-plat-masto"   title="Mastodon">Mastodon</label>
+                    <label class="btn ghost" for="pub-plat-bsky"    title="Bluesky">Bluesky</label>
+                    <label class="btn ghost" for="pub-plat-threads" title="Threads">Threads</label>
+                  </span>
+                  <span class="plat-set">
+                    <label class="btn ghost" for="pub-plat-tumblr" title="Tumblr">Tumblr</label>
+                    <label class="btn ghost" for="pub-plat-medium" title="Medium">Medium</label>
+                    <label class="btn ghost" for="pub-plat-wizy"   title="Wizy">Wizy</label>
+                  </span>
+                </span></span>
+                <label class="plat-nav" for="pub-plat-set-1" data-when-set="0" title="More platforms">＋</label>
+                <label class="plat-nav" for="pub-plat-set-2" data-when-set="1" title="More platforms">＋</label>
+                <label class="plat-nav" for="pub-plat-set-0" data-when-set="2" title="More platforms">＋</label>
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   </details>
   <div id="related-wrap">
-    <div class="summary-bottom-actions">
-      <button class="btn btn-soft" id="btn-see-more" type="button">Related apps</button>
-    </div>
-    <div class="related-apps" id="related-apps" hidden></div>
     <div class="summary-nav-row" id="summary-nav-row">
-      <button class="btn btn-ghost btn-back" id="btn-summary-back" type="button">← Fields</button>
+      <button class="btn btn-ghost btn-back" id="btn-summary-back" type="button">← Decks</button>
+      <button class="btn btn-primary" id="btn-summary-next" type="button">Next →</button>
     </div>
+    <!-- related apps live two rows below the nav buttons -->
+    <div class="related-apps" id="related-apps" hidden></div>
   </div>
 
 </div>
@@ -1274,13 +1550,21 @@
   // hands the ordered decks back to the parent (keys) instead of opening fields.
   const EMBED = location.hash.indexOf('embed') !== -1;
   if (EMBED) document.body.classList.add('embed');
+  // A reload — or a back/forward bfcache restore — must start clean (no prior
+  // selections, orderings or typed inputs). State is in-memory, so a fresh load
+  // already resets; this defeats the browser's bfcache restoring the old page.
+  window.addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
   // ============== Fivy decks (pathologies excluded) ==============
   const DECKS = [
     { id:'p1', title:'Senses',   items:['Taste','Smell','Hearing','Touch','Sight'] },
     { id:'p2', title:'Flavors',  items:['Acid','Sour','Sweet','Umami','Salty'] },
     { id:'p3', title:'Social',   items:['Economy','Judicial','Media','Military','Political'] },
     { id:'p4', title:'Elements', items:['Water','Air','Fire','Plasma','Earth'] },
+    // p5: a blank fifth deck the player fills, titles and orders — revealed after the first four
+    { id:'p5', title:'', items:['','','','',''], custom:true },
   ];
+  const BASE4 = ['p1','p2','p3','p4'];
+  const base4Done = () => BASE4.every(id => state.done[id]);
 
   const state = {
     openDeckIdx: null,
@@ -1305,7 +1589,8 @@
   const orderSig = id => state.orders[id].join(',');
   const matchingWhy = id => (state.porQues[id]||[]).find(p => p.orderSig === orderSig(id));
   const lastWhy = id => { const a = state.porQues[id]||[]; return a.length ? a[a.length-1] : null; };
-  const allDone = () => DECKS.every(d => state.done[d.id]);
+  // embed (keys Stage 5) keeps the original 4-deck flow; standalone also needs the 5th
+  const allDone = () => (EMBED ? BASE4 : DECKS.map(d => d.id)).every(id => state.done[id]);
 
   // ============== Render ==============
   function render(){
@@ -1333,14 +1618,19 @@
 
   function renderBoard(){
     $board.innerHTML = '';
-    // Step 4: once all four decks are settled, collapse the deck cards away
-    // (unless one is reopened for editing). The Summary keeps the orderings.
-    if (allDone() && state.openDeckIdx === null){ $board.style.display = 'none'; return; }
+    // Embed (keys Stage 5) still collapses to hand the 4 decks back. Standalone keeps the
+    // row of decks visible once all are settled and simply shows the Fields button below.
+    if (EMBED && allDone() && state.openDeckIdx === null){ $board.style.display = 'none'; return; }
     $board.style.display = '';
     DECKS.forEach((deck, deckIdx) => {
+      if (deck.id === 'p5' && EMBED) return;          // no fifth deck in embed
       const slot = document.createElement('div');
       slot.className = 'slot';
-      if (state.openDeckIdx === deckIdx){
+      if (deck.id === 'p5' && !base4Done()){
+        // the fifth deck holds the last space in the row, locked until the first four settle
+        slot.classList.add('locked');
+        slot.textContent = '5th';
+      } else if (state.openDeckIdx === deckIdx){
         slot.classList.add('placeholder');
         slot.textContent = 'in the center ↑';
       } else if (state.done[deck.id]){
@@ -1356,12 +1646,13 @@
     const btn = document.createElement('button');
     btn.className = 'deck-closed';
     btn.setAttribute('aria-label', 'Face-down deck · tap to reveal');
+    const d = DECKS[deckIdx];
     btn.innerHTML = `
       <div class="back back-1"></div>
       <div class="back back-2"></div>
       <div class="back back-3"></div>
-      <div class="mark">✺</div>
-      <div class="hint">${escapeHTML(DECKS[deckIdx].title)}</div>
+      <div class="mark">${d.custom ? '✎' : '✺'}</div>
+      <div class="hint">${escapeHTML(d.title || (d.custom ? 'New fivy' : ''))}</div>
     `;
     btn.addEventListener('click', () => openDeck(deckIdx));
     return btn;
@@ -1426,7 +1717,8 @@
 
     $spotlight.classList.add('active');
     $spotlight.innerHTML = `
-      <div class="hand fivy" id="hand"></div>
+      ${deck.custom ? `<input id="deck-title" class="deck-title-input" maxlength="32" placeholder="Title your fivy…" value="${escapeHTML(deck.title)}">` : ''}
+      <div class="hand fivy${deck.custom ? ' custom' : ''}" id="hand"></div>
       <div class="pq-panel" id="pq-panel">
         <textarea id="pq-text" placeholder="Write why you placed this key in this order…">${escapeHTML(state.porQueDraft || (match ? match.text : ''))}</textarea>
         <div class="pq-row">
@@ -1441,6 +1733,11 @@
     `;
 
     renderHand(deck, state.orders[deck.id]);
+
+    if (deck.custom){
+      const $dt = $spotlight.querySelector('#deck-title');
+      if ($dt) $dt.addEventListener('input', e => { deck.title = e.target.value; });
+    }
 
     const $panel = $spotlight.querySelector('#pq-panel');
     const $toggle = $spotlight.querySelector('#pq-toggle');
@@ -1473,7 +1770,7 @@
     order.forEach((itemIdx, pos) => {
       const card = document.createElement('div');
       card.className = 'pcard';
-      card.setAttribute('draggable','true');
+      card.setAttribute('draggable', deck.custom ? 'false' : 'true');   // custom: reorder by arrows
       card.setAttribute('data-pos', String(pos));
       card.setAttribute('role','listitem');
       card.setAttribute('aria-label', `${deck.items[itemIdx]} · position ${pos+1}`);
@@ -1486,10 +1783,18 @@
         isFirst ? rightArrow :
         isLast  ? leftArrow  :
         (leftArrow + rightArrow);
+      const nameHTML = deck.custom
+        ? `<input class="pcard-input" maxlength="28" placeholder="rank ${pos+1}" value="${escapeHTML(deck.items[itemIdx])}">`
+        : `<div class="name">${escapeHTML(deck.items[itemIdx])}</div>`;
       card.innerHTML = `
-        <div class="name">${escapeHTML(deck.items[itemIdx])}</div>
+        ${nameHTML}
         <div class="arrows">${arrowHTML}</div>
       `;
+      if (deck.custom){
+        const inp = card.querySelector('.pcard-input');
+        inp.addEventListener('input', e => { deck.items[itemIdx] = e.target.value; });
+        inp.addEventListener('click', e => e.stopPropagation());
+      }
       const leftBtn  = card.querySelector('[data-action="left"]');
       const rightBtn = card.querySelector('[data-action="right"]');
       if (leftBtn)  leftBtn .addEventListener('click', e => { e.stopPropagation(); moveByDelta(deck.id, pos, -1); });
@@ -1548,7 +1853,21 @@
   }
 
   function doneDeck(deckIdx){
-    const id = DECKS[deckIdx].id;
+    const deck = DECKS[deckIdx];
+    const id = deck.id;
+    // the custom fifth deck must be titled and have all five cards filled in
+    if (deck.custom){
+      const emptyIdx = deck.items.findIndex(v => !(v||'').trim());
+      if (!(deck.title||'').trim()){
+        const dt = $spotlight.querySelector('#deck-title'); if (dt) dt.focus();
+        return;
+      }
+      if (emptyIdx !== -1){
+        const inp = $spotlight.querySelectorAll('.pcard-input')[state.orders[id].indexOf(emptyIdx)];
+        if (inp) inp.focus();
+        return;
+      }
+    }
     const wasDone = state.done[id];
     flushDeckTime();              // bank the time spent on this deck
     state.done[id] = true;
@@ -1603,7 +1922,9 @@
     if ($fieldsNavRow)  $fieldsNavRow.style.display  = (view === 'fields')  ? '' : 'none';
     if ($summarySec){   $summarySec.style.display    = (view === 'summary') ? '' : 'none'; $summarySec.open = true; }
     if ($relatedWrap)   $relatedWrap.style.display   = (view === 'summary') ? '' : 'none';
-    setProgress(view === 'decks' ? 0 : 1);
+    // the 4-deck sub-progress belongs to the Decks stage only (Fields/Summary have no substeps)
+    if ($deckProg) $deckProg.style.display = (view === 'decks') ? '' : 'none';
+    setProgress(view === 'decks' ? 0 : view === 'fields' ? 1 : 2);
     window.scrollTo({ top:0, behavior:'smooth' });
   }
   function showDecks(){
@@ -1615,9 +1936,10 @@
     renderNested();   // the settled decks become toggle buttons here
     setView('fields');
     applyGrowth();    // toolbar is now visible → size the square to its height
-    setDeckSubProgress(1);   // fresh stage → sub-bar restarts at its first step
+    // Fields is its own stage with no substeps — the deck sub-bar stays hidden here.
   }
   function enterSummary(){
+    timer.tSummary = Date.now();   // freeze the fields-stage clock for the summary stats
     paintSummary();
     setView('summary');
   }
@@ -1638,7 +1960,7 @@
   }
 
   // ============== Elapsed timer ==============
-  const timer = { t0:0, tFields:0, handle:null };
+  const timer = { t0:0, tFields:0, tSummary:0, handle:null };
   // per-deck active time: accumulates while a deck is open in the spotlight
   const deckTime = {};   // deckId -> ms
   let _openTs = 0;
@@ -1753,7 +2075,10 @@
   // Fields ↔ Summary navigation
   document.getElementById('btn-fields-back').addEventListener('click', showDecks);
   document.getElementById('btn-to-summary').addEventListener('click', enterSummary);
-  document.getElementById('btn-summary-back').addEventListener('click', enterFields);
+  // Summary's go-back returns to the decks/play view (where Go play lands) so the
+  // cards can be reordered; Fields + Summary keep what was already added (state is
+  // untouched by the view switch — only deck-derived bits re-derive on the way back).
+  document.getElementById('btn-summary-back').addEventListener('click', showDecks);
 
   // ============== Brand menu ==============
   const $brandMenu = document.getElementById('brand-menu');
@@ -1796,7 +2121,7 @@
     'cat-g':'var(--cat-g)', 'cat-b':'var(--cat-b)', 'cat-i':'var(--cat-i)',
   };
   // Fallback deck colour (only used if a deck has no parent category).
-  const DECK_COLOR = { p1:'var(--sky)', p2:'var(--brand)', p3:'var(--gold)', p4:'var(--accent)' };
+  const DECK_COLOR = { p1:'var(--sky)', p2:'var(--brand)', p3:'var(--gold)', p4:'var(--accent)', p5:'var(--plum)' };
   // Each deck nests under a parent category, takes its colour, and renders below it.
   // p3 (Social, ex-Powers) has no parent → not shown as a sub-button.
   const DECK_PARENT = { p1:'cat-y', p2:'cat-y', p4:'cat-o' };  // Senses,Flavors→Bio · Elements→Sci
@@ -2092,10 +2417,38 @@
     if ($title) $title.textContent = title;
   }
 
+  // The settled fifth deck shows as its own top-level category button (toggles deck:p5).
+  function ensureFifthCat(){
+    const cats = document.getElementById('cats');
+    const addBtn = document.getElementById('btn-add-cat');
+    let group = cats.querySelector('.cat-group[data-fifth]');
+    const p5 = DECKS.find(d => d.id === 'p5');
+    if (state.done.p5){
+      if (!group){
+        group = document.createElement('div');
+        group.className = 'cat-group';
+        group.dataset.fifth = '1';
+        const b = document.createElement('button');
+        b.className = 'cat'; b.type = 'button'; b.dataset.cat = 'deck:p5';
+        b.style.setProperty('--c', deckColor('p5'));
+        b.addEventListener('click', () => toggleSet('deck:p5'));
+        const ch = document.createElement('div');
+        ch.className = 'cat-children'; ch.dataset.for = 'deck:p5';
+        group.appendChild(b); group.appendChild(ch);
+        cats.insertBefore(group, addBtn);
+      }
+      group.querySelector('button').textContent = (p5 && p5.title) || 'Fivy 5';
+    } else if (group){
+      group.remove();
+    }
+  }
+
   // ----- Sub-buttons: drop below each parent category, but only while that
   //       parent is checked (active). Each is coloured by its parent. -----
   function renderNested(){
     document.querySelectorAll('#cats .cat-children').forEach(el => el.innerHTML = '');
+    // the settled fifth deck becomes its own top-level category button in the left menu
+    ensureFifthCat();
     DECKS.forEach(d => {
       if (!state.done[d.id]) return;          // only decks the player actually settled
       const parent = DECK_PARENT[d.id];
@@ -2216,6 +2569,74 @@
 
   function paintSummary(){
     paintFivysTable();
+    paintSummaryStats();
+    paintSummarySnapshot();
+    paintSummaryPhrase();
+  }
+  // Build the headline phrase, its "magic" rephrasing, and four insights from the settled fivys.
+  function paintSummaryPhrase(){
+    const ph  = document.getElementById('fivy-phrase');
+    const mg  = document.getElementById('fivy-phrase-magic');
+    const ins = document.getElementById('fivy-insight');
+    if (!ph) return;
+    const decks = settledDecks();
+    if (!decks.length){
+      ph.textContent = 'Order your fivys to see a summary phrase here.';
+      if (mg)  mg.textContent = '✨ Your woven phrase appears once you have ordered some fivys.';
+      if (ins) ins.innerHTML = '';
+      return;
+    }
+    const parts = decks.map(d => `${d.title}: ${deckRanked(d).filter(Boolean).join(' ▸ ')}`);
+    ph.textContent = `My fivys — ${parts.join('  ·  ')}.`;
+
+    const woven = decks.map(d => {
+      const r = deckRanked(d).filter(Boolean);
+      return r.length ? `in ${d.title.toLowerCase()} you lead with ${r[0]}` : '';
+    }).filter(Boolean);
+    if (mg) mg.textContent = `✨ ${woven.join(', ')}${woven.length ? ' — a small map of how you weigh the world.' : ''}`;
+
+    if (ins){
+      const firsts = decks.map(d => deckRanked(d)[0]).filter(Boolean);
+      const lasts  = decks.map(d => deckRanked(d)[4]).filter(Boolean);
+      const end = timer.tSummary || Date.now();
+      const fieldsMs = timer.tFields ? (end - timer.tFields) : 0;
+      const texts = [
+        `You settled ${decks.length} ${decks.length === 1 ? 'fivy' : 'fivys'}, ranking five cards in each — ${decks.length * 5} small decisions in all.`,
+        `Your firsts: ${firsts.join(', ')}.`,
+        `Your lasts: ${lasts.join(', ')}.`,
+        `You spent ${fmtTime(end - timer.t0)} in all${timer.tFields ? `, ${fmtTime(fieldsMs)} of it in Fields` : ''}.`,
+      ];
+      ins.innerHTML = '';
+      texts.forEach(t => { const s = document.createElement('span'); s.className = 'insight-text'; s.textContent = t; ins.appendChild(s); });
+    }
+  }
+  // Fields-stage time stats: time spent on decks, on fields, and total.
+  function paintSummaryStats(){
+    const host = document.getElementById('summary-stats');
+    if (!host) return;
+    const end    = timer.tSummary || Date.now();
+    const decks  = timer.tFields ? (timer.tFields - timer.t0) : (end - timer.t0);
+    const fields = timer.tFields ? (end - timer.tFields) : 0;
+    const total  = end - timer.t0;
+    host.innerHTML =
+        `<span class="ss-item"><span class="ss-k">Decks</span><span class="ss-v">${fmtTime(decks)}</span></span>`
+      + `<span class="ss-item ss-hi"><span class="ss-k">Fields</span><span class="ss-v">${fmtTime(fields)}</span></span>`
+      + `<span class="ss-item"><span class="ss-k">Total</span><span class="ss-v">${fmtTime(total)}</span></span>`;
+  }
+  // Snapshot of the last selected square — keeps cycle/confluence arrows, never the list.
+  function paintSummarySnapshot(){
+    const host = document.getElementById('summary-snapshot');
+    if (!host) return;
+    host.innerHTML = '';
+    const sq = $square.cloneNode(true);
+    sq.removeAttribute('id');
+    sq.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+    sq.classList.remove('grow');
+    // keep the square at its original (live) size from the Fields interface
+    const liveW = $square.offsetWidth
+      || parseInt(getComputedStyle($square).getPropertyValue('--sq'), 10) || 320;
+    sq.style.setProperty('--sq', liveW + 'px');
+    host.appendChild(sq);
   }
 
   // Fivys recap: a leading Time column (per-deck active time, live for the open
@@ -2239,8 +2660,8 @@
     if ($sp) $sp.innerHTML = fivysTableHTML();
   }
 
-  // ----- Analyses are shown directly (no Analyze button) → See more -----
-  const $btnSeeMore = document.getElementById('btn-see-more');
+  // ----- Related apps: revealed by the Summary stage's "Next →" -----
+  const $btnSeeMore = document.getElementById('btn-summary-next');
   const $related    = document.getElementById('related-apps');
 
   // Related apps: 3 shown first, then ＋ reveals 6 more.
@@ -2277,6 +2698,17 @@
     $related.hidden = false;
     $btnSeeMore.hidden = true;
     $related.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  });
+
+  // ----- Summary actions: Print + Publish "Go" (Save/Share/Copy are wired by flove.js) -----
+  document.addEventListener('click', e => {
+    if (e.target.closest('[data-flove-print]')) window.print();
+  });
+  const pubGo = document.getElementById('fivy-pub-go');
+  if (pubGo) pubGo.addEventListener('click', () => {
+    // hand the summary off via the same Share path flove.js provides
+    if (window.flove && window.flove.share) window.flove.share(document.getElementById('summary-body'));
+    else window.print();
   });
 
   // ----- Initial paint -----
