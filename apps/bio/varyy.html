@@ -1403,7 +1403,7 @@
         <section class="q-group" data-reveal="1">
           <div class="q" data-base="1">
             <span class="fire" aria-hidden="true"></span>
-            <label for="q1">1. What don’t you like from <span class="other-gender">the other gender</span>?</label>
+            <label for="q1">What don’t you like from <span class="other-gender">the other gender</span>?</label>
             <div class="field">
               <textarea id="q1" name="dislikes" rows="2" maxlength="1000" placeholder="Be specific, be respectful…"></textarea>
               <div class="field-tools">
@@ -1422,7 +1422,7 @@
           <div class="q" data-base="2">
             <span class="fire" aria-hidden="true"></span>
             <button type="button" class="q-collapse" data-action="collapse" aria-label="Collapse this question" title="Collapse this question">✕</button>
-            <label for="q2">2. What do you like from <span class="other-gender">the other gender</span>?</label>
+            <label for="q2">What do you like from <span class="other-gender">the other gender</span>?</label>
             <div class="field">
               <textarea id="q2" name="likes" rows="2" maxlength="1000" placeholder="Sure there are many things..."></textarea>
               <div class="field-tools">
@@ -1441,7 +1441,7 @@
           <div class="q" data-base="3">
             <span class="fire" aria-hidden="true"></span>
             <button type="button" class="q-collapse" data-action="collapse" aria-label="Collapse this question" title="Collapse this question">✕</button>
-            <label for="q3">3. What would you like <span class="other-gender">the other gender</span> to develop more?</label>
+            <label for="q3">What would you like <span class="other-gender">the other gender</span> to develop more?</label>
             <div class="field">
               <textarea id="q3" name="their_growth" rows="2" maxlength="1000" placeholder="Growth in them you’d love to see…"></textarea>
               <div class="field-tools">
@@ -1724,14 +1724,16 @@
       renumberQuestions();
     });
 
-    // Keep question numbers tidy after add/delete (labels start with "N.")
+    // Questions are unnumbered now — strip any stray leading "N." and
+    // re-sync the placeholders that mirror the labels.
     function renumberQuestions(){
       const qs = document.querySelectorAll('.qs .q');
-      qs.forEach((q, i) => {
+      qs.forEach(q => {
         const lab = q.querySelector('label');
-        if (lab) lab.firstChild.nodeValue = (i + 1) + '. ' + lab.firstChild.nodeValue.replace(/^\d+\.\s*/, '');
+        if (lab && lab.firstChild){
+          lab.firstChild.nodeValue = (lab.firstChild.nodeValue || '').replace(/^\s*\d+\.\s*/, '');
+        }
       });
-      // Numbers changed → the placeholders that mirror the labels must too.
       syncPlaceholders();
     }
 
@@ -1843,20 +1845,7 @@
       }
     }
 
-    // ===== More questions =====
-    const POSSIBLE_QS = [
-      'What do you find confusing about <span class="other-gender">the other gender</span>?',
-      'What do you wish <span class="other-gender">the other gender</span> understood about you?',
-      'When have you been positively surprised by <span class="other-gender">the other gender</span>?',
-      'What’s a strength of <span class="other-gender">the other gender</span> you’d like to grow yourself?',
-      'What advice would you give to <span class="other-gender">the other gender</span>?',
-      'What’s a common misunderstanding between you and <span class="other-gender">the other gender</span>?',
-      'What have you learned from <span class="other-gender">the other gender</span>?',
-      'What’s a behaviour from <span class="other-gender">the other gender</span> you would never imitate?',
-      'What positive change have you seen in <span class="other-gender">the other gender</span> lately?',
-      'What is a question you’ve always wanted to ask <span class="other-gender">the other gender</span>?'
-    ];
-    let nextQIndex = 0;
+    // ===== Extra questions =====
     let nextQId = 4;
     const qsContainer = document.querySelector('.qs');
     let currentStyle = 'neutral';
@@ -1884,15 +1873,28 @@
       }
     });
 
+    // Reveal both Q2 & Q3 at once (used by typing in Q1 and by "Show more").
+    function revealAllBase(){
+      const baseGroup = qsContainer.querySelector('.q-group[data-reveal]');
+      if (baseGroup) baseGroup.dataset.reveal = '3';
+      // Nothing further to reveal — retire the "Show more" control if present.
+      document.querySelectorAll('#moreControls .more-row').forEach(r => r.remove());
+    }
+
+    // The moment anything is typed in the first field, the other two
+    // questions (which used to be always present) appear.
+    document.getElementById('q1')?.addEventListener('input', e => {
+      if (e.target.value.trim()) revealAllBase();
+    });
+
     function makeQ(labelInnerHTML, placeholder){
       const id = 'q' + (nextQId++);
-      const tempNum = qsContainer.querySelectorAll('.q').length + 1;
       const q = document.createElement('div');
       q.className = 'q';
       q.innerHTML =
         '<span class="fire" aria-hidden="true"></span>' +
         '<button type="button" class="q-delete" aria-label="Delete question">✕</button>' +
-        '<label for="' + id + '">' + tempNum + '. ' + labelInnerHTML + '</label>' +
+        '<label for="' + id + '">' + labelInnerHTML + '</label>' +
         '<div class="field">' +
           '<textarea id="' + id + '" name="' + id + '" rows="2" maxlength="1000" placeholder="' + (placeholder || 'Your thoughts here…') + '"></textarea>' +
           '<div class="field-tools">' +
@@ -1913,28 +1915,6 @@
       ta.addEventListener('input', refresh);
       refresh();
     }
-    function addQuestionGroup(){
-      if (nextQIndex >= POSSIBLE_QS.length) return null;
-      const group = document.createElement('section');
-      group.className = 'q-group';
-
-      const added = [];
-      for (let i = 0; i < 3 && nextQIndex < POSSIBLE_QS.length; i++){
-        const labelHTML = POSSIBLE_QS[nextQIndex++];
-        const { q, id } = makeQ(labelHTML, 'Your thoughts here…');
-        group.appendChild(q);
-        addExtraResumeLine(id, labelHTML);
-        added.push(id);
-      }
-      qsContainer.appendChild(group);
-      // New groups inherit whatever tone the labelers are currently set to.
-      group.dataset.style = currentStyle;
-      if (currentStyle !== 'neutral') applyGroupStyle(group, currentStyle);
-      renumberQuestions();
-      syncOther();
-      added.forEach(bindAnswerSync);
-      return group;
-    }
     function addExtraResumeLine(id, labelHTML){
       // Append to the resume phrase so new answers also show in the recap.
       const p = document.getElementById('resumePhrase');
@@ -1944,84 +1924,17 @@
       p.appendChild(span);
       answerEls[id] = span.querySelector('[data-answer="' + id + '"]');
     }
-    /* "Show more" cascade — up to 3 sets total.
-       Each Show-more click: turns its row into an X (for the new set) AND,
-       if a further set is still allowed, drops a fresh Show-more row below.
-       Each X removes its set and any sets/control-rows after it. */
+    /* "Show more" no longer adds questions — it simply reveals the two
+       questions (Q2 & Q3) that were always part of the form, then retires
+       itself since there is nothing further to show. */
     const moreControls = document.getElementById('moreControls');
-    const MAX_SETS = 3;
-
-    function totalGroups(){
-      return qsContainer.querySelectorAll('.q-group').length;
-    }
-    function removeGroupRecursive(group){
-      if (!group) return;
-      group.querySelectorAll('.q textarea').forEach(ta => {
-        const id = ta.id;
-        if (!id) return;
-        delete answerEls[id];
-        const phrase = document.getElementById('resumePhrase');
-        const ansSpan = phrase?.querySelector('[data-answer="' + id + '"]');
-        if (ansSpan && ansSpan.parentElement && ansSpan.parentElement !== phrase){
-          ansSpan.parentElement.remove();
-        }
-      });
-      group.remove();
-    }
-    function addMoreRow(step){
-      const row = document.createElement('div');
-      row.className = 'more-row is-revealed';
-      row.dataset.step = String(step);
-      row.innerHTML = '<button type="button" class="big-more-btn" data-action="more">Show more</button>';
-      moreControls.appendChild(row);
-    }
-    function transformRowToX(row){
-      row.innerHTML = '<button type="button" class="collapse-x" data-action="collapse" aria-label="Collapse this set" title="Collapse">✕</button>';
-      row.classList.add('is-revealed');
-    }
-    function transformRowToShowMore(row){
-      row.innerHTML = '<button type="button" class="big-more-btn" data-action="more">Show more</button>';
-      row.classList.remove('is-revealed');
-    }
 
     moreControls.addEventListener('click', e => {
-      const btn = e.target.closest('button[data-action]');
+      const btn = e.target.closest('button[data-action="more"]');
       if (!btn) return;
+      revealAllBase();
       const row = btn.closest('.more-row');
-      if (!row) return;
-
-      if (btn.dataset.action === 'more'){
-        if (totalGroups() >= MAX_SETS) return;
-        if (nextQIndex >= POSSIBLE_QS.length) return;
-        const group = addQuestionGroup();
-        if (!group) return;
-        transformRowToX(row);
-        // After this click, if we're still below MAX_SETS, drop a fresh
-        // Show-more row below for the next set.
-        if (totalGroups() < MAX_SETS){
-          addMoreRow(Number(row.dataset.step) + 1);
-        }
-      } else if (btn.dataset.action === 'collapse'){
-        // Collapse THIS set and any sets/rows after it
-        const groups = [...qsContainer.querySelectorAll('.q-group')];
-        const myStep = Number(row.dataset.step);
-        // The Nth control row corresponds to the (N+1)th group
-        // (set 1 is the initial group, no control row added it).
-        const myGroupIndex = myStep;  // step 1 -> groups[1], step 2 -> groups[2]
-        for (let i = groups.length - 1; i >= myGroupIndex; i--){
-          removeGroupRecursive(groups[i]);
-        }
-        renumberQuestions();
-        // Remove any later more-rows
-        let next = row.nextElementSibling;
-        while (next){
-          const after = next.nextElementSibling;
-          next.remove();
-          next = after;
-        }
-        // Restore THIS row to "Show more" state
-        transformRowToShowMore(row);
-      }
+      if (row) row.remove();
     });
 
     // ===== More formal / More informal style switch (per group) =====
@@ -2050,8 +1963,7 @@
         if (!variants) return;   // only q1/q2/q3 have variants today
         const label = q.querySelector('label');
         if (!label) return;
-        const num = (label.firstChild?.nodeValue || '').match(/^(\d+)\.\s/)?.[1] || '1';
-        label.innerHTML = num + '. ' + (variants[style] || variants.neutral)
+        label.innerHTML = (variants[style] || variants.neutral)
           .replace(/<other>/g, '<span class="other-gender">the other gender</span>');
       });
       syncOther();
