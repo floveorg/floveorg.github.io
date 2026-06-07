@@ -12,7 +12,6 @@
       --line:#1e2133; --field:#13162a; --accent2:#70f0d3;
       --grad:linear-gradient(135deg, var(--app-accent), var(--accent2));
     }
-    @property --spin{ syntax:"<angle>"; inherits:false; initial-value:0deg }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
@@ -50,7 +49,7 @@
     body:has(#puz-menu:checked) .puz-overlay{ display:block }
     body:has(#compass-open:checked) .cmp-overlay{ display:block }
     .puz-menu{ position:absolute; top:calc(100% + 6px); left:.7rem; z-index:50; display:none;
-      flex-direction:column; gap:.1rem; min-width:212px; padding:.5rem;
+      flex-direction:column; gap:.1rem; min-width:200px; padding:.5rem;
       border-radius:var(--flove-radius); background:#13162a; border:1px solid var(--line); box-shadow:0 16px 40px rgba(0,0,0,.5) }
     body:has(#puz-menu:checked) .puz-menu{ display:flex }
     .puz-menu a{ display:block; padding:.5rem .7rem; border-radius:8px; color:var(--ink); text-decoration:none;
@@ -60,7 +59,7 @@
     .puz-mlabel{ font-size:.66rem; letter-spacing:.6px; text-transform:uppercase; color:var(--muted); padding:.25rem .7rem }
     .puz-menu .lang{ padding:.1rem .5rem .3rem }
 
-    /* global compass — drives ALL app buttons at once */
+    /* global compass — drives the scatter of all app buttons */
     .compass-wrap{ position:relative; display:inline-flex; align-items:center }
     .compass-btn{ display:inline-flex; align-items:center; justify-content:center; padding:0; border:0;
       background:transparent; color:var(--app-accent-soft); cursor:pointer;
@@ -85,70 +84,67 @@
     body:has(#disp-sized:checked) .mb-sized, body:has(#disp-rand:checked) .mb-rand{ background:rgba(141,137,255,.18); border-radius:8px }
     .mode-sep{ width:1px; align-self:stretch; margin:3px 1px; background:var(--line) }
 
-    /* ───── sections — plain headers, no boxes/rules ───── */
-    main{ max-width:1080px; margin:2.2rem auto 4rem; padding:0 1.2rem; display:grid; gap:2.4rem }
-    .sec__head{ display:flex; align-items:baseline; gap:.6rem; margin:0 0 .9rem; flex-wrap:wrap }
-    .sec__num{ font-size:1.3rem; line-height:1 }                 /* just the emoji, no pill */
-    .sec__title{ margin:0; font-size:1.1rem; letter-spacing:.5px; font-weight:800; color:var(--ink) }
-    .sec__lede{ margin:0; color:var(--muted); font-size:.84rem; flex:1 1 16ch; min-width:12ch }
+    /* ───── one free-flowing, scattered field of app buttons (no icons, no sections) ───── */
+    main{ max-width:1000px; margin:3rem auto 5rem; padding:0 1.4rem }
+    .flow{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:1.4rem 2rem }
+    .app{ text-decoration:none; color:var(--ink); background:none; border:0; padding:.15rem .25rem; cursor:pointer;
+      font-weight:700; letter-spacing:.3px; font-size:1.1rem; display:inline-block;
+      transition:color var(--flove-fast), transform var(--flove-fast), filter var(--flove-fast), scale .4s ease, rotate .4s ease }
+    .app:hover{ color:var(--accent2); transform:translateY(-3px); filter:drop-shadow(0 0 10px rgba(112,240,211,.5)) }
 
-    /* fold = nest the category away (flat chevron, no box) */
-    .cat-tools{ margin-left:auto; display:inline-flex; align-items:center }
-    .fold-btn{ cursor:pointer; background:none; border:0; color:var(--app-accent-soft); font-size:1rem; line-height:1;
-      padding:0 .2rem; transition:transform var(--flove-fast), color var(--flove-fast) }
-    .fold-btn:hover{ color:var(--accent2) }
-    .cat:has(.opt-fold:checked) .fold-btn{ transform:rotate(-90deg) }
-    .cat:has(.opt-fold:checked) .cat-body{ display:none }
+    /* the default scatter — varied rotation, vertical offset and size (flows randomly) */
+    .flow > .app:nth-child(7n+1){ rotate:-6deg;  margin-top:1.7rem;  font-size:1rem }
+    .flow > .app:nth-child(7n+2){ rotate:5deg;   margin-top:-1.1rem; font-size:1.35rem }
+    .flow > .app:nth-child(7n+3){ rotate:-3deg;  margin-top:2.3rem;  font-size:.95rem }
+    .flow > .app:nth-child(7n+4){ rotate:8deg;   margin-top:.3rem;   font-size:1.5rem }
+    .flow > .app:nth-child(7n+5){ rotate:-9deg;  margin-top:-1.5rem; font-size:1.1rem }
+    .flow > .app:nth-child(7n+6){ rotate:4deg;   margin-top:1.1rem;  font-size:1.25rem }
+    .flow > .app:nth-child(7n+7){ rotate:-5deg;  margin-top:-.5rem;  font-size:.9rem }
 
-    /* ───── apps as free-flowing buttons (no bg, no border, no box) ───── */
-    .flow{ display:flex; flex-wrap:wrap; align-items:center; gap:.8rem 1.3rem }
-    .app{ display:inline-flex; align-items:center; gap:.45rem; text-decoration:none; color:var(--ink);
-      background:none; border:0; padding:.2rem; cursor:pointer; font-weight:700; letter-spacing:.3px;
-      transition:transform var(--flove-fast), color var(--flove-fast), filter var(--flove-fast) }
-    .app:hover{ color:var(--accent2); transform:translateY(-2px); filter:drop-shadow(0 0 9px rgba(112,240,211,.45)) }
-    .app .ico{ font-size:1.35rem; line-height:1; filter:saturate(1.1) }
-    .app .nm{ font-size:1rem }
-    .app .hub{ color:var(--accent2); margin-left:.1em }              /* hub star, flat */
-    .app--feat .ico{ font-size:1.8rem }
-    .app--feat .nm{ font-size:1.3rem;
-      background:linear-gradient(120deg,#fff,var(--app-accent-soft) 40%,var(--accent2));
-      -webkit-background-clip:text; background-clip:text; color:transparent }
-    .app--feat:hover{ filter:drop-shadow(0 0 12px rgba(141,137,255,.55)) }
-    /* the "Redefine & Read" section tints its emoji marker */
-    .cat-read .sec__num{ filter:drop-shadow(0 0 8px rgba(255,212,121,.5)) }
-
-    footer{ max-width:1080px; margin:0 auto 5rem; padding:1.4rem 1.2rem 0; color:var(--muted);
-      font-size:.82rem; text-align:center; border-top:1px solid var(--line) }
-    footer a{ color:var(--accent2) }
-
-    /* ───── compass display modes — applied to the flowing buttons as a whole ───── */
-    body:has(#disp-sized:checked) .flow > .app:not(.app--feat):nth-child(3n+1){ scale:.85 }
-    body:has(#disp-sized:checked) .flow > .app:not(.app--feat):nth-child(3n+2){ scale:1.05 }
-    body:has(#disp-sized:checked) .flow > .app:not(.app--feat):nth-child(3n+3){ scale:1.25 }
+    /* compass · List — neaten the scatter into an even row */
+    body:has(#disp-list:checked) .flow > .app{ rotate:0deg; scale:1; margin-top:0; font-size:1.1rem }
+    /* compass · Sized — graded sizes */
+    body:has(#disp-sized:checked) .flow > .app:nth-child(3n+1){ scale:.8 }
+    body:has(#disp-sized:checked) .flow > .app:nth-child(3n+2){ scale:1.1 }
+    body:has(#disp-sized:checked) .flow > .app:nth-child(3n+3){ scale:1.4 }
+    /* compass · Cloud — drift */
     body:has(#disp-cloud:checked) .app{ animation:b-drift 6.5s ease-in-out infinite }
     body:has(#disp-cloud:checked) .app:nth-child(3n+2){ animation-duration:7.6s; animation-delay:-1.6s }
     body:has(#disp-cloud:checked) .app:nth-child(3n+3){ animation-duration:5.9s; animation-delay:-3.2s }
-    @keyframes b-drift{ 0%,100%{ transform:translate(0,0) rotate(0) } 25%{ transform:translate(9px,-7px) rotate(2deg) }
-      50%{ transform:translate(-7px,6px) rotate(-2deg) } 75%{ transform:translate(7px,5px) rotate(1.5deg) } }
-    body:has(#disp-bub:checked) .app{ animation:b-bubble 5s ease-in-out infinite }
+    @keyframes b-drift{ 0%,100%{ transform:translate(0,0) } 25%{ transform:translate(10px,-9px) }
+      50%{ transform:translate(-8px,7px) } 75%{ transform:translate(8px,6px) } }
+    /* compass · Bubbles — glassy floating pill bubbles (like wanty.html) */
+    body:has(#disp-bub:checked) .app{
+      animation:b-bub 5s ease-in-out infinite; color:var(--ink);
+      padding:.5rem 1.15rem; border-radius:var(--flove-radius-pill);
+      background:radial-gradient(ellipse at 50% 28%, rgba(141,137,255,.30), rgba(112,240,211,.12) 72%, rgba(255,255,255,.03));
+      border:1px solid rgba(201,198,255,.4);
+      box-shadow:inset 0 1px 7px rgba(255,255,255,.22), 0 8px 20px rgba(0,0,0,.32);
+    }
+    body:has(#disp-bub:checked) .app:hover{ filter:brightness(1.08) }
     body:has(#disp-bub:checked) .app:nth-child(3n+2){ animation-duration:5.8s; animation-delay:-1.2s }
     body:has(#disp-bub:checked) .app:nth-child(3n+3){ animation-duration:6.4s; animation-delay:-2.4s }
-    @keyframes b-bubble{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-9px) } }
-    body:has(#disp-rand:checked) .flow > .app:not(.app--feat):nth-child(4n+1){ rotate:-4deg; scale:.95 }
-    body:has(#disp-rand:checked) .flow > .app:not(.app--feat):nth-child(4n+2){ rotate:3deg; scale:1.12; order:2 }
-    body:has(#disp-rand:checked) .flow > .app:not(.app--feat):nth-child(4n+3){ rotate:-2deg; order:-1 }
-    body:has(#disp-rand:checked) .flow > .app:not(.app--feat):nth-child(4n+4){ rotate:5deg; scale:.88; order:1 }
+    @keyframes b-bub{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-11px) } }
+    /* compass · Random — re-shuffle order on top of the scatter */
+    body:has(#disp-rand:checked) .flow > .app:nth-child(4n+1){ order:3; rotate:-11deg }
+    body:has(#disp-rand:checked) .flow > .app:nth-child(4n+2){ order:1; rotate:9deg }
+    body:has(#disp-rand:checked) .flow > .app:nth-child(4n+3){ order:4; rotate:-7deg }
+    body:has(#disp-rand:checked) .flow > .app:nth-child(4n+4){ order:2; rotate:12deg }
     @media (prefers-reduced-motion:reduce){
       body:has(#disp-cloud:checked) .app, body:has(#disp-bub:checked) .app{ animation:none }
     }
+
+    footer{ max-width:1000px; margin:0 auto 5rem; padding:1.4rem 1.2rem 0; color:var(--muted);
+      font-size:.82rem; text-align:center; border-top:1px solid var(--line) }
+    footer a{ color:var(--accent2) }
   </style>
 </head>
 <body>
-  <!-- global compass controls (pure CSS; list = default) -->
+  <!-- global compass controls (pure CSS; default = free scatter, no radio checked) -->
   <input type="checkbox" id="compass-open" class="ctl">
   <input type="radio" name="disp" id="disp-cloud" class="ctl">
   <input type="radio" name="disp" id="disp-bub"   class="ctl">
-  <input type="radio" name="disp" id="disp-list"  class="ctl" checked>
+  <input type="radio" name="disp" id="disp-list"  class="ctl">
   <input type="checkbox" id="disp-sized" class="ctl">
   <input type="checkbox" id="disp-rand"  class="ctl">
   <label for="compass-open" class="cmp-overlay" aria-hidden="true"></label>
@@ -166,11 +162,6 @@
     <label for="puz-menu" class="puz-overlay" aria-hidden="true"></label>
     <div class="puz-menu" role="menu">
       <a href="../index.html" role="menuitem">← <span class="t-en">Apps</span><span class="t-es">Apps</span></a>
-      <span class="puz-sep"></span>
-      <span class="puz-mlabel"><span class="t-en">Go to</span><span class="t-es">Ir a</span></span>
-      <a href="#cat-rate" role="menuitem">🌈 <span class="t-en">Rate</span><span class="t-es">Puntúa</span></a>
-      <a href="#cat-relate" role="menuitem">🕸️ <span class="t-en">Relate</span><span class="t-es">Relaciona</span></a>
-      <a href="#cat-read" role="menuitem">📖 <span class="t-en">Redefine &amp; Read</span><span class="t-es">Redefine y Lee</span></a>
       <span class="puz-sep"></span>
       <span class="puz-mlabel"><span class="t-en">Language</span><span class="t-es">Idioma</span></span>
       <span class="lang">
@@ -191,65 +182,28 @@
       <span class="mode-buttons" role="group" aria-label="Display modes">
         <label class="mode-btn mb-cloud" for="disp-cloud" title="Cloud — drift" tabindex="0"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="8.5" cy="13" r="5.2"/><circle cx="15" cy="10" r="6.3"/><circle cx="18" cy="14.5" r="4.6"/><rect x="6.5" y="13" width="12.5" height="6" rx="3"/></g></svg></label>
         <label class="mode-btn mb-bub" for="disp-bub" title="Bubbles — float &amp; bounce" tabindex="0"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="8" cy="9" r="4.2"/><circle cx="16" cy="14" r="5"/><circle cx="17" cy="6" r="2.6"/></g></svg></label>
-        <label class="mode-btn mb-list" for="disp-list" title="List — ordered" tabindex="0"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="4" cy="6" r="2.3"/><rect x="9" y="4.2" width="13" height="3.6" rx="1.8"/><circle cx="4" cy="12" r="2.3"/><rect x="9" y="10.2" width="13" height="3.6" rx="1.8"/><circle cx="4" cy="18" r="2.3"/><rect x="9" y="16.2" width="13" height="3.6" rx="1.8"/></g></svg></label>
+        <label class="mode-btn mb-list" for="disp-list" title="List — even row" tabindex="0"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="4" cy="6" r="2.3"/><rect x="9" y="4.2" width="13" height="3.6" rx="1.8"/><circle cx="4" cy="12" r="2.3"/><rect x="9" y="10.2" width="13" height="3.6" rx="1.8"/><circle cx="4" cy="18" r="2.3"/><rect x="9" y="16.2" width="13" height="3.6" rx="1.8"/></g></svg></label>
         <span class="mode-sep" aria-hidden="true"></span>
         <label class="mode-btn mb-sized" for="disp-sized" title="Size — small to large" tabindex="0"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><g fill="currentColor"><rect x="2" y="15" width="3" height="5"/><rect x="7" y="12" width="3" height="8"/><rect x="12" y="8" width="3" height="12"/><rect x="17" y="3" width="3" height="17"/></g></svg></label>
-        <label class="mode-btn mb-rand" for="disp-rand" title="Random — shuffle sizes &amp; order" tabindex="0">🎲</label>
+        <label class="mode-btn mb-rand" for="disp-rand" title="Random — shuffle the order" tabindex="0">🎲</label>
       </span>
     </span>
   </nav>
 
   <main>
-    <!-- ══ 1 · RATE ══ -->
-    <section id="cat-rate" class="cat cat-rate">
-      <input type="checkbox" class="ctl opt-fold" id="f-rate">
-      <div class="sec__head">
-        <span class="sec__num">🌈</span>
-        <span class="cat-tools"><label class="fold-btn" for="f-rate" title="Fold / nest" aria-label="Fold category" tabindex="0">▾</label></span>
-      </div>
-      <div class="cat-body">
-        <div class="flow">
-          <a class="app app--feat" href="raty.html" title="Seven colour scales + the five senses as meta-rater; live phrase, axis, ranks."><span class="ico">🌈</span><span class="nm">Raty</span><span class="hub">★</span></a>
-          <a class="app" href="poly.html" title="Bipolar pairs as mutual flow, with complementary hints."><span class="ico">☯️</span><span class="nm">Poly</span></a>
-          <a class="app" href="triady.html" title="When two aren't enough: the triad as minimal harmony; live ranking."><span class="ico">🔱</span><span class="nm">Triady</span></a>
-          <a class="app" href="fivy.html" title="Order the five senses, then map their fields, simplexes and confluences."><span class="ico">🖐️</span><span class="nm">Fivy</span></a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══ 2 · RELATE ══ -->
-    <section id="cat-relate" class="cat cat-relate">
-      <input type="checkbox" class="ctl opt-fold" id="f-relate">
-      <div class="sec__head">
-        <span class="sec__num">🕸️</span>
-        <span class="cat-tools"><label class="fold-btn" for="f-relate" title="Fold / nest" aria-label="Fold category" tabindex="0">▾</label></span>
-      </div>
-      <div class="cat-body">
-        <div class="flow">
-          <a class="app app--feat" href="vizy2.html" title="The semantic mind-map: relations radiating from the core object."><span class="ico">🕸️</span><span class="nm">Vizy2</span><span class="hub">★</span></a>
-          <a class="app" href="comby.html" title="Fuzzy combinations from words and pools — full power-set, JSON export."><span class="ico">🎲</span><span class="nm">Comby</span></a>
-          <a class="app" href="confluenty.html" title="7-column board where lists meet at a centre."><span class="ico">🌀</span><span class="nm">Confluenty</span></a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══ 3 · REDEFINE & READ ══ -->
-    <section id="cat-read" class="cat cat-read">
-      <input type="checkbox" class="ctl opt-fold" id="f-read">
-      <div class="sec__head">
-        <span class="sec__num">📖</span>
-        <span class="cat-tools"><label class="fold-btn" for="f-read" title="Fold / nest" aria-label="Fold category" tabindex="0">▾</label></span>
-      </div>
-      <div class="cat-body">
-        <div class="flow">
-          <a class="app" href="wisy.html" title="Progressive form by depth: prism, tone, focus, then formalise."><span class="ico">📝</span><span class="nm">Wisy</span></a>
-          <a class="app" href="vizy.html" title="Read the whole definition back as one woven phrase."><span class="ico">👁️</span><span class="nm">Vizy</span></a>
-          <a class="app" href="sety.html" title="Language, scales and defaults for the whole tool."><span class="ico">⚙️</span><span class="nm">Sety</span></a>
-          <a class="app" href="keys.html" title="The visual alphabet of flove — symbols, glyphs and shortcuts you learn by looking."><span class="ico">🔑</span><span class="nm">Keys</span></a>
-        </div>
-      </div>
-    </section>
-
+    <div class="flow">
+      <a class="app" href="raty.html"       title="Seven colour scales + the five senses as meta-rater; live phrase, axis, ranks.">Raty</a>
+      <a class="app" href="wisy.html"       title="Progressive form by depth: prism, tone, focus, then formalise.">Wisy</a>
+      <a class="app" href="poly.html"       title="Bipolar pairs as mutual flow, with complementary hints.">Poly</a>
+      <a class="app" href="keys.html"       title="The visual alphabet of flove — symbols, glyphs and shortcuts.">Keys</a>
+      <a class="app" href="vizy2.html"      title="The semantic mind-map: relations radiating from the core object.">Vizy2</a>
+      <a class="app" href="fivy.html"       title="Order the five senses, then map their fields, simplexes and confluences.">Fivy</a>
+      <a class="app" href="comby.html"      title="Fuzzy combinations from words and pools — full power-set, JSON export.">Comby</a>
+      <a class="app" href="vizy.html"       title="Read the whole definition back as one woven phrase.">Vizy</a>
+      <a class="app" href="triady.html"     title="When two aren't enough: the triad as minimal harmony; live ranking.">Triady</a>
+      <a class="app" href="sety.html"       title="Language, scales and defaults for the whole tool.">Sety</a>
+      <a class="app" href="confluenty.html" title="7-column board where lists meet at a centre.">Confluenty</a>
+    </div>
   </main>
 
   <footer>
