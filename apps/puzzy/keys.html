@@ -1074,9 +1074,13 @@
   @media (max-width:520px){ .analyze-bars{padding-left:70px} }
   .analyze-bars[hidden]{display:none}
   .ab-title{
-    margin:0 0 .8rem;text-align:center;
+    margin:0 0 .4rem;text-align:center;
     font:600 1.05rem/1.2 ui-serif,Georgia,serif;color:var(--gold);
     letter-spacing:.4px;
+  }
+  .ab-legend{
+    margin:0 auto .9rem;text-align:center;max-width:52ch;
+    color:var(--muted);font-size:.84rem;line-height:1.45;
   }
   .ab-grid{
     display:grid;
@@ -1999,7 +2003,10 @@
     flex:0 0 auto;align-self:center;width:90px;height:auto;
     pointer-events:none;filter:drop-shadow(0 6px 14px rgba(0,0,0,.4));
   }
+  .chooser-panda.enter{animation:chooser-panda-in 5s ease both}
+  @keyframes chooser-panda-in{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:translateX(0)}}
   @media (max-width:520px){ .chooser-panda{ width:64px } }
+  @media (prefers-reduced-motion: reduce){ .chooser-panda.enter{animation:none} }
   /* Secondary row of smaller "More …" alternatives. Sits below the main two
      chooser opts with reduced padding + smaller heading + 60% width cap. */
   .chooser-actions-sm{margin-top:14px}
@@ -3596,7 +3603,7 @@
   </div>
 
   <section class="chooser" id="chooser" aria-label="Choose a way to start">
-    <h2>Choose a way to start</h2>
+    <h2 id="chooser-title">Choose a way to start</h2>
     <div class="chooser-actions">
       <button class="opt hard" id="chooser-step0" type="button">
         <span class="tag">harder</span>
@@ -5627,6 +5634,23 @@
     if (chooserPandaTimer) return;
     chooserPandaTimer = cyclePanda(document.getElementById('chooserPanda'), 'neutral', 248);
   }
+  // On entering the chooser: type the title and fade the panda in left→right,
+  // both over ~5s.
+  function enterChooser(){
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const h = document.getElementById('chooser-title');
+    if (h){
+      const full = 'Choose a way to start';
+      if (reduce){ h.textContent = full; }
+      else {
+        const step = Math.max(40, Math.round(5000 / full.length));
+        let i = 0; h.textContent = '';
+        (function t(){ h.textContent = full.slice(0, i); if (i++ <= full.length) setTimeout(t, step); })();
+      }
+    }
+    const p = document.getElementById('chooserPanda');
+    if (p){ p.classList.remove('enter'); void p.offsetWidth; p.classList.add('enter'); }
+  }
   // A small panda cycling in the bottom-left corner of a section. Survives the
   // container's innerHTML rebuilds (re-appended + re-armed when wiped).
   const cornerTimers = {};
@@ -5643,8 +5667,8 @@
     if (!cornerTimers[containerId]) cornerTimers[containerId] = cyclePanda(img, emotion, 248);
   }
 
-  // ---- Stage-0 deck pandas: idle (dormido 10s → enfadado 5s) between the
-  // decks when not clicking, one enamorado in a middle for 5s on a deck click,
+  // ---- Stage-0 deck pandas: idle (pensativo 10s → dormido 10s → enfadado 5s)
+  // between the decks when not clicking, enamorado in a middle 5s on a click,
   // and an enamorado in BOTH middles once the three decks are done. ----
   function makePandaSlot(el){
     let t = null;
@@ -5657,7 +5681,7 @@
   let deckOverlay = null, deckSlotL = null, deckSlotR = null;
   let deckIdleTimer = null, deckIdleStep = 0, deckClickTimer = null;
   let deckIdleArmed = false, deckQuestionShown = false;
-  const DECK_IDLE = [{ m:'dormido', ms:10000 }, { m:'enfadado', ms:5000 }];
+  const DECK_IDLE = [{ m:'pensativo', ms:10000 }, { m:'dormido', ms:10000 }, { m:'enfadado', ms:5000 }];
   const stageZeroDone = () => [0,1,2].every(i => DECKS[i] && state.done[DECKS[i].id]);
   function ensureDeckOverlay(){
     if (!deckOverlay){
@@ -6235,7 +6259,7 @@
   function setUIMode(mode){
     $intro.classList.toggle('hidden', mode !== 'intro');
     $chooser.classList.toggle('active', mode === 'chooser');
-    if (mode === 'chooser') startChooserPanda();
+    if (mode === 'chooser'){ startChooserPanda(); enterChooser(); }
     $prelude.classList.toggle('active', mode === 'prelude');
     const showMain = mode === 'main';
     ['play-area','stage-progress','stage-cta','stage-cta-below','stage-back-below'].forEach(id => {
@@ -6725,10 +6749,17 @@
     `).join('');
     $panel.innerHTML = `
       <h3 class="ab-title">Your alternative perspective</h3>
+      <p class="ab-legend">Add another order in another perspective, specially if the perspective of your play has been Subjective and Mommentual.</p>
       <div class="ab-grid">${rows}</div>
       <p class="ab-help">Move the point in each bar.</p>
+      <div class="ab-plus-wrap">
+        <button class="ab-plus-btn" id="ab-plus-btn" type="button" aria-label="Add another order in another perspective" title="Add another order in another perspective">+</button>
+      </div>
     `;
     BARS.forEach(b => { wireBar(b); paintBar(b); });
+    renderParallelRows();
+    document.getElementById('ab-plus-btn').addEventListener('click', addParallelRow);
+    updatePlusBtn();
     showCornerPanda('analyze-bars', 'pensativo');   // pensativo, bottom-left
   }
 
