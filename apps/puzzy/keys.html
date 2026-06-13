@@ -697,6 +697,7 @@
     text-align:center;
   }
   .summary p{color:var(--muted);margin:0 0 1rem;text-align:center}
+  .deck-time{font:600 .7rem/1 system-ui,sans-serif;color:var(--sky);white-space:nowrap;margin-left:.3rem}
   .summary-triads-wrap{position:relative;margin-top:.4rem}
   .summary-triads,
   .summary-fivys{
@@ -931,7 +932,7 @@
   /* "Groups to top" — when Play more is engaged we shove the groups display
      above analyze-bars + the second-play strip so the user works on the
      decks first. */
-  .summary.groups-on-top .summary-actions{order:0}
+  .summary.groups-on-top .summary-actions{order:5}   /* analyze/more buttons below the tables */
   .summary.groups-on-top .play-more-hint{order:1}
   .summary.groups-on-top .summary-triads-wrap{order:1}
   .summary.groups-on-top .summary-fivys{order:1}
@@ -941,7 +942,7 @@
   /* Insights panel rides right under the summary button row (its trigger). */
   .summary.groups-on-top .insights-panel{order:0}
   .summary.groups-on-top .simplex-cta{order:7}
-  .summary.groups-on-top .time-stats{order:8}
+  .summary.groups-on-top .time-stats{order:0}   /* general stats above the tables */
   .summary.groups-on-top .play-more-row{order:8}
   .summary.groups-on-top .flv-std{order:12}
   /* See more + related apps now live below the Summary panel. */
@@ -4757,7 +4758,8 @@
     if (opts.inSummary){
       const t = document.createElement('div');
       t.className = 'deck-title';
-      t.textContent = deck.title;
+      const ms = (state.timing && state.timing.perDeck) ? (state.timing.perDeck[deck.id] || 0) : 0;
+      t.innerHTML = `${escapeHTML(deck.title)}${ms ? ` <span class="deck-time">⏱ ${fmtDuration(ms)}</span>` : ''}`;
       el.appendChild(t);
     }
 
@@ -5354,10 +5356,12 @@
         </div>`;
       }).join('');
 
+    // Per-deck times now live inline on each summary deck (see renderDoneDeck);
+    // keep only the more general step/stage breakdown here.
+    void deckRows;
     const breakdown =
         `${stepRows ? `<div class="ts-group"><div class="ts-cap">Steps</div>${stepRows}</div>` : ''}`
-      + `${stageRows ? `<div class="ts-group"><div class="ts-cap">Stages</div>${stageRows}</div>` : ''}`
-      + `${deckRows ? `<div class="ts-group"><div class="ts-cap">Decks · why</div>${deckRows}</div>` : ''}`;
+      + `${stageRows ? `<div class="ts-group"><div class="ts-cap">Stages</div>${stageRows}</div>` : ''}`;
     // Analyze reveals one primary insight; a "More" button then cycles through
     // a pool of extra hints two at a time, resetting (and looping) on the 3rd
     // click.
@@ -5418,10 +5422,10 @@
     }
     // Light up the breakdown rows named by whichever insights are visible.
     highlightMentionedStats($panel);
-    // Stay hidden — the Stats "more" button reveals the panel. We just mark
-    // whether the panel has any content to show.
+    // Merged into the Summary: the general stats show above the tables (no
+    // longer gated behind the Stats toggle).
     $panel.dataset.populated = hasContent ? '1' : '0';
-    $panel.hidden = true;
+    $panel.hidden = !hasContent;
   }
 
   // ============== Actions ==============
