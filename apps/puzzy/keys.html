@@ -5410,18 +5410,25 @@
     // a row with the time stat to the LEFT of the title it belongs to
     const tsRow = (label, ms, extra) => `<div class="ts-row"><b>${fmtDuration(ms)}</b><span>${label}${extra || ''}</span></div>`;
 
+    const decksTotal = Object.values(t.perDeck || {}).reduce((a, b) => a + (b || 0), 0);
     const stepRows = [
-      ['Create groups',  t.perStep.step0],
-      ['Order the keys', t.perStep.step1],
-    ].filter(([_, ms]) => ms > 0).map(([n, ms]) => tsRow(n, ms)
-    ).join('');
+      ['Create groups', t.perStep.step0],
+      ['Main decks',    t.perStep.step1],
+    ].filter(([_, ms]) => ms > 0).map(([n, ms]) => tsRow(n, ms)).join('');
 
     const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);   // use the section name itself
     const stageRows = STAGES
       .map((s, i) => ({ idx: i, name: s.name, ms: t.perStage[i] || 0 }))
       .filter(s => s.ms > 0)
-      .map(s => tsRow(escapeHTML(cap(s.name)), s.ms))
+      .map(s => tsRow(escapeHTML(cap(s.name).replace(/\s*·\s*/g, ' ')), s.ms))
       .join('');
+
+    // Analysis-subsection timings, also listed in the full table below.
+    const analysisRows =
+        (introMs ? tsRow('Intro', introMs) : '')
+      + (decksTotal ? tsRow('Main decks', decksTotal) : '')
+      + (secondPlayMs ? tsRow('Additional perspective', secondPlayMs) : '')
+      + (analisysMs   ? tsRow('Analisys', analisysMs) : '');
 
     const deckRows = decksActiveSoFar(state.stageIdx)
       .filter(idx => state.done[DECKS[idx].id])
@@ -5445,7 +5452,6 @@
     // perspective · Analisys (See results → Summary-More).
     const $top = document.getElementById('std-timestats-top');
     if ($top){
-      const decksTotal = Object.values(t.perDeck || {}).reduce((a, b) => a + (b || 0), 0);
       const sq = (ms, label) => `<div class="sq"><b>${fmtDuration(ms)}</b><span class="sq-h">${label}</span></div>`;
       const quick = sq(decksTotal, 'Decks')
         + (secondPlayMs ? sq(secondPlayMs, 'Additional perspective') : '')
@@ -5464,6 +5470,7 @@
       <div class="std-ts-cols">
         <div class="std-ts-left">
           ${totalText ? `<div class="std-sub"><h4 class="std-subhead">Total</h4><div class="ts-total"><b>${escapeHTML(totalText)}</b> total</div></div>` : ''}
+          ${analysisRows ? `<div class="std-sub"><h4 class="std-subhead">Analysis</h4>${analysisRows}</div>` : ''}
           ${(stepRows || stageRows || deckRows) ? `<div class="std-sub"><h4 class="std-subhead">By section</h4>${stepRows}${stageRows}${deckRows}</div>` : ''}
         </div>
         <div class="std-ts-right">
@@ -6048,6 +6055,7 @@
   }
 
   function dismissIntro(){
+    if (introStart && !introMs) introMs = Date.now() - introStart;   // freeze intro time
     state.introActive = false;
     setUIMode('chooser');
   }
@@ -7881,6 +7889,7 @@
   let secondPlayFinished = false;
   let secondPlayStart = null, secondPlayMs = 0;   // new-perspective timing
   let seeResultsAt = null, analisysMs = 0;        // time from See results → Summary-More
+  let introStart = null, introMs = 0;             // time spent in the intro (timer hidden there)
   let _spDrag = null;
 
   function initSecondPlayItemOrders(){
@@ -9218,6 +9227,7 @@
   })();
 
   // ============== Boot ==============
+  introStart = Date.now();   // start counting intro time (timer stays hidden here)
   initPrelude();
   renderIntro();
   renderPrelude();   // build prelude DOM in advance (hidden by setUIMode)
