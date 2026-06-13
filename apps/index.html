@@ -595,6 +595,7 @@
   /* Botón brújula = ordenar por colores (arcoíris) */
   .topbar .compass-btn {
     flex: 0 0 auto;
+    margin-left: auto;          /* push compass + sort cluster to the right edge */
     width: 36px; height: 36px;
     display: grid; place-items: center;
     border-radius: 10px;
@@ -753,7 +754,7 @@
     transition: transform .3s var(--flove-ease, ease);
   }
   details.tile-big[open] > summary .chev { transform: rotate(90deg); }
-  details.tile-big[open] > summary.tile-big-main { flex-basis: 50%; }
+  details.tile-big[open] > summary.tile-big-main { flex-basis: 100%; }
   details.tile-big > .tile-big-children {
     display: flex; flex-direction: column;
     flex: 0 1 0%;
@@ -925,37 +926,52 @@
   }
   .launcher-chip .lc-i { font-size: .9rem; line-height: 1; display:inline-flex; }
   .launcher-chip .lc-i .flove-mark { width: 1.15em; height: 1.15em; font-size: 1.05rem; }
-  /* when the folder is open, tuck the chip into the summary half so it
-     doesn't sit on top of the children list */
-  details.tile-big[open] > .launcher-chip { left: 25%; }
+  /* when open, the launcher stays centred and the subs flow around it */
+  details.tile-big[open] > .launcher-chip { left: 50%; }
   /* in cloud/bubbles the card shrinks — keep the chip readable, hide its label */
   body:has(#layout-cloud:checked)   .launcher-chip .lc-t,
   body:has(#layout-bubbles:checked) .launcher-chip .lc-t { display: none; }
 
-  /* ── FLOWING SUBS · open folder card → subs drift inside it as logo-above
-     -name chips (shareful "reasons" style), gently moving within the card ── */
+  /* ── FLOWING SUBS · open folder card → subs use the WHOLE card, drifting as
+     transparent logo-above-name chips (no fill, no border) around the launcher ── */
+  details.tile-big[open] > .tile-big-children {
+    position: absolute; inset: 0; z-index: 2;
+    flex: none; padding: 16px;
+    pointer-events: none;            /* gaps fall through to the summary toggle */
+  }
   details.tile-big[open] > .tile-big-children > .children-list {
     flex-direction: row; flex-wrap: wrap;
-    align-content: center; justify-content: center;
-    gap: 9px; padding: 6px;
+    align-content: center; justify-content: center; align-items: center;
+    gap: 12px 18px; height: 100%; min-height: 0;
+    pointer-events: auto;
   }
   details.tile-big > .tile-big-children > .children-list > .child-btn {
     flex: 0 0 auto;
     flex-direction: column; align-items: center; gap: 4px;
-    min-height: 0; padding: 8px 12px;
-    border-radius: 14px;
+    min-height: 0; padding: 6px 10px;
+    border-radius: 12px;
+    background: transparent;          /* no colour background */
+    border: 0;                        /* no border */
+    color: var(--tile-ink);
+    text-shadow: 0 1px 2px rgba(255,255,255,.45);
   }
-  details.tile-big > .tile-big-children > .children-list > .child-btn .child-icon { font-size: 24px; }
-  details.tile-big > .tile-big-children > .children-list > .child-btn .child-name { font-size: .72rem; }
-  /* gentle drift once the card is open (staggered, clipped to the card) */
-  details.tile-big[open] .children-list > .child-btn { animation: sub-drift 5s ease-in-out infinite; }
-  details.tile-big[open] .children-list > .child-btn:nth-child(3n)   { animation-duration: 6.2s; animation-delay: -1.4s; }
-  details.tile-big[open] .children-list > .child-btn:nth-child(3n+1) { animation-duration: 4.6s; animation-delay: -2.6s; }
-  details.tile-big[open] .children-list > .child-btn:nth-child(4n+2) { animation-duration: 5.6s; animation-delay: -3.3s; }
+  details.tile-big > .tile-big-children > .children-list > .child-btn:hover {
+    background: rgba(255,255,255,.30); border: 0;
+    color: var(--tile-ink);
+    animation-play-state: paused; transform: scale(1.1);
+  }
+  details.tile-big > .tile-big-children > .children-list > .child-btn .child-icon { font-size: 26px; }
+  details.tile-big > .tile-big-children > .children-list > .child-btn .child-name { font-size: .72rem; font-weight: 700; }
+  /* drift across the full card (staggered, clipped to the card) */
+  details.tile-big[open] .children-list > .child-btn { animation: sub-drift 6s ease-in-out infinite; }
+  details.tile-big[open] .children-list > .child-btn:nth-child(3n)   { animation-duration: 7.4s; animation-delay: -1.4s; }
+  details.tile-big[open] .children-list > .child-btn:nth-child(3n+1) { animation-duration: 5.2s; animation-delay: -2.8s; }
+  details.tile-big[open] .children-list > .child-btn:nth-child(4n+2) { animation-duration: 6.6s; animation-delay: -3.6s; }
   @keyframes sub-drift {
     0%,100% { transform: translate(0,0); }
-    33%     { transform: translate(3px,-5px); }
-    66%     { transform: translate(-4px,3px); }
+    25%     { transform: translate(7px,-10px); }
+    50%     { transform: translate(-8px,6px); }
+    75%     { transform: translate(5px,9px); }
   }
   @media (prefers-reduced-motion: reduce) {
     details.tile-big[open] .children-list > .child-btn { animation: none; }
@@ -3205,14 +3221,12 @@ details.tile-big:hover > summary .tag,
 <input type="radio" name="incat" id="in-meta" class="vh" />
 <input type="radio" name="incat" id="in-ling" class="vh" />
 <input type="radio" name="incat" id="in-psy"  class="vh" />
-<!-- Menu toggle (hamburger) -->
-<input type="checkbox" id="menu-tog" class="vh" />
 
 <!-- ── INTRO SPLASH: rainbow category chooser (hides once a category is picked) ── -->
 <div class="intro-splash" id="introSplash" role="navigation" aria-label="Choose a category">
   <a class="flow-btn flow-know intro-flow-top" href="nety.html" aria-label="Know more · about the network"><span class="flow-txt">Know more</span></a>
   <div class="intro-bands">
-    <a     class="intro-band intro-tune"   href="#custom-form"><span class="ib-name">Custom</span><span class="ib-sub">My momentum</span></a>
+    <a     class="intro-band intro-tune"   href="#custom-form"><span class="ib-name">Custom</span><span class="ib-sub">Mommentum</span></a>
 
     <div class="intro-band intro-inside preview-band">
       <input type="radio" name="preview" id="prev-inside" class="vh">
@@ -3238,7 +3252,7 @@ details.tile-big:hover > summary .tag,
 
     <div class="intro-band intro-ling preview-band">
       <input type="radio" name="preview" id="prev-ling" class="vh">
-      <label class="ib-cover" for="prev-ling"><span class="ib-name">Linguistics</span><span class="ib-sub">Word plays that matter</span></label>
+      <label class="ib-cover" for="prev-ling"><span class="ib-name">Linguistics</span><span class="ib-sub">Expressions matter</span></label>
       <div class="ib-stage">
         <a class="ib-app ia1" href="#app-keys"><svg class="flove-mark" aria-hidden="true"><use href="#mark-keys"/></svg><span class="ib-app-n">Keys</span></a>
         <a class="ib-app ia2" href="#app-fivy"><svg class="flove-mark" aria-hidden="true"><use href="#mark-fivy"/></svg><span class="ib-app-n">Fivy</span></a>
@@ -3318,7 +3332,7 @@ details.tile-big:hover > summary .tag,
   <div class="topbar-row topbar-row-1">
     <div class="brand-wrap">
       <input type="checkbox" id="brand-menu-tog" class="vh">
-      <label class="brand brand-btn" for="brand-menu-tog" aria-label="flove menu" title="menu">
+      <label class="brand brand-btn" for="brand-menu-tog" aria-label="flove · advanced menu" title="advanced menu">
         <span class="ster flove-asterism brand-leaf" aria-hidden="true">
           <svg viewBox="0 0 100 100" aria-hidden="true">
             <defs>
@@ -3334,14 +3348,20 @@ details.tile-big:hover > summary .tag,
           </svg>
         </span>
         <span class="brand-title">flove</span>
-        <span class="brand-caret" aria-hidden="true">▾</span>
       </label>
-      <div class="brand-menu" role="menu" aria-label="flove menu">
-        <div class="bm-head">flove</div>
+      <div class="brand-menu brand-menu-advanced" role="menu" aria-label="flove advanced menu">
+        <div class="bm-head">Navigate</div>
         <a href="../index.html" role="menuitem"><span class="bm-i">🏠</span>Home</a>
         <a href="#newApps" role="menuitem"><span class="bm-i">＋</span>Add an app</a>
         <a href="../docs/" role="menuitem"><span class="bm-i">📖</span>Docs</a>
         <hr>
+        <div class="bm-head">Advanced</div>
+        <a href="puzzy/keys.html" role="menuitem"><span class="bm-i">⌘</span>Keys · shortcuts</a>
+        <a href="nety.html" role="menuitem"><span class="bm-i">🛰️</span>Network · know more</a>
+        <a href="#custom-form" role="menuitem"><span class="bm-i">🎛️</span>Custom · tune my list</a>
+        <a href="../docs/#standards" role="menuitem"><span class="bm-i">📐</span>Standards</a>
+        <hr>
+        <div class="bm-head">External</div>
         <a href="https://flove.org" target="_blank" rel="noopener" role="menuitem"><span class="bm-i">🌐</span>flove.org ↗</a>
         <a href="https://codeberg.org/Flove/FloveAll" target="_blank" rel="noopener" role="menuitem"><span class="bm-i">📦</span>Repo ↗</a>
       </div>
@@ -3374,15 +3394,6 @@ details.tile-big:hover > summary .tag,
       </label>
     </div>
     <label for="sort-tog" class="compass-btn" aria-label="sort options" title="sort options" tabindex="0">🧭</label>
-    <div class="menu-wrap">
-      
-      <label for="menu-tog" class="menu-btn" aria-label="menu" title="menu">☰</label>
-      <div class="menu-panel">
-        <div class="label">flove</div>
-        <a href="https://flove.org" target="_blank" rel="noopener">flove.org ↗</a>
-        <a href="https://codeberg.org/Flove/FloveAll" target="_blank" rel="noopener">repo (Codeberg) ↗</a>
-      </div>
-    </div>
   </div>
   <div class="topbar-row topbar-row-2">
     <nav class="cats" aria-label="Categories">
