@@ -1439,7 +1439,7 @@
     color:var(--muted);font-size:.86rem;
   }
   .sp-decks{
-    display:flex;flex-wrap:nowrap;gap:10px;justify-content:flex-start;
+    display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
     padding:8px 2px;overflow-x:auto;
     scrollbar-width:thin;
   }
@@ -2017,6 +2017,8 @@
   }
   .chooser-actions .opt.hard .tag{background:rgba(255,95,220,.18);color:var(--accent)}
   .chooser-actions .opt.easy .tag{background:rgba(168,228,255,.18);color:var(--sky)}
+  /* Highlight Step 1 as the recommended start */
+  #chooser-step1{border-color:var(--sky);box-shadow:0 8px 24px rgba(168,228,255,.28), 0 0 0 1px rgba(168,228,255,.35) inset}
   .chooser-actions .opt h3{
     margin:0 0 .25rem;font:600 1.05rem/1.2 ui-serif,Georgia,serif;color:var(--ink);
   }
@@ -5868,6 +5870,7 @@
   function onDeckClickPanda(){
     if (state.stageIdx !== 0) return;
     ensureDeckOverlay();
+    if (!deckQuestionShown){ deckQuestionShown = true; showDeckQuestion(); }   // after the first deck click
     if (stageZeroDone()) return;
     stopDeckIdle(); deckSlotL.hide();
     deckSlotR.set('enamorado');
@@ -5913,7 +5916,6 @@
     deckDoneShown = false;
     if (!deckIdleArmed){                        // first render of the stage-0 board
       deckIdleArmed = true;
-      if (!deckQuestionShown){ deckQuestionShown = true; showDeckQuestion(); }
       if (!deckClickTimer) startDeckIdle();
     }
   }
@@ -6998,18 +7000,10 @@
       });
       const head = document.createElement('div');
       head.className = 'ab-parallel-head';
-      head.innerHTML = `<span class="ab-parallel-tag">New perspective</span>
-        <button class="ab-parallel-remove" data-act="remove" aria-label="Remove this perspective" title="remove">✕</button>`;
+      head.innerHTML = `<span class="ab-parallel-tag">New perspective</span>`;   // no delete
       block.appendChild(head);
       block.appendChild(grid);
       $wrap.appendChild(block);
-      block.querySelector('[data-act="remove"]').addEventListener('click', () => {
-        parallelRows.splice(rowI, 1);
-        renderParallelRows();
-        renderSecondPlay();
-        updatePlusBtn();
-        updateInsightsBtn();
-      });
       BARS.forEach(b => {
         wireCycleBar(`bar-free-${rowI}-${b.id}`, row.states[b.id]);
       });
