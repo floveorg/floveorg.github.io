@@ -2029,7 +2029,7 @@
   @keyframes type-caret{50%{border-color:transparent}}
   /* Pensativo panda rising into the bottom-left corner of the slider */
   .intro-panda{
-    position:absolute;left:-20px;bottom:-3px;
+    position:absolute;left:-15px;bottom:-5px;
     width:166px;height:auto;pointer-events:none;z-index:2;
     opacity:0;transform:translateY(24px);
     filter:drop-shadow(0 6px 14px rgba(0,0,0,.45));
@@ -5560,7 +5560,27 @@
       if (!pandaFrames.length) return;
       pandaFrameIdx = (pandaFrameIdx + 1) % pandaFrames.length;
       $panda.src = pandaFrames[pandaFrameIdx];
-    }, 110);
+    }, 165);   // 50% slower than the original 110ms
+  }
+
+  // Idle moods: after 10s without a click the panda gets enfadado, 10s later
+  // dormido, then loops between the two every 10s. Any click resets it back
+  // to the current slide's mood.
+  const SLIDE_MOODS = ['pensativo','guino','feliz','celebrando'];
+  const IDLE_MOODS = ['enfadado','dormido'];
+  const slideMood = () => SLIDE_MOODS[introSlide] || 'pensativo';
+  let idleStep = 0;
+  let idleTimer = null;
+  function idleAdvance(){
+    if ($intro.classList.contains('hidden')) return;   // only while the intro shows
+    setPandaEmotion(IDLE_MOODS[idleStep % IDLE_MOODS.length]);
+    idleStep++;
+    idleTimer = setTimeout(idleAdvance, 10000);
+  }
+  function resetIdle(){
+    clearTimeout(idleTimer);
+    if (idleStep > 0){ idleStep = 0; setPandaEmotion(slideMood()); }
+    idleTimer = setTimeout(idleAdvance, 10000);
   }
 
   // Types "that" into the first slide while the pensativo panda rises in the
@@ -5597,8 +5617,8 @@
     Array.from($dots.children).forEach((d, i) => d.classList.toggle('active', i === introSlide));
     document.getElementById('intro-prev').disabled = introSlide === 0;
     document.getElementById('intro-next').disabled = introSlide === INTRO_SLIDES.length - 1;
-    // Each slide gets its own panda mood; fall back to pensativo
-    setPandaEmotion(['pensativo','guino','feliz','celebrando'][introSlide] || 'pensativo');
+    // Each slide gets its own panda mood (unless an idle mood is showing)
+    if (idleStep === 0) setPandaEmotion(slideMood());
     // CTA buttons (More info + Start) only appear once the user has reached the last slide
     const reachedLast = introSlide >= INTRO_SLIDES.length - 1;
     document.getElementById('intro-cta').classList.toggle('gated', !reachedLast);
@@ -8809,6 +8829,8 @@
   renderPrelude();   // build prelude DOM in advance (hidden by setUIMode)
   setUIMode('intro');
   typeThat();        // type "that" + raise the panda once the intro is on screen
+  document.addEventListener('click', resetIdle, true);  // any click resets the idle moods
+  resetIdle();       // arm the idle timer
 })();
 </script>
 </body>
