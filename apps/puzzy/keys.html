@@ -3515,8 +3515,7 @@
           </ul>
         </div>
         <div class="cust-group">
-          <button type="button" class="cust-label cust-collapse-btn" id="custCertifyToggle" aria-expanded="false" aria-controls="custCertifyRow">Certify play</button>
-          <div class="cust-certify-row" id="custCertifyRow" hidden>
+          <div class="cust-certify-row" id="custCertifyRow">
             <div class="cert-track" role="progressbar" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0" id="certTrack">
               <div class="cert-fill" id="certFill"></div>
               <button type="button" class="cert-node" data-cert="trusts" aria-label="Trusts"><span class="cert-dot"></span><span class="cert-name">Trusts</span></button>
@@ -5557,7 +5556,7 @@
       if (!pandaFrames.length) return;
       pandaFrameIdx = (pandaFrameIdx + 1) % pandaFrames.length;
       $panda.src = pandaFrames[pandaFrameIdx];
-    }, 165);   // 50% slower than the original 110ms
+    }, 248);   // slowed a further 50% (was 165ms)
   }
 
   // Idle moods: after 10s without a click the panda gets enfadado, 10s later
@@ -5678,6 +5677,10 @@
     if (btn && panel){
       btn.addEventListener('click', () => {
         const open = panel.hidden;
+        const p = document.getElementById('intro-panda');
+        // Freeze the panda at its current spot BEFORE the panel expands, so the
+        // growing panel can't push it down.
+        if (open && p){ p.style.top = p.offsetTop + 'px'; p.style.bottom = 'auto'; }
         panel.hidden = !open;
         btn.setAttribute('aria-expanded', String(open));
         if (open){
@@ -5686,6 +5689,7 @@
           setPandaEmotion('preocupado');          // worried while customizing
         } else {
           custOpen = false; setPandaEmotion(slideMood()); resetIdle();
+          if (p){ p.style.top = ''; p.style.bottom = ''; }   // back to bottom-anchored
         }
       });
     }
