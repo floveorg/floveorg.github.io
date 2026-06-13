@@ -2798,7 +2798,12 @@
   .std-timestats{display:flex;flex-direction:column;gap:.9rem;margin-top:.9rem}
   .std-sub{border-top:1px dashed var(--stroke);padding-top:.6rem}
   .std-subhead{margin:0 0 .45rem;font:700 .68rem/1 system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:center}
-  .std-timestats .ts-row{display:flex;gap:.55rem;align-items:baseline;justify-content:center;font-size:.86rem;color:var(--ink);margin:.12rem 0}
+  .std-timestats .ts-row{display:flex;gap:.55rem;align-items:baseline;justify-content:flex-start;font-size:.86rem;color:var(--ink);margin:.12rem 0}
+  .std-stage-head{font-size:.78rem;color:var(--sky);margin-top:.4rem}
+  /* timing shown before each deck/stage title in the comparison table */
+  .pr-time{color:var(--sky);font-weight:700;font-variant-numeric:tabular-nums;font-size:.82em;margin-right:.25rem}
+  .pt-newpersp{text-align:center;color:var(--muted);font-size:.84rem;margin:.1rem 0 .5rem}
+  .pt-newpersp b{color:var(--sky)}
   .std-timestats .ts-row b{color:var(--sky);min-width:3.4em;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
   .std-timestats .ts-total{margin:0;font-size:.95rem}
   .std-timestats .ts-total b{color:var(--gold)}
@@ -5408,12 +5413,13 @@
 
     // Subtle subsections within the Summary section, by the comparison tables.
     $panel.innerHTML = `
+      <h4 class="std-subhead std-stage-head">Stage 2: Analisys</h4>
       ${totalText ? `<div class="std-sub"><h4 class="std-subhead">Time</h4><div class="ts-total"><b>${escapeHTML(totalText)}</b> total</div></div>` : ''}
       ${(stepRows || stageRows || deckRows) ? `<div class="std-sub"><h4 class="std-subhead">By step · stage · deck</h4>${stepRows}${stageRows}${deckRows}</div>` : ''}
       ${(hintHTML || primaryHint || cyclePool.length) ? `<div class="std-sub"><h4 class="std-subhead">Insights</h4>
         ${hintHTML ? `<div class="ts-hint" id="ts-insight">${hintHTML}</div>` : ''}
         ${(primaryHint || cyclePool.length) ? `<div class="ts-expanded">
-          <button class="btn btn-soft ts-analyze-btn" id="ts-analyze-btn" type="button" aria-expanded="false">Analyze</button>
+          <button class="btn btn-soft ts-analyze-btn" id="ts-analyze-btn" type="button" aria-expanded="false">Analyze timings</button>
           <div class="ts-further" id="ts-further" hidden>
             ${primaryHint ? `<div class="ts-hint ts-further-hint">${primaryHint}</div>` : ''}
             <div class="ts-cycle" id="ts-cycle"></div>
@@ -5430,7 +5436,7 @@
         const willShow = $tsFurther.hidden;
         $tsFurther.hidden = !willShow;
         $tsAnalyze.setAttribute('aria-expanded', String(willShow));
-        $tsAnalyze.textContent = willShow ? 'Hide' : 'Analyze';
+        $tsAnalyze.textContent = willShow ? 'Hide' : 'Analyze timings';
         highlightMentionedStats($panel);
       });
     }
@@ -6941,6 +6947,7 @@
     // Default to Objective + General (right pole, single point).
     BARS.forEach(b => { states[b.id] = { phase:1, p1:100, p2:null }; });
     parallelRows.push({ idx, states });
+    secondPlayStart = Date.now();   // start timing the new perspective
     const $ab = document.getElementById('analyze-bars');   // hide the "Add a perspective" block once added
     if ($ab) $ab.hidden = true;
     renderParallelRows();
@@ -7527,19 +7534,24 @@
     if (!first.length) return '';
     const showSecond = parallelRows.length >= 1;
     const secondMap = showSecond ? playWordMap('second') : {};
+    const perDeck = (state.timing && state.timing.perDeck) || {};
+    const dt = (id) => `<span class="pr-time">${fmtDuration(perDeck[id] || 0)}</span> `;   // timing before the title
     const cellsHTML = (id, words) => words.map((w, rank) =>
       `<span class="pt-cell" data-group="${id}" data-rank="${rank}">${escapeHTML(w)}</span>`
     ).join('');
     const groups = first.map(g => {
-      const firstRow = `<div class="pr-line"><span class="pr-label">${escapeHTML(g.title)}:</span>`
+      const firstRow = `<div class="pr-line"><span class="pr-label">${dt(g.id)}${escapeHTML(g.title)}:</span>`
         + `<span class="pr-cells">${cellsHTML(g.id, g.words)}</span></div>`;
       const secondRow = showSecond
-        ? `<div class="pr-line pr-second"><span class="pr-label"></span>`
+        ? `<div class="pr-line pr-second"><span class="pr-label">${dt(g.id)}${escapeHTML(g.title)} ·</span>`
           + `<span class="pr-cells">${cellsHTML(g.id, secondMap[g.id] || g.words)}</span></div>`
         : '';
       return `<div class="pr-group">${firstRow}${secondRow}</div>`;
     }).join('');
-    return `<div class="play-rows">${groups}</div>`
+    const newPerspLine = showSecond
+      ? `<div class="pt-newpersp">New perspective · <b>${fmtDuration(secondPlayMs)}</b></div>` : '';
+    return `<h4 class="std-subhead std-stage-head">Stage 1: Decks orders</h4>${newPerspLine}`
+      + `<div class="play-rows">${groups}</div>`
       + buildPerspectivesHTML()
       + buildCombosKeysHTML();
   }
@@ -7824,6 +7836,7 @@
   let secondPlayOrder = null;       // [deckIdx, …] in user-reordered order
   let secondPlayItemOrders = null;  // { deckId: [itemIdx, …] } per-deck item order under the new perspective
   let secondPlayFinished = false;
+  let secondPlayStart = null, secondPlayMs = 0;   // new-perspective timing
   let _spDrag = null;
 
   function initSecondPlayItemOrders(){
@@ -8002,6 +8015,7 @@
 
   function finishSecondPlay(){
     secondPlayFinished = true;
+    if (secondPlayStart) secondPlayMs = Date.now() - secondPlayStart;   // freeze new-perspective timing
     renderSecondPlay();
     // Re-render summary so .is-moved highlights are applied to decks that
     // shifted between the original arrangement and secondPlayOrder.
