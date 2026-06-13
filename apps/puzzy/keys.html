@@ -3535,12 +3535,16 @@
     <div class="intro-arrows">
       <button id="intro-prev" type="button" aria-label="Previous">←</button>
       <button id="intro-next" type="button" aria-label="Next">→</button>
+      <button class="btn btn-primary intro-start-arrow" id="intro-start" type="button" hidden>Start →</button>
     </div>
     <div class="intro-dots" id="intro-dots" role="tablist" aria-label="Slides"></div>
     <div class="intro-cta gated" id="intro-cta">
       <div class="intro-cta-row">
         <button class="btn customize-btn" id="customizeBtn" type="button" aria-expanded="false" aria-controls="customizePanel">⚙ Customize</button>
-        <button class="btn btn-primary" id="intro-start" type="button">Start →</button>
+        <div class="moreinfo-wrap">
+          <button class="btn btn-soft moreinfo-btn" id="intro-more" type="button" aria-expanded="false" aria-controls="intro-more-box">ⓘ More info</button>
+          <div class="moreinfo-box cert-intro" id="intro-more-box" hidden></div>
+        </div>
       </div>
       <div class="customize-panel" id="customizePanel" hidden>
         <!-- hidden language radios drive the CSS-only selected state -->
@@ -3606,10 +3610,6 @@
           <div class="cert-intro" id="custCertIntro" hidden></div>
           <div class="cert-fields" id="custCertFields" hidden></div>
         </div>
-      </div>
-      <div class="moreinfo-wrap">
-        <button class="btn btn-soft moreinfo-btn" id="intro-more" type="button" aria-expanded="false" aria-controls="intro-more-box">ⓘ More info</button>
-        <div class="moreinfo-box cert-intro" id="intro-more-box" hidden></div>
       </div>
     </div>
   </section>
@@ -5685,10 +5685,25 @@
     return timer;
   }
   let chooserPandaStarted = false;
+  let chooserSeqInterval = null, chooserSeqTimeout = null;
   function startChooserPanda(){
     if (chooserPandaStarted) return;
     chooserPandaStarted = true;
-    cyclePanda(document.getElementById('chooserPanda'), 'neutral', 248, 2);  // from the start, 2 loops
+    const el = document.getElementById('chooserPanda');
+    if (!el) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches){ cyclePanda(el, 'neutral', 248); return; }
+    const FRAME = 248, twoLoopsMs = 2 * 10 * FRAME;   // neutral has 10 frames
+    function neutralPhase(){
+      if (chooserSeqInterval) clearInterval(chooserSeqInterval);
+      chooserSeqInterval = cyclePanda(el, 'neutral', FRAME, 2);   // 2 loops, then stays fixed
+      chooserSeqTimeout = setTimeout(dormidoPhase, twoLoopsMs + 10000);   // + 10s fixed neutral
+    }
+    function dormidoPhase(){
+      if (chooserSeqInterval) clearInterval(chooserSeqInterval);
+      chooserSeqInterval = cyclePanda(el, 'dormido', FRAME);     // dormido for 10s
+      chooserSeqTimeout = setTimeout(neutralPhase, 10000);       // then restart the loop
+    }
+    neutralPhase();
   }
   // On entering the chooser: type the title and fade the panda in left→right,
   // both over ~5s.
@@ -5956,11 +5971,15 @@
     const $dots = document.getElementById('intro-dots');
     Array.from($dots.children).forEach((d, i) => d.classList.toggle('active', i === introSlide));
     document.getElementById('intro-prev').disabled = introSlide === 0;
-    document.getElementById('intro-next').disabled = introSlide === INTRO_SLIDES.length - 1;
     // Each slide gets its own panda mood (unless an idle/customize mood shows)
     if (!custOpen && idleStep === 0) setPandaEmotion(slideMood());
-    // CTA buttons (More info + Start) only appear once the user has reached the last slide
+    // On the last slide the Start button substitutes the → arrow; CTA (Customize
+    // + More info) also appears there.
     const reachedLast = introSlide >= INTRO_SLIDES.length - 1;
+    const $next = document.getElementById('intro-next');
+    const $start = document.getElementById('intro-start');
+    if ($next)  $next.hidden  = reachedLast;
+    if ($start) $start.hidden = !reachedLast;
     document.getElementById('intro-cta').classList.toggle('gated', !reachedLast);
   }
 
