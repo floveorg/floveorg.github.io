@@ -1912,7 +1912,8 @@
     .lvl-btn:hover{ background:var(--accent-soft); }
     .lvl-btn.is-active{ background:linear-gradient(135deg, var(--accent), var(--accent-deep)); }
     .lvl-btn.is-active b, .lvl-btn.is-active i{ color:#fff; }
-    body:has(#axis-something:checked) .compass-wrap{ display:none; }
+    body:has(#axis-something:checked) .compass-wrap,
+    body:has(#axis-something:checked) .compass-overlay{ display:none; }
     @media (max-width:600px){ .topbar-inner{ flex-wrap:wrap; row-gap:.4rem; } }
 
     /* ── axis view switching ───────────────────────────────── */
@@ -2208,13 +2209,14 @@
   <div class="onboarding-card" role="note">
     <span class="o-icon" aria-hidden="true">✺</span>
     <div class="o-body">
-      <h3>A gentle map for your first declaration</h3>
-      <p>Trust grows in small, scoped steps. Walk down the page; each card adds a layer. Your readable declaration composes itself as you go.</p>
+      <h3>A gentle map — two ways in</h3>
+      <p>Switch from the topbar: <b>People</b> browses what trusting someone can mean (use the compass to show less or more); <b>For something</b> builds a scoped declaration, step by step.</p>
       <div class="o-steps">
         <span class="o-step"><b>1</b> who</span>
         <span class="o-step"><b>2</b> scope</span>
         <span class="o-step"><b>3</b> protection</span>
-        <span class="o-step"><b>4</b> declare</span>
+        <span class="o-step"><b>4</b> conditions</span>
+        <span class="o-step"><b>5</b> declare</span>
       </div>
     </div>
     <button class="onboarding-close" id="onboardingClose" aria-label="Dismiss this hint">×</button>
@@ -2337,18 +2339,23 @@
     </div>
   </details>
 
-  <!-- ===== 3.5 · Conditions — the "For something" picklist ===== -->
-  <details class="card">
+  <!-- ===== 4 · Conditions — the "For something" picklist ===== -->
+  <details class="card" data-step="4">
     <summary class="card-summary"><h2>Conditions</h2></summary>
     <div class="card-body">
       <button class="section-close" type="button" aria-label="Collapse section">✕</button>
       <p class="lede">Pick the conditions that shape this trust — when, where, for what, and what's given back. Reframed from Dealy's clause taxonomy.</p>
       <div id="conditionsList"></div>
+      <nav class="section-nav" aria-label="Section navigation">
+        <button class="nav-btn prev" type="button" data-nav="prev"><span class="glyph" aria-hidden="true">←</span> Previous</button>
+        <span class="nav-spacer"></span>
+        <button class="nav-btn next" type="button" data-nav="next">Next <span class="glyph" aria-hidden="true">→</span></button>
+      </nav>
     </div>
   </details>
 
   <!-- ===== 4 · Declaration ===== -->
-  <details class="card emphasis" data-step="4">
+  <details class="card emphasis" data-step="5">
     <summary class="card-summary"><h2>Declaration</h2></summary>
     <div class="card-body">
       <button class="section-close" type="button" aria-label="Collapse section">✕</button>
@@ -3045,7 +3052,7 @@
       const trigger = e.target.closest("[data-nav]");
       if(!trigger || trigger.disabled) return;
       const dir = trigger.dataset.nav === "next" ? +1 : -1;
-      const cards = $$("main.container > details.card");
+      const cards = $$("#view-something details.card");
       const here  = trigger.closest("details.card");
       if(!here) return;
       const idx = cards.indexOf(here);
