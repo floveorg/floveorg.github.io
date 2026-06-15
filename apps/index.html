@@ -299,8 +299,17 @@
     position: absolute; left: 50%; z-index: 3;
     padding: 9px 24px; font-size: .98rem;
   }
-  .intro-flow-top { top: 18px;    animation: flow-bob-top 4.5s ease-in-out infinite; }
-  .intro-flow-bot { bottom: 22px; animation: flow-bob-bot 4.5s ease-in-out infinite; }
+  .intro-flow-top { top: 18px;    animation: flow-bob-top 4.5s ease-in-out infinite, intro-zoom 5s ease-in-out 1; }
+  .intro-flow-bot { bottom: 22px; animation: flow-bob-bot 4.5s ease-in-out infinite, intro-zoom 5s ease-in-out 1; }
+  /* on entry the two CTAs zoom in for ~5s to catch the eye, then settle into the bob */
+  @keyframes intro-zoom {
+    0%   { transform: translateX(-50%) scale(1); }
+    10%  { transform: translateX(-50%) scale(1.22); }
+    24%  { transform: translateX(-50%) scale(1); }
+    40%  { transform: translateX(-50%) scale(1.18); }
+    56%  { transform: translateX(-50%) scale(1); }
+    100% { transform: translateX(-50%) scale(1); }
+  }
   .intro-flow-top:hover, .intro-flow-bot:hover { animation-play-state: paused; }
   .intro-flow-top:hover { transform: translateX(-50%) translateY(-2px) scale(1.05); }
   .intro-flow-bot:hover { transform: translateX(-50%) translateY(-2px) scale(1.05); }
@@ -3071,6 +3080,40 @@
   body:has(#cat-economy:checked) .grid > .tile.cat-economy:not(.sub-float),
   body:has(#cat-all:checked)     .grid > .tile:not(.sub-float) { display: flex; }
 
+  /* ── FEELING (emoji) FILTER · the 🙂 button after ALL reveals the 5 Custom
+     feelings as plain emoji buttons (no bg / no border), left-aligned, below the
+     cats row. App↔feeling tagging is SCAFFOLDED below but inert — adding
+     cat-emo1..5 to the tiles and un-commenting the rule wires the actual filter. */
+  body:has(#emo-tog:checked) .cat-emo { box-shadow: 0 0 0 2px rgba(20,16,32,.18) inset; }
+  .emo-row { display: none; }
+  body:has(#emo-tog:checked) .emo-row { display: flex; }
+  .emo-filter {
+    display: flex; flex-direction: row; flex-wrap: wrap;
+    justify-content: flex-start; align-items: center; gap: 10px; padding: 4px 6px;
+  }
+  .emo-btn {
+    background: none; border: 0; padding: 2px; cursor: pointer;
+    width: 34px; height: 34px; display: grid; place-items: center;
+    opacity: .65; transition: opacity .15s ease, transform .15s ease;
+  }
+  .emo-btn:hover { opacity: 1; transform: scale(1.14); }
+  .emo-btn .cmoji { width: 28px; height: 28px; }
+  .emo-btn.e1 .cmoji { color: #b85a1c; }
+  .emo-btn.e2 .cmoji { color: #9c2418; }
+  .emo-btn.e3 .cmoji { color: #9c2418; }
+  .emo-btn.e4 .cmoji { color: #181210; }
+  .emo-btn.e5 .cmoji { color: #181210; }
+  #emo1:checked + .emo-btn, #emo2:checked + .emo-btn, #emo3:checked + .emo-btn,
+  #emo4:checked + .emo-btn, #emo5:checked + .emo-btn { opacity: 1; transform: scale(1.1); }
+  /* ── App↔feeling categorisation · PREPARED, activate once tiles carry cat-emoN:
+  body:has(#emo1:checked, #emo2:checked, #emo3:checked, #emo4:checked, #emo5:checked) .grid > .tile:not(.sub-float) { display: none; }
+  body:has(#emo1:checked) .grid > .tile.cat-emo1:not(.sub-float),
+  body:has(#emo2:checked) .grid > .tile.cat-emo2:not(.sub-float),
+  body:has(#emo3:checked) .grid > .tile.cat-emo3:not(.sub-float),
+  body:has(#emo4:checked) .grid > .tile.cat-emo4:not(.sub-float),
+  body:has(#emo5:checked) .grid > .tile.cat-emo5:not(.sub-float) { display: flex; }
+  */
+
   /* Inside sub-category narrowing — only effective while Inside is active.
      Filters the same way the main icons do (Metaphysics · Linguistics · Psychology). */
   body:has(#cat-inside:checked):has(#in-meta:checked) .grid > .tile.cat-inside:not(.sub-meta),
@@ -3620,7 +3663,7 @@ details.tile-big:hover > summary .tag,
         <div class="kpc kpc5"><span class="kpc-face"><svg class="cmoji" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.2"/><path d="M7.4 11q1.6 1.4 3 0"/><path d="M13.6 11q1.6 1.4 3 0"/><path d="M10.2 15q1.8 1 3.6 0"/></svg></span></div>
       </div>
       <input type="radio" name="preview" id="prev-custom" class="vh">
-      <label class="ib-cover" for="prev-custom"><span class="ib-name">Custom</span><span class="ib-sub">Mommentum</span></label>
+      <label class="ib-cover" for="prev-custom"><span class="ib-name">Custom</span><span class="ib-sub">Moments</span></label>
       <div class="ib-stage">
         <div class="cust-moods">
           <a class="cmood cm1" href="#app-sensy" aria-label="a feeling → an app">
@@ -3654,18 +3697,18 @@ details.tile-big:hover > summary .tag,
         <a class="ib-app ia1" href="#app-goddess"><svg class="flove-mark" aria-hidden="true"><use href="#mark-goddess"/></svg><span class="ib-app-n">Goddy</span></a>
         <a class="ib-app ia2" href="#app-hacky"><svg class="flove-mark" aria-hidden="true"><use href="#mark-hacky"/></svg><span class="ib-app-n">Hacky</span></a>
         <a class="ib-app ia3" href="#app-sensy"><svg class="flove-mark" aria-hidden="true"><use href="#mark-sensy"/></svg><span class="ib-app-n">Sensy</span></a>
-        <label class="ib-all" for="cat-inside">All</label>
+        <label class="ib-all" for="cat-inside">ALL</label>
       </div>
     </div>
 
     <div class="intro-band intro-mating preview-band">
       <input type="radio" name="preview" id="prev-mating" class="vh">
-      <label class="ib-cover" for="prev-mating"><span class="ib-name">Mating</span><span class="ib-sub">My close network</span></label>
+      <label class="ib-cover" for="prev-mating"><span class="ib-name">Mating</span><span class="ib-sub">Close networks</span></label>
       <div class="ib-stage">
         <a class="ib-app ia1" href="#app-daty"><svg class="flove-mark" aria-hidden="true"><use href="#mark-daty"/></svg><span class="ib-app-n">Daty</span></a>
         <a class="ib-app ia2" href="#app-myfamily"><svg class="flove-mark" aria-hidden="true"><use href="#mark-myfamily"/></svg><span class="ib-app-n">MyFamily</span></a>
         <a class="ib-app ia3" href="#app-trusty"><svg class="flove-mark" aria-hidden="true"><use href="#mark-trusty"/></svg><span class="ib-app-n">Trusty</span></a>
-        <label class="ib-all" for="cat-mating">All</label>
+        <label class="ib-all" for="cat-mating">ALL</label>
       </div>
     </div>
 
@@ -3676,7 +3719,7 @@ details.tile-big:hover > summary .tag,
         <a class="ib-app ia1" href="#app-keys"><svg class="flove-mark" aria-hidden="true"><use href="#mark-keys"/></svg><span class="ib-app-n">Keys</span></a>
         <a class="ib-app ia2" href="#app-fivy"><svg class="flove-mark" aria-hidden="true"><use href="#mark-fivy"/></svg><span class="ib-app-n">Fivy</span></a>
         <a class="ib-app ia3" href="puzzy/index.html"><svg class="flove-mark" aria-hidden="true"><use href="#mark-puzzy"/></svg><span class="ib-app-n">Puzzy</span></a>
-        <label class="ib-all" for="cat-ling">All</label>
+        <label class="ib-all" for="cat-ling">ALL</label>
       </div>
     </div>
 
@@ -3687,7 +3730,7 @@ details.tile-big:hover > summary .tag,
         <a class="ib-app ia1" href="#app-realy"><svg class="flove-mark" aria-hidden="true"><use href="#mark-realy"/></svg><span class="ib-app-n">Realy</span></a>
         <a class="ib-app ia2" href="#app-nety"><svg class="flove-mark" aria-hidden="true"><use href="#mark-nety"/></svg><span class="ib-app-n">Nety</span></a>
         <a class="ib-app ia3" href="#app-freedoms"><svg class="flove-mark" aria-hidden="true"><use href="#mark-freedoms"/></svg><span class="ib-app-n">Freedoms</span></a>
-        <label class="ib-all" for="cat-social">All</label>
+        <label class="ib-all" for="cat-social">ALL</label>
       </div>
     </div>
 
@@ -3698,7 +3741,7 @@ details.tile-big:hover > summary .tag,
         <a class="ib-app ia1" href="#app-crowdcrafting"><svg class="flove-mark" aria-hidden="true"><use href="#mark-crowdcrafting"/></svg><span class="ib-app-n">Crafty</span></a>
         <a class="ib-app ia2" href="#app-worthing"><svg class="flove-mark" aria-hidden="true"><use href="#mark-worthing"/></svg><span class="ib-app-n">Worthing</span></a>
         <a class="ib-app ia3" href="#app-loves"><svg class="flove-mark" aria-hidden="true"><use href="#mark-loves"/></svg><span class="ib-app-n">Lovy</span></a>
-        <label class="ib-all" for="cat-economy">All</label>
+        <label class="ib-all" for="cat-economy">ALL</label>
       </div>
     </div>
 
@@ -3725,11 +3768,11 @@ details.tile-big:hover > summary .tag,
         <span class="kp-hint kp-h2">Fall for a sign you already knew</span>
         <span class="kp-hint kp-h3">Ideal for all ages and cultures</span>
         <span class="kp-hint kp-h4">More fun &amp; rich with mates</span>
-        <span class="kp-hint kp-h5">The whole, learned with eyes half-closed</span>
+        <span class="kp-hint kp-h5">All near, very relaxed…</span>
       </div>
     </div>
   </div>
-  <label class="flow-btn flow-all intro-flow-bot" for="cat-all" aria-label="All · show every app"><span class="flow-txt">All</span></label>
+  <label class="flow-btn flow-all intro-flow-bot" for="cat-all" aria-label="All · show every app"><span class="flow-txt">ALL</span></label>
 </div>
 
 <header class="topbar">
@@ -3837,7 +3880,9 @@ details.tile-big:hover > summary .tag,
   </div>
   <div class="topbar-row topbar-row-2">
     <nav class="cats" aria-label="Categories">
-      <label class="flow-btn flow-all" for="cat-all" aria-label="All · show every app"><span class="flow-txt">All</span></label>
+      <label class="flow-btn flow-all" for="cat-all" aria-label="All · show every app"><span class="flow-txt">ALL</span></label>
+      <input type="checkbox" id="emo-tog" class="vh">
+      <label class="cat cat-emo" for="emo-tog" aria-label="filter apps by feeling" title="filter by feeling">🙂</label>
       <label class="cat cat-tune" for="prev-custom" aria-label="Custom · feelings" title="Custom · feelings">Custom</label>
       <label class="cat cat-inside" for="cat-inside">Inside<span class="cat-count">10</span></label>
       <span class="inside-subs" aria-label="Inside subcategories">
@@ -3850,6 +3895,17 @@ details.tile-big:hover > summary .tag,
       <label class="cat cat-economy" for="cat-economy">Economy<span class="cat-count">4</span></label>
       <a class="cat cat-keys" href="puzzy/keys.html" aria-label="Keys · shortcuts for the whole" title="Keys · shortcuts for the whole">Keys</a>
       <a class="flow-btn flow-know" href="nety.html" aria-label="Know more · about the network"><span class="flow-txt">Know more</span></a>
+    </nav>
+  </div>
+  <!-- Feeling filter · the 5 Custom emojis, revealed by the 🙂 button. App↔feeling
+       categorisation is scaffolded but inert until the specific matching is added. -->
+  <div class="topbar-row emo-row">
+    <nav class="emo-filter" aria-label="Filter apps by feeling">
+      <input type="checkbox" id="emo1" class="vh"><label class="emo-btn e1" for="emo1" title="Joyful"><svg class="cmoji" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.2"/><circle cx="9" cy="10.5" r=".95" fill="currentColor"/><circle cx="15" cy="10.5" r=".95" fill="currentColor"/><path d="M8 13.6q4 3.4 8 0"/></svg></label>
+      <input type="checkbox" id="emo2" class="vh"><label class="emo-btn e2" for="emo2" title="Tender"><svg class="cmoji" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.2"/><path transform="translate(7.4 8.4)" d="M0 1.2C0 0 1.6 0 1.6 1 1.6 0 3.2 0 3.2 1.2 3.2 2.4 1.6 3.2 1.6 3.8 1.6 3.2 0 2.4 0 1.2Z" fill="currentColor" stroke="none"/><path transform="translate(13.4 8.4)" d="M0 1.2C0 0 1.6 0 1.6 1 1.6 0 3.2 0 3.2 1.2 3.2 2.4 1.6 3.2 1.6 3.8 1.6 3.2 0 2.4 0 1.2Z" fill="currentColor" stroke="none"/><path d="M9 14.2q3 1.6 6 0"/></svg></label>
+      <input type="checkbox" id="emo3" class="vh"><label class="emo-btn e3" for="emo3" title="Playful"><svg class="cmoji" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.2"/><path d="M7.6 10.6q1.4-1.4 2.8 0"/><circle cx="15" cy="10.7" r=".95" fill="currentColor"/><path d="M8.4 14q3.6 2.4 6.4-.4"/></svg></label>
+      <input type="checkbox" id="emo4" class="vh"><label class="emo-btn e4" for="emo4" title="Curious"><svg class="cmoji" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.2"/><path d="M7.2 9 10 9.7"/><circle cx="9" cy="11.4" r=".9" fill="currentColor"/><circle cx="15" cy="11.4" r=".9" fill="currentColor"/><path d="M10.2 15h3"/></svg></label>
+      <input type="checkbox" id="emo5" class="vh"><label class="emo-btn e5" for="emo5" title="Dreamy"><svg class="cmoji" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.2"/><path d="M7.4 11q1.6 1.4 3 0"/><path d="M13.6 11q1.6 1.4 3 0"/><path d="M10.2 15q1.8 1 3.6 0"/></svg></label>
     </nav>
   </div>
   <div class="topbar-row topbar-row-3 subcats-row">
