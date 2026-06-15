@@ -1981,22 +1981,28 @@
     .thandoff:hover{ border-color:var(--accent); background:#fff; box-shadow:0 3px 12px var(--accent-glow); transform:translateY(-1px); }
     .thandoff:hover .thandoff-logo{ background:var(--accent); color:#fff; }
 
-    /* ── reveal by level — Essence·Normal·Distinctive·Full (data-detail) ── */
-    #view-people[data-detail="0"] .tsub-grid{ display:none; }                  /* Essence: Main only */
-    #view-people[data-detail="1"] .titem--original,
-    #view-people[data-detail="1"] .thandoff{ display:none; }                   /* Normal: formals */
-    #view-people[data-detail="2"] .thandoff{ display:none; }                   /* Distinctive: + ✦ originals */
-    /* Essence — its own manifesto design: the category name recedes, the Main is the hero */
-    #view-people[data-detail="0"] .tcat{ background:transparent; box-shadow:none; border-style:dashed; padding-bottom:.55rem; }
-    #view-people[data-detail="0"] .tcat-chev{ display:none; }
-    #view-people[data-detail="0"] .tcat-head{ font:700 .78rem/1 var(--font-ui); text-transform:uppercase;
-      letter-spacing:1.3px; color:var(--muted); padding-bottom:0; }
-    #view-people[data-detail="0"] .tcat-emoji{ font-size:1rem; filter:none; }
-    #view-people[data-detail="0"] .tcat-note{ display:none; }
-    #view-people[data-detail="0"] .tcat-main{ font-size:1.85rem; margin:.25rem 0 .15rem; }
+    /* ── reveal by LAYER — Essence·Normal·Distinctive multiselect (+ Full) ── */
+    /* each layer is an independent class toggled on #view-people; hide when off */
+    #view-people:not(.show-main)     .tcat-main{ display:none; }               /* Essence → Main phrases */
+    #view-people:not(.show-formal)   .titem--formal{ display:none; }           /* Normal → formal items */
+    #view-people:not(.show-original) .titem--original{ display:none; }         /* Distinctive → ✦ originals */
+    #view-people:not(.show-handoff)  .thandoff{ display:none; }                /* Full → app handoffs */
+    /* no item layer on → fold the sub-grid away (mains-only stays clean) */
+    #view-people:not(.show-formal):not(.show-original) .tsub-grid{ display:none; }
+    /* Essence alone → its own manifesto design: category name recedes, Main is the hero */
+    #view-people.show-main:not(.show-formal):not(.show-original):not(.show-handoff) .tcat{
+      background:transparent; box-shadow:none; border-style:dashed; padding-bottom:.55rem; }
+    #view-people.show-main:not(.show-formal):not(.show-original):not(.show-handoff) .tcat-chev{ display:none; }
+    #view-people.show-main:not(.show-formal):not(.show-original):not(.show-handoff) .tcat-head{
+      font:700 .78rem/1 var(--font-ui); text-transform:uppercase; letter-spacing:1.3px; color:var(--muted); padding-bottom:0; }
+    #view-people.show-main:not(.show-formal):not(.show-original):not(.show-handoff) .tcat-emoji{ font-size:1rem; filter:none; }
+    #view-people.show-main:not(.show-formal):not(.show-original):not(.show-handoff) .tcat-note{ display:none; }
+    #view-people.show-main:not(.show-formal):not(.show-original):not(.show-handoff) .tcat-main{ font-size:1.85rem; margin:.25rem 0 .15rem; }
 
     /* ── level checks — shared across the topbar control and the bottom one ── */
-    .lvl-btn.is-active::before{ content:'✓'; margin-right:.34em; font-weight:700; }
+    /* Essence/Normal/Distinctive are plain multiselect toggles (no check glyph);
+       only Full — a true on/off — carries the ✓ */
+    .lvl-full.is-active::before{ content:'✓'; margin-right:.34em; font-weight:700; }
     .lvl-essence{ font-family:var(--font-display); font-style:italic; letter-spacing:.2px; }
     .lvl-div{ width:1px; align-self:stretch; min-height:1.1em; background:var(--accent-soft); margin:0 .12rem; }
     /* Full is a distinct overlay toggle — warm, not sage */
@@ -2036,7 +2042,7 @@
 </head>
 <body>
 
-<!-- ▸ axis state — CSS-driven (blogyadvanced idiom); detail level is JS (data-detail) -->
+<!-- ▸ axis state — CSS-driven (blogyadvanced idiom); detail layers are JS (show-* classes) -->
 <input type="radio" name="axis" id="axis-people"    class="vh" checked>
 <input type="radio" name="axis" id="axis-something" class="vh">
 
@@ -2075,9 +2081,9 @@
           <circle cx="12" cy="12" r="1.7" fill="#fffaf2"/>
         </svg>
       </span>
-      <button class="lvl-btn lvl-essence" data-level="0" type="button" role="radio" aria-checked="false" title="Just the headlines — a manifesto">Essence</button>
-      <button class="lvl-btn" data-level="1" type="button" role="radio" aria-checked="true" title="Categories collapsed — click one to open">Normal</button>
-      <button class="lvl-btn" data-level="2" type="button" role="radio" aria-checked="false" title="+ flove ✦ originals">Distinctive</button>
+      <button class="lvl-btn lvl-essence" data-level="0" type="button" aria-pressed="true" title="The Main phrases — a manifesto">Essence</button>
+      <button class="lvl-btn" data-level="1" type="button" aria-pressed="true" title="The formal items">Normal</button>
+      <button class="lvl-btn" data-level="2" type="button" aria-pressed="false" title="The ✦ flove originals">Distinctive</button>
       <span class="lvl-div" aria-hidden="true"></span>
       <button class="lvl-btn lvl-full" data-full type="button" aria-pressed="false" title="Show everything — click again to reset to your last pick">Full</button>
     </div>
@@ -2389,13 +2395,13 @@
   </div><!-- /#view-something -->
 
   <!-- ===== People — the trust tree (rendered from PEOPLE) ===== -->
-  <div id="view-people" aria-live="polite" data-detail="0">
+  <div id="view-people" aria-live="polite">
     <div id="peopleTree"></div>
     <div class="detail-stepper" id="detailStepper" role="group" aria-label="Detail level">
       <span class="ds-cap">Show</span>
-      <button class="lvl-btn lvl-essence" data-level="0" type="button" role="radio" aria-checked="false">Essence</button>
-      <button class="lvl-btn" data-level="1" type="button" role="radio" aria-checked="true">Normal</button>
-      <button class="lvl-btn" data-level="2" type="button" role="radio" aria-checked="false">Distinctive</button>
+      <button class="lvl-btn lvl-essence" data-level="0" type="button" aria-pressed="true">Essence</button>
+      <button class="lvl-btn" data-level="1" type="button" aria-pressed="true">Normal</button>
+      <button class="lvl-btn" data-level="2" type="button" aria-pressed="false">Distinctive</button>
       <span class="lvl-div" aria-hidden="true"></span>
       <button class="lvl-btn lvl-full" data-full type="button" aria-pressed="false">Full</button>
     </div>
@@ -3389,22 +3395,25 @@
       + `<div class="cond-items">${g.items.map(t =>
           `<label class="cond-pill"><input type="checkbox"><span>${escT(t)}</span></label>`).join('')}</div></fieldset>`).join('');
   }
-  /* Detail control: 3 single-select levels (0 Essence · 1 Normal · 2 Distinctive)
-     + Full, an independent overlay toggle. Unchecking Full resets to the last level.
-     Essence & Full open every category; Normal & Distinctive start collapsed. */
-  let _level = 1;     // Normal is the default
-  let _full  = false;
+  /* Detail control: Essence(0)·Normal(1)·Distinctive(2) are independent, multiselect
+     content layers (Main phrases · formal items · ✦ originals). Full is an overlay
+     toggle that shows everything (+ handoffs); turning it off reverts to the picked
+     layers. Default: Essence + Normal. */
+  const LAYER_CLASS = ['show-main','show-formal','show-original'];
+  const _sel = new Set([0,1]);
+  let _full = false;
   function applyDisplay(){
-    const eff = _full ? 3 : _level;
     const v = document.getElementById('view-people');
-    if(v) v.dataset.detail = eff;
-    document.querySelectorAll('.compass-needle').forEach(n => { n.style.transform = 'rotate(' + (eff*90) + 'deg)'; });
-    const openAll = (eff === 0 || eff === 3);          // Essence + Full reveal; Normal/Distinctive collapse
-    document.querySelectorAll('.tcat').forEach(d => { d.open = openAll; });
+    if(v){
+      LAYER_CLASS.forEach((cls,i) => v.classList.toggle(cls, _full || _sel.has(i)));
+      v.classList.toggle('show-handoff', _full);
+    }
+    const n = (_full ? 4 : _sel.size);
+    document.querySelectorAll('.compass-needle').forEach(el => { el.style.transform = 'rotate(' + (n*55) + 'deg)'; });
     document.querySelectorAll('.lvl-btn[data-level]').forEach(b => {
-      const on = !_full && (+b.dataset.level === _level);
+      const on = !_full && _sel.has(+b.dataset.level);
       b.classList.toggle('is-active', on);
-      b.setAttribute('aria-checked', on ? 'true' : 'false');
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
     document.querySelectorAll('.lvl-btn[data-full]').forEach(b => {
       b.classList.toggle('is-active', _full);
@@ -3413,7 +3422,12 @@
   }
   function initDisplay(){
     document.querySelectorAll('.lvl-btn[data-level]').forEach(b =>
-      b.addEventListener('click', () => { _level = +b.dataset.level; _full = false; applyDisplay(); }));
+      b.addEventListener('click', () => {
+        _full = false;
+        const k = +b.dataset.level;
+        _sel.has(k) ? _sel.delete(k) : _sel.add(k);
+        applyDisplay();
+      }));
     document.querySelectorAll('.lvl-btn[data-full]').forEach(b =>
       b.addEventListener('click', () => { _full = !_full; applyDisplay(); }));
     applyDisplay();
