@@ -237,6 +237,12 @@
   .slot.over{ border-color:var(--accent); background:rgba(77,208,225,.10); }
   .slot.sub-ok{ border-color:var(--accent); box-shadow:0 0 0 2px rgba(77,208,225,.25) inset; }
   .slot.sub-no{ border-color:var(--accent-2); }
+  /* a reason smiley clicked → its pair of systems blows up ×3 (growing outward,
+     away from the middle) while that reason field is open */
+  .slot.pair-zoom{ z-index:14; }
+  .slot.pair-zoom .card{ transform:scale(3); transition:transform var(--fast); }
+  .slot.pair-zoom:not(.col-right) .card{ transform-origin:right center; }
+  .slot.pair-zoom.col-right .card{ transform-origin:left center; }
   .slot .card{
     width:100%; height:100%; cursor:pointer;
     flex-direction:column; gap:.35rem; justify-content:center; text-align:center; padding:6px;
@@ -272,6 +278,19 @@
   .reason-flag:hover{ border-color:var(--accent); transform:translateY(-1px); }
   .reason-flag.has{ border-color:var(--success); }
   .reason-flag:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  /* the reasons host floats above the zoomed pair so the smiley/composer stay usable */
+  .reasons.show{ position:relative; z-index:21; }
+  /* the contextual "Next →" that appears right where you just saved/added/related */
+  .inline-next{
+    appearance:none; cursor:pointer; margin-top:6px;
+    padding:5px 14px; border-radius:var(--radius-pill);
+    border:1px solid var(--accent); background:var(--accent); color:#001018;
+    font:700 .72rem/1 var(--font-ui); white-space:nowrap;
+    animation:nextpulse 1.8s ease-in-out infinite;
+    transition:filter var(--fast);
+  }
+  .inline-next:hover{ filter:brightness(1.08); }
+  .inline-next.on-slot{ position:absolute; bottom:-34px; left:50%; transform:translateX(-50%); z-index:9; }
   .reason-saved{
     display:flex; align-items:center; gap:.5rem;
     width:100%; padding:7px 10px;
@@ -766,7 +785,7 @@
   <p class="subtitle">The eleven biological systems from <b>souls</b>, laid out as a living body you arrange by hand.</p>
   <ol>
     <li><b>Stage 1 · Place.</b> The eleven <b>systems</b> start fanned open on the left — click or drag each into a placeholder. Click a placed one to send it back. When all are down, press <b>Next stage</b> — this locks the placements and removes Clear board.</li>
-    <li><b>Stage 2 · Reasons.</b> Where a row's left+right (or the <b>centroid</b>) are placed, a <b>smiley</b> appears in the middle — click it to write a <b>reason</b>; it collapses on save. Click the centroid's smiley to draw <b>confluence arrows</b> from its row's left & right cards. Once you've written one, <b>Next</b> appears beside <b>Back</b>.</li>
+    <li><b>Stage 2 · Reasons.</b> Where a row's left+right (or the <b>centroid</b>) are placed, a <b>smiley</b> appears in the middle — click it and that pair of systems <b>blows up ×3</b> with a line drawn between them, while you write a <b>reason</b>; it collapses on save. Click the centroid's smiley to draw <b>confluence arrows</b> from its row's left & right cards. Once you've saved one, a <b>Next →</b> appears right there (and in the bottom bar).</li>
     <li><b>Stage 3 · Verbs.</b> Each right-column system now shows its <b>icon</b> on its card. A <b>+</b> shows on each card's lower edge — click it to add a <b>verb</b>; saved verbs sit centred (a <b>+N</b> opens the full list). Once you've added one, <b>Next</b> reveals the subsystems.</li>
     <li><b>Stage 4 · Subsystems.</b> The <b>Immune</b> and <b>Nervous</b> systems glow; click one to fan its subsystems out as chips — to the right if the parent sits in the left column, to the left if it's on the right, above if it's the centroid. Click a subsystem and a system to thread a labelled line. Threaded ones leave the fan; click the line's label to add a reason/verb (or unthread). The reasons + emojis collapse under a <b>Reasons</b> toggle and verbs under a <b>Verbs</b> toggle. The <b>progress bar</b> tracks every stage.</li>
   </ol>
@@ -975,6 +994,37 @@
   const hasAnySubVerb   = () => Object.values(state.subVerbs).some(a => a && a.length);
   let armedSub = null;            // currently click-armed subsystem id
   const openReasons = new Set();  // which reason fields are expanded (ephemeral UI)
+  // the last item saved/added/related in each stage — anchors the contextual Next
+  let lastReasonKey = null, lastVerbSlot = null, lastSubSlot = null;
+
+  // ── the contextual "Next →" that surfaces only once a step has its first save ──
+  function advance(){
+    if      (state.stage === 2 && hasAnyReason()){ goStage(3); toast('Add verbs with the + on each card'); }
+    else if (state.stage === 3 && hasAnyVerb())  { goStage(4); toast('Click Immune or Nervous to thread subsystems'); }
+    else if (state.stage === 4 && Object.keys(state.subs).length){ showSummary(); }
+  }
+  function mkInlineNext(){
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'inline-next'; b.textContent = 'Next →';
+    b.addEventListener('click', e => { e.stopPropagation(); advance(); });
+    return b;
+  }
+  // which pair/centroid the stage-2 inline Next hangs off (last saved, else first with a reason)
+  function reasonNextKey(){
+    if (lastReasonKey != null && state.reasons[lastReasonKey] && state.reasons[lastReasonKey].length) return lastReasonKey;
+    return REASON_KEYS.find(k => state.reasons[k] && state.reasons[k].length) ?? null;
+  }
+  // a reason smiley that is open blows up its pair of systems ×3
+  function markPairZoom(){
+    allSlots().forEach(s => s.classList.remove('pair-zoom'));
+    if (state.stage !== 2) return;
+    openReasons.forEach(key => {
+      if (key === 'c') return;                       // centroid keeps its confluence view
+      [leftSlotId(+key), rightSlotId(+key)].forEach(id => {
+        if (state.placed[id]){ const s = slotEl(id); if (s) s.classList.add('pair-zoom'); }
+      });
+    });
+  }
 
   // ── build the deck (system cards) ───────────────────────────
   function makeCard(sys){
@@ -1124,6 +1174,7 @@
       const v = inp.value.trim();
       if (v){
         (state.verbs[slot.dataset.slot] ||= []).push(v);
+        lastVerbSlot = slot.dataset.slot;        // anchor the contextual Next to this card
         renderVerbChips(slot); afterChange();   // reveal the Next gate + refresh progress
       }
       inp.value = '';
@@ -1139,7 +1190,10 @@
   }
 
   function firstEmptySlot(){
-    return allSlots().find(s => !s.classList.contains('filled')) || null;
+    // the central placeholder is the FIRST to fill, then the rest in board order
+    const c = slotEl(CENTRE_SLOT);
+    if (c && !c.classList.contains('filled')) return c;
+    return allSlots().find(s => s.dataset.slot !== CENTRE_SLOT && !s.classList.contains('filled')) || null;
   }
   function slotOfSystem(sysId){
     const id = Object.keys(state.placed).find(k => state.placed[k] === sysId);
@@ -1197,11 +1251,15 @@
       if (key === 'c'){ centreClick(); return; }   // centre cycles the confluence view
       if (openReasons.has(key)) openReasons.delete(key);
       else { openReasons.clear(); openReasons.add(key); }   // one reason open at a time
-      renderAllReasons();
+      afterChange();   // re-render + zoom the pair ×3 + draw the connecting line
     });
     host.appendChild(flag);
 
-    if (!openReasons.has(key)) return;   // collapsed → only the smiley shows
+    if (!openReasons.has(key)){
+      // collapsed → smiley only, plus the contextual Next once this pair has a saved reason
+      if (state.stage === 2 && list.length && key === reasonNextKey()) host.appendChild(mkInlineNext());
+      return;
+    }
 
     // saved reasons (deletable)
     list.forEach((txt, i) => {
@@ -1228,6 +1286,7 @@
       const v = input.value.trim();
       if (!v){ toast('Write a reason first'); input.focus(); return; }
       list.push(v);
+      lastReasonKey = key;       // anchor the contextual Next to this pair
       openReasons.delete(key);   // collapse back to the smiley after saving
       afterChange();             // reveal the Next gate + refresh progress
     };
@@ -1330,15 +1389,16 @@
     }
     state.subs[subId] = { kind, slotId: slot.dataset.slot };
     armedSub = null;
-    renderBadges(); renderSubChips(kind); renderProgress(); save(); drawLinks();
+    lastSubSlot = slot.dataset.slot;   // anchor the contextual Next to this target
+    afterChange();                     // badges + chips + links + gates + inline Next
     return true;
   }
   function removeSub(subId, silent){
     const rec = state.subs[subId];
     if (!rec) return;
     delete state.subs[subId];
-    renderBadges(); renderSubChips(rec.kind); renderProgress();
-    if (!silent){ save(); drawLinks(); }
+    if (silent){ renderBadges(); renderSubChips(rec.kind); renderProgress(); return; }
+    afterChange();   // refresh chips/badges/links + the stage-4 gate + contextual Next
   }
   function renderBadges(){
     // a threaded subsystem now shows only as its connector line (+ label) — no
@@ -1368,6 +1428,21 @@
           svg.appendChild(ln);
         });
       }
+    }
+    // open reason (stage 2): a line across that pair of systems
+    if (state.stage === 2){
+      openReasons.forEach(key => {
+        if (key === 'c') return;
+        const li = leftSlotId(+key), ri = rightSlotId(+key);
+        if (!state.placed[li] || !state.placed[ri]) return;
+        const L = slotEl(li), R = slotEl(ri); if (!L || !R) return;
+        const a = anchorRect(L), b = anchorRect(R);
+        const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        ln.setAttribute('x1', a.left + a.width/2); ln.setAttribute('y1', a.top + a.height/2);
+        ln.setAttribute('x2', b.left + b.width/2); ln.setAttribute('y2', b.top + b.height/2);
+        ln.setAttribute('stroke', acc); ln.setAttribute('stroke-width', '3');
+        svg.appendChild(ln);
+      });
     }
     Object.entries(state.subs).forEach(([subId, rec]) => {
       // SubNervous / SubImmune toggles hide that kind's arrows
@@ -1524,8 +1599,8 @@
     const next2 = $('#nextBtn2');
     if (state.stage === 2)      next2.hidden = !hasAnyReason();
     else if (state.stage === 3) next2.hidden = !hasAnyVerb();
-    // stage 4: a final Next once some subsystem has both a reason and a verb
-    else if (state.stage === 4) next2.hidden = !(hasAnySubReason() && hasAnySubVerb());
+    // stage 4: a final Next once at least one subsystem is related to a system
+    else if (state.stage === 4) next2.hidden = !Object.keys(state.subs).length;
     else                        next2.hidden = true;
     // stage-4 toggles: Reasons (reasons + emojis) then Verbs
     const rt = $('#reasonToggle');
@@ -1534,6 +1609,19 @@
     const vt = $('#verbToggle');
     vt.classList.toggle('show', state.stage === 4);
     vt.setAttribute('aria-pressed', state.verbsShown ? 'true' : 'false');
+    // ── pair zoom (stage 2) + the contextual Next anchored to the last action ──
+    markPairZoom();
+    $$('.inline-next.on-slot').forEach(b => b.remove());
+    if (state.stage === 3 && hasAnyVerb()){
+      const sid = (lastVerbSlot && state.verbs[lastVerbSlot] && state.verbs[lastVerbSlot].length)
+        ? lastVerbSlot : Object.keys(state.verbs).find(s => state.verbs[s] && state.verbs[s].length);
+      const slot = sid && slotEl(sid);
+      if (slot){ const b = mkInlineNext(); b.classList.add('on-slot'); slot.appendChild(b); }
+    } else if (state.stage === 4 && Object.keys(state.subs).length){
+      const sid = (lastSubSlot && slotEl(lastSubSlot)) ? lastSubSlot : Object.values(state.subs)[0].slotId;
+      const slot = sid && slotEl(sid);
+      if (slot){ const b = mkInlineNext(); b.classList.add('on-slot'); slot.appendChild(b); }
+    }
     renderProgress();
     drawLinks();
     save();
@@ -1743,7 +1831,7 @@
   // capture phase so it runs before the smiley/verb listeners re-render their own nodes
   document.addEventListener('click', e => {
     if (!e.target.closest('.reasons') && openReasons.size){
-      openReasons.clear(); renderAllReasons();
+      openReasons.clear(); afterChange();   // also drops the pair zoom + connecting line
     }
     $$('.slot.verb-open').forEach(s => { if (!s.contains(e.target)) s.classList.remove('verb-open'); });
     $$('.slot.verbs-expanded').forEach(s => { if (!s.contains(e.target)) s.classList.remove('verbs-expanded'); });
@@ -1795,11 +1883,7 @@
     }
   });
   // middle-stage Next: 2 → 3 (reveal + verbs) · 3 → 4 (reveal subsystems) · 4 → done
-  $('#nextBtn2').addEventListener('click', () => {
-    if (state.stage === 2 && hasAnyReason()){ goStage(3); toast('Add verbs with the + on each card'); }
-    else if (state.stage === 3 && hasAnyVerb()){ goStage(4); toast('Click Immune or Nervous to thread subsystems'); }
-    else if (state.stage === 4 && hasAnySubReason() && hasAnySubVerb()){ showSummary(); }
-  });
+  $('#nextBtn2').addEventListener('click', advance);
   // SubNervous / SubImmune: hide that kind's connector arrows
   $('#subNerveBtn').addEventListener('click', () => { state.hideNerve = !state.hideNerve; afterChange(); });
   $('#subImmuneBtn').addEventListener('click', () => { state.hideImmune = !state.hideImmune; afterChange(); });
