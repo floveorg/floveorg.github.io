@@ -385,15 +385,24 @@
     flex-wrap:wrap; gap:3px; justify-content:center; align-items:center;
   }
   body.show-verbs .slot .verb-list{ display:flex; }
+  /* once expanded, the one-verb summary hides — the full list takes over */
+  body.show-verbs .slot.verbs-expanded .verb-list{ display:none; }
   .verb-chip{
     font:600 .84rem/1.2 var(--font-ui); padding:0; border-radius:0;
     background:transparent; border:0; color:var(--accent);
     max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
   .verb-more{
-    font:700 .56rem/1 var(--font-ui); padding:1px 5px; border-radius:var(--radius-pill);
+    font:700 .72rem/1 var(--font-ui); width:16px; height:16px; padding:0; border-radius:50%;
+    display:grid; place-items:center;
     background:var(--accent); border:1px solid var(--accent); color:#001018; cursor:pointer;
   }
+  .verb-collapse{
+    align-self:center; margin-bottom:2px; padding:2px 8px; border-radius:var(--radius-pill);
+    font:700 .58rem/1 var(--font-ui); letter-spacing:.04em;
+    background:transparent; border:1px solid var(--line); color:var(--ink-dim); cursor:pointer;
+  }
+  .verb-collapse:hover{ border-color:var(--accent); color:var(--accent); }
   .verb-all{
     display:none; position:absolute; top:calc(100% + 6px); left:50%; transform:translateX(-50%); z-index:8;
     min-width:96px; max-width:160px; padding:6px; border-radius:var(--radius-sm);
@@ -1244,19 +1253,24 @@
     list.innerHTML = ''; all.innerHTML = '';
     if (!verbs.length){ slot.classList.remove('verbs-expanded'); return; }
 
-    // centred summary: the first verb, plus a +N opener when there's more
+    // collapsed view: just the first verb (sits directly above the + add button),
+    // with a "+" to its right that expands the full list when there's more than one
     const chip = document.createElement('span');
     chip.className = 'verb-chip'; chip.textContent = verbs[0]; chip.title = verbs[0];
     list.appendChild(chip);
     if (verbs.length > 1){
       const more = document.createElement('button');
       more.type = 'button'; more.className = 'verb-more';
-      more.textContent = '+' + (verbs.length - 1);
-      more.title = 'Show all verbs';
+      more.textContent = '+'; more.title = 'Show all verbs';
       list.appendChild(more);
     }
 
-    // the full list, shown below the card when expanded
+    // expanded view: every verb of this system + a collapse control back to one
+    if (verbs.length > 1){
+      const col = document.createElement('button');
+      col.type = 'button'; col.className = 'verb-collapse'; col.textContent = '▴ collapse';
+      all.appendChild(col);
+    }
     verbs.forEach((v, i) => {
       const row = document.createElement('div');
       row.className = 'verb-row';
@@ -1913,7 +1927,9 @@
     const vSave = e.target.closest('.verb-save');
     if (vSave){ saveVerb(vSave.closest('.slot')); return; }
     const vMore = e.target.closest('.verb-more');
-    if (vMore){ vMore.closest('.slot').classList.toggle('verbs-expanded'); return; }
+    if (vMore){ vMore.closest('.slot').classList.add('verbs-expanded'); return; }
+    const vCol = e.target.closest('.verb-collapse');
+    if (vCol){ vCol.closest('.slot').classList.remove('verbs-expanded'); return; }
     const vEdit = e.target.closest('.verb-all .vedit');
     if (vEdit){
       const slot = vEdit.closest('.slot'), i = +vEdit.dataset.i;
