@@ -648,22 +648,63 @@
 
   /* ── Complete · summary section + action bar (souls-style §13.9 surface) ── */
   .summary-section{
-    display:none; margin-top:18px; width:min(640px, 100%);
-    flex-direction:column; gap:12px;
-    padding:16px 18px; border:1px solid var(--line); border-radius:var(--radius);
-    background:linear-gradient(180deg, rgba(77,208,225,.05), transparent), var(--panel);
-    animation:rise .35s cubic-bezier(.2,.8,.2,1) both;
+    display:none; margin-top:22px; width:min(680px, 100%);
+    flex-direction:column; gap:16px; position:relative; overflow:hidden;
+    padding:26px 26px 22px; border:1px solid rgba(255,255,255,.14); border-radius:22px;
+    background:
+      radial-gradient(420px 200px at 12% -20%, rgba(77,208,225,.16), transparent),
+      radial-gradient(420px 200px at 110% 0%, rgba(179,136,255,.14), transparent),
+      radial-gradient(360px 220px at 50% 130%, rgba(105,240,174,.10), transparent),
+      linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015)), var(--panel);
+    box-shadow:0 26px 70px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
+    animation:rise .4s cubic-bezier(.2,.8,.2,1) both;
   }
   .summary-section.show{ display:flex; }
+  /* a thin tri-colour seam along the top edge */
+  .summary-section::before{
+    content:''; position:absolute; inset:0 0 auto 0; height:3px;
+    background:linear-gradient(90deg, var(--accent), var(--nerve) 50%, var(--immune));
+    opacity:.85;
+  }
   @keyframes rise{ from{ opacity:0; transform:translateY(10px) } to{ opacity:1; transform:none } }
-  .summary-title{ margin:0; text-align:center; font:700 1.1rem/1.2 var(--font-ui); color:var(--accent); letter-spacing:.01em; }
+  .summary-head{ display:flex; flex-direction:column; align-items:center; gap:4px; text-align:center; }
+  .summary-glyph{ width:46px; height:46px; filter:drop-shadow(0 0 12px rgba(77,208,225,.4)); }
+  .summary-title{
+    margin:0; font:700 1.7rem/1.1 Georgia, 'Times New Roman', serif; letter-spacing:-.01em;
+    background:linear-gradient(120deg, var(--accent), var(--nerve) 50%, var(--immune));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .summary-sub{ margin:0; color:var(--ink-dim); font:400 .85rem/1.4 var(--font-ui); }
+
+  /* the styled, rendered resume — grouped cards with coloured chips */
+  .summary-render{ display:flex; flex-direction:column; gap:16px; }
+  .sum-group h3{
+    display:flex; align-items:center; gap:.45rem; margin:0 0 7px;
+    font:800 .66rem/1 var(--font-ui); letter-spacing:.2em; text-transform:uppercase; color:var(--g);
+  }
+  .sum-item{
+    display:flex; flex-wrap:wrap; align-items:center; gap:5px 10px;
+    padding:10px 14px; margin-bottom:7px; border-radius:13px;
+    background:linear-gradient(100deg, color-mix(in srgb, var(--g) 15%, transparent), transparent);
+    border-left:3px solid var(--g);
+  }
+  .sum-item:last-child{ margin-bottom:0; }
+  .sum-ttl{ font:700 .9rem/1.25 var(--font-ui); color:var(--ink); margin-right:auto; }
+  .sum-chips{ display:flex; flex-wrap:wrap; gap:5px; }
+  .sum-chip{
+    font:600 .72rem/1 var(--font-ui); padding:4px 10px; border-radius:var(--radius-pill);
+    background:color-mix(in srgb, var(--g) 16%, #0d1018); color:var(--ink);
+    border:1px solid color-mix(in srgb, var(--g) 38%, transparent);
+  }
+  .sum-empty{ text-align:center; color:var(--ink-dim); margin:4px 0; }
+
   .summary-text{
     margin:0; max-height:340px; overflow:auto; white-space:pre-wrap; word-break:break-word;
     padding:12px 14px; border-radius:var(--radius-sm);
-    background:#0d1018; border:1px solid var(--chip-border); border-left:3px solid var(--accent);
-    color:var(--ink); font:500 .82rem/1.5 var(--font-ui);
+    background:#0d1018; border:1px solid var(--chip-border); border-left:3px solid var(--nerve);
+    color:#e9ddff; font:500 .85rem/1.55 var(--font-ui); font-style:italic;
   }
-  .summary-text.phrase--magic{ border-left-color:var(--nerve); color:#e9ddff; font-style:italic; }
+  .summary-text[hidden]{ display:none; }
 
   /* insight panel — the cycling reads of the body */
   .insight-panel{
@@ -907,8 +948,23 @@
     <!-- Summary · revealed by the subsystems-stage Next: the resume of every
          selection + the magic / insight / copy + save / share / publish bar -->
     <section class="summary-section" id="summarySection" aria-label="Your pracsys results">
-      <h2 class="summary-title">Your pracsys body</h2>
-      <pre class="summary-text" id="summaryText"></pre>
+      <header class="summary-head">
+        <svg class="summary-glyph" viewBox="0 0 100 100" aria-hidden="true">
+          <defs>
+            <linearGradient id="g-sum" x1="14" y1="14" x2="86" y2="86" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#4dd0e1"/><stop offset="50%" stop-color="#b388ff"/><stop offset="100%" stop-color="#69f0ae"/>
+            </linearGradient>
+          </defs>
+          <g fill="none" stroke="url(#g-sum)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="50" cy="50" r="34"/><line x1="50" y1="16" x2="50" y2="84"/><line x1="16" y1="50" x2="84" y2="50"/>
+          </g>
+          <circle cx="50" cy="50" r="6" fill="url(#g-sum)"/>
+        </svg>
+        <h2 class="summary-title">pracsys body</h2>
+        <p class="summary-sub">your eleven systems, laid out as a living body</p>
+      </header>
+      <div class="summary-render" id="summaryRender"></div>
+      <pre class="summary-text" id="summaryText" hidden></pre>
       <div class="insight-panel" id="insightPanel" hidden></div>
 
       <div class="result-actions">
@@ -2184,10 +2240,34 @@
   }
   // what Copy / Share read: whatever the panel currently shows
   function shownText(){ return magicOn ? magicPhrase() : summaryText(); }
+
+  // the four groups, with the colours that theme the rendered/exported/JPG views
+  const GROUP_META = [
+    { kind:'pair',      label:'Systems pairs', icon:'⇄',  cssVar:'--accent',   hex:'#4dd0e1' },
+    { kind:'centroid',  label:'Centroid',      icon:'✺',  cssVar:'--accent-2', hex:'#ff8a65' },
+    { kind:'verbs',     label:'Verbs',         icon:'🔗', cssVar:'--nerve',    hex:'#b388ff' },
+    { kind:'subsystem', label:'Subsystems',    icon:'🛡', cssVar:'--immune',   hex:'#69f0ae' }
+  ];
+  function summaryRenderHTML(){
+    const rows = summaryRows();
+    let html = '';
+    GROUP_META.forEach(g => {
+      const items = rows.filter(r => r.kind === g.kind); if (!items.length) return;
+      html += `<div class="sum-group" style="--g:var(${g.cssVar})"><h3>${g.icon} ${g.label}</h3>`;
+      items.forEach(r => {
+        html += `<div class="sum-item"><span class="sum-ttl">${escHtml(r.title)}</span>`
+          + (r.items.length ? `<span class="sum-chips">${r.items.map(it => `<span class="sum-chip">${escHtml(it)}</span>`).join('')}</span>` : '')
+          + `</div>`;
+      });
+      html += `</div>`;
+    });
+    return html || `<p class="sum-empty">Nothing placed yet.</p>`;
+  }
   function renderSummary(){
-    const pre = $('#summaryText'); if (!pre) return;
-    pre.textContent = shownText();
-    pre.classList.toggle('phrase--magic', magicOn);
+    const render = $('#summaryRender'); if (render) render.innerHTML = summaryRenderHTML();
+    // the text pre shows only in Magic mode (the remix phrase); cards are the default view
+    const pre = $('#summaryText');
+    if (pre){ pre.hidden = !magicOn; if (magicOn) pre.textContent = magicPhrase(); }
   }
 
   // ── Insight · cycling reads of the body ──
@@ -2286,6 +2366,79 @@
   });
 
   // ── the [data-action] surface: Copy / Save (download) / Share / Publish ──
+  const hexA = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`; };
+  function roundRect(ctx, x, y, w, h, r){
+    ctx.beginPath();
+    if (ctx.roundRect){ ctx.roundRect(x, y, w, h, r); return; }
+    ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+  }
+  // a lavish self-contained HTML document of the body
+  function exportHtmlDoc(){
+    const rows = summaryRows();
+    const date = new Date().toISOString().slice(0,10);
+    const groups = GROUP_META.map(g => {
+      const items = rows.filter(r => r.kind === g.kind); if (!items.length) return '';
+      return `<section class="g" style="--g:${g.hex}"><h2>${g.icon} ${g.label}</h2>`
+        + items.map(r => `<div class="item"><span class="t">${escHtml(r.title)}</span>`
+            + (r.items.length ? `<span class="chips">${r.items.map(it => `<span class="chip">${escHtml(it)}</span>`).join('')}</span>` : '')
+            + `</div>`).join('')
+        + `</section>`;
+    }).join('');
+    return `<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FLOVE · PRACSYS body</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;justify-content:center;padding:52px 18px;
+  font-family:Inter,system-ui,-apple-system,sans-serif;color:#e8eef7;
+  background:
+    radial-gradient(1100px 560px at 8% -12%, rgba(77,208,225,.20), transparent),
+    radial-gradient(1000px 520px at 112% 8%, rgba(179,136,255,.18), transparent),
+    radial-gradient(900px 600px at 50% 122%, rgba(105,240,174,.14), transparent), #07080c;}
+.card{width:min(720px,100%);position:relative;overflow:hidden;
+  background:linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.02));
+  border:1px solid rgba(255,255,255,.13);border-radius:26px;padding:42px 38px 26px;
+  box-shadow:0 34px 90px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.07);backdrop-filter:blur(8px)}
+.card::before{content:'';position:absolute;inset:0 0 auto 0;height:4px;
+  background:linear-gradient(90deg,#4dd0e1,#b388ff 50%,#69f0ae)}
+header{text-align:center;margin-bottom:30px}
+.glyph{width:62px;height:62px;filter:drop-shadow(0 0 18px rgba(77,208,225,.45))}
+h1{margin:.4rem 0 0;font-family:Fraunces,Georgia,serif;font-weight:700;font-size:2.5rem;letter-spacing:-.01em;
+  background:linear-gradient(120deg,#4dd0e1,#b388ff 50%,#69f0ae);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{margin:.5rem 0 0;color:#9fb0c4;font-size:.95rem}
+.g{margin:24px 0 0}
+.g h2{display:flex;align-items:center;gap:.5rem;margin:0 0 10px;font:800 .72rem/1 Inter,sans-serif;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--g)}
+.item{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:13px 17px;margin-bottom:8px;border-radius:15px;
+  background:linear-gradient(100deg, color-mix(in srgb, var(--g) 16%, transparent), transparent);border-left:3px solid var(--g)}
+.item .t{font-weight:700;font-size:1rem;margin-right:auto}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:.8rem;font-weight:600;padding:5px 12px;border-radius:999px;
+  background:color-mix(in srgb, var(--g) 16%, #0c1018);border:1px solid color-mix(in srgb, var(--g) 38%, transparent);color:#eaf1fb}
+footer{margin-top:28px;text-align:center;color:#7f8da0;font-size:.8rem}
+footer a{color:#4dd0e1;text-decoration:none}
+.empty{text-align:center;color:#9fb0c4}
+@media print{body{padding:0;background:#07080c}.card{box-shadow:none;border:0}}
+</style></head><body>
+<main class="card">
+  <header>
+    <svg class="glyph" viewBox="0 0 100 100" aria-hidden="true">
+      <defs><linearGradient id="gg" x1="14" y1="14" x2="86" y2="86" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#4dd0e1"/><stop offset="50%" stop-color="#b388ff"/><stop offset="100%" stop-color="#69f0ae"/></linearGradient></defs>
+      <g fill="none" stroke="url(#gg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="50" cy="50" r="34"/><line x1="50" y1="16" x2="50" y2="84"/><line x1="16" y1="50" x2="84" y2="50"/></g>
+      <circle cx="50" cy="50" r="6" fill="url(#gg)"/>
+    </svg>
+    <h1>pracsys body</h1>
+    <p class="sub">eleven systems, laid out as a living body · ${date}</p>
+  </header>
+  ${groups || '<p class="empty">An empty body.</p>'}
+  <footer>made with <a href="https://flove.org">flove</a> · pracsys</footer>
+</main></body></html>`;
+  }
   function downloadBlob(body, mime, ext){
     const blob = new Blob([body], { type:mime });
     const url = URL.createObjectURL(blob);
@@ -2305,15 +2458,92 @@
           + r.items.map(it => `<item>${escXml(it)}</item>`).join('') + '</row>').join('\n')
       + '\n</pracsys>';
   }
+  // a stylish canvas render of the body — gradient ground, glyph, coloured chips
   function summaryToJpg(){
-    const text = summaryText().split('\n');
-    const pad = 28, lh = 22, w = 720, h = pad*2 + lh*text.length;
-    const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
-    const ctx = cv.getContext('2d');
-    ctx.fillStyle = '#0b0c10'; ctx.fillRect(0,0,w,h);
-    ctx.font = '14px Inter, system-ui, sans-serif'; ctx.textBaseline = 'top';
-    text.forEach((ln,i) => { ctx.fillStyle = i===0 ? '#4dd0e1' : '#e6eef8'; ctx.fillText(ln, pad, pad + i*lh); });
-    cv.toBlob(b => { const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = 'pracsys-body.jpg'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); }, 'image/jpeg', 0.92);
+    const rows = summaryRows();
+    const W = 840, padX = 48, innerW = W - padX*2, S = 2;
+    const m = document.createElement('canvas').getContext('2d');
+    // lay chips into wrapped rows (used for both measuring and drawing)
+    const chipRows = (ctx, items, x0, maxRight) => {
+      ctx.font = '600 13px Inter, system-ui, sans-serif';
+      const out = []; let cur = [], cx = x0;
+      items.forEach(it => {
+        const w = ctx.measureText(it).width + 22;
+        if (cx + w > maxRight && cur.length){ out.push(cur); cur = []; cx = x0; }
+        cur.push({ text:it, x:cx, w }); cx += w + 6;
+      });
+      if (cur.length) out.push(cur);
+      return out;
+    };
+    // build the layout model + total height
+    const model = [];
+    GROUP_META.forEach(g => {
+      const items = rows.filter(r => r.kind === g.kind); if (!items.length) return;
+      model.push({ type:'header', g });
+      items.forEach(r => {
+        const cr = r.items.length ? chipRows(m, r.items, padX + 16, W - padX - 16) : [];
+        const height = cr.length ? 34 + cr.length * 30 : 42;
+        model.push({ type:'item', g, title:r.title, cr, height });
+      });
+    });
+    let H = 180;
+    model.forEach(x => { H += x.type === 'header' ? 32 : x.height + 8; });
+    H += 78;
+
+    const cv = document.createElement('canvas'); cv.width = W * S; cv.height = H * S;
+    const ctx = cv.getContext('2d'); ctx.scale(S, S); ctx.textBaseline = 'alphabetic';
+    // ground
+    const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#0b0f18'); bg.addColorStop(1, '#070809');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    [['#4dd0e1', 120, -30, .20], ['#b388ff', W - 110, 50, .18], ['#69f0ae', W/2, H - 30, .12]].forEach(([c, x, y, a]) => {
+      const rg = ctx.createRadialGradient(x, y, 0, x, y, 300);
+      rg.addColorStop(0, hexA(c, a)); rg.addColorStop(1, hexA(c, 0)); ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
+    });
+    // tri-colour top seam
+    const seam = ctx.createLinearGradient(0, 0, W, 0); seam.addColorStop(0, '#4dd0e1'); seam.addColorStop(.5, '#b388ff'); seam.addColorStop(1, '#69f0ae');
+    ctx.fillStyle = seam; ctx.fillRect(0, 0, W, 4);
+    // glyph
+    let y = 56; const gx = W/2, r = 22;
+    const gg = ctx.createLinearGradient(gx-r, y-r, gx+r, y+r); gg.addColorStop(0, '#4dd0e1'); gg.addColorStop(.5, '#b388ff'); gg.addColorStop(1, '#69f0ae');
+    ctx.strokeStyle = gg; ctx.lineWidth = 4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(gx, y, r, 0, Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(gx, y-r); ctx.lineTo(gx, y+r); ctx.moveTo(gx-r, y); ctx.lineTo(gx+r, y); ctx.stroke();
+    ctx.beginPath(); ctx.arc(gx, y, 4.5, 0, Math.PI*2); ctx.fillStyle = gg; ctx.fill();
+    // title + subtitle
+    y += r + 36; ctx.textAlign = 'center';
+    const tg = ctx.createLinearGradient(gx-180, 0, gx+180, 0); tg.addColorStop(0, '#4dd0e1'); tg.addColorStop(.5, '#b388ff'); tg.addColorStop(1, '#69f0ae');
+    ctx.fillStyle = tg; ctx.font = '700 40px Georgia, "Times New Roman", serif'; ctx.fillText('pracsys body', gx, y);
+    y += 26; ctx.fillStyle = '#9fb0c4'; ctx.font = '400 15px Inter, system-ui, sans-serif';
+    ctx.fillText('eleven systems, laid out as a living body · ' + new Date().toISOString().slice(0,10), gx, y);
+    y += 38; ctx.textAlign = 'left';
+    // groups
+    model.forEach(x => {
+      if (x.type === 'header'){
+        ctx.fillStyle = x.g.hex; ctx.font = '800 14px Inter, system-ui, sans-serif';
+        ctx.fillText(x.g.label.toUpperCase(), padX, y + 2); y += 28;
+      } else {
+        ctx.fillStyle = hexA(x.g.hex, .11); roundRect(ctx, padX, y, innerW, x.height, 13); ctx.fill();
+        ctx.fillStyle = x.g.hex; roundRect(ctx, padX, y, 3, x.height, 1.5); ctx.fill();
+        ctx.fillStyle = '#e8eef7'; ctx.font = '700 16px Inter, system-ui, sans-serif';
+        ctx.fillText(x.title, padX + 16, y + 25);
+        let cy = y + 34;
+        x.cr.forEach(rowChips => {
+          rowChips.forEach(ch => {
+            ctx.fillStyle = hexA(x.g.hex, .18); roundRect(ctx, ch.x, cy, ch.w, 22, 11); ctx.fill();
+            ctx.strokeStyle = hexA(x.g.hex, .45); ctx.lineWidth = 1; roundRect(ctx, ch.x, cy, ch.w, 22, 11); ctx.stroke();
+            ctx.fillStyle = '#eaf1fb'; ctx.font = '600 13px Inter, system-ui, sans-serif'; ctx.fillText(ch.text, ch.x + 11, cy + 15);
+          });
+          cy += 30;
+        });
+        y += x.height + 8;
+      }
+    });
+    if (!model.length){ ctx.textAlign = 'center'; ctx.fillStyle = '#9fb0c4'; ctx.font = '400 16px Inter, sans-serif'; ctx.fillText('An empty body.', W/2, y + 10); }
+    // footer
+    ctx.textAlign = 'center'; ctx.fillStyle = '#7f8da0'; ctx.font = '400 13px Inter, system-ui, sans-serif';
+    ctx.fillText('made with flove · pracsys', W/2, H - 28);
+
+    cv.toBlob(b => { const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = 'pracsys-body.jpg'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); }, 'image/jpeg', 0.95);
   }
   document.addEventListener('click', async e => {
     const btn = e.target.closest('#summarySection [data-action]'); if (!btn) return;
@@ -2328,7 +2558,7 @@
       if (fmt === 'json'){ downloadBlob(JSON.stringify(buildElement(), null, 2), 'application/json;charset=utf-8', 'json'); }
       else if (fmt === 'csv'){ downloadBlob(rowsCsv(), 'text/csv;charset=utf-8', 'csv'); }
       else if (fmt === 'xml'){ downloadBlob(rowsXml(), 'application/xml;charset=utf-8', 'xml'); }
-      else if (fmt === 'html'){ downloadBlob(`<!doctype html><meta charset="utf-8"><title>pracsys body</title><pre style="font:14px/1.5 ui-monospace,monospace">${escHtml(summaryText())}</pre>`, 'text/html;charset=utf-8', 'html'); }
+      else if (fmt === 'html'){ downloadBlob(exportHtmlDoc(), 'text/html;charset=utf-8', 'html'); }
       else if (fmt === 'md'){ downloadBlob('# ✺ pracsys body\n\n```\n' + summaryText() + '\n```\n', 'text/markdown;charset=utf-8', 'md'); }
       else { downloadBlob(summaryText(), 'text/plain;charset=utf-8', 'txt'); }
       toast('Downloaded · ' + fmt.toUpperCase());
