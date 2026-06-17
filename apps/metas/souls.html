@@ -28,6 +28,8 @@
     --gold:       #f5b463;
     --aura:       #ffd089;
     --moss:       #9bc28a;
+    --card-yellow:#e8c63b;
+    --card-violet:#9b6fe0;
 
     --line:       rgba(243,236,220,.12);
     --line-soft:  rgba(243,236,220,.06);
@@ -851,6 +853,9 @@
   }
   .timestats__insights[hidden]{ display:none; }
   .timestats__insights em{ color:var(--app-accent-soft); font-style:normal; }
+  /* two columns: stats on the left, click-by-click timeline on the right */
+  .timestats__cols{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; align-items:start; }
+  @media (max-width:720px){ .timestats__cols{ grid-template-columns:1fr; } }
   .timestats__row{
     display:grid; gap:.3rem .9rem;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -1094,7 +1099,33 @@
   /* ── full-spectrum scales (save-form side column): each step shows its whole
      option set with the picked one highlighted and the rest dimmed to 50%
      (only dimmed once a pick exists). Free-text steps just show the answer. ── */
-  .soul-scales{ display:grid; gap:.9rem; }
+  .soul-scales{ display:grid; grid-template-columns:1fr 1fr; gap:.9rem; align-items:start; }
+  @media (max-width:720px){ .soul-scales{ grid-template-columns:1fr; } }
+  /* Row-2 lists — one item per row, centered, chosen highlighted (flove dim standard) */
+  .scale-list{
+    background:var(--panel); border:1px solid var(--line); border-radius:18px;
+    padding:.9rem 1.05rem; box-shadow:0 8px 22px rgba(0,0,0,.2);
+    text-align:center; min-width:0;
+  }
+  .scale-list__h{
+    margin:0 0 .6rem; font:600 .72rem/1 'Inter', system-ui, sans-serif;
+    letter-spacing:.2em; text-transform:uppercase;
+  }
+  .scale-list--a .scale-list__h{ color:var(--app-accent); }
+  .scale-list--b .scale-list__h{ color:var(--rose); }
+  .scale-items{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; align-items:center; gap:.3rem; }
+  .scale-item{
+    display:inline-flex; align-items:center; justify-content:center; gap:.3rem;
+    padding:.26rem .7rem; border-radius:999px;
+    background:var(--panel-strong); border:1px solid var(--line);
+    font-size:.84rem; color:var(--ink-soft); max-width:100%;
+    transition:opacity .2s, background .2s, border-color .2s, box-shadow .2s;
+  }
+  .scale-item .opt-ico{ font-size:.9rem; line-height:1; }
+  .scale-items:has(.is-picked) .scale-item:not(.is-picked){ opacity:.5; }
+  .scale-item.is-picked{ color:var(--ink); font-weight:600; background:rgba(255,255,255,.09); }
+  .scale-list--a .scale-item.is-picked{ border-color:var(--app-accent); box-shadow:0 0 0 1px var(--app-accent) inset; }
+  .scale-list--b .scale-item.is-picked{ border-color:var(--rose); box-shadow:0 0 0 1px var(--rose) inset; }
   .scale-table{
     background:var(--panel);
     border:1px solid var(--line);
@@ -1143,12 +1174,13 @@
   .scale-table--b .scale-answer{ color:var(--rose); }
   .scale-answer.empty{ color:var(--ink-dim); font-style:italic; font-weight:400; font-size:.98rem; opacity:.6; }
 
-  .portrait-row-1 .portrait-cell{ border-left-color: var(--app-accent) }
-  .portrait-row-1 .portrait-cell .cell-title{ color: var(--app-accent) }
-  .portrait-row-2 .portrait-cell{ border-left-color: var(--rose) }
-  .portrait-row-2 .portrait-cell .cell-title{ color: var(--rose) }
+  /* Row-1 results — modern bordered cards: yellow (left) · violet (right) */
+  .portrait-row-1 .portrait-cell{ border:1.5px solid var(--card-yellow); border-left-width:4px; }
+  .portrait-row-1 .portrait-cell .cell-title{ color: var(--card-yellow) }
+  .portrait-row-2 .portrait-cell{ border:1.5px solid var(--card-violet); border-left-width:4px; }
+  .portrait-row-2 .portrait-cell .cell-title{ color: var(--card-violet) }
   .portrait-row-1 .portrait-cell.empty,
-  .portrait-row-2 .portrait-cell.empty{ border-left-color: transparent }
+  .portrait-row-2 .portrait-cell.empty{ border-color: transparent }
 
   /* toast */
   .toast{
@@ -1405,22 +1437,12 @@
 
   /* centered summary heading */
   .summary-title{ text-align:center; }
-  /* summary: two columns — table on the left, time stats + insight phrase on the right */
-  .summary-cols{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:.9rem;
-    align-items:start;
+  /* summary: three stacked rows (results · lists · time stats), each 2 columns */
+  .summary-stack{
+    display:flex; flex-direction:column; gap:1rem;
     margin:.6rem 0 1.4rem;
   }
-  .summary-col{ min-width:0; }
-  .summary-col--side{ display:grid; gap:.8rem; align-content:start; }
-  .summary-col .portrait-frame,
-  .summary-col .timestats,
-  .summary-col .insight-panel{ margin:0; }
-  @media (max-width: 720px){
-    .summary-cols{ grid-template-columns: 1fr; }
-  }
+  .summary-stack > *{ margin:0; }
   /* insight panel — the 5 analyses revealed by the Insight button */
   .insight-panel{
     width:100%;
@@ -2607,28 +2629,34 @@
     <h1 class="summary-title">Summary</h1>
     <p class="hint">First answers in <em>warm</em>, second answers in <em>rose</em>. <span class="pill-tag">cloud sync coming soon</span></p>
 
-    <div class="summary-cols">
-      <div class="summary-col summary-col--main">
-        <div class="portrait-frame">
-          <div class="portrait-grid portrait-row-1" id="portraitRow1"></div>
-          <div class="portrait-grid portrait-row-2" id="portraitRow2"></div>
-        </div>
+    <div class="summary-stack">
+      <!-- Row 1 · results — two columns: left yellow cards, right violet cards -->
+      <div class="portrait-frame">
+        <div class="portrait-grid portrait-row-1" id="portraitRow1"></div>
+        <div class="portrait-grid portrait-row-2" id="portraitRow2"></div>
       </div>
 
-      <div class="summary-col summary-col--side">
-        <div class="soul-scales" id="soulScales"></div>
-        <div class="timestats" id="timeStats" hidden>
-          <div class="timestats__h" title="Enter" role="button" tabindex="0" aria-expanded="false">Time stats</div>
-          <div class="timestats__row" id="timeStatsRow"></div>
-          <div class="timestats__per" id="timeStatsPer"></div>
-          <div class="timestats__t-label">Click-by-click · time you took between each action</div>
-          <div class="timestats__timeline" id="timeStatsTimeline"></div>
-          <button class="btn ghost timestats__insights-btn" id="timeInsightBtn" type="button">💡 Insights</button>
-          <div class="timestats__insights" id="timeInsightText" hidden></div>
-        </div>
+      <!-- Row 2 · two parallel lists of every item, chosen ones highlighted -->
+      <div class="soul-scales" id="soulScales"></div>
 
-        <div class="insight-panel" id="insightPanel" hidden></div>
+      <!-- Row 3 · time stats (left) + click-by-click timeline (right) -->
+      <div class="timestats" id="timeStats" hidden>
+        <div class="timestats__h" title="Enter" role="button" tabindex="0" aria-expanded="false">Time stats</div>
+        <div class="timestats__cols">
+          <div class="timestats__statcol">
+            <div class="timestats__row" id="timeStatsRow"></div>
+            <div class="timestats__per" id="timeStatsPer"></div>
+          </div>
+          <div class="timestats__timecol">
+            <div class="timestats__t-label">Click-by-click · time you took between each action</div>
+            <div class="timestats__timeline" id="timeStatsTimeline"></div>
+          </div>
+        </div>
+        <button class="btn ghost timestats__insights-btn" id="timeInsightBtn" type="button">💡 Insights</button>
+        <div class="timestats__insights" id="timeInsightText" hidden></div>
       </div>
+
+      <div class="insight-panel" id="insightPanel" hidden></div>
     </div>
 
     <div class="result-actions action-grid">
@@ -4516,57 +4544,53 @@
   //    rest dimmed (free-text steps just show the answer) ──────────────
   function renderScales(){
     const wrap = $('#soulScales'); if (!wrap) return;
-    const opt = (o, picked) =>
-      `<span class="scale-opt${o.id === picked ? ' is-picked' : ''}">`
-      + (o.icon ? `<span class="opt-ico">${o.icon}</span>` : '')
-      + `<span>${escapeHtml(o.label)}</span></span>`;
-    const cat  = (list, picked) => `<div class="scale-row__opts">${list.map(o => opt(o, picked)).join('')}</div>`;
-    const free = (val) => {
-      const t = (val || '').trim();
-      return `<div class="scale-row__opts"><span class="scale-answer${t ? '' : ' empty'}">${t ? escapeHtml(t) : '—'}</span></div>`;
+    // one list item per option, on its own row; chosen ones highlighted
+    const item = (label, icon, picked) =>
+      `<li class="scale-item${picked ? ' is-picked' : ''}">`
+      + (icon ? `<span class="opt-ico">${icon}</span>` : '')
+      + `<span>${escapeHtml(label)}</span></li>`;
+    // free-text picks (animal, species, colour…) — always the chosen item, no alternatives
+    const freeItem = (val, ball) => {
+      const t = (val || '').trim(); if (!t) return '';
+      return `<li class="scale-item is-picked">`
+        + (ball ? `<span class="color-ball" aria-hidden="true"></span>` : '')
+        + `<span>${escapeHtml(t)}</span></li>`;
     };
-    const colourFree = (val) => {
-      const t = (val || '').trim();
-      return `<div class="scale-row__opts"><span class="scale-answer${t ? '' : ' empty'}"><span class="color-ball" aria-hidden="true"></span>${t ? escapeHtml(t) : '—'}</span></div>`;
+    // merge option groups into a single de-duplicated list (by id) — no repeats
+    const unique = (...groups) => {
+      const seen = new Map();
+      groups.forEach(g => g.forEach(o => { if (!seen.has(o.id)) seen.set(o.id, o); }));
+      return Array.from(seen.values());
     };
-    const row = (label, content) => `<div class="scale-row"><div class="scale-row__label">${label}</div>${content}</div>`;
 
     // channel pick lives as 'sense:id' | 'bio:id'
     const chType = (state.s3Channel || '').split(':')[0];
     const chId   = (state.s3Channel || '').split(':')[1] || '';
-    const channelOpts =
-      `<div class="scale-row__opts">`
-      + SENSES.map(o => opt(o, chType === 'sense' ? chId : '')).join('')
-      + BIO_SYSTEMS.map(o => opt(o, chType === 'bio' ? chId : '')).join('')
-      + `</div>`;
 
+    // LEFT — Being · matter (free picks first, then the de-duped matter + particle set)
     const s2Title = (state.species  || state.s2Cat2 || state.s2Cat1 || '').trim();
     const s3Title = (state.s3Species || state.s3Cat || '').trim();
-    const matterFree = (state.s4MatterSpecific || '').trim();
-    const matterContent = cat(MATTER_SCALE, state.s4Matter)
-      + (matterFree ? `<div class="scale-row__opts"><span class="scale-answer">${escapeHtml(matterFree)}</span></div>` : '');
+    const leftPicked = new Set([state.s4Matter, state.s5Particle].filter(Boolean));
+    const leftHtml =
+        freeItem(state.animal) + freeItem(s2Title) + freeItem(s3Title)
+      + freeItem((state.s4MatterSpecific || '').trim())
+      + unique(MATTER_SCALE, PARTICLES).map(o => item(o.label, o.icon, leftPicked.has(o.id))).join('');
 
-    const tableA =
-      `<div class="scale-table scale-table--a">`
-      + `<h3 class="scale-table__h">◑ Being · matter</h3>`
-      + row('Animal',   free(state.animal))
-      + row('Species',  free(s2Title))
-      + row('Deeper',   free(s3Title))
-      + row('Matter',   matterContent)
-      + row('Particle', cat(PARTICLES, state.s5Particle))
-      + `</div>`;
+    // RIGHT — Experience · sense (colour first, then the de-duped sense + system + immune set)
+    const rightPicked = new Set([
+      state.sense,
+      chType === 'sense' ? chId : '',
+      chType === 'bio'   ? chId : '',
+      state.s4Bio, state.s5Immune
+    ].filter(Boolean));
+    const rightHtml =
+        freeItem(state.color, true)
+      + unique(SENSES, BIO_SYSTEMS, IMMUNE).map(o => item(o.label, o.icon, rightPicked.has(o.id))).join('');
 
-    const tableB =
-      `<div class="scale-table scale-table--b">`
-      + `<h3 class="scale-table__h">◐ Experience · sense</h3>`
-      + row('Colour',    colourFree(state.color))
-      + row('Sense',     cat(SENSES, state.sense))
-      + row('Channel',   channelOpts)
-      + row('System',    cat(BIO_SYSTEMS, state.s4Bio))
-      + row('Subsystem', cat(IMMUNE, state.s5Immune))
-      + `</div>`;
-
-    wrap.innerHTML = tableA + tableB;
+    wrap.innerHTML =
+        `<div class="scale-list scale-list--a"><h3 class="scale-list__h">◑ Being · matter</h3><ul class="scale-items">${leftHtml}</ul></div>`
+      + `<div class="scale-list scale-list--b"><h3 class="scale-list__h">◐ Experience · sense</h3><ul class="scale-items">${rightHtml}</ul></div>`;
+    if (typeof refreshColorBalls === 'function') refreshColorBalls();
   }
 
   // ── structured portrait data (used by csv/xml/json exports) ─────
