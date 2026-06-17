@@ -4351,7 +4351,7 @@ window.tKey = function tKey(k){
     <button type="button" class="brand-link" id="brandLink"
             aria-haspopup="true" aria-expanded="false"
             aria-controls="menuPanel" aria-label="Open menu" data-i18n-attr="aria-label:menu.open">
-      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="url(#brandGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 6px rgba(167,99,250,.75))"><defs><linearGradient id="brandGrad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#8b5cf6"/><stop offset=".55" stop-color="#c084fc"/><stop offset="1" stop-color="#ff5fdc"/></linearGradient></defs><path d="M12 7.4v9.2M8.2 9.6l7.6 4.8M15.8 9.6l-7.6 4.8"/></svg>
+      <svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true" style="filter:drop-shadow(0 0 6px rgba(167,99,250,.75))"><defs><linearGradient id="g-keys" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#8b5cf6"/><stop offset=".55" stop-color="#c084fc"/><stop offset="1" stop-color="#ff5fdc"/></linearGradient></defs><g fill="url(#g-keys)" stroke="none"><g transform="rotate(0 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g><g transform="rotate(72 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g><g transform="rotate(288 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g><circle cx="50" cy="50" r="4.5"/></g></svg>
       <span class="brand-text" data-i18n="brand.name">Keys</span>
     </button>
 
@@ -6614,13 +6614,12 @@ window.tKey = function tKey(k){
       quick += node(tKey('stats.main_triads'), decksTotal, 0);   // renamed from Main decks / Main Keys
       if (ordinalsMs)   quick += node(tKey('stats.extra_triads'), ordinalsMs, 0);   // time on the extra triads
       if (secondPlayMs) quick += node(tKey('stats.additional_perspective'), secondPlayMs, 0);
-      // Above the table: the stats, then two hints (these replaced the old
+      // Above the table: the stats, then a single hint (replaced the old
       // "Insights"/Reflexiones button). The Pistas (perspective insights) moved
       // down to their own block between the new perspective and the summary.
-      const topHint2 = (typeof buildContrastHintHTML === 'function' ? buildContrastHintHTML() : '');
       $top.innerHTML = `<div class="std-quick-wrap">`
         + `<div class="std-quick std-tsn-list">${quick}</div>`
-        + `<div class="std-quick-insight std-quick-hints">${hintHTML || ''}${topHint2 || ''}</div>`
+        + `<div class="std-quick-insight std-quick-hints">${hintHTML || ''}</div>`
         + `</div>`;
       // Master-mode stats + substats stay visible above the table (not gated
       // behind the Stats toggle) once Master's Step 0 has been played.
@@ -9740,46 +9739,25 @@ window.tKey = function tKey(k){
   function summaryPageCSS(){
     return Array.from(document.querySelectorAll('style')).map(s => s.textContent).join('\n');
   }
-  // The app's own neutral panda, fetched once and inlined into the HTML export
-  // so the saved file shows the same panda yet still stands alone. Falls back to
-  // a drawn panda if the fetch isn't available (e.g. opened from file://).
-  let _pandaSvgCache = null;
-  (function loadExportPanda(){
-    try {
-      fetch('../../others/panda/animated/frame-00.svg')
-        .then(r => r.ok ? r.text() : null)
-        .then(t => { if (t && t.indexOf('<svg') !== -1) _pandaSvgCache = t; })
-        .catch(() => {});
-    } catch(_){}
-  })();
-  function summaryPandaSVG(){
-    if (_pandaSvgCache) return `<span class="kx-panda" aria-hidden="true">${_pandaSvgCache}</span>`;
-    return `<svg class="kx-panda" viewBox="0 0 120 112" width="90" height="84" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">`
-      + `<ellipse cx="30" cy="26" rx="16" ry="16" fill="#1b1b25"/><ellipse cx="90" cy="26" rx="16" ry="16" fill="#1b1b25"/>`
-      + `<ellipse cx="30" cy="26" rx="8" ry="8" fill="#46466a"/><ellipse cx="90" cy="26" rx="8" ry="8" fill="#46466a"/>`
-      + `<ellipse cx="60" cy="60" rx="47" ry="43" fill="#f6f7fb"/>`
-      + `<ellipse cx="42" cy="56" rx="13" ry="17" fill="#1b1b25"/><ellipse cx="78" cy="56" rx="13" ry="17" fill="#1b1b25"/>`
-      + `<circle cx="44" cy="58" r="5.5" fill="#fff"/><circle cx="76" cy="58" r="5.5" fill="#fff"/>`
-      + `<circle cx="45" cy="59" r="2.6" fill="#1b1b25"/><circle cx="75" cy="59" r="2.6" fill="#1b1b25"/>`
-      + `<ellipse cx="60" cy="76" rx="6" ry="4" fill="#1b1b25"/>`
-      + `<path d="M60 80 q-7 8 -15 4 M60 80 q7 8 15 4" stroke="#1b1b25" stroke-width="2.4" fill="none" stroke-linecap="round"/>`
-      + `</svg>`;
+  // The Keys logo (the ellipses-flower from the deck backs) for the export header.
+  function summaryLogoSVG(){
+    return `<svg class="kx-logo" viewBox="0 0 100 100" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">`
+      + `<defs><linearGradient id="kxg" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">`
+      + `<stop offset="0" stop-color="#8b5cf6"/><stop offset=".55" stop-color="#c084fc"/><stop offset="1" stop-color="#ff5fdc"/></linearGradient></defs>`
+      + `<g fill="url(#kxg)" stroke="none">`
+      + `<g transform="rotate(0 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g>`
+      + `<g transform="rotate(72 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g>`
+      + `<g transform="rotate(288 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g>`
+      + `<circle cx="50" cy="50" r="4.5"/></g></svg>`;
   }
-  // Build the standalone HTML export, wrapped in a decorative gradient frame with
-  // a panda header. All styling is inline so the saved file renders on its own.
+  // Build the standalone HTML export: a decorative gradient frame with the Keys
+  // logo header (no panda, no flove text), the summary, and one insight above
+  // the tables. The Insight + Magic section is not included.
   function buildSummaryDocHTML(){
     const clone = summaryCaptureClone();
+    // Make sure the single hint above the tables shows in the export.
+    if (clone){ const top = clone.querySelector('#std-timestats-top'); if (top) top.removeAttribute('hidden'); }
     const inner = clone ? clone.outerHTML : '';
-    // Insight + Magic, all expanded, appended to the export (the on-screen block
-    // lives outside #std-summary, and its panels are normally cycle-revealed).
-    let extras = '';
-    const im = document.getElementById('insight-magic-block');
-    if (im){
-      const imc = im.cloneNode(true);
-      imc.removeAttribute('hidden');
-      imc.querySelectorAll('input, .insight-cycle, .magic-cycle, .action-row-relocated').forEach(el => el.remove());
-      extras = `<div class="kx-extras flv-std">${imc.innerHTML}</div>`;
-    }
     const bodyCS = window.getComputedStyle(document.body);
     const bg = bodyCS.backgroundColor || '#252538';
     const font = `${bodyCS.fontStyle} ${bodyCS.fontWeight} ${bodyCS.fontSize}/${bodyCS.lineHeight} ${bodyCS.fontFamily}`;
@@ -9791,24 +9769,17 @@ window.tKey = function tKey(k){
       .kx-card::before,.kx-card::after{content:"";position:absolute;width:220px;height:220px;border-radius:50%;filter:blur(64px);opacity:.18;pointer-events:none}
       .kx-card::before{background:#ff5fdc;top:-96px;right:-66px}
       .kx-card::after{background:#a8e4ff;bottom:-110px;left:-76px}
-      .kx-head{position:relative;display:flex;align-items:center;gap:14px;margin:0 0 18px}
-      .kx-panda{flex:none;display:inline-flex;width:84px;filter:drop-shadow(0 6px 14px rgba(0,0,0,.4))}
-      .kx-panda svg,.kx-panda img{width:84px;height:auto;display:block}
-      .kx-title{font:800 1.5rem/1 ui-serif,Georgia,serif;letter-spacing:.5px;background:linear-gradient(135deg,#fadc92,#ff5fdc 60%,#a8e4ff);-webkit-background-clip:text;background-clip:text;color:transparent}
-      .kx-sub{display:block;margin-top:4px;font:600 .72rem/1.3 system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#c4c7d2}
+      .kx-head{position:relative;display:flex;align-items:center;justify-content:center;margin:0 0 18px}
+      .kx-logo{width:64px;height:64px;display:block;filter:drop-shadow(0 6px 14px rgba(0,0,0,.4))}
       .kx-card #std-summary{position:relative;z-index:1}
-      .kx-extras{position:relative;z-index:1;margin-top:20px;border-top:1px solid rgba(255,255,255,.12);padding-top:16px}
-      .kx-extras .magic-panel,.kx-extras .insight-panel{display:block !important}
-      .kx-extras .im-cols{display:flex;gap:1.2rem;justify-content:center;align-items:flex-start;flex-wrap:wrap}
-      .kx-extras .im-col{flex:1 1 0;min-width:220px;max-width:360px}
       /* Export: expand all right-column time-stats hints; hide the cycler. */
       .kx-card .ts-insight-all{display:block !important}
       .kx-card #ts-insight-list,.kx-card #ts-insight-more{display:none !important}`;
-    return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>flove · keys — summary</title>`
+    return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>keys — summary</title>`
       + `<style>${summaryPageCSS()}\n${frameCSS}</style></head>`
       + `<body class="kx-page"><div class="kx-frame"><div class="kx-card">`
-      + `<div class="kx-head">${summaryPandaSVG()}<div><span class="kx-title">flove · keys</span><span class="kx-sub">Your summary</span></div></div>`
-      + `${inner}${extras}</div></div></body></html>`;
+      + `<div class="kx-head">${summaryLogoSVG()}</div>`
+      + `${inner}</div></div></body></html>`;
   }
   // Mobile default: share the summary as the decorated HTML file (Web Share).
   async function shareSummaryFiles(){
