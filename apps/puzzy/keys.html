@@ -6545,7 +6545,9 @@ window.tKey = function tKey(k){
     if (custMs)          mergedList += node(tKey('stats.cust_start'), custMs, 1);
     // Master mode groups its first two parts (Free triads, Create triads) under a title.
     if (currentModeName() === 'Master'){
-      mergedList += node(tKey('stats.master_mode'), null, 0);
+      // Master-mode total time (primer + create) shown first, with the parts nested.
+      const masterTotal = (t.perStep.primer || 0) + (t.perStep.step0 || 0);
+      mergedList += node(tKey('stats.master_mode'), masterTotal || null, 0);
       if (t.perStep.primer) mergedList += node(tKey('stats.free_triads'), t.perStep.primer, 1);
       if (t.perStep.step0)  mergedList += node(tKey('stats.create_triads'), t.perStep.step0, 1);
     } else if (t.perStep.step0){
@@ -6580,6 +6582,9 @@ window.tKey = function tKey(k){
       let quick = '';
       const cmt = customModeTitle();
       if (cmt) quick += node(cmt, null, 0);   // "<Mode> Mode" title above Main triads (custom modes)
+      // Master-mode total time, copied up here above the tables too.
+      const masterTopTotal = (t.perStep.primer || 0) + (t.perStep.step0 || 0);
+      if (masterTopTotal) quick += node(tKey('stats.master_mode'), masterTopTotal, 0);
       quick += node(tKey('stats.main_triads'), decksTotal, 0);   // renamed from Main decks / Main Keys
       if (ordinalsMs)   quick += node(tKey('stats.extra_triads'), ordinalsMs, 0);   // time on the extra triads
       if (secondPlayMs) quick += node(tKey('stats.additional_perspective'), secondPlayMs, 0);
@@ -6612,7 +6617,8 @@ window.tKey = function tKey(k){
       </div>
     `;
     // Right column: one insight by default, "More" loads the next, "Hide" at the end.
-    wireTsInsight([hintHTML, primaryHint, ...cyclePool].filter(Boolean));
+    // Right column below the table cycles at most 4 insights (not 5).
+    wireTsInsight([hintHTML, primaryHint, ...cyclePool].filter(Boolean).slice(0, 4));
     // Light up the breakdown rows named by whichever insights are visible.
     highlightMentionedStats($panel);
     // Hidden until the Stats "More" expands the Summary section.
@@ -8303,6 +8309,7 @@ window.tKey = function tKey(k){
     renderStars();
     showPreludeCheckPanda('.phase-a-section', stars, 'prelude-stars');
     if (stars === 5){
+      stepFinishWave('g');   // groups step solved → greenish wave (mirrors the red primer one)
       // Transition to phase B (shuffle so the user actively re-orders)
       state.preludeAxisOrder = shuffle([0,1,2,3,4]);
       setTimeout(() => { state.preludePhase = 'B'; renderPrelude(); }, 600);
@@ -8437,7 +8444,7 @@ window.tKey = function tKey(k){
   }
 
   function finishPrelude(){
-    stepFinishWave('g');           // Groups step finished → greenish wave
+    stepFinishWave('b');           // ordering step finished → blueish wave
     state.preludeActive = false;
     state.step0Completed = true;   // Step 0 played to 100%
     // Master forces Step 0; once done it returns to the Modes screen with the
@@ -9272,7 +9279,7 @@ window.tKey = function tKey(k){
     let saved = '';
     if (typeof _combySaved !== 'undefined' && _combySaved.length){
       const items = _combySaved.map(s =>
-        `<div class="combos-saved-item"><b>${escapeHTML(s.combo)}</b> — ${escapeHTML(s.text)}</div>`
+        `<div class="combos-saved-item"><b>${escapeHTML(s.combo)}</b> ${escapeHTML(s.text)}</div>`
       ).join('');
       saved = `<div class="combos-saved">${items}</div>`;
     }
@@ -10950,8 +10957,8 @@ window.tKey = function tKey(k){
     // (2 in each). Saved ones are not re-shown.
     const grid = document.createElement('div');
     grid.className = 'comby-pairs-grid';
-    if (picks.length === 3 && !savedLabels.has(picks.join(' · '))){
-      grid.appendChild(makeCell(picks.join(' · '), { trio:true }));
+    if (picks.length === 3 && !savedLabels.has(picks.join(' '))){
+      grid.appendChild(makeCell(picks.join(' '), { trio:true }));
     }
     const pairs = [];
     for (let i = 0; i < picks.length; i++)
