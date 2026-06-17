@@ -2244,6 +2244,9 @@
   /* Completed mode card + highlighted not-yet-done custom modes. */
   .opt.is-completed{opacity:.6;border-color:var(--brand)}
   .opt.is-completed::after{content:"✓ done";display:block;margin-top:.4rem;color:var(--brand);font:700 .68rem/1 system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+  /* Master can only be played once — once completed, drop its Go so there's no
+     way back into it (the "✓ done" marker stays). */
+  #chooser-step0.is-completed .opt-go{display:none}
   .opt.mode-highlight{animation:mode-flash 1.6s ease infinite}
   .chooser p{margin:0 auto 1.2rem;color:var(--muted);max-width:50ch;font-size:.96rem}
   .chooser-actions{
@@ -3618,7 +3621,8 @@
   .action-row-relocated .action-row.right{justify-content:center}
   .flv-std .action-row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
   .flv-std .action-row.right{justify-content:flex-end}
-  .flv-std .action-row > .copy-btn{margin-left:auto}
+  /* Copy is pinned to the left while Save/Share/Publish stay to the right. */
+  .flv-std .action-row.right > .copy-btn{margin-right:auto;margin-left:0}
 
   /* ---- insight cycle (shows ONE step label per state) ---- */
   .flv-std .insight-cycle{display:inline-flex}
@@ -3769,11 +3773,6 @@
   .flv-std:has(#flv-wiz-lyra:checked)  .wizardry-cell[for="flv-wiz-lyra"]{
     border-color:var(--brand);color:var(--brand);box-shadow:0 0 0 1px var(--brand) inset}
 
-  /* download row */
-  .flv-std .download-row{margin-top:.4rem}
-  .flv-std .dl-btn{width:100%;justify-content:center;
-    background:rgba(250,220,146,.1);border:1px solid rgba(250,220,146,.35);color:var(--gold)}
-  .flv-std .dl-btn:hover{border-color:var(--gold);color:var(--ink);background:rgba(250,220,146,.18)}
 
   @media (max-width:520px){
     .flv-std .action-row.right{justify-content:flex-start}
@@ -4672,7 +4671,6 @@ window.tKey = function tKey(k){
       <input type="checkbox" id="flv-pub-all"       class="flv-ctl">
       <!-- save-format toggles (bundled by Download) -->
       <input type="checkbox" id="flv-fmt-md"   class="flv-ctl">
-      <input type="checkbox" id="flv-fmt-jpg"  class="flv-ctl">
       <input type="checkbox" id="flv-fmt-html" class="flv-ctl">
       <input type="checkbox" id="flv-fmt-csv"  class="flv-ctl">
       <input type="checkbox" id="flv-fmt-xml"  class="flv-ctl">
@@ -4727,10 +4725,6 @@ window.tKey = function tKey(k){
 
       <div class="action-grid">
 
-        <div class="action-row">
-          <label class="fbtn copy-btn" for="flv-copy-hint" data-flove-copy="phrase" title="Copy" data-i18n="summary.copy" data-i18n-attr="title:summary.copy">Copy</label>
-        </div>
-
         <div class="copy-hint-panel" role="status" data-i18n-html="summary.copy_hint">
           Select the phrase above (triple-click selects the whole paragraph), then press
           <kbd>Ctrl</kbd>+<kbd>C</kbd> on Windows/Linux or <kbd>⌘</kbd>+<kbd>C</kbd> on Mac to copy it.
@@ -4738,13 +4732,14 @@ window.tKey = function tKey(k){
         </div>
 
         <div class="action-row right">
+          <!-- Copy sits with Save/Share/Publish, pinned to the left of the row. -->
+          <label class="fbtn copy-btn" for="flv-copy-hint" data-flove-copy="phrase" title="Copy" data-i18n="summary.copy" data-i18n-attr="title:summary.copy">Copy</label>
           <span class="cycle-wrap save-wrap">
             <span class="cycle-trigger">
               <label class="fbtn save-btn cycle-step cycle-step--open"  for="flv-cycle-save" title="Save" data-i18n="summary.save" data-i18n-attr="title:summary.save">💾 Save</label>
               <label class="fbtn save-btn cycle-step cycle-step--close" for="flv-cycle-none" title="Close" data-i18n="summary.save" data-i18n-attr="title:common.close">💾 Save</label>
               <span class="cycle-row below">
                 <label class="fbtn" for="flv-fmt-md"   data-fmt="md">MD</label>
-                <label class="fbtn" for="flv-fmt-jpg"  data-fmt="jpg">JPG</label>
                 <label class="fbtn" for="flv-fmt-html" data-fmt="html">HTML</label>
                 <label class="fbtn" for="flv-fmt-csv"  data-fmt="csv">CSV</label>
                 <label class="fbtn" for="flv-fmt-xml"  data-fmt="xml">XML</label>
@@ -4869,11 +4864,6 @@ window.tKey = function tKey(k){
               <p data-i18n-html="summary.nety_intro">Nety is a Friend2Friend Groupware. <a href="https://flove.org/apps/nety" target="_blank" rel="noopener">Nety</a></p>
             </div>
           </div>
-        </div>
-
-        <!-- Download — own full-width row, bundles whatever formats are marked -->
-        <div class="download-row">
-          <a class="fbtn dl-btn" href="#" download="keys-summary" title="Download" data-flove-save="bundle" data-i18n="summary.download" data-i18n-attr="title:summary.download">⬇ Download</a>
         </div>
 
       </div>
@@ -9586,83 +9576,52 @@ window.tKey = function tKey(k){
   function summaryPageCSS(){
     return Array.from(document.querySelectorAll('style')).map(s => s.textContent).join('\n');
   }
+  // A small self-contained inline panda for the HTML export header (no external
+  // assets, so the downloaded file stands alone).
+  function summaryPandaSVG(){
+    return `<svg class="kx-panda" viewBox="0 0 120 112" width="90" height="84" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">`
+      + `<ellipse cx="30" cy="26" rx="16" ry="16" fill="#1b1b25"/><ellipse cx="90" cy="26" rx="16" ry="16" fill="#1b1b25"/>`
+      + `<ellipse cx="30" cy="26" rx="8" ry="8" fill="#46466a"/><ellipse cx="90" cy="26" rx="8" ry="8" fill="#46466a"/>`
+      + `<ellipse cx="60" cy="60" rx="47" ry="43" fill="#f6f7fb"/>`
+      + `<ellipse cx="42" cy="56" rx="13" ry="17" fill="#1b1b25"/><ellipse cx="78" cy="56" rx="13" ry="17" fill="#1b1b25"/>`
+      + `<circle cx="44" cy="58" r="5.5" fill="#fff"/><circle cx="76" cy="58" r="5.5" fill="#fff"/>`
+      + `<circle cx="45" cy="59" r="2.6" fill="#1b1b25"/><circle cx="75" cy="59" r="2.6" fill="#1b1b25"/>`
+      + `<ellipse cx="60" cy="76" rx="6" ry="4" fill="#1b1b25"/>`
+      + `<path d="M60 80 q-7 8 -15 4 M60 80 q7 8 15 4" stroke="#1b1b25" stroke-width="2.4" fill="none" stroke-linecap="round"/>`
+      + `</svg>`;
+  }
+  // Build the standalone HTML export, wrapped in a decorative gradient frame with
+  // a panda header. All styling is inline so the saved file renders on its own.
   function buildSummaryDocHTML(){
     const clone = summaryCaptureClone();
     const inner = clone ? clone.outerHTML : '';
-    const bg = (window.getComputedStyle(document.body).backgroundColor) || '#0e0e16';
-    return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>keys-summary</title>`
-      + `<style>${summaryPageCSS()}\nbody{margin:0;padding:24px;background:${bg}}</style></head>`
-      + `<body>${inner}</body></html>`;
+    const bodyCS = window.getComputedStyle(document.body);
+    const bg = bodyCS.backgroundColor || '#252538';
+    const font = `${bodyCS.fontStyle} ${bodyCS.fontWeight} ${bodyCS.fontSize}/${bodyCS.lineHeight} ${bodyCS.fontFamily}`;
+    const frameCSS = `
+      .kx-page{margin:0;padding:28px;background:${bg};color:${bodyCS.color};min-height:100vh;font:${font}}
+      .kx-frame{max-width:920px;margin:0 auto;padding:4px;border-radius:26px;
+        background:linear-gradient(135deg,#fadc92,#ff5fdc 55%,#a8e4ff);box-shadow:0 24px 60px rgba(0,0,0,.45)}
+      .kx-card{position:relative;overflow:hidden;background:${bg};border-radius:22px;padding:26px 30px 34px}
+      .kx-card::before,.kx-card::after{content:"";position:absolute;width:220px;height:220px;border-radius:50%;filter:blur(64px);opacity:.18;pointer-events:none}
+      .kx-card::before{background:#ff5fdc;top:-96px;right:-66px}
+      .kx-card::after{background:#a8e4ff;bottom:-110px;left:-76px}
+      .kx-head{position:relative;display:flex;align-items:center;gap:14px;margin:0 0 18px}
+      .kx-panda{flex:none;filter:drop-shadow(0 6px 14px rgba(0,0,0,.4))}
+      .kx-title{font:800 1.5rem/1 ui-serif,Georgia,serif;letter-spacing:.5px;background:linear-gradient(135deg,#fadc92,#ff5fdc 60%,#a8e4ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+      .kx-sub{display:block;margin-top:4px;font:600 .72rem/1.3 system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#c4c7d2}
+      .kx-card #std-summary{position:relative;z-index:1}`;
+    return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>flove · keys — summary</title>`
+      + `<style>${summaryPageCSS()}\n${frameCSS}</style></head>`
+      + `<body class="kx-page"><div class="kx-frame"><div class="kx-card">`
+      + `<div class="kx-head">${summaryPandaSVG()}<div><span class="kx-title">flove · keys</span><span class="kx-sub">Your summary</span></div></div>`
+      + `${inner}</div></div></body></html>`;
   }
-  // The base :root custom-property declarations, lifted verbatim from the page
-  // CSS. The foreignObject has no :root/body of its own, so we re-apply these
-  // (plus the body's text colour + font) directly on its wrapper — otherwise
-  // every var(--…) is unset and the summary renders as invisible text → a blank
-  // JPG. Cached after first read.
-  let _rootVarDeclsCache = null;
-  function rootVarDecls(){
-    if (_rootVarDeclsCache != null) return _rootVarDeclsCache;
-    const m = summaryPageCSS().match(/:root\s*\{([^}]*)\}/);
-    _rootVarDeclsCache = m ? m[1].replace(/\s+/g, ' ').trim() : '';
-    return _rootVarDeclsCache;
-  }
-  // Rasterise the captured summary to a real JPG via an SVG foreignObject (no
-  // libs). The wrapper carries the root vars + body text styles so colours/fonts
-  // resolve; the clone is measured off-screen for an exact height and the canvas
-  // is drawn at device resolution for a crisp image.
-  function summaryToImageBlob(mime){
-    mime = mime || 'image/jpeg';
-    return new Promise((resolve, reject) => {
-      try {
-        const sec = document.getElementById('std-summary');
-        const clone = summaryCaptureClone();
-        if (!sec || !clone) { reject(new Error('no summary')); return; }
-        const bodyCS = window.getComputedStyle(document.body);
-        const bg = (bodyCS.backgroundColor && bodyCS.backgroundColor !== 'rgba(0, 0, 0, 0)')
-          ? bodyCS.backgroundColor : '#252538';
-        const font = `${bodyCS.fontStyle} ${bodyCS.fontWeight} ${bodyCS.fontSize}/${bodyCS.lineHeight} ${bodyCS.fontFamily}`;
-        const W = Math.min(1100, Math.max(380, sec.scrollWidth || 760));
-        // Inherited text styles + root vars, applied to the foreignObject wrapper.
-        const baseStyle = `${rootVarDecls()};color:${bodyCS.color};font:${font};`
-          + `background:${bg};padding:20px;width:${W}px;box-sizing:border-box`;
-        // Measure the expanded clone off-screen so the height is exact (the live
-        // section may be collapsed or clipped).
-        const meas = document.createElement('div');
-        meas.setAttribute('style', `position:fixed;left:-99999px;top:0;visibility:hidden;${baseStyle}`);
-        meas.appendChild(clone);
-        document.body.appendChild(meas);
-        // Take the taller of the live (expanded) section and the off-screen clone
-        // so nothing is clipped, plus a small margin.
-        const H = Math.max(380, Math.ceil(Math.max(meas.scrollHeight, sec.scrollHeight || 0)) + 24);
-        const xhtml = new XMLSerializer().serializeToString(clone);
-        document.body.removeChild(meas);
-        const fo = `<div xmlns="http://www.w3.org/1999/xhtml" style="${baseStyle.replace(/"/g, "'")}">`
-          + `<style>/*<![CDATA[*/${summaryPageCSS()}/*]]>*/</style>${xhtml}</div>`;
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}"><foreignObject width="100%" height="100%">${fo}</foreignObject></svg>`;
-        const dpr = Math.min(2, window.devicePixelRatio || 1);
-        const img = new Image();
-        img.onload = () => {
-          try {
-            const canvas = document.createElement('canvas');
-            canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
-            const ctx = canvas.getContext('2d');
-            ctx.scale(dpr, dpr);
-            ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-            ctx.drawImage(img, 0, 0, W, H);
-            canvas.toBlob(b => b ? resolve(b) : reject(new Error('toBlob null')), mime, 0.95);
-          } catch(err){ reject(err); }
-        };
-        img.onerror = () => reject(new Error('svg image load failed'));
-        img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-      } catch(err){ reject(err); }
-    });
-  }
-  // Mobile default: share the summary as HTML + JPG files (Web Share with files).
+  // Mobile default: share the summary as the decorated HTML file (Web Share).
   async function shareSummaryFiles(){
     if (!(navigator.canShare && navigator.share)) return false;
     const files = [];
     try { files.push(new File([buildSummaryDocHTML()], 'keys-summary.html', { type:'text/html' })); } catch(_){}
-    try { const img = await summaryToImageBlob('image/jpeg'); if (img) files.push(new File([img], 'keys-summary.jpg', { type:'image/jpeg' })); } catch(_){}
     if (!files.length || !navigator.canShare({ files })) return false;
     try { await navigator.share({ title:'flove · keys', text:'My flove keys', files }); return true; }
     catch(_){ return false; }
@@ -9672,12 +9631,8 @@ window.tKey = function tKey(k){
     const $sec = document.getElementById('std-summary');
     if (!$sec) return;
 
-    // Clicking any button in this panel scrolls the panel up so the result
-    // (insight text + tables, which sit above the button rows) comes into view.
-    $sec.addEventListener('click', (e) => {
-      if (!e.target.closest('.fbtn')) return;
-      setTimeout(() => $sec.scrollIntoView({ behavior:'smooth', block:'start' }), 0);
-    });
+    // (Save / Share / Publish and the format/platform buttons no longer jump the
+    // page back to the top of the summary — the user stays where they clicked.)
 
     // Collapsed by default — the ✦ Summary header expands / collapses it.
     const $stdToggle = document.getElementById('std-summary-toggle');
@@ -9699,43 +9654,32 @@ window.tKey = function tKey(k){
       if (await copyToClipboard(buildBottomSummaryText())) stdToast('Copied to clipboard ✓');
     });
 
-    // Download bundle: every marked format (TXT is always included) is
-    // downloaded; JPG falls back to HTML (no canvas render here).
-    const $dl = $sec.querySelector('[data-flove-save="bundle"]');
-    if ($dl) $dl.addEventListener('click', async (e) => {
-      e.preventDefault();
-      const marked = ['md','html','csv','xml','json'].filter(f => {
-        const el = document.getElementById('flv-fmt-' + f);
-        return el && el.checked;
-      });
-      const fmts = ['txt', ...marked];
-      fmts.forEach(f => triggerDownload(`keys-summary.${f}`, FMT_MIME[f] || 'text/plain', serializeSummary(f)));
-      // JPG: render the summary doc to a real image; fall back to the HTML doc.
-      let extra = 0;
-      const jpg = document.getElementById('flv-fmt-jpg');
-      if (jpg && jpg.checked){
-        try {
-          const blob = await summaryToImageBlob('image/jpeg');
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url; a.download = 'keys-summary.jpg';
-          document.body.appendChild(a); a.click(); document.body.removeChild(a);
-          setTimeout(() => URL.revokeObjectURL(url), 1000);
-        } catch(_){
-          if (!marked.includes('html')) triggerDownload('keys-summary.html', 'text/html', serializeSummary('html'));
-        }
-        extra = 1;
-      }
-      const count = fmts.length + extra;
-      stdToast(count > 1 ? `Downloaded ${count} files` : 'Downloaded keys-summary.txt');
-    });
+    // Direct export: clicking a format button downloads that single file right
+    // away (no Download button, no bundle). HTML carries the decorative frame.
+    $sec.querySelectorAll('[data-fmt]').forEach(btn =>
+      btn.addEventListener('click', () => {
+        const f = btn.getAttribute('data-fmt');
+        if (!f) return;
+        triggerDownload(`keys-summary.${f}`, FMT_MIME[f] || 'text/plain', serializeSummary(f));
+        stdToast(`Saved keys-summary.${f} ✓`);
+      }));
+
+    // Direct share: clicking a publish platform shares the result to it at once.
+    $sec.querySelectorAll('.plat-set label[for^="flv-plat-"]').forEach(btn =>
+      btn.addEventListener('click', () => {
+        const name = (btn.getAttribute('for') || '').replace('flv-plat-', '') || 'platform';
+        const nice = name.charAt(0).toUpperCase() + name.slice(1);
+        const text = buildBottomSummaryText();
+        if (navigator.share){ navigator.share({ title:'flove · keys', text }).catch(()=>{}); stdToast(`Shared to ${nice} ✓`); }
+        else { copyToClipboard(text).then(ok => stdToast(ok ? `Copied for ${nice} — paste it there` : `Open ${nice} to share`)); }
+      }));
 
     // Share sub-actions: print + Web Share API.
     $sec.querySelectorAll('[data-flove-print]').forEach(b =>
       b.addEventListener('click', () => window.print()));
     $sec.querySelectorAll('[data-flove-share-menu]').forEach(b =>
       b.addEventListener('click', async () => {
-        // Mobile defaults to sharing the summary as HTML + JPG files.
+        // Mobile defaults to sharing the summary as an HTML file.
         if (b.getAttribute('data-flove-share-menu') === 'mobile' && await shareSummaryFiles()) return;
         const text = buildBottomSummaryText();
         if (navigator.share){ try { await navigator.share({ title:'flove · keys', text }); } catch(_){} }
@@ -9763,8 +9707,6 @@ window.tKey = function tKey(k){
       wrap.className = 'flv-std action-row-relocated';
       $sec.querySelectorAll('input[name="flv-cycle"]').forEach(inp => wrap.appendChild(inp));
       wrap.appendChild($actions);
-      const $dlrow = $sec.querySelector('.download-row');   // keep Download with Save
-      if ($dlrow) wrap.appendChild($dlrow);
       const imButtons = $im.querySelector('.im-buttons');   // place right with insight/magic
       if (imButtons) $im.insertBefore(wrap, imButtons.nextSibling);
       else $im.appendChild(wrap);
