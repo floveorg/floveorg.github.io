@@ -213,6 +213,10 @@
   .entry-actions .eact:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
   .entry-actions .eact .k{ color:var(--accent); margin-right:.2rem; }
   .entry-actions .sp{ flex:1; }
+  .prompt-out{ margin-top:.7rem; white-space:pre-wrap; font-family:var(--mono); font-size:.66rem; line-height:1.5;
+    color:var(--ink); background:var(--paper); border:1px solid var(--line); border-radius:6px; padding:.7rem .8rem;
+    max-height:340px; overflow:auto; user-select:all; }
+  .prompt-out[hidden]{ display:none; }
 
   /* question paginator (change #4) */
   .qpager{ display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
@@ -295,6 +299,519 @@
 
 <script>
 const ENTRIES = [
+ {
+ "id": "talk2web-refine",
+ "title": "Refining talk2web — the implementation plan",
+ "date": "2026-06-18",
+ "cats": [
+  "talk2web",
+  "plan"
+ ],
+ "commit": {
+  "repo": "flove",
+  "sha": "c810272b5f6be6a479fbf5461c2a85c01529f1ef",
+  "public": true,
+  "subject": "talk2web-refine: refinement-plan survey for the talk2web skill"
+ },
+ "summary": "The plan this whole making-of is building toward — refining the talk2web skill itself: wiring Gitea fully operational (provenance, push to gitea-docsify, auto-commit), settling sharing & backends, and finalising this page's design. Each ★ decided option is the proposed plan; recorded from the talk2web-refine survey. yes/no questions excluded.",
+ "links": [
+  {
+   "label": "open the survey",
+   "href": "./talk2web-refine.html"
+  }
+ ],
+ "qa": [
+  {
+   "q": "Public host for provenance / commit links (GIT_BASE public)?",
+   "cats": [
+    "Gitea"
+   ],
+   "o": [
+    {
+     "l": "Public Gitea at git.flove.org",
+     "d": "Stand up a public Gitea; commit + wiki links resolve for everyone. Most self-hosted-aligned."
+    },
+    {
+     "l": "Mirror to GitHub (floveorg)",
+     "d": "Push a mirror; link to GitHub commits. Easy reach, less FOSS-pure."
+    },
+    {
+     "l": "Keep localhost only",
+     "d": "Links work only on your machine; public visitors get no provenance."
+    }
+   ],
+   "chosen": [
+    "Public Gitea at git.flove.org"
+   ],
+   "suggest": [
+    "Public Gitea at git.flove.org"
+   ]
+  },
+  {
+   "q": "Commit + push making-of on every recording?",
+   "cats": [
+    "Gitea"
+   ],
+   "o": [
+    {
+     "l": "Always, automatically",
+     "d": "Each recorded interview commits + pushes. Zero drift; matches the current rule."
+    },
+    {
+     "l": "On confirmation",
+     "d": "Ask before each push. Safer, more friction."
+    },
+    {
+     "l": "Manual",
+     "d": "You push when you choose."
+    }
+   ],
+   "chosen": [
+    "Always, automatically"
+   ],
+   "suggest": [
+    "Always, automatically"
+   ]
+  },
+  {
+   "q": "How does 'push' actually post to the commit-wiki (gitea-docsify)?",
+   "cats": [
+    "Gitea"
+   ],
+   "o": [
+    {
+     "l": "docsify-comments via Gitea (Gitalk-style)",
+     "d": "Comments land as Gitea issues through a docsify comment plugin; one click, real."
+    },
+    {
+     "l": "Gitea API write with a token",
+     "d": "Skill writes a wiki page / issue via API. Powerful, needs a stored token."
+    },
+    {
+     "l": "Keep copy + open (manual paste)",
+     "d": "Current MVP: copy the AI-text, open the page, paste."
+    }
+   ],
+   "chosen": [
+    "docsify-comments via Gitea (Gitalk-style)"
+   ],
+   "suggest": [
+    "docsify-comments via Gitea (Gitalk-style)"
+   ]
+  },
+  {
+   "q": "DOCS_BASE — where does gitea-docsify actually live?",
+   "cats": [
+    "Gitea"
+   ],
+   "o": [
+    {
+     "l": "Gitea on :3000 (wiki render)",
+     "d": "Reuse the running Gitea; docsify renders its docs."
+    },
+    {
+     "l": "Separate docsify server (own port)",
+     "d": "A dedicated docsify instance over the repo files."
+    },
+    {
+     "l": "Public docs.flove.org",
+     "d": "A published docs host for public deep-links."
+    }
+   ],
+   "chosen": [
+    "Gitea on :3000 (wiki render)"
+   ],
+   "suggest": [
+    "Gitea on :3000 (wiki render)"
+   ]
+  },
+  {
+   "q": "Shared / public replies — backend?",
+   "cats": [
+    "Backend"
+   ],
+   "o": [
+    {
+     "l": "Local only (browser) for now",
+     "d": "Keep frontend-first; everyone answers privately. Defer aggregation."
+    },
+    {
+     "l": "flovenet P2P aggregation",
+     "d": "Replies sync over flovenet; native, bigger build."
+    },
+    {
+     "l": "oasis / SSB",
+     "d": "Use the oasis add-on feed for shared replies."
+    }
+   ],
+   "chosen": [
+    "Local only (browser) for now"
+   ],
+   "suggest": [
+    "Local only (browser) for now"
+   ]
+  },
+  {
+   "q": "'debate' target (forums)?",
+   "cats": [
+    "Backend"
+   ],
+   "o": [
+    {
+     "l": "Gitea issues as debate threads",
+     "d": "Each question debates in a Gitea issue; reuses existing infra."
+    },
+    {
+     "l": "A real forum (Discourse-style)",
+     "d": "Richer discussion, a separate service to run."
+    },
+    {
+     "l": "Defer debate for now",
+     "d": "Keep the copy + open placeholder until a forum exists."
+    }
+   ],
+   "chosen": [
+    "Gitea issues as debate threads"
+   ],
+   "suggest": [
+    "Gitea issues as debate threads"
+   ]
+  },
+  {
+   "q": "The conversation-publishing skill (piece C)?",
+   "cats": [
+    "Backend"
+   ],
+   "o": [
+    {
+     "l": "Defer it",
+     "d": "Finish talk2web + making-of first; publish whole chats later."
+    },
+    {
+     "l": "Build it now",
+     "d": "A skill that publishes entire conversations like interviews."
+    },
+    {
+     "l": "Fold into talk2web",
+     "d": "Make talk2web itself publish full conversations."
+    }
+   ],
+   "chosen": [
+    "Defer it"
+   ],
+   "suggest": [
+    "Defer it"
+   ]
+  },
+  {
+   "q": "Category tree structure?",
+   "cats": [
+    "Design"
+   ],
+   "o": [
+    {
+     "l": "Keep 3-deep groups (talk2web / nety·flovenet)",
+     "d": "Conversation → sub-section → category leaf, as now."
+    },
+    {
+     "l": "Regroup by phase",
+     "d": "Brainstorm / plan / implementation as the top groups."
+    },
+    {
+     "l": "Flat list + search",
+     "d": "Drop nesting; add a filter box."
+    }
+   ],
+   "chosen": [
+    "Keep 3-deep groups (talk2web / nety·flovenet)"
+   ],
+   "suggest": [
+    "Keep 3-deep groups (talk2web / nety·flovenet)"
+   ]
+  },
+  {
+   "q": "Default view on load?",
+   "cats": [
+    "Design"
+   ],
+   "o": [
+    {
+     "l": "talk2web open + decisions revealed",
+     "d": "Current: the talk2web interview expands with the decided option highlighted."
+    },
+    {
+     "l": "All collapsed",
+     "d": "Quietest; the visitor opens what they want."
+    },
+    {
+     "l": "All open + decided",
+     "d": "Everything expanded at once; heavy."
+    }
+   ],
+   "chosen": [
+    "talk2web open + decisions revealed"
+   ],
+   "suggest": [
+    "talk2web open + decisions revealed"
+   ]
+  },
+  {
+   "q": "Aesthetic direction?",
+   "cats": [
+    "Design"
+   ],
+   "o": [
+    {
+     "l": "Keep warm-paper editorial",
+     "d": "Fraunces + mono, coral / teal — the current field-journal look."
+    },
+    {
+     "l": "Align with flove main palette",
+     "d": "Match the home page's identity more tightly."
+    },
+    {
+     "l": "Add a dark-mode toggle",
+     "d": "Offer both; more CSS to maintain."
+    }
+   ],
+   "chosen": [
+    "Keep warm-paper editorial"
+   ],
+   "suggest": [
+    "Keep warm-paper editorial"
+   ]
+  },
+  {
+   "q": "Question paginator (currently 20 / page)?",
+   "cats": [
+    "Design"
+   ],
+   "o": [
+    {
+     "l": "Keep 20 per page",
+     "d": "Balanced for long interviews like nety (67)."
+    },
+    {
+     "l": "10 per page",
+     "d": "Lighter pages, more clicks."
+    },
+    {
+     "l": "Show-all by default",
+     "d": "No pagination; long scroll."
+    }
+   ],
+   "chosen": [
+    "Keep 20 per page"
+   ],
+   "suggest": [
+    "Keep 20 per page"
+   ]
+  },
+  {
+   "q": "Per-question footer (note / see-more / push·debate·save)?",
+   "cats": [
+    "Design"
+   ],
+   "o": [
+    {
+     "l": "Keep all of it",
+     "d": "Full toolkit on every question."
+    },
+    {
+     "l": "Trim to note + save",
+     "d": "Less clutter; drop per-question push / debate."
+    },
+    {
+     "l": "Move actions to entry-level only",
+     "d": "One Copy / Share per interview, not per question."
+    }
+   ],
+   "chosen": [
+    "Keep all of it"
+   ],
+   "suggest": [
+    "Keep all of it"
+   ]
+  },
+  {
+   "q": "When to offer the form?",
+   "cats": [
+    "Skill"
+   ],
+   "o": [
+    {
+     "l": "Offer each time (you opt in)",
+     "d": "Current: propose it, you choose. No surprise forms."
+    },
+    {
+     "l": "Auto when ~4+ questions",
+     "d": "Skip the ask above a threshold."
+    },
+    {
+     "l": "Always in brainstorm / plan",
+     "d": "Every batch becomes a form."
+    }
+   ],
+   "chosen": [
+    "Offer each time (you opt in)"
+   ],
+   "suggest": [
+    "Offer each time (you opt in)"
+   ]
+  },
+  {
+   "q": "Context model in the copied prompt?",
+   "cats": [
+    "Skill"
+   ],
+   "o": [
+    {
+     "l": "Pointer-links to public wiki-git",
+     "d": "Current: links travel, not text. Light, single source of truth."
+    },
+    {
+     "l": "Embed full text",
+     "d": "Self-contained prompt; heavier, can drift from source."
+    },
+    {
+     "l": "Both",
+     "d": "Links plus an embedded snapshot."
+    }
+   ],
+   "chosen": [
+    "Pointer-links to public wiki-git"
+   ],
+   "suggest": [
+    "Pointer-links to public wiki-git"
+   ]
+  },
+  {
+   "q": "Copy-prompt intents to offer? (multi)",
+   "cats": [
+    "Skill"
+   ],
+   "o": [
+    {
+     "l": "Find conflicts",
+     "d": "Flag tensions / contradictions across picks."
+    },
+    {
+     "l": "Summarize",
+     "d": "Condense picks into a brief."
+    },
+    {
+     "l": "Draft a plan",
+     "d": "Turn picks into an implementation plan."
+    },
+    {
+     "l": "Critique",
+     "d": "Challenge the weakest picks."
+    },
+    {
+     "l": "Extract decisions",
+     "d": "Emit a clean decision log."
+    }
+   ],
+   "chosen": [
+    "Find conflicts",
+    "Summarize",
+    "Draft a plan",
+    "Critique",
+    "Extract decisions"
+   ],
+   "suggest": [
+    "Find conflicts",
+    "Summarize",
+    "Draft a plan",
+    "Critique",
+    "Extract decisions"
+   ],
+   "multi": true
+  },
+  {
+   "q": "Recording flow ownership?",
+   "cats": [
+    "Skill"
+   ],
+   "o": [
+    {
+     "l": "talk2web records + feeds + commits",
+     "d": "Current: the skill appends the entry, regenerates feeds, commits + pushes."
+    },
+    {
+     "l": "Manual recording",
+     "d": "You add entries by hand."
+    },
+    {
+     "l": "A separate 'record' skill",
+     "d": "Split recording into its own skill."
+    }
+   ],
+   "chosen": [
+    "talk2web records + feeds + commits"
+   ],
+   "suggest": [
+    "talk2web records + feeds + commits"
+   ]
+  },
+  {
+   "q": "Implement first?",
+   "cats": [
+    "Plan"
+   ],
+   "o": [
+    {
+     "l": "Gitea fully operating (provenance + push)",
+     "d": "Make links + push real before anything else."
+    },
+    {
+     "l": "making-of design polish",
+     "d": "Finalise the page UX first."
+    },
+    {
+     "l": "Sharing backend (replies / debate)",
+     "d": "Stand up the shared layer first."
+    },
+    {
+     "l": "Publishing skill (C)",
+     "d": "Start whole-conversation publishing first."
+    }
+   ],
+   "chosen": [
+    "Gitea fully operating (provenance + push)"
+   ],
+   "suggest": [
+    "Gitea fully operating (provenance + push)"
+   ]
+  },
+  {
+   "q": "Milestone size?",
+   "cats": [
+    "Plan"
+   ],
+   "o": [
+    {
+     "l": "One coherent commit per block (A→E)",
+     "d": "Ship each block as a unit; reviewable."
+    },
+    {
+     "l": "Tiny incremental commits",
+     "d": "Many small steps; the current cadence."
+    },
+    {
+     "l": "Big-bang",
+     "d": "All at once; risky."
+    }
+   ],
+   "chosen": [
+    "One coherent commit per block (A→E)"
+   ],
+   "suggest": [
+    "One coherent commit per block (A→E)"
+   ]
+  }
+ ]
+},
  {
    id:"talk2web-design",
    title:"Designing talk2web — interviews as web forms, + this making-of",
@@ -2190,6 +2707,9 @@ document.getElementById('s-cats-panel').textContent = allCats.length;
 
 /* ---------- nested category navigator (3 deep, expanded) ---------- */
 const CATTREE = [
+ { name:"talk2web · refine", kids:[
+   { name:"plan blocks", kids:["Gitea","Backend","Design","Skill","Plan"] },
+ ]},
  { name:"talk2web", kids:[
    { name:"Skill & method", kids:["Skills","Process","Naming","Meta"] },
    { name:"Design & UX",    kids:["talk2web","Frontend","UX","Architecture"] },
@@ -2341,6 +2861,7 @@ ENTRIES.forEach(e=>{
         `<button class="eact" data-eact="share"><span class="k">↗</span> Share</button>`+
         `<span class="sp"></span>`+
       `</div>`+
+      `<pre class="prompt-out" data-eid="${e.id}" hidden></pre>`+
     `</div>`;
   el.querySelector('.open-q').addEventListener('click', ()=>{
     el.classList.toggle('open');
@@ -2462,7 +2983,9 @@ function doEntryAct(act, entryEl){
   const id=entryEl.dataset.id;
   const e=ENTRIES.find(x=>x.id===id); if(!e) return;
   if(act==='copyprompt'){
-    copyTo(entryText(e),'full interview prompt copied ('+e.qa.length+' questions + your answers)');
+    const t=entryText(e);
+    const out=entryEl.querySelector('.prompt-out'); if(out){ out.textContent=t; out.hidden=false; out.scrollIntoView({block:'nearest'}); }
+    copyTo(t,'prompt copied & shown below ('+e.qa.length+' questions + your answers)');
     return;
   }
   if(act==='share'){
@@ -2569,7 +3092,7 @@ apply();
   document.addEventListener('click', ev=>{ if(!wrap.contains(ev.target)) menu.classList.remove('open'); });
 })();
 document.getElementById('uploadBtn').addEventListener('click', ()=>{
-  const p = "Use the talk2web skill to run design interviews (questions) for this work. Produce self-contained collapsible HTML question forms as needed per phase — brainstorm, plan, and implementation — grouping the open questions into coherent blocks, each option with a short rationale and a suggested pick. Then record each interview into the flove making-of (making-of.html) as a new entry and regenerate the per-category RSS feeds.";
+  const p = "Implement the talk2web refinement plan. Source of truth: the 'Refining talk2web — the implementation plan' interview in this making-of (open talk2web-refine.html, or the entry on this page) — for each question, the ★ decided option IS the plan. Deliver it block by block, committing + pushing each block to the flove Gitea:\n(A) Gitea fully operating — provenance/commit links on the chosen host, auto commit+push, push posting to gitea-docsify, DOCS_BASE wired.\n(B) Sharing & backends — replies, the debate target, the publishing skill.\n(C) making-of page design — category tree, default view, aesthetic, paginator, per-question footer.\n(D) The talk2web skill itself — offer threshold, context model, intents, recording flow.\n(E) Sequencing & milestones.\nKeep the frontend-first, FOSS, pointer-links-to-public-wiki-git stance. Use the talk2web skill to capture any further design questions as collapsible HTML forms and record them into the making-of, regenerating the per-category RSS feeds.";
   navigator.clipboard.writeText(p).then(()=>toast('talk2web prompt copied — paste it to your assistant'))
     .catch(()=>{ const ta=document.createElement('textarea'); ta.value=p; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast('talk2web prompt copied'); });
 });
