@@ -583,7 +583,7 @@ body{
 .rstage:hover{ border-color:var(--accent); color:var(--ink); }
 .rstage.reached{ color:var(--accent-soft); border-color:rgba(108,92,231,.28); }
 .rstage.current{ border-color:var(--signal); color:var(--signal); background:rgba(2,133,92,.08); font-weight:700; }
-.rings-facets{ display:flex; flex-direction:column; gap:.55rem; }
+.rings-circles{ display:flex; flex-direction:column; gap:.55rem; }
 /* stage detail (opens from the stage tabs) */
 .stage-detail{ max-height:0; overflow:hidden; opacity:0; transition:max-height .34s cubic-bezier(.4,0,.2,1), opacity .24s ease; }
 .stage-detail.open{ max-height:360px; opacity:1; margin-bottom:1.1rem; }
@@ -591,13 +591,13 @@ body{
 .sd-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:.5rem; }
 .sd-stage{ font-family:"Fredoka",sans-serif; font-weight:700; font-size:.95rem; text-transform:capitalize; }
 .sd-stars{ font-family:"Fredoka",sans-serif; font-weight:700; font-size:1.1rem; color:var(--signal); }
-.rfacet{ display:flex; align-items:center; gap:.5rem; font-size:.66rem; }
-.rfacet-dot{ width:11px; height:11px; border-radius:50%; flex:none; background:currentColor; box-shadow:0 0 7px 1px currentColor; }
-.rfacet-name{ flex:1; font-weight:700; font:inherit; color:inherit; background:none; border:none; padding:0; text-align:left; cursor:pointer; font-weight:700; }
-.rfacet-name:hover{ text-decoration:underline; }
-.rfacet strong{ font-family:"Fredoka",sans-serif; font-weight:700; font-size:.85rem; min-width:1.6em; text-align:right; }
-.rfacet-active{ position:relative; }
-.rfacet-active .rfacet-name::after{ content:" ✦"; }
+.rcircle{ display:flex; align-items:center; gap:.5rem; font-size:.66rem; }
+.rcircle-dot{ width:11px; height:11px; border-radius:50%; flex:none; background:currentColor; box-shadow:0 0 7px 1px currentColor; }
+.rcircle-name{ flex:1; font-weight:700; font:inherit; color:inherit; background:none; border:none; padding:0; text-align:left; cursor:pointer; font-weight:700; }
+.rcircle-name:hover{ text-decoration:underline; }
+.rcircle strong{ font-family:"Fredoka",sans-serif; font-weight:700; font-size:.85rem; min-width:1.6em; text-align:right; }
+.rcircle-active{ position:relative; }
+.rcircle-active .rcircle-name::after{ content:" ✦"; }
 
 
 
@@ -605,28 +605,28 @@ body{
 
 
 /* per-scope "+" (50% of the 44px global +) */
-.facet-plus{
+.circle-plus{
   width:22px; height:22px; border-radius:50%; line-height:1;
   border:1.5px solid var(--accent); background:rgba(108,92,231,.1);
   color:var(--accent); font-size:.8rem; font-weight:700; cursor:pointer;
   display:flex; align-items:center; justify-content:center;
   transition:background .16s, box-shadow .16s, transform .22s;
 }
-.facet-plus:hover{ background:rgba(108,92,231,.2); box-shadow:0 0 12px -4px var(--glow-a); }
-.facet-plus[aria-expanded="true"]{ background:var(--accent); color:#fff; transform:rotate(45deg); }
-.facet-plus:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
-.facet-info{
+.circle-plus:hover{ background:rgba(108,92,231,.2); box-shadow:0 0 12px -4px var(--glow-a); }
+.circle-plus[aria-expanded="true"]{ background:var(--accent); color:#fff; transform:rotate(45deg); }
+.circle-plus:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+.circle-info{
   max-height:0; overflow:hidden; opacity:0;
   transition:max-height .34s cubic-bezier(.4,0,.2,1), opacity .24s ease;
 }
-.facet-info.open{ max-height:340px; opacity:1; margin-top:.55rem; }
-.facet-info-inner{
+.circle-info.open{ max-height:340px; opacity:1; margin-top:.55rem; }
+.circle-info-inner{
   padding:.8rem 1rem; border-radius:12px;
   border:1px solid var(--glass-border); background:var(--panel);
 }
-.facet-info-title{ font-size:.72rem; font-weight:700; margin-bottom:.3rem; }
-.facet-info-desc{ font-size:.64rem; color:var(--muted); line-height:1.6; margin-bottom:.6rem; }
-.facet-info-actions{ display:flex; gap:.5rem; flex-wrap:wrap; }
+.circle-info-title{ font-size:.72rem; font-weight:700; margin-bottom:.3rem; }
+.circle-info-desc{ font-size:.64rem; color:var(--muted); line-height:1.6; margin-bottom:.6rem; }
+.circle-info-actions{ display:flex; gap:.5rem; flex-wrap:wrap; }
 
 
 
@@ -1646,7 +1646,7 @@ body{
               <div class="profile-card-expand-inner">
                 <div class="pc-row">Linked identities: <strong id="pc-ids">none</strong></div>
                 <div class="pc-row">Social profiles: <strong id="pc-social-count">0</strong></div>
-                <div class="pc-row">Circles: <strong>close · friends · mynet</strong></div>
+                <div class="pc-row">Groups: <strong>close · friends · mynet</strong></div>
                 <div class="pc-row">Joined: <strong>2026-01</strong></div>
                 <div class="pc-row">Stars: <strong id="pc-stars">42</strong> ⭐</div>
                 <!-- moved here from Registration -->
@@ -1686,12 +1686,12 @@ body{
         <div class="profile-posts" id="profile-posts" aria-live="polite"></div>
 
         <!-- Extend profile — moved here, below marcflove -->
-        <div class="expandable-card" id="tc-B" style="margin-top:.9rem">
-          <div class="ec-header" onclick="toggleTourCard('B')" role="button" tabindex="0" aria-expanded="false" aria-controls="tc-B-body">
+        <div class="expandable-card" id="tc-extend" style="margin-top:.9rem">
+          <div class="ec-header" onclick="toggleTourCard('extend')" role="button" tabindex="0" aria-expanded="false" aria-controls="tc-extend-body">
             <span class="ec-title">Extend profile</span>
             <span class="ec-chevron" aria-hidden="true">▸</span>
           </div>
-          <div class="ec-body" id="tc-B-body" role="region">
+          <div class="ec-body" id="tc-extend-body" role="region">
             <div class="ec-inner">
               <div class="extend-col-label">Authenticate</div>
               <div class="id5-scale" id="id5-scale"><!-- built by renderIdentityScale() --></div>
@@ -1714,14 +1714,14 @@ body{
 
         <div style="text-align:center;font-family:'Fredoka',sans-serif;font-weight:700;font-size:1.05rem;margin:3.2rem 0 1.1rem">Be more <span class="rainbow-text">appy</span></div>
         <div class="access-card-grid" style="margin-top:0">          <!-- D: Share resources — the core contribution -->
-          <div class="expandable-card share-card" id="tc-D">
-            <div class="ec-header" onclick="toggleTourCard('D')" role="button" tabindex="0" aria-expanded="false" aria-controls="tc-D-body">
+          <div class="expandable-card share-card" id="tc-donate">
+            <div class="ec-header" onclick="toggleTourCard('donate')" role="button" tabindex="0" aria-expanded="false" aria-controls="tc-donate-body">
               <span class="ec-id">★</span>
               <span class="ec-title">Donate Computing</span>
               <span class="ec-summary">Lend hardware to the mesh — the core of nety. Raises Global &amp; earns stars.</span>
               <span class="ec-chevron" aria-hidden="true">▸</span>
             </div>
-            <div class="ec-body" id="tc-D-body" role="region">
+            <div class="ec-body" id="tc-donate-body" role="region">
               <div class="ec-inner">
                 <p style="font-size:.66rem;color:var(--muted);margin-bottom:.7rem;line-height:1.6">Lend compute to the mesh — the most important way to contribute. Pick a preset, then donate.</p>
                 <div class="res-presets" id="res-presets">
@@ -1735,25 +1735,25 @@ body{
                   <div class="res-bar"><span class="res-bar-label">GPU</span><div class="res-bar-track"><div class="res-bar-fill" id="res-fill-gpu"></div></div><span class="res-bar-val" id="res-val-gpu">0%</span></div>
                   <div class="res-bar"><span class="res-bar-label">RAM</span><div class="res-bar-track"><div class="res-bar-fill" id="res-fill-ram"></div></div><span class="res-bar-val" id="res-val-ram">0%</span></div>
                 </div>
-                <div style="font-size:.66rem;color:var(--muted);margin-bottom:.6rem">Contributed: <strong style="color:var(--signal)" id="tc-D-cu">5</strong> CU</div>
+                <div style="font-size:.66rem;color:var(--muted);margin-bottom:.6rem">Contributed: <strong style="color:var(--signal)" id="tc-donate-cu">5</strong> CU</div>
                 <button class="btn signal js-share-btn" style="width:100%;justify-content:center" onclick="shareHardware()">Share hardware (+5 CU · +8⭐ · +5 global)</button>
-                <div class="see-more-wrap"><button class="see-more-chip" id="see-more-D" onclick="toggleCardMore('D')">see more</button></div>
+                <div class="see-more-wrap"><button class="see-more-chip" id="see-more-donate" onclick="toggleCardMore('donate')">see more</button></div>
               </div>
             </div>
           </div>
 
           <!-- C: Add content -->
-          <div class="expandable-card" id="tc-C">
-            <div class="ec-header" onclick="toggleTourCard('C')" role="button" tabindex="0" aria-expanded="false" aria-controls="tc-C-body">
+          <div class="expandable-card" id="tc-add">
+            <div class="ec-header" onclick="toggleTourCard('add')" role="button" tabindex="0" aria-expanded="false" aria-controls="tc-add-body">
               <span class="ec-id">C</span>
               <span class="ec-title">Add content</span>
               <span class="ec-chevron" aria-hidden="true">▸</span>
             </div>
-            <div class="ec-body" id="tc-C-body" role="region">
+            <div class="ec-body" id="tc-add-body" role="region">
               <div class="ec-inner">
                 <div class="field" style="margin-bottom:.45rem">
                   <label>Category</label>
-                  <select id="tc-C-category" aria-label="Category">
+                  <select id="tc-add-category" aria-label="Category">
                     <option value="post">Post</option>
                     <option value="page">Page</option>
                     <option value="file">File</option>
@@ -1762,14 +1762,14 @@ body{
                   </select>
                 </div>
                 <div style="display:flex;gap:.4rem;align-items:center">
-                  <input type="text" id="tc-C-content" placeholder="What's in your love" aria-label="Add content" style="font-family:'Space Mono',monospace;font-size:.7rem;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(28,25,42,.07);border-radius:9px;padding:.52rem .85rem;flex:1;outline:none;transition:border-color .18s,box-shadow .18s" onkeydown="if(event.key==='Enter')tcGoPublish()">
+                  <input type="text" id="tc-add-content" placeholder="What's in your love" aria-label="Add content" style="font-family:'Space Mono',monospace;font-size:.7rem;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(28,25,42,.07);border-radius:9px;padding:.52rem .85rem;flex:1;outline:none;transition:border-color .18s,box-shadow .18s" onkeydown="if(event.key==='Enter')tcGoPublish()">
                   <button class="btn signal" style="font-size:.64rem;padding:.42rem .9rem;flex-none" onclick="tcGoPublish()">Go</button>
                 </div>
-                <div id="tc-C-msg" style="margin-top:.38rem;font-size:.64rem;color:var(--muted)"></div>
+                <div id="tc-add-msg" style="margin-top:.38rem;font-size:.64rem;color:var(--muted)"></div>
                 <!-- kept hidden for render() null-guard compatibility -->
-                <span id="tc-C-stars" style="display:none">42</span>
-                <span id="tc-C-progress" style="display:none">known (10⭐)</span>
-                <div class="see-more-wrap"><button class="see-more-chip" id="see-more-C" onclick="toggleCardMore('C')">see more</button></div>
+                <span id="tc-add-stars" style="display:none">42</span>
+                <span id="tc-add-progress" style="display:none">known (10⭐)</span>
+                <div class="see-more-wrap"><button class="see-more-chip" id="see-more-add" onclick="toggleCardMore('add')">see more</button></div>
               </div>
             </div>
           </div>
@@ -1778,13 +1778,13 @@ body{
           <div style="grid-column:1/-1;height:1.1rem"></div>
 
           <!-- E: Add invite code -->
-          <div class="expandable-card" id="tc-E">
-            <div class="ec-header" onclick="toggleTourCard('E')" role="button" tabindex="0" aria-expanded="false" aria-controls="tc-E-body">
+          <div class="expandable-card" id="tc-invite">
+            <div class="ec-header" onclick="toggleTourCard('invite')" role="button" tabindex="0" aria-expanded="false" aria-controls="tc-invite-body">
               <span class="ec-id">＋</span>
               <span class="ec-title">Add invite code</span>
               <span class="ec-chevron" aria-hidden="true">▸</span>
             </div>
-            <div class="ec-body" id="tc-E-body" role="region">
+            <div class="ec-body" id="tc-invite-body" role="region">
               <div class="ec-inner">
                 <div class="field" style="margin-bottom:.5rem">
                   <label>Invite code</label>
@@ -1792,27 +1792,27 @@ body{
                 </div>
                 <button class="btn signal" style="font-size:.64rem;padding:.42rem .85rem" onclick="extValidateInvite()">Validate</button>
                 <div id="ext-invite-msg" style="margin-top:.45rem;font-size:.64rem;color:var(--muted)"></div>
-                <div class="see-more-wrap"><button class="see-more-chip" id="see-more-E" onclick="toggleCardMore('E')">see more</button></div>
+                <div class="see-more-wrap"><button class="see-more-chip" id="see-more-invite" onclick="toggleCardMore('invite')">see more</button></div>
               </div>
             </div>
           </div>
 
           <!-- F: Ask for trusts (was Get trust) -->
-          <div class="expandable-card" id="tc-F">
-            <div class="ec-header" onclick="toggleTourCard('F')" role="button" tabindex="0" aria-expanded="false" aria-controls="tc-F-body">
+          <div class="expandable-card" id="tc-trust">
+            <div class="ec-header" onclick="toggleTourCard('trust')" role="button" tabindex="0" aria-expanded="false" aria-controls="tc-trust-body">
               <span class="ec-id">✦</span>
               <span class="ec-title">Ask for trusts</span>
               <span class="ec-chevron" aria-hidden="true">▸</span>
             </div>
-            <div class="ec-body" id="tc-F-body" role="region">
+            <div class="ec-body" id="tc-trust-body" role="region">
               <div class="ec-inner">
                 <p style="font-size:.66rem;color:var(--muted);margin-bottom:.6rem;line-height:1.6">Request a vouch from peers who know you — each co-signature lifts your Local &amp; Social trust.</p>
                 <div style="display:flex;gap:.5rem;flex-wrap:wrap">
                   <button class="btn signal" style="font-size:.64rem;padding:.42rem .85rem" onclick="askForTrust()">Request a vouch</button>
                   <button class="btn ghost" style="font-size:.64rem;padding:.42rem .85rem" onclick="switchTab('mynet')">See more →</button>
                 </div>
-                <div id="tc-F-msg" style="margin-top:.45rem;font-size:.64rem;color:var(--muted)"></div>
-                <div class="see-more-wrap"><button class="see-more-chip" id="see-more-F" onclick="toggleCardMore('F')">see more</button></div>
+                <div id="tc-trust-msg" style="margin-top:.45rem;font-size:.64rem;color:var(--muted)"></div>
+                <div class="see-more-wrap"><button class="see-more-chip" id="see-more-trust" onclick="toggleCardMore('trust')">see more</button></div>
               </div>
             </div>
           </div>
@@ -2015,10 +2015,10 @@ body{
             </div>
           </div>
 
-          <!-- Right column: tribes / social circles -->
+          <!-- Right column: Groups -->
           <div>
             <div class="sec" style="margin-top:0">Groups</div>
-            <div class="peer-list" id="circles-list">
+            <div class="peer-list" id="groups-list">
               <!-- populated by renderMyNet() -->
             </div>
           </div>
@@ -2096,7 +2096,7 @@ body{
     <div class="tab-panel" id="panel-activity" role="tabpanel">
       <div class="vcard">
 
-        <!-- Stage tabs (left) · rings (centre) · facet activity (right) -->
+        <!-- Stage tabs (left) · rings (centre) · circle activity (right) -->
         <div class="rings-3col">
           <div class="rings-stages" id="rings-stages"><!-- buildRingStages() --></div>
 
@@ -2131,11 +2131,11 @@ body{
             </svg>
           </div>
 
-          <div class="rings-facets">
-            <div class="rfacet" style="color:#02a85f"><span class="rfacet-dot"></span><button class="rfacet-name" onclick="openFacetTitle('personal')">Personal</button><strong id="tr-p">0</strong><button class="facet-plus" onclick="openFacetPlus('personal')" aria-label="Suggestions for Personal">+</button></div>
-            <div class="rfacet" style="color:#0bb5c9"><span class="rfacet-dot"></span><button class="rfacet-name" onclick="openFacetTitle('local')">Local</button><strong id="tr-l">30</strong><button class="facet-plus" onclick="openFacetPlus('local')" aria-label="Suggestions for Local">+</button></div>
-            <div class="rfacet" style="color:#6c5ce7"><span class="rfacet-dot"></span><button class="rfacet-name" onclick="openFacetTitle('social')">Social</button><strong id="tr-s">20</strong><button class="facet-plus" onclick="openFacetPlus('social')" aria-label="Suggestions for Social">+</button></div>
-            <div class="rfacet rfacet-active" style="color:#3a86ff"><span class="rfacet-dot"></span><button class="rfacet-name" onclick="openFacetTitle('global')">Global</button><strong id="tr-g">15</strong><button class="facet-plus" onclick="openFacetPlus('global')" aria-label="Suggestions for Global">+</button></div>
+          <div class="rings-circles">
+            <div class="rcircle" style="color:#02a85f"><span class="rcircle-dot"></span><button class="rcircle-name" onclick="openCircleTitle('personal')">Personal</button><strong id="tr-p">0</strong><button class="circle-plus" onclick="openCirclePlus('personal')" aria-label="Suggestions for Personal">+</button></div>
+            <div class="rcircle" style="color:#0bb5c9"><span class="rcircle-dot"></span><button class="rcircle-name" onclick="openCircleTitle('local')">Local</button><strong id="tr-l">30</strong><button class="circle-plus" onclick="openCirclePlus('local')" aria-label="Suggestions for Local">+</button></div>
+            <div class="rcircle" style="color:#6c5ce7"><span class="rcircle-dot"></span><button class="rcircle-name" onclick="openCircleTitle('social')">Social</button><strong id="tr-s">20</strong><button class="circle-plus" onclick="openCirclePlus('social')" aria-label="Suggestions for Social">+</button></div>
+            <div class="rcircle rcircle-active" style="color:#3a86ff"><span class="rcircle-dot"></span><button class="rcircle-name" onclick="openCircleTitle('global')">Global</button><strong id="tr-g">15</strong><button class="circle-plus" onclick="openCirclePlus('global')" aria-label="Suggestions for Global">+</button></div>
           </div>
         </div>
 
@@ -2143,7 +2143,7 @@ body{
         <div class="stage-detail" id="stage-detail"><!-- renderStageDetail() --></div>
 
         <!-- facet detail: + = suggestions · title = upgrade message -->
-        <div class="facet-info" id="facet-detail"><!-- renderFacetDetail() --></div>
+        <div class="circle-info" id="circle-detail"><!-- renderCircleDetail() --></div>
 
         <div class="sec">Donated Computing</div>
         <div class="rsc-stats">
@@ -2276,7 +2276,7 @@ const state = {
   activity: 'LIVE',
   queue: [],
   peers: [],
-  circles: { close: ['alice'], friends: ['alice','bob'], mynet: ['alice','bob','carol'] },
+  groups: { close: ['alice'], friends: ['alice','bob'], mynet: ['alice','bob','carol'] },
   tags: { collaborators: ['alice','carol'] },
   joinedGroups: ['close','friends'],
   openPeer: null,
@@ -2347,8 +2347,8 @@ const state = {
   tourCommentsOpen: false,
   engagement: {},
   openStageDetail: null,
-  openFacet: null,
-  facetMode: null,
+  openCircle: null,
+  circleMode: null,
   openFeatureTier: 0,
   sessionQueueCount: 0,
   profileCardOpen: false,
@@ -2741,42 +2741,42 @@ function checkStageThreshold() {
 function updatePerm(area, val) {
   state.permissions[area] = val;
 }
-function updateVis(facet, val) { /* visibility prefs, no state impact needed */ }
+function updateVis(circle, val) { /* visibility prefs, no state impact needed */ }
 
 // ============================================================
 // STAT WAYS PANEL (Trust tab + button)
 // ============================================================
 
 // Per-scope trust info — one open at a time
-// Specific suggestions per facet (recovered) — shown from the + button
-const FACET_SUGGEST = {
+// Specific suggestions per circle (recovered) — shown from the + button
+const CIRCLE_SUGGEST = {
   personal: { color: '#02a85f', title: 'Personal — prove you\'re a real, unique human', desc: 'Verified identity links and social profiles raise it. Telegram is the minimum to unlock publishing.',
     actions: [['Link identity →', 'extensions'], ['Add social profiles →', 'extensions']] },
   local:    { color: '#0bb5c9', title: 'Local — trust from people close to you', desc: 'Grows when nearby peers vouch for you face-to-face and the people you invite stay active.',
     actions: [['Meet peers f2f →', 'mynet'], ['Invite well →', 'mynet']] },
-  social:   { color: '#6c5ce7', title: 'Social — reach across the wider network', desc: 'Builds as you receive vouches across circles and publish content others engage with.',
+  social:   { color: '#6c5ce7', title: 'Social — reach across the wider network', desc: 'Builds as you receive vouches across groups and publish content others engage with.',
     actions: [['Grow your net →', 'mynet'], ['Publish content →', 'access']] },
   global:   { color: '#3a86ff', title: 'Global — contribution to the whole mesh', desc: 'Share hardware (CPU/GPU/RAM) and publish approved content to raise it.',
     actions: [['Donate Computing →', 'resources'], ['Publish content →', 'access']] },
 };
-function openFacetPlus(f)  { const same = state.openFacet === f && state.facetMode === 'suggest'; state.openFacet = same ? null : f; state.facetMode = 'suggest'; renderFacetDetail(); }
-function openFacetTitle(f) { const same = state.openFacet === f && state.facetMode === 'upgrade'; state.openFacet = same ? null : f; state.facetMode = 'upgrade'; renderFacetDetail(); }
-function renderFacetDetail() {
-  const wrap = document.getElementById('facet-detail');
+function openCirclePlus(f)  { const same = state.openCircle === f && state.circleMode === 'suggest'; state.openCircle = same ? null : f; state.circleMode = 'suggest'; renderCircleDetail(); }
+function openCircleTitle(f) { const same = state.openCircle === f && state.circleMode === 'upgrade'; state.openCircle = same ? null : f; state.circleMode = 'upgrade'; renderCircleDetail(); }
+function renderCircleDetail() {
+  const wrap = document.getElementById('circle-detail');
   if (!wrap) return;
-  const f = state.openFacet;
+  const f = state.openCircle;
   if (!f) { wrap.classList.remove('open'); wrap.innerHTML = ''; return; }
-  const s = FACET_SUGGEST[f];
+  const s = CIRCLE_SUGGEST[f];
   let inner;
-  if (state.facetMode === 'upgrade') {
-    inner = `<div class="facet-info-desc"><a href="#" onclick="switchTab('extensions');return false" style="color:var(--accent);font-weight:700;text-decoration:none;border-bottom:1px dotted var(--accent)">Upgrade to Basic</a> to see more custom Local and Social Activities and scores.</div>`;
+  if (state.circleMode === 'upgrade') {
+    inner = `<div class="circle-info-desc"><a href="#" onclick="switchTab('extensions');return false" style="color:var(--accent);font-weight:700;text-decoration:none;border-bottom:1px dotted var(--accent)">Upgrade to Basic</a> to see more custom Local and Social Activities and scores.</div>`;
   } else {
-    inner = `<div class="facet-info-title" style="color:${s.color}">${s.title}</div>
-      <div class="facet-info-desc">${s.desc}</div>
-      <div class="facet-info-actions">${s.actions.map((a, i) => `<button class="btn ${i === 0 ? 'signal' : 'ghost'}" style="font-size:.62rem;padding:.4rem .8rem" onclick="switchTab('${a[1]}')">${a[0]}</button>`).join('')}</div>`;
+    inner = `<div class="circle-info-title" style="color:${s.color}">${s.title}</div>
+      <div class="circle-info-desc">${s.desc}</div>
+      <div class="circle-info-actions">${s.actions.map((a, i) => `<button class="btn ${i === 0 ? 'signal' : 'ghost'}" style="font-size:.62rem;padding:.4rem .8rem" onclick="switchTab('${a[1]}')">${a[0]}</button>`).join('')}</div>`;
   }
   wrap.classList.add('open');
-  wrap.innerHTML = `<div class="facet-info-inner">${inner}</div>`;
+  wrap.innerHTML = `<div class="circle-info-inner">${inner}</div>`;
 }
 
 // ============================================================
@@ -2849,7 +2849,7 @@ function rotateKey() {
 function toggleTourCard(id) {
   state.tourCardOpen = (state.tourCardOpen === id) ? null : id;
   state.cardMoreOpen = null; renderCardMore();   // collapse the see-more panel when cards toggle
-  ['A','B','C','D','E','F'].forEach(k => {
+  ['extend','add','donate','invite','trust'].forEach(k => {
     const card = document.getElementById('tc-' + k);
     if (!card) return;
     const hdr  = card.querySelector('.ec-header');
@@ -2865,9 +2865,9 @@ function renderTourCardState() {
     const tog = document.getElementById('tc-tog-' + id);
     if (tog) tog.classList.toggle('on', state.linkedIdentities.includes(id));
   });
-  const cs = document.getElementById('tc-C-stars');
+  const cs = document.getElementById('tc-add-stars');
   if (cs) cs.textContent = state.stars;
-  const cp = document.getElementById('tc-C-progress');
+  const cp = document.getElementById('tc-add-progress');
   if (cp) {
     const nextIdx = Math.min(4, state.stage + 1);
     cp.textContent = state.stageName[nextIdx] + ' (' + state.stageThresholds[nextIdx] + '⭐)';
@@ -2876,20 +2876,20 @@ function renderTourCardState() {
 }
 
 function askForTrust() {
-  const m = document.getElementById('tc-F-msg');
-  if (m) { m.style.color = 'var(--signal)'; m.textContent = '✓ Vouch request sent to your circles. (mock)'; }
+  const m = document.getElementById('tc-trust-msg');
+  if (m) { m.style.color = 'var(--signal)'; m.textContent = '✓ Vouch request sent to your groups. (mock)'; }
 }
 
 // "see more" — full-width feature panel below the Extensions card grid
 const CARD_MORE = {
-  D: { title: 'Donate Computing', feats: ['Bandwidth &amp; power caps', 'Schedule donation windows', 'Pick which projects your compute backs', 'Contribution history &amp; rewards'] },
-  C: { title: 'Add content',      feats: ['Drafts &amp; scheduling', 'Media attachments', 'Cross-post to your circles', 'License &amp; visibility per post'] },
-  E: { title: 'Add invite code',  feats: ['See who invited you', 'View your lineage tree', 'Transfer standing to invitees', 'Bulk codes (basic+)'] },
-  F: { title: 'Ask for trusts',   feats: ['Request vouches from chosen circles', 'Track pending vouch requests', 'Reciprocal vouching', 'Curator escalation'] },
+  donate: { title: 'Donate Computing', feats: ['Bandwidth &amp; power caps', 'Schedule donation windows', 'Pick which projects your compute backs', 'Contribution history &amp; rewards'] },
+  add: { title: 'Add content',      feats: ['Drafts &amp; scheduling', 'Media attachments', 'Cross-post to your groups', 'License &amp; visibility per post'] },
+  invite: { title: 'Add invite code',  feats: ['See who invited you', 'View your lineage tree', 'Transfer standing to invitees', 'Bulk codes (basic+)'] },
+  trust: { title: 'Ask for trusts',   feats: ['Request vouches from chosen groups', 'Track pending vouch requests', 'Reciprocal vouching', 'Curator escalation'] },
 };
 function toggleCardMore(id) { state.cardMoreOpen = (state.cardMoreOpen === id) ? null : id; renderCardMore(); }
 function renderCardMore() {
-  ['D', 'C', 'E', 'F'].forEach(k => { const c = document.getElementById('see-more-' + k); if (c) c.textContent = (state.cardMoreOpen === k) ? 'see less' : 'see more'; });
+  ['donate', 'add', 'invite', 'trust'].forEach(k => { const c = document.getElementById('see-more-' + k); if (c) c.textContent = (state.cardMoreOpen === k) ? 'see less' : 'see more'; });
   const wrap = document.getElementById('card-more');
   if (!wrap) return;
   const id = state.cardMoreOpen;
@@ -2946,15 +2946,15 @@ function tourValidateInvite() {
 
 
 function tcGoPublish() {
-  const inp = document.getElementById('tc-C-content');
-  const msg = document.getElementById('tc-C-msg');
+  const inp = document.getElementById('tc-add-content');
+  const msg = document.getElementById('tc-add-msg');
   if (!inp) return;
   const val = inp.value.trim();
   if (!val) {
     if (msg) { msg.style.color = 'var(--warn)'; msg.textContent = '⚠ Write something first.'; }
     return;
   }
-  const cat = document.getElementById('tc-C-category');
+  const cat = document.getElementById('tc-add-category');
   state.queue.push({ id: queueCounter++, type: cat ? cat.value : 'post', content: val, status: 'pending' });
   state.sessionQueueCount++;
   inp.value = '';
@@ -2978,7 +2978,7 @@ function tcRemoveSocialProfile(idx) {
 }
 
 function renderSocialProfiles() {
-  const list = document.getElementById('tc-B-social-list');
+  const list = document.getElementById('tc-extend-social-list');
   if (!list) return;
   if (state.socialProfiles.length === 0) {
     list.innerHTML = '';
@@ -3132,7 +3132,7 @@ function entityMeta(name, isGroup) {
   return {
     intro: isGroup
       ? `${name} — a community circle on the nety mesh. Members share content, vouches and resources here.`
-      : `${name} runs a node on the nety mesh and contributes across circles.`,
+      : `${name} runs a node on the nety mesh and contributes across groups.`,
     last: DEMO_POSTS[i],
   };
 }
@@ -3188,7 +3188,7 @@ function renderMyNet() {
   }
 
   // Groups — Follows / Supports lists first, then the actual groups
-  const cl = document.getElementById('circles-list');
+  const cl = document.getElementById('groups-list');
   if (cl) {
     const accentIc = key => `<span style="color:var(--accent)">${groupSvg(key)}</span>`;
     const followInfo = state.follows.length
@@ -3205,7 +3205,7 @@ function renderMyNet() {
       netItem('Follows', accentIc('follows'), 'Follows', followInfo, `toggleGroup('Follows')`) +
       netItem('Supports', accentIc('supports'), 'Supports', supportInfo, `toggleGroup('Supports')`);
     const existing = state.joinedGroups.concat(Object.keys(state.tags)).map(name => {
-      const members = (state.circles[name] || state.tags[name] || []).length;
+      const members = (state.groups[name] || state.tags[name] || []).length;
       const info = `<div class="net-info-row"><strong>${members}</strong> member${members !== 1 ? 's' : ''}${state.joinedGroups.includes(name) ? ' · joined' : ''}</div>${metaRows(name, true)}`;
       return netItem(name, accentIc(name), name, info, `toggleGroup('${name}')`);
     }).join('');
@@ -3324,9 +3324,9 @@ function mynetAddFriend() {
   const handle = val.replace(/^@/, '');
   // Avoid duplicate handles
   if (!state.peers.find(p => p.handle === handle)) {
-    state.peers.push({ handle, presence: 'LIVE', stage: 'newbie', circles: 'mynet' });
+    state.peers.push({ handle, presence: 'LIVE', stage: 'newbie', groups: 'mynet' });
     // Also add to mynet circle
-    if (state.circles.mynet) state.circles.mynet.push(handle);
+    if (state.groups.mynet) state.groups.mynet.push(handle);
   }
   inp.value = '';
   inp.focus();
@@ -3342,7 +3342,7 @@ function mynetJoinGroup() {
   // Add to joinedGroups if not already there; create circle entry if needed
   if (!state.joinedGroups.includes(name)) {
     state.joinedGroups.push(name);
-    if (!state.circles[name]) state.circles[name] = [state.handle];
+    if (!state.groups[name]) state.groups[name] = [state.handle];
   }
   inp.value = '';
   inp.focus();
@@ -3362,14 +3362,14 @@ function render() {
   // Rebuild tier ladder + feature tiers
   buildRingStages();
   renderStageDetail();
-  renderFacetDetail();
+  renderCircleDetail();
   buildFeatureTiers();
 
   // Access tab — passport mini (null-guarded)
   const setTxt = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
   setTxt('acc-handle', state.handle);
   setTxt('acc-hw', state.contributions + ' CU');
-  setTxt('tc-D-cu', state.contributions);
+  setTxt('tc-donate-cu', state.contributions);
   setTxt('rsc-cu', state.contributions);
   renderResources();
   setTxt('acc-ids', state.linkedIdentities.join(', ') || 'none');
@@ -3527,7 +3527,7 @@ const STAGE_DETAIL = {
     unlocks: [
       'Play &amp; store apps',
       'Full <strong>profily</strong>',
-      'MyNet circles &amp; permissions',
+      'MyNet groups &amp; permissions',
     ],
     activities: [
       { label: 'Extend Profile',   tab: 'access' },
@@ -3619,7 +3619,7 @@ const FEATURE_TIERS = [
     name: 'basic',
     label: 'profily + apps',
     threshold: 100,
-    features: ['play & store apps', 'full profily', 'MyNet circles & permissions', 'publish'],
+    features: ['play & store apps', 'full profily', 'MyNet groups & permissions', 'publish'],
   },
   {
     name: 'normal',
