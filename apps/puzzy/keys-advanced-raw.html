@@ -154,10 +154,10 @@
 
 <h3><span class="en">Share</span><span class="es">Compartir</span></h3>
 <div class="row">
-  <button type="button"><span class="en">Print</span><span class="es">Imprimir</span></button>
-  <button type="button"><span class="en">Mobile</span><span class="es">Móvil</span></button>
-  <button type="button"><span class="en">Apps</span><span class="es">Apps</span></button>
-  <button type="button"><span class="en">Email</span><span class="es">Correo</span></button>
+  <button type="button" id="btn-print"><span class="en">Print</span><span class="es">Imprimir</span></button>
+  <button type="button" id="btn-mobile"><span class="en">Mobile</span><span class="es">Móvil</span></button>
+  <button type="button" id="btn-apps"><span class="en">Apps</span><span class="es">Apps</span></button>
+  <button type="button" id="btn-email"><span class="en">Email</span><span class="es">Correo</span></button>
 </div>
 
 <h3><span class="en">Publish</span><span class="es">Publicar</span></h3>
@@ -186,11 +186,11 @@
   <select name="year"><option selected>2026</option><option>2027</option><option>2028</option></select>
   <select name="hour"><option>09</option><option selected>12</option><option>15</option><option>18</option><option>21</option></select>:<select name="minute"><option selected>00</option><option>15</option><option>30</option><option>45</option></select></label>
   <label><input type="checkbox" name="pub-all"> <span class="en">All</span><span class="es">Todo</span></label></div>
-<div class="row"><button type="button"><span class="en">✈ Go (publish)</span><span class="es">✈ Ir (publicar)</span></button></div>
+<div class="row"><button type="button" id="btn-publish"><span class="en">✈ Go (publish)</span><span class="es">✈ Ir (publicar)</span></button></div>
 
 <div class="row">
-  <button type="button"><span class="en">Copy</span><span class="es">Copiar</span></button>
-  <button type="button"><span class="en">⬇ Download</span><span class="es">⬇ Descargar</span></button>
+  <button type="button" id="btn-copy"><span class="en">Copy</span><span class="es">Copiar</span></button>
+  <button type="button" id="btn-download"><span class="en">⬇ Download</span><span class="es">⬇ Descargar</span></button>
 </div>
 
 </div><!-- /#locked -->
@@ -347,6 +347,219 @@
   // language radios re-text the <option>s and placeholders CSS can't toggle
   document.querySelectorAll('input[name="lang"]').forEach(r => r.addEventListener('change', applyLang));
   applyLang();
+
+  // ============================================================
+  // EXPORT — gather the composed content and ship it correctly.
+  // The buttons serialise the live form (in the active language) into
+  // text formats; Download honours the Save format checkboxes.
+  // ============================================================
+
+  // visible text in the active language: drop the other-language spans, then read
+  // what's left (keeps trailing text like the "1" in "Group 1", unlike a single
+  // .en lookup which would miss it).
+  const vis = (el) => {
+    if (!el) return '';
+    const other = curLang() === 'en' ? 'es' : 'en';
+    const c = el.cloneNode(true);
+    c.querySelectorAll('.' + other).forEach(n => n.remove());
+    return c.textContent.trim().replace(/\s+/g, ' ');
+  };
+
+  // a preset/blank deck block: order-select + word, plus a Why textarea
+  function collectDeck(deckEl){
+    const title = vis(deckEl.querySelector('h3'));
+    const items = []; let why = '';
+    deckEl.querySelectorAll(':scope > .row').forEach(row => {
+      const ta = row.querySelector('textarea'); if (ta){ why = ta.value.trim(); return; }
+      const sel = row.querySelector('select'); const inp = row.querySelector('input[type="text"]');
+      const span = row.querySelector(':scope > span.' + curLang());
+      const word = inp ? inp.value.trim() : (span ? span.textContent.trim() : '');
+      const order = sel ? sel.value : '';
+      if (word || order) items.push({ order, word });
+    });
+    return { title, items, why };
+  }
+  // a 5-of-3 group block: an -ord select + three word selects + a Why
+  function collectGroup(deckEl){
+    const title = vis(deckEl.querySelector('h3'));
+    const ordSel = deckEl.querySelector('select[name$="-ord"]');
+    const order = ordSel ? ordSel.value : '';
+    const words = [];
+    deckEl.querySelectorAll('select').forEach(sel => {
+      if (sel.name.endsWith('-ord')) return;
+      if (sel.value !== '' && sel.selectedOptions[0]) words.push(sel.selectedOptions[0].textContent.trim());
+    });
+    const ta = deckEl.querySelector('textarea');
+    return { title, order, words, why: ta ? ta.value.trim() : '' };
+  }
+  function collectCustom(){
+    const wrap = document.getElementById('custom-deck'); if (!wrap) return null;
+    const title = (wrap.querySelector('input[name="custom-title"]') || {}).value || '';
+    const items = [];
+    wrap.querySelectorAll('#custom-items .row').forEach(row => {
+      const sel = row.querySelector('select'); const inp = row.querySelector('input[type="text"]');
+      const word = inp ? inp.value.trim() : ''; const order = sel ? sel.value : '';
+      if (word || order) items.push({ order, word });
+    });
+    const ta = wrap.querySelector('textarea[name="custom-why"]');
+    return { title: title.trim() || 'Your group', items, why: ta ? ta.value.trim() : '' };
+  }
+  function collectFavourites(){
+    const out = [];
+    document.querySelectorAll('#combos .combo-row').forEach(row => {
+      const b = row.querySelector('b'); const inp = row.querySelector('input[type="text"]');
+      const combo = b ? vis(b) : ''; if (combo) out.push({ combo, definition: inp ? inp.value.trim() : '' });
+    });
+    return out;
+  }
+  function collect(){
+    const nonEmptyDeck = d => d.why || d.items.some(i => i.word || i.order);
+    const nonEmptyGroup = g => g.why || g.words.length || g.order;
+    const modeBtn = document.querySelector('#mode-tabs .tab[aria-pressed="true"]');
+    const custom = collectCustom();
+    return {
+      mode: modeBtn ? (modeBtn.dataset.mode || vis(modeBtn)) : 'normal',
+      free:   Array.from(document.querySelectorAll('#free-groups .deck')).map(collectGroup).filter(nonEmptyGroup),
+      master: Array.from(document.querySelectorAll('#master-groups .deck')).map(collectGroup).filter(nonEmptyGroup),
+      decks:  Array.from(document.querySelectorAll('#decks .deck')).map(collectDeck).filter(nonEmptyDeck),
+      custom: (custom && (custom.items.length || custom.why)) ? custom : null,
+      perspective: {
+        decks: Array.from(document.querySelectorAll('#persp-decks .deck')).map(collectDeck).filter(nonEmptyDeck),
+        note: (document.querySelector('[name="persp-note"]') || {}).value ? document.querySelector('[name="persp-note"]').value.trim() : ''
+      },
+      favourites: collectFavourites()
+    };
+  }
+
+  // ---- serialisers (one per format) ----
+  function toText(d, md){
+    const H2 = md ? s => `## ${s}` : s => `\n${s}\n${'─'.repeat(s.length)}`;
+    const H3 = md ? s => `### ${s}` : s => `${s}:`;
+    const b = md ? '- ' : '  • ';
+    const L = [ md ? '# Keys' : 'KEYS', md ? `_Mode: ${d.mode}_` : `Mode: ${d.mode}`, '' ];
+    const item = it => `${b}${it.order ? it.order + '. ' : ''}${it.word || '—'}`;
+    const deckOut = dk => { L.push(H3(dk.title)); dk.items.forEach(it => L.push(item(it))); if (dk.why) L.push(`${md ? '' : '  '}Why: ${dk.why}`); L.push(''); };
+    const grpOut  = g  => { L.push(H3(`${g.title}${g.order ? ' (order ' + g.order + ')' : ''}`)); g.words.forEach(w => L.push(`${b}${w}`)); if (g.why) L.push(`${md ? '' : '  '}Why: ${g.why}`); L.push(''); };
+    if (d.free.length){ L.push(H2('Free grouping')); d.free.forEach(grpOut); }
+    if (d.master.length){ L.push(H2('Objective grouping')); d.master.forEach(grpOut); }
+    if (d.decks.length){ L.push(H2('Decks')); d.decks.forEach(deckOut); }
+    if (d.custom){ L.push(H2('Your group')); deckOut(d.custom); }
+    if (d.perspective.decks.length || d.perspective.note){ L.push(H2('New perspective')); d.perspective.decks.forEach(deckOut); if (d.perspective.note){ L.push(`${md ? '' : '  '}Note: ${d.perspective.note}`, ''); } }
+    if (d.favourites.length){ L.push(H2('Favourites')); d.favourites.forEach(f => L.push(`${b}${f.combo}${f.definition ? ' — ' + f.definition : ''}`)); L.push(''); }
+    return L.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
+  }
+  function toCSV(d){
+    const rows = [['field', 'value']];
+    const cell = v => (v == null || String(v).trim() === '' || v === '—') ? '---' : String(v);
+    const add = (k, v) => rows.push([k, cell(v)]);
+    add('mode', d.mode);
+    d.free.forEach((g, i) => { add(`free${i+1}_order`, g.order); g.words.forEach((w, wi) => add(`free${i+1}_word${wi+1}`, w)); add(`free${i+1}_why`, g.why); });
+    d.master.forEach((g, i) => { add(`master${i+1}_order`, g.order); g.words.forEach((w, wi) => add(`master${i+1}_word${wi+1}`, w)); add(`master${i+1}_why`, g.why); });
+    d.decks.forEach((dk, i) => { add(`deck${i+1}_title`, dk.title); dk.items.forEach((it, ii) => { add(`deck${i+1}_item${ii+1}_order`, it.order); add(`deck${i+1}_item${ii+1}_word`, it.word); }); add(`deck${i+1}_why`, dk.why); });
+    if (d.custom){ add('custom_title', d.custom.title); d.custom.items.forEach((it, ii) => { add(`custom_item${ii+1}_order`, it.order); add(`custom_item${ii+1}_word`, it.word); }); add('custom_why', d.custom.why); }
+    d.perspective.decks.forEach((dk, i) => { add(`perspective${i+1}_title`, dk.title); dk.items.forEach((it, ii) => { add(`perspective${i+1}_item${ii+1}_order`, it.order); add(`perspective${i+1}_item${ii+1}_word`, it.word); }); add(`perspective${i+1}_why`, dk.why); });
+    add('perspective_note', d.perspective.note);
+    d.favourites.forEach((f, i) => { add(`fav${i+1}_combo`, f.combo); add(`fav${i+1}_definition`, f.definition); });
+    return rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+  }
+  function toXML(d){
+    const esc = s => String(s).replace(/[<>&"]/g, c => ({ '<':'&lt;', '>':'&gt;', '&':'&amp;', '"':'&quot;' }[c]));
+    const itemX = it => `<item order="${esc(it.order)}">${esc(it.word)}</item>`;
+    const grpX  = g => `    <group order="${esc(g.order)}">${g.words.map(w => `<word>${esc(w)}</word>`).join('')}<why>${esc(g.why)}</why></group>`;
+    const deckX = dk => `    <deck title="${esc(dk.title)}">${dk.items.map(itemX).join('')}<why>${esc(dk.why)}</why></deck>`;
+    let x = `<?xml version="1.0" encoding="UTF-8"?>\n<keys mode="${esc(d.mode)}">\n`;
+    x += '  <free>\n'   + d.free.map(grpX).join('\n')   + '\n  </free>\n';
+    x += '  <master>\n' + d.master.map(grpX).join('\n') + '\n  </master>\n';
+    x += '  <decks>\n'  + d.decks.map(deckX).join('\n') + '\n  </decks>\n';
+    if (d.custom) x += `  <custom title="${esc(d.custom.title)}">${d.custom.items.map(itemX).join('')}<why>${esc(d.custom.why)}</why></custom>\n`;
+    x += `  <perspective note="${esc(d.perspective.note)}">\n` + d.perspective.decks.map(deckX).join('\n') + '\n  </perspective>\n';
+    x += '  <favourites>' + d.favourites.map(f => `<combo def="${esc(f.definition)}">${esc(f.combo)}</combo>`).join('') + '</favourites>\n';
+    return x + '</keys>';
+  }
+  function toHTML(d){
+    const esc = s => String(s).replace(/[<>&]/g, c => ({ '<':'&lt;', '>':'&gt;', '&':'&amp;' }[c]));
+    const itemsUL = items => '<ul>' + items.map(it => `<li>${it.order ? '<b>' + esc(it.order) + '.</b> ' : ''}${esc(it.word || '—')}</li>`).join('') + '</ul>';
+    const why = w => w ? `<p class="why">${esc(w)}</p>` : '';
+    const S = [];
+    const deckH = dk => { S.push(`<h3>${esc(dk.title)}</h3>${itemsUL(dk.items)}${why(dk.why)}`); };
+    const grpH  = g  => { S.push(`<h3>${esc(g.title)}${g.order ? ' <small>(order ' + esc(g.order) + ')</small>' : ''}</h3><ul>${g.words.map(w => `<li>${esc(w)}</li>`).join('')}</ul>${why(g.why)}`); };
+    if (d.free.length){ S.push('<h2>Free grouping</h2>'); d.free.forEach(grpH); }
+    if (d.master.length){ S.push('<h2>Objective grouping</h2>'); d.master.forEach(grpH); }
+    if (d.decks.length){ S.push('<h2>Decks</h2>'); d.decks.forEach(deckH); }
+    if (d.custom){ S.push('<h2>Your group</h2>'); deckH(d.custom); }
+    if (d.perspective.decks.length || d.perspective.note){ S.push('<h2>New perspective</h2>'); d.perspective.decks.forEach(deckH); if (d.perspective.note) S.push(why('Note: ' + d.perspective.note)); }
+    if (d.favourites.length){ S.push('<h2>Favourites</h2><ul>' + d.favourites.map(f => `<li><b>${esc(f.combo)}</b>${f.definition ? ' — ' + esc(f.definition) : ''}</li>`).join('') + '</ul>'); }
+    return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>keys — summary</title>`
+      + `<style>body{font-family:Georgia,serif;line-height:1.5;max-width:760px;margin:0 auto;padding:1.5rem;color:#222}`
+      + `h1{margin:.2rem 0}h2{border-bottom:1px solid #999;padding-bottom:.2rem;margin:1.4rem 0 .4rem}h3{margin:.9rem 0 .2rem}`
+      + `ul{margin:.2rem 0 .5rem 1.2rem}.why{color:#555;font-style:italic;margin:.2rem 0 .4rem}small{color:#666}</style></head>`
+      + `<body><h1>Keys</h1><p><small>Mode: ${esc(d.mode)}</small></p>${S.join('')}</body></html>`;
+  }
+  function serialize(fmt){
+    const d = collect();
+    if (fmt === 'json') return JSON.stringify(d, null, 2);
+    if (fmt === 'csv')  return toCSV(d);
+    if (fmt === 'xml')  return toXML(d);
+    if (fmt === 'html') return toHTML(d);
+    return toText(d, fmt === 'md');   // md or txt
+  }
+
+  // ---- delivery helpers ----
+  const MIME = { txt:'text/plain', md:'text/markdown', html:'text/html', csv:'text/csv', xml:'application/xml', json:'application/json' };
+  async function copyText(txt){
+    try { await navigator.clipboard.writeText(txt); return true; }
+    catch(_){
+      const ta = document.createElement('textarea'); ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); let ok = false; try { ok = document.execCommand('copy'); } catch(__){}
+      document.body.removeChild(ta); return ok;
+    }
+  }
+  function download(name, mime, content){
+    const url = URL.createObjectURL(new Blob([content], { type: mime + ';charset=utf-8' }));
+    const a = document.createElement('a'); a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  let statusEl;
+  function flash(msg){
+    if (!statusEl){
+      statusEl = document.createElement('span'); statusEl.id = 'exp-status'; statusEl.setAttribute('aria-live', 'polite');
+      statusEl.style.cssText = 'margin-left:.5rem;color:#666;font-size:.85rem';
+      const dl = document.getElementById('btn-download');
+      (dl && dl.parentNode ? dl.parentNode : document.body).appendChild(statusEl);
+    }
+    statusEl.textContent = msg; clearTimeout(statusEl._t); statusEl._t = setTimeout(() => { statusEl.textContent = ''; }, 4000);
+  }
+
+  // ---- wire the buttons ----
+  const on = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener('click', fn); };
+  on('btn-copy', async () => flash(await copyText(serialize('md')) ? 'copied ✓' : 'copy failed'));
+  on('btn-download', () => {
+    const checked = Array.from(document.querySelectorAll('input[name="fmt"]:checked')).map(c => c.value);
+    let fmts = checked.filter(f => MIME[f]);
+    const skipped = checked.filter(f => !MIME[f]);   // jpg / app — not text exports
+    if (!fmts.length) fmts = ['md'];
+    // stagger: browsers throttle several programmatic downloads fired at once
+    fmts.forEach((f, i) => setTimeout(() => download(`keys-summary.${f}`, MIME[f], serialize(f)), i * 150));
+    flash(`saved ${fmts.map(f => '.' + f).join(' ')} ✓` + (skipped.length ? ` · ${skipped.join(', ')} not text — skipped` : ''));
+  });
+  on('btn-print', () => {
+    const w = window.open('', '_blank'); if (!w){ flash('pop-up blocked'); return; }
+    w.document.write(serialize('html')); w.document.close(); w.focus(); setTimeout(() => w.print(), 300);
+  });
+  const shareText = async () => {
+    const text = serialize('md');
+    if (navigator.share){ try { await navigator.share({ title: 'flove · keys', text }); return; } catch(_){} }
+    flash(await copyText(text) ? 'copied (share n/a) ✓' : 'share not available');
+  };
+  on('btn-mobile', shareText);
+  on('btn-apps', shareText);
+  on('btn-email', () => { location.href = `mailto:?subject=${encodeURIComponent('flove · keys')}&body=${encodeURIComponent(serialize('md'))}`; });
+  on('btn-publish', () => {
+    const plat = (document.querySelector('input[name="plat"]:checked') || {}).value;
+    if (!plat){ flash('pick a platform first'); return; }
+    shareText();
+  });
 })();
 </script>
 </body>
