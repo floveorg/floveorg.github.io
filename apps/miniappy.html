@@ -1345,6 +1345,34 @@ body{
   font-size:.56rem; letter-spacing:.14em; text-transform:uppercase;
   color:var(--muted); margin-bottom:.5rem; font-family:"Space Mono",monospace;
 }
+/* 5-bar identity scale (Self + 4 identities) */
+.id5-scale{ display:flex; gap:.45rem; align-items:flex-end; }
+.id5-bar{ flex:1; display:flex; flex-direction:column; align-items:center; gap:.3rem; cursor:pointer; }
+.id5-bar-col{
+  width:100%; border-radius:6px 6px 4px 4px; display:flex; align-items:flex-start; justify-content:center;
+  padding-top:.22rem; background:rgba(28,25,42,.07); border:1px solid var(--line); transition:background .22s, box-shadow .22s, border-color .22s;
+}
+.id5-bar.reached .id5-bar-col{
+  background:linear-gradient(180deg,var(--signal),var(--accent)); border-color:transparent;
+  box-shadow:0 0 12px -3px var(--glow-s);
+}
+.id5-bar:hover .id5-bar-col{ border-color:var(--accent); }
+.id5-bar-badge{ font-size:.85rem; filter:grayscale(1); opacity:.35; transition:.22s; }
+.id5-bar.reached .id5-bar-badge{ filter:none; opacity:1; }
+.id5-bar-pts{ font-size:.5rem; font-weight:700; color:var(--signal); }
+.id5-bar:not(.reached) .id5-bar-pts{ color:var(--muted); opacity:.5; }
+.id5-bar-label{ font-size:.48rem; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); text-align:center; }
+/* Saved "more about me" entries below marcflove */
+.about-entries{ display:flex; flex-direction:column; gap:.4rem; margin-top:.6rem; }
+.about-entry{
+  display:flex; align-items:center; gap:.6rem; padding:.5rem .8rem;
+  border-radius:11px; border:1px solid var(--line); background:var(--card); font-size:.66rem;
+}
+.about-entry-body{ flex:1; display:flex; flex-direction:column; gap:.15rem; overflow:hidden; }
+.about-entry-text{ color:var(--ink); }
+.about-entry-link{ color:var(--accent); font-size:.6rem; text-decoration:none; border-bottom:1px dotted var(--accent); word-break:break-all; }
+.about-entry-del{ background:none; border:none; cursor:pointer; color:var(--danger); font-size:.72rem; opacity:.7; flex-none; padding:.1rem .3rem; }
+.about-entry-del:hover{ opacity:1; }
 
 /* Share resources — flagged as the core contribution */
 .share-card{
@@ -1705,6 +1733,32 @@ body{
 
         </div><!-- /.access-card-grid -->
 
+        <!-- saved "more about me" entries — sit directly below the marcflove card -->
+        <div class="about-entries" id="about-entries" aria-live="polite"></div>
+
+        <!-- Extend profile — moved here, below marcflove -->
+        <div class="expandable-card" id="tc-B" style="margin-top:.9rem">
+          <div class="ec-header" onclick="toggleTourCard('B')" role="button" tabindex="0" aria-expanded="false" aria-controls="tc-B-body">
+            <span class="ec-title">Extend profile</span>
+            <span class="ec-chevron" aria-hidden="true">▸</span>
+          </div>
+          <div class="ec-body" id="tc-B-body" role="region">
+            <div class="ec-inner">
+              <div class="extend-col-label">Identity scale</div>
+              <div class="id5-scale" id="id5-scale"><!-- built by renderIdentityScale() --></div>
+
+              <div class="field" style="margin-top:.85rem">
+                <label>More about me</label>
+                <input type="text" id="ep-about" placeholder="Some words" aria-label="More about me">
+              </div>
+              <div class="field" style="margin-top:.5rem">
+                <input type="text" id="add-link-input" placeholder="add link" aria-label="Add link">
+              </div>
+              <button class="btn signal" id="about-save-btn" style="margin-top:.65rem;width:100%;justify-content:center" onclick="saveAbout()">Save</button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -1819,76 +1873,7 @@ body{
         </div>
 
         <div style="text-align:center;font-family:'Fredoka',sans-serif;font-weight:700;font-size:1.05rem;margin:3.2rem 0 1.1rem">Get more <span class="rainbow-text">appys</span></div>
-        <div class="access-card-grid" style="margin-top:0">
-          <!-- B: Extend profile (was Authenticate) -->
-          <div class="expandable-card" id="tc-B">
-            <div class="ec-header" onclick="toggleTourCard('B')" role="button" tabindex="0" aria-expanded="false" aria-controls="tc-B-body">
-              <span class="ec-title">Extend profile</span>
-              <span class="ec-chevron" aria-hidden="true">▸</span>
-            </div>
-            <div class="ec-body" id="tc-B-body" role="region">
-              <div class="ec-inner">
-                <div class="extend-grid">
-                  <!-- LEFT: identity ladder chips + new field + links -->
-                  <div class="extend-col">
-                    <div class="extend-col-label">Identity ladder</div>
-                    <div class="id-ladder">
-                      <div class="id-rung" id="rung-social-link">
-                        <span class="rung-icon">🔗</span>
-                        <span class="rung-name">Social link</span>
-                        <span class="rung-status">base level</span>
-                      </div>
-                      <div class="id-rung" id="rung-telegram" onclick="linkIdentity('telegram')" role="button" tabindex="0" aria-label="Link Telegram" style="cursor:pointer">
-                        <span class="rung-icon">✈</span>
-                        <span class="rung-name">Telegram ✦</span>
-                        <span class="rung-status" id="rung-tel-status">click to link · unlocks publish</span>
-                      </div>
-                      <div class="id-rung" id="rung-phone" onclick="linkIdentity('phone')" role="button" tabindex="0" aria-label="Link phone" style="cursor:pointer">
-                        <span class="rung-icon">📱</span>
-                        <span class="rung-name">Phone</span>
-                        <span class="rung-status" id="rung-phone-status">click to link</span>
-                      </div>
-                      <div class="id-rung" id="rung-bio" onclick="linkIdentity('biometrics')" role="button" tabindex="0" aria-label="Link biometrics" style="cursor:pointer">
-                        <span class="rung-icon">👁</span>
-                        <span class="rung-name">Biometrics</span>
-                        <span class="rung-status" id="rung-bio-status">click to link</span>
-                      </div>
-                    </div>
-                    <!-- new field -->
-                    <div class="field" style="margin-top:.7rem">
-                      <label>Display name</label>
-                      <input type="text" id="ep-display-name" placeholder="how you appear to others" aria-label="Display name">
-                    </div>
-                    <!-- add-a-link control (moved here) -->
-                    <div class="add-link-row" id="add-link-row">
-                      <input type="text" id="add-link-input" placeholder="add a link (e.g. https://…)" aria-label="Add a link">
-                      <button class="btn ghost" style="font-size:.64rem;padding:.44rem .9rem;flex-none" onclick="saveLink()">Save</button>
-                    </div>
-                    <div class="saved-links-list" id="saved-links-list" aria-live="polite"></div>
-                  </div>
-                  <!-- RIGHT: social profiles -->
-                  <div class="extend-col">
-                    <div class="extend-col-label">Social profiles</div>
-                    <div style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap" id="tc-B-social-row">
-                      <select id="tc-B-social-platform" aria-label="Social platform" style="font-family:'Space Mono',monospace;font-size:.64rem;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(28,25,42,.07);border-radius:7px;padding:.38rem .6rem;outline:none;cursor:pointer;transition:border-color .18s">
-                        <option value="instagram">Instagram</option>
-                        <option value="linkedin">LinkedIn</option>
-                        <option value="x">X / Twitter</option>
-                        <option value="github">GitHub</option>
-                        <option value="tiktok">TikTok</option>
-                        <option value="mastodon">Mastodon</option>
-                      </select>
-                      <input type="text" id="tc-B-social-handle" placeholder="handle or link" aria-label="Social handle or link" style="font-family:'Space Mono',monospace;font-size:.64rem;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(28,25,42,.07);border-radius:7px;padding:.38rem .7rem;outline:none;flex:1;min-width:90px;transition:border-color .18s" onkeydown="if(event.key==='Enter')tcAddSocialProfile()">
-                      <button class="btn ghost" style="font-size:.62rem;padding:.38rem .75rem;flex-none" onclick="tcAddSocialProfile()">Add</button>
-                    </div>
-                    <div id="tc-B-social-list" style="margin-top:.45rem;display:flex;flex-direction:column;gap:.28rem"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- D: Share resources — the core contribution -->
+        <div class="access-card-grid" style="margin-top:0">          <!-- D: Share resources — the core contribution -->
           <div class="expandable-card share-card" id="tc-D">
             <div class="ec-header" onclick="toggleTourCard('D')" role="button" tabindex="0" aria-expanded="false" aria-controls="tc-D-body">
               <span class="ec-id">★</span>
@@ -2392,6 +2377,7 @@ const state = {
   resources: { cpu: 55, gpu: 45, ram: 55 },
   resourcePreset: 'balanced',
   shared: false,
+  aboutEntries: [],
   savedLinks: [],
   inviteRenewOpen: false,
 };
@@ -2546,6 +2532,67 @@ function setResourcePreset(name) {
   state.resourcePreset = name;
   renderResources();
 }
+// 5-bar identity scale — Self always reached; each step grants points + a badge
+const IDENTITY_STEPS = [
+  { key: 'self',       label: 'Self',     badge: '🪪', pts: 5,  h: 24 },
+  { key: 'telegram',   label: 'Telegram', badge: '✈',  pts: 12, h: 32 },
+  { key: 'phone',      label: 'Phone',    badge: '📱', pts: 6,  h: 40 },
+  { key: 'biometrics', label: 'Bio',      badge: '👁', pts: 8,  h: 48 },
+  { key: 'email',      label: 'Email',    badge: '✉',  pts: 4,  h: 56 },
+];
+function renderIdentityScale() {
+  const wrap = document.getElementById('id5-scale');
+  if (!wrap) return;
+  wrap.innerHTML = IDENTITY_STEPS.map(s => {
+    const reached = s.key === 'self' || state.linkedIdentities.includes(s.key);
+    const click = s.key === 'self' ? 'goToProfile()' : `linkIdentity('${s.key}')`;
+    return `<div class="id5-bar${reached ? ' reached' : ''}" onclick="${click}" role="button" tabindex="0" aria-label="${s.label}${reached ? ' (reached)' : ''}">
+      <div class="id5-bar-col" style="height:${s.h}px"><span class="id5-bar-badge">${s.badge}</span></div>
+      <span class="id5-bar-pts">+${s.pts}</span>
+      <span class="id5-bar-label">${s.label}</span>
+    </div>`;
+  }).join('');
+}
+
+// Clicking the Self bar jumps to your profile card
+function goToProfile() {
+  switchTab('access');
+  const card = document.getElementById('pc-marcflove');
+  if (card) {
+    if (!state.profileCardOpen) toggleProfileCard();
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+// "More about me" — save adds an entry below the marcflove card; each is deletable
+function saveAbout() {
+  const a = document.getElementById('ep-about');
+  const l = document.getElementById('add-link-input');
+  const text = a ? a.value.trim() : '';
+  const link = l ? l.value.trim() : '';
+  if (!text && !link) { if (a) a.focus(); return; }
+  state.aboutEntries.push({ text, link });
+  if (a) a.value = '';
+  if (l) l.value = '';
+  renderAboutEntries();
+}
+function deleteAbout(i) {
+  if (i < 0 || i >= state.aboutEntries.length) return;
+  state.aboutEntries.splice(i, 1);
+  renderAboutEntries();
+}
+function renderAboutEntries() {
+  const wrap = document.getElementById('about-entries');
+  if (!wrap) return;
+  wrap.innerHTML = state.aboutEntries.map((e, i) => `<div class="about-entry">
+    <div class="about-entry-body">
+      ${e.text ? `<span class="about-entry-text">${e.text}</span>` : ''}
+      ${e.link ? `<a class="about-entry-link" href="#" onclick="return false">${e.link}</a>` : ''}
+    </div>
+    <button class="about-entry-del" onclick="deleteAbout(${i})" aria-label="Delete entry">✕</button>
+  </div>`).join('');
+}
+
 // "Only" preference — when ticked, the word becomes a link to your Scores
 function toggleRscOnly() {
   const cb = document.getElementById('rsc-only');
@@ -3240,19 +3287,9 @@ function render() {
   document.getElementById('tr-s').textContent = state.facets.social;
   document.getElementById('tr-g').textContent = state.facets.global;
 
-  // Identity ladder rungs
-  const rungs = [
-    { el: 'rung-telegram', id: 'telegram', status: 'rung-tel-status',   linked: 'linked ✓ · publish unlocked', unlinked: 'click to link · unlocks publish' },
-    { el: 'rung-phone',    id: 'phone',    status: 'rung-phone-status', linked: 'linked ✓', unlinked: 'click to link' },
-    { el: 'rung-bio',      id: 'biometrics', status: 'rung-bio-status', linked: 'linked ✓', unlinked: 'click to link' },
-  ];
-  rungs.forEach(r => {
-    const linked = state.linkedIdentities.includes(r.id);
-    const el = document.getElementById(r.el);
-    if (el) el.classList.toggle('linked', linked);
-    const sel = document.getElementById(r.status);
-    if (sel) sel.textContent = linked ? r.linked : r.unlinked;
-  });
+  // Extend profile — 5-bar identity scale + saved "more about me" entries
+  renderIdentityScale();
+  renderAboutEntries();
 
   // Invite credits chip (N / 3 left)
   const rem = state.inviteBudget.total - state.inviteBudget.used;
