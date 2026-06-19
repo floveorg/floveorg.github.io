@@ -443,10 +443,10 @@ body{
   50%    { opacity:.4; transform:scale(1.5); box-shadow:0 0 12px 4px rgba(0,247,167,.3); }
 }
 .pbadge.RECENT{
-  color:var(--signal); border-color:rgba(0,247,167,.3);
-  background:rgba(0,247,167,.05);
+  color:#2f6fe0; border-color:rgba(58,134,255,.35);
+  background:rgba(58,134,255,.07);
 }
-.pbadge.RECENT::before{ content:""; width:5px; height:5px; border-radius:50%; background:var(--signal); opacity:.7; }
+.pbadge.RECENT::before{ content:""; width:5px; height:5px; border-radius:50%; background:#3a86ff; opacity:.85; }
 .pbadge.REACHABLE{
   color:var(--warn); border-color:rgba(255,206,107,.4);
   background:rgba(255,206,107,.06);
@@ -841,6 +841,10 @@ body{
 .peer-row:hover{ border-color:rgba(141,137,255,.22); }
 .peer-handle{ font-size:.7rem; flex:1; letter-spacing:.02em; }
 .peer-circle{ font-size:.56rem; color:var(--muted); }
+/* People — stage icon tinted by presence status (icon + colour only) */
+.peer-stage-ic{ font-size:1.05rem; flex:none; line-height:1; filter:drop-shadow(0 0 5px currentColor); }
+/* Groups — demo logo */
+.group-logo{ font-size:1.05rem; flex:none; line-height:1; }
 
 /* Permission picker */
 .perm-grid{
@@ -1741,7 +1745,7 @@ body{
       <button class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('trust')"    id="tab-trust">Scores</button>
       <button class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('mynet')"    id="tab-mynet">MyNet</button>
       <button class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('pending')"  id="tab-pending">Activity</button>
-      <button class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('recovery')" id="tab-recovery">Recovery</button>
+      <button class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('recovery')" id="tab-recovery">Account</button>
     </nav>
 
     <!-- ACCESS TAB -->
@@ -2076,7 +2080,7 @@ body{
 
           <!-- Left column: f2f connections -->
           <div>
-            <div class="sec" style="margin-top:0">f2f connections</div>
+            <div class="sec" style="margin-top:0">People</div>
             <div class="peer-list" id="peers-list">
               <!-- populated by renderMyNet() -->
             </div>
@@ -2084,7 +2088,7 @@ body{
 
           <!-- Right column: tribes / social circles -->
           <div>
-            <div class="sec" style="margin-top:0">tribes &amp; circles</div>
+            <div class="sec" style="margin-top:0">Groups</div>
             <div class="peer-list" id="circles-list">
               <!-- populated by renderMyNet() -->
             </div>
@@ -2368,9 +2372,9 @@ const state = {
   activity: 'LIVE',
   queue: [],
   peers: [
-    { handle: 'alice', presence: 'LIVE',      circles: 'close · friends · collaborators' },
-    { handle: 'bob',   presence: 'RECENT',    circles: 'friends · bookclub' },
-    { handle: 'carol', presence: 'REACHABLE', circles: 'mynet · collaborators' },
+    { handle: 'alice', presence: 'LIVE',      stage: 'homie',  circles: 'close · friends · collaborators' },
+    { handle: 'bob',   presence: 'RECENT',    stage: 'known',  circles: 'friends · bookclub' },
+    { handle: 'carol', presence: 'REACHABLE', stage: 'newbie', circles: 'mynet · collaborators' },
   ],
   circles: { close: ['alice'], friends: ['alice','bob'], mynet: ['alice','bob','carol'] },
   tags: { collaborators: ['alice','carol'], bookclub: ['bob'] },
@@ -3278,39 +3282,36 @@ function pubAddComment(id, inputEl) {
 // ============================================================
 // MYNET — add friend / join group
 // ============================================================
+// Stage icons, group logos, and a differentiated presence colour code
+const STAGE_ICON = { newbie: '🐣', known: '🌱', homie: '🤝', expert: '⭐', legend: '👑' };
+const PRESENCE_COLOR = { LIVE: '#02a85f', RECENT: '#3a86ff', REACHABLE: '#e08a00', DARK: '#8a8e99' };
+const GROUP_LOGO = { close: '💞', friends: '👥', mynet: '🕸️', collaborators: '🛠️', bookclub: '📚', family: '🏡', work: '💼' };
+const groupLogo = name => GROUP_LOGO[name] || '🟣';
+
 function renderMyNet() {
-  // f2f connections
+  // People — only a stage icon coloured by presence + the handle
   const pl = document.getElementById('peers-list');
   if (pl) {
-    pl.innerHTML = state.peers.map(p =>
-      `<div class="peer-row">
-        <span class="pbadge ${p.presence}">${p.presence}</span>
+    pl.innerHTML = state.peers.map(p => {
+      const icon  = STAGE_ICON[p.stage] || STAGE_ICON.newbie;
+      const color = PRESENCE_COLOR[p.presence] || PRESENCE_COLOR.DARK;
+      return `<div class="peer-row">
+        <span class="peer-stage-ic" style="color:${color}" title="${p.stage} · ${p.presence.toLowerCase()}">${icon}</span>
         <span class="peer-handle">${p.handle}</span>
-        <span class="peer-circle">${p.circles}</span>
-      </div>`
-    ).join('') || '<div style="font-size:.66rem;color:var(--muted)">No connections yet.</div>';
+      </div>`;
+    }).join('') || '<div style="font-size:.66rem;color:var(--muted)">No people yet.</div>';
   }
 
-  // tribes / circles — joinedGroups first, then tag circles
+  // Groups — logo demo + name, no descriptive text/chips
   const cl = document.getElementById('circles-list');
   if (cl) {
-    const joined = state.joinedGroups.map(name => {
-      const members = state.circles[name] ? state.circles[name].length : 0;
-      return `<div class="peer-row">
-        <span class="sbadge" style="font-size:.5rem;padding:.18rem .55rem">${name}</span>
-        <span class="peer-handle">${members} member${members !== 1 ? 's' : ''}</span>
-        <span class="peer-circle" style="color:var(--signal)">joined ✓</span>
-      </div>`;
-    });
-    const tags = Object.keys(state.tags).map(name => {
-      const members = state.tags[name] ? state.tags[name].length : 0;
-      return `<div class="peer-row">
-        <span class="sbadge" style="font-size:.5rem;padding:.18rem .55rem">${name}</span>
-        <span class="peer-handle">${members} member${members !== 1 ? 's' : ''}</span>
-        <span class="peer-circle">tag circle</span>
-      </div>`;
-    });
-    cl.innerHTML = joined.concat(tags).join('') || '<div style="font-size:.66rem;color:var(--muted)">No circles yet.</div>';
+    const names = state.joinedGroups.concat(Object.keys(state.tags));
+    cl.innerHTML = names.map(name =>
+      `<div class="peer-row">
+        <span class="group-logo">${groupLogo(name)}</span>
+        <span class="peer-handle">${name}</span>
+      </div>`
+    ).join('') || '<div style="font-size:.66rem;color:var(--muted)">No groups yet.</div>';
   }
 }
 
@@ -3323,7 +3324,7 @@ function mynetAddFriend() {
   const handle = val.replace(/^@/, '');
   // Avoid duplicate handles
   if (!state.peers.find(p => p.handle === handle)) {
-    state.peers.push({ handle, presence: 'LIVE', circles: 'mynet' });
+    state.peers.push({ handle, presence: 'LIVE', stage: 'newbie', circles: 'mynet' });
     // Also add to mynet circle
     if (state.circles.mynet) state.circles.mynet.push(handle);
   }
