@@ -674,6 +674,8 @@ body{
   justify-content:center; margin-bottom:.9rem;
 }
 .fl-item{ display:flex; flex-direction:column; align-items:center; gap:.34rem; }
+/* highlighted facet (Global — its activity is shown below) */
+.fl-item-active{ background:rgba(108,92,231,.09); border:1px solid rgba(108,92,231,.32); border-radius:11px; padding:.4rem .6rem; box-shadow:0 0 14px -5px var(--glow-a); }
 .fl-row{ display:flex; align-items:center; gap:.4rem; }
 .fl-dot{
   width:8px; height:8px; border-radius:50%; flex-none;
@@ -1065,9 +1067,9 @@ body{
 .invites-2col{ display:grid; grid-template-columns:1fr 1fr; gap:1.3rem; align-items:start; }
 @media (max-width:560px){ .invites-2col{ grid-template-columns:1fr; } }
 .invites-col{ display:flex; flex-direction:column; }
-.map-toggle-wrap{ position:relative; border-top:1px solid var(--line); margin-top:1.3rem; display:flex; justify-content:center; }
+.map-toggle-wrap{ position:relative; margin-top:1.1rem; display:flex; justify-content:center; }
 .map-toggle-btn{
-  transform:translateY(-50%); cursor:pointer;
+  cursor:pointer;
   font-family:"Space Mono",monospace; font-size:.62rem; letter-spacing:.06em;
   padding:.4rem 1.1rem; border-radius:999px;
   border:1px solid var(--line); background:var(--card); color:var(--muted);
@@ -1650,33 +1652,6 @@ body{
 </div>
 
 <!-- Persistent status bar -->
-<div class="status-bar" role="status" aria-live="polite" aria-label="Account status">
-  <span class="sb-stars">
-    <span class="sb-label">stars</span>
-    ⭐ <span id="sb-stars-val">42</span>
-  </span>
-  <span class="sb-sep" aria-hidden="true"></span>
-  <span class="sb-chip">
-    <span class="sb-label">stage</span>
-    <span id="sb-stage">newbie</span>
-  </span>
-  <span class="sb-chip hi">
-    <span class="sb-label">ceiling</span>
-    <span id="sb-ceiling">mini</span>
-  </span>
-  <span class="sb-chip">
-    <span class="sb-label">mode</span>
-    <span id="sb-mode">basic</span>
-  </span>
-  <span class="sb-sep" aria-hidden="true"></span>
-  <div class="sb-facets" aria-label="Facet scores">
-    <span class="sb-facet"><span class="sb-label">personal</span><span id="sb-p">0</span></span>
-    <span class="sb-facet"><span class="sb-label">local</span><span id="sb-l">30</span></span>
-    <span class="sb-facet"><span class="sb-label">social</span><span id="sb-s">20</span></span>
-    <span class="sb-facet"><span class="sb-label">global</span><span id="sb-g">15</span></span>
-  </div>
-</div>
-
 <!-- Sticky top bar -->
 <!-- shared rainbow gradient for the appy bee mark + wordmark -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -2031,7 +2006,7 @@ body{
 
         <!-- map button on the border, centred below both columns -->
         <div class="map-toggle-wrap">
-          <button class="map-toggle-btn" id="map-toggle-btn" onclick="toggleInviteMap()" aria-expanded="false" aria-controls="invite-map-region">🗺 Map</button>
+          <button class="map-toggle-btn" id="map-toggle-btn" onclick="toggleInviteMap()" aria-expanded="false" aria-controls="invite-map-region"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="4.6" r="1.8"/><circle cx="4.6" cy="14" r="1.8"/><circle cx="15.4" cy="14" r="1.8"/><path d="M9 6L5.5 12.4M11 6l3.5 6.4M6.2 14h7.6"/></svg> See chain</button>
         </div>
         <div class="invite-map-region" id="invite-map-region">
           <div class="invite-web-wrap" style="margin-top:.9rem">
@@ -2111,15 +2086,15 @@ body{
         <div class="perm-grid">
           <span class="perm-label">Content</span>
           <select class="perm-select" onchange="updatePerm('content',this.value)" id="perm-content">
-            <option value="mynet">MyNet</option><option value="circle">Circle</option><option value="public">Public</option><option value="private">Private</option>
+            <option value="mynet">MyNet</option><option value="circle">Group</option><option value="public">Public</option><option value="private">Private</option>
           </select>
           <span class="perm-label">Resources</span>
           <select class="perm-select" onchange="updatePerm('resources',this.value)" id="perm-resources">
-            <option value="mynet">MyNet</option><option value="circle">Circle</option><option value="public">Public</option><option value="private">Private</option>
+            <option value="mynet">MyNet</option><option value="circle">Group</option><option value="public">Public</option><option value="private">Private</option>
           </select>
           <span class="perm-label">Profile</span>
           <select class="perm-select" onchange="updatePerm('profile',this.value)" id="perm-profile">
-            <option value="private">Private</option><option value="mynet">MyNet</option><option value="circle">Circle</option><option value="public">Public</option>
+            <option value="private">Private</option><option value="mynet">MyNet</option><option value="circle">Group</option><option value="public">Public</option>
           </select>
         </div>
       </div>
@@ -2129,27 +2104,6 @@ body{
     <!-- PENDING TAB -->
     <div class="tab-panel" id="panel-pending" role="tabpanel">
       <div class="vcard">
-
-        <!-- ── Global-activity ── -->
-        <div class="sec" style="margin-top:0">Global-activity</div>
-        <p style="font-size:.64rem;color:var(--muted);margin-bottom:.75rem;line-height:1.65">Stages measure how much you've contributed to the mesh — stars, approved content, hardware sharing.</p>
-        <div id="upgrade-stage-ladder-wrap" style="position:relative;margin-bottom:1.1rem">
-          <!-- Glow bar behind the ladder -->
-          <div style="position:absolute;left:0;right:0;top:50%;height:2px;transform:translateY(-50%);
-            background:linear-gradient(90deg,rgba(141,137,255,.04),rgba(141,137,255,.22),rgba(0,247,167,.18),rgba(0,247,167,.04));
-            pointer-events:none;border-radius:2px"></div>
-          <div id="upgrade-stage-ladder" style="display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;position:relative">
-            <!-- Populated by buildTierLadder() -->
-          </div>
-        </div>
-
-        <div class="sec">This node</div>
-        <div class="rsc-stats">
-          <div class="rsc-stat"><span class="rsc-stat-label">Contributed</span><span class="rsc-stat-val"><strong id="rsc-cu">5</strong> CU</span></div>
-          <div class="rsc-stat"><span class="rsc-stat-label">Uptime</span><span class="rsc-stat-val">99.2%</span></div>
-          <div class="rsc-stat"><span class="rsc-stat-label">Peers served</span><span class="rsc-stat-val">12</span></div>
-          <div class="rsc-stat"><span class="rsc-stat-label">Est. monthly</span><span class="rsc-stat-val">~40 ⭐</span></div>
-        </div>
 
         <!-- Concentric rings SVG — signature moment -->
         <!-- NOTE: radii preserved to match JS circumference constants (r110=692, r85=534, r60=377, r35=220) -->
@@ -2209,41 +2163,26 @@ body{
             <span class="fl-row"><span class="fl-dot" style="background:#8d89ff;color:#8d89ff"></span><span style="color:var(--accent)">Social: <strong id="tr-s">20</strong></span></span>
             <button class="facet-plus" onclick="toggleFacetInfo('social')" aria-expanded="false" aria-controls="facet-info-social" aria-label="How to raise Social trust">+</button>
           </span>
-          <span class="fl-item">
-            <span class="fl-row"><span class="fl-dot" style="background:#6e6adb;color:#6e6adb;opacity:.75"></span><span style="color:#8d89ff;opacity:.8">Global: <strong id="tr-g">15</strong></span></span>
+          <span class="fl-item fl-item-active">
+            <span class="fl-row"><span class="fl-dot" style="background:#6c5ce7;color:#6c5ce7"></span><span style="color:var(--accent);font-weight:700">Global: <strong id="tr-g">15</strong></span></span>
             <button class="facet-plus" onclick="toggleFacetInfo('global')" aria-expanded="false" aria-controls="facet-info-global" aria-label="How to raise Global trust">+</button>
           </span>
         </div>
 
-        <!-- per-scope info + suggested actions -->
-        <div id="facet-info-personal" class="facet-info" role="region" aria-label="Raise Personal trust">
+        <!-- Personal / Local / Social are gated behind Basic -->
+        <div id="facet-info-personal" class="facet-info" role="region" aria-label="Personal — locked">
           <div class="facet-info-inner">
-            <div class="facet-info-title" style="color:var(--signal)">Personal — prove you're a real, unique human</div>
-            <div class="facet-info-desc">The innermost ring. Verified identity links and social profiles raise it. Telegram is the minimum to unlock publishing.</div>
-            <div class="facet-info-actions">
-              <button class="btn signal" style="font-size:.62rem;padding:.4rem .8rem" onclick="switchTab('extensions')">Link identity →</button>
-              <button class="btn ghost" style="font-size:.62rem;padding:.4rem .8rem" onclick="switchTab('extensions')">Add social profiles →</button>
-            </div>
+            <div class="facet-info-desc"><a href="#" onclick="switchTab('extensions');return false" style="color:var(--accent);font-weight:700;text-decoration:none;border-bottom:1px dotted var(--accent)">Upgrade to Basic</a> to see more custom Local and Social Activities and scores.</div>
           </div>
         </div>
-        <div id="facet-info-local" class="facet-info" role="region" aria-label="Raise Local trust">
+        <div id="facet-info-local" class="facet-info" role="region" aria-label="Local — locked">
           <div class="facet-info-inner">
-            <div class="facet-info-title" style="color:var(--accent-soft)">Local — trust from people close to you</div>
-            <div class="facet-info-desc">Grows when nearby peers vouch for you face-to-face and the people you invite stay active in your circles.</div>
-            <div class="facet-info-actions">
-              <button class="btn ghost" style="font-size:.62rem;padding:.4rem .8rem" onclick="switchTab('mynet')">Meet peers f2f →</button>
-              <button class="btn ghost" style="font-size:.62rem;padding:.4rem .8rem" onclick="switchTab('mynet')">Invite well →</button>
-            </div>
+            <div class="facet-info-desc"><a href="#" onclick="switchTab('extensions');return false" style="color:var(--accent);font-weight:700;text-decoration:none;border-bottom:1px dotted var(--accent)">Upgrade to Basic</a> to see more custom Local and Social Activities and scores.</div>
           </div>
         </div>
-        <div id="facet-info-social" class="facet-info" role="region" aria-label="Raise Social trust">
+        <div id="facet-info-social" class="facet-info" role="region" aria-label="Social — locked">
           <div class="facet-info-inner">
-            <div class="facet-info-title" style="color:var(--accent)">Social — reach across the wider network</div>
-            <div class="facet-info-desc">Builds as you receive vouches across circles and publish content other members engage with.</div>
-            <div class="facet-info-actions">
-              <button class="btn ghost" style="font-size:.62rem;padding:.4rem .8rem" onclick="switchTab('mynet')">Grow your net →</button>
-              <button class="btn ghost" style="font-size:.62rem;padding:.4rem .8rem" onclick="switchTab('access')">Publish content →</button>
-            </div>
+            <div class="facet-info-desc"><a href="#" onclick="switchTab('extensions');return false" style="color:var(--accent);font-weight:700;text-decoration:none;border-bottom:1px dotted var(--accent)">Upgrade to Basic</a> to see more custom Local and Social Activities and scores.</div>
           </div>
         </div>
         <div id="facet-info-global" class="facet-info" role="region" aria-label="Raise Global trust">
@@ -2255,6 +2194,27 @@ body{
               <button class="btn ghost" style="font-size:.62rem;padding:.4rem .8rem" onclick="switchTab('access')">Publish content →</button>
             </div>
           </div>
+        </div>
+
+        <!-- ── Global-activity ── -->
+        <div class="sec" style="margin-top:0">Global-activity</div>
+        <p style="font-size:.64rem;color:var(--muted);margin-bottom:.75rem;line-height:1.65">Stages measure how much you've contributed to the mesh — stars, approved content, hardware sharing.</p>
+        <div id="upgrade-stage-ladder-wrap" style="position:relative;margin-bottom:1.1rem">
+          <!-- Glow bar behind the ladder -->
+          <div style="position:absolute;left:0;right:0;top:50%;height:2px;transform:translateY(-50%);
+            background:linear-gradient(90deg,rgba(141,137,255,.04),rgba(141,137,255,.22),rgba(0,247,167,.18),rgba(0,247,167,.04));
+            pointer-events:none;border-radius:2px"></div>
+          <div id="upgrade-stage-ladder" style="display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;position:relative">
+            <!-- Populated by buildTierLadder() -->
+          </div>
+        </div>
+
+        <div class="sec">This node</div>
+        <div class="rsc-stats">
+          <div class="rsc-stat"><span class="rsc-stat-label">Contributed</span><span class="rsc-stat-val"><strong id="rsc-cu">5</strong> CU</span></div>
+          <div class="rsc-stat"><span class="rsc-stat-label">Uptime</span><span class="rsc-stat-val">99.2%</span></div>
+          <div class="rsc-stat"><span class="rsc-stat-label">Peers served</span><span class="rsc-stat-val">12</span></div>
+          <div class="rsc-stat"><span class="rsc-stat-label">Est. monthly</span><span class="rsc-stat-val">~40 ⭐</span></div>
         </div>
 
         <div class="sec" style="margin-top:1.1rem">Your posts</div>
@@ -3134,8 +3094,7 @@ function tourLike() {
   if (cnt) cnt.textContent = state.tourLikeCount;
   if (credit) credit.style.display = state.tourLiked ? 'block' : 'none';
   updateRings();
-  document.getElementById('tr-s').textContent = state.facets.social;
-  document.getElementById('sb-s').textContent = state.facets.social;
+  const trs = document.getElementById('tr-s'); if (trs) trs.textContent = state.facets.social;
 }
 
 function tourRepost() {
@@ -3380,16 +3339,6 @@ function mynetJoinGroup() {
 // RENDER
 // ============================================================
 function render() {
-  // Status bar
-  document.getElementById('sb-stars-val').textContent = state.stars;
-  document.getElementById('sb-stage').textContent = state.stageName[state.stage];
-  document.getElementById('sb-ceiling').textContent = state.tierCeiling;
-  document.getElementById('sb-mode').textContent = state.currentMode;
-  document.getElementById('sb-p').textContent = state.facets.personal;
-  document.getElementById('sb-l').textContent = state.facets.local;
-  document.getElementById('sb-s').textContent = state.facets.social;
-  document.getElementById('sb-g').textContent = state.facets.global;
-
   // Tour step 1 presence
   const t1p = document.getElementById('t1-presence');
   if (t1p) { t1p.className = 'pbadge ' + state.activity; t1p.textContent = state.activity; }
