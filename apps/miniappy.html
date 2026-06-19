@@ -1156,7 +1156,18 @@ body{
 .nety-banner{ border-radius:14px; padding:1.1rem 1.2rem; margin-bottom:1.3rem; position:relative; overflow:hidden;
   border:1px solid var(--glass-border);
   background:linear-gradient(115deg, rgba(108,92,231,.1), rgba(2,133,92,.08)); }
-.nety-banner-title{ font-family:"Fredoka",sans-serif; font-weight:700; font-size:1.2rem; margin-bottom:.35rem; }
+.nety-banner-head{ display:flex; align-items:center; gap:.7rem; margin-bottom:.35rem; }
+.nety-banner-logo{ width:38px; height:38px; flex:none; overflow:visible; }
+.nety-banner-title{ font-family:"Fredoka",sans-serif; font-weight:700; font-size:1.2rem; }
+.netstat{ align-items:center; text-align:center; }
+/* big close on the About panel */
+.about-close{
+  position:absolute; top:.7rem; right:.9rem; width:36px; height:36px; border-radius:50%;
+  border:1px solid var(--line); background:var(--card); color:var(--muted);
+  font-size:1.5rem; line-height:1; cursor:pointer; z-index:3;
+  display:flex; align-items:center; justify-content:center; transition:border-color .16s, color .16s;
+}
+.about-close:hover{ border-color:var(--accent); color:var(--ink); }
 .nety-banner-desc{ font-size:.66rem; color:var(--muted); line-height:1.6; margin-bottom:.75rem; max-width:46ch; }
 .nety-banner-actions{ display:flex; gap:.6rem; flex-wrap:wrap; }
 
@@ -1773,6 +1784,7 @@ body{
 
   <!-- About reveal panel (hidden by default, toggled by top-bar menu) -->
   <div class="about-reveal" id="about-reveal" aria-label="About miniappy">
+    <button class="about-close" onclick="toggleAbout()" aria-label="Close about">×</button>
     <div class="about-bee">
       <svg class="bee-mark bee-mark-lg" viewBox="0 0 64 64" fill="none" role="img" aria-label="nety bee">
         <ellipse class="wing-left" cx="22" cy="25" rx="11" ry="6.5" transform="rotate(-22 22 25)" fill="rgba(255,255,255,.5)" stroke="url(#rainbow)" stroke-width="1.4"/>
@@ -2041,19 +2053,24 @@ body{
     <div class="tab-panel" id="panel-resources" role="tabpanel">
       <div class="vcard">
 
-        <div class="sec" style="margin-top:0">Network <span class="pbadge LIVE" style="font-size:.5rem;margin-left:.4rem">LIVE</span></div>
-        <div class="netstats">
-          <div class="netstat"><span class="netstat-val" id="ns-nodes">1,284</span><span class="netstat-label">nodes online</span></div>
-          <div class="netstat"><span class="netstat-val" id="ns-peers">5,902</span><span class="netstat-label">active peers</span></div>
-          <div class="netstat"><span class="netstat-val" id="ns-compute">8.4 TF</span><span class="netstat-label">compute shared</span></div>
-          <div class="netstat"><span class="netstat-val" id="ns-posts">23.1k</span><span class="netstat-label">posts live</span></div>
-          <div class="netstat"><span class="netstat-val">412</span><span class="netstat-label">groups</span></div>
-          <div class="netstat"><span class="netstat-val">37</span><span class="netstat-label">regions</span></div>
-        </div>
-
         <div class="nety-banner">
-          <div class="nety-banner-title">Welcome to <span class="rainbow-text">nety</span></div>
-          <div class="nety-banner-desc">A p2p mesh owned by the people who run it. Learn how the technology works and help grow this subcommunity.</div>
+          <div class="nety-banner-head">
+            <svg class="bee-mark nety-banner-logo" viewBox="0 0 64 64" fill="none" role="img" aria-label="nety bee">
+              <ellipse class="wing-left" cx="22" cy="25" rx="11" ry="6.5" transform="rotate(-22 22 25)" fill="rgba(255,255,255,.5)" stroke="url(#rainbow)" stroke-width="1.4"/>
+              <ellipse class="wing-right" cx="42" cy="25" rx="11" ry="6.5" transform="rotate(22 42 25)" fill="rgba(255,255,255,.5)" stroke="url(#rainbow)" stroke-width="1.4"/>
+              <rect x="23.5" y="29" width="17" height="25" rx="8.5" fill="#ffffff" stroke="url(#rainbow)" stroke-width="1.6"/>
+              <line x1="25" y1="37" x2="39" y2="37" stroke="url(#rainbow)" stroke-width="2.4" stroke-linecap="round"/>
+              <line x1="25" y1="44" x2="39" y2="44" stroke="url(#rainbow)" stroke-width="2.4" stroke-linecap="round"/>
+              <line x1="27" y1="50.5" x2="37" y2="50.5" stroke="url(#rainbow)" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="32" cy="27" r="5" fill="#ffffff" stroke="url(#rainbow)" stroke-width="1.4"/>
+              <path d="M29 23.5 L25 16" stroke="url(#rainbow)" stroke-width="1.3" stroke-linecap="round"/>
+              <circle cx="25" cy="16" r="2.4" fill="url(#rainbow)"/>
+              <path d="M35 23.5 L39 16" stroke="url(#rainbow)" stroke-width="1.3" stroke-linecap="round"/>
+              <circle cx="39" cy="16" r="2.4" fill="url(#rainbow)"/>
+            </svg>
+            <div class="nety-banner-title">Welcome to <span class="rainbow-text">nety</span></div>
+          </div>
+          <div class="nety-banner-desc">A p2p mesh owned by the people who run it.</div>
           <div class="nety-banner-actions">
             <button class="btn signal" style="font-size:.64rem;padding:.42rem .9rem" onclick="toggleAbout()">Learn the tech →</button>
             <button class="btn ghost" style="font-size:.64rem;padding:.42rem .9rem" onclick="switchTab('mynet')">Join the community →</button>
@@ -2101,6 +2118,15 @@ body{
         </div>
 
         <button class="btn signal js-share-btn" style="width:100%;justify-content:center;margin-top:.2rem" onclick="shareHardware()">Share hardware (+5 CU · +8⭐ · +5 global)</button>
+
+        <div class="netstats" style="margin-top:1.3rem;margin-bottom:0">
+          <div class="netstat"><span class="netstat-val" id="ns-nodes">1,284</span></div>
+          <div class="netstat"><span class="netstat-val" id="ns-peers">5,902</span></div>
+          <div class="netstat"><span class="netstat-val" id="ns-compute">8.4 TF</span></div>
+          <div class="netstat"><span class="netstat-val" id="ns-posts">23.1k</span></div>
+          <div class="netstat"><span class="netstat-val">412</span></div>
+          <div class="netstat"><span class="netstat-val">37</span></div>
+        </div>
 
       </div>
     </div>
