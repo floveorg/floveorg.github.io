@@ -1617,6 +1617,16 @@ body{
 .prof-apps{ display:flex; flex-wrap:wrap; gap:.35rem; }
 .prof-app{ font-size:.62rem; font-weight:700; color:#fff; padding:.24rem .6rem; border-radius:999px;
   background:var(--c); box-shadow:0 2px 7px -2px var(--c); }
+/* Rainbow — one swatch per app colour, filled if the user has played it */
+.prof-rainbow{ display:flex; gap:.45rem; margin:.9rem 0 .2rem; flex-wrap:wrap; }
+.rdot{ width:19px; height:19px; border-radius:50%; border:2px solid var(--c); background:transparent; opacity:.45; transition:opacity .15s, box-shadow .15s; }
+.rdot.filled{ background:var(--c); opacity:1; box-shadow:0 0 9px -1px var(--c); }
+/* Extended bio + recent posts */
+.prof-bio{ font-size:.66rem; color:var(--muted); line-height:1.65; margin:.55rem 0 .2rem; }
+.prof-posts{ display:flex; flex-direction:column; gap:.32rem; }
+.prof-post{ font-size:.6rem; color:var(--ink); padding:.4rem .65rem; border-radius:9px; border:1px solid var(--line); background:var(--panel); }
+.prof-post.played{ border-color:rgba(0,247,167,.45); background:rgba(0,247,167,.07); color:var(--signal); font-weight:700; }
+.prof-post.played strong{ color:var(--signal); }
 .prof-actions{ display:flex; gap:.45rem; margin-top:1.1rem; }
 .prof-actions .net-btn{ flex:1; justify-content:center; text-align:center; }
 .net-btn.alt{ background:var(--signal); border-color:var(--signal); color:#fff; }
@@ -4011,23 +4021,81 @@ switchTab('profile');
   const APP_COLORS = {Goddy:'#e23b3b',Souls:'#ef7d1a',Pracsys:'#e3bb12',Myfamily:'#34b36b',Inventary:'#2f7fd6',Realy:'#5a4fd0',Keys:'#9b51e0'};
   const APPS = Object.keys(APP_COLORS);
   const PLAYED = {alice:['Goddy','Myfamily','Keys'], bob:['Souls','Inventary'], carol:['Realy','Pracsys','Keys']};
+  // Demonstrative extended bios (profile-section resume) for the seeded users
+  const BIOS = {
+    alice:    'Mesh gardener who vouches face-to-face and walks newcomers into their first circle. Keeps a small solar relay humming for the close circle.',
+    bob:      'Audio tinkerer who trades sourdough for compute. Believes every node should sing — maintains two relays and one very noisy synth.',
+    carol:    'Cartographer of trust. Maps local seed swaps and co-signs vouch threads across three groups.',
+    dave:     'Infra nomad keeping eu-west relays warm. Will happily debug your NAT for a coffee.',
+    erin:     'Writes the “mesh tips” series — half engineer, half poet, full-time explainer.',
+    finn:     'Quiet builder. Vouches carefully, ships 3d-printable things, says little.',
+    gus:      'Tag-everything archivist. If it moved on the mesh this week, Gus already filed it.',
+    hana:     'Top contributor and steady donor. Keeps the lights on and the legends honest.',
+    ivo:      'Tracks, loops and field recordings — posts a song most weeks.',
+    juno:     'Runs help threads and onboarding. The peer you ping when you get stuck.',
+    kai:      'Relay workhorse, serves a dozen peers without ever complaining.',
+    lia:      'Newcomer finding her feet — just joined her first circle and loving it.',
+    marcflove:'flove founder node. Builds the access prototype you are looking at right now.',
+  };
+  const POST_POOL = [
+    'shared a relay node in eu-west', 'vouched for two newcomers', 'published a short field note',
+    'donated CU this week', 'joined a new group', 'co-signed a vouch thread',
+    'posted a track 🎵', 'mapped a local seed swap', 'opened a help thread',
+    'tagged a batch of posts', 'planned a Sunday mesh-walk', 'released a tiny tool',
+  ];
   const escH = s => String(s).replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
   function hash(s){ let h=0; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0; return h; }
   function playedOf(h){ if(PLAYED[h]) return PLAYED[h]; const x=hash(h); const r=APPS.filter((_,i)=>(x>>i)&1); return r.length?r:[APPS[x%APPS.length]]; }
   function statOf(h){ const x=hash(h); return {souls:40+x%180, trust:['low','med','high'][x%3], stars:5+x%90, cu:1+x%12}; }
-  function personHandles(){ const s=new Set(['alice','bob','carol']);
-    try{ (state.morePeople||[]).forEach(p=>s.add(p.handle)); (state.peers||[]).forEach(p=>s.add(p.handle)); (state.favourites||[]).forEach(h=>s.add(h)); }catch(_){}
+  function bioOf(h){
+    if (BIOS[h]) return BIOS[h];
+    const x = hash(h);
+    const role  = ['relay operator','content curator','f2f voucher','app explorer','mesh gardener','quiet builder'][x%6];
+    const trait = ['keeps a steady node','vouches with care','posts most weeks','mentors newcomers','shares spare compute'][(x>>3)%5];
+    return 'A ' + role + ' on the mesh — ' + trait + '. (Demonstrative profile.)';
+  }
+  function metaOf(h){
+    let stage='homie', presence='LIVE';
+    try{
+      const found = [].concat(state.morePeople||[], state.extraPeople||[], state.peers||[]).find(p=>p.handle===h);
+      if (found){ stage = found.stage || stage; presence = found.presence || presence; }
+      if (h==='marcflove'){ stage = state.stageName[state.stage]; presence = state.activity; }
+    }catch(_){}
+    return {stage, presence};
+  }
+  // Last 5 posts — lead with this user's played-app posts, then deterministic filler
+  function postsOf(h){
+    const out = playedOf(h).slice(0,2).map(a => ({played:true, app:a}));
+    const x = hash(h);
+    for (let i=0; out.length<5; i++) out.push({played:false, text: POST_POOL[(x + i*7) % POST_POOL.length]});
+    return out.slice(0,5);
+  }
+  function personHandles(){ const s=new Set(['alice','bob','carol','marcflove']);
+    try{
+      (state.morePeople||[]).forEach(p=>s.add(p.handle));
+      (state.extraPeople||[]).forEach(p=>s.add(p.handle));
+      (state.peers||[]).forEach(p=>s.add(p.handle));
+      (state.favourites||[]).forEach(h=>s.add(h));
+      (state.feedPosts||[]).forEach(p=>{ if(p.kind==='person') s.add(p.who); });
+      (state.chats||[]).forEach(c=>s.add(c.user));
+    }catch(_){}
     return s; }
 
   function dotsHTML(h){ return '<span class="played-dots">'+playedOf(h).map(a=>'<i class="pdot" style="--c:'+APP_COLORS[a]+'" title="plays '+a+'"></i>').join('')+'</span>'; }
+  function wire(el, h, withDots){
+    if (withDots && !el.querySelector('.played-dots')) el.insertAdjacentHTML('beforeend', ' ' + dotsHTML(h));
+    if (!el.dataset.ph){ el.dataset.ph = '1'; el.classList.add('clickable-user');
+      el.addEventListener('click', ev => { ev.stopPropagation(); openProfile(h); }); }
+  }
   function decorate(){
     const ph = personHandles();
     document.querySelectorAll('.net-name, .peer-handle').forEach(el => {
       const h = el.textContent.trim();
-      if (!ph.has(h)) return;                                  // skip groups/non-people
-      if (!el.querySelector('.played-dots')) el.insertAdjacentHTML('beforeend', ' ' + dotsHTML(h));
-      if (!el.dataset.ph){ el.dataset.ph = '1'; el.classList.add('clickable-user');
-        el.addEventListener('click', ev => { ev.stopPropagation(); openProfile(h); }); }
+      if (ph.has(h)) wire(el, h, true);                        // people lists: name + played dots
+    });
+    document.querySelectorAll('.feed-who').forEach(el => {
+      const h = el.textContent.trim();
+      if (ph.has(h)) wire(el, h, false);                       // feed: person names clickable (groups skipped)
     });
   }
 
@@ -4042,17 +4110,26 @@ switchTab('profile');
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeProfile(); });
 
   window.openProfile = function(h){
-    const pl = playedOf(h), st = statOf(h);
+    const pl = playedOf(h), st = statOf(h), meta = metaOf(h);
+    const played = new Set(pl);
     const apps = pl.map(a => '<span class="prof-app" style="--c:'+APP_COLORS[a]+'">'+escH(a)+'</span>').join('');
+    // rainbow — every app colour, filled if played, hollow if not
+    const rainbow = APPS.map(a => '<i class="rdot'+(played.has(a)?' filled':'')+'" style="--c:'+APP_COLORS[a]+'" title="'+escH(a)+(played.has(a)?' · played':' · not played')+'"></i>').join('');
+    const posts = postsOf(h).map(p => p.played
+      ? '<div class="prof-post played">Played the <strong>'+escH(p.app)+'</strong> app</div>'
+      : '<div class="prof-post">'+escH(p.text)+'</div>').join('');
     document.getElementById('prof-body').innerHTML =
       '<div class="prof-top"><div class="prof-av" style="--c:'+(APP_COLORS[pl[0]]||'#6c5ce7')+'">'+escH((h[0]||'?').toUpperCase())+'</div>'+
-        '<div><div class="prof-handle">@'+escH(h)+'</div><div class="prof-sub">peer nety:p2p:'+hash(h).toString(16)+'… · stage homie · LIVE</div></div></div>'+
+        '<div><div class="prof-handle">@'+escH(h)+'</div><div class="prof-sub">peer nety:p2p:'+hash(h).toString(16)+'… · stage '+escH(meta.stage)+' · '+escH(meta.presence)+'</div></div></div>'+
+      '<div class="prof-section">Apps played — by colour</div><div class="prof-rainbow">'+rainbow+'</div>'+
+      '<div class="prof-section">Bio</div><div class="prof-bio">'+escH(bioOf(h))+'</div>'+
       '<div class="prof-stats">'+
         '<div class="ps"><b>'+st.souls+'</b><span>souls</span></div>'+
         '<div class="ps"><b>'+st.trust+'</b><span>trust</span></div>'+
         '<div class="ps"><b>'+st.stars+'</b><span>⭐ stars</span></div>'+
         '<div class="ps"><b>'+st.cu+'</b><span>CU</span></div></div>'+
       '<div class="prof-section">Played apps · '+pl.length+'</div><div class="prof-apps">'+apps+'</div>'+
+      '<div class="prof-section">Last 5 posts</div><div class="prof-posts">'+posts+'</div>'+
       '<div class="prof-actions">'+
         '<button class="net-btn" onclick="profAct(this,\'follow\',\''+escH(h)+'\')">Follow</button>'+
         '<button class="net-btn alt" onclick="profAct(this,\'support\',\''+escH(h)+'\')">Support</button>'+
@@ -4068,7 +4145,7 @@ switchTab('profile');
   };
 
   // re-apply dots after every social render
-  ['renderMyNet','renderMoreSocial'].forEach(fn => {
+  ['renderMyNet','renderMoreSocial','renderFeed'].forEach(fn => {
     const orig = window[fn];
     if (typeof orig === 'function') window[fn] = function(){ const r = orig.apply(this, arguments); decorate(); return r; };
   });
