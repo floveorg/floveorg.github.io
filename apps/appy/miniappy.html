@@ -2601,9 +2601,22 @@ function downloadBlob(body, mime, filename){
 // Export profile — serialise everything added in the Profile section to JSON
 function exportProfile(){
   const APP_C = { Goddy:'#e23b3b', Souls:'#ef7d1a', Pracsys:'#e3bb12', Myfamily:'#34b36b', Inventary:'#2f7fd6', Realy:'#5a4fd0', Keys:'#9b51e0' };
+  // Pull ONLY the cells selection out of an app result (published or hand-uploaded);
+  // tolerate the { "from:to": level } save-format too. No phrase/title/etc.
+  const cellsOf = d => {
+    if (!d || typeof d !== 'object') return null;
+    if (Array.isArray(d.cells)) return d.cells;
+    const keys = Object.keys(d).filter(k => k.indexOf(':') !== -1);
+    if (keys.length) return keys.map(k => { const p = k.split(':'); return { from: p[0], to: p[1], level: d[k] }; });
+    return null;
+  };
   const played = Array.prototype.map.call(
     document.querySelectorAll('#played-grid .app-card'),
-    c => ({ app: c.dataset.app, colour: APP_C[c.dataset.app] || null })
+    c => {
+      let cells = null;
+      try { const b = c.querySelector('.ac-body'); if (b) cells = cellsOf(JSON.parse(b.textContent)); } catch (_) {}
+      return { app: c.dataset.app, colour: APP_C[c.dataset.app] || null, cells: cells };
+    }
   );
   const model = {
     kind: 'flove-profile',
