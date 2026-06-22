@@ -1,9 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<meta name="description" content="miniappy — interactive prototype of the nety/appy access system" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="miniappy — interactive prototype of the nety/appy access system">
 <title>✺ miniappy · access prototype</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1641,6 +1641,24 @@ body{
 .net-btn.alt{ background:var(--signal); border-color:var(--signal); color:#fff; }
 .net-btn.ghost{ background:transparent; color:var(--ink); }
 .net-btn.done{ background:var(--accent); border-color:var(--accent); color:#fff; }
+
+/* ── translate2 — page-translation engine + worldball switcher (en default + es) ── */
+.es{display:none}                                  /* default view = .en */
+body:has(#lang-es:checked) .en{display:none}
+body:has(#lang-es:checked) .es{display:inline}
+
+/* worldball switcher (🌐 opens the language options) */
+.lang{display:inline-block;position:relative;margin:0}
+.top-bar .lang{margin-left:auto}
+.lang>summary{list-style:none;cursor:pointer;width:34px;height:34px;border:1px solid var(--line);border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;font-size:1.15rem;line-height:1;-webkit-user-select:none;user-select:none;background:var(--card)}
+.lang>summary::-webkit-details-marker{display:none}
+.lang[open]>summary{border-color:var(--accent);background:var(--panel)}
+.lang-opts{position:absolute;right:0;z-index:400;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;
+  background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.lang input{position:absolute;opacity:0;pointer-events:none}
+.lang label{cursor:pointer;padding:0 12px;min-height:34px;display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:11px;white-space:nowrap;font-size:.7rem;font-family:"Space Mono",monospace}
+.lang input:checked + label{background:var(--accent);color:#fff;font-weight:bold;border-color:var(--accent)}
 </style>
 <!-- receiver: read apps published from other flove apps (no data-app → no button) -->
 <script src="../flove-appy.js" defer></script>
@@ -1715,9 +1733,9 @@ body{
   </linearGradient>
 </defs></svg>
 
-<header class="top-bar" role="banner">
+<header class="top-bar">
   <div class="top-bar-menu-wrap" id="top-menu-wrap">
-    <button class="top-bar-brand" id="top-brand-btn" onclick="toggleTopMenu()" aria-haspopup="true" aria-expanded="false" aria-label="Open site menu">
+    <button type="button" class="top-bar-brand" id="top-brand-btn" onclick="toggleTopMenu()" aria-haspopup="true" aria-expanded="false" aria-label="Open site menu">
       <svg class="bee-mark bee-mark-sm" viewBox="0 0 64 64" fill="none" role="img" aria-label="nety bee">
         <ellipse class="wing-left" cx="22" cy="25" rx="11" ry="6.5" transform="rotate(-22 22 25)" fill="rgba(255,255,255,.5)" stroke="url(#rainbow)" stroke-width="1.4"/>
         <ellipse class="wing-right" cx="42" cy="25" rx="11" ry="6.5" transform="rotate(22 42 25)" fill="rgba(255,255,255,.5)" stroke="url(#rainbow)" stroke-width="1.4"/>
@@ -1736,17 +1754,25 @@ body{
       </span>
     </button>
     <div class="top-bar-dropdown" id="top-dropdown" role="menu">
-      <button class="top-menu-item" id="menu-about-btn" role="menuitem" onclick="toggleAbout()">About</button>
+      <button type="button" class="top-menu-item" id="menu-about-btn" role="menuitem" onclick="toggleAbout()"><span class="en" lang="en">About</span><span class="es" lang="es">Acerca de</span></button>
     </div>
   </div>
+  <!-- translate2 worldball -->
+  <details class="lang">
+    <summary class="worldball" title="Language" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐</summary>
+    <div class="lang-opts">
+      <input type="radio" name="lang" id="lang-en" checked><label for="lang-en">English</label>
+      <input type="radio" name="lang" id="lang-es"><label for="lang-es">Español</label>
+    </div>
+  </details>
 </header>
 
 <!-- Main content -->
 <div class="wrap">
 
   <!-- About reveal panel (hidden by default, toggled by top-bar menu) -->
-  <div class="about-reveal" id="about-reveal" aria-label="About miniappy">
-    <button class="about-close" onclick="toggleAbout()" aria-label="Close about">×</button>
+  <div class="about-reveal" id="about-reveal" role="region" aria-label="About miniappy">
+    <button type="button" class="about-close" onclick="toggleAbout()" aria-label="Close about" data-aria-en="Close about" data-aria-es="Cerrar acerca de">×</button>
     <div class="about-bee">
       <svg class="bee-mark bee-mark-lg" viewBox="0 0 64 64" fill="none" role="img" aria-label="nety bee">
         <ellipse class="wing-left" cx="22" cy="25" rx="11" ry="6.5" transform="rotate(-22 22 25)" fill="rgba(255,255,255,.5)" stroke="url(#rainbow)" stroke-width="1.4"/>
@@ -1763,37 +1789,36 @@ body{
       </svg>
       <div>
         <div class="about-title">mini<em>appy</em></div>
-        <div class="about-sub">nety · appy · access prototype</div>
+        <div class="about-sub"><span class="en" lang="en">nety · appy · access prototype</span><span class="es" lang="es">nety · appy · prototipo de acceso</span></div>
       </div>
     </div>
-    <p class="about-desc">A guided interactive prototype of the <strong style="color:var(--accent-soft)">nety/appy access system</strong> — the layer that lets people earn presence on the mesh through trust, contribution, and identity. Walk the tour to see how stages, tiers, and entry paths fit together.</p>
+    <p class="about-desc"><span class="en" lang="en">A guided interactive prototype of the <strong style="color:var(--accent-soft)">nety/appy access system</strong> — the layer that lets people earn presence on the mesh through trust, contribution, and identity. Walk the tour to see how stages, tiers, and entry paths fit together.</span><span class="es" lang="es">Un prototipo interactivo y guiado del <strong style="color:var(--accent-soft)">sistema de acceso nety/appy</strong> — la capa que permite a las personas ganar presencia en la malla mediante confianza, contribución e identidad. Recorre el tour para ver cómo encajan las etapas, los niveles y las vías de entrada.</span></p>
     <div class="about-slogans">
-      <span class="about-slogan hi">mesh-native</span>
-      <span class="about-slogan">trust-gated</span>
-      <span class="about-slogan">tier-aware</span>
-      <span class="about-slogan">curator-curated</span>
-      <span class="about-slogan hi">p2p · no server</span>
+      <span class="about-slogan hi"><span class="en" lang="en">mesh-native</span><span class="es" lang="es">nativo de malla</span></span>
+      <span class="about-slogan"><span class="en" lang="en">trust-gated</span><span class="es" lang="es">con acceso por confianza</span></span>
+      <span class="about-slogan"><span class="en" lang="en">tier-aware</span><span class="es" lang="es">consciente de niveles</span></span>
+      <span class="about-slogan"><span class="en" lang="en">curator-curated</span><span class="es" lang="es">curado por curadores</span></span>
+      <span class="about-slogan hi"><span class="en" lang="en">p2p · no server</span><span class="es" lang="es">p2p · sin servidor</span></span>
     </div>
     <div class="candid" style="margin-top:.9rem;margin-bottom:0">
-      <strong>Honest preview</strong> — This is an interactive mockup simulating the nety/appy access system. No real network, no real keys, no real data. Flows are illustrative; the spec is still evolving.
-    </div>
+      <span class="en" lang="en"><strong>Honest preview</strong> — This is an interactive mockup simulating the nety/appy access system. No real network, no real keys, no real data. Flows are illustrative; the spec is still evolving.</span><span class="es" lang="es"><strong>Vista previa honesta</strong> — Esto es una maqueta interactiva que simula el sistema de acceso nety/appy. Sin red real, sin claves reales, sin datos reales. Los flujos son ilustrativos; la especificación sigue evolucionando.</span></div>
   </div>
 
   <!-- =============================================
        TABS
        ============================================= -->
   <div class="tabs-wrap" style="margin-top:.6rem">
-    <nav class="tab-bar" role="tablist" aria-label="App sections">
-      <button class="tab-btn active" role="tab" aria-selected="true"  onclick="switchTab('profile')"   id="tab-profile">Profile</button>
-      <button class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('nety')" id="tab-nety">Nety</button>
-      <button class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('mynet')"    id="tab-mynet">MyNet</button>
-      <button class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('chat')"    id="tab-chat">Chat</button>
-      <button class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('activity')"  id="tab-activity">Activity</button>
-      <button class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('extensions')" id="tab-extensions">Extensions</button>
-      <button class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('privacy')" id="tab-privacy">Privacy</button>
+    <nav class="tab-bar" role="tablist" aria-label="App sections" data-aria-en="App sections" data-aria-es="Secciones de la app">
+      <button type="button" class="tab-btn active" role="tab" aria-selected="true"  onclick="switchTab('profile')"   id="tab-profile"><span class="en" lang="en">Profile</span><span class="es" lang="es">Perfil</span></button>
+      <button type="button" class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('nety')" id="tab-nety">Nety</button>
+      <button type="button" class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('mynet')"    id="tab-mynet">MyNet</button>
+      <button type="button" class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('chat')"    id="tab-chat"><span class="en" lang="en">Chat</span><span class="es" lang="es">Chat</span></button>
+      <button type="button" class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('activity')"  id="tab-activity"><span class="en" lang="en">Activity</span><span class="es" lang="es">Actividad</span></button>
+      <button type="button" class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('extensions')" id="tab-extensions"><span class="en" lang="en">Extensions</span><span class="es" lang="es">Extensiones</span></button>
+      <button type="button" class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('privacy')" id="tab-privacy"><span class="en" lang="en">Privacy</span><span class="es" lang="es">Privacidad</span></button>
     </nav>
 
-    <!-- ACCESS TAB -->
+    <!-- PROFILE TAB -->
     <div class="tab-panel active" id="panel-profile" role="tabpanel">
       <div class="vcard">
 
@@ -1802,10 +1827,10 @@ body{
 
           <!-- marcflove profile card — top-left, it's you -->
           <div class="profile-card" id="pc-marcflove">
-            <div class="profile-card-header" onclick="toggleProfileCard()" role="button" tabindex="0" aria-expanded="false" aria-controls="pc-marcflove-expand" aria-label="Your profile card — expand for details">
+            <div class="profile-card-header" onclick="toggleProfileCard()" role="button" tabindex="0" aria-expanded="false" aria-controls="pc-marcflove-expand" aria-label="Your profile card — expand for details" data-aria-en="Your profile card — expand for details" data-aria-es="Tu tarjeta de perfil — despliega para ver detalles">
               <div class="profily-handle" style="font-size:1rem">@<span id="pc-handle">marcflove</span></div>
-              <div class="profily-peer" style="font-size:.54rem">peer: nety:p2p:7e3a9c…f12b4</div>
-              <div class="profily-hw" style="font-size:.6rem">contribution: <span id="pc-hw">5 CU</span></div>
+              <div class="profily-peer" style="font-size:.54rem"><span class="en" lang="en">peer:</span><span class="es" lang="es">par:</span> nety:p2p:7e3a9c…f12b4</div>
+              <div class="profily-hw" style="font-size:.6rem"><span class="en" lang="en">contribution:</span><span class="es" lang="es">contribución:</span> <span id="pc-hw">5 CU</span></div>
               <div class="profily-badges" style="margin-top:.2rem">
                 <span id="pc-presence" class="pbadge LIVE" style="font-size:.52rem">LIVE</span>
                 <span class="sbadge" id="pc-stage" style="font-size:.48rem">newbie</span>
@@ -1814,19 +1839,19 @@ body{
             </div>
             <div class="profile-card-expand" id="pc-marcflove-expand" role="region">
               <div class="profile-card-expand-inner">
-                <div class="pc-row">Linked identities: <strong id="pc-ids">none</strong></div>
-                <div class="pc-row">Social profiles: <strong id="pc-social-count">0</strong></div>
-                <div class="pc-row">Groups: <strong>close · friends · mynet</strong></div>
-                <div class="pc-row">Joined: <strong>2026-01</strong></div>
-                <div class="pc-row">Stars: <strong id="pc-stars">42</strong> ⭐</div>
+                <div class="pc-row"><span class="en" lang="en">Linked identities:</span><span class="es" lang="es">Identidades vinculadas:</span> <strong id="pc-ids">none</strong></div>
+                <div class="pc-row"><span class="en" lang="en">Social profiles:</span><span class="es" lang="es">Perfiles sociales:</span> <strong id="pc-social-count">0</strong></div>
+                <div class="pc-row"><span class="en" lang="en">Groups:</span><span class="es" lang="es">Grupos:</span> <strong>close · friends · mynet</strong></div>
+                <div class="pc-row"><span class="en" lang="en">Joined:</span><span class="es" lang="es">Se unió:</span> <strong>2026-01</strong></div>
+                <div class="pc-row"><span class="en" lang="en">Stars:</span><span class="es" lang="es">Estrellas:</span> <strong id="pc-stars">42</strong> ⭐</div>
                 <!-- moved here from Registration -->
                 <div class="field" style="margin-top:.55rem">
-                  <label>Handle</label>
-                  <input type="text" id="reg-handle" value="marcflove" aria-label="Handle" oninput="updateHandle(this.value)">
+                  <label><span class="en" lang="en">Handle</span><span class="es" lang="es">Alias</span></label>
+                  <input type="text" id="reg-handle" value="marcflove" aria-label="Handle" data-aria-en="Handle" data-aria-es="Alias" oninput="updateHandle(this.value)">
                 </div>
                 <div class="field" style="margin-top:.45rem">
-                  <label>Keypair (mock)</label>
-                  <input type="text" readonly value="pub:Ed25519·8f3c…a92d / priv:••••••••" style="color:var(--muted)" aria-label="Mock keypair">
+                  <label><span class="en" lang="en">Keypair (mock)</span><span class="es" lang="es">Par de claves (simulado)</span></label>
+                  <input type="text" readonly value="pub:Ed25519·8f3c…a92d / priv:••••••••" style="color:var(--muted)" aria-label="Mock keypair" data-aria-en="Mock keypair" data-aria-es="Par de claves simulado">
                 </div>
                 <!-- saved content — last section, designed per type -->
                 <div class="pc-extras" id="pc-extras" aria-live="polite"></div>
@@ -1837,53 +1862,53 @@ body{
           <!-- Publish — right column of the profile -->
           <div class="pub-col">
             <div class="field">
-              <select id="pub-visibility" aria-label="Visibility">
+              <select id="pub-visibility" aria-label="Visibility" data-aria-en="Visibility" data-aria-es="Visibilidad">
                 <option value="mynet">MyNet</option>
-                <option value="circle">Group</option>
-                <option value="public">Public</option>
-                <option value="private">Private</option>
+                <option value="circle" data-en="Group" data-es="Grupo">Group</option>
+                <option value="public" data-en="Public" data-es="Público">Public</option>
+                <option value="private" data-en="Private" data-es="Privado">Private</option>
               </select>
             </div>
             <div class="field" style="margin-top:.5rem">
-              <textarea id="pub-content" placeholder="What's in your love" aria-label="What's in your love"></textarea>
+              <textarea id="pub-content" placeholder="What's in your love" aria-label="What's in your love" data-ph-en="What's in your love" data-ph-es="Qué hay en tu love" data-aria-en="What's in your love" data-aria-es="Qué hay en tu love"></textarea>
             </div>
-            <button class="btn" style="margin-top:.6rem;width:100%;justify-content:center" id="pub-submit-btn" onclick="submitContent()">Submit to queue</button>
+            <button type="button" class="btn" style="margin-top:.6rem;width:100%;justify-content:center" id="pub-submit-btn" onclick="submitContent()"><span class="en" lang="en">Submit to queue</span><span class="es" lang="es">Enviar a la cola</span></button>
           </div>
 
         </div><!-- /.access-card-grid -->
 
         <!-- Apps — tap a logo to open the app preview -->
-        <section class="apps-sec" id="play-apps" aria-label="Play Apps">
-          <div class="apps-head">Play Apps</div>
-          <div class="apps-row" role="group" aria-label="App logos">
-            <a class="appbtn" style="--c:#e23b3b" href="../metas/goddy.html" data-app="Goddy" title="Goddy preview" aria-label="Goddy preview" onclick="appJump(event,this)">
+        <section class="apps-sec" id="play-apps" aria-label="Play Apps" data-aria-en="Play Apps" data-aria-es="Jugar apps">
+          <div class="apps-head"><span class="en" lang="en">Play Apps</span><span class="es" lang="es">Jugar apps</span></div>
+          <div class="apps-row" role="group" aria-label="App logos" data-aria-en="App logos" data-aria-es="Logos de apps">
+            <a class="appbtn" style="--c:#e23b3b" href="../metas/goddy.html" data-app="Goddy" title="Goddy preview" aria-label="Goddy preview" data-aria-en="Goddy preview" data-aria-es="Vista previa de Goddy" onclick="appJump(event,this)">
               <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round"><circle cx="12" cy="13.5" r="3.2"/><path d="M12 4v2M5.6 6.6l1.5 1.5M18.4 6.6l-1.5 1.5M3.5 13.5h2M18.5 13.5h2"/><path d="M8 8.8a5 5 0 0 1 8 0"/></svg><span>Goddy</span></a>
-            <a class="appbtn" style="--c:#ef7d1a" href="../metas/souls.html" data-app="Souls" title="Souls preview" aria-label="Souls preview" onclick="appJump(event,this)">
+            <a class="appbtn" style="--c:#ef7d1a" href="../metas/souls.html" data-app="Souls" title="Souls preview" aria-label="Souls preview" data-aria-en="Souls preview" data-aria-es="Vista previa de Souls" onclick="appJump(event,this)">
               <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round"><circle cx="12" cy="12" r="2.6"/><path d="M7.4 12a4.6 4.6 0 0 1 9.2 0"/><path d="M4.8 12a7.2 7.2 0 0 1 14.4 0"/></svg><span>Souls</span></a>
-            <a class="appbtn" style="--c:#e3bb12" href="../bio/pracsys.html" data-app="Pracsys" title="Pracsys preview" aria-label="Pracsys preview" onclick="appJump(event,this)">
+            <a class="appbtn" style="--c:#e3bb12" href="../bio/pracsys.html" data-app="Pracsys" title="Pracsys preview" aria-label="Pracsys preview" data-aria-en="Pracsys preview" data-aria-es="Vista previa de Pracsys" onclick="appJump(event,this)">
               <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round"><circle cx="6" cy="8" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="12" cy="17" r="2"/><path d="M7.6 9.4l3 6M16.4 9.4l-3 6M8 8h8"/></svg><span>Pracsys</span></a>
-            <a class="appbtn" style="--c:#34b36b" href="../trusty/myfamily.html" data-app="Myfamily" title="Myfamily preview" aria-label="Myfamily preview" onclick="appJump(event,this)">
+            <a class="appbtn" style="--c:#34b36b" href="../trusty/myfamily.html" data-app="Myfamily" title="Myfamily preview" aria-label="Myfamily preview" data-aria-en="Myfamily preview" data-aria-es="Vista previa de Myfamily" onclick="appJump(event,this)">
               <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="2.3"/><path d="M5 18a4 4 0 0 1 8 0"/><circle cx="16.5" cy="9.5" r="1.9"/><path d="M14 18a3.4 3.4 0 0 1 6.4-1.6"/></svg><span>Myfamily</span></a>
-            <a class="appbtn" style="--c:#2f7fd6" href="../economy/dealy/inventary.html" data-app="Inventary" title="Inventary preview" aria-label="Inventary preview" onclick="appJump(event,this)">
+            <a class="appbtn" style="--c:#2f7fd6" href="../economy/dealy/inventary.html" data-app="Inventary" title="Inventary preview" aria-label="Inventary preview" data-aria-en="Inventary preview" data-aria-es="Vista previa de Inventary" onclick="appJump(event,this)">
               <svg viewBox="0 0 24 24" fill="none" stroke-linejoin="round"><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/><rect x="8.5" y="4" width="7" height="7" rx="1"/></svg><span>Inventary</span></a>
-            <a class="appbtn" style="--c:#5a4fd0" href="../realy.html" data-app="Realy" title="Realy preview" aria-label="Realy preview" onclick="appJump(event,this)">
+            <a class="appbtn" style="--c:#5a4fd0" href="../realy.html" data-app="Realy" title="Realy preview" aria-label="Realy preview" data-aria-en="Realy preview" data-aria-es="Vista previa de Realy" onclick="appJump(event,this)">
               <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c4-4.5 6-7.7 6-11a6 6 0 0 0-12 0c0 3.3 2 6.5 6 11z"/><circle cx="12" cy="10" r="2.2"/></svg><span>Realy</span></a>
-            <a class="appbtn" style="--c:#9b51e0" href="../puzzy/keys.html" data-app="Keys" title="Keys preview" aria-label="Keys preview" onclick="appJump(event,this)">
+            <a class="appbtn" style="--c:#9b51e0" href="../puzzy/keys.html" data-app="Keys" title="Keys preview" aria-label="Keys preview" data-aria-en="Keys preview" data-aria-es="Vista previa de Keys" onclick="appJump(event,this)">
               <svg viewBox="0 0 100 100" style="fill:#fff;stroke:none"><g transform="rotate(0 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g><g transform="rotate(72 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g><g transform="rotate(288 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g><circle cx="50" cy="50" r="4.5"/></svg><span>Keys</span></a>
           </div>
         </section>
 
         <!-- Played apps — play an app by uploading its summary -->
-        <section class="upload-sec" aria-label="Played apps">
-          <div class="upload-head">Played apps <span class="upload-sub">— add an app by its <code>Appname-summary.json</code></span></div>
-          <div class="rainbow-row" role="group" aria-label="App upload buttons">
-            <button class="rb" data-app="Goddy"     style="--c:#e23b3b" onclick="pickApp('Goddy',this)">Goddy</button>
-            <button class="rb" data-app="Souls"     style="--c:#ef7d1a" onclick="pickApp('Souls',this)">Souls</button>
-            <button class="rb" data-app="Pracsys"   style="--c:#e3bb12" onclick="pickApp('Pracsys',this)">Pracsys</button>
-            <button class="rb" data-app="Myfamily"  style="--c:#34b36b" onclick="pickApp('Myfamily',this)">Myfamily</button>
-            <button class="rb" data-app="Inventary" style="--c:#2f7fd6" onclick="pickApp('Inventary',this)">Inventary</button>
-            <button class="rb" data-app="Realy"     style="--c:#5a4fd0" onclick="pickApp('Realy',this)">Realy</button>
-            <button class="rb" data-app="Keys"      style="--c:#9b51e0" onclick="pickApp('Keys',this)">Keys</button>
+        <section class="upload-sec" aria-label="Played apps" data-aria-en="Played apps" data-aria-es="Apps jugadas">
+          <div class="upload-head"><span class="en" lang="en">Played apps</span><span class="es" lang="es">Apps jugadas</span> <span class="upload-sub"><span class="en" lang="en">— add an app by its <code>Appname-summary.json</code></span><span class="es" lang="es">— añade una app por su <code>Appname-summary.json</code></span></span></div>
+          <div class="rainbow-row" role="group" aria-label="App upload buttons" data-aria-en="App upload buttons" data-aria-es="Botones para subir apps">
+            <button type="button" class="rb" data-app="Goddy"     style="--c:#e23b3b" onclick="pickApp('Goddy',this)">Goddy</button>
+            <button type="button" class="rb" data-app="Souls"     style="--c:#ef7d1a" onclick="pickApp('Souls',this)">Souls</button>
+            <button type="button" class="rb" data-app="Pracsys"   style="--c:#e3bb12" onclick="pickApp('Pracsys',this)">Pracsys</button>
+            <button type="button" class="rb" data-app="Myfamily"  style="--c:#34b36b" onclick="pickApp('Myfamily',this)">Myfamily</button>
+            <button type="button" class="rb" data-app="Inventary" style="--c:#2f7fd6" onclick="pickApp('Inventary',this)">Inventary</button>
+            <button type="button" class="rb" data-app="Realy"     style="--c:#5a4fd0" onclick="pickApp('Realy',this)">Realy</button>
+            <button type="button" class="rb" data-app="Keys"      style="--c:#9b51e0" onclick="pickApp('Keys',this)">Keys</button>
           </div>
           <input type="file" id="app-file" accept=".json,application/json" hidden onchange="handleAppFile(this)" aria-hidden="true">
           <div class="upload-msg" id="upload-msg" role="status" aria-live="polite"></div>
@@ -1897,12 +1922,12 @@ body{
         <!-- Extend profile — moved here, below marcflove -->
         <div class="expandable-card" id="ec-extend" style="margin-top:.9rem">
           <div class="ec-header" onclick="toggleEcard('extend')" role="button" tabindex="0" aria-expanded="false" aria-controls="ec-extend-body">
-            <span class="ec-title">Extend profile</span>
+            <span class="ec-title"><span class="en" lang="en">Extend profile</span><span class="es" lang="es">Ampliar perfil</span></span>
             <span class="ec-chevron" aria-hidden="true">▸</span>
           </div>
           <div class="ec-body" id="ec-extend-body" role="region">
             <div class="ec-inner">
-              <div class="extend-col-label">Authenticate</div>
+              <div class="extend-col-label"><span class="en" lang="en">Authenticate</span><span class="es" lang="es">Autenticar</span></div>
               <div class="id5-scale" id="id5-scale"><!-- built by renderIdentityScale() --></div>
               <div class="id-form" id="id-form"><!-- built by renderIdentityForm() --></div>
             </div>
@@ -1910,7 +1935,7 @@ body{
         </div>
 
         <!-- Export profile — download everything added in this section as JSON -->
-        <button class="btn signal" style="width:100%;justify-content:center;margin-top:1.2rem;padding:.74rem 1rem;font-size:.8rem" onclick="exportProfile()">⤓ Export profile · JSON</button>
+        <button type="button" class="btn signal" style="width:100%;justify-content:center;margin-top:1.2rem;padding:.74rem 1rem;font-size:.8rem" onclick="exportProfile()"><span class="en" lang="en">⤓ Export profile · JSON</span><span class="es" lang="es">⤓ Exportar perfil · JSON</span></button>
         <div id="export-profile-msg" style="margin-top:.4rem;font-size:.6rem;color:var(--muted);text-align:center" aria-live="polite"></div>
 
       </div>
@@ -1920,38 +1945,38 @@ body{
     <!-- EXTENSIONS TAB -->
     <div class="tab-panel" id="panel-extensions" role="tabpanel">
       <div class="vcard">
-        <div style="text-align:center;font-family:'Fredoka',sans-serif;font-weight:700;font-size:1.05rem;margin:0 0 1rem"><span class="rainbow-text">Appy</span> navs</div>
+        <div style="text-align:center;font-family:'Fredoka',sans-serif;font-weight:700;font-size:1.05rem;margin:0 0 1rem"><span class="rainbow-text">Appy</span> <span class="en" lang="en">navs</span><span class="es" lang="es">navs</span></div>
         <div id="upgrade-feat-ladder" style="display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;align-items:start;position:relative">
           <!-- Populated by buildFeatureTiers() -->
         </div>
         <div class="nav-more" id="nav-more"><!-- renderNavMore() --></div>
 
-        <div style="text-align:center;font-family:'Fredoka',sans-serif;font-weight:700;font-size:1.05rem;margin:3.2rem 0 1.1rem">Be more <span class="rainbow-text">appy</span></div>
+        <div style="text-align:center;font-family:'Fredoka',sans-serif;font-weight:700;font-size:1.05rem;margin:3.2rem 0 1.1rem"><span class="en" lang="en">Be more</span><span class="es" lang="es">Sé más</span> <span class="rainbow-text">appy</span></div>
         <div class="access-card-grid" style="margin-top:0">          <!-- D: Share resources — the core contribution -->
           <div class="expandable-card share-card" id="ec-donate">
             <div class="ec-header" onclick="toggleEcard('donate')" role="button" tabindex="0" aria-expanded="false" aria-controls="ec-donate-body">
               <span class="ec-id">★</span>
-              <span class="ec-title">Donate Computing</span>
-              <span class="ec-summary">Lend hardware to the mesh — the core of nety. Raises Global &amp; earns stars.</span>
+              <span class="ec-title"><span class="en" lang="en">Donate Computing</span><span class="es" lang="es">Donar cómputo</span></span>
+              <span class="ec-summary"><span class="en" lang="en">Lend hardware to the mesh — the core of nety. Raises Global &amp; earns stars.</span><span class="es" lang="es">Presta hardware a la malla — el núcleo de nety. Sube tu Global y gana estrellas.</span></span>
               <span class="ec-chevron" aria-hidden="true">▸</span>
             </div>
             <div class="ec-body" id="ec-donate-body" role="region">
               <div class="ec-inner">
-                <p style="font-size:.66rem;color:var(--muted);margin-bottom:.7rem;line-height:1.6">Lend compute to the mesh — the most important way to contribute. Pick a preset, then donate.</p>
+                <p style="font-size:.66rem;color:var(--muted);margin-bottom:.7rem;line-height:1.6"><span class="en" lang="en">Lend compute to the mesh — the most important way to contribute. Pick a preset, then donate.</span><span class="es" lang="es">Presta cómputo a la malla — la forma más importante de contribuir. Elige un preajuste y luego dona.</span></p>
                 <div class="res-presets" id="res-presets">
-                  <button class="res-preset-btn" data-preset="none" onclick="setResourcePreset('none')">I can't</button>
-          <button class="res-preset-btn" data-preset="light" onclick="setResourcePreset('light')">Light</button>
-                  <button class="res-preset-btn" data-preset="balanced" onclick="setResourcePreset('balanced')">Balanced</button>
-                  <button class="res-preset-btn" data-preset="max" onclick="setResourcePreset('max')">Max</button>
+                  <button type="button" class="res-preset-btn" data-preset="none" onclick="setResourcePreset('none')"><span class="en" lang="en">I can't</span><span class="es" lang="es">No puedo</span></button>
+          <button type="button" class="res-preset-btn" data-preset="light" onclick="setResourcePreset('light')"><span class="en" lang="en">Light</span><span class="es" lang="es">Ligero</span></button>
+                  <button type="button" class="res-preset-btn" data-preset="balanced" onclick="setResourcePreset('balanced')"><span class="en" lang="en">Balanced</span><span class="es" lang="es">Equilibrado</span></button>
+                  <button type="button" class="res-preset-btn" data-preset="max" onclick="setResourcePreset('max')"><span class="en" lang="en">Max</span><span class="es" lang="es">Máx</span></button>
                 </div>
                 <div class="res-bars">
                   <div class="res-bar"><span class="res-bar-label">CPU</span><div class="res-bar-track"><div class="res-bar-fill" id="res-fill-cpu"></div></div><span class="res-bar-val" id="res-val-cpu">0%</span></div>
                   <div class="res-bar"><span class="res-bar-label">GPU</span><div class="res-bar-track"><div class="res-bar-fill" id="res-fill-gpu"></div></div><span class="res-bar-val" id="res-val-gpu">0%</span></div>
                   <div class="res-bar"><span class="res-bar-label">RAM</span><div class="res-bar-track"><div class="res-bar-fill" id="res-fill-ram"></div></div><span class="res-bar-val" id="res-val-ram">0%</span></div>
                 </div>
-                <div style="font-size:.66rem;color:var(--muted);margin-bottom:.6rem">Contributed: <strong style="color:var(--signal)" id="ec-donate-cu">5</strong> CU</div>
-                <button class="btn signal js-share-btn" style="width:100%;justify-content:center" onclick="shareHardware()">Share hardware (+5 CU · +8⭐ · +5 global)</button>
-                <div class="see-more-wrap"><button class="see-more-chip" id="see-more-donate" onclick="toggleCardMore('donate')">see more</button></div>
+                <div style="font-size:.66rem;color:var(--muted);margin-bottom:.6rem"><span class="en" lang="en">Contributed:</span><span class="es" lang="es">Contribuido:</span> <strong style="color:var(--signal)" id="ec-donate-cu">5</strong> CU</div>
+                <button type="button" class="btn signal js-share-btn" style="width:100%;justify-content:center" onclick="shareHardware()"></button>
+                <div class="see-more-wrap"><button type="button" class="see-more-chip" id="see-more-donate" onclick="toggleCardMore('donate')"><span class="en" lang="en">see more</span><span class="es" lang="es">ver más</span></button></div>
                 <div class="card-more card-more-incard" id="card-more-donate"><!-- renderCardMore() (inside the card) --></div>
               </div>
             </div>
@@ -1961,30 +1986,30 @@ body{
           <div class="expandable-card" id="ec-add">
             <div class="ec-header" onclick="toggleEcard('add')" role="button" tabindex="0" aria-expanded="false" aria-controls="ec-add-body">
               <span class="ec-id">C</span>
-              <span class="ec-title">Add content</span>
+              <span class="ec-title"><span class="en" lang="en">Add content</span><span class="es" lang="es">Añadir contenido</span></span>
               <span class="ec-chevron" aria-hidden="true">▸</span>
             </div>
             <div class="ec-body" id="ec-add-body" role="region">
               <div class="ec-inner">
                 <div class="field" style="margin-bottom:.45rem">
-                  <label>Category</label>
-                  <select id="ec-add-category" aria-label="Category">
-                    <option value="post">Post</option>
-                    <option value="page">Page</option>
-                    <option value="file">File</option>
-                    <option value="link">Link</option>
-                    <option value="event">Event</option>
+                  <label><span class="en" lang="en">Category</span><span class="es" lang="es">Categoría</span></label>
+                  <select id="ec-add-category" aria-label="Category" data-aria-en="Category" data-aria-es="Categoría">
+                    <option value="post" data-en="Post" data-es="Publicación">Post</option>
+                    <option value="page" data-en="Page" data-es="Página">Page</option>
+                    <option value="file" data-en="File" data-es="Archivo">File</option>
+                    <option value="link" data-en="Link" data-es="Enlace">Link</option>
+                    <option value="event" data-en="Event" data-es="Evento">Event</option>
                   </select>
                 </div>
                 <div style="display:flex;gap:.4rem;align-items:center">
-                  <input type="text" id="ec-add-content" placeholder="What's in your love" aria-label="Add content" style="font-family:'Space Mono',monospace;font-size:.7rem;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(28,25,42,.07);border-radius:9px;padding:.52rem .85rem;flex:1;outline:none;transition:border-color .18s,box-shadow .18s" onkeydown="if(event.key==='Enter')ecGoPublish()">
-                  <button class="btn signal" style="font-size:.64rem;padding:.42rem .9rem;flex-none" onclick="ecGoPublish()">Go</button>
+                  <input type="text" id="ec-add-content" placeholder="What's in your love" aria-label="Add content" data-ph-en="What's in your love" data-ph-es="Qué hay en tu love" data-aria-en="Add content" data-aria-es="Añadir contenido" style="font-family:'Space Mono',monospace;font-size:.7rem;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(28,25,42,.07);border-radius:9px;padding:.52rem .85rem;flex:1;outline:none;transition:border-color .18s,box-shadow .18s" onkeydown="if(event.key==='Enter')ecGoPublish()">
+                  <button type="button" class="btn signal" style="font-size:.64rem;padding:.42rem .9rem;flex-none" onclick="ecGoPublish()"><span class="en" lang="en">Go</span><span class="es" lang="es">Ir</span></button>
                 </div>
                 <div id="ec-add-msg" style="margin-top:.38rem;font-size:.64rem;color:var(--muted)"></div>
                 <!-- kept hidden for render() null-guard compatibility -->
                 <span id="ec-add-stars" style="display:none">42</span>
                 <span id="ec-add-progress" style="display:none">known (10⭐)</span>
-                <div class="see-more-wrap"><button class="see-more-chip" id="see-more-add" onclick="goToPlayApps()">Play Apps</button></div>
+                <div class="see-more-wrap"><button type="button" class="see-more-chip" id="see-more-add" onclick="goToPlayApps()"><span class="en" lang="en">Play Apps</span><span class="es" lang="es">Jugar apps</span></button></div>
               </div>
             </div>
           </div>
@@ -1996,18 +2021,18 @@ body{
           <div class="expandable-card" id="ec-invite">
             <div class="ec-header" onclick="toggleEcard('invite')" role="button" tabindex="0" aria-expanded="false" aria-controls="ec-invite-body">
               <span class="ec-id">＋</span>
-              <span class="ec-title">Add invite code</span>
+              <span class="ec-title"><span class="en" lang="en">Add invite code</span><span class="es" lang="es">Añadir código de invitación</span></span>
               <span class="ec-chevron" aria-hidden="true">▸</span>
             </div>
             <div class="ec-body" id="ec-invite-body" role="region">
               <div class="ec-inner">
                 <div class="field" style="margin-bottom:.5rem">
-                  <label>Invite code</label>
-                  <input type="text" id="ext-invite-input" placeholder="e.g. FLOVE2024" aria-label="Invite code">
+                  <label><span class="en" lang="en">Invite code</span><span class="es" lang="es">Código de invitación</span></label>
+                  <input type="text" id="ext-invite-input" placeholder="e.g. FLOVE2024" aria-label="Invite code" data-ph-en="e.g. FLOVE2024" data-ph-es="p. ej. FLOVE2024" data-aria-en="Invite code" data-aria-es="Código de invitación">
                 </div>
-                <button class="btn signal" style="font-size:.64rem;padding:.42rem .85rem" onclick="extValidateInvite()">Validate</button>
+                <button type="button" class="btn signal" style="font-size:.64rem;padding:.42rem .85rem" onclick="extValidateInvite()"><span class="en" lang="en">Validate</span><span class="es" lang="es">Validar</span></button>
                 <div id="ext-invite-msg" style="margin-top:.45rem;font-size:.64rem;color:var(--muted)"></div>
-                <div class="see-more-wrap"><button class="see-more-chip" id="see-more-invite" onclick="toggleCardMore('invite')">see more</button></div>
+                <div class="see-more-wrap"><button type="button" class="see-more-chip" id="see-more-invite" onclick="toggleCardMore('invite')"><span class="en" lang="en">see more</span><span class="es" lang="es">ver más</span></button></div>
               </div>
             </div>
           </div>
@@ -2016,18 +2041,18 @@ body{
           <div class="expandable-card" id="ec-trust">
             <div class="ec-header" onclick="toggleEcard('trust')" role="button" tabindex="0" aria-expanded="false" aria-controls="ec-trust-body">
               <span class="ec-id">✦</span>
-              <span class="ec-title">Ask for trusts</span>
+              <span class="ec-title"><span class="en" lang="en">Ask for trusts</span><span class="es" lang="es">Pedir confianzas</span></span>
               <span class="ec-chevron" aria-hidden="true">▸</span>
             </div>
             <div class="ec-body" id="ec-trust-body" role="region">
               <div class="ec-inner">
-                <p style="font-size:.66rem;color:var(--muted);margin-bottom:.6rem;line-height:1.6">Request a vouch from peers who know you — each co-signature lifts your Local &amp; Social trust.</p>
+                <p style="font-size:.66rem;color:var(--muted);margin-bottom:.6rem;line-height:1.6"><span class="en" lang="en">Request a vouch from peers who know you — each co-signature lifts your Local &amp; Social trust.</span><span class="es" lang="es">Pide un aval a pares que te conocen — cada cofirma sube tu confianza Local y Social.</span></p>
                 <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-                  <button class="btn signal" style="font-size:.64rem;padding:.42rem .85rem" onclick="askForTrust()">Request a vouch</button>
-                  <button class="btn ghost" style="font-size:.64rem;padding:.42rem .85rem" onclick="switchTab('mynet')">See more →</button>
+                  <button type="button" class="btn signal" style="font-size:.64rem;padding:.42rem .85rem" onclick="askForTrust()"><span class="en" lang="en">Request a vouch</span><span class="es" lang="es">Pedir un aval</span></button>
+                  <button type="button" class="btn ghost" style="font-size:.64rem;padding:.42rem .85rem" onclick="switchTab('mynet')"><span class="en" lang="en">See more →</span><span class="es" lang="es">Ver más →</span></button>
                 </div>
                 <div id="ec-trust-msg" style="margin-top:.45rem;font-size:.64rem;color:var(--muted)"></div>
-                <div class="see-more-wrap"><button class="see-more-chip" id="see-more-trust" onclick="toggleCardMore('trust')">see more</button></div>
+                <div class="see-more-wrap"><button type="button" class="see-more-chip" id="see-more-trust" onclick="toggleCardMore('trust')"><span class="en" lang="en">see more</span><span class="es" lang="es">ver más</span></button></div>
               </div>
             </div>
           </div>
@@ -2037,25 +2062,25 @@ body{
         <div class="card-more" id="card-more"><!-- renderCardMore() --></div>
 
         <!-- More appy flove — three ways to help (moved here) -->
-        <button class="upgrade-bar" id="moreflove-btn" onclick="toggleMoreFlove()" aria-expanded="false" aria-controls="moreflove-region" style="margin-top:1.6rem">
-          <span class="ub-text">More appy flove</span>
+        <button type="button" class="upgrade-bar" id="moreflove-btn" onclick="toggleMoreFlove()" aria-expanded="false" aria-controls="moreflove-region" style="margin-top:1.6rem">
+          <span class="ub-text"><span class="en" lang="en">More appy flove</span><span class="es" lang="es">Más appy flove</span></span>
         </button>
         <div class="moreflove-region" id="moreflove-region">
           <div class="moreflove-cols">
             <div class="moreflove-col" id="flove-col-jobs" role="button" tabindex="0" onclick="toggleFloveScope('jobs')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFloveScope('jobs');}">
               <div class="moreflove-col-ic" aria-hidden="true">🧩</div>
-              <div class="moreflove-col-title">Easy jobs</div>
-              <div class="moreflove-col-desc">Small mesh tasks anyone can pick up — moderation, relays, tagging.</div>
+              <div class="moreflove-col-title"><span class="en" lang="en">Easy jobs</span><span class="es" lang="es">Tareas fáciles</span></div>
+              <div class="moreflove-col-desc"><span class="en" lang="en">Small mesh tasks anyone can pick up — moderation, relays, tagging.</span><span class="es" lang="es">Pequeñas tareas de la malla que cualquiera puede asumir — moderación, repetidores, etiquetado.</span></div>
             </div>
             <div class="moreflove-col" id="flove-col-talent" role="button" tabindex="0" onclick="toggleFloveScope('talent')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFloveScope('talent');}">
               <div class="moreflove-col-ic" aria-hidden="true">✦</div>
-              <div class="moreflove-col-title">Your talent</div>
-              <div class="moreflove-col-desc">Offer a skill — design, code, music, translation — to the network.</div>
+              <div class="moreflove-col-title"><span class="en" lang="en">Your talent</span><span class="es" lang="es">Tu talento</span></div>
+              <div class="moreflove-col-desc"><span class="en" lang="en">Offer a skill — design, code, music, translation — to the network.</span><span class="es" lang="es">Ofrece una habilidad — diseño, código, música, traducción — a la red.</span></div>
             </div>
             <div class="moreflove-col" id="flove-col-donations" role="button" tabindex="0" onclick="toggleFloveScope('donations')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFloveScope('donations');}">
               <div class="moreflove-col-ic" aria-hidden="true">♥</div>
-              <div class="moreflove-col-title">Donations</div>
-              <div class="moreflove-col-desc">Back the commons directly — send stars or funds to people &amp; groups.</div>
+              <div class="moreflove-col-title"><span class="en" lang="en">Donations</span><span class="es" lang="es">Donaciones</span></div>
+              <div class="moreflove-col-desc"><span class="en" lang="en">Back the commons directly — send stars or funds to people &amp; groups.</span><span class="es" lang="es">Apoya el procomún directamente — envía estrellas o fondos a personas y grupos.</span></div>
             </div>
           </div>
           <div class="flove-scope" id="flove-scope"><!-- renderFloveScope() --></div>
@@ -2063,7 +2088,7 @@ body{
       </div>
     </div>
 
-    <!-- RESOURCES TAB -->
+    <!-- NETY TAB -->
     <div class="tab-panel" id="panel-nety" role="tabpanel">
       <div class="vcard">
 
@@ -2082,64 +2107,64 @@ body{
               <path d="M35 23.5 L39 16" stroke="url(#rainbow)" stroke-width="1.3" stroke-linecap="round"/>
               <circle cx="39" cy="16" r="2.4" fill="url(#rainbow)"/>
             </svg>
-            <div class="nety-banner-title">Welcome to <span class="rainbow-text">nety</span></div>
+            <div class="nety-banner-title"><span class="en" lang="en">Welcome to</span><span class="es" lang="es">Bienvenido a</span> <span class="rainbow-text">nety</span></div>
           </div>
-          <div class="nety-banner-desc">A p2p mesh owned by the people who run it.</div>
+          <div class="nety-banner-desc"><span class="en" lang="en">A p2p mesh owned by the people who run it.</span><span class="es" lang="es">Una malla p2p propiedad de quienes la mantienen.</span></div>
           <div class="nety-banner-actions">
-            <button class="btn signal" style="font-size:.64rem;padding:.42rem .9rem" onclick="toggleAbout()">Learn the tech →</button>
-            <button class="btn ghost" style="font-size:.64rem;padding:.42rem .9rem" onclick="switchTab('mynet')">Join the community →</button>
+            <button type="button" class="btn signal" style="font-size:.64rem;padding:.42rem .9rem" onclick="toggleAbout()"><span class="en" lang="en">Learn the tech →</span><span class="es" lang="es">Conoce la tecnología →</span></button>
+            <button type="button" class="btn ghost" style="font-size:.64rem;padding:.42rem .9rem" onclick="switchTab('mynet')"><span class="en" lang="en">Join the community →</span><span class="es" lang="es">Únete a la comunidad →</span></button>
           </div>
         </div>
 
-        <div class="sec">Donate Computing</div>
-        <p style="font-size:.7rem;color:var(--muted);margin-bottom:.85rem;line-height:1.6">Your node lends compute, storage and bandwidth to the mesh — the most important way to keep nety alive. Open to anyone, no invite needed. Pick a preset, direct your share, then donate.</p>
+        <div class="sec"><span class="en" lang="en">Donate Computing</span><span class="es" lang="es">Donar cómputo</span></div>
+        <p style="font-size:.7rem;color:var(--muted);margin-bottom:.85rem;line-height:1.6"><span class="en" lang="en">Your node lends compute, storage and bandwidth to the mesh — the most important way to keep nety alive. Open to anyone, no invite needed. Pick a preset, direct your share, then donate.</span><span class="es" lang="es">Tu nodo presta cómputo, almacenamiento y ancho de banda a la malla — la forma más importante de mantener nety con vida. Abierto a cualquiera, sin invitación. Elige un preajuste, dirige tu aporte y luego dona.</span></p>
 
         <div class="res-presets" id="rsc-res-presets">
-          <button class="res-preset-btn" data-preset="none" onclick="setResourcePreset('none')">I can't</button>
-          <button class="res-preset-btn" data-preset="light" onclick="setResourcePreset('light')">Light</button>
-          <button class="res-preset-btn" data-preset="balanced" onclick="setResourcePreset('balanced')">Balanced</button>
-          <button class="res-preset-btn" data-preset="max" onclick="setResourcePreset('max')">Max</button>
+          <button type="button" class="res-preset-btn" data-preset="none" onclick="setResourcePreset('none')"><span class="en" lang="en">I can't</span><span class="es" lang="es">No puedo</span></button>
+          <button type="button" class="res-preset-btn" data-preset="light" onclick="setResourcePreset('light')"><span class="en" lang="en">Light</span><span class="es" lang="es">Ligero</span></button>
+          <button type="button" class="res-preset-btn" data-preset="balanced" onclick="setResourcePreset('balanced')"><span class="en" lang="en">Balanced</span><span class="es" lang="es">Equilibrado</span></button>
+          <button type="button" class="res-preset-btn" data-preset="max" onclick="setResourcePreset('max')"><span class="en" lang="en">Max</span><span class="es" lang="es">Máx</span></button>
         </div>
         <div class="res-bars-ext">
           <div class="res-row-ext">
             <div class="res-row-ext-top"><span class="res-bar-label">CPU</span><span class="res-bar-val" id="rsc-res-val-cpu">0%</span></div>
             <div class="res-bar-track"><div class="res-bar-fill" id="rsc-res-fill-cpu"></div></div>
-            <div class="res-row-ext-desc">Compute cycles lent to mesh tasks and relays.</div>
+            <div class="res-row-ext-desc"><span class="en" lang="en">Compute cycles lent to mesh tasks and relays.</span><span class="es" lang="es">Ciclos de cómputo prestados a tareas y repetidores de la malla.</span></div>
           </div>
           <div class="res-row-ext">
             <div class="res-row-ext-top"><span class="res-bar-label">GPU</span><span class="res-bar-val" id="rsc-res-val-gpu">0%</span></div>
             <div class="res-bar-track"><div class="res-bar-fill" id="rsc-res-fill-gpu"></div></div>
-            <div class="res-row-ext-desc">Parallel work — inference, transcoding, rendering.</div>
+            <div class="res-row-ext-desc"><span class="en" lang="en">Parallel work — inference, transcoding, rendering.</span><span class="es" lang="es">Trabajo en paralelo — inferencia, transcodificación, renderizado.</span></div>
           </div>
           <div class="res-row-ext">
             <div class="res-row-ext-top"><span class="res-bar-label">RAM</span><span class="res-bar-val" id="rsc-res-val-ram">0%</span></div>
             <div class="res-bar-track"><div class="res-bar-fill" id="rsc-res-fill-ram"></div></div>
-            <div class="res-row-ext-desc">Memory held for caching and in-flight peer data.</div>
+            <div class="res-row-ext-desc"><span class="en" lang="en">Memory held for caching and in-flight peer data.</span><span class="es" lang="es">Memoria reservada para caché y datos de pares en tránsito.</span></div>
           </div>
         </div>
 
         <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;font-size:.68rem;margin:.2rem 0 .8rem">
-          <span style="color:var(--muted)">Preference:</span>
-          <select class="perm-select" id="rsc-target" aria-label="Share preference">
-            <option value="mesh">Whole mesh</option>
-            <option value="mynet">MyNet first</option>
-            <option value="close">Close circle</option>
+          <span style="color:var(--muted)"><span class="en" lang="en">Preference:</span><span class="es" lang="es">Preferencia:</span></span>
+          <select class="perm-select" id="rsc-target" aria-label="Share preference" data-aria-en="Share preference" data-aria-es="Preferencia de compartir">
+            <option value="mesh" data-en="Whole mesh" data-es="Toda la malla">Whole mesh</option>
+            <option value="mynet" data-en="MyNet first" data-es="MyNet primero">MyNet first</option>
+            <option value="close" data-en="Close circle" data-es="Círculo cercano">Close circle</option>
           </select>
           <label style="display:inline-flex;align-items:center;gap:.35rem;cursor:pointer">
             <input type="checkbox" id="rsc-only" onchange="toggleRscOnly()">
-            <span id="rsc-only-text">Only</span>
+            <span id="rsc-only-text"><span class="en" lang="en">Only</span><span class="es" lang="es">Solo</span></span>
           </label>
         </div>
 
-        <button class="btn signal js-share-btn" style="width:100%;justify-content:center;margin-top:.2rem" onclick="shareHardware()">Share hardware (+5 CU · +8⭐ · +5 global)</button>
+        <button type="button" class="btn signal js-share-btn" style="width:100%;justify-content:center;margin-top:.2rem" onclick="shareHardware()"></button>
 
         <div class="netstats" style="margin-top:1.3rem;margin-bottom:0">
-          <div class="netstat"><span class="netstat-val" id="ns-nodes">1,284</span><span class="netstat-label">nodes online</span></div>
-          <div class="netstat"><span class="netstat-val" id="ns-peers">5,902</span><span class="netstat-label">active peers</span></div>
-          <div class="netstat"><span class="netstat-val" id="ns-compute">8.4 TF</span><span class="netstat-label">compute shared</span></div>
-          <div class="netstat"><span class="netstat-val" id="ns-posts">23.1k</span><span class="netstat-label">posts live</span></div>
-          <div class="netstat"><span class="netstat-val">412</span><span class="netstat-label">groups</span></div>
-          <div class="netstat"><span class="netstat-val">37</span><span class="netstat-label">regions</span></div>
+          <div class="netstat"><span class="netstat-val" id="ns-nodes">1,284</span><span class="netstat-label"><span class="en" lang="en">nodes online</span><span class="es" lang="es">nodos en línea</span></span></div>
+          <div class="netstat"><span class="netstat-val" id="ns-peers">5,902</span><span class="netstat-label"><span class="en" lang="en">active peers</span><span class="es" lang="es">pares activos</span></span></div>
+          <div class="netstat"><span class="netstat-val" id="ns-compute">8.4 TF</span><span class="netstat-label"><span class="en" lang="en">compute shared</span><span class="es" lang="es">cómputo compartido</span></span></div>
+          <div class="netstat"><span class="netstat-val" id="ns-posts">23.1k</span><span class="netstat-label"><span class="en" lang="en">posts live</span><span class="es" lang="es">posts en vivo</span></span></div>
+          <div class="netstat"><span class="netstat-val">412</span><span class="netstat-label"><span class="en" lang="en">groups</span><span class="es" lang="es">grupos</span></span></div>
+          <div class="netstat"><span class="netstat-val">37</span><span class="netstat-label"><span class="en" lang="en">regions</span><span class="es" lang="es">regiones</span></span></div>
         </div>
 
       </div>
@@ -2154,24 +2179,24 @@ body{
         <div class="invites-2col">
           <!-- LEFT: enter invite code -->
           <div class="invites-col">
-            <div class="extend-col-label">Enter invite code</div>
+            <div class="extend-col-label"><span class="en" lang="en">Enter invite code</span><span class="es" lang="es">Introduce el código de invitación</span></div>
             <div class="field" style="margin-bottom:.5rem">
-              <input type="text" id="ec-invite-input" placeholder="e.g. FLOVE2024" aria-label="Invite code">
+              <input type="text" id="ec-invite-input" placeholder="e.g. FLOVE2024" aria-label="Invite code" data-ph-en="e.g. FLOVE2024" data-ph-es="p. ej. FLOVE2024" data-aria-en="Invite code" data-aria-es="Código de invitación">
             </div>
-            <button class="btn signal" style="font-size:.64rem;padding:.4rem .85rem;align-self:flex-start" onclick="ecardValidateInvite()">Validate code</button>
+            <button type="button" class="btn signal" style="font-size:.64rem;padding:.4rem .85rem;align-self:flex-start" onclick="ecardValidateInvite()"><span class="en" lang="en">Validate code</span><span class="es" lang="es">Validar código</span></button>
             <div id="ec-invite-msg" style="margin-top:.45rem;font-size:.64rem;color:var(--muted)"></div>
           </div>
           <!-- RIGHT: your invites -->
           <div class="invites-col">
-            <div class="extend-col-label">Invites</div>
+            <div class="extend-col-label"><span class="en" lang="en">Invites</span><span class="es" lang="es">Invitaciones</span></div>
             <div style="display:flex;flex-direction:column;align-items:flex-start;gap:.2rem;margin-bottom:.55rem">
-              <div id="invite-renew-hint" style="display:none;font-size:.6rem;color:var(--muted);padding:.22rem .65rem;border-radius:7px;background:rgba(141,137,255,.07);border:1px solid rgba(141,137,255,.18);line-height:1.4">Renews 3 more the first day of the next month.</div>
-              <button id="invite-credits-btn" onclick="toggleInviteRenew()" aria-label="Toggle invite-renewal info" style="background:none;border:none;cursor:pointer;padding:0;font:inherit;text-align:left">
+              <div id="invite-renew-hint" style="display:none;font-size:.6rem;color:var(--muted);padding:.22rem .65rem;border-radius:7px;background:rgba(141,137,255,.07);border:1px solid rgba(141,137,255,.18);line-height:1.4"><span class="en" lang="en">Renews 3 more the first day of the next month.</span><span class="es" lang="es">Renueva 3 más el primer día del mes que viene.</span></div>
+              <button type="button" id="invite-credits-btn" onclick="toggleInviteRenew()" aria-label="Toggle invite-renewal info" data-aria-en="Toggle invite-renewal info" data-aria-es="Mostrar info de renovación de invitaciones" style="background:none;border:none;cursor:pointer;padding:0;font:inherit;text-align:left">
                 <span class="sbadge" id="invite-credits-chip" style="cursor:pointer">2 / 3 left</span>
               </button>
             </div>
             <div style="display:flex;align-items:center;gap:.65rem;flex-wrap:wrap">
-              <button class="btn ghost" onclick="generateInvite()">Generate</button>
+              <button type="button" class="btn ghost" onclick="generateInvite()"><span class="en" lang="en">Generate</span><span class="es" lang="es">Generar</span></button>
               <span id="invite-generated-code" style="display:none;font-family:'Space Mono',monospace;font-size:.82rem;color:var(--signal);letter-spacing:.12em;text-shadow:0 0 12px rgba(0,247,167,.5);padding:.3rem .7rem;border-radius:8px;border:1px solid rgba(0,247,167,.3);background:rgba(0,247,167,.06)"></span>
             </div>
             <div id="invite-action-msg" style="font-size:.64rem;color:var(--muted);margin-top:.5rem"></div>
@@ -2180,11 +2205,11 @@ body{
 
         <!-- map button on the border, centred below both columns -->
         <div class="map-toggle-wrap">
-          <button class="map-toggle-btn" id="map-toggle-btn" onclick="toggleInviteMap()" aria-expanded="false" aria-controls="invite-map-region"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="4.6" r="1.8"/><circle cx="4.6" cy="14" r="1.8"/><circle cx="15.4" cy="14" r="1.8"/><path d="M9 6L5.5 12.4M11 6l3.5 6.4M6.2 14h7.6"/></svg> See chain</button>
+          <button type="button" class="map-toggle-btn" id="map-toggle-btn" onclick="toggleInviteMap()" aria-expanded="false" aria-controls="invite-map-region"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="4.6" r="1.8"/><circle cx="4.6" cy="14" r="1.8"/><circle cx="15.4" cy="14" r="1.8"/><path d="M9 6L5.5 12.4M11 6l3.5 6.4M6.2 14h7.6"/></svg> <span class="en" lang="en">See chain</span><span class="es" lang="es">Ver cadena</span></button>
         </div>
         <div class="invite-map-region" id="invite-map-region">
           <div class="invite-web-wrap" style="margin-top:.9rem">
-            <svg viewBox="0 0 400 260" width="100%" height="auto" aria-label="Invite lineage tree" style="max-height:240px;padding:1rem;display:block">
+            <svg viewBox="0 0 400 260" width="100%" height="auto" aria-label="Invite lineage tree" data-aria-en="Invite lineage tree" data-aria-es="Árbol de linaje de invitaciones" style="max-height:240px;padding:1rem;display:block">
               <defs>
                 <filter id="glow-you" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
                 <filter id="glow-node" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
@@ -2212,19 +2237,19 @@ body{
             </svg>
           </div>
           <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.5rem">
-            <button class="btn ghost" onclick="revokeInvite()">Revoke</button>
-            <button class="btn danger" onclick="disownInvite()">Disown (−10 local)</button>
+            <button type="button" class="btn ghost" onclick="revokeInvite()"><span class="en" lang="en">Revoke</span><span class="es" lang="es">Revocar</span></button>
+            <button type="button" class="btn danger" onclick="disownInvite()"><span class="en" lang="en">Disown (−10 local)</span><span class="es" lang="es">Repudiar (−10 local)</span></button>
           </div>
         </div>
 
-        <div style="text-align:center;font-family:'Fredoka',sans-serif;font-weight:700;font-size:1.05rem;margin:.3rem 0 .9rem">Social Network</div>
+        <div style="text-align:center;font-family:'Fredoka',sans-serif;font-weight:700;font-size:1.05rem;margin:.3rem 0 .9rem"><span class="en" lang="en">Social Network</span><span class="es" lang="es">Red social</span></div>
         <div class="social-feed" id="social-feed"><!-- renderFeed() --></div>
         <!-- Two-column layout: People (left) + Groups (right) -->
         <div class="mynet-cols" style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start">
 
           <!-- Left column: f2f connections -->
           <div>
-            <div class="sec" style="margin-top:0">Favourites</div>
+            <div class="sec" style="margin-top:0"><span class="en" lang="en">Favourites</span><span class="es" lang="es">Favoritos</span></div>
             <div class="peer-list" id="peers-list">
               <!-- populated by renderMyNet() -->
             </div>
@@ -2232,7 +2257,7 @@ body{
 
           <!-- Right column: Groups -->
           <div>
-            <div class="sec" style="margin-top:0">Groups</div>
+            <div class="sec" style="margin-top:0"><span class="en" lang="en">Groups</span><span class="es" lang="es">Grupos</span></div>
             <div class="peer-list" id="groups-list">
               <!-- populated by renderMyNet() -->
             </div>
@@ -2244,29 +2269,29 @@ body{
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-top:.75rem">
           <!-- Under left column: add a friend -->
           <div style="display:flex;gap:.4rem;align-items:center">
-            <input type="text" id="mynet-add-friend-input" placeholder="peer handle or @id…" aria-label="Add a friend"
+            <input type="text" id="mynet-add-friend-input" placeholder="peer handle or @id…" aria-label="Add a friend" data-ph-en="peer handle or @id…" data-ph-es="alias del par o @id…" data-aria-en="Add a friend" data-aria-es="Añadir un amigo"
               style="font-family:'Space Mono',monospace;font-size:.67rem;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(28,25,42,.07);border-radius:9px;padding:.48rem .75rem;flex:1;outline:none;transition:border-color .18s,box-shadow .18s"
               onkeydown="if(event.key==='Enter')mynetAddFriend()">
-            <button class="btn ghost" style="font-size:.63rem;padding:.44rem .8rem;flex-none" onclick="mynetAddFriend()">Search</button>
+            <button type="button" class="btn ghost" style="font-size:.63rem;padding:.44rem .8rem;flex-none" onclick="mynetAddFriend()"><span class="en" lang="en">Search</span><span class="es" lang="es">Buscar</span></button>
           </div>
           <!-- Under right column: join a group -->
           <div style="display:flex;gap:.4rem;align-items:center">
-            <input type="text" id="mynet-join-group-input" placeholder="circle / group name…" aria-label="Join a group"
+            <input type="text" id="mynet-join-group-input" placeholder="circle / group name…" aria-label="Join a group" data-ph-en="circle / group name…" data-ph-es="nombre de círculo / grupo…" data-aria-en="Join a group" data-aria-es="Unirse a un grupo"
               style="font-family:'Space Mono',monospace;font-size:.67rem;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(28,25,42,.07);border-radius:9px;padding:.48rem .75rem;flex:1;outline:none;transition:border-color .18s,box-shadow .18s"
               onkeydown="if(event.key==='Enter')mynetJoinGroup()">
-            <button class="btn ghost" style="font-size:.63rem;padding:.44rem .8rem;flex-none" onclick="mynetJoinGroup()">Search</button>
+            <button type="button" class="btn ghost" style="font-size:.63rem;padding:.44rem .8rem;flex-none" onclick="mynetJoinGroup()"><span class="en" lang="en">Search</span><span class="es" lang="es">Buscar</span></button>
           </div>
         </div>
 
         <!-- ── More Social — demo people & groups to follow / support ── -->
-        <div class="sec" style="margin-top:1.2rem">Be more social</div>
+        <div class="sec" style="margin-top:1.2rem"><span class="en" lang="en">Be more social</span><span class="es" lang="es">Sé más social</span></div>
         <div class="mynet-cols" style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start">
           <div>
-            <div class="extend-col-label">People to follow</div>
+            <div class="extend-col-label"><span class="en" lang="en">People to follow</span><span class="es" lang="es">Personas a seguir</span></div>
             <div class="peer-list" id="more-people-list"><!-- renderMoreSocial() --></div>
           </div>
           <div>
-            <div class="extend-col-label">Groups to support</div>
+            <div class="extend-col-label"><span class="en" lang="en">Groups to support</span><span class="es" lang="es">Grupos a apoyar</span></div>
             <div class="peer-list" id="more-groups-list"><!-- renderMoreSocial() --></div>
           </div>
         </div>
@@ -2280,8 +2305,8 @@ body{
         <div class="chat-cols">
           <!-- Inbox + search -->
           <div class="chat-side">
-            <div class="extend-col-label">Inbox</div>
-            <input type="text" id="chat-search-input" class="chat-search-input" placeholder="search users to invite…" aria-label="Search users to invite" oninput="renderChatSearch(this.value)">
+            <div class="extend-col-label"><span class="en" lang="en">Inbox</span><span class="es" lang="es">Bandeja</span></div>
+            <input type="text" id="chat-search-input" class="chat-search-input" placeholder="search users to invite…" aria-label="Search users to invite" data-ph-en="search users to invite…" data-ph-es="busca usuarios para invitar…" data-aria-en="Search users to invite" data-aria-es="Buscar usuarios para invitar" oninput="renderChatSearch(this.value)">
             <div id="chat-search-results" class="chat-search-results"></div>
             <div class="chat-inbox" id="chat-inbox"><!-- renderChat() --></div>
           </div>
@@ -2289,16 +2314,16 @@ body{
           <div class="chat-main">
             <div class="chat-header">
               <span id="chat-with">—</span>
-              <label class="chat-ephemeral"><input type="checkbox" id="chat-ephemeral" onchange="state.chatEphemeral=this.checked"> ephemeral</label>
+              <label class="chat-ephemeral"><input type="checkbox" id="chat-ephemeral" onchange="state.chatEphemeral=this.checked"> <span class="en" lang="en">ephemeral</span><span class="es" lang="es">efímero</span></label>
             </div>
             <div class="chat-messages" id="chat-messages"><!-- renderChat() --></div>
             <div class="chat-compose">
-              <textarea id="chat-input" rows="1" placeholder="Message…" aria-label="Message" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend();}"></textarea>
-              <button class="btn signal" style="flex-none" onclick="chatSend()">Send</button>
+              <textarea id="chat-input" rows="1" placeholder="Message…" aria-label="Message" data-ph-en="Message…" data-ph-es="Mensaje…" data-aria-en="Message" data-aria-es="Mensaje" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend();}"></textarea>
+              <button type="button" class="btn signal" style="flex-none" onclick="chatSend()"><span class="en" lang="en">Send</span><span class="es" lang="es">Enviar</span></button>
             </div>
             <div class="chat-av">
-              <button class="chat-av-btn" onclick="chatUpgrade()">🎙 Audio</button>
-              <button class="chat-av-btn" onclick="chatUpgrade()">🎥 Video</button>
+              <button type="button" class="chat-av-btn" onclick="chatUpgrade()">🎙 <span class="en" lang="en">Audio</span><span class="es" lang="es">Audio</span></button>
+              <button type="button" class="chat-av-btn" onclick="chatUpgrade()">🎥 <span class="en" lang="en">Video</span><span class="es" lang="es">Vídeo</span></button>
               <span id="chat-av-msg" class="chat-av-msg"></span>
             </div>
           </div>
@@ -2307,7 +2332,7 @@ body{
     </div>
 
 
-    <!-- PENDING TAB -->
+    <!-- ACTIVITY TAB -->
     <div class="tab-panel" id="panel-activity" role="tabpanel">
       <div class="vcard">
 
@@ -2317,7 +2342,7 @@ body{
 
           <div class="rings-wrap">
             <div class="rings-activity-halo" aria-hidden="true"></div>
-            <svg id="rings-svg" viewBox="0 0 280 280" width="240" height="240" aria-label="Trust facet rings">
+            <svg id="rings-svg" viewBox="0 0 280 280" width="240" height="240" aria-label="Trust facet rings" data-aria-en="Trust facet rings" data-aria-es="Anillos de facetas de confianza">
               <g opacity=".25" stroke="#c4c7d6" stroke-width="1">
                 <line x1="140" y1="15"  x2="140" y2="26"/>
                 <line x1="140" y1="254" x2="140" y2="265"/>
@@ -2356,65 +2381,65 @@ body{
         <!-- facet detail: + = suggestions · title = upgrade message -->
         <div class="circle-info" id="circle-detail"><!-- renderCircleDetail() --></div>
 
-        <div class="sec">Donated Computing</div>
+        <div class="sec"><span class="en" lang="en">Donated Computing</span><span class="es" lang="es">Cómputo donado</span></div>
         <div class="rsc-stats">
-          <div class="rsc-stat"><span class="rsc-stat-label">Contributed</span><span class="rsc-stat-val"><strong id="rsc-cu">5</strong> CU</span></div>
-          <div class="rsc-stat"><span class="rsc-stat-label">Uptime</span><span class="rsc-stat-val">99.2%</span></div>
-          <div class="rsc-stat"><span class="rsc-stat-label">Peers served</span><span class="rsc-stat-val">12</span></div>
-          <div class="rsc-stat"><span class="rsc-stat-label">Est. monthly</span><span class="rsc-stat-val">~40 ⭐</span></div>
+          <div class="rsc-stat"><span class="rsc-stat-label"><span class="en" lang="en">Contributed</span><span class="es" lang="es">Contribuido</span></span><span class="rsc-stat-val"><strong id="rsc-cu">5</strong> CU</span></div>
+          <div class="rsc-stat"><span class="rsc-stat-label"><span class="en" lang="en">Uptime</span><span class="es" lang="es">Disponibilidad</span></span><span class="rsc-stat-val">99.2%</span></div>
+          <div class="rsc-stat"><span class="rsc-stat-label"><span class="en" lang="en">Peers served</span><span class="es" lang="es">Pares servidos</span></span><span class="rsc-stat-val">12</span></div>
+          <div class="rsc-stat"><span class="rsc-stat-label"><span class="en" lang="en">Est. monthly</span><span class="es" lang="es">Est. mensual</span></span><span class="rsc-stat-val">~40 ⭐</span></div>
         </div>
 
-        <div class="sec" style="margin-top:1.1rem">Your posts</div>
+        <div class="sec" style="margin-top:1.1rem"><span class="en" lang="en">Your posts</span><span class="es" lang="es">Tus posts</span></div>
         <div id="queue-list" class="queue-list">
-          <div style="font-size:.66rem;color:var(--muted)">No posts yet.</div>
+          <div style="font-size:.66rem;color:var(--muted)"><span class="en" lang="en">No posts yet.</span><span class="es" lang="es">Aún no hay posts.</span></div>
         </div>
 
-        <div class="sec" style="margin-top:.9rem">Moderation flow</div>
+        <div class="sec" style="margin-top:.9rem"><span class="en" lang="en">Moderation flow</span><span class="es" lang="es">Flujo de moderación</span></div>
         <div style="display:flex;align-items:center;gap:.7rem;font-size:.7rem;flex-wrap:wrap;margin-bottom:.7rem">
-          <span style="padding:.3rem .7rem;border-radius:6px;background:rgba(255,206,107,.08);border:1px solid rgba(255,206,107,.3);color:var(--warn)">pending</span>
+          <span style="padding:.3rem .7rem;border-radius:6px;background:rgba(255,206,107,.08);border:1px solid rgba(255,206,107,.3);color:var(--warn)"><span class="en" lang="en">pending</span><span class="es" lang="es">pendiente</span></span>
           <span style="color:var(--muted)">→</span>
-          <span style="padding:.3rem .7rem;border-radius:6px;background:rgba(141,137,255,.08);border:1px solid rgba(141,137,255,.3);color:var(--accent-soft)">curator review</span>
+          <span style="padding:.3rem .7rem;border-radius:6px;background:rgba(141,137,255,.08);border:1px solid rgba(141,137,255,.3);color:var(--accent-soft)"><span class="en" lang="en">curator review</span><span class="es" lang="es">revisión de curador</span></span>
           <span style="color:var(--muted)">→</span>
-          <span style="padding:.3rem .7rem;border-radius:6px;background:rgba(0,247,167,.08);border:1px solid rgba(0,247,167,.3);color:var(--signal)">live ✓</span>
+          <span style="padding:.3rem .7rem;border-radius:6px;background:rgba(0,247,167,.08);border:1px solid rgba(0,247,167,.3);color:var(--signal)"><span class="en" lang="en">live ✓</span><span class="es" lang="es">en vivo ✓</span></span>
         </div>
 
       </div>
     </div>
 
-    <!-- RECOVERY TAB -->
+    <!-- PRIVACY TAB -->
     <div class="tab-panel" id="panel-privacy" role="tabpanel">
       <div class="vcard">
 
-        <div class="sec" style="margin-top:0">Visibility</div>
+        <div class="sec" style="margin-top:0"><span class="en" lang="en">Visibility</span><span class="es" lang="es">Visibilidad</span></div>
         <div class="perm-grid">
-          <span class="perm-label">Content</span>
+          <span class="perm-label"><span class="en" lang="en">Content</span><span class="es" lang="es">Contenido</span></span>
           <select class="perm-select" onchange="updatePerm('content',this.value)" id="perm-content">
-            <option value="mynet">MyNet</option><option value="circle">Group</option><option value="public">Public</option><option value="private">Private</option>
+            <option value="mynet">MyNet</option><option value="circle" data-en="Group" data-es="Grupo">Group</option><option value="public" data-en="Public" data-es="Público">Public</option><option value="private" data-en="Private" data-es="Privado">Private</option>
           </select>
-          <span class="perm-label">Resources</span>
+          <span class="perm-label"><span class="en" lang="en">Resources</span><span class="es" lang="es">Recursos</span></span>
           <select class="perm-select" onchange="updatePerm('resources',this.value)" id="perm-resources">
-            <option value="mynet">MyNet</option><option value="circle">Group</option><option value="public">Public</option><option value="private">Private</option>
+            <option value="mynet">MyNet</option><option value="circle" data-en="Group" data-es="Grupo">Group</option><option value="public" data-en="Public" data-es="Público">Public</option><option value="private" data-en="Private" data-es="Privado">Private</option>
           </select>
-          <span class="perm-label">Profile</span>
+          <span class="perm-label"><span class="en" lang="en">Profile</span><span class="es" lang="es">Perfil</span></span>
           <select class="perm-select" onchange="updatePerm('profile',this.value)" id="perm-profile">
-            <option value="private">Private</option><option value="mynet">MyNet</option><option value="circle">Group</option><option value="public">Public</option>
+            <option value="private" data-en="Private" data-es="Privado">Private</option><option value="mynet">MyNet</option><option value="circle" data-en="Group" data-es="Grupo">Group</option><option value="public" data-en="Public" data-es="Público">Public</option>
           </select>
         </div>
 
-        <div class="sec" style="margin-top:.6rem">Group visibility</div>
+        <div class="sec" style="margin-top:.6rem"><span class="en" lang="en">Group visibility</span><span class="es" lang="es">Visibilidad del grupo</span></div>
         <div class="perm-grid">
-          <span class="perm-label">Personal</span>
-          <select class="perm-select" aria-label="Personal group visibility" onchange="updateVis('personal',this.value)"><option>private</option><option>mynet</option><option>public</option></select>
-          <span class="perm-label">Local</span>
-          <select class="perm-select" aria-label="Local group visibility" onchange="updateVis('local',this.value)"><option>mynet</option><option>private</option><option>public</option></select>
-          <span class="perm-label">Social</span>
-          <select class="perm-select" aria-label="Social group visibility" onchange="updateVis('social',this.value)"><option>mynet</option><option>private</option><option>public</option></select>
-          <span class="perm-label">Global</span>
-          <select class="perm-select" aria-label="Global group visibility" onchange="updateVis('global',this.value)"><option>public</option><option>mynet</option><option>private</option></select>
+          <span class="perm-label"><span class="en" lang="en">Personal</span><span class="es" lang="es">Personal</span></span>
+          <select class="perm-select" aria-label="Personal group visibility" data-aria-en="Personal group visibility" data-aria-es="Visibilidad del grupo Personal" onchange="updateVis('personal',this.value)"><option value="private" data-en="private" data-es="privado">private</option><option value="mynet">mynet</option><option value="public" data-en="public" data-es="público">public</option></select>
+          <span class="perm-label"><span class="en" lang="en">Local</span><span class="es" lang="es">Local</span></span>
+          <select class="perm-select" aria-label="Local group visibility" data-aria-en="Local group visibility" data-aria-es="Visibilidad del grupo Local" onchange="updateVis('local',this.value)"><option value="mynet">mynet</option><option value="private" data-en="private" data-es="privado">private</option><option value="public" data-en="public" data-es="público">public</option></select>
+          <span class="perm-label"><span class="en" lang="en">Social</span><span class="es" lang="es">Social</span></span>
+          <select class="perm-select" aria-label="Social group visibility" data-aria-en="Social group visibility" data-aria-es="Visibilidad del grupo Social" onchange="updateVis('social',this.value)"><option value="mynet">mynet</option><option value="private" data-en="private" data-es="privado">private</option><option value="public" data-en="public" data-es="público">public</option></select>
+          <span class="perm-label"><span class="en" lang="en">Global</span><span class="es" lang="es">Global</span></span>
+          <select class="perm-select" aria-label="Global group visibility" data-aria-en="Global group visibility" data-aria-es="Visibilidad del grupo Global" onchange="updateVis('global',this.value)"><option value="public" data-en="public" data-es="público">public</option><option value="mynet">mynet</option><option value="private" data-en="private" data-es="privado">private</option></select>
         </div>
 
-        <div class="sec">Self-backup</div>
-        <div class="seed-phrase" aria-label="Mock seed phrase">
+        <div class="sec"><span class="en" lang="en">Self-backup</span><span class="es" lang="es">Copia propia</span></div>
+        <div class="seed-phrase" role="group" aria-label="Mock seed phrase">
           <span class="seed-word"><em>1</em> orbit</span>
           <span class="seed-word"><em>2</em> mesh</span>
           <span class="seed-word"><em>3</em> facet</span>
@@ -2429,28 +2454,28 @@ body{
           <span class="seed-word"><em>12</em> node</span>
         </div>
         <label style="display:flex;align-items:center;gap:.6rem;font-size:.68rem;margin-top:.6rem;cursor:pointer">
-          <input type="checkbox" id="backup-check" onchange="render()"> Backup confirmed
+          <input type="checkbox" id="backup-check" onchange="render()"> <span class="en" lang="en">Backup confirmed</span><span class="es" lang="es">Copia confirmada</span>
         </label>
 
-        <div class="sec">Social quorum</div>
-        <div class="note">Needs 2 of 3 MyNet peers to co-sign key rotation.</div>
+        <div class="sec"><span class="en" lang="en">Social quorum</span><span class="es" lang="es">Quórum social</span></div>
+        <div class="note"><span class="en" lang="en">Needs 2 of 3 MyNet peers to co-sign key rotation.</span><span class="es" lang="es">Requiere que 2 de 3 pares de MyNet cofirmen la rotación de claves.</span></div>
         <div class="peer-list" style="margin-top:.5rem">
-          <div class="peer-row"><span class="pbadge LIVE">LIVE</span><span class="peer-handle">alice</span><span class="peer-circle" style="color:var(--signal)">signed ✓</span></div>
-          <div class="peer-row"><span class="pbadge RECENT">RECENT</span><span class="peer-handle">bob</span><span class="peer-circle" style="color:var(--signal)">signed ✓</span></div>
-          <div class="peer-row"><span class="pbadge REACHABLE">REACHABLE</span><span class="peer-handle">carol</span><span class="peer-circle">pending</span></div>
+          <div class="peer-row"><span class="pbadge LIVE">LIVE</span><span class="peer-handle">alice</span><span class="peer-circle" style="color:var(--signal)"><span class="en" lang="en">signed ✓</span><span class="es" lang="es">firmado ✓</span></span></div>
+          <div class="peer-row"><span class="pbadge RECENT">RECENT</span><span class="peer-handle">bob</span><span class="peer-circle" style="color:var(--signal)"><span class="en" lang="en">signed ✓</span><span class="es" lang="es">firmado ✓</span></span></div>
+          <div class="peer-row"><span class="pbadge REACHABLE">REACHABLE</span><span class="peer-handle">carol</span><span class="peer-circle"><span class="en" lang="en">pending</span><span class="es" lang="es">pendiente</span></span></div>
         </div>
 
-        <div class="sec">Key rotation</div>
+        <div class="sec"><span class="en" lang="en">Key rotation</span><span class="es" lang="es">Rotación de claves</span></div>
         <div style="display:flex;align-items:center;gap:.7rem;flex-wrap:wrap">
-          <button class="btn danger" onclick="rotateKey()">Rotate key</button>
+          <button type="button" class="btn danger" onclick="rotateKey()"><span class="en" lang="en">Rotate key</span><span class="es" lang="es">Rotar clave</span></button>
           <div id="prob-badge-wrap"></div>
         </div>
         <div id="prob-timer" style="font-size:.62rem;color:var(--muted);margin-top:.4rem"></div>
 
-        <div class="sec">Loss vs. compromise</div>
+        <div class="sec"><span class="en" lang="en">Loss vs. compromise</span><span class="es" lang="es">Pérdida vs. compromiso</span></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.2rem">
-          <div class="note"><strong style="color:var(--warn)">Compromise</strong> — key stolen. Revoke immediately. 30-day probation.</div>
-          <div class="note"><strong style="color:var(--accent-soft)">Loss</strong> — seed lost. Quorum restores. No probation.</div>
+          <div class="note"><span class="en" lang="en"><strong style="color:var(--warn)">Compromise</strong> — key stolen. Revoke immediately. 30-day probation.</span><span class="es" lang="es"><strong style="color:var(--warn)">Compromiso</strong> — clave robada. Revoca de inmediato. 30 días de prueba.</span></div>
+          <div class="note"><span class="en" lang="en"><strong style="color:var(--accent-soft)">Loss</strong> — seed lost. Quorum restores. No probation.</span><span class="es" lang="es"><strong style="color:var(--accent-soft)">Pérdida</strong> — semilla perdida. El quórum la restaura. Sin periodo de prueba.</span></div>
         </div>
       </div>
     </div>
@@ -2459,15 +2484,19 @@ body{
 
   <footer class="foot">
     <span class="dot"></span>
-    <span>miniappy · prototype</span>
-    <span>nety/appy spec · 2026</span>
-    <span style="margin-left:auto">not a real app</span>
+    <span>miniappy · <span class="en" lang="en">prototype</span><span class="es" lang="es">prototipo</span></span>
+    <span><span class="en" lang="en">nety/appy spec · 2026</span><span class="es" lang="es">especificación nety/appy · 2026</span></span>
+    <span style="margin-left:auto"><span class="en" lang="en">not a real app</span><span class="es" lang="es">no es una app real</span></span>
   </footer>
 
 </div><!-- wrap -->
 
 <script>
 'use strict';
+
+// translate2 — bilingual innerHTML helper: emits per-language spans so CSS toggles them.
+// Use inside any JS-built markup that contains user-facing text.
+function bx(en, es){ return '<span class="en" lang="en">' + en + '</span><span class="es" lang="es">' + es + '</span>'; }
 
 // ============================================================
 // STATE
@@ -2564,7 +2593,7 @@ const state = {
   inviteRenewOpen: false,
 };
 
-let activeTab = 'access';
+let activeTab = 'profile';
 let queueCounter = 1;
 
 // ============================================================
@@ -2579,6 +2608,7 @@ function switchTab(name) {
     p.classList.toggle('active', p.id === 'panel-' + name);
   });
   activeTab = name;
+  if (name === 'profile' && window.floveIngest) window.floveIngest();   // pick up newly published apps
 }
 
 // "Play Apps" chip (Add content card) → jump to the profile's Play Apps section
@@ -2689,9 +2719,9 @@ function toggleMoreFlove() {
   if (b) b.setAttribute('aria-expanded', open ? 'true' : 'false');
 }
 const FLOVE_SCOPE = {
-  jobs:      { title: 'Easy jobs',  ph: 'a task you can pick up…' },
-  talent:    { title: 'Your talent', ph: 'a skill you offer…' },
-  donations: { title: 'Donations',  ph: 'amount in ⭐ to pledge…' },
+  jobs:      { title: ['Easy jobs', 'Tareas fáciles'],   ph: ['a task you can pick up…', 'una tarea que puedas asumir…'] },
+  talent:    { title: ['Your talent', 'Tu talento'],     ph: ['a skill you offer…', 'una habilidad que ofreces…'] },
+  donations: { title: ['Donations', 'Donaciones'],       ph: ['amount in ⭐ to pledge…', 'cantidad en ⭐ a comprometer…'] },
 };
 function toggleFloveScope(s) { state.floveScope = (state.floveScope === s) ? null : s; renderFloveScope(); }
 function addFloveItem(s) {
@@ -2715,17 +2745,18 @@ function renderFloveScope() {
   if (!s) { wrap.classList.remove('open'); wrap.innerHTML = ''; return; }
   const meta = FLOVE_SCOPE[s];
   const items = state.floveItems[s] || [];
-  const chips = items.map((it, i) => `<span class="flove-chip">${it}<button onclick="delFloveItem('${s}',${i})" aria-label="remove">✕</button></span>`).join('')
-    || '<span style="font-size:.58rem;color:var(--muted)">nothing yet — add one below.</span>';
+  const chips = items.map((it, i) => `<span class="flove-chip">${it}<button type="button" onclick="delFloveItem('${s}',${i})" aria-label="remove" data-aria-en="remove" data-aria-es="quitar">✕</button></span>`).join('')
+    || `<span style="font-size:.58rem;color:var(--muted)">${bx('nothing yet — add one below.', 'nada todavía — añade una abajo.')}</span>`;
   wrap.classList.add('open');
   wrap.innerHTML = `<div class="flove-scope-inner">
-    <div class="flove-scope-title">${meta.title}</div>
+    <div class="flove-scope-title">${bx(meta.title[0], meta.title[1])}</div>
     <div class="flove-chips">${chips}</div>
     <div class="flove-add">
-      <input type="text" id="flove-input" placeholder="${meta.ph}" aria-label="Add to ${meta.title}" onkeydown="if(event.key==='Enter')addFloveItem('${s}')">
-      <button class="btn signal" style="flex-none" onclick="addFloveItem('${s}')">Add</button>
+      <input type="text" id="flove-input" placeholder="${meta.ph[0]}" data-ph-en="${meta.ph[0]}" data-ph-es="${meta.ph[1]}" aria-label="Add to ${meta.title[0]}" data-aria-en="Add to ${meta.title[0]}" data-aria-es="Añadir a ${meta.title[1]}" onkeydown="if(event.key==='Enter')addFloveItem('${s}')">
+      <button type="button" class="btn signal" style="flex-none" onclick="addFloveItem('${s}')">${bx('Add', 'Añadir')}</button>
     </div>
   </div>`;
+  if (window.applyLang) applyLang();
 }
 
 // Demonstrative live network stats — small jitter for a "live" feel
@@ -2758,16 +2789,16 @@ function generateInvite() {
   const warn = document.getElementById('invite-action-msg');
   if (warn) {
     warn.style.color = 'var(--warn)';
-    warn.innerHTML = '<a href="#" onclick="switchTab(\'extensions\');return false" style="color:var(--accent);font-weight:700;text-decoration:none;border-bottom:1px dotted var(--accent)">Upgrade to Basic</a> to make it work.';
+    warn.innerHTML = '<a href="#" onclick="switchTab(\'extensions\');return false" style="color:var(--accent);font-weight:700;text-decoration:none;border-bottom:1px dotted var(--accent)">' + bx('Upgrade to Basic', 'Sube a Basic') + '</a> ' + bx('to make it work.', 'para que funcione.');
   }
 }
 
 function revokeInvite() {
-  document.getElementById('invite-action-msg').textContent = 'Invite revoked (mock).';
+  document.getElementById('invite-action-msg').innerHTML = bx('Invite revoked (mock).', 'Invitación revocada (simulado).');
 }
 function disownInvite() {
   state.facets.local = Math.max(0, state.facets.local - 10);
-  document.getElementById('invite-action-msg').textContent = '⚠ Disowned. −10 local score.';
+  document.getElementById('invite-action-msg').innerHTML = bx('⚠ Disowned. −10 local score.', '⚠ Repudiado. −10 de puntuación local.');
   render();
 }
 
@@ -2802,11 +2833,11 @@ function setResourcePreset(name) {
 }
 // 5-bar identity scale — Self always reached; each step grants points + a badge
 const IDENTITY_STEPS = [
-  { key: 'self',       label: 'Self',     badge: '🪪', pts: 5,  h: 24, color: '#02a85f' },
-  { key: 'email',      label: 'Email',    badge: '✉',  pts: 4,  h: 32, color: '#0bb5c9' },
-  { key: 'telegram',   label: 'Telegram', badge: '✈',  pts: 12, h: 40, color: '#3a86ff' },
-  { key: 'phone',      label: 'Phone',    badge: '📱', pts: 6,  h: 48, color: '#6c5ce7' },
-  { key: 'biometrics', label: 'Bio',      badge: '👁', pts: 8,  h: 56, color: '#c44ad0' },
+  { key: 'self',       label: 'Self',     labelEs: 'Yo',       badge: '🪪', pts: 5,  h: 24, color: '#02a85f' },
+  { key: 'email',      label: 'Email',    labelEs: 'Correo',   badge: '✉',  pts: 4,  h: 32, color: '#0bb5c9' },
+  { key: 'telegram',   label: 'Telegram', labelEs: 'Telegram', badge: '✈',  pts: 12, h: 40, color: '#3a86ff' },
+  { key: 'phone',      label: 'Phone',    labelEs: 'Teléfono', badge: '📱', pts: 6,  h: 48, color: '#6c5ce7' },
+  { key: 'biometrics', label: 'Bio',      labelEs: 'Bio',      badge: '👁', pts: 8,  h: 56, color: '#c44ad0' },
 ];
 // The user's actual status = highest reached step in order
 function identityActualStatus() {
@@ -2829,12 +2860,13 @@ function renderIdentityScale() {
     if (isActual) cls += ' actual';
     if (isOpen) cls += ' open';
     const op = (reached || isOpen) ? 1 : 0.4;   // incremental colour kept when checked
-    return `<div class="${cls}" onclick="selectIdentityStep('${s.key}')" role="button" tabindex="0" aria-expanded="${isOpen}" aria-label="${s.label}${isActual ? ' — your status' : ''}">
+    return `<div class="${cls}" onclick="selectIdentityStep('${s.key}')" role="button" tabindex="0" aria-expanded="${isOpen}" aria-label="${s.label}${isActual ? ' — your status' : ''}" data-aria-en="${s.label}${isActual ? ' — your status' : ''}" data-aria-es="${s.labelEs}${isActual ? ' — tu estado' : ''}">
       <div class="id5-bar-col" style="height:${s.h}px;background:${s.color};opacity:${op}"><span class="id5-bar-badge">${s.badge}</span></div>
       <span class="id5-bar-pts" style="color:${s.color}">+${s.pts}</span>
-      <span class="id5-bar-label">${s.label}</span>
+      <span class="id5-bar-label">${bx(s.label, s.labelEs)}</span>
     </div>`;
   }).join('');
+  if (window.applyLang) applyLang();
 }
 // Open a step's form below (collapsing the previous)
 function selectIdentityStep(key) {
@@ -2855,12 +2887,12 @@ function renderIdentityForm() {
   const icon = `<div class="id-form-icon" style="color:${s.color}" aria-hidden="true">${s.badge}</div>`;
   if (key === 'self') {
     wrap.innerHTML = `${icon}
-      <div class="field"><label>More about me</label>
-        <input type="text" id="ep-about" placeholder="Some words" aria-label="More about me"></div>
+      <div class="field"><label>${bx('More about me', 'Más sobre mí')}</label>
+        <input type="text" id="ep-about" placeholder="Some words" data-ph-en="Some words" data-ph-es="Unas palabras" aria-label="More about me" data-aria-en="More about me" data-aria-es="Más sobre mí"></div>
       <div class="field" style="margin-top:.5rem">
-        <input type="text" id="add-link-input" placeholder="add link" aria-label="Add link"></div>
+        <input type="text" id="add-link-input" placeholder="add link" data-ph-en="add link" data-ph-es="añadir enlace" aria-label="Add link" data-aria-en="Add link" data-aria-es="Añadir enlace"></div>
       <div style="margin-top:.5rem;display:flex;gap:.4rem;align-items:center;flex-wrap:wrap">
-        <select id="ep-social-platform" class="perm-select" aria-label="Social platform">
+        <select id="ep-social-platform" class="perm-select" aria-label="Social platform" data-aria-en="Social platform" data-aria-es="Plataforma social">
           <option value="instagram">Instagram</option>
           <option value="linkedin">LinkedIn</option>
           <option value="x">X / Twitter</option>
@@ -2868,22 +2900,25 @@ function renderIdentityForm() {
           <option value="tiktok">TikTok</option>
           <option value="mastodon">Mastodon</option>
         </select>
-        <input type="text" id="ep-social-handle" placeholder="social handle or link" aria-label="Social link" style="flex:1;min-width:90px;font-family:'Space Mono',monospace;font-size:.64rem;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(28,25,42,.07);border-radius:7px;padding:.38rem .7rem;outline:none">
+        <input type="text" id="ep-social-handle" placeholder="social handle or link" data-ph-en="social handle or link" data-ph-es="alias o enlace social" aria-label="Social link" data-aria-en="Social link" data-aria-es="Enlace social" style="flex:1;min-width:90px;font-family:'Space Mono',monospace;font-size:.64rem;color:var(--ink);background:rgba(255,255,255,.85);border:1px solid rgba(28,25,42,.07);border-radius:7px;padding:.38rem .7rem;outline:none">
       </div>
-      <button class="id-action" style="background:${s.color}" onclick="saveAbout()">Save</button>`;
+      <button type="button" class="id-action" style="background:${s.color}" onclick="saveAbout()">${bx('Save', 'Guardar')}</button>`;
     const a = document.getElementById('ep-about'); if (a && prevAbout !== undefined) a.value = prevAbout;
     const l = document.getElementById('add-link-input'); if (l && prevLink !== undefined) l.value = prevLink;
     const sh = document.getElementById('ep-social-handle'); if (sh && prevSocial !== undefined) sh.value = prevSocial;
+    if (window.applyLang) applyLang();
     return;
   }
   if (state.linkedIdentities.includes(key)) {
-    wrap.innerHTML = `${icon}<div class="note">${s.label} linked ✓ — +${s.pts} to your Personal facet.</div>`;
+    wrap.innerHTML = `${icon}<div class="note">${bx(s.label + ' linked ✓ — +' + s.pts + ' to your Personal facet.', s.labelEs + ' vinculado ✓ — +' + s.pts + ' a tu faceta Personal.')}</div>`;
+    if (window.applyLang) applyLang();
     return;
   }
   const ph = key === 'telegram' ? '@handle' : key === 'phone' ? '+34 600 …' : key === 'email' ? 'you@mail.org' : '';
   const inputHtml = key === 'biometrics' ? '' :
-    `<div class="field"><input type="text" placeholder="${ph}" aria-label="${s.label}"></div>`;
-  wrap.innerHTML = `${icon}${inputHtml}<button class="id-action" style="background:${s.color}" onclick="linkIdentity('${key}');renderIdentityForm()">${key === 'biometrics' ? 'Scan biometrics' : 'Link ' + s.label}</button>`;
+    `<div class="field"><input type="text" placeholder="${ph}" aria-label="${s.label}" data-aria-en="${s.label}" data-aria-es="${s.labelEs}"></div>`;
+  wrap.innerHTML = `${icon}${inputHtml}<button type="button" class="id-action" style="background:${s.color}" onclick="linkIdentity('${key}');renderIdentityForm()">${key === 'biometrics' ? bx('Scan biometrics', 'Escanear biometría') : bx('Link ' + s.label, 'Vincular ' + s.labelEs)}</button>`;
+  if (window.applyLang) applyLang();
 }
 
 // Save — pushes typed entries (about / link / social) shown in the marcflove card
@@ -2913,12 +2948,18 @@ function deleteAbout(i) {
 function renderProfilePosts() {
   const wrap = document.getElementById('profile-posts');
   if (!wrap) return;
-  const label = { pending: 'pending review', live: 'live ✓', rejected: 'rejected', reviewing: 'in review' };
+  const label = {
+    pending:   bx('pending review', 'pendiente de revisión'),
+    live:      bx('live ✓', 'en vivo ✓'),
+    rejected:  bx('rejected', 'rechazado'),
+    reviewing: bx('in review', 'en revisión'),
+  };
   wrap.innerHTML = state.queue.map(q => `<div class="ppost">
     <span class="qi-type">${q.type}</span>
     <span class="ppost-content">${q.content}</span>
-    <button class="qi-status qi-status-link ${q.status}" onclick="switchTab('activity')" title="See it in Activity">${label[q.status] || q.status}</button>
+    <button type="button" class="qi-status qi-status-link ${q.status}" onclick="switchTab('activity')" aria-label="See it in Activity" data-aria-en="See it in Activity" data-aria-es="Verlo en Actividad">${label[q.status] || q.status}</button>
   </div>`).join('');
+  if (window.applyLang) applyLang();
 }
 // Saved content — last section of the marcflove card, designed per type
 function renderProfileExtras() {
@@ -2926,16 +2967,17 @@ function renderProfileExtras() {
   if (!wrap) return;
   if (state.aboutEntries.length === 0) { wrap.innerHTML = ''; return; }
   const pf = { instagram: 'Instagram', linkedin: 'LinkedIn', x: 'X', github: 'GitHub', tiktok: 'TikTok', mastodon: 'Mastodon' };
-  wrap.innerHTML = `<div class="pc-extras-label">Added</div>` + state.aboutEntries.map((e, i) => {
+  wrap.innerHTML = `<div class="pc-extras-label">${bx('Added', 'Añadido')}</div>` + state.aboutEntries.map((e, i) => {
     let inner;
     if (e.type === 'about')      inner = `<span class="px-about">“${e.text}”</span>`;
     else if (e.type === 'link')  inner = `<a class="px-link" href="#" onclick="return false">🔗 ${e.text}</a>`;
     else                         inner = `<span class="px-social"><span class="px-social-pf">${pf[e.platform] || e.platform}</span>${e.text}</span>`;
     return `<div class="px-item px-${e.type}">
       <div class="px-body">${inner}</div>
-      <button class="about-entry-del" onclick="deleteAbout(${i})" aria-label="Delete">✕</button>
+      <button type="button" class="about-entry-del" onclick="deleteAbout(${i})" aria-label="Delete" data-aria-en="Delete" data-aria-es="Eliminar">✕</button>
     </div>`;
   }).join('');
+  if (window.applyLang) applyLang();
 }
 
 // "Only" preference — when ticked, the word becomes a link to your Scores
@@ -2944,19 +2986,19 @@ function toggleRscOnly() {
   const t  = document.getElementById('rsc-only-text');
   if (!cb || !t) return;
   if (cb.checked) {
-    t.innerHTML = '<a href="#" onclick="switchTab(\'pending\');return false;" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent)">Only</a>';
+    t.innerHTML = '<a href="#" onclick="switchTab(\'activity\');return false;" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent)">' + bx('Only', 'Solo') + '</a>';
   } else {
-    t.textContent = 'Only';
+    t.innerHTML = bx('Only', 'Solo');
   }
 }
 function updateShareButtons() {
   const r = RESOURCE_REWARD[state.resourcePreset] || RESOURCE_REWARD.balanced;
   document.querySelectorAll('.js-share-btn').forEach(b => {
     if (state.shared) {
-      b.textContent = 'Shared ✓';
+      b.innerHTML = bx('Shared ✓', 'Compartido ✓');
       b.disabled = true;
     } else {
-      b.textContent = 'Share';
+      b.innerHTML = bx('Share', 'Compartir');
       b.disabled = false;
     }
   });
@@ -3019,14 +3061,22 @@ function updateVis(circle, val) { /* visibility prefs, no state impact needed */
 // Per-scope trust info — one open at a time
 // Specific suggestions per circle (recovered) — shown from the + button
 const CIRCLE_SUGGEST = {
-  personal: { color: '#02a85f', title: 'Personal — prove you\'re a real, unique human', desc: 'Verified identity links and social profiles raise it. Telegram is the minimum to unlock publishing.',
-    actions: [['Link identity →', 'extensions'], ['Add social profiles →', 'extensions']] },
-  local:    { color: '#0bb5c9', title: 'Local — trust from people close to you', desc: 'Grows when nearby peers vouch for you face-to-face and the people you invite stay active.',
-    actions: [['Meet peers f2f →', 'mynet'], ['Invite well →', 'mynet']] },
-  social:   { color: '#6c5ce7', title: 'Social — reach across the wider network', desc: 'Builds as you receive vouches across groups and publish content others engage with.',
-    actions: [['Grow your net →', 'mynet'], ['Publish content →', 'access']] },
-  global:   { color: '#3a86ff', title: 'Global — contribution to the whole mesh', desc: 'Share hardware (CPU/GPU/RAM) and publish approved content to raise it.',
-    actions: [['Donate Computing →', 'resources'], ['Publish content →', 'access']] },
+  personal: { color: '#02a85f', title: 'Personal — prove you\'re a real, unique human',
+    desc: 'Verified identity links and social profiles raise it. Telegram is the minimum to unlock publishing.',
+    descEs: 'Las identidades verificadas y los perfiles sociales la suben. Telegram es el mínimo para desbloquear la publicación.',
+    actions: [['Link identity →', 'Vincular identidad →', 'extensions'], ['Add social profiles →', 'Añadir perfiles sociales →', 'extensions']] },
+  local:    { color: '#0bb5c9', title: 'Local — trust from people close to you',
+    desc: 'Grows when nearby peers vouch for you face-to-face and the people you invite stay active.',
+    descEs: 'Crece cuando pares cercanos te avalan cara a cara y las personas que invitas siguen activas.',
+    actions: [['Meet peers f2f →', 'Conoce pares f2f →', 'mynet'], ['Invite well →', 'Invita bien →', 'mynet']] },
+  social:   { color: '#6c5ce7', title: 'Social — reach across the wider network',
+    desc: 'Builds as you receive vouches across groups and publish content others engage with.',
+    descEs: 'Se construye al recibir avales en distintos grupos y publicar contenido con el que otros interactúan.',
+    actions: [['Grow your net →', 'Haz crecer tu red →', 'mynet'], ['Publish content →', 'Publicar contenido →', 'profile']] },
+  global:   { color: '#3a86ff', title: 'Global — contribution to the whole mesh',
+    desc: 'Share hardware (CPU/GPU/RAM) and publish approved content to raise it.',
+    descEs: 'Comparte hardware (CPU/GPU/RAM) y publica contenido aprobado para subirla.',
+    actions: [['Donate Computing →', 'Donar cómputo →', 'nety'], ['Publish content →', 'Publicar contenido →', 'profile']] },
 };
 function openCirclePlus(f)  { const same = state.openCircle === f && state.circleMode === 'suggest'; state.openCircle = same ? null : f; state.circleMode = 'suggest'; renderCircleDetail(); }
 function openCircleTitle(f) { const same = state.openCircle === f && state.circleMode === 'upgrade'; state.openCircle = same ? null : f; state.circleMode = 'upgrade'; renderCircleDetail(); }
@@ -3136,19 +3186,20 @@ function renderEcardState() {
 
 function askForTrust() {
   const m = document.getElementById('ec-trust-msg');
-  if (m) { m.style.color = 'var(--signal)'; m.textContent = '✓ Vouch request sent to your groups. (mock)'; }
+  if (m) { m.style.color = 'var(--signal)'; m.innerHTML = bx('✓ Vouch request sent to your groups. (mock)', '✓ Solicitud de aval enviada a tus grupos. (simulado)'); }
 }
 
-// "see more" — full-width feature panel below the Extensions card grid
+// "see more" — full-width feature panel below the Extensions card grid.
+// title: [en, es] · feats: [[en, es], …]
 const CARD_MORE = {
-  donate: { title: 'Donate Computing', feats: ['Bandwidth &amp; power caps', 'Schedule donation windows', 'Pick which projects your compute backs', 'Contribution history &amp; rewards'] },
-  add: { title: 'Add content',      feats: ['Drafts &amp; scheduling', 'Media attachments', 'Cross-post to your groups', 'License &amp; visibility per post'] },
-  invite: { title: 'Add invite code',  feats: ['See who invited you', 'View your lineage tree', 'Transfer standing to invitees', 'Bulk codes (basic+)'] },
-  trust: { title: 'Ask for trusts',   feats: ['Request vouches from chosen groups', 'Track pending vouch requests', 'Reciprocal vouching', 'Curator escalation'] },
+  donate: { title: ['Donate Computing', 'Donar cómputo'], feats: [['Bandwidth &amp; power caps', 'Límites de ancho de banda y energía'], ['Schedule donation windows', 'Programar franjas de donación'], ['Pick which projects your compute backs', 'Elegir qué proyectos respalda tu cómputo'], ['Contribution history &amp; rewards', 'Historial de contribución y recompensas']] },
+  add: { title: ['Add content', 'Añadir contenido'], feats: [['Drafts &amp; scheduling', 'Borradores y programación'], ['Media attachments', 'Archivos adjuntos'], ['Cross-post to your groups', 'Publicar a la vez en tus grupos'], ['License &amp; visibility per post', 'Licencia y visibilidad por post']] },
+  invite: { title: ['Add invite code', 'Añadir código de invitación'], feats: [['See who invited you', 'Ver quién te invitó'], ['View your lineage tree', 'Ver tu árbol de linaje'], ['Transfer standing to invitees', 'Transferir prestigio a tus invitados'], ['Bulk codes (basic+)', 'Códigos por lotes (basic+)']] },
+  trust: { title: ['Ask for trusts', 'Pedir confianzas'], feats: [['Request vouches from chosen groups', 'Pedir avales a grupos elegidos'], ['Track pending vouch requests', 'Seguir solicitudes de aval pendientes'], ['Reciprocal vouching', 'Aval recíproco'], ['Curator escalation', 'Escalado a curador']] },
 };
 function toggleCardMore(id) { state.cardMoreOpen = (state.cardMoreOpen === id) ? null : id; renderCardMore(); }
 function renderCardMore() {
-  ['donate', 'invite', 'trust'].forEach(k => { const c = document.getElementById('see-more-' + k); if (c) c.textContent = (state.cardMoreOpen === k) ? 'see less' : 'see more'; });
+  ['donate', 'invite', 'trust'].forEach(k => { const c = document.getElementById('see-more-' + k); if (c) c.innerHTML = (state.cardMoreOpen === k) ? bx('see less', 'ver menos') : bx('see more', 'ver más'); });
   const ext = document.getElementById('card-more');          // external panel (add/invite/trust)
   const inc = document.getElementById('card-more-donate');   // in-card panel (Donate Computing)
   const id = state.cardMoreOpen;
@@ -3156,13 +3207,14 @@ function renderCardMore() {
   const close = el => { if (el) { el.classList.remove('open'); el.innerHTML = ''; } };
   if (!d) { close(ext); close(inc); return; }
   const html = `<div class="card-more-inner">
-    <div class="card-more-head"><span class="card-more-title">${d.title} — more features</span><button class="card-more-collapse" onclick="toggleCardMore('${id}')">Collapse ✕</button></div>
-    <ul class="card-more-feats">${d.feats.map(f => `<li>${f}</li>`).join('')}</ul>
+    <div class="card-more-head"><span class="card-more-title">${bx(d.title[0] + ' — more features', d.title[1] + ' — más funciones')}</span><button type="button" class="card-more-collapse" onclick="toggleCardMore('${id}')">${bx('Collapse ✕', 'Plegar ✕')}</button></div>
+    <ul class="card-more-feats">${d.feats.map(f => `<li>${bx(f[0], f[1])}</li>`).join('')}</ul>
   </div>`;
   const target = (id === 'donate') ? inc : ext;
   const other  = (id === 'donate') ? ext : inc;
   close(other);
   if (target) { target.classList.add('open'); target.innerHTML = html; }
+  if (window.applyLang) applyLang();
 }
 
 function extValidateInvite() {
@@ -3172,14 +3224,14 @@ function extValidateInvite() {
   const code = inp.value.trim();
   if (code === 'FLOVE2024') {
     msg.style.color = 'var(--signal)';
-    msg.textContent = '✓ Valid! Trust extended — ceiling raised to basic.';
+    msg.innerHTML = bx('✓ Valid! Trust extended — ceiling raised to basic.', '✓ ¡Válido! Confianza ampliada — tope subido a basic.');
     render();
   } else if (code === '') {
     msg.style.color = 'var(--warn)';
-    msg.textContent = '⚠ Enter a code to validate.';
+    msg.innerHTML = bx('⚠ Enter a code to validate.', '⚠ Introduce un código para validar.');
   } else {
     msg.style.color = 'var(--danger)';
-    msg.textContent = '✗ Invalid code. Try FLOVE2024 — or See more for invites.';
+    msg.innerHTML = bx('✗ Invalid code. Try FLOVE2024 — or See more for invites.', '✗ Código no válido. Prueba FLOVE2024 — o pulsa Ver más para invitaciones.');
   }
 }
 
@@ -3190,14 +3242,14 @@ function ecardValidateInvite() {
   const code = inp.value.trim();
   if (code === 'FLOVE2024') {
     msg.style.color = 'var(--signal)';
-    msg.textContent = '✓ Valid! Tier ceiling upgraded to basic. You can proceed.';
+    msg.innerHTML = bx('✓ Valid! Tier ceiling upgraded to basic. You can proceed.', '✓ ¡Válido! Tope de nivel subido a basic. Puedes continuar.');
     render();
   } else if (code === '') {
     msg.style.color = 'var(--warn)';
-    msg.textContent = '⚠ Enter a code to validate.';
+    msg.innerHTML = bx('⚠ Enter a code to validate.', '⚠ Introduce un código para validar.');
   } else {
     msg.style.color = 'var(--danger)';
-    msg.textContent = '✗ Invalid code. Try FLOVE2024.';
+    msg.innerHTML = bx('✗ Invalid code. Try FLOVE2024.', '✗ Código no válido. Prueba FLOVE2024.');
   }
 }
 
@@ -3210,7 +3262,7 @@ function ecGoPublish() {
   if (!inp) return;
   const val = inp.value.trim();
   if (!val) {
-    if (msg) { msg.style.color = 'var(--warn)'; msg.textContent = '⚠ Write something first.'; }
+    if (msg) { msg.style.color = 'var(--warn)'; msg.innerHTML = bx('⚠ Write something first.', '⚠ Escribe algo primero.'); }
     return;
   }
   const cat = document.getElementById('ec-add-category');
@@ -3219,7 +3271,7 @@ function ecGoPublish() {
   inp.value = '';
   inp.focus();
   if (msg) {
-    msg.innerHTML = 'Added to queue · <button onclick="switchTab(\'pending\')" style="background:none;border:none;cursor:pointer;font-family:inherit;font-size:inherit;color:var(--accent);font-weight:700;text-decoration:underline;text-underline-offset:2px;padding:0">' + state.sessionQueueCount + '</button>';
+    msg.innerHTML = bx('Added to queue · ', 'Añadido a la cola · ') + '<button type="button" onclick="switchTab(\'activity\')" style="background:none;border:none;cursor:pointer;font-family:inherit;font-size:inherit;color:var(--accent);font-weight:700;text-decoration:underline;text-underline-offset:2px;padding:0">' + state.sessionQueueCount + '</button>';
     msg.style.color = 'var(--muted)';
   }
   render();
@@ -3251,7 +3303,7 @@ function renderSocialProfiles() {
     `<div style="display:flex;align-items:center;gap:.5rem;padding:.32rem .6rem;border-radius:7px;border:1px solid rgba(141,137,255,.18);background:rgba(141,137,255,.05);font-size:.63rem">
       <span style="color:var(--accent-soft);min-width:60px">${platformLabels[p.platform] || p.platform}</span>
       <span style="color:var(--ink);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.handle}</span>
-      <button onclick="ecRemoveSocialProfile(${i})" aria-label="Remove ${p.handle}" style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:.72rem;padding:.1rem .25rem;border-radius:4px;opacity:.7;transition:opacity .15s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.7'">✕</button>
+      <button type="button" onclick="ecRemoveSocialProfile(${i})" aria-label="Remove ${p.handle}" style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:.72rem;padding:.1rem .25rem;border-radius:4px;opacity:.7;transition:opacity .15s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.7'">✕</button>
     </div>`
   ).join('');
 }
@@ -3283,10 +3335,10 @@ function buildEngagement(id) {
   const reportedClass = e.reported ? ' reported' : '';
   const commentHtml = e.commentsOpen ? buildCommentThread(id) : '';
   return `<div class="engagement-bar">
-    <button class="eng-btn${likedClass}" onclick="pubLike(${id})" aria-label="Like"${e.reported ? ' disabled' : ''}>♥ ${e.likeCount}</button>
-    <button class="eng-btn${repostedClass}" onclick="pubRepost(${id})" aria-label="Repost"${(e.reposted || e.reported) ? ' disabled' : ''}>↻ ${e.repostCount}</button>
-    <button class="eng-btn" onclick="pubToggleComments(${id})" aria-label="Comments">💬 ${e.comments.length}</button>
-    <button class="eng-btn${reportedClass}" onclick="pubReport(${id})" aria-label="Flag"${e.reported ? ' disabled style="cursor:not-allowed"' : ''}>⚑ ${e.reported ? 'flagged' : 'flag'}</button>
+    <button type="button" class="eng-btn${likedClass}" onclick="pubLike(${id})" aria-label="Like" data-aria-en="Like" data-aria-es="Me gusta"${e.reported ? ' disabled' : ''}>♥ ${e.likeCount}</button>
+    <button type="button" class="eng-btn${repostedClass}" onclick="pubRepost(${id})" aria-label="Repost" data-aria-en="Repost" data-aria-es="Repostear"${(e.reposted || e.reported) ? ' disabled' : ''}>↻ ${e.repostCount}</button>
+    <button type="button" class="eng-btn" onclick="pubToggleComments(${id})" aria-label="Comments" data-aria-en="Comments" data-aria-es="Comentarios">💬 ${e.comments.length}</button>
+    <button type="button" class="eng-btn${reportedClass}" onclick="pubReport(${id})" aria-label="Flag" data-aria-en="Flag" data-aria-es="Reportar"${e.reported ? ' disabled style="cursor:not-allowed"' : ''}>⚑ ${e.reported ? bx('flagged', 'reportado') : bx('flag', 'reportar')}</button>
   </div>${commentHtml}`;
 }
 
@@ -3295,7 +3347,7 @@ function buildCommentThread(id) {
   const items = e.comments.map(c =>
     `<div class="comment-item"><span class="comment-author">${c.author}</span><span class="comment-text">${c.text}</span></div>`
   ).join('');
-  return `<div class="comment-thread">${items}<div class="comment-add"><input type="text" placeholder="Reply…" aria-label="Add comment" onkeydown="if(event.key==='Enter')pubAddComment(${id},this)"><button class="btn ghost" style="font-size:.62rem;padding:.3rem .6rem" onclick="pubAddComment(${id},this.previousElementSibling)">Send</button></div></div>`;
+  return `<div class="comment-thread">${items}<div class="comment-add"><input type="text" placeholder="Reply…" data-ph-en="Reply…" data-ph-es="Responder…" aria-label="Add comment" data-aria-en="Add comment" data-aria-es="Añadir comentario" onkeydown="if(event.key==='Enter')pubAddComment(${id},this)"><button type="button" class="btn ghost" style="font-size:.62rem;padding:.3rem .6rem" onclick="pubAddComment(${id},this.previousElementSibling)">${bx('Send', 'Enviar')}</button></div></div>`;
 }
 
 function pubLike(id) {
@@ -3385,27 +3437,37 @@ function unfollow(n)  { state.follows = state.follows.filter(x => x !== n); stat
 function unsupport(n) { state.supports = state.supports.filter(x => x !== n); renderMyNet(); }
 
 // Demo extended intro + last content for a user / group (deterministic)
-const DEMO_POSTS = ['shared a relay node in eu-west', 'published “mesh tips #3”', 'vouched for two newcomers', 'donated 6 CU this week', 'started a new circle', 'posted a track 🎵', 'tagged 20 posts', 'opened a help thread'];
+// each demo post = [en, es]
+const DEMO_POSTS = [
+  ['shared a relay node in eu-west', 'compartió un nodo repetidor en eu-west'],
+  ['published “mesh tips #3”', 'publicó «consejos de malla #3»'],
+  ['vouched for two newcomers', 'avaló a dos recién llegados'],
+  ['donated 6 CU this week', 'donó 6 CU esta semana'],
+  ['started a new circle', 'inició un nuevo círculo'],
+  ['posted a track 🎵', 'publicó una pista 🎵'],
+  ['tagged 20 posts', 'etiquetó 20 posts'],
+  ['opened a help thread', 'abrió un hilo de ayuda'],
+];
 function entityMeta(name, isGroup) {
   const i = name.charCodeAt(0) % DEMO_POSTS.length;
   return {
     intro: isGroup
-      ? `${name} — a community circle on the nety mesh. Members share content, vouches and resources here.`
-      : `${name} runs a node on the nety mesh and contributes across groups.`,
-    last: DEMO_POSTS[i],
+      ? bx(`${name} — a community circle on the nety mesh. Members share content, vouches and resources here.`, `${name} — un círculo comunitario en la malla nety. Sus miembros comparten contenido, avales y recursos aquí.`)
+      : bx(`${name} runs a node on the nety mesh and contributes across groups.`, `${name} mantiene un nodo en la malla nety y contribuye en varios grupos.`),
+    last: bx(DEMO_POSTS[i][0], DEMO_POSTS[i][1]),
   };
 }
 function metaRows(name, isGroup) {
   const m = entityMeta(name, isGroup);
   return `<div class="net-info-row net-intro">${m.intro}</div>
-    <div class="net-info-row net-last"><span class="net-last-label">last</span> ${m.last}</div>`;
+    <div class="net-info-row net-last"><span class="net-last-label">${bx('last', 'último')}</span> ${m.last}</div>`;
 }
 // Unfollow / Unsupport removes the group from the list it was in
 
 function netActions(followed, supported, followCb, supportCb) {
   return `<div class="net-actions">
-    <button class="net-btn${followed ? ' active' : ''}" onclick="${followCb}">${followed ? 'Following' : 'Follow'}</button>
-    <button class="net-btn${supported ? ' active' : ''}" onclick="${supportCb}">${supported ? 'Supported' : 'Support'}</button>
+    <button type="button" class="net-btn${followed ? ' active' : ''}" onclick="${followCb}">${followed ? bx('Following', 'Siguiendo') : bx('Follow', 'Seguir')}</button>
+    <button type="button" class="net-btn${supported ? ' active' : ''}" onclick="${supportCb}">${supported ? bx('Supported', 'Apoyado') : bx('Support', 'Apoyar')}</button>
   </div>`;
 }
 function netItem(id, icon, name, infoRows, toggleCb) {
@@ -3438,12 +3500,12 @@ function renderMyNet() {
         <div class="net-head" onclick="togglePeer('fav:${p.handle}')" role="button" tabindex="0">
           <span class="net-ic">${icon}</span>
           <span class="net-name">${p.handle}</span>
-          <button class="net-del" onclick="event.stopPropagation();removeFavourite('${p.handle}')" aria-label="Remove ${p.handle}">✕</button>
+          <button type="button" class="net-del" onclick="event.stopPropagation();removeFavourite('${p.handle}')" aria-label="Remove ${p.handle}" data-aria-en="Remove ${p.handle}" data-aria-es="Quitar ${p.handle}">✕</button>
         </div>
         <div class="net-info"><div class="net-info-inner">${info}</div></div>
       </div>`;
     }).join('');
-    if (favPeople.length > shown) pl.innerHTML += `<button class="net-addmore" onclick="showMorePeopleCol()">show 3 more</button>`;
+    if (favPeople.length > shown) pl.innerHTML += `<button type="button" class="net-addmore" onclick="showMorePeopleCol()">${bx('show 3 more', 'mostrar 3 más')}</button>`;
   }
 
   // Groups — Follows / Supports lists first, then the actual groups
@@ -3452,24 +3514,26 @@ function renderMyNet() {
     const accentIc = key => `<span style="color:var(--accent)">${groupSvg(key)}</span>`;
     const followInfo = state.follows.length
       ? state.follows.map(n => `<div class="follow-row">
-          <button class="fav-star${state.favourites.includes(n) ? ' on' : ''}" onclick="toggleFavourite('${n}')" title="favourite">★</button>
+          <button type="button" class="fav-star${state.favourites.includes(n) ? ' on' : ''}" onclick="toggleFavourite('${n}')" aria-label="favourite" data-aria-en="favourite" data-aria-es="favorito">★</button>
           <span class="follow-name">${n}</span>
-          <button class="net-del" onclick="unfollow('${n}')" title="unfollow">✕</button>
+          <button type="button" class="net-del" onclick="unfollow('${n}')" aria-label="unfollow" data-aria-en="unfollow" data-aria-es="dejar de seguir">✕</button>
         </div>`).join('')
-      : '<div class="net-info-row" style="color:var(--muted)">none yet</div>';
+      : `<div class="net-info-row" style="color:var(--muted)">${bx('none yet', 'aún ninguno')}</div>`;
     const supportInfo = state.supports.length
-      ? state.supports.map(n => `<div class="follow-row"><span class="follow-name">${n}</span><button class="net-del" onclick="unsupport('${n}')" title="unsupport">✕</button></div>`).join('')
-      : '<div class="net-info-row" style="color:var(--muted)">none yet</div>';
+      ? state.supports.map(n => `<div class="follow-row"><span class="follow-name">${n}</span><button type="button" class="net-del" onclick="unsupport('${n}')" aria-label="unsupport" data-aria-en="unsupport" data-aria-es="dejar de apoyar">✕</button></div>`).join('')
+      : `<div class="net-info-row" style="color:var(--muted)">${bx('none yet', 'aún ninguno')}</div>`;
     const special =
-      netItem('Follows', accentIc('follows'), 'Follows', followInfo, `toggleGroup('Follows')`) +
-      netItem('Supports', accentIc('supports'), 'Supports', supportInfo, `toggleGroup('Supports')`);
+      netItem('Follows', accentIc('follows'), bx('Follows', 'Seguidos'), followInfo, `toggleGroup('Follows')`) +
+      netItem('Supports', accentIc('supports'), bx('Supports', 'Apoyos'), supportInfo, `toggleGroup('Supports')`);
     const existing = state.joinedGroups.concat(Object.keys(state.tags)).map(name => {
       const members = (state.groups[name] || state.tags[name] || []).length;
-      const info = `<div class="net-info-row"><strong>${members}</strong> member${members !== 1 ? 's' : ''}${state.joinedGroups.includes(name) ? ' · joined' : ''}</div>${metaRows(name, true)}`;
+      const memberTxt = bx(members + ' member' + (members !== 1 ? 's' : ''), members + ' miembro' + (members !== 1 ? 's' : ''));
+      const info = `<div class="net-info-row">${memberTxt}${state.joinedGroups.includes(name) ? bx(' · joined', ' · unido') : ''}</div>${metaRows(name, true)}`;
       return netItem(name, accentIc(name), name, info, `toggleGroup('${name}')`);
     }).join('');
     cl.innerHTML = special + existing;
   }
+  if (window.applyLang) applyLang();
 
   renderMoreSocial();
   renderFeed();
@@ -3482,7 +3546,7 @@ function renderFeed() {
   if (!wrap) return;
   const postHtml = p => {
     const played = p.type === 'played';
-    const txt = played ? `Played the <strong>${p.app}</strong> app` : p.text;
+    const txt = played ? bx(`Played the <strong>${p.app}</strong> app`, `Jugó a la app <strong>${p.app}</strong>`) : p.text;
     return `<div class="feed-post${played ? ' feed-played' : ''}"><span class="feed-who">${p.who}</span><span class="feed-text">${txt}</span></div>`;
   };
   const col = (label, kind) => {
@@ -3491,10 +3555,11 @@ function renderFeed() {
     return `<div class="feed-col">
       <div class="feed-col-head">${label} <span class="pbadge LIVE">live</span></div>
       ${shown.map(postHtml).join('')}
-      ${state.feedShown < all.length ? `<button class="net-addmore" onclick="showMoreFeed()">more</button>` : ''}
+      ${state.feedShown < all.length ? `<button type="button" class="net-addmore" onclick="showMoreFeed()">${bx('more', 'más')}</button>` : ''}
     </div>`;
   };
-  wrap.innerHTML = col('People', 'person') + col('Groups', 'group');
+  wrap.innerHTML = col(bx('People', 'Personas'), 'person') + col(bx('Groups', 'Grupos'), 'group');
+  if (window.applyLang) applyLang();
 }
 
 // ============================================================
@@ -3509,13 +3574,14 @@ function renderChat() {
         <span class="chat-inbox-name">${c.user}</span>
         <span class="chat-inbox-last">${last}</span>
       </div>`;
-    }).join('') || '<div style="font-size:.6rem;color:var(--muted);padding:.3rem">No chats yet.</div>';
+    }).join('') || `<div style="font-size:.6rem;color:var(--muted);padding:.3rem">${bx('No chats yet.', 'Aún no hay chats.')}</div>`;
   }
   const active = state.chats.find(c => c.user === state.chatActive);
   const msgs = document.getElementById('chat-messages');
   if (msgs) msgs.innerHTML = (active ? active.messages : []).map(m => `<div class="chat-msg ${m.from}">${m.text}</div>`).join('');
   const wth = document.getElementById('chat-with');
   if (wth) wth.textContent = state.chatActive || '—';
+  if (window.applyLang) applyLang();
 }
 function chatOpen(u) { state.chatActive = u; renderChat(); }
 function chatSend() {
@@ -3535,8 +3601,9 @@ function renderChatSearch(q) {
   if (!q) { res.innerHTML = ''; return; }
   const pool = state.peers.map(p => p.handle).concat(state.morePeople.map(p => p.handle));
   const matches = pool.filter(h => h.toLowerCase().includes(q) && !state.chats.find(c => c.user === h));
-  res.innerHTML = matches.map(h => `<div class="chat-search-item" onclick="chatInvite('${h}')">${h}<span class="chat-invite-tag">invite</span></div>`).join('')
-    || '<div style="font-size:.58rem;color:var(--muted);padding:.3rem">no users found</div>';
+  res.innerHTML = matches.map(h => `<div class="chat-search-item" onclick="chatInvite('${h}')">${h}<span class="chat-invite-tag">${bx('invite', 'invitar')}</span></div>`).join('')
+    || `<div style="font-size:.58rem;color:var(--muted);padding:.3rem">${bx('no users found', 'no se encontraron usuarios')}</div>`;
+  if (window.applyLang) applyLang();
 }
 function chatInvite(h) {
   if (!state.chats.find(c => c.user === h)) state.chats.push({ user: h, messages: [] });
@@ -3548,7 +3615,7 @@ function chatInvite(h) {
 }
 function chatUpgrade() {
   const m = document.getElementById('chat-av-msg');
-  if (m) m.innerHTML = 'Upgrade <a href="#" onclick="switchTab(\'extensions\');return false" style="color:var(--accent);font-weight:700;text-decoration:none;border-bottom:1px dotted var(--accent)">to Normal</a>';
+  if (m) m.innerHTML = bx('Upgrade ', 'Sube ') + '<a href="#" onclick="switchTab(\'extensions\');return false" style="color:var(--accent);font-weight:700;text-decoration:none;border-bottom:1px dotted var(--accent)">' + bx('to Normal', 'a Normal') + '</a>';
 }
 
 // More Social — demo people & groups to follow / support
@@ -3563,17 +3630,23 @@ function addMoreGroups() {
   state.moreGroups = state.moreGroups.concat(state.extraGroups.splice(0, 3));
   renderMoreSocial();
 }
+// presence token → bilingual lowercase label
+const PRESENCE_LABEL = {
+  LIVE:      ['live', 'en vivo'], RECENT: ['recent', 'reciente'],
+  REACHABLE: ['reachable', 'accesible'], DARK: ['dark', 'apagado'],
+};
 function renderMoreSocial() {
   const mp = document.getElementById('more-people-list');
   if (mp) {
     mp.innerHTML = state.morePeople.map(p => {
       const color = PRESENCE_COLOR[p.presence] || PRESENCE_COLOR.DARK;
+      const pl = PRESENCE_LABEL[p.presence] || [p.presence.toLowerCase(), p.presence.toLowerCase()];
       const icon = `<span style="color:${color}">${STAGE_SVG[p.stage] || STAGE_SVG.newbie}</span>`;
-      const info = `<div class="net-info-row"><span style="color:${color}">${p.presence.toLowerCase()}</span></div>
+      const info = `<div class="net-info-row"><span style="color:${color}">${bx(pl[0], pl[1])}</span></div>
         ${metaRows(p.handle, false)}
         ${netActions(state.follows.includes(p.handle), state.supports.includes(p.handle), `followMore('${p.handle}')`, `supportMore('${p.handle}')`)}`;
       return netItem('more:' + p.handle, icon, p.handle, info, `togglePeer('more:${p.handle}')`);
-    }).join('') + (state.extraPeople.length ? `<button class="net-addmore" onclick="addMorePeople()">+ Add more</button>` : '');
+    }).join('') + (state.extraPeople.length ? `<button type="button" class="net-addmore" onclick="addMorePeople()">${bx('+ Add more', '+ Añadir más')}</button>` : '');
   }
   const mg = document.getElementById('more-groups-list');
   if (mg) {
@@ -3582,8 +3655,9 @@ function renderMoreSocial() {
       const info = `${metaRows(name, true)}
         ${netActions(state.follows.includes(name), state.supports.includes(name), `followMore('${name}')`, `supportMore('${name}')`)}`;
       return netItem('more:' + name, icon, name, info, `toggleGroup('more:${name}')`);
-    }).join('') + (state.extraGroups.length ? `<button class="net-addmore" onclick="addMoreGroups()">+ Add more</button>` : '');
+    }).join('') + (state.extraGroups.length ? `<button type="button" class="net-addmore" onclick="addMoreGroups()">${bx('+ Add more', '+ Añadir más')}</button>` : '');
   }
+  if (window.applyLang) applyLang();
 }
 
 function mynetAddFriend() {
@@ -3677,7 +3751,7 @@ function render() {
   // Invite credits chip (N / 3 left)
   const rem = state.inviteBudget.total - state.inviteBudget.used;
   const chip = document.getElementById('invite-credits-chip');
-  if (chip) chip.textContent = rem + ' / ' + state.inviteBudget.total + ' left';
+  if (chip) chip.innerHTML = rem + ' / ' + state.inviteBudget.total + bx(' left', ' restantes');
 
 
   // MyNet
@@ -3689,16 +3763,18 @@ function render() {
   const ql = document.getElementById('queue-list');
   if (ql) {
     if (state.queue.length === 0) {
-      ql.innerHTML = '<div style="font-size:.66rem;color:var(--muted)">No posts yet.</div>';
+      ql.innerHTML = `<div style="font-size:.66rem;color:var(--muted)">${bx('No posts yet.', 'Aún no hay posts.')}</div>`;
     } else {
+      const STATUS_LABEL = { pending: ['pending', 'pendiente'], live: ['live', 'en vivo'], rejected: ['rejected', 'rechazado'], reviewing: ['reviewing', 'en revisión'] };
       ql.innerHTML = state.queue.map(q => {
         const isLive = q.status === 'live';
         const engagement = isLive ? buildEngagement(q.id) : '';
+        const sl = STATUS_LABEL[q.status] || [q.status, q.status];
         return `<div class="queue-item" style="flex-direction:column;align-items:stretch;gap:0;padding:0;overflow:hidden">
           <div style="display:flex;align-items:center;gap:.7rem;padding:.6rem .8rem">
             <span class="qi-type">${q.type}</span>
             <span class="qi-content">${q.content.substring(0, 60)}${q.content.length > 60 ? '…' : ''}</span>
-            <span class="qi-status ${q.status}">${q.status}</span>
+            <span class="qi-status ${q.status}">${bx(sl[0], sl[1])}</span>
           </div>
           ${engagement}
         </div>`;
@@ -3710,17 +3786,20 @@ function render() {
   const pbw = document.getElementById('prob-badge-wrap');
   if (pbw) {
     pbw.innerHTML = state.inProbation
-      ? '<span class="prob-badge">⚠ rotated ✓ · in probation</span>'
-      : (state.recovered ? '<span class="sbadge">key rotated</span>' : '');
+      ? `<span class="prob-badge">${bx('⚠ rotated ✓ · in probation', '⚠ rotada ✓ · en periodo de prueba')}</span>`
+      : (state.recovered ? `<span class="sbadge">${bx('key rotated', 'clave rotada')}</span>` : '');
   }
   const pt = document.getElementById('prob-timer');
-  if (pt) pt.textContent = state.inProbation ? 'Probation: 30 days remaining (mock).' : '';
+  if (pt) pt.innerHTML = state.inProbation ? bx('Probation: 30 days remaining (mock).', 'Periodo de prueba: quedan 30 días (simulado).') : '';
 
   // Sync expandable-card state (stars/progress/toggles)
   renderEcardState();
 
   // Profile card (Access tab)
   renderProfileCard();
+
+  // translate2: apply data-* (option/placeholder/aria) on freshly-injected markup
+  if (window.applyLang) applyLang();
 }
 
 function updateRings() {
@@ -3786,51 +3865,52 @@ function toggleAbout() {
 // ============================================================
 // STAGE DETAIL DATA + TOGGLE
 // ============================================================
+// reach: [en, es] · unlocks: [[en, es], …] · activities[].label: [en, es]
 const STAGE_DETAIL = {
   newbie: {
-    reach: 'nothing — just run nety (open to all)',
+    reach: ['nothing — just run nety (open to all)', 'nada — basta con ejecutar nety (abierto a todos)'],
     unlocks: [
-      'Share hardware with the mesh',
-      'Get a <strong>profily-mini</strong> presence',
-      'Browse public content',
+      ['Share hardware with the mesh', 'Compartir hardware con la malla'],
+      ['Get a <strong>profily-mini</strong> presence', 'Obtener una presencia <strong>profily-mini</strong>'],
+      ['Browse public content', 'Explorar contenido público'],
     ]
   },
   known: {
     unlocks: [
-      'Play &amp; store apps',
-      'Full <strong>profily</strong>',
-      'MyNet groups &amp; permissions',
+      ['Play &amp; store apps', 'Jugar y guardar apps'],
+      ['Full <strong>profily</strong>', '<strong>profily</strong> completo'],
+      ['MyNet groups &amp; permissions', 'Grupos y permisos de MyNet'],
     ],
     activities: [
-      { label: 'Extend Profile',   tab: 'access' },
-      { label: 'Be more Nety',     tab: 'resources' },
-      { label: 'Add lovely posts', tab: 'access' },
-      { label: 'Vouch for people', tab: 'mynet' },
+      { label: ['Extend Profile', 'Ampliar perfil'],   tab: 'profile' },
+      { label: ['Be more Nety', 'Sé más Nety'],         tab: 'nety' },
+      { label: ['Add lovely posts', 'Añade posts bonitos'], tab: 'profile' },
+      { label: ['Vouch for people', 'Avala a personas'], tab: 'mynet' },
     ]
   },
   homie: {
-    reach: '~10 approved posts + a curator\'s approval (mandatory for normal)',
+    reach: ['~10 approved posts + a curator\'s approval (mandatory for normal)', '~10 posts aprobados + el visto bueno de un curador (obligatorio para normal)'],
     unlocks: [
-      '<strong>sety</strong> — data management',
-      'Deeper Social trust',
-      'Larger resource draw',
-      'Earmark your donations',
+      ['<strong>sety</strong> — data management', '<strong>sety</strong> — gestión de datos'],
+      ['Deeper Social trust', 'Confianza Social más profunda'],
+      ['Larger resource draw', 'Mayor consumo de recursos'],
+      ['Earmark your donations', 'Destina tus donaciones'],
     ]
   },
   expert: {
-    reach: '~30 approved posts / sustained contribution + ≥ Telegram-verified',
+    reach: ['~30 approved posts / sustained contribution + ≥ Telegram-verified', '~30 posts aprobados / contribución sostenida + ≥ verificado por Telegram'],
     unlocks: [
-      '<strong>MyWizy</strong> finetuner access',
-      'Donation pool directing &amp; stewardship',
-      'Complex trust configurations',
+      ['<strong>MyWizy</strong> finetuner access', 'Acceso al afinador <strong>MyWizy</strong>'],
+      ['Donation pool directing &amp; stewardship', 'Dirección y administración del fondo de donaciones'],
+      ['Complex trust configurations', 'Configuraciones de confianza complejas'],
     ]
   },
   legend: {
-    reach: 'top contribution + high Identity &amp; Social standing (+ biometrics)',
+    reach: ['top contribution + high Identity &amp; Social standing (+ biometrics)', 'máxima contribución + alto prestigio de Identidad y Social (+ biometría)'],
     unlocks: [
-      'The full stack',
-      'Network-wide governance powers',
-      'Stewardship roles (still being defined)',
+      ['The full stack', 'La pila completa'],
+      ['Network-wide governance powers', 'Poderes de gobernanza a nivel de red'],
+      ['Stewardship roles (still being defined)', 'Roles de administración (aún por definir)'],
     ]
   },
 };
@@ -3860,21 +3940,22 @@ function buildRingStages() {
     const open = (s === state.openStageDetail);
     if (open) cls += ' checked';                      // background moves to the checked one
     const th = state.stageThresholds[i];             // stars needed to reach this stage
-    const thTxt = th === 0 ? 'open' : th + ' ⭐';
+    const thTxt = th === 0 ? bx('open', 'abierto') : th + ' ⭐';
     const d = STAGE_DETAIL[s] || {};
     let txt = '';                                     // description shown only on click
     if (open) {
-      if (d.reach)   txt += `<div class="rstage-reach">to reach: <strong>${d.reach}</strong></div>`;
-      if (d.unlocks) txt += `<ul class="rstage-unlocks">${d.unlocks.map(u => `<li>${u}</li>`).join('')}</ul>`;
-      if (d.activities) txt += `<div class="rstage-acts">${d.activities.map(a => `<button class="rstage-act" onclick="event.stopPropagation();switchTab('${a.tab}')">${a.label} →</button>`).join('')}</div>`;
+      if (d.reach)   txt += `<div class="rstage-reach">${bx('to reach: <strong>' + d.reach[0] + '</strong>', 'para alcanzar: <strong>' + d.reach[1] + '</strong>')}</div>`;
+      if (d.unlocks) txt += `<ul class="rstage-unlocks">${d.unlocks.map(u => `<li>${bx(u[0], u[1])}</li>`).join('')}</ul>`;
+      if (d.activities) txt += `<div class="rstage-acts">${d.activities.map(a => `<button type="button" class="rstage-act" onclick="event.stopPropagation();switchTab('${a.tab}')">${bx(a.label[0] + ' →', a.label[1] + ' →')}</button>`).join('')}</div>`;
     }
     return `<div class="rstage-col">
-      <button class="${cls}" onclick="toggleStageDetail('${s}')" aria-expanded="${open}">${s}</button>
+      <button type="button" class="${cls}" onclick="toggleStageDetail('${s}')" aria-expanded="${open}">${s}</button>
       <div class="rstage-th">${thTxt}</div>
       ${open ? `<div class="rstage-text">${txt}</div>` : ''}
     </div>`;
   }).join('');
   wrap.innerHTML = `<span class="rstage-arrow" aria-hidden="true">→</span>` + cols;
+  if (window.applyLang) applyLang();
 }
 
 // Facet circles — Personal · Local · Social · Global in 4 columns, each with its onclick text
@@ -3890,12 +3971,13 @@ function renderRingCircles() {
   wrap.innerHTML = FACETS.map(f => {
     const s = CIRCLE_SUGGEST[f.key];
     const open = (state.openCircle === f.key);       // description shown only on click
-    const actions = s.actions.map((a, i) => `<button class="btn ${i === 0 ? 'signal' : 'ghost'}" onclick="switchTab('${a[1]}')">${a[0]}</button>`).join('');
+    const actions = s.actions.map((a, i) => `<button type="button" class="btn ${i === 0 ? 'signal' : 'ghost'}" onclick="switchTab('${a[2]}')">${bx(a[0], a[1])}</button>`).join('');
     return `<div class="rcircle-col${f.active ? ' rcircle-active' : ''}${open ? ' open' : ''}" style="color:${s.color}">
-      <button class="rcircle-top" onclick="toggleRingCircle('${f.key}')" aria-expanded="${open}"><span class="rcircle-dot"></span><span class="rcircle-name">${f.name}</span><strong id="${f.score}">${state.facets[f.key]}</strong></button>
-      ${open ? `<div class="rcircle-desc">${s.desc}</div><div class="rcircle-actions">${actions}</div>` : ''}
+      <button type="button" class="rcircle-top" onclick="toggleRingCircle('${f.key}')" aria-expanded="${open}"><span class="rcircle-dot"></span><span class="rcircle-name">${f.name}</span><strong id="${f.score}">${state.facets[f.key]}</strong></button>
+      ${open ? `<div class="rcircle-desc">${bx(s.desc, s.descEs)}</div><div class="rcircle-actions">${actions}</div>` : ''}
     </div>`;
   }).join('');
+  if (window.applyLang) applyLang();
 }
 function toggleRingCircle(key){
   state.openCircle = (state.openCircle === key) ? null : key;
@@ -3905,36 +3987,37 @@ function toggleRingCircle(key){
 // ============================================================
 // FEATURE TIERS (ts-feat slide)
 // ============================================================
+// label: [en, es] · features: [[en, es], …]
 const FEATURE_TIERS = [
   {
     name: 'mini',
-    label: 'nety',
+    label: ['nety', 'nety'],
     threshold: 0,
-    features: ['share hardware', 'profily-mini', 'browse public content'],
+    features: [['share hardware', 'compartir hardware'], ['profily-mini', 'profily-mini'], ['browse public content', 'explorar contenido público']],
   },
   {
     name: 'basic',
-    label: 'profily + apps',
+    label: ['profily + apps', 'profily + apps'],
     threshold: 100,
-    features: ['play & store apps', 'full profily', 'MyNet groups & permissions', 'publish'],
+    features: [['play & store apps', 'jugar y guardar apps'], ['full profily', 'profily completo'], ['MyNet groups & permissions', 'grupos y permisos de MyNet'], ['publish', 'publicar']],
   },
   {
     name: 'normal',
-    label: 'sety',
+    label: ['sety', 'sety'],
     threshold: 500,
-    features: ['data management', 'deeper trust config', 'larger resource draw'],
+    features: [['data management', 'gestión de datos'], ['deeper trust config', 'config. de confianza más profunda'], ['larger resource draw', 'mayor consumo de recursos']],
   },
   {
     name: 'advanced',
-    label: 'MyWizy',
+    label: ['MyWizy', 'MyWizy'],
     threshold: 2000,
-    features: ['finetuner agents', 'donation directing', 'complex trust'],
+    features: [['finetuner agents', 'agentes afinadores'], ['donation directing', 'dirección de donaciones'], ['complex trust', 'confianza compleja']],
   },
   {
     name: 'super',
-    label: 'full stack',
+    label: ['full stack', 'pila completa'],
     threshold: 10000,
-    features: ['network-wide powers', 'stewardship roles', '(being defined)'],
+    features: [['network-wide powers', 'poderes a nivel de red'], ['stewardship roles', 'roles de administración'], ['(being defined)', '(por definir)']],
   },
 ];
 
@@ -3951,7 +4034,7 @@ function buildFeatureTiers() {
     if (tier.name === 'mini') cls += ' feat-mini';            // very highlighted + wavy
     if (isOpen) cls += ' feat-expanded';
     const op = isOpen ? 1 : (TIER_OPACITY[tier.name] ?? 0.5);
-    const featsHtml = tier.features.map(f => `<li>${cap(f)}</li>`).join('');
+    const featsHtml = tier.features.map(f => `<li>${bx(cap(f[0]), cap(f[1]))}</li>`).join('');
 
     // Threshold below the nav — full bar for mini, progress for basic, label otherwise
     let threshHtml;
@@ -3967,19 +4050,20 @@ function buildFeatureTiers() {
         <span class="feat-thresh-txt">${state.stars} / ${tier.threshold} ⭐</span>
       </div>`;
     } else {
-      threshHtml = `<div class="feat-thresh"><span class="feat-thresh-txt">${tier.threshold === 0 ? 'open' : tier.threshold + ' ⭐'}</span></div>`;
+      threshHtml = `<div class="feat-thresh"><span class="feat-thresh-txt">${tier.threshold === 0 ? bx('open', 'abierto') : tier.threshold + ' ⭐'}</span></div>`;
     }
 
-    const moreLabel = state.navMoreOpen === tier.name ? 'see less' : 'see more';
-    wrap.innerHTML += `<div class="${cls}" style="opacity:${op}" onclick="toggleFeatureTier(${i})" role="button" tabindex="0" aria-expanded="${isOpen}" aria-label="Toggle ${tier.name} feature list">
-      <button class="feat-name-btn tr-stage-btn" style="font-family:'Fredoka',sans-serif;font-weight:700;font-size:.85rem;line-height:1;letter-spacing:.01em">${tier.name}</button>
-      <span style="font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:.06rem 0 .14rem;font-family:'Space Mono',monospace">${tier.label}</span>
+    const moreLabel = state.navMoreOpen === tier.name ? bx('see less', 'ver menos') : bx('see more', 'ver más');
+    wrap.innerHTML += `<div class="${cls}" style="opacity:${op}" onclick="toggleFeatureTier(${i})" role="button" tabindex="0" aria-expanded="${isOpen}" aria-label="Toggle ${tier.name} feature list" data-aria-en="Toggle ${tier.name} feature list" data-aria-es="Mostrar la lista de funciones de ${tier.name}">
+      <button type="button" class="feat-name-btn tr-stage-btn" style="font-family:'Fredoka',sans-serif;font-weight:700;font-size:.85rem;line-height:1;letter-spacing:.01em">${tier.name}</button>
+      <span style="font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:.06rem 0 .14rem;font-family:'Space Mono',monospace">${bx(tier.label[0], tier.label[1])}</span>
       <ul class="fr-feats feat-feats-collapse">${featsHtml}</ul>
       ${threshHtml}
-      <button class="nav-see-more" id="nav-see-more-${tier.name}" onclick="event.stopPropagation();toggleNavMore('${tier.name}')">${moreLabel}</button>
+      <button type="button" class="nav-see-more" id="nav-see-more-${tier.name}" onclick="event.stopPropagation();toggleNavMore('${tier.name}')">${moreLabel}</button>
     </div>`;
   });
   renderNavMore();
+  if (window.applyLang) applyLang();
 }
 
 function toggleFeatureTier(idx) {
@@ -3988,26 +4072,28 @@ function toggleFeatureTier(idx) {
 }
 
 // "see more" on each nav → full-width detail row below the ladder
+// feats: [[en, es], …]
 const NAV_MORE = {
-  mini:     { feats: ['Run a node and share spare CPU/GPU/RAM with the mesh', 'Get a profily-mini — your public presence', 'Browse public content, no identity required', 'Open to anyone, no invite needed'] },
-  basic:    { feats: ['Play &amp; store apps from the network', 'A full profily with social links &amp; groups', 'MyNet groups, permissions &amp; visibility', 'Publish to the moderated queue'] },
-  normal:   { feats: ['sety — manage your own data', 'Deeper trust configuration per group', 'Larger resource-draw quotas', 'Earmark where your donations go'] },
-  advanced: { feats: ['MyWizy finetuner agents', 'Direct the donation pool &amp; stewardship', 'Complex, conditional trust rules', 'Priority relays &amp; scheduling'] },
-  super:    { feats: ['Network-wide governance powers', 'Stewardship &amp; curator roles', 'Full-stack access', '(still being defined)'] },
+  mini:     { feats: [['Run a node and share spare CPU/GPU/RAM with the mesh', 'Ejecuta un nodo y comparte CPU/GPU/RAM libre con la malla'], ['Get a profily-mini — your public presence', 'Obtén un profily-mini — tu presencia pública'], ['Browse public content, no identity required', 'Explora contenido público, sin necesidad de identidad'], ['Open to anyone, no invite needed', 'Abierto a cualquiera, sin invitación']] },
+  basic:    { feats: [['Play &amp; store apps from the network', 'Juega y guarda apps de la red'], ['A full profily with social links &amp; groups', 'Un profily completo con enlaces sociales y grupos'], ['MyNet groups, permissions &amp; visibility', 'Grupos, permisos y visibilidad de MyNet'], ['Publish to the moderated queue', 'Publica en la cola moderada']] },
+  normal:   { feats: [['sety — manage your own data', 'sety — gestiona tus propios datos'], ['Deeper trust configuration per group', 'Configuración de confianza más profunda por grupo'], ['Larger resource-draw quotas', 'Cuotas de consumo de recursos mayores'], ['Earmark where your donations go', 'Destina a dónde van tus donaciones']] },
+  advanced: { feats: [['MyWizy finetuner agents', 'Agentes afinadores MyWizy'], ['Direct the donation pool &amp; stewardship', 'Dirige el fondo de donaciones y su administración'], ['Complex, conditional trust rules', 'Reglas de confianza complejas y condicionales'], ['Priority relays &amp; scheduling', 'Repetidores prioritarios y programación']] },
+  super:    { feats: [['Network-wide governance powers', 'Poderes de gobernanza a nivel de red'], ['Stewardship &amp; curator roles', 'Roles de administración y curaduría'], ['Full-stack access', 'Acceso a la pila completa'], ['(still being defined)', '(aún por definir)']] },
 };
 function toggleNavMore(name) { state.navMoreOpen = (state.navMoreOpen === name) ? null : name; renderNavMore(); }
 function renderNavMore() {
-  Object.keys(NAV_MORE).forEach(n => { const c = document.getElementById('nav-see-more-' + n); if (c) c.textContent = (state.navMoreOpen === n) ? 'see less' : 'see more'; });
+  Object.keys(NAV_MORE).forEach(n => { const c = document.getElementById('nav-see-more-' + n); if (c) c.innerHTML = (state.navMoreOpen === n) ? bx('see less', 'ver menos') : bx('see more', 'ver más'); });
   const wrap = document.getElementById('nav-more');
   if (!wrap) return;
   const n = state.navMoreOpen, d = n ? NAV_MORE[n] : null;
   if (!d) { wrap.classList.remove('open'); wrap.innerHTML = ''; return; }
   wrap.classList.add('open');
   wrap.innerHTML = `<div class="nav-more-inner">
-    <div class="card-more-title" style="text-transform:capitalize;margin-bottom:.55rem">${n} — features in detail</div>
-    <ul class="card-more-feats">${d.feats.map(f => `<li>${f}</li>`).join('')}</ul>
-    <button class="nav-more-x" onclick="toggleNavMore('${n}')" aria-label="Collapse">✕</button>
+    <div class="card-more-title" style="text-transform:capitalize;margin-bottom:.55rem">${bx(n + ' — features in detail', n + ' — funciones en detalle')}</div>
+    <ul class="card-more-feats">${d.feats.map(f => `<li>${bx(f[0], f[1])}</li>`).join('')}</ul>
+    <button type="button" class="nav-more-x" onclick="toggleNavMore('${n}')" aria-label="Collapse" data-aria-en="Collapse" data-aria-es="Plegar">✕</button>
   </div>`;
+  if (window.applyLang) applyLang();
 }
 
 // ============================================================
@@ -4099,11 +4185,15 @@ switchTab('profile');
       const b = document.querySelector('.rb[data-app="' + rec.app + '"]'); if (b) b.classList.add('played');
     });
   }
-  // run after flove-appy.js (deferred) has loaded
+  window.floveIngest = ingestAppy;                       // let switchTab re-ingest on Profile
+  // run after flove-appy.js (deferred) has loaded; retry to defeat any load-order race
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ingestAppy);
   else ingestAppy();
-  // live-update when an app publishes from another tab
+  setTimeout(ingestAppy, 300);
+  setTimeout(ingestAppy, 1200);
+  // live-update when an app publishes from another tab, and when the window regains focus
   window.addEventListener('storage', function(e){ if (window.floveAppy && e.key === floveAppy.KEY) ingestAppy(); });
+  window.addEventListener('focus', ingestAppy);
 })();
 </script>
 <script>
@@ -4194,7 +4284,7 @@ switchTab('profile');
   const ov = document.createElement('div');
   ov.className = 'prof-overlay'; ov.id = 'profile-overlay';
   ov.setAttribute('role','dialog'); ov.setAttribute('aria-modal','true'); ov.setAttribute('aria-hidden','true'); ov.setAttribute('aria-label','User profile');
-  ov.innerHTML = '<div class="prof-modal"><button class="prof-close" aria-label="Close profile">✕</button><div id="prof-body"></div></div>';
+  ov.innerHTML = '<div class="prof-modal"><button type="button" class="prof-close" aria-label="Close profile">✕</button><div id="prof-body"></div></div>';
   (document.body || document.documentElement).appendChild(ov);
   ov.addEventListener('click', e => { if (e.target === ov) closeProfile(); });
   ov.querySelector('.prof-close').addEventListener('click', closeProfile);
@@ -4207,31 +4297,32 @@ switchTab('profile');
     // rainbow — every app colour, filled if played, hollow if not
     const rainbow = APPS.map(a => '<i class="rdot'+(played.has(a)?' filled':'')+'" style="--c:'+APP_COLORS[a]+'" title="'+escH(a)+(played.has(a)?' · played':' · not played')+'"></i>').join('');
     const posts = postsOf(h).map(p => p.played
-      ? '<div class="prof-post played">Played the <strong>'+escH(p.app)+'</strong> app</div>'
+      ? '<div class="prof-post played">'+bx('Played the <strong>'+escH(p.app)+'</strong> app', 'Jugó a la app <strong>'+escH(p.app)+'</strong>')+'</div>'
       : '<div class="prof-post">'+escH(p.text)+'</div>').join('');
     document.getElementById('prof-body').innerHTML =
       '<div class="prof-top"><div class="prof-av" style="--c:'+(APP_COLORS[pl[0]]||'#6c5ce7')+'">'+escH((h[0]||'?').toUpperCase())+'</div>'+
-        '<div><div class="prof-handle">@'+escH(h)+'</div><div class="prof-sub">peer nety:p2p:'+hash(h).toString(16)+'… · stage '+escH(meta.stage)+' · '+escH(meta.presence)+'</div></div></div>'+
-      '<div class="prof-section">Apps played — by colour</div><div class="prof-rainbow">'+rainbow+'</div>'+
-      '<div class="prof-section">Bio</div><div class="prof-bio">'+escH(bioOf(h))+'</div>'+
+        '<div><div class="prof-handle">@'+escH(h)+'</div><div class="prof-sub">peer nety:p2p:'+hash(h).toString(16)+'… · '+bx('stage', 'etapa')+' '+escH(meta.stage)+' · '+escH(meta.presence)+'</div></div></div>'+
+      '<div class="prof-section">'+bx('Apps played — by colour', 'Apps jugadas — por color')+'</div><div class="prof-rainbow">'+rainbow+'</div>'+
+      '<div class="prof-section">'+bx('Bio', 'Bio')+'</div><div class="prof-bio">'+escH(bioOf(h))+'</div>'+
       '<div class="prof-stats">'+
-        '<div class="ps"><b>'+st.souls+'</b><span>souls</span></div>'+
-        '<div class="ps"><b>'+st.trust+'</b><span>trust</span></div>'+
-        '<div class="ps"><b>'+st.stars+'</b><span>⭐ stars</span></div>'+
+        '<div class="ps"><b>'+st.souls+'</b><span>'+bx('souls', 'souls')+'</span></div>'+
+        '<div class="ps"><b>'+st.trust+'</b><span>'+bx('trust', 'confianza')+'</span></div>'+
+        '<div class="ps"><b>'+st.stars+'</b><span>'+bx('⭐ stars', '⭐ estrellas')+'</span></div>'+
         '<div class="ps"><b>'+st.cu+'</b><span>CU</span></div></div>'+
-      '<div class="prof-section">Played apps · '+pl.length+'</div><div class="prof-apps">'+apps+'</div>'+
-      '<div class="prof-section">Last 5 posts</div><div class="prof-posts">'+posts+'</div>'+
+      '<div class="prof-section">'+bx('Played apps · '+pl.length, 'Apps jugadas · '+pl.length)+'</div><div class="prof-apps">'+apps+'</div>'+
+      '<div class="prof-section">'+bx('Last 5 posts', 'Últimos 5 posts')+'</div><div class="prof-posts">'+posts+'</div>'+
       '<div class="prof-actions">'+
-        '<button class="net-btn" onclick="profAct(this,\'follow\',\''+escH(h)+'\')">Follow</button>'+
-        '<button class="net-btn alt" onclick="profAct(this,\'support\',\''+escH(h)+'\')">Support</button>'+
-        '<button class="net-btn ghost" onclick="profAct(this,\'message\',\''+escH(h)+'\')">Message</button></div>';
+        '<button type="button" class="net-btn" onclick="profAct(this,\'follow\',\''+escH(h)+'\')">'+bx('Follow', 'Seguir')+'</button>'+
+        '<button type="button" class="net-btn alt" onclick="profAct(this,\'support\',\''+escH(h)+'\')">'+bx('Support', 'Apoyar')+'</button>'+
+        '<button type="button" class="net-btn ghost" onclick="profAct(this,\'message\',\''+escH(h)+'\')">'+bx('Message', 'Mensaje')+'</button></div>';
     ov.classList.add('open'); ov.setAttribute('aria-hidden','false');
+    if (window.applyLang) applyLang();
   };
   window.closeProfile = function(){ ov.classList.remove('open'); ov.setAttribute('aria-hidden','true'); };
   window.profAct = function(btn, kind, h){
-    if (kind === 'follow'){ btn.textContent = 'Following ✓'; btn.classList.add('done'); try{ if(window.followMore) followMore(h); }catch(_){} }
-    else if (kind === 'support'){ btn.textContent = 'Supporting ✓'; btn.classList.add('done'); }
-    else { btn.textContent = 'Drafted ✉'; try{ state.chatActive = h; }catch(_){} }
+    if (kind === 'follow'){ btn.innerHTML = bx('Following ✓', 'Siguiendo ✓'); btn.classList.add('done'); try{ if(window.followMore) followMore(h); }catch(_){} }
+    else if (kind === 'support'){ btn.innerHTML = bx('Supporting ✓', 'Apoyando ✓'); btn.classList.add('done'); }
+    else { btn.innerHTML = bx('Drafted ✉', 'Borrador ✉'); try{ state.chatActive = h; }catch(_){} }
     btn.disabled = true; setTimeout(() => { btn.disabled = false; }, 1200);
   };
 
@@ -4241,6 +4332,35 @@ switchTab('profile');
     if (typeof orig === 'function') window[fn] = function(){ const r = orig.apply(this, arguments); decorate(); return r; };
   });
   decorate();
+})();
+</script>
+<script>
+// translate2 engine — switches the page language and translates the bits CSS can't
+// (<option> text, placeholders, aria-labels), remembers the choice, syncs <html lang>.
+(function(){
+  const LS = 'translate2-lang';
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const radios = () => Array.from(document.querySelectorAll('input[name="lang"]'));
+  const curLang = () => { const r = radios().find(x => x.checked); return r ? r.id.replace('lang-', '') : 'en'; };
+  function applyLang(){
+    const li = curLang();
+    document.documentElement.lang = li;
+    document.querySelectorAll('option[data-en]').forEach(o => { if (o.dataset[li] != null) o.textContent = o.dataset[li]; });
+    document.querySelectorAll('[data-ph-en]').forEach(el => { const v = el.dataset['ph' + cap(li)]; if (v != null) el.placeholder = v; });
+    document.querySelectorAll('[data-aria-en]').forEach(el => { const v = el.dataset['aria' + cap(li)]; if (v != null) el.setAttribute('aria-label', v); });
+    try { localStorage.setItem(LS, li); } catch (_) {}
+  }
+  window.applyLang = applyLang;
+  function init(){
+    let saved = null; try { saved = localStorage.getItem(LS); } catch (_) {}
+    if (saved){ const r = document.getElementById('lang-' + saved); if (r) r.checked = true; }
+    radios().forEach(r => r.addEventListener('change', () => {
+      applyLang();
+      const d = document.querySelector('details.lang'); if (d) d.open = false;
+    }));
+    applyLang();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 </script>
 </body>
