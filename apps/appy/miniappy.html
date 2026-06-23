@@ -944,6 +944,18 @@ body{
   border-color:rgba(141,137,255,.52);
   box-shadow:0 0 28px -6px rgba(141,137,255,.2), inset 0 1px 0 rgba(28,25,42,.05);
 }
+
+/* Play Apps card-button — same footprint as a card header, faint rainbow wash */
+.play-apps-card{
+  display:flex; align-items:center; gap:.65rem; width:100%; cursor:pointer;
+  font:inherit; text-align:left; padding:.9rem 1.05rem; border-radius:13px;
+  border:1px solid rgba(28,25,42,.12);
+  background:linear-gradient(92deg, rgba(255,77,77,.10), rgba(255,154,58,.10), rgba(255,196,31,.10), rgba(63,200,98,.10), rgba(58,160,255,.10), rgba(176,107,255,.10));
+  transition:border-color .2s, box-shadow .2s, transform .12s;
+}
+.play-apps-card:hover{ border-color:rgba(141,137,255,.4); box-shadow:0 0 18px -5px var(--glow-a); }
+.play-apps-card:active{ transform:translateY(1px); }
+.play-apps-card:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
 .ec-header{
   display:flex; align-items:center; gap:.65rem; padding:.9rem 1.05rem;
   cursor:pointer; user-select:none;
@@ -1278,6 +1290,7 @@ body{
   box-shadow:0 0 22px -6px rgba(0,247,167,.28), inset 0 1px 0 rgba(0,247,167,.08);
   overflow:hidden; position:relative;
   transition:box-shadow .28s, border-color .28s;
+  display:inline-flex; flex-direction:row; align-items:stretch; vertical-align:top; max-width:100%;
 }
 .profile-card:hover{
   box-shadow:0 0 32px -6px rgba(0,247,167,.42), inset 0 1px 0 rgba(0,247,167,.12);
@@ -1291,17 +1304,29 @@ body{
   display:flex; flex-direction:column; gap:.38rem;
   padding:.9rem 1rem .8rem; cursor:pointer; user-select:none;
   transition:background .18s;
+  flex:0 0 auto; min-width:200px;
 }
 .profile-card-header:hover{ background:rgba(0,247,167,.04); }
+/* expand reveals to the RIGHT of the header (opened by clicking the username box) */
 .profile-card-expand{
-  max-height:0; overflow:hidden; opacity:0;
-  transition:max-height .36s cubic-bezier(.4,0,.2,1), opacity .26s ease;
+  max-width:0; overflow:hidden; opacity:0; flex:0 0 auto; align-self:stretch;
+  transition:max-width .4s cubic-bezier(.4,0,.2,1), opacity .26s ease;
 }
-.profile-card.open .profile-card-expand{ max-height:900px; opacity:1; }
+.profile-card.open .profile-card-expand{ max-width:360px; opacity:1; }
 .profile-card-expand-inner{
-  padding:.1rem 1rem .9rem;
-  border-top:1px solid rgba(0,247,167,.12);
+  width:320px; max-width:78vw; height:100%;
+  padding:.85rem 1rem;
+  border-left:1px solid rgba(0,247,167,.12);
   display:flex; flex-direction:column; gap:.35rem;
+}
+@media (max-width:600px){
+  .profile-card{ display:block; }
+  .profile-card-header{ min-width:0; }
+  .profile-card-expand{ max-width:none; max-height:0; align-self:auto;
+    transition:max-height .36s cubic-bezier(.4,0,.2,1), opacity .26s ease; }
+  .profile-card.open .profile-card-expand{ max-width:none; max-height:900px; }
+  .profile-card-expand-inner{ width:auto; max-width:none; height:auto;
+    border-left:none; border-top:1px solid rgba(0,247,167,.12); padding:.1rem 1rem .9rem; }
 }
 .pc-row{ font-size:.63rem; color:var(--muted); display:flex; gap:.5rem; }
 .pc-row strong{ color:var(--ink); }
@@ -1848,12 +1873,12 @@ body:has(#lang-es:checked) .es{display:inline}
       <div class="vcard">
 
         <!-- ── Access card set ── -->
-        <div class="access-card-grid" style="grid-template-columns:1fr;max-width:460px">
+        <div class="access-card-grid" style="display:block;max-width:none">
 
           <!-- marcflove profile card — top-left, it's you -->
           <div class="profile-card" id="pc-marcflove">
             <div class="profile-card-header" onclick="toggleProfileCard()" role="button" tabindex="0" aria-expanded="false" aria-controls="pc-marcflove-expand" aria-label="Your profile card — expand for details" data-aria-en="Your profile card — expand for details" data-aria-es="Tu tarjeta de perfil — despliega para ver detalles">
-              <div class="profily-handle" style="font-size:1rem">@<input type="text" id="reg-handle" value="" placeholder="username" aria-label="Handle" data-aria-en="Handle" data-aria-es="Alias" data-ph-en="username" data-ph-es="usuario" oninput="updateHandle(this.value)" onclick="event.stopPropagation()" style="font-family:'Fredoka',sans-serif;font-weight:700;font-size:1rem;color:var(--signal);background:transparent;border:none;border-bottom:1px dashed rgba(2,133,92,.45);outline:none;width:12ch;padding:0 0 1px"></div>
+              <div class="profily-handle" style="font-size:1rem">@<input type="text" id="reg-handle" value="" placeholder="username" aria-label="Handle" data-aria-en="Handle" data-aria-es="Alias" data-ph-en="username" data-ph-es="usuario" oninput="updateHandle(this.value)" onclick="event.stopPropagation(); if(!state.profileCardOpen) toggleProfileCard();" style="font-family:'Fredoka',sans-serif;font-weight:700;font-size:1rem;color:var(--signal);background:transparent;border:none;border-bottom:1px dashed rgba(2,133,92,.45);outline:none;width:12ch;padding:0 0 1px"></div>
               <div class="profily-peer" style="font-size:.54rem"><span class="en" lang="en">peer:</span><span class="es" lang="es">par:</span> <span id="pc-peer-id" style="opacity:.7"><span class="en" lang="en">— create your id —</span><span class="es" lang="es">— crea tu id —</span></span></div>
               <div class="profily-badges" style="margin-top:.2rem">
                 <span id="pc-presence" class="pbadge LIVE" style="font-size:.52rem">LIVE</span>
@@ -1982,6 +2007,14 @@ body:has(#lang-es:checked) .es{display:inline}
             </div>
           </div>
 
+          <!-- Play Apps button + Add content, stacked in one cell (Play Apps directly above) -->
+          <div style="display:flex;flex-direction:column;gap:.75rem">
+          <button type="button" class="play-apps-card" onclick="goToPlayApps()" aria-label="Play Apps — go to your profile" data-aria-en="Play Apps — go to your profile" data-aria-es="Jugar apps — ir a tu perfil">
+            <span class="ec-id" aria-hidden="true">▶</span>
+            <span class="ec-title"><span class="en" lang="en">Play Apps</span><span class="es" lang="es">Jugar apps</span></span>
+            <span class="ec-chevron" aria-hidden="true">▸</span>
+          </button>
+
           <!-- C: Add content -->
           <div class="expandable-card" id="ec-add">
             <div class="ec-header" onclick="toggleEcard('add')" role="button" tabindex="0" aria-expanded="false" aria-controls="ec-add-body">
@@ -2013,6 +2046,7 @@ body:has(#lang-es:checked) .es{display:inline}
               </div>
             </div>
           </div>
+          </div><!-- /Play Apps + Add content stack -->
 
           <!-- spacer row before the invite / trust cards -->
           <div style="grid-column:1/-1;height:1.1rem"></div>
