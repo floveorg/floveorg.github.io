@@ -1815,7 +1815,7 @@ body:has(#lang-es:checked) .es{display:inline}
       <button type="button" class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('chat')"    id="tab-chat"><span class="en" lang="en">Chat</span><span class="es" lang="es">Chat</span></button>
       <button type="button" class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('activity')"  id="tab-activity"><span class="en" lang="en">Activity</span><span class="es" lang="es">Actividad</span></button>
       <button type="button" class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('extensions')" id="tab-extensions"><span class="en" lang="en">Extensions</span><span class="es" lang="es">Extensiones</span></button>
-      <button type="button" class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('privacy')" id="tab-privacy"><span class="en" lang="en">Privacy</span><span class="es" lang="es">Privacidad</span></button>
+      <button type="button" class="tab-btn"        role="tab" aria-selected="false" onclick="switchTab('privacy')" id="tab-privacy" style="display:none"><span class="en" lang="en">Privacy</span><span class="es" lang="es">Privacidad</span></button>
     </nav>
 
     <!-- PROFILE TAB -->
@@ -1823,14 +1823,13 @@ body:has(#lang-es:checked) .es{display:inline}
       <div class="vcard">
 
         <!-- ── Access card set ── -->
-        <div class="access-card-grid">
+        <div class="access-card-grid" style="grid-template-columns:1fr;max-width:460px">
 
           <!-- marcflove profile card — top-left, it's you -->
           <div class="profile-card" id="pc-marcflove">
             <div class="profile-card-header" onclick="toggleProfileCard()" role="button" tabindex="0" aria-expanded="false" aria-controls="pc-marcflove-expand" aria-label="Your profile card — expand for details" data-aria-en="Your profile card — expand for details" data-aria-es="Tu tarjeta de perfil — despliega para ver detalles">
-              <div class="profily-handle" style="font-size:1rem">@<span id="pc-handle">marcflove</span></div>
-              <div class="profily-peer" style="font-size:.54rem"><span class="en" lang="en">peer:</span><span class="es" lang="es">par:</span> nety:p2p:7e3a9c…f12b4</div>
-              <div class="profily-hw" style="font-size:.6rem"><span class="en" lang="en">contribution:</span><span class="es" lang="es">contribución:</span> <span id="pc-hw">5 CU</span></div>
+              <div class="profily-handle" style="font-size:1rem">@<input type="text" id="reg-handle" value="" placeholder="username" aria-label="Handle" data-aria-en="Handle" data-aria-es="Alias" data-ph-en="username" data-ph-es="usuario" oninput="updateHandle(this.value)" onclick="event.stopPropagation()" style="font-family:'Fredoka',sans-serif;font-weight:700;font-size:1rem;color:var(--signal);background:transparent;border:none;border-bottom:1px dashed rgba(2,133,92,.45);outline:none;width:12ch;padding:0 0 1px"></div>
+              <div class="profily-peer" style="font-size:.54rem"><span class="en" lang="en">peer:</span><span class="es" lang="es">par:</span> <span id="pc-peer-id" style="opacity:.7"><span class="en" lang="en">— create your id —</span><span class="es" lang="es">— crea tu id —</span></span></div>
               <div class="profily-badges" style="margin-top:.2rem">
                 <span id="pc-presence" class="pbadge LIVE" style="font-size:.52rem">LIVE</span>
                 <span class="sbadge" id="pc-stage" style="font-size:.48rem">newbie</span>
@@ -1844,35 +1843,10 @@ body:has(#lang-es:checked) .es{display:inline}
                 <div class="pc-row"><span class="en" lang="en">Groups:</span><span class="es" lang="es">Grupos:</span> <strong>close · friends · mynet</strong></div>
                 <div class="pc-row"><span class="en" lang="en">Joined:</span><span class="es" lang="es">Se unió:</span> <strong>2026-01</strong></div>
                 <div class="pc-row"><span class="en" lang="en">Stars:</span><span class="es" lang="es">Estrellas:</span> <strong id="pc-stars">42</strong> ⭐</div>
-                <!-- moved here from Registration -->
-                <div class="field" style="margin-top:.55rem">
-                  <label><span class="en" lang="en">Handle</span><span class="es" lang="es">Alias</span></label>
-                  <input type="text" id="reg-handle" value="marcflove" aria-label="Handle" data-aria-en="Handle" data-aria-es="Alias" oninput="updateHandle(this.value)">
-                </div>
-                <div class="field" style="margin-top:.45rem">
-                  <label><span class="en" lang="en">Keypair (mock)</span><span class="es" lang="es">Par de claves (simulado)</span></label>
-                  <input type="text" readonly value="pub:Ed25519·8f3c…a92d / priv:••••••••" style="color:var(--muted)" aria-label="Mock keypair" data-aria-en="Mock keypair" data-aria-es="Par de claves simulado">
-                </div>
                 <!-- saved content — last section, designed per type -->
                 <div class="pc-extras" id="pc-extras" aria-live="polite"></div>
               </div>
             </div>
-          </div>
-
-          <!-- Publish — right column of the profile -->
-          <div class="pub-col">
-            <div class="field">
-              <select id="pub-visibility" aria-label="Visibility" data-aria-en="Visibility" data-aria-es="Visibilidad">
-                <option value="mynet">MyNet</option>
-                <option value="circle" data-en="Group" data-es="Grupo">Group</option>
-                <option value="public" data-en="Public" data-es="Público">Public</option>
-                <option value="private" data-en="Private" data-es="Privado">Private</option>
-              </select>
-            </div>
-            <div class="field" style="margin-top:.5rem">
-              <textarea id="pub-content" placeholder="What's in your love" aria-label="What's in your love" data-ph-en="What's in your love" data-ph-es="Qué hay en tu love" data-aria-en="What's in your love" data-aria-es="Qué hay en tu love"></textarea>
-            </div>
-            <button type="button" class="btn" style="margin-top:.6rem;width:100%;justify-content:center" id="pub-submit-btn" onclick="submitContent()"><span class="en" lang="en">Submit to queue</span><span class="es" lang="es">Enviar a la cola</span></button>
           </div>
 
         </div><!-- /.access-card-grid -->
@@ -2116,6 +2090,15 @@ body:has(#lang-es:checked) .es{display:inline}
           </div>
         </div>
 
+        <!-- Identity — create your id, then your keypair appears here -->
+        <div class="sec"><span class="en" lang="en">Your identity</span><span class="es" lang="es">Tu identidad</span></div>
+        <p style="font-size:.7rem;color:var(--muted);margin-bottom:.7rem;line-height:1.6"><span class="en" lang="en">Create your nety id to join the mesh — it mints your peer id and keypair, adds them to your profile, and unlocks the Privacy tab.</span><span class="es" lang="es">Crea tu id de nety para unirte a la malla — genera tu id de par y tu par de claves, los añade a tu perfil y desbloquea la pestaña de Privacidad.</span></p>
+        <button type="button" class="btn signal" id="create-id-btn" style="margin-bottom:.75rem" onclick="createId()"><span class="en" lang="en">✦ Create ID</span><span class="es" lang="es">✦ Crear ID</span></button>
+        <div class="field" style="margin-bottom:1.3rem">
+          <label><span class="en" lang="en">Keypair (mock)</span><span class="es" lang="es">Par de claves (simulado)</span></label>
+          <input type="text" id="nety-keypair" readonly value="" placeholder="— create your id to generate keys —" data-ph-en="— create your id to generate keys —" data-ph-es="— crea tu id para generar claves —" style="color:var(--muted)" aria-label="Mock keypair" data-aria-en="Mock keypair" data-aria-es="Par de claves simulado">
+        </div>
+
         <div class="sec"><span class="en" lang="en">Donate Computing</span><span class="es" lang="es">Donar cómputo</span></div>
         <p style="font-size:.7rem;color:var(--muted);margin-bottom:.85rem;line-height:1.6"><span class="en" lang="en">Your node lends compute, storage and bandwidth to the mesh — the most important way to keep nety alive. Open to anyone, no invite needed. Pick a preset, direct your share, then donate.</span><span class="es" lang="es">Tu nodo presta cómputo, almacenamiento y ancho de banda a la malla — la forma más importante de mantener nety con vida. Abierto a cualquiera, sin invitación. Elige un preajuste, dirige tu aporte y luego dona.</span></p>
 
@@ -2243,6 +2226,23 @@ body:has(#lang-es:checked) .es{display:inline}
         </div>
 
         <div style="text-align:center;font-family:'Fredoka',sans-serif;font-weight:700;font-size:1.05rem;margin:.3rem 0 .9rem"><span class="en" lang="en">Social Network</span><span class="es" lang="es">Red social</span></div>
+
+        <!-- Publish — moved here from the profile's right column -->
+        <div class="pub-col" style="max-width:460px;margin:0 auto 1.1rem">
+          <div class="field">
+            <select id="pub-visibility" aria-label="Visibility" data-aria-en="Visibility" data-aria-es="Visibilidad">
+              <option value="mynet">MyNet</option>
+              <option value="circle" data-en="Group" data-es="Grupo">Group</option>
+              <option value="public" data-en="Public" data-es="Público">Public</option>
+              <option value="private" data-en="Private" data-es="Privado">Private</option>
+            </select>
+          </div>
+          <div class="field" style="margin-top:.5rem">
+            <textarea id="pub-content" placeholder="What's in your love" aria-label="What's in your love" data-ph-en="What's in your love" data-ph-es="Qué hay en tu love" data-aria-en="What's in your love" data-aria-es="Qué hay en tu love"></textarea>
+          </div>
+          <button type="button" class="btn" style="margin-top:.6rem;width:100%;justify-content:center" id="pub-submit-btn" onclick="submitContent()"><span class="en" lang="en">Submit to queue</span><span class="es" lang="es">Enviar a la cola</span></button>
+        </div>
+
         <div class="social-feed" id="social-feed"><!-- renderFeed() --></div>
         <!-- Two-column layout: People (left) + Groups (right) -->
         <div class="mynet-cols" style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start">
@@ -2502,7 +2502,10 @@ function bx(en, es){ return '<span class="en" lang="en">' + en + '</span><span c
 // STATE
 // ============================================================
 const state = {
-  handle: 'marcflove',
+  handle: '',
+  idCreated: false,
+  peerId: '',
+  keypair: '',
   stars: 42,
   stage: 0,
   stageName: ['newbie','known','homie','expert','legend'],
@@ -2688,8 +2691,37 @@ const presenceCycle = ['LIVE','RECENT','REACHABLE','DARK'];
 
 
 function updateHandle(v) {
-  state.handle = v || 'marcflove';
+  state.handle = v;
   render();
+}
+
+// Create ID — mint a mock peer id + keypair, add to the profile card,
+// drop the keys into the Nety section, and reveal the Privacy ("security") tab.
+function createId() {
+  if (state.idCreated) return;
+  state.idCreated = true;
+  const hex = '0123456789abcdef';
+  const rnd = n => Array.from({ length: n }, () => hex[Math.floor(Math.random() * 16)]).join('');
+  state.peerId  = 'nety:p2p:' + rnd(6) + '…' + rnd(5);
+  state.keypair = 'pub:Ed25519·' + rnd(4) + '…' + rnd(4) + ' / priv:••••••••';
+
+  const pid = document.getElementById('pc-peer-id');
+  if (pid) { pid.textContent = state.peerId; pid.style.opacity = '1'; }
+
+  const kp = document.getElementById('nety-keypair');
+  if (kp) { kp.value = state.keypair; kp.style.color = 'var(--ink)'; }
+
+  const btn = document.getElementById('create-id-btn');
+  if (btn) {
+    btn.disabled = true;
+    const en = btn.querySelector('.en'), es = btn.querySelector('.es');
+    if (en) en.textContent = '✦ ID created';
+    if (es) es.textContent = '✦ ID creada';
+  }
+
+  const ptab = document.getElementById('tab-privacy');
+  if (ptab) ptab.style.display = '';
+  switchTab('privacy');
 }
 
 // ============================================================
@@ -4138,15 +4170,17 @@ switchTab('profile');
     const target = app.toLowerCase();
     // accept Appname-summary.json, Appname.json, or any file whose title starts with the app name
     const titleMatch = base === target || base === target + '-summary' || base.startsWith(target);
+    const fn = escHtml(file.name), ap = escHtml(app);
     if (!titleMatch){
-      msg.textContent = '“' + file.name + '” doesn’t match ' + app + '. Expected ' + app + '-summary.json.';
+      msg.innerHTML = bx('“' + fn + '” doesn’t match ' + ap + '. Expected ' + ap + '-summary.json.', '«' + fn + '» no coincide con ' + ap + '. Se esperaba ' + ap + '-summary.json.');
       msg.className = 'upload-msg err';
+      if (window.applyLang) applyLang();
       return;
     }
     const reader = new FileReader();
     reader.onload = e => { addPlayedApp(app, file.name, e.target.result, btn);
-      msg.textContent = app + ' added to Played apps ✓'; msg.className = 'upload-msg ok'; };
-    reader.onerror = () => { msg.textContent = 'Could not read ' + file.name + '.'; msg.className = 'upload-msg err'; };
+      msg.innerHTML = bx(ap + ' added to Played apps ✓', ap + ' añadido a Apps jugadas ✓'); msg.className = 'upload-msg ok'; if (window.applyLang) applyLang(); };
+    reader.onerror = () => { msg.innerHTML = bx('Could not read ' + fn + '.', 'No se pudo leer ' + fn + '.'); msg.className = 'upload-msg err'; if (window.applyLang) applyLang(); };
     reader.readAsText(file);
   };
 
@@ -4164,13 +4198,16 @@ switchTab('profile');
     card.style.setProperty('--c', RAINBOW[app] || 'var(--accent)');
     card.tabIndex = 0; card.setAttribute('role','button');
     card.setAttribute('aria-label', app + ' summary — toggle contents');
+    card.setAttribute('data-aria-en', app + ' summary — toggle contents');
+    card.setAttribute('data-aria-es', 'Resumen de ' + app + ' — mostrar contenido');
     card.innerHTML = '<div class="ac-title">' + escHtml(app) + '</div>' +
-                     '<div class="ac-sub">' + escHtml(fname) + ' · tap to view</div>' +
+                     '<div class="ac-sub">' + escHtml(fname) + ' · ' + bx('tap to view', 'toca para ver') + '</div>' +
                      '<pre class="ac-body">' + pretty + '</pre>';
     const toggle = () => card.classList.toggle('open');
     card.addEventListener('click', toggle);
     card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
     grid.appendChild(card);
+    if (window.applyLang) applyLang();
   }
 
   // --- Ingest apps published from other flove apps via flove-appy.js (localStorage) ---
@@ -4284,7 +4321,8 @@ switchTab('profile');
   const ov = document.createElement('div');
   ov.className = 'prof-overlay'; ov.id = 'profile-overlay';
   ov.setAttribute('role','dialog'); ov.setAttribute('aria-modal','true'); ov.setAttribute('aria-hidden','true'); ov.setAttribute('aria-label','User profile');
-  ov.innerHTML = '<div class="prof-modal"><button type="button" class="prof-close" aria-label="Close profile">✕</button><div id="prof-body"></div></div>';
+  ov.setAttribute('data-aria-en','User profile'); ov.setAttribute('data-aria-es','Perfil de usuario');
+  ov.innerHTML = '<div class="prof-modal"><button type="button" class="prof-close" aria-label="Close profile" data-aria-en="Close profile" data-aria-es="Cerrar perfil">✕</button><div id="prof-body"></div></div>';
   (document.body || document.documentElement).appendChild(ov);
   ov.addEventListener('click', e => { if (e.target === ov) closeProfile(); });
   ov.querySelector('.prof-close').addEventListener('click', closeProfile);
