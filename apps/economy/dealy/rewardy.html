@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -603,12 +603,36 @@
   }
   .tier-pop-step--current .tier-pop-label{ color:var(--card-accent, var(--accent-deep)); font-weight:700; }
   .flove-bar .flove-mark{vertical-align:-.18em;overflow:visible}
+
+  /* ── translate2 — i18n span toggle (CSS-only): hide every non-active language ── */
+  .es{display:none}                                  /* default view = .en */
+  body:has(#lang-es:checked) .en{display:none}
+  body:has(#lang-es:checked) .es{display:inline}
+
+  /* ── worldball switcher (🌐 opens the language options) ── */
+  .lang{display:inline-block;position:relative;margin:.2rem 0 .6rem}
+  .lang>summary{list-style:none;cursor:pointer;width:40px;height:40px;border:1px solid #999;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;font-size:1.35rem;line-height:1;-webkit-user-select:none;user-select:none}
+  .lang>summary::-webkit-details-marker{display:none}
+  .lang[open]>summary{border-color:#333;background:#f2f2f2}
+  .lang-opts{position:absolute;right:0;z-index:10;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;
+    background:#fff;border:1px solid #999;border-radius:12px;padding:6px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+  .lang input{position:absolute;opacity:0;pointer-events:none}
+  .lang label{cursor:pointer;padding:0 12px;min-height:40px;display:inline-flex;align-items:center;border:1px solid #999;border-radius:11px;white-space:nowrap}
+  .lang input:checked + label{background:#333;color:#fff;font-weight:bold;border-color:#333}
+
+  @media (prefers-color-scheme:dark){
+    .lang>summary{border-color:#777} .lang[open]>summary{background:#2a2a2a;border-color:#999}
+    .lang-opts{background:#222;border-color:#777;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+    .lang label{border-color:#777}
+    .lang input:checked + label{background:#e9e9e9;color:#111;border-color:#e9e9e9}
+  }
 </style>
 </head>
 <body>
 
 <div class="flove-bar">
-  <a class="flove-home" href="../index.html" aria-label="Back to flove launcher">←</a>
+  <a class="flove-home" href="../index.html" aria-label="Back to flove launcher" data-aria-en="Back to flove launcher" data-aria-es="Volver al menú de flove">←</a>
   <span class="brand">
     <svg class="flove-mark" aria-hidden="true" viewBox="0 0 100 100" width="1em" height="1em">
       <defs>
@@ -628,14 +652,14 @@
   <span class="flove-spacer"></span>
   <input type="checkbox" id="tier-pop-open" class="tier-pop-ctl">
   <div class="tier-pop">
-    <ul class="tier-pop-rays" role="menu" aria-label="Offer categories">
+    <ul class="tier-pop-rays" role="menu" aria-label="Offer categories" data-aria-en="Offer categories" data-aria-es="Categorías de ofertas">
       <li><a class="tier-pop-step" href="dealy-mini.html" title="Minidealy"><span class="tier-pop-node" aria-hidden="true"></span><span class="tier-pop-label">Minidealy</span></a></li>
       <li><a class="tier-pop-step" href="inventary.html" title="Inventary"><span class="tier-pop-node" aria-hidden="true"></span><span class="tier-pop-label">Inventary</span></a></li>
       <li><a class="tier-pop-step" href="wanty.html" title="Wanty"><span class="tier-pop-node" aria-hidden="true"></span><span class="tier-pop-label">Wanty</span></a></li>
       <li><a class="tier-pop-step" href="dealy-advanced.html" title="Offeradvanced"><span class="tier-pop-node" aria-hidden="true"></span><span class="tier-pop-label">Offeradvanced</span></a></li>
       <li><a class="tier-pop-step tier-pop-step--current" href="rewardy.html" aria-current="page" title="Rewardy (current)"><span class="tier-pop-node" aria-hidden="true"></span><span class="tier-pop-label">Rewardy</span></a></li>
     </ul>
-    <label class="tier-pop-btn" for="tier-pop-open" title="Show offer categories" tabindex="0">
+    <label class="tier-pop-btn" for="tier-pop-open" aria-label="Show offer categories" data-aria-en="Show offer categories" data-aria-es="Mostrar categorías de ofertas" tabindex="0">
       <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><g fill="currentColor">
         <rect x="2"    y="16" width="3.2" height="4"/>
         <rect x="6.4"  y="13" width="3.2" height="7"/>
@@ -645,13 +669,20 @@
       </g></svg>
     </label>
   </div>
+  <details class="lang">
+    <summary class="worldball" title="Language" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐</summary>
+    <div class="lang-opts">
+      <input type="radio" name="lang" id="lang-en" checked><label for="lang-en">English</label>
+      <input type="radio" name="lang" id="lang-es"><label for="lang-es">Español</label>
+    </div>
+  </details>
   <div class="topmenu">
-    <button type="button" class="menu-btn" id="menuBtn" aria-haspopup="true" aria-expanded="false" aria-label="Menu">☰</button>
+    <button type="button" class="menu-btn" id="menuBtn" aria-haspopup="true" aria-expanded="false" aria-label="Menu" data-aria-en="Menu" data-aria-es="Menú">☰</button>
     <div class="menu-pop" id="menuPop" hidden>
-      <a class="menu-item" href="../index.html">🏠 flove launcher</a>
-      <a class="menu-item" href="help.html">❓ Help · Q&amp;A</a>
-      <button type="button" class="menu-item" id="menuPrint">🖨️ Print</button>
-      <button type="button" class="menu-item" id="menuReset">↻ Reset comparison</button>
+      <a class="menu-item" href="../index.html">🏠 <span class="en" lang="en">flove launcher</span><span class="es" lang="es">menú de flove</span></a>
+      <a class="menu-item" href="help.html">❓ <span class="en" lang="en">Help · Q&amp;A</span><span class="es" lang="es">Ayuda · Preguntas</span></a>
+      <button type="button" class="menu-item" id="menuPrint">🖨️ <span class="en" lang="en">Print</span><span class="es" lang="es">Imprimir</span></button>
+      <button type="button" class="menu-item" id="menuReset">↻ <span class="en" lang="en">Reset comparison</span><span class="es" lang="es">Reiniciar comparación</span></button>
     </div>
   </div>
 </div>
@@ -663,11 +694,11 @@
 
       <!-- Bob -->
       <div class="pcell">
-      <article class="person-card" data-id="bob" role="checkbox" tabindex="0" aria-checked="false" aria-label="Toggle Bob in comparison">
+      <article class="person-card" data-id="bob" role="checkbox" tabindex="0" aria-checked="false" aria-label="Toggle Bob in comparison" data-aria-en="Toggle Bob in comparison" data-aria-es="Activar Bob en la comparación">
         <div class="p-top">
           <div class="p-head">
             <span class="emoji">🛠️</span>
-            <span class="p-name"><span class="nm-h">Bob</span><span class="role">Labour help</span></span>
+            <span class="p-name"><span class="nm-h">Bob</span><span class="role"><span class="en" lang="en">Labour help</span><span class="es" lang="es">Manos para currar</span></span></span>
           </div>
           <div class="p-rgb">
             <div class="bar souls"><span class="track"><span class="fill" style="--v:42%"></span></span></div>
@@ -677,23 +708,23 @@
         </div>
         <p class="terms"><strong>10</strong> H$</p>
         <details class="morebox">
-          <summary>More</summary>
+          <summary><span class="en" lang="en">More</span><span class="es" lang="es">Más</span></summary>
           <div class="morecontent">
-            <p>Disponibilidad: fines de semana</p>
-            <p>Herramientas: kit básico</p>
+            <p><span class="en" lang="en">Availability: weekends</span><span class="es" lang="es">Disponibilidad: fines de semana</span></p>
+            <p><span class="en" lang="en">Tools: basic kit</span><span class="es" lang="es">Herramientas: kit básico</span></p>
             <details class="morebox">
-              <summary>More offers from Bob</summary>
+              <summary><span class="en" lang="en">More offers from Bob</span><span class="es" lang="es">Más ofertas de Bob</span></summary>
               <div class="offer-list">
-                <button type="button" class="offer-item" aria-pressed="false" data-label="🧹 Limpieza" data-info="2 h/sem · 4 H$">
-                  <span class="oi-label">🧹 Limpieza</span>
-                  <span class="oi-info"><strong>2</strong> h/sem <span class="dot">•</span> <strong>4</strong> H$</span>
+                <button type="button" class="offer-item" aria-pressed="false" data-label-en="🧹 Cleaning" data-label-es="🧹 Limpieza" data-info-en="2 h/wk · 4 H$" data-info-es="2 h/sem · 4 H$">
+                  <span class="oi-label"><span class="en" lang="en">🧹 Cleaning</span><span class="es" lang="es">🧹 Limpieza</span></span>
+                  <span class="oi-info"><strong>2</strong> <span class="en" lang="en">h/wk</span><span class="es" lang="es">h/sem</span> <span class="dot">•</span> <strong>4</strong> H$</span>
                 </button>
-                <button type="button" class="offer-item" aria-pressed="false" data-label="🪚 Arreglos carpintería" data-info="1.5 h/tarea · 8 H$">
-                  <span class="oi-label">🪚 Arreglos carpintería</span>
-                  <span class="oi-info"><strong>1.5</strong> h/tarea <span class="dot">•</span> <strong>8</strong> H$</span>
+                <button type="button" class="offer-item" aria-pressed="false" data-label-en="🪚 Carpentry fixes" data-label-es="🪚 Arreglos carpintería" data-info-en="1.5 h/task · 8 H$" data-info-es="1.5 h/tarea · 8 H$">
+                  <span class="oi-label"><span class="en" lang="en">🪚 Carpentry fixes</span><span class="es" lang="es">🪚 Arreglos carpintería</span></span>
+                  <span class="oi-info"><strong>1.5</strong> <span class="en" lang="en">h/task</span><span class="es" lang="es">h/tarea</span> <span class="dot">•</span> <strong>8</strong> H$</span>
                 </button>
-                <button type="button" class="offer-item" aria-pressed="false" data-label="🚚 Pequeñas mudanzas" data-info="1 h$ · 6 H$">
-                  <span class="oi-label">🚚 Pequeñas mudanzas</span>
+                <button type="button" class="offer-item" aria-pressed="false" data-label-en="🚚 Small moves" data-label-es="🚚 Pequeñas mudanzas" data-info-en="1 h$ · 6 H$" data-info-es="1 h$ · 6 H$">
+                  <span class="oi-label"><span class="en" lang="en">🚚 Small moves</span><span class="es" lang="es">🚚 Pequeñas mudanzas</span></span>
                   <span class="oi-info"><strong>1</strong> h$ <span class="dot">•</span> <strong>6</strong> H$</span>
                 </button>
               </div>
@@ -705,11 +736,11 @@
 
       <!-- Alice -->
       <div class="pcell">
-      <article class="person-card" data-id="alice" role="checkbox" tabindex="0" aria-checked="false" aria-label="Toggle Alice in comparison">
+      <article class="person-card" data-id="alice" role="checkbox" tabindex="0" aria-checked="false" aria-label="Toggle Alice in comparison" data-aria-en="Toggle Alice in comparison" data-aria-es="Activar Alice en la comparación">
         <div class="p-top">
           <div class="p-head">
             <span class="emoji">🏠</span>
-            <span class="p-name"><span class="nm-h">Alice</span><span class="role">Home sitting</span></span>
+            <span class="p-name"><span class="nm-h">Alice</span><span class="role"><span class="en" lang="en">Home sitting</span><span class="es" lang="es">Cuidado de casa</span></span></span>
           </div>
           <div class="p-rgb">
             <div class="bar souls"><span class="track"><span class="fill" style="--v:60%"></span></span></div>
@@ -717,26 +748,26 @@
             <div class="bar deal"><span class="track"><span class="fill" style="--v:25%"></span></span></div>
           </div>
         </div>
-        <p class="terms"><strong>3</strong> H/sem <span class="dot">•</span> <strong>1</strong> h$</p>
+        <p class="terms"><strong>3</strong> <span class="en" lang="en">H/wk</span><span class="es" lang="es">H/sem</span> <span class="dot">•</span> <strong>1</strong> h$</p>
         <details class="morebox">
-          <summary>More</summary>
+          <summary><span class="en" lang="en">More</span><span class="es" lang="es">Más</span></summary>
           <div class="morecontent">
-            <p>Apto mascotas, revisión de correo</p>
-            <p>Tardes preferidas</p>
+            <p><span class="en" lang="en">Pet-friendly, mail check</span><span class="es" lang="es">Apto mascotas, revisión de correo</span></p>
+            <p><span class="en" lang="en">Afternoons preferred</span><span class="es" lang="es">Tardes preferidas</span></p>
             <details class="morebox">
-              <summary>More offers from Alice</summary>
+              <summary><span class="en" lang="en">More offers from Alice</span><span class="es" lang="es">Más ofertas de Alice</span></summary>
               <div class="offer-list">
-                <button type="button" class="offer-item" aria-pressed="false" data-label="🌿 Cuidado de plantas" data-info="1 h/sem · 2 H$">
-                  <span class="oi-label">🌿 Cuidado de plantas</span>
-                  <span class="oi-info"><strong>1</strong> h/sem <span class="dot">•</span> <strong>2</strong> H$</span>
+                <button type="button" class="offer-item" aria-pressed="false" data-label-en="🌿 Plant care" data-label-es="🌿 Cuidado de plantas" data-info-en="1 h/wk · 2 H$" data-info-es="1 h/sem · 2 H$">
+                  <span class="oi-label"><span class="en" lang="en">🌿 Plant care</span><span class="es" lang="es">🌿 Cuidado de plantas</span></span>
+                  <span class="oi-info"><strong>1</strong> <span class="en" lang="en">h/wk</span><span class="es" lang="es">h/sem</span> <span class="dot">•</span> <strong>2</strong> H$</span>
                 </button>
-                <button type="button" class="offer-item" aria-pressed="false" data-label="🐶 Paseo de perros" data-info="0.5 h · 3 H$">
-                  <span class="oi-label">🐶 Paseo de perros</span>
+                <button type="button" class="offer-item" aria-pressed="false" data-label-en="🐶 Dog walking" data-label-es="🐶 Paseo de perros" data-info-en="0.5 h · 3 H$" data-info-es="0.5 h · 3 H$">
+                  <span class="oi-label"><span class="en" lang="en">🐶 Dog walking</span><span class="es" lang="es">🐶 Paseo de perros</span></span>
                   <span class="oi-info"><strong>0.5</strong> h <span class="dot">•</span> <strong>3</strong> H$</span>
                 </button>
-                <button type="button" class="offer-item" aria-pressed="false" data-label="📦 Recogida de paquetes" data-info="a demanda · 1 H$">
-                  <span class="oi-label">📦 Recogida de paquetes</span>
-                  <span class="oi-info">a demanda <span class="dot">•</span> <strong>1</strong> H$</span>
+                <button type="button" class="offer-item" aria-pressed="false" data-label-en="📦 Parcel pickup" data-label-es="📦 Recogida de paquetes" data-info-en="on demand · 1 H$" data-info-es="a demanda · 1 H$">
+                  <span class="oi-label"><span class="en" lang="en">📦 Parcel pickup</span><span class="es" lang="es">📦 Recogida de paquetes</span></span>
+                  <span class="oi-info"><span class="en" lang="en">on demand</span><span class="es" lang="es">a demanda</span> <span class="dot">•</span> <strong>1</strong> H$</span>
                 </button>
               </div>
             </details>
@@ -747,11 +778,11 @@
 
       <!-- Charlie -->
       <div class="pcell">
-      <article class="person-card" data-id="charlie" role="checkbox" tabindex="0" aria-checked="false" aria-label="Toggle Charlie in comparison">
+      <article class="person-card" data-id="charlie" role="checkbox" tabindex="0" aria-checked="false" aria-label="Toggle Charlie in comparison" data-aria-en="Toggle Charlie in comparison" data-aria-es="Activar Charlie en la comparación">
         <div class="p-top">
           <div class="p-head">
             <span class="emoji">🔧</span>
-            <span class="p-name"><span class="nm-h">Charlie</span><span class="role">Fix &amp; errands</span></span>
+            <span class="p-name"><span class="nm-h">Charlie</span><span class="role"><span class="en" lang="en">Fix &amp; errands</span><span class="es" lang="es">Arreglos y recados</span></span></span>
           </div>
           <div class="p-rgb">
             <div class="bar souls"><span class="track"><span class="fill" style="--v:55%"></span></span></div>
@@ -759,25 +790,25 @@
             <div class="bar deal"><span class="track"><span class="fill" style="--v:70%"></span></span></div>
           </div>
         </div>
-        <p class="terms"><strong>2</strong> H/sem <span class="dot">•</span> <strong>0.5</strong> h$</p>
+        <p class="terms"><strong>2</strong> <span class="en" lang="en">H/wk</span><span class="es" lang="es">H/sem</span> <span class="dot">•</span> <strong>0.5</strong> h$</p>
         <details class="morebox">
-          <summary>More</summary>
+          <summary><span class="en" lang="en">More</span><span class="es" lang="es">Más</span></summary>
           <div class="morecontent">
-            <p>Gestiones pequeñas y reparaciones básicas</p>
-            <p>Horario flexible</p>
+            <p><span class="en" lang="en">Small tasks and basic repairs</span><span class="es" lang="es">Gestiones pequeñas y reparaciones básicas</span></p>
+            <p><span class="en" lang="en">Flexible hours</span><span class="es" lang="es">Horario flexible</span></p>
             <details class="morebox">
-              <summary>More offers from Charlie</summary>
+              <summary><span class="en" lang="en">More offers from Charlie</span><span class="es" lang="es">Más ofertas de Charlie</span></summary>
               <div class="offer-list">
-                <button type="button" class="offer-item" aria-pressed="false" data-label="🧺 Lavandería y doblado" data-info="1.5 h/sem · 3 H$">
-                  <span class="oi-label">🧺 Lavandería y doblado</span>
-                  <span class="oi-info"><strong>1.5</strong> h/sem <span class="dot">•</span> <strong>3</strong> H$</span>
+                <button type="button" class="offer-item" aria-pressed="false" data-label-en="🧺 Laundry &amp; folding" data-label-es="🧺 Lavandería y doblado" data-info-en="1.5 h/wk · 3 H$" data-info-es="1.5 h/sem · 3 H$">
+                  <span class="oi-label"><span class="en" lang="en">🧺 Laundry &amp; folding</span><span class="es" lang="es">🧺 Lavandería y doblado</span></span>
+                  <span class="oi-info"><strong>1.5</strong> <span class="en" lang="en">h/wk</span><span class="es" lang="es">h/sem</span> <span class="dot">•</span> <strong>3</strong> H$</span>
                 </button>
-                <button type="button" class="offer-item" aria-pressed="false" data-label="🧯 Mantenimiento básico" data-info="por tarea · 5 H$">
-                  <span class="oi-label">🧯 Mantenimiento básico</span>
-                  <span class="oi-info">por tarea <span class="dot">•</span> <strong>5</strong> H$</span>
+                <button type="button" class="offer-item" aria-pressed="false" data-label-en="🧯 Basic maintenance" data-label-es="🧯 Mantenimiento básico" data-info-en="per task · 5 H$" data-info-es="por tarea · 5 H$">
+                  <span class="oi-label"><span class="en" lang="en">🧯 Basic maintenance</span><span class="es" lang="es">🧯 Mantenimiento básico</span></span>
+                  <span class="oi-info"><span class="en" lang="en">per task</span><span class="es" lang="es">por tarea</span> <span class="dot">•</span> <strong>5</strong> H$</span>
                 </button>
-                <button type="button" class="offer-item" aria-pressed="false" data-label="🛒 Recados locales" data-info="1 h · 2 H$">
-                  <span class="oi-label">🛒 Recados locales</span>
+                <button type="button" class="offer-item" aria-pressed="false" data-label-en="🛒 Local errands" data-label-es="🛒 Recados locales" data-info-en="1 h · 2 H$" data-info-es="1 h · 2 H$">
+                  <span class="oi-label"><span class="en" lang="en">🛒 Local errands</span><span class="es" lang="es">🛒 Recados locales</span></span>
                   <span class="oi-info"><strong>1</strong> h <span class="dot">•</span> <strong>2</strong> H$</span>
                 </button>
               </div>
@@ -789,11 +820,11 @@
 
       <!-- Dana -->
       <div class="pcell">
-      <article class="person-card" data-id="dana" role="checkbox" tabindex="0" aria-checked="false" aria-label="Toggle Dana in comparison">
+      <article class="person-card" data-id="dana" role="checkbox" tabindex="0" aria-checked="false" aria-label="Toggle Dana in comparison" data-aria-en="Toggle Dana in comparison" data-aria-es="Activar Dana en la comparación">
         <div class="p-top">
           <div class="p-head">
             <span class="emoji">🌿</span>
-            <span class="p-name"><span class="nm-h">Dana</span><span class="role">Garden care</span></span>
+            <span class="p-name"><span class="nm-h">Dana</span><span class="role"><span class="en" lang="en">Garden care</span><span class="es" lang="es">Cuidado del jardín</span></span></span>
           </div>
           <div class="p-rgb">
             <div class="bar souls"><span class="track"><span class="fill" style="--v:70%"></span></span></div>
@@ -801,25 +832,25 @@
             <div class="bar deal"><span class="track"><span class="fill" style="--v:48%"></span></span></div>
           </div>
         </div>
-        <p class="terms"><strong>4</strong> H/sem <span class="dot">•</span> <strong>1</strong> h$</p>
+        <p class="terms"><strong>4</strong> <span class="en" lang="en">H/wk</span><span class="es" lang="es">H/sem</span> <span class="dot">•</span> <strong>1</strong> h$</p>
         <details class="morebox">
-          <summary>More</summary>
+          <summary><span class="en" lang="en">More</span><span class="es" lang="es">Más</span></summary>
           <div class="morecontent">
-            <p>Mano verde, herramientas propias</p>
-            <p>Mañanas preferidas</p>
+            <p><span class="en" lang="en">Green thumb, own tools</span><span class="es" lang="es">Mano verde, herramientas propias</span></p>
+            <p><span class="en" lang="en">Mornings preferred</span><span class="es" lang="es">Mañanas preferidas</span></p>
             <details class="morebox">
-              <summary>More offers from Dana</summary>
+              <summary><span class="en" lang="en">More offers from Dana</span><span class="es" lang="es">Más ofertas de Dana</span></summary>
               <div class="offer-list">
-                <button type="button" class="offer-item" aria-pressed="false" data-label="🌳 Poda y recorte" data-info="2 h/tarea · 7 H$">
-                  <span class="oi-label">🌳 Poda y recorte</span>
-                  <span class="oi-info"><strong>2</strong> h/tarea <span class="dot">•</span> <strong>7</strong> H$</span>
+                <button type="button" class="offer-item" aria-pressed="false" data-label-en="🌳 Pruning &amp; trimming" data-label-es="🌳 Poda y recorte" data-info-en="2 h/task · 7 H$" data-info-es="2 h/tarea · 7 H$">
+                  <span class="oi-label"><span class="en" lang="en">🌳 Pruning &amp; trimming</span><span class="es" lang="es">🌳 Poda y recorte</span></span>
+                  <span class="oi-info"><strong>2</strong> <span class="en" lang="en">h/task</span><span class="es" lang="es">h/tarea</span> <span class="dot">•</span> <strong>7</strong> H$</span>
                 </button>
-                <button type="button" class="offer-item" aria-pressed="false" data-label="🌻 Plantación de temporada" data-info="3 h · 9 H$">
-                  <span class="oi-label">🌻 Plantación de temporada</span>
+                <button type="button" class="offer-item" aria-pressed="false" data-label-en="🌻 Seasonal planting" data-label-es="🌻 Plantación de temporada" data-info-en="3 h · 9 H$" data-info-es="3 h · 9 H$">
+                  <span class="oi-label"><span class="en" lang="en">🌻 Seasonal planting</span><span class="es" lang="es">🌻 Plantación de temporada</span></span>
                   <span class="oi-info"><strong>3</strong> h <span class="dot">•</span> <strong>9</strong> H$</span>
                 </button>
-                <button type="button" class="offer-item" aria-pressed="false" data-label="♻️ Montaje de compostera" data-info="1.5 h · 5 H$">
-                  <span class="oi-label">♻️ Montaje de compostera</span>
+                <button type="button" class="offer-item" aria-pressed="false" data-label-en="♻️ Compost bin setup" data-label-es="♻️ Montaje de compostera" data-info-en="1.5 h · 5 H$" data-info-es="1.5 h · 5 H$">
+                  <span class="oi-label"><span class="en" lang="en">♻️ Compost bin setup</span><span class="es" lang="es">♻️ Montaje de compostera</span></span>
                   <span class="oi-info"><strong>1.5</strong> h <span class="dot">•</span> <strong>5</strong> H$</span>
                 </button>
               </div>
@@ -831,11 +862,11 @@
 
       <!-- Erin -->
       <div class="pcell">
-      <article class="person-card" data-id="erin" role="checkbox" tabindex="0" aria-checked="false" aria-label="Toggle Erin in comparison">
+      <article class="person-card" data-id="erin" role="checkbox" tabindex="0" aria-checked="false" aria-label="Toggle Erin in comparison" data-aria-en="Toggle Erin in comparison" data-aria-es="Activar Erin en la comparación">
         <div class="p-top">
           <div class="p-head">
             <span class="emoji">📚</span>
-            <span class="p-name"><span class="nm-h">Erin</span><span class="role">Tutoring</span></span>
+            <span class="p-name"><span class="nm-h">Erin</span><span class="role"><span class="en" lang="en">Tutoring</span><span class="es" lang="es">Clases particulares</span></span></span>
           </div>
           <div class="p-rgb">
             <div class="bar souls"><span class="track"><span class="fill" style="--v:38%"></span></span></div>
@@ -843,26 +874,26 @@
             <div class="bar deal"><span class="track"><span class="fill" style="--v:58%"></span></span></div>
           </div>
         </div>
-        <p class="terms"><strong>2</strong> H/sem <span class="dot">•</span> <strong>1.5</strong> h$</p>
+        <p class="terms"><strong>2</strong> <span class="en" lang="en">H/wk</span><span class="es" lang="es">H/sem</span> <span class="dot">•</span> <strong>1.5</strong> h$</p>
         <details class="morebox">
-          <summary>More</summary>
+          <summary><span class="en" lang="en">More</span><span class="es" lang="es">Más</span></summary>
           <div class="morecontent">
-            <p>Matemáticas e idiomas</p>
-            <p>Tardes-noche</p>
+            <p><span class="en" lang="en">Maths and languages</span><span class="es" lang="es">Matemáticas e idiomas</span></p>
+            <p><span class="en" lang="en">Evenings</span><span class="es" lang="es">Tardes-noche</span></p>
             <details class="morebox">
-              <summary>More offers from Erin</summary>
+              <summary><span class="en" lang="en">More offers from Erin</span><span class="es" lang="es">Más ofertas de Erin</span></summary>
               <div class="offer-list">
-                <button type="button" class="offer-item" aria-pressed="false" data-label="✏️ Apoyo con deberes" data-info="1 h/sem · 3 H$">
-                  <span class="oi-label">✏️ Apoyo con deberes</span>
-                  <span class="oi-info"><strong>1</strong> h/sem <span class="dot">•</span> <strong>3</strong> H$</span>
+                <button type="button" class="offer-item" aria-pressed="false" data-label-en="✏️ Homework help" data-label-es="✏️ Apoyo con deberes" data-info-en="1 h/wk · 3 H$" data-info-es="1 h/sem · 3 H$">
+                  <span class="oi-label"><span class="en" lang="en">✏️ Homework help</span><span class="es" lang="es">✏️ Apoyo con deberes</span></span>
+                  <span class="oi-info"><strong>1</strong> <span class="en" lang="en">h/wk</span><span class="es" lang="es">h/sem</span> <span class="dot">•</span> <strong>3</strong> H$</span>
                 </button>
-                <button type="button" class="offer-item" aria-pressed="false" data-label="📝 Preparación de exámenes" data-info="2 h/sem · 6 H$">
-                  <span class="oi-label">📝 Preparación de exámenes</span>
-                  <span class="oi-info"><strong>2</strong> h/sem <span class="dot">•</span> <strong>6</strong> H$</span>
+                <button type="button" class="offer-item" aria-pressed="false" data-label-en="📝 Exam prep" data-label-es="📝 Preparación de exámenes" data-info-en="2 h/wk · 6 H$" data-info-es="2 h/sem · 6 H$">
+                  <span class="oi-label"><span class="en" lang="en">📝 Exam prep</span><span class="es" lang="es">📝 Preparación de exámenes</span></span>
+                  <span class="oi-info"><strong>2</strong> <span class="en" lang="en">h/wk</span><span class="es" lang="es">h/sem</span> <span class="dot">•</span> <strong>6</strong> H$</span>
                 </button>
-                <button type="button" class="offer-item" aria-pressed="false" data-label="📖 Club de lectura" data-info="1.5 h/sem · 2 H$">
-                  <span class="oi-label">📖 Club de lectura</span>
-                  <span class="oi-info"><strong>1.5</strong> h/sem <span class="dot">•</span> <strong>2</strong> H$</span>
+                <button type="button" class="offer-item" aria-pressed="false" data-label-en="📖 Reading club" data-label-es="📖 Club de lectura" data-info-en="1.5 h/wk · 2 H$" data-info-es="1.5 h/sem · 2 H$">
+                  <span class="oi-label"><span class="en" lang="en">📖 Reading club</span><span class="es" lang="es">📖 Club de lectura</span></span>
+                  <span class="oi-info"><strong>1.5</strong> <span class="en" lang="en">h/wk</span><span class="es" lang="es">h/sem</span> <span class="dot">•</span> <strong>2</strong> H$</span>
                 </button>
               </div>
             </details>
@@ -873,11 +904,11 @@
 
       <!-- Frank -->
       <div class="pcell">
-      <article class="person-card" data-id="frank" role="checkbox" tabindex="0" aria-checked="false" aria-label="Toggle Frank in comparison">
+      <article class="person-card" data-id="frank" role="checkbox" tabindex="0" aria-checked="false" aria-label="Toggle Frank in comparison" data-aria-en="Toggle Frank in comparison" data-aria-es="Activar Frank en la comparación">
         <div class="p-top">
           <div class="p-head">
             <span class="emoji">🚲</span>
-            <span class="p-name"><span class="nm-h">Frank</span><span class="role">Delivery runs</span></span>
+            <span class="p-name"><span class="nm-h">Frank</span><span class="role"><span class="en" lang="en">Delivery runs</span><span class="es" lang="es">Repartos</span></span></span>
           </div>
           <div class="p-rgb">
             <div class="bar souls"><span class="track"><span class="fill" style="--v:50%"></span></span></div>
@@ -885,25 +916,25 @@
             <div class="bar deal"><span class="track"><span class="fill" style="--v:82%"></span></span></div>
           </div>
         </div>
-        <p class="terms"><strong>5</strong> H/sem <span class="dot">•</span> <strong>0.5</strong> h$</p>
+        <p class="terms"><strong>5</strong> <span class="en" lang="en">H/wk</span><span class="es" lang="es">H/sem</span> <span class="dot">•</span> <strong>0.5</strong> h$</p>
         <details class="morebox">
-          <summary>More</summary>
+          <summary><span class="en" lang="en">More</span><span class="es" lang="es">Más</span></summary>
           <div class="morecontent">
-            <p>Mensajero en bici, centro ciudad</p>
-            <p>Horario amplio</p>
+            <p><span class="en" lang="en">Bike courier, city centre</span><span class="es" lang="es">Mensajero en bici, centro ciudad</span></p>
+            <p><span class="en" lang="en">Wide schedule</span><span class="es" lang="es">Horario amplio</span></p>
             <details class="morebox">
-              <summary>More offers from Frank</summary>
+              <summary><span class="en" lang="en">More offers from Frank</span><span class="es" lang="es">Más ofertas de Frank</span></summary>
               <div class="offer-list">
-                <button type="button" class="offer-item" aria-pressed="false" data-label="🛒 Compra de supermercado" data-info="1 h · 3 H$">
-                  <span class="oi-label">🛒 Compra de supermercado</span>
+                <button type="button" class="offer-item" aria-pressed="false" data-label-en="🛒 Grocery shopping" data-label-es="🛒 Compra de supermercado" data-info-en="1 h · 3 H$" data-info-es="1 h · 3 H$">
+                  <span class="oi-label"><span class="en" lang="en">🛒 Grocery shopping</span><span class="es" lang="es">🛒 Compra de supermercado</span></span>
                   <span class="oi-info"><strong>1</strong> h <span class="dot">•</span> <strong>3</strong> H$</span>
                 </button>
-                <button type="button" class="offer-item" aria-pressed="false" data-label="💊 Recogida de farmacia" data-info="0.5 h · 2 H$">
-                  <span class="oi-label">💊 Recogida de farmacia</span>
+                <button type="button" class="offer-item" aria-pressed="false" data-label-en="💊 Pharmacy pickup" data-label-es="💊 Recogida de farmacia" data-info-en="0.5 h · 2 H$" data-info-es="0.5 h · 2 H$">
+                  <span class="oi-label"><span class="en" lang="en">💊 Pharmacy pickup</span><span class="es" lang="es">💊 Recogida de farmacia</span></span>
                   <span class="oi-info"><strong>0.5</strong> h <span class="dot">•</span> <strong>2</strong> H$</span>
                 </button>
-                <button type="button" class="offer-item" aria-pressed="false" data-label="📄 Entrega de documentos" data-info="0.5 h · 2 H$">
-                  <span class="oi-label">📄 Entrega de documentos</span>
+                <button type="button" class="offer-item" aria-pressed="false" data-label-en="📄 Document delivery" data-label-es="📄 Entrega de documentos" data-info-en="0.5 h · 2 H$" data-info-es="0.5 h · 2 H$">
+                  <span class="oi-label"><span class="en" lang="en">📄 Document delivery</span><span class="es" lang="es">📄 Entrega de documentos</span></span>
                   <span class="oi-info"><strong>0.5</strong> h <span class="dot">•</span> <strong>2</strong> H$</span>
                 </button>
               </div>
@@ -917,7 +948,7 @@
   </section>
 
   <div class="addmore">
-    <button type="button" class="add-btn" id="addMore" aria-label="Add 6 more users">+</button>
+    <button type="button" class="add-btn" id="addMore" aria-label="Add 6 more users" data-aria-en="Add 6 more users" data-aria-es="Añadir 6 usuarios más">+</button>
   </div>
 
   <!-- users added by the + button — a wrapping row below, no extra lateral scroll -->
@@ -926,7 +957,7 @@
   <!-- collapse button shown only after expanding — duplicates the top +
        (which becomes ×) so the user can fold the list back from the bottom too -->
   <div class="addmore addmore--bottom" id="collapseMoreWrap" hidden>
-    <button type="button" class="add-btn" id="collapseMore" aria-label="Collapse extra users">×</button>
+    <button type="button" class="add-btn" id="collapseMore" aria-label="Collapse extra users" data-aria-en="Collapse extra users" data-aria-es="Plegar usuarios extra">×</button>
   </div>
 
   <!-- Comparison -->
@@ -936,15 +967,15 @@
 
     <!-- view selector — radios; the checked view shows directly below -->
     <div class="cmp-bar">
-      <div class="views-ctl" role="radiogroup" aria-label="Comparison view">
+      <div class="views-ctl" role="radiogroup" aria-label="Comparison view" data-aria-en="Comparison view" data-aria-es="Vista de comparación">
         <input type="radio" name="cmpview" id="vw-bars" class="vw-input" value="bars" checked>
-        <label for="vw-bars" class="vw">▥ Bars</label>
+        <label for="vw-bars" class="vw">▥ <span class="en" lang="en">Bars</span><span class="es" lang="es">Barras</span></label>
         <input type="radio" name="cmpview" id="vw-spider" class="vw-input" value="spider">
-        <label for="vw-spider" class="vw">◈ Spider</label>
+        <label for="vw-spider" class="vw">◈ <span class="en" lang="en">Spider</span><span class="es" lang="es">Radar</span></label>
         <input type="radio" name="cmpview" id="vw-axial" class="vw-input" value="axial">
-        <label for="vw-axial" class="vw">▦ Axial</label>
+        <label for="vw-axial" class="vw">▦ <span class="en" lang="en">Axial</span><span class="es" lang="es">Axial</span></label>
         <input type="radio" name="cmpview" id="vw-area" class="vw-input" value="area">
-        <label for="vw-area" class="vw">▤ Per area</label>
+        <label for="vw-area" class="vw">▤ <span class="en" lang="en">Per area</span><span class="es" lang="es">Por área</span></label>
       </div>
     </div>
 
@@ -958,7 +989,7 @@
 
     <!-- Axial view — parallel category axes, one polyline per user -->
     <div class="cmp-axial" id="axialView" hidden>
-      <svg class="axial" viewBox="0 0 320 240" role="img" aria-label="Axial chart">
+      <svg class="axial" viewBox="0 0 320 240" role="img" aria-label="Axial chart" data-aria-en="Axial chart" data-aria-es="Gráfico axial">
         <line class="axis" x1="55" y1="20" x2="55" y2="200"/>
         <line class="axis" x1="160" y1="20" x2="160" y2="200"/>
         <line class="axis" x1="265" y1="20" x2="265" y2="200"/>
@@ -972,7 +1003,7 @@
     <!-- Spider view -->
     <div class="cmp-spider" id="spiderView">
       <div class="radar-wrap" id="radarWrap">
-        <svg class="radar" id="radar" viewBox="0 0 260 260" role="img" aria-label="Spider chart">
+        <svg class="radar" id="radar" viewBox="0 0 260 260" role="img" aria-label="Spider chart" data-aria-en="Spider chart" data-aria-es="Gráfico radar">
           <polygon class="grid" points="130,20 225.3,185 34.7,185"/>
           <line class="axis" x1="130" y1="130" x2="130" y2="20"/>
           <line class="axis" x1="130" y1="130" x2="225.3" y2="185"/>
@@ -983,7 +1014,7 @@
         <button type="button" class="axis-label t pos-t" data-axis="t">TRUST</button>
         <button type="button" class="axis-label d pos-d" data-axis="d">DEAL</button>
       </div>
-      <p class="spider-note" id="spiderNote">Select cards to draw their triangles · click a category title to focus its nodes.</p>
+      <p class="spider-note" id="spiderNote"><span class="en" lang="en">Select cards to draw their triangles · click a category title to focus its nodes.</span><span class="es" lang="es">Selecciona tarjetas para dibujar sus triángulos · pulsa el título de una categoría para enfocar sus nodos.</span></p>
     </div>
   </section>
 
@@ -992,7 +1023,7 @@
 <!-- "Message" modal -->
 <div class="modal-backdrop" id="modalBackdrop" hidden>
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <button type="button" class="modal-close" id="modalClose" aria-label="Close">✕</button>
+    <button type="button" class="modal-close" id="modalClose" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">✕</button>
     <h2 class="modal-title" id="modalTitle">Message</h2>
     <textarea class="modal-field" id="modalField"></textarea>
     <div class="modal-links" id="modalLinks" hidden></div>
@@ -1781,6 +1812,38 @@
   collapseMoreBtn.addEventListener('click', collapseExtras);
 
   render();
+})();
+</script>
+
+<script>
+// translate2 engine — switches the page language and translates the bits CSS
+// can't (<option> text, placeholders, aria-labels), remembers the choice, and
+// keeps <html lang> in sync.
+(function(){
+  const LS = 'translate2-lang';
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const radios = () => Array.from(document.querySelectorAll('input[name="lang"]'));
+  const curLang = () => { const r = radios().find(x => x.checked); return r ? r.id.replace('lang-', '') : 'en'; };
+  function applyLang(){
+    const li = curLang();
+    document.documentElement.lang = li;
+    document.querySelectorAll('option[data-en]').forEach(o => { if (o.dataset[li] != null) o.textContent = o.dataset[li]; });
+    document.querySelectorAll('[data-ph-en]').forEach(el => { const v = el.dataset['ph' + cap(li)]; if (v != null) el.placeholder = v; });
+    document.querySelectorAll('[data-aria-en]').forEach(el => { const v = el.dataset['aria' + cap(li)]; if (v != null) el.setAttribute('aria-label', v); });
+    try { localStorage.setItem(LS, li); } catch (_) {}
+    window.curLang = li;
+    document.dispatchEvent(new CustomEvent('langchange', { detail: li }));
+  }
+  function init(){
+    let saved = null; try { saved = localStorage.getItem(LS); } catch (_) {}
+    if (saved){ const r = document.getElementById('lang-' + saved); if (r) r.checked = true; }
+    radios().forEach(r => r.addEventListener('change', () => {
+      applyLang();
+      const d = document.querySelector('details.lang'); if (d) d.open = false;
+    }));
+    applyLang();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 </script>
 

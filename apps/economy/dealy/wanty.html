@@ -1543,6 +1543,29 @@
       box-shadow:0 0 0 3px var(--accent-glow, rgba(220,38,38,.22));
     }
     .tier-pop-step--current .tier-pop-label{ color:var(--accent-deep); font-weight:700; }
+
+    /* ── translate2 — i18n span toggle (CSS-only): hide every non-active language ── */
+    .es{display:none}                                  /* default view = .en */
+    body:has(#lang-es:checked) .en{display:none}
+    body:has(#lang-es:checked) .es{display:inline}
+
+    /* ── translate2 — worldball switcher (🌐 opens the language options) ── */
+    .lang{display:inline-block;position:relative;margin:.2rem 0 .6rem}
+    .lang>summary{list-style:none;cursor:pointer;width:40px;height:40px;border:1px solid #999;border-radius:50%;
+      display:inline-flex;align-items:center;justify-content:center;font-size:1.35rem;line-height:1;-webkit-user-select:none;user-select:none}
+    .lang>summary::-webkit-details-marker{display:none}
+    .lang[open]>summary{border-color:#333;background:#f2f2f2}
+    .lang-opts{position:absolute;right:0;z-index:90;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;
+      background:#fff;border:1px solid #999;border-radius:12px;padding:6px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+    .lang input{position:absolute;opacity:0;pointer-events:none}
+    .lang label{cursor:pointer;padding:0 12px;min-height:40px;display:inline-flex;align-items:center;border:1px solid #999;border-radius:11px;white-space:nowrap}
+    .lang input:checked + label{background:#333;color:#fff;font-weight:bold;border-color:#333}
+    @media (prefers-color-scheme:dark){
+      .lang>summary{border-color:#777} .lang[open]>summary{background:#2a2a2a;border-color:#999}
+      .lang-opts{background:#222;border-color:#777;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+      .lang label{border-color:#777}
+      .lang input:checked + label{background:#e9e9e9;color:#111;border-color:#e9e9e9}
+    }
   </style>
 </head>
 <body>
@@ -1640,9 +1663,16 @@
       <button type="button" class="topmenu__item" data-act="export" role="menuitem">📦 Export JSON</button>
       <button type="button" class="topmenu__item" data-act="import" role="menuitem">📥 Import JSON</button>
       <div class="topmenu__sep" role="separator"></div>
-      <button type="button" class="topmenu__item" data-act="about" role="menuitem">◐ About</button>
+      <button type="button" class="topmenu__item" data-act="about" role="menuitem">◐ <span class="en" lang="en">About</span><span class="es" lang="es">Acerca de</span></button>
     </div>
   </div>
+  <details class="lang">
+    <summary class="worldball" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐</summary>
+    <div class="lang-opts">
+      <input type="radio" name="lang" id="lang-en" checked><label for="lang-en">English</label>
+      <input type="radio" name="lang" id="lang-es"><label for="lang-es">Español</label>
+    </div>
+  </details>
 </div>
 
 <aside class="info-panel" id="infoPanel" role="dialog" aria-label="About Wanty">
@@ -1680,25 +1710,25 @@
         <span class="chevron" aria-hidden="true"></span>
       </button>
       <div class="resume-body" id="resumeBody">
-      <div class="readable-phrase empty" id="readablePhrase">Pick a field and write to see your legible phrase…</div>
+      <div class="readable-phrase empty" id="readablePhrase"><span class="en" lang="en">Pick a field and write to see your legible phrase…</span><span class="es" lang="es">Elige un campo y escribe para ver tu frase legible…</span></div>
       <div class="insight-panel" id="insightPanel" hidden></div>
       <div class="action-buttons">
-        <button type="button" class="btn" id="insightBtn"><i class="fas fa-lightbulb"></i> Insight</button>
-        <button type="button" class="btn" id="creativeBtn"><i class="fas fa-sync-alt"></i> Creative</button>
-        <button type="button" class="btn" id="copyBtn"><i class="fas fa-copy"></i> Copy</button>
+        <button type="button" class="btn" id="insightBtn"><i class="fas fa-lightbulb"></i> <span class="en" lang="en">Insight</span><span class="es" lang="es">Reflexión</span></button>
+        <button type="button" class="btn" id="creativeBtn"><i class="fas fa-sync-alt"></i> <span class="en" lang="en">Creative</span><span class="es" lang="es">Creativo</span></button>
+        <button type="button" class="btn" id="copyBtn"><i class="fas fa-copy"></i> <span class="en" lang="en">Copy</span><span class="es" lang="es">Copiar</span></button>
       </div>
       <div class="button-group">
         <div class="btn-with-subs" id="saveWrap">
-          <button type="button" class="btn" id="saveBtn"><i class="fas fa-download"></i> Save</button>
+          <button type="button" class="btn" id="saveBtn"><i class="fas fa-download"></i> <span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></button>
           <div class="subitems">
             <button type="button" class="subitem" data-group="save" data-action="jpg">JPG</button>
             <button type="button" class="subitem" data-group="save" data-action="html">HTML</button>
-            <button type="button" class="subitem" data-group="save" data-action="text">Text</button>
+            <button type="button" class="subitem" data-group="save" data-action="text"><span class="en" lang="en">Text</span><span class="es" lang="es">Texto</span></button>
             <button type="button" class="subitem" data-group="save" data-action="json">JSON</button>
           </div>
         </div>
         <div class="btn-with-subs" id="shareWrap">
-          <button type="button" class="btn" id="shareBtn"><i class="fas fa-share-alt"></i> Share</button>
+          <button type="button" class="btn" id="shareBtn"><i class="fas fa-share-alt"></i> <span class="en" lang="en">Share</span><span class="es" lang="es">Compartir</span></button>
           <div class="subitems">
             <button type="button" class="subitem" data-group="share" data-action="whatsapp">WhatsApp</button>
             <button type="button" class="subitem" data-group="share" data-action="telegram">Telegram</button>
@@ -1717,11 +1747,11 @@
           <button type="button" class="btn" id="publishBtn"><i class="fas fa-cloud-upload-alt"></i> Publish</button>
           <div class="subitems subitems-below">
             <input class="subitem-radio" type="radio" name="publishVisibility" id="pubV0" data-r="0" data-visibility="Public" aria-hidden="true" tabindex="-1">
-            <label class="subitem is-radio" for="pubV0" data-r="0" data-group="publish">Public</label>
+            <label class="subitem is-radio" for="pubV0" data-r="0" data-group="publish"><span class="en" lang="en">Public</span><span class="es" lang="es">Público</span></label>
             <input class="subitem-radio" type="radio" name="publishVisibility" id="pubV1" data-r="1" data-visibility="Friends" aria-hidden="true" tabindex="-1">
-            <label class="subitem is-radio" for="pubV1" data-r="1" data-group="publish">Friends</label>
+            <label class="subitem is-radio" for="pubV1" data-r="1" data-group="publish"><span class="en" lang="en">Friends</span><span class="es" lang="es">Amigos</span></label>
             <input class="subitem-radio" type="radio" name="publishVisibility" id="pubV2" data-r="2" data-visibility="Private" aria-hidden="true" tabindex="-1">
-            <label class="subitem is-radio" for="pubV2" data-r="2" data-group="publish">Private</label>
+            <label class="subitem is-radio" for="pubV2" data-r="2" data-group="publish"><span class="en" lang="en">Private</span><span class="es" lang="es">Privado</span></label>
           </div>
         </div>
       </div>
@@ -1733,6 +1763,30 @@
 <script>
   (function(){
     "use strict";
+
+    // ── i18n: pick the active-language string for JS-generated text ──
+    // The worldball engine (below) exposes window.wantyLang(); default 'en'.
+    function lang(){ return (typeof window.wantyLang === 'function' ? window.wantyLang() : 'en'); }
+    function L(en, es){ return lang() === 'es' ? es : en; }
+    // Translations for the fixed tree node names (proper essence labels stay
+    // language-aware in the generated pills, phrase and chips).
+    const NODE_ES = {
+      'Like': 'Gusto', 'Wish': 'Deseo', 'Interest': 'Interés', 'Purpose': 'Propósito',
+      'Project': 'Proyecto', 'Want': 'Quiero',
+      'Favorite': 'Favorito', 'Cheer': 'Ánimo', 'Affection': 'Cariño', 'Joy': 'Alegría',
+      'Fancy': 'Antojo', 'Hope': 'Esperanza', 'Longing': 'Anhelo', 'Dream': 'Sueño', 'Fantasy': 'Fantasía',
+      'Preference': 'Preferencia', 'Curiosity': 'Curiosidad', 'Inspiration': 'Inspiración', 'Idea': 'Idea',
+      'Willing': 'Disposición', 'Hobby': 'Afición', 'Habit': 'Hábito',
+      'Calling': 'Llamada', 'Aspiration': 'Aspiración', 'Vision': 'Visión', 'Vocation': 'Vocación',
+      'Path': 'Camino', 'Mission': 'Misión', 'Destiny': 'Destino',
+      'Projection': 'Proyección', 'Pledge': 'Compromiso', 'Plan': 'Plan', 'Legacy': 'Legado',
+      'Request': 'Petición', 'Demand': 'Exigencia', 'Need': 'Necesidad', 'Require': 'Requisito'
+    };
+    // Display label for a node name in the active language (custom user-added
+    // nodes have no translation → shown as typed).
+    function nodeLabel(name){ return lang() === 'es' && NODE_ES[name] ? NODE_ES[name] : name; }
+    // Spanish lowercase form for the editor placeholder ("Tell me your …").
+    function nodeLower(name){ return nodeLabel(name).toLowerCase(); }
 
     // ── Parent / subtab tree ──────────────────────────────────────────
     // Each parent is an essence that itself reads as a kind of "want";
@@ -1949,7 +2003,7 @@
       if (ps) btn.style.setProperty('--btn-size', ps);
       if (isOpen(name) || isSelected(name)) btn.classList.add('active');
       if (fieldHasContent(name) || (tree[name] || []).some(fieldHasContent)) btn.classList.add('has-content');
-      btn.textContent = name;
+      btn.textContent = nodeLabel(name);
       btn.addEventListener('click', () => {
         if (isOpen(name)) {
           // Closing a parent drops it and its subtabs from the editor stack.
@@ -1998,7 +2052,7 @@
       btn.style.animationDelay = (idx * 0.12).toFixed(2) + 's';
       if (fieldHasContent(name)) btn.classList.add('has-content');
       if (isSelected(name)) btn.classList.add('active');
-      btn.textContent = name;
+      btn.textContent = nodeLabel(name);
 
       const sz = subSize(name, idx, total);
       if (sz) btn.style.setProperty('--btn-size', sz);
@@ -2330,7 +2384,7 @@
       const labelBtn = document.createElement('button');
       labelBtn.type = 'button';
       labelBtn.className = 'addmenu-node__label' + (expanded ? ' is-open' : '');
-      labelBtn.innerHTML = '<span class="addmenu-node__caret">▸</span>' + escapeHTML(name);
+      labelBtn.innerHTML = '<span class="addmenu-node__caret">▸</span>' + escapeHTML(nodeLabel(name));
       labelBtn.addEventListener('click', () => {
         if (addmenuExpanded.has(name)) addmenuExpanded.delete(name);
         else addmenuExpanded.add(name);
@@ -2342,7 +2396,7 @@
       x.type = 'button';
       x.className = 'addmenu-node__x';
       x.textContent = '×';
-      x.setAttribute('aria-label', 'Collapse ' + name);
+      x.setAttribute('aria-label', L('Collapse ', 'Contraer ') + nodeLabel(name));
       x.addEventListener('click', () => { addmenuExpanded.delete(name); renderAddMenu(); });
       head.appendChild(x);
       wrap.appendChild(head);
@@ -2356,18 +2410,18 @@
         const input = document.createElement('input');
         input.type = 'text';
         input.className = 'addmenu__input';
-        input.placeholder = 'add under ' + name + '…';
-        input.setAttribute('aria-label', 'Add a want under ' + name);
+        input.placeholder = L('add under ', 'añadir bajo ') + nodeLabel(name) + '…';
+        input.setAttribute('aria-label', L('Add a want under ', 'Añadir un quiero bajo ') + nodeLabel(name));
         const addBtn = document.createElement('button');
         addBtn.type = 'button';
         addBtn.className = 'addmenu__addbtn';
         addBtn.textContent = '+';
-        addBtn.setAttribute('aria-label', 'Add under ' + name);
+        addBtn.setAttribute('aria-label', L('Add under ', 'Añadir bajo ') + nodeLabel(name));
         const doAdd = () => {
           const v = input.value.trim();
           if (!v) return;
           if (allNodes().includes(v)) {
-            setHint('<i class="fas fa-info-circle"></i> “' + escapeHTML(v) + '” already exists.');
+            setHint('<i class="fas fa-info-circle"></i> “' + escapeHTML(v) + L('” already exists.', '” ya existe.'));
             return;
           }
           kidsOf(name).push(v);
@@ -2377,7 +2431,7 @@
           buildRandomCache();
           renderAddMenu();
           renderFields();
-          setHint('<i class="fas fa-check"></i> Added “' + escapeHTML(v) + '” under ' + escapeHTML(name) + '.');
+          setHint('<i class="fas fa-check"></i> ' + L('Added “', 'Añadido “') + escapeHTML(v) + L('” under ', '” bajo ') + escapeHTML(nodeLabel(name)) + '.');
         };
         addBtn.addEventListener('click', doAdd);
         input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doAdd(); } });
@@ -2407,13 +2461,13 @@
       // Ensure the array ends with an empty "draft" slot.
       if (arr.length === 0 || arr[arr.length - 1].trim() !== '') arr.push('');
       const draftIdx = arr.length - 1;
-      const placeholder = `Tell me your ${fieldName.toLowerCase()}…`;
+      const placeholder = L(`Tell me your ${fieldName.toLowerCase()}…`, `Cuéntame tu ${nodeLower(fieldName)}…`);
 
       // Saved entries (everything but the draft) render as chips with X.
       const chipsHTML = arr.slice(0, -1).map((v, i) => `
             <li class="entry-chip" data-idx="${i}">
               <span class="chip-text">${escapeHTML(v)}</span>
-              <button type="button" class="chip-remove" data-idx="${i}" aria-label="delete">×</button>
+              <button type="button" class="chip-remove" data-idx="${i}" aria-label="${L('delete', 'eliminar')}">×</button>
             </li>`).join('');
 
       const block = document.createElement('div');
@@ -2424,29 +2478,29 @@
       const urgentHTML = urgent ? `
             <label class="urgent-toggle${urgentOn ? ' is-on' : ''}">
               <input type="checkbox" class="urgent-checkbox"${urgentOn ? ' checked' : ''}>
-              <span>Urgent</span>
+              <span>${L('Urgent', 'Urgente')}</span>
             </label>` : '';
       block.innerHTML = `
         <div class="editor-block__head">
           <div class="editor-block__head-left">
-            <div class="field-title">${escapeHTML(fieldName)}</div>${urgentHTML}
+            <div class="field-title">${escapeHTML(nodeLabel(fieldName))}</div>${urgentHTML}
           </div>
-          <button type="button" class="editor-close" aria-label="Remove ${escapeHTML(fieldName)}">×</button>
+          <button type="button" class="editor-close" aria-label="${L('Remove ', 'Quitar ') + escapeHTML(nodeLabel(fieldName))}">×</button>
         </div>
         <div class="entry-input">
           <textarea class="new-entry" data-idx="${draftIdx}" rows="2" placeholder="${escapeHTML(placeholder)}">${escapeHTML(arr[draftIdx])}</textarea>
           <div class="entry-input__icons">
-            <label class="icon-btn upload-btn" aria-label="attach file" title="Attach file">
+            <label class="icon-btn upload-btn" aria-label="${L('attach file', 'adjuntar archivo')}">
               <i class="fas fa-paperclip"></i>
               <input type="file" class="entry-file" hidden>
             </label>
-            <button type="button" class="icon-btn voice-btn" aria-label="voice" title="Record voice">
+            <button type="button" class="icon-btn voice-btn" aria-label="${L('voice', 'voz')}">
               <i class="fas fa-microphone"></i>
             </button>
           </div>
         </div>
         <div class="entry-actions">
-          <button type="button" class="plus-entry-btn save-entry" aria-label="save" title="Save">
+          <button type="button" class="plus-entry-btn save-entry" aria-label="${L('save', 'guardar')}">
             <i class="fas fa-plus"></i>
           </button>
         </div>
@@ -2531,7 +2585,8 @@
     // Build the legible phrase from filled fields
     function buildPhrase() {
       const parts = filledFields().map(f => {
-        const label = urgentFlags[f.name] ? `${f.name} (urgent)` : f.name;
+        const nm = nodeLabel(f.name);
+        const label = urgentFlags[f.name] ? `${nm}${L(' (urgent)', ' (urgente)')}` : nm;
         return `${label}: ${f.values.join(', ')}.`;
       });
       return parts.join(' ');
@@ -2562,13 +2617,13 @@
     // ── Copy (simple one-shot) ──
     const copyBtn = document.getElementById('copyBtn');
     copyBtn?.addEventListener('click', async () => {
-      const phrase = buildPhrase() || 'Pick a field and write to see your legible phrase…';
+      const phrase = buildPhrase() || L('Pick a field and write to see your legible phrase…', 'Elige un campo y escribe para ver tu frase legible…');
       try {
         await navigator.clipboard.writeText(phrase);
-        copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied';
-        setTimeout(() => { copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy'; }, 1500);
+        copyBtn.innerHTML = '<i class="fas fa-check"></i> ' + L('Copied', 'Copiado');
+        setTimeout(() => { copyBtn.innerHTML = '<i class="fas fa-copy"></i> <span class="en" lang="en">Copy</span><span class="es" lang="es">Copiar</span>'; }, 1500);
       } catch (err) {
-        setHint('<i class="fas fa-info-circle"></i> Could not copy. Select and copy manually.');
+        setHint('<i class="fas fa-info-circle"></i> ' + L('Could not copy. Select and copy manually.', 'No se pudo copiar. Selecciona y copia manualmente.'));
       }
     });
 
@@ -2594,8 +2649,11 @@
         const plat = document.querySelector('input[name="publishPlatform"]:checked');
         const vis  = document.querySelector('input[name="publishVisibility"]:checked');
         const platName = plat?.dataset.platform   || '—';
-        const visName  = vis?.dataset.visibility  || '—';
-        setHint(`<i class="fas fa-cloud-upload-alt"></i> Published · ${platName} · ${visName} (${filledFields().length} fields).`);
+        const visRaw   = vis?.dataset.visibility  || '—';
+        const visMap   = { Public: L('Public', 'Público'), Friends: L('Friends', 'Amigos'), Private: L('Private', 'Privado') };
+        const visName  = visMap[visRaw] || visRaw;
+        const n = filledFields().length;
+        setHint(`<i class="fas fa-cloud-upload-alt"></i> ${L('Published', 'Publicado')} · ${platName} · ${visName} (${n} ${L(n === 1 ? 'field' : 'fields', n === 1 ? 'campo' : 'campos')}).`);
         wraps.publish.classList.remove('is-open');
       } else {
         closeAllWraps();
@@ -3043,6 +3101,38 @@
     setupCloudSets();
     startIntroSequence();
   })();
+</script>
+
+<script>
+// translate2 engine — switches the page language and translates the bits CSS
+// can't (placeholders, aria-labels, data-tip tooltips), remembers the choice,
+// and keeps <html lang> in sync.
+(function(){
+  const LS = 'translate2-lang';
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const radios = () => Array.from(document.querySelectorAll('input[name="lang"]'));
+  const curLang = () => { const r = radios().find(x => x.checked); return r ? r.id.replace('lang-', '') : 'en'; };
+  function applyLang(){
+    const li = curLang();
+    document.documentElement.lang = li;
+    document.querySelectorAll('option[data-en]').forEach(o => { if (o.dataset[li] != null) o.textContent = o.dataset[li]; });
+    document.querySelectorAll('[data-ph-en]').forEach(el => { const v = el.dataset['ph' + cap(li)]; if (v != null) el.placeholder = v; });
+    document.querySelectorAll('[data-aria-en]').forEach(el => { const v = el.dataset['aria' + cap(li)]; if (v != null) el.setAttribute('aria-label', v); });
+    document.querySelectorAll('[data-tip-en]').forEach(el => { const v = el.dataset['tip' + cap(li)]; if (v != null) el.setAttribute('data-tip', v); });
+    try { localStorage.setItem(LS, li); } catch (_) {}
+  }
+  window.wantyLang = curLang;
+  function init(){
+    let saved = null; try { saved = localStorage.getItem(LS); } catch (_) {}
+    if (saved){ const r = document.getElementById('lang-' + saved); if (r) r.checked = true; }
+    radios().forEach(r => r.addEventListener('change', () => {
+      applyLang();
+      const d = document.querySelector('details.lang'); if (d) d.open = false;
+    }));
+    applyLang();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
 </script>
 
 </body>
