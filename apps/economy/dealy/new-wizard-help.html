@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -176,10 +176,13 @@ body{
 /* ────────── question-centric strings area ────────── */
 .strings-host{ padding: .2rem 0 .2rem; }
 .strings-host:empty::before{
-  content: "Selecciona uno o más bots arriba para ver las preguntas de Cram y sus respuestas como referencia.";
+  content: "Pick one or more bots above to see Cram's questions and their answers as reference.";
   display: block; padding: 1.4rem 1rem;
   text-align: center; font-style: italic;
   color: var(--ink-mute);
+}
+body:has(#lang-es:checked) .strings-host:empty::before{
+  content: "Selecciona uno o más bots arriba para ver las preguntas de Cram y sus respuestas como referencia.";
 }
 .q-group{
   padding: 1rem 1.1rem 1rem;
@@ -351,31 +354,64 @@ body{
   .prompt-area{ min-height: 180px; }
   .ref-line{ grid-template-columns: 64px minmax(0, 1fr); }
 }
+
+/* translate2 — page-translation engine + worldball switcher (EN base + ES) */
+/* ── i18n span toggle (CSS-only): hide every non-active language ── */
+.es{display:none}                                  /* default view = .en */
+body:has(#lang-es:checked) .en{display:none}
+body:has(#lang-es:checked) .es{display:inline}
+
+/* ── worldball switcher (🌐 opens the language options) ── */
+.lang{display:inline-block;position:relative;margin:.2rem 0 .6rem}
+.lang>summary{list-style:none;cursor:pointer;width:40px;height:40px;border:1px solid #999;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;font-size:1.35rem;line-height:1;-webkit-user-select:none;user-select:none}
+.lang>summary::-webkit-details-marker{display:none}
+.lang[open]>summary{border-color:#333;background:#f2f2f2}
+.lang-opts{position:absolute;right:0;z-index:10;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;
+  background:#fff;border:1px solid #999;border-radius:12px;padding:6px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+.lang input{position:absolute;opacity:0;pointer-events:none}
+.lang label{cursor:pointer;padding:0 12px;min-height:40px;display:inline-flex;align-items:center;border:1px solid #999;border-radius:11px;white-space:nowrap}
+.lang input:checked + label{background:#333;color:#fff;font-weight:bold;border-color:#333}
+
+@media (prefers-color-scheme:dark){
+  .lang>summary{border-color:#777} .lang[open]>summary{background:#2a2a2a;border-color:#999}
+  .lang-opts{background:#222;border-color:#777;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+  .lang label{border-color:#777}
+  .lang input:checked + label{background:#e9e9e9;color:#111;border-color:#e9e9e9}
+}
 </style>
 </head>
 <body>
 
 <main class="page">
 
+  <details class="lang">
+    <summary class="worldball" title="Language" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐</summary>
+    <div class="lang-opts">
+      <input type="radio" name="lang" id="lang-en" checked><label for="lang-en">English</label>
+      <input type="radio" name="lang" id="lang-es"><label for="lang-es">Español</label>
+    </div>
+  </details>
+
   <header class="page-head">
-    <h1 class="page-title"><span class="page-mark">🧙</span> Crear un bot</h1>
-    <p class="page-sub">Define al nuevo bot, mira las preguntas de Cram con las respuestas de los bots que elijas como referencia, y añade las tuyas. El prompt se actualiza en vivo para que puedas pedírselo a una IA.</p>
+    <h1 class="page-title"><span class="page-mark">🧙</span> <span class="en" lang="en">Create a bot</span><span class="es" lang="es">Crear un bot</span></h1>
+    <p class="page-sub"><span class="en" lang="en">Define the new bot, see Cram's questions alongside the answers from the bots you pick as reference, and add your own. The prompt updates live so you can hand it to an AI.</span><span class="es" lang="es">Define al nuevo bot, mira las preguntas de Cram con las respuestas de los bots que elijas como referencia, y añade las tuyas. El prompt se actualiza en vivo para que puedas pedírselo a una IA.</span></p>
   </header>
 
   <div class="layout">
 
     <!-- ============== FORM (left) ============== -->
-    <section class="card" aria-label="Nuevo bot">
+    <section class="card" aria-label="New bot" data-aria-en="New bot" data-aria-es="Nuevo bot">
 
       <!-- Identity: name + icon -->
       <div class="identity">
         <div class="field name">
-          <span class="field-title">Nombre</span>
-          <input type="text" id="botName" placeholder="Ej. Roque" maxlength="30" required>
+          <span class="field-title"><span class="en" lang="en">Name</span><span class="es" lang="es">Nombre</span></span>
+          <input type="text" id="botName" placeholder="e.g. Roque" data-ph-en="e.g. Roque" data-ph-es="Ej. Roque" maxlength="30" required>
         </div>
         <div class="field">
-          <span class="field-title">Icono</span>
-          <div class="icon-pick" role="radiogroup" aria-label="Icono">
+          <span class="field-title"><span class="en" lang="en">Icon</span><span class="es" lang="es">Icono</span></span>
+          <div class="icon-pick" role="radiogroup" aria-label="Icon" data-aria-en="Icon" data-aria-es="Icono">
             <label><input type="radio" name="botIcon" value="🦊" checked>🦊</label>
             <label><input type="radio" name="botIcon" value="🐝">🐝</label>
             <label><input type="radio" name="botIcon" value="🪴">🪴</label>
@@ -392,7 +428,7 @@ body{
 
       <!-- Bot inspiration multi-select -->
       <div class="bots-row" id="botsRow">
-        <span class="row-title">Inspirarse en</span>
+        <span class="row-title"><span class="en" lang="en">Draw inspiration from</span><span class="es" lang="es">Inspirarse en</span></span>
         <!-- bot buttons injected -->
       </div>
 
@@ -402,23 +438,25 @@ body{
 
       <!-- Save row -->
       <div class="add-it-row">
-        <button type="button" class="btn btn--lg" id="saveBtn">＋ Guardar bot</button>
-        <button type="button" class="btn btn--ghost" id="cancelBtn">Cancelar</button>
-        <span class="feedback" id="saveFeedback">guardado.</span>
+        <button type="button" class="btn btn--lg" id="saveBtn">＋ <span class="en" lang="en">Save bot</span><span class="es" lang="es">Guardar bot</span></button>
+        <button type="button" class="btn btn--ghost" id="cancelBtn"><span class="en" lang="en">Cancel</span><span class="es" lang="es">Cancelar</span></button>
+        <span class="feedback" id="saveFeedback"><span class="en" lang="en">saved.</span><span class="es" lang="es">guardado.</span></span>
       </div>
     </section>
 
     <!-- ============== OUTPUT (right) ============== -->
-    <aside class="card output-card" aria-label="Prompt para una IA">
+    <aside class="card output-card" aria-label="Prompt for an AI" data-aria-en="Prompt for an AI" data-aria-es="Prompt para una IA">
       <div class="prompt-actions">
-        <button type="button" class="btn btn--lg" id="copyPromptBtn">Copy Prompt</button>
-        <span class="copy-feedback" id="copyFeedback">copiado.</span>
+        <button type="button" class="btn btn--lg" id="copyPromptBtn"><span class="en" lang="en">Copy prompt</span><span class="es" lang="es">Copiar prompt</span></button>
+        <span class="copy-feedback" id="copyFeedback"><span class="en" lang="en">copied.</span><span class="es" lang="es">copiado.</span></span>
       </div>
 
       <textarea class="prompt-area" id="promptArea" spellcheck="false"
-                placeholder="El prompt para tu IA aparecerá aquí en cuanto añadas un nombre y elijas alguna inspiración…"></textarea>
+                placeholder="The prompt for your AI will appear here as soon as you add a name and pick some inspiration…"
+                data-ph-en="The prompt for your AI will appear here as soon as you add a name and pick some inspiration…"
+                data-ph-es="El prompt para tu IA aparecerá aquí en cuanto añadas un nombre y elijas alguna inspiración…"></textarea>
 
-      <p class="prompt-hint">El prompt se reescribe al cambiar el nombre, elegir bots de inspiración o escribir tus respuestas. Cópialo para pedirle a una IA las respuestas en la voz de tu nuevo bot.</p>
+      <p class="prompt-hint"><span class="en" lang="en">The prompt is rewritten when you change the name, pick inspiration bots, or write your answers. Copy it to ask an AI for answers in your new bot's voice.</span><span class="es" lang="es">El prompt se reescribe al cambiar el nombre, elegir bots de inspiración o escribir tus respuestas. Cópialo para pedirle a una IA las respuestas en la voz de tu nuevo bot.</span></p>
     </aside>
   </div>
 </main>
@@ -517,6 +555,7 @@ body{
              <p class="ref-text">${esc(q.cram)}</p>
            </div>`
         : "";
+      // (Cram + bot names are proper nouns — left untranslated)
       // Each selected bot's answer to this Cram question
       const botsRefs = picks.map(key => {
         const meta = BOTS.find(b => b.key === key) || { label: key };
@@ -529,16 +568,20 @@ body{
       }).join("");
       const old = previous[q.id] ? esc(previous[q.id]) : "";
       return `<section class="q-group" data-q="${esc(q.id)}">
-        <h2 class="q-head">Pregunta ${idx + 1}${q.id ? ` · ${esc(q.id)}` : ""}</h2>
+        <h2 class="q-head"><span class="en" lang="en">Question ${idx + 1}</span><span class="es" lang="es">Pregunta ${idx + 1}</span>${q.id ? ` · ${esc(q.id)}` : ""}</h2>
         ${cramRef}
         ${botsRefs}
-        <label class="new-strings-label" for="ns-${esc(q.id)}">Tu respuesta como el nuevo bot</label>
+        <label class="new-strings-label" for="ns-${esc(q.id)}"><span class="en" lang="en">Your answer as the new bot</span><span class="es" lang="es">Tu respuesta como el nuevo bot</span></label>
         <textarea id="ns-${esc(q.id)}"
                   class="new-strings-field"
                   data-new-strings-for="${esc(q.id)}"
-                  placeholder="Escribe la respuesta de tu nuevo bot a esta pregunta de Cram…">${old}</textarea>
+                  placeholder="Write your new bot's answer to this Cram question…"
+                  data-ph-en="Write your new bot's answer to this Cram question…"
+                  data-ph-es="Escribe la respuesta de tu nuevo bot a esta pregunta de Cram…">${old}</textarea>
       </section>`;
     }).join("");
+    // Re-apply language-dependent attributes to freshly injected nodes.
+    if (window.applyLang) window.applyLang();
   }
   renderStrings();
 
@@ -555,20 +598,38 @@ body{
     });
     return { name, icon, basedOn, strings };
   }
+  // Active page language (driven by the worldball radios): "en" | "es"
+  function lang(){
+    const r = document.querySelector('input[name="lang"]:checked');
+    return r ? r.id.replace('lang-', '') : 'en';
+  }
   function buildPrompt(){
     const d = gather();
     if (!d.name && !d.basedOn.length) return "";
+    const es = lang() === 'es';
     const questions = corpus.questions || [];
     let p = "";
-    p += `Vas a ayudarme a dar voz a un nuevo bot del chat de Cram.\n\n`;
-    p += `Nombre: ${d.name || "(sin nombre)"}\n`;
-    p += `Icono: ${d.icon}\n\n`;
-    if (d.basedOn.length){
-      const labels = d.basedOn.map(k => (BOTS.find(b => b.key === k) || { label: k }).label);
-      p += `Personalidad inspirada en: ${labels.join(", ")}.\n\n`;
+    if (es){
+      p += `Vas a ayudarme a dar voz a un nuevo bot del chat de Cram.\n\n`;
+      p += `Nombre: ${d.name || "(sin nombre)"}\n`;
+      p += `Icono: ${d.icon}\n\n`;
+      if (d.basedOn.length){
+        const labels = d.basedOn.map(k => (BOTS.find(b => b.key === k) || { label: k }).label);
+        p += `Personalidad inspirada en: ${labels.join(", ")}.\n\n`;
+      }
+      p += `Estas son las preguntas de Cram, con las respuestas de los bots elegidos como referencia` +
+           (Object.keys(d.strings).length ? ` y mis primeras respuestas para el nuevo bot:\n` : `:\n`);
+    } else {
+      p += `You'll help me give voice to a new bot in Cram's chat.\n\n`;
+      p += `Name: ${d.name || "(no name)"}\n`;
+      p += `Icon: ${d.icon}\n\n`;
+      if (d.basedOn.length){
+        const labels = d.basedOn.map(k => (BOTS.find(b => b.key === k) || { label: k }).label);
+        p += `Personality inspired by: ${labels.join(", ")}.\n\n`;
+      }
+      p += `These are Cram's questions, with the chosen bots' answers as reference` +
+           (Object.keys(d.strings).length ? ` and my first answers for the new bot:\n` : `:\n`);
     }
-    p += `Estas son las preguntas de Cram, con las respuestas de los bots elegidos como referencia` +
-         (Object.keys(d.strings).length ? ` y mis primeras respuestas para el nuevo bot:\n` : `:\n`);
     questions.forEach((q, idx) => {
       const label = q.id || `q${idx + 1}`;
       p += `\n[${idx + 1}] Cram: "${q.cram}"\n`;
@@ -580,10 +641,16 @@ body{
       });
       const my = d.strings[label];
       if (my){
-        p += `   · ${d.name || "Nuevo bot"} (semilla): "${my}"\n`;
+        const seedName = es ? (d.name || "Nuevo bot") : (d.name || "New bot");
+        const seedTag  = es ? "semilla" : "seed";
+        p += `   · ${seedName} (${seedTag}): "${my}"\n`;
       }
     });
-    p += `\nGenera una respuesta nueva para cada pregunta en la voz de ${d.name || "el nuevo bot"}, manteniendo la personalidad implícita arriba. Devuélvelas como una lista numerada en español, una por pregunta.`;
+    if (es){
+      p += `\nGenera una respuesta nueva para cada pregunta en la voz de ${d.name || "el nuevo bot"}, manteniendo la personalidad implícita arriba. Devuélvelas como una lista numerada en español, una por pregunta.`;
+    } else {
+      p += `\nGenerate a fresh answer for each question in the voice of ${d.name || "the new bot"}, keeping the personality implied above. Return them as a numbered list, one per question.`;
+    }
     return p;
   }
   function updatePrompt(){
@@ -597,6 +664,10 @@ body{
     if (ev.target.closest("#botName, .new-strings-field, .icon-pick, #botsRow")){
       updatePrompt();
     }
+  });
+  // Rebuild the live prompt (and re-apply dynamic data-* placeholders) on language switch.
+  document.addEventListener("change", (ev) => {
+    if (ev.target && ev.target.name === "lang") updatePrompt();
   });
 
   // ───────── Copy prompt ─────────
@@ -635,6 +706,37 @@ body{
     try { window.parent.postMessage({ type: "flove:new-bot-cancel" }, "*"); } catch(_){}
   });
 
+})();
+</script>
+
+<script>
+// translate2 engine — switches the page language and translates the bits CSS
+// can't (<option> text, placeholders, aria-labels), remembers the choice, and
+// keeps <html lang> in sync. Works for any number of languages.
+(function(){
+  const LS = 'translate2-lang';
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);            // es -> Es
+  const radios = () => Array.from(document.querySelectorAll('input[name="lang"]'));
+  const curLang = () => { const r = radios().find(x => x.checked); return r ? r.id.replace('lang-', '') : 'en'; };
+  function applyLang(){
+    const li = curLang();
+    document.documentElement.lang = li;
+    document.querySelectorAll('option[data-en]').forEach(o => { if (o.dataset[li] != null) o.textContent = o.dataset[li]; });
+    document.querySelectorAll('[data-ph-en]').forEach(el => { const v = el.dataset['ph' + cap(li)]; if (v != null) el.placeholder = v; });
+    document.querySelectorAll('[data-aria-en]').forEach(el => { const v = el.dataset['aria' + cap(li)]; if (v != null) el.setAttribute('aria-label', v); });
+    try { localStorage.setItem(LS, li); } catch (_) {}
+  }
+  window.applyLang = applyLang;
+  function init(){
+    let saved = null; try { saved = localStorage.getItem(LS); } catch (_) {}
+    if (saved){ const r = document.getElementById('lang-' + saved); if (r) r.checked = true; }
+    radios().forEach(r => r.addEventListener('change', () => {
+      applyLang();
+      const d = document.querySelector('details.lang'); if (d) d.open = false;   // close the worldball after a pick
+    }));
+    applyLang();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 </script>
 </body>

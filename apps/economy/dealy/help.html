@@ -669,6 +669,10 @@
   .bubble.fairy    .name{ color: var(--c-fairy) }
   .bubble.me       .name{ color: var(--c-mine) }
   .bubble p{ margin: 0; line-height: 1.45; font-size: .95rem }
+  /* Question bubble lives inside <summary> (phrasing-only), so its parts are
+     spans; restore the block flow the <div>/<p> versions had. */
+  .qa-card > summary .msg{ display: block }
+  .qa-card > summary .qtext{ display: block; margin: 0; line-height: 1.45; font-size: .95rem }
   .bubble .msg time{ font-size: .68rem; color: var(--muted); margin-left: 6px }
 
   .bubble.cram .avatar{ background: var(--c-cram) }
@@ -924,11 +928,29 @@
   .btn-fav:hover{ border-color: #f59e0b; color: #b45309 }
   .btn-fav.is-on{ background: #fef3c7; color: #b45309; border-color: #fde68a }
 
-  /* ── i18n dual-span swap (EN default · ES alternate), as in blogynormal ─ */
-  .ctl{ position:absolute; opacity:0; pointer-events:none; width:1px; height:1px }
-  .t-es{ display:none }
-  body:has(#ui-lang-es:checked) .t-en{ display:none }
-  body:has(#ui-lang-es:checked) .t-es{ display:inline }
+  /* ── i18n span toggle (CSS-only): hide every non-active language ── */
+  .es{display:none}                                  /* default view = .en */
+  body:has(#lang-es:checked) .en{display:none}
+  body:has(#lang-es:checked) .es{display:inline}
+
+  /* ── worldball switcher (🌐 opens the language options) ── */
+  .lang{display:inline-block;position:relative;margin:.2rem 0 .6rem}
+  .lang>summary{list-style:none;cursor:pointer;width:40px;height:40px;border:1px solid #999;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;font-size:1.35rem;line-height:1;-webkit-user-select:none;user-select:none}
+  .lang>summary::-webkit-details-marker{display:none}
+  .lang[open]>summary{border-color:#333;background:#f2f2f2}
+  .lang-opts{position:absolute;right:0;z-index:10;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;
+    background:#fff;border:1px solid #999;border-radius:12px;padding:6px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+  .lang input{position:absolute;opacity:0;pointer-events:none}
+  .lang label{cursor:pointer;padding:0 12px;min-height:40px;display:inline-flex;align-items:center;border:1px solid #999;border-radius:11px;white-space:nowrap}
+  .lang input:checked + label{background:#333;color:#fff;font-weight:bold;border-color:#333}
+
+  @media (prefers-color-scheme:dark){
+    .lang>summary{border-color:#777} .lang[open]>summary{background:#2a2a2a;border-color:#999}
+    .lang-opts{background:#222;border-color:#777;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+    .lang label{border-color:#777}
+    .lang input:checked + label{background:#e9e9e9;color:#111;border-color:#e9e9e9}
+  }
 
   /* Language picker rows inside the menu */
   .menu-list li > label.menu-opt{
@@ -938,57 +960,62 @@
     transition: background var(--fast), color var(--fast);
   }
   .menu-list li > label.menu-opt:hover{ background:var(--accent-soft); color:var(--accent-deep) }
-  body:has(#ui-lang-en:checked) .menu-list label.menu-opt[for="ui-lang-en"],
-  body:has(#ui-lang-es:checked) .menu-list label.menu-opt[for="ui-lang-es"]{
+  body:has(#lang-en:checked) .menu-list label.menu-opt[for="lang-en"],
+  body:has(#lang-es:checked) .menu-list label.menu-opt[for="lang-es"]{
     background:var(--accent-soft); color:var(--accent-deep); font-weight:700;
   }
 </style>
 </head>
 <body class="f-all">
 
-<!-- UI language switcher — CSS-only dual-span swap (EN default · ES) -->
-<input type="radio" name="ui-lang" id="ui-lang-en" class="ctl" checked>
-<input type="radio" name="ui-lang" id="ui-lang-es" class="ctl">
-
 <div class="flove-bar">
   <div class="top-menu">
     <input type="checkbox" class="menu-toggle" id="d-menu">
     <label class="menu-btn" for="d-menu" title="Menu" tabindex="0">☰</label>
     <ul class="menu-list" role="menu">
-      <li class="menu-section-title"><span class="t-en" lang="en">This page</span><span class="t-es" lang="es">Esta página</span></li>
-      <li><a href="../index.html"><span class="mi">←</span><span class="t-en" lang="en">Back to flove launcher</span><span class="t-es" lang="es">Volver al lanzador flove</span></a></li>
+      <li class="menu-section-title"><span class="en" lang="en">This page</span><span class="es" lang="es">Esta página</span></li>
+      <li><a href="../index.html"><span class="mi">←</span><span class="en" lang="en">Back to flove launcher</span><span class="es" lang="es">Volver al lanzador flove</span></a></li>
       <li><a href="dealy-advanced.html"><span class="mi">✺</span>Dealy</a></li>
       <li><a href="shareful.html"><span class="mi">🤝</span>Shareful</a></li>
       <li><a href="clauses.html"><span class="mi">📜</span>Clauses</a></li>
       <li class="menu-divider" role="separator" aria-hidden="true"></li>
-      <li class="menu-section-title"><span class="t-en" lang="en">Help</span><span class="t-es" lang="es">Ayuda</span></li>
-      <li><a href="#"><span class="mi">ⓘ</span><span class="t-en" lang="en">About this page</span><span class="t-es" lang="es">Acerca de esta página</span></a></li>
-      <li><a href="#"><span class="mi">⚙</span><span class="t-en" lang="en">Settings</span><span class="t-es" lang="es">Ajustes</span></a></li>
+      <li class="menu-section-title"><span class="en" lang="en">Help</span><span class="es" lang="es">Ayuda</span></li>
+      <li><a href="#"><span class="mi">ⓘ</span><span class="en" lang="en">About this page</span><span class="es" lang="es">Acerca de esta página</span></a></li>
+      <li><a href="#"><span class="mi">⚙</span><span class="en" lang="en">Settings</span><span class="es" lang="es">Ajustes</span></a></li>
       <li class="menu-divider" role="separator" aria-hidden="true"></li>
-      <li class="menu-section-title"><span class="t-en" lang="en">Language</span><span class="t-es" lang="es">Idioma</span></li>
-      <li><label class="menu-opt" for="ui-lang-en"><span class="mi">🇬🇧</span>English</label></li>
-      <li><label class="menu-opt" for="ui-lang-es"><span class="mi">🇪🇸</span>Español</label></li>
+      <li class="menu-section-title"><span class="en" lang="en">Language</span><span class="es" lang="es">Idioma</span></li>
+      <li><label class="menu-opt" for="lang-en"><span class="mi">🇬🇧</span>English</label></li>
+      <li><label class="menu-opt" for="lang-es"><span class="mi">🇪🇸</span>Español</label></li>
     </ul>
   </div>
+  <!-- translate2 worldball — the radios here are the master language inputs
+       (ids lang-en/lang-es) that the CSS :has() toggle and menu <label for> key off. -->
+  <details class="lang">
+    <summary class="worldball" title="Language" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐</summary>
+    <div class="lang-opts">
+      <input type="radio" name="lang" id="lang-en" checked><label for="lang-en">English</label>
+      <input type="radio" name="lang" id="lang-es"><label for="lang-es">Español</label>
+    </div>
+  </details>
   <a href="help.html" class="flove-mark-link" aria-label="Reload Help">
     <span class="flove-mark flove-asterism" aria-hidden="true">✺</span>
   </a>
-  <button type="button" class="flove-app-name flove-title-btn" id="titleBtn" aria-expanded="false" aria-controls="introSection"><span class="t-en" lang="en">Help</span><span class="t-es" lang="es">Ayuda</span></button>
+  <button type="button" class="flove-app-name flove-title-btn" id="titleBtn" aria-expanded="false" aria-controls="introSection"><span class="en" lang="en">Help</span><span class="es" lang="es">Ayuda</span></button>
   <div class="topbar-search-wrap">
     <div class="topbar-search">
       <span class="ico" aria-hidden="true">🔎</span>
-      <input id="searchBox" type="search" placeholder="Search questions and answers…">
-      <button type="button" class="btn-go" id="searchGo"><span class="t-en" lang="en">Go</span><span class="t-es" lang="es">Ir</span></button>
+      <input id="searchBox" type="search" placeholder="Search questions and answers…" data-ph-en="Search questions and answers…" data-ph-es="Buscar en preguntas y respuestas…">
+      <button type="button" class="btn-go" id="searchGo"><span class="en" lang="en">Go</span><span class="es" lang="es">Ir</span></button>
     </div>
   </div>
-  <span class="flove-tag"><span class="t-en" lang="en">offer chat</span><span class="t-es" lang="es">chat de ofertas</span></span>
-  <button type="button" class="btn-fav" id="favOnly"><span class="t-en" lang="en">★ Favorites</span><span class="t-es" lang="es">★ Favoritas</span></button>
+  <span class="flove-tag"><span class="en" lang="en">offer chat</span><span class="es" lang="es">chat de ofertas</span></span>
+  <button type="button" class="btn-fav" id="favOnly"><span class="en" lang="en">★ Favorites</span><span class="es" lang="es">★ Favoritas</span></button>
 </div>
 
 <section id="introSection" hidden aria-label="About Help">
   <p class="intro-lead">
-    <span class="t-en" lang="en"><strong>Help</strong> — a chat of offers and answers. Browse questions, filter by bot, search the Q&amp;A, mark <strong>★ Favorites</strong> and add your own voice with <strong>+ Have your say</strong>.</span>
-    <span class="t-es" lang="es"><strong>Ayuda</strong> — un chat de ofertas y respuestas. Explora preguntas, filtra por bot, busca en las preguntas y respuestas, marca <strong>★ Favoritas</strong> y aporta tu voz con <strong>+ Di la tuya</strong>.</span>
+    <span class="en" lang="en"><strong>Help</strong> — a chat of offers and answers. Browse questions, filter by bot, search the Q&amp;A, mark <strong>★ Favorites</strong> and add your own voice with <strong>+ Have your say</strong>.</span>
+    <span class="es" lang="es"><strong>Ayuda</strong> — un chat de ofertas y respuestas. Explora preguntas, filtra por bot, busca en las preguntas y respuestas, marca <strong>★ Favoritas</strong> y aporta tu voz con <strong>+ Di la tuya</strong>.</span>
   </p>
 </section>
 
@@ -997,7 +1024,7 @@
 
   <!-- Inline my-bot creator (toggled by Have your say) -->
   <form class="my-bot-form" id="myBotForm" autocomplete="off">
-    <input type="text" id="myBotName" placeholder="Your title / name (e.g. Marco)" maxlength="20">
+    <input type="text" id="myBotName" placeholder="Your title / name (e.g. Marco)" data-ph-en="Your title / name (e.g. Marco)" data-ph-es="Tu título / nombre (ej. Marco)" maxlength="20">
     <div class="icon-pick" role="radiogroup" aria-label="Choose icon">
       <label><input type="radio" name="myBotIcon" value="🦊">🦊</label>
       <label><input type="radio" name="myBotIcon" value="🐝">🐝</label>
@@ -1006,18 +1033,18 @@
       <label><input type="radio" name="myBotIcon" value="🔮">🔮</label>
       <label><input type="radio" name="myBotIcon" value="🎵">🎵</label>
     </div>
-    <button type="submit" class="btn-save"><span class="t-en" lang="en">Save</span><span class="t-es" lang="es">Guardar</span></button>
+    <button type="submit" class="btn-save"><span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></button>
   </form>
 
   <!-- Stepper (blocks of questions) -->
   <details class="row-toggle" id="toggle-asuntos">
-    <summary><span class="t-en" lang="en">Topics</span><span class="t-es" lang="es">Asuntos</span></summary>
+    <summary><span class="en" lang="en">Topics</span><span class="es" lang="es">Asuntos</span></summary>
     <nav class="stepper" id="stepper" aria-label="Question blocks">
-      <button type="button" class="step" data-block="1"><span class="t-en" lang="en">Trust</span><span class="t-es" lang="es">Confianza</span></button>
-      <button type="button" class="step" data-block="2"><span class="t-en" lang="en">Goods</span><span class="t-es" lang="es">Bienes</span></button>
-      <button type="button" class="step" data-block="3"><span class="t-en" lang="en">Legal &amp; data</span><span class="t-es" lang="es">Legal &amp; datos</span></button>
-      <button type="button" class="step" data-block="4"><span class="t-en" lang="en">Your offer</span><span class="t-es" lang="es">Tu oferta</span></button>
-      <button type="button" class="step is-active" data-block="all"><span class="t-en" lang="en">All</span><span class="t-es" lang="es">Todos</span></button>
+      <button type="button" class="step" data-block="1"><span class="en" lang="en">Trust</span><span class="es" lang="es">Confianza</span></button>
+      <button type="button" class="step" data-block="2"><span class="en" lang="en">Goods</span><span class="es" lang="es">Bienes</span></button>
+      <button type="button" class="step" data-block="3"><span class="en" lang="en">Legal &amp; data</span><span class="es" lang="es">Legal &amp; datos</span></button>
+      <button type="button" class="step" data-block="4"><span class="en" lang="en">Your offer</span><span class="es" lang="es">Tu oferta</span></button>
+      <button type="button" class="step is-active" data-block="all"><span class="en" lang="en">All</span><span class="es" lang="es">Todos</span></button>
     </nav>
   </details>
 
@@ -1032,14 +1059,14 @@
     <input type="checkbox" id="f-mine">
 
     <details class="row-toggle" id="toggle-wizards">
-      <summary><span class="t-en" lang="en">Wizards</span><span class="t-es" lang="es">Magos</span></summary>
+      <summary><span class="en" lang="en">Wizards</span><span class="es" lang="es">Magos</span></summary>
       <nav class="filter-buttons" aria-label="Filter by bot (multi)">
         <label for="f-juanito"  class="chip juanito"  data-personality="🤝,⚖️,📊">Juanito</label>
         <label for="f-maripuri" class="chip maripuri" data-personality="💝,🤲,☀️">Mari Puri</label>
         <label for="f-uxia"     class="chip uxia"     data-personality="😊,🌱,🌈">Uxía</label>
         <label for="f-encarna"  class="chip encarna"  data-personality="🕉️,🌌,🙏">Encarna</label>
         <label for="f-fairy"    class="chip fairy"    data-personality="✨,🧚,🦄">Fairy</label>
-        <label for="f-mine"     class="chip mine" id="chipMine" data-personality="🔥,💫,🎯"><span id="chipMineLabel"><span class="t-en" lang="en">You</span><span class="t-es" lang="es">Tú</span></span></label>
+        <label for="f-mine"     class="chip mine" id="chipMine" data-personality="🔥,💫,🎯"><span id="chipMineLabel"><span class="en" lang="en">You</span><span class="es" lang="es">Tú</span></span></label>
         <button type="button" class="chip chip-add" id="addBotChip" title="Add a new bot" aria-label="Add a new bot">＋</button>
       </nav>
     </details>
@@ -1048,14 +1075,14 @@
 
       <details class="qa-card" id="q1" open data-block="1" data-q="convencer presion convince pressure">
         <summary>
-          <div class="bubble cram"><div class="avatar">C</div><div class="msg"><div class="msg-head"><span class="name">Cram</span><time>10:01</time></div><p><span class="t-en" lang="en">Hi, I feel you want to convince me of something you want…</span><span class="t-es" lang="es">Hola, siento que queréis convencerme de algo que vosotros queréis…</span></p></div></div>
+          <span class="bubble cram"><span class="avatar">C</span><span class="msg"><span class="msg-head"><span class="name">Cram</span><time>10:01</time></span><span class="qtext"><span class="en" lang="en">Hi, I feel you want to convince me of something you want…</span><span class="es" lang="es">Hola, siento que queréis convencerme de algo que vosotros queréis…</span></span></span></span>
         </summary>
         <div class="answers">
-          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:02</time></div><p><span class="t-en" lang="en">Partly yes, but you can be sure we'll never pressure anyone.</span><span class="t-es" lang="es">En parte sí, pero puedes estar seguro de que nunca presionaremos a nadie.</span></p></div></div>
-          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:02</time></div><p><span class="t-en" lang="en">We want you to give, lend and swap — and to clear up any doubts about it.</span><span class="t-es" lang="es">Queremos que des, prestes y cambies, y resolver tus dudas al respecto.</span></p></div></div>
-          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:03</time></div><p><span class="t-en" lang="en">Hi! I'm already convinced 🙂</span><span class="t-es" lang="es">¡Hola! A mí ya me convencieron 🙂</span></p></div></div>
-          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:03</time></div><p><span class="t-en" lang="en">Opening yourself to generosity and gratitude opens the door to a new world…</span><span class="t-es" lang="es">Abriéndote a la generosidad y la gratitud se abre la puerta a un mundo nuevo…</span></p></div></div>
-          <div class="bubble bot fairy"><div class="avatar">F</div><div class="msg"><div class="msg-head"><span class="name">Fairy</span><time>10:04</time></div><p><span class="t-en" lang="en">Heaven forbid I convince anyone 😄 I don't think you've got the idea yet.</span><span class="t-es" lang="es">Dios me libre de convencer a nadie 😄 Creo que aún no has pillado la idea.</span></p></div></div>
+          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:02</time></div><p><span class="en" lang="en">Partly yes, but you can be sure we'll never pressure anyone.</span><span class="es" lang="es">En parte sí, pero puedes estar seguro de que nunca presionaremos a nadie.</span></p></div></div>
+          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:02</time></div><p><span class="en" lang="en">We want you to give, lend and swap — and to clear up any doubts about it.</span><span class="es" lang="es">Queremos que des, prestes y cambies, y resolver tus dudas al respecto.</span></p></div></div>
+          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:03</time></div><p><span class="en" lang="en">Hi! I'm already convinced 🙂</span><span class="es" lang="es">¡Hola! A mí ya me convencieron 🙂</span></p></div></div>
+          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:03</time></div><p><span class="en" lang="en">Opening yourself to generosity and gratitude opens the door to a new world…</span><span class="es" lang="es">Abriéndote a la generosidad y la gratitud se abre la puerta a un mundo nuevo…</span></p></div></div>
+          <div class="bubble bot fairy"><div class="avatar">F</div><div class="msg"><div class="msg-head"><span class="name">Fairy</span><time>10:04</time></div><p><span class="en" lang="en">Heaven forbid I convince anyone 😄 I don't think you've got the idea yet.</span><span class="es" lang="es">Dios me libre de convencer a nadie 😄 Creo que aún no has pillado la idea.</span></p></div></div>
         </div>
         <div class="qa-foot">
           <div class="rate-group" data-rate="q1">
@@ -1063,19 +1090,19 @@
             <button class="rate-btn" type="button" data-key="informal" title="Informal">👋</button>
             <button class="rate-btn" type="button" data-key="hotter"   title="Hotter">🔥</button>
           </div>
-          <button class="star-btn" type="button" data-fav="q1"><span class="t-en" lang="en">Favorite</span><span class="t-es" lang="es">Favorita</span></button>
+          <button class="star-btn" type="button" data-fav="q1"><span class="en" lang="en">Favorite</span><span class="es" lang="es">Favorita</span></button>
         </div>
       </details>
 
       <details class="qa-card" id="q2" data-block="2" data-q="prestar merece la pena lend worth worthwhile">
         <summary>
-          <div class="bubble cram"><div class="avatar">C</div><div class="msg"><div class="msg-head"><span class="name">Cram</span><time>10:06</time></div><p><span class="t-en" lang="en">Why is it worth lending things?</span><span class="t-es" lang="es">¿Por qué merece la pena prestar cosas?</span></p></div></div>
+          <span class="bubble cram"><span class="avatar">C</span><span class="msg"><span class="msg-head"><span class="name">Cram</span><time>10:06</time></span><span class="qtext"><span class="en" lang="en">Why is it worth lending things?</span><span class="es" lang="es">¿Por qué merece la pena prestar cosas?</span></span></span></span>
         </summary>
         <div class="answers">
-          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:06</time></div><p><span class="t-en" lang="en">To save money.</span><span class="t-es" lang="es">Por ahorro.</span></p></div></div>
-          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:07</time></div><p><span class="t-en" lang="en">Because agreeing with someone is easier than it looks.</span><span class="t-es" lang="es">Porque acordar con alguien es más fácil de lo que parece.</span></p></div></div>
-          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:07</time></div><p><span class="t-en" lang="en">To get to know people and be on better terms with them.</span><span class="t-es" lang="es">Por conocer y estar mejor con las personas.</span></p></div></div>
-          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:08</time></div><p><span class="t-en" lang="en">Try it and you'll find out for yourself…</span><span class="t-es" lang="es">Prueba y lo descubrirás tú mismo…</span></p></div></div>
+          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:06</time></div><p><span class="en" lang="en">To save money.</span><span class="es" lang="es">Por ahorro.</span></p></div></div>
+          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:07</time></div><p><span class="en" lang="en">Because agreeing with someone is easier than it looks.</span><span class="es" lang="es">Porque acordar con alguien es más fácil de lo que parece.</span></p></div></div>
+          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:07</time></div><p><span class="en" lang="en">To get to know people and be on better terms with them.</span><span class="es" lang="es">Por conocer y estar mejor con las personas.</span></p></div></div>
+          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:08</time></div><p><span class="en" lang="en">Try it and you'll find out for yourself…</span><span class="es" lang="es">Prueba y lo descubrirás tú mismo…</span></p></div></div>
         </div>
         <div class="qa-foot">
           <div class="rate-group" data-rate="q2">
@@ -1083,19 +1110,19 @@
             <button class="rate-btn" type="button" data-key="informal" title="Informal">👋</button>
             <button class="rate-btn" type="button" data-key="hotter"   title="Hotter">🔥</button>
           </div>
-          <button class="star-btn" type="button" data-fav="q2"><span class="t-en" lang="en">Favorite</span><span class="t-es" lang="es">Favorita</span></button>
+          <button class="star-btn" type="button" data-fav="q2"><span class="en" lang="en">Favorite</span><span class="es" lang="es">Favorita</span></button>
         </div>
       </details>
 
       <details class="qa-card" id="q3" data-block="2" data-q="prestar tanto lend so much">
         <summary>
-          <div class="bubble cram"><div class="avatar">C</div><div class="msg"><div class="msg-head"><span class="name">Cram</span><time>10:10</time></div><p><span class="t-en" lang="en">And why lend so much?</span><span class="t-es" lang="es">¿Y por qué prestar tanto?</span></p></div></div>
+          <span class="bubble cram"><span class="avatar">C</span><span class="msg"><span class="msg-head"><span class="name">Cram</span><time>10:10</time></span><span class="qtext"><span class="en" lang="en">And why lend so much?</span><span class="es" lang="es">¿Y por qué prestar tanto?</span></span></span></span>
         </summary>
         <div class="answers">
-          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:10</time></div><p><span class="t-en" lang="en">I came to give it a try and look at me now…</span><span class="t-es" lang="es">Vine a probar y mírame…</span></p></div></div>
-          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:11</time></div><p><span class="t-en" lang="en">Don't lend — give it away if you'd rather.</span><span class="t-es" lang="es">No prestes, regala si no quieres.</span></p></div></div>
-          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:11</time></div><p><span class="t-en" lang="en">To spread a story and get things moving.</span><span class="t-es" lang="es">Para difundir una historia y activar la cosa.</span></p></div></div>
-          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:12</time></div><p><span class="t-en" lang="en">It feels good because it almost always works out.</span><span class="t-es" lang="es">Se siente bien porque casi siempre sale bien.</span></p></div></div>
+          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:10</time></div><p><span class="en" lang="en">I came to give it a try and look at me now…</span><span class="es" lang="es">Vine a probar y mírame…</span></p></div></div>
+          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:11</time></div><p><span class="en" lang="en">Don't lend — give it away if you'd rather.</span><span class="es" lang="es">No prestes, regala si no quieres.</span></p></div></div>
+          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:11</time></div><p><span class="en" lang="en">To spread a story and get things moving.</span><span class="es" lang="es">Para difundir una historia y activar la cosa.</span></p></div></div>
+          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:12</time></div><p><span class="en" lang="en">It feels good because it almost always works out.</span><span class="es" lang="es">Se siente bien porque casi siempre sale bien.</span></p></div></div>
         </div>
         <div class="qa-foot">
           <div class="rate-group" data-rate="q3">
@@ -1103,20 +1130,20 @@
             <button class="rate-btn" type="button" data-key="informal" title="Informal">👋</button>
             <button class="rate-btn" type="button" data-key="hotter"   title="Hotter">🔥</button>
           </div>
-          <button class="star-btn" type="button" data-fav="q3"><span class="t-en" lang="en">Favorite</span><span class="t-es" lang="es">Favorita</span></button>
+          <button class="star-btn" type="button" data-fav="q3"><span class="en" lang="en">Favorite</span><span class="es" lang="es">Favorita</span></button>
         </div>
       </details>
 
       <details class="qa-card" id="q4" data-block="3" data-q="legal legalidad legal legality">
         <summary>
-          <div class="bubble cram"><div class="avatar">C</div><div class="msg"><div class="msg-head"><span class="name">Cram</span><time>10:15</time></div><p><span class="t-en" lang="en">Is this completely legal?</span><span class="t-es" lang="es">¿Esto es completamente legal?</span></p></div></div>
+          <span class="bubble cram"><span class="avatar">C</span><span class="msg"><span class="msg-head"><span class="name">Cram</span><time>10:15</time></span><span class="qtext"><span class="en" lang="en">Is this completely legal?</span><span class="es" lang="es">¿Esto es completamente legal?</span></span></span></span>
         </summary>
         <div class="answers">
-          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:15</time></div><p><span class="t-en" lang="en">As legal as life itself.</span><span class="t-es" lang="es">Legal como la vida misma.</span></p></div></div>
-          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:16</time></div><p><span class="t-en" lang="en">There are terms of use on the site.</span><span class="t-es" lang="es">Hay condiciones de uso en la web.</span></p></div></div>
-          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:16</time></div><p><span class="t-en" lang="en">I haven't read them, to be honest. But I trust the admins.</span><span class="t-es" lang="es">No las he leído, la verdad. Pero confío en los administradores.</span></p></div></div>
-          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:17</time></div><p><span class="t-en" lang="en">Beyond legal, it's quite karmic.</span><span class="t-es" lang="es">Además de legal, es bastante kármico.</span></p></div></div>
-          <div class="bubble bot fairy"><div class="avatar">F</div><div class="msg"><div class="msg-head"><span class="name">Fairy</span><time>10:17</time></div><p><span class="t-en" lang="en">hahaha</span><span class="t-es" lang="es">juajuajua</span></p></div></div>
+          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:15</time></div><p><span class="en" lang="en">As legal as life itself.</span><span class="es" lang="es">Legal como la vida misma.</span></p></div></div>
+          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:16</time></div><p><span class="en" lang="en">There are terms of use on the site.</span><span class="es" lang="es">Hay condiciones de uso en la web.</span></p></div></div>
+          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:16</time></div><p><span class="en" lang="en">I haven't read them, to be honest. But I trust the admins.</span><span class="es" lang="es">No las he leído, la verdad. Pero confío en los administradores.</span></p></div></div>
+          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:17</time></div><p><span class="en" lang="en">Beyond legal, it's quite karmic.</span><span class="es" lang="es">Además de legal, es bastante kármico.</span></p></div></div>
+          <div class="bubble bot fairy"><div class="avatar">F</div><div class="msg"><div class="msg-head"><span class="name">Fairy</span><time>10:17</time></div><p><span class="en" lang="en">hahaha</span><span class="es" lang="es">juajuajua</span></p></div></div>
         </div>
         <div class="qa-foot">
           <div class="rate-group" data-rate="q4">
@@ -1124,20 +1151,20 @@
             <button class="rate-btn" type="button" data-key="informal" title="Informal">👋</button>
             <button class="rate-btn" type="button" data-key="hotter"   title="Hotter">🔥</button>
           </div>
-          <button class="star-btn" type="button" data-fav="q4"><span class="t-en" lang="en">Favorite</span><span class="t-es" lang="es">Favorita</span></button>
+          <button class="star-btn" type="button" data-fav="q4"><span class="en" lang="en">Favorite</span><span class="es" lang="es">Favorita</span></button>
         </div>
       </details>
 
       <details class="qa-card" id="q5" data-block="3" data-q="datos privacidad data privacy">
         <summary>
-          <div class="bubble cram"><div class="avatar">C</div><div class="msg"><div class="msg-head"><span class="name">Cram</span><time>10:20</time></div><p><span class="t-en" lang="en">And my data? What do you use it for?</span><span class="t-es" lang="es">¿Y mis datos? ¿Para qué os sirven?</span></p></div></div>
+          <span class="bubble cram"><span class="avatar">C</span><span class="msg"><span class="msg-head"><span class="name">Cram</span><time>10:20</time></span><span class="qtext"><span class="en" lang="en">And my data? What do you use it for?</span><span class="es" lang="es">¿Y mis datos? ¿Para qué os sirven?</span></span></span></span>
         </summary>
         <div class="answers">
-          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:20</time></div><p><span class="t-en" lang="en">We ask for the bare minimum. From there, you decide what to share.</span><span class="t-es" lang="es">Se pide lo mínimo. A partir de ahí, tú decides qué aportar.</span></p></div></div>
-          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:21</time></div><p><span class="t-en" lang="en">We use it to recommend our content better.</span><span class="t-es" lang="es">Los usamos para recomendar mejor nuestro contenido.</span></p></div></div>
-          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:21</time></div><p><span class="t-en" lang="en">I like seeing fairly complete profiles to get to know the person.</span><span class="t-es" lang="es">Me gusta ver perfiles más o menos completos para conocer a la persona.</span></p></div></div>
-          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:22</time></div><p><span class="t-en" lang="en">Neither your data nor mine is really "ours"…</span><span class="t-es" lang="es">Ni tus datos ni los míos son "nuestros", en realidad…</span></p></div></div>
-          <div class="bubble bot fairy"><div class="avatar">F</div><div class="msg"><div class="msg-head"><span class="name">Fairy</span><time>10:22</time></div><p><span class="t-en" lang="en">What would you do? Any ideas?</span><span class="t-es" lang="es">¿Tú qué harías? ¿Qué se te ocurre?</span></p></div></div>
+          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:20</time></div><p><span class="en" lang="en">We ask for the bare minimum. From there, you decide what to share.</span><span class="es" lang="es">Se pide lo mínimo. A partir de ahí, tú decides qué aportar.</span></p></div></div>
+          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:21</time></div><p><span class="en" lang="en">We use it to recommend our content better.</span><span class="es" lang="es">Los usamos para recomendar mejor nuestro contenido.</span></p></div></div>
+          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:21</time></div><p><span class="en" lang="en">I like seeing fairly complete profiles to get to know the person.</span><span class="es" lang="es">Me gusta ver perfiles más o menos completos para conocer a la persona.</span></p></div></div>
+          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:22</time></div><p><span class="en" lang="en">Neither your data nor mine is really "ours"…</span><span class="es" lang="es">Ni tus datos ni los míos son "nuestros", en realidad…</span></p></div></div>
+          <div class="bubble bot fairy"><div class="avatar">F</div><div class="msg"><div class="msg-head"><span class="name">Fairy</span><time>10:22</time></div><p><span class="en" lang="en">What would you do? Any ideas?</span><span class="es" lang="es">¿Tú qué harías? ¿Qué se te ocurre?</span></p></div></div>
         </div>
         <div class="qa-foot">
           <div class="rate-group" data-rate="q5">
@@ -1145,20 +1172,20 @@
             <button class="rate-btn" type="button" data-key="informal" title="Informal">👋</button>
             <button class="rate-btn" type="button" data-key="hotter"   title="Hotter">🔥</button>
           </div>
-          <button class="star-btn" type="button" data-fav="q5"><span class="t-en" lang="en">Favorite</span><span class="t-es" lang="es">Favorita</span></button>
+          <button class="star-btn" type="button" data-fav="q5"><span class="en" lang="en">Favorite</span><span class="es" lang="es">Favorita</span></button>
         </div>
       </details>
 
       <details class="qa-card" id="q6" data-block="4" data-q="verguenza ofrecer shame embarrassed offer">
         <summary>
-          <div class="bubble cram"><div class="avatar">C</div><div class="msg"><div class="msg-head"><span class="name">Cram</span><time>10:25</time></div><p><span class="t-en" lang="en">I feel embarrassed to show what I can offer…</span><span class="t-es" lang="es">Me da vergüenza mostrar lo que puedo ofrecer…</span></p></div></div>
+          <span class="bubble cram"><span class="avatar">C</span><span class="msg"><span class="msg-head"><span class="name">Cram</span><time>10:25</time></span><span class="qtext"><span class="en" lang="en">I feel embarrassed to show what I can offer…</span><span class="es" lang="es">Me da vergüenza mostrar lo que puedo ofrecer…</span></span></span></span>
         </summary>
         <div class="answers">
-          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:25</time></div><p><span class="t-en" lang="en">It's normal at first, but it passes quickly.</span><span class="t-es" lang="es">Es normal al principio, pero se pasa rápido.</span></p></div></div>
-          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:26</time></div><p><span class="t-en" lang="en">If you like, I can be a go-between with people who might be interested.</span><span class="t-es" lang="es">Si quieres, puedo ser contacto intermedio con posibles interesados.</span></p></div></div>
-          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:26</time></div><p><span class="t-en" lang="en">We put objects/services into circulation, and that's how they regain value.</span><span class="t-es" lang="es">Ponemos objetos/servicios en circulación y así se revalorizan.</span></p></div></div>
-          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:27</time></div><p><span class="t-en" lang="en">People appreciate you offering what you don't use and others need.</span><span class="t-es" lang="es">La gente valora que ofrezcas lo que no usas y otros necesitan.</span></p></div></div>
-          <div class="bubble bot fairy"><div class="avatar">F</div><div class="msg"><div class="msg-head"><span class="name">Fairy</span><time>10:27</time></div><p><span class="t-en" lang="en">Trust yourself, and you'll trust others. We're all the same.</span><span class="t-es" lang="es">Confía en ti, y confiarás en los demás. Somos iguales.</span></p></div></div>
+          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:25</time></div><p><span class="en" lang="en">It's normal at first, but it passes quickly.</span><span class="es" lang="es">Es normal al principio, pero se pasa rápido.</span></p></div></div>
+          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:26</time></div><p><span class="en" lang="en">If you like, I can be a go-between with people who might be interested.</span><span class="es" lang="es">Si quieres, puedo ser contacto intermedio con posibles interesados.</span></p></div></div>
+          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:26</time></div><p><span class="en" lang="en">We put objects/services into circulation, and that's how they regain value.</span><span class="es" lang="es">Ponemos objetos/servicios en circulación y así se revalorizan.</span></p></div></div>
+          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:27</time></div><p><span class="en" lang="en">People appreciate you offering what you don't use and others need.</span><span class="es" lang="es">La gente valora que ofrezcas lo que no usas y otros necesitan.</span></p></div></div>
+          <div class="bubble bot fairy"><div class="avatar">F</div><div class="msg"><div class="msg-head"><span class="name">Fairy</span><time>10:27</time></div><p><span class="en" lang="en">Trust yourself, and you'll trust others. We're all the same.</span><span class="es" lang="es">Confía en ti, y confiarás en los demás. Somos iguales.</span></p></div></div>
         </div>
         <div class="qa-foot">
           <div class="rate-group" data-rate="q6">
@@ -1166,19 +1193,19 @@
             <button class="rate-btn" type="button" data-key="informal" title="Informal">👋</button>
             <button class="rate-btn" type="button" data-key="hotter"   title="Hotter">🔥</button>
           </div>
-          <button class="star-btn" type="button" data-fav="q6"><span class="t-en" lang="en">Favorite</span><span class="t-es" lang="es">Favorita</span></button>
+          <button class="star-btn" type="button" data-fav="q6"><span class="en" lang="en">Favorite</span><span class="es" lang="es">Favorita</span></button>
         </div>
       </details>
 
       <details class="qa-card" id="q7" data-block="4" data-q="danio roto romper damage broken break return">
         <summary>
-          <div class="bubble cram"><div class="avatar">C</div><div class="msg"><div class="msg-head"><span class="name">Cram</span><time>10:30</time></div><p><span class="t-en" lang="en">What if they damage what I lend, or return it broken?</span><span class="t-es" lang="es">¿Y si dañan lo que presto o me lo devuelven roto?</span></p></div></div>
+          <span class="bubble cram"><span class="avatar">C</span><span class="msg"><span class="msg-head"><span class="name">Cram</span><time>10:30</time></span><span class="qtext"><span class="en" lang="en">What if they damage what I lend, or return it broken?</span><span class="es" lang="es">¿Y si dañan lo que presto o me lo devuelven roto?</span></span></span></span>
         </summary>
         <div class="answers">
-          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:30</time></div><p><span class="t-en" lang="en">If they break it, they can replace it; and there's mediation for disputes.</span><span class="t-es" lang="es">Si lo rompen, pueden reponerlo; y hay mediación para conflictos.</span></p></div></div>
-          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:31</time></div><p><span class="t-en" lang="en">Don't hesitate to ask for guarantees or to keep the conversation going.</span><span class="t-es" lang="es">No dudes en pedir garantías o alargar la conversación.</span></p></div></div>
-          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:31</time></div><p><span class="t-en" lang="en">Accidents happen; being a bit more careful helps.</span><span class="t-es" lang="es">Accidentes hay, ser un poco más cuidadosos ayuda.</span></p></div></div>
-          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:32</time></div><p><span class="t-en" lang="en">And what if they improve it, clean it and put it to good use? That happens too.</span><span class="t-es" lang="es">¿Y si lo mejoran, limpian y ponen a buen uso? También pasa.</span></p></div></div>
+          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:30</time></div><p><span class="en" lang="en">If they break it, they can replace it; and there's mediation for disputes.</span><span class="es" lang="es">Si lo rompen, pueden reponerlo; y hay mediación para conflictos.</span></p></div></div>
+          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:31</time></div><p><span class="en" lang="en">Don't hesitate to ask for guarantees or to keep the conversation going.</span><span class="es" lang="es">No dudes en pedir garantías o alargar la conversación.</span></p></div></div>
+          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:31</time></div><p><span class="en" lang="en">Accidents happen; being a bit more careful helps.</span><span class="es" lang="es">Accidentes hay, ser un poco más cuidadosos ayuda.</span></p></div></div>
+          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:32</time></div><p><span class="en" lang="en">And what if they improve it, clean it and put it to good use? That happens too.</span><span class="es" lang="es">¿Y si lo mejoran, limpian y ponen a buen uso? También pasa.</span></p></div></div>
         </div>
         <div class="qa-foot">
           <div class="rate-group" data-rate="q7">
@@ -1186,19 +1213,19 @@
             <button class="rate-btn" type="button" data-key="informal" title="Informal">👋</button>
             <button class="rate-btn" type="button" data-key="hotter"   title="Hotter">🔥</button>
           </div>
-          <button class="star-btn" type="button" data-fav="q7"><span class="t-en" lang="en">Favorite</span><span class="t-es" lang="es">Favorita</span></button>
+          <button class="star-btn" type="button" data-fav="q7"><span class="en" lang="en">Favorite</span><span class="es" lang="es">Favorita</span></button>
         </div>
       </details>
 
       <details class="qa-card" id="q8" data-block="4" data-q="curso titulo profesional course certificate professional title">
         <summary>
-          <div class="bubble cram"><div class="avatar">C</div><div class="msg"><div class="msg-head"><span class="name">Cram</span><time>10:35</time></div><p><span class="t-en" lang="en">Can a course without an official certificate interest anyone?</span><span class="t-es" lang="es">¿Un curso sin título oficial puede interesar a alguien?</span></p></div></div>
+          <span class="bubble cram"><span class="avatar">C</span><span class="msg"><span class="msg-head"><span class="name">Cram</span><time>10:35</time></span><span class="qtext"><span class="en" lang="en">Can a course without an official certificate interest anyone?</span><span class="es" lang="es">¿Un curso sin título oficial puede interesar a alguien?</span></span></span></span>
         </summary>
         <div class="answers">
-          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:35</time></div><p><span class="t-en" lang="en">If you know the subject and feel comfortable teaching it, it's worth it.</span><span class="t-es" lang="es">Si sabes del tema y te sientes cómodo enseñándolo, vale.</span></p></div></div>
-          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:36</time></div><p><span class="t-en" lang="en">"Course" means several sessions; "professional" if you hold certificates.</span><span class="t-es" lang="es">"Curso" son varias sesiones; "profesional" si tienes certificados.</span></p></div></div>
-          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:36</time></div><p><span class="t-en" lang="en">If people like the topic or how you teach it, they'll come back.</span><span class="t-es" lang="es">Si gusta el tema o cómo lo das, repetirán.</span></p></div></div>
-          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:37</time></div><p><span class="t-en" lang="en">It's our quirky interests that we share most joyfully.</span><span class="t-es" lang="es">Nuestros intereses peculiares son los que más felices transmitimos.</span></p></div></div>
+          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:35</time></div><p><span class="en" lang="en">If you know the subject and feel comfortable teaching it, it's worth it.</span><span class="es" lang="es">Si sabes del tema y te sientes cómodo enseñándolo, vale.</span></p></div></div>
+          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:36</time></div><p><span class="en" lang="en">"Course" means several sessions; "professional" if you hold certificates.</span><span class="es" lang="es">"Curso" son varias sesiones; "profesional" si tienes certificados.</span></p></div></div>
+          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:36</time></div><p><span class="en" lang="en">If people like the topic or how you teach it, they'll come back.</span><span class="es" lang="es">Si gusta el tema o cómo lo das, repetirán.</span></p></div></div>
+          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:37</time></div><p><span class="en" lang="en">It's our quirky interests that we share most joyfully.</span><span class="es" lang="es">Nuestros intereses peculiares son los que más felices transmitimos.</span></p></div></div>
         </div>
         <div class="qa-foot">
           <div class="rate-group" data-rate="q8">
@@ -1206,7 +1233,7 @@
             <button class="rate-btn" type="button" data-key="informal" title="Informal">👋</button>
             <button class="rate-btn" type="button" data-key="hotter"   title="Hotter">🔥</button>
           </div>
-          <button class="star-btn" type="button" data-fav="q8"><span class="t-en" lang="en">Favorite</span><span class="t-es" lang="es">Favorita</span></button>
+          <button class="star-btn" type="button" data-fav="q8"><span class="en" lang="en">Favorite</span><span class="es" lang="es">Favorita</span></button>
         </div>
       </details>
 
@@ -1243,30 +1270,45 @@
   [KEY_FAV, KEY_OPEN, KEY_RATE, KEY_MYBOT, KEY_FILTER, KEY_THREADS_EARLY]
     .forEach(k => { try{ localStorage.removeItem(k); }catch(_){} });
 
-  // ===== i18n — EN default · ES alternate (CSS dual-span + a few attrs) =====
-  const curLang = () => ($("#ui-lang-es") && $("#ui-lang-es").checked) ? "es" : "en";
+  // ===== i18n — translate2 engine (generic, any number of languages) =====
+  // Active language = the code after "lang-" in the checked radio's id.
+  const LANG_LS = "translate2-lang";
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);            // es -> Es
+  const langRadios = () => $$('input[name="lang"]');
+  const curLang = () => { const r = langRadios().find(x => x.checked); return r ? r.id.replace("lang-", "") : "en"; };
+  // JS-generated strings the CSS .en/.es span swap can't reach at build time.
   const I18N = {
-    searchBox: { en: "Search questions and answers…", es: "Buscar en preguntas y respuestas…" },
-    myBotName: { en: "Your title / name (e.g. Marco)", es: "Tu título / nombre (ej. Marco)" },
-    sayInput:  { en: "Your reply…",                    es: "Tu respuesta…" },
-    you:       { en: "You",                            es: "Tú" },
+    sayInput:  { en: "Your reply…", es: "Tu respuesta…" },
+    you:       { en: "You",         es: "Tú" },
   };
-  // Read the English text of a dual-span node (for the bot corpus sent to
-  // the new-wizard iframe) so it doesn't pick up both languages at once.
+  // Read the English text of a dual-span node (for the bot corpus sent to the
+  // new-wizard iframe) so it doesn't pick up both languages at once.
   function enText(el){
     if (!el) return "";
-    const en = el.querySelector(".t-en");
+    const en = el.querySelector(".en");
     return ((en ? en.textContent : el.textContent) || "").trim();
   }
-  // Attributes can't use dual-spans, so swap placeholders on language change.
-  function applyLangAttrs(){
-    const L = curLang();
-    document.documentElement.lang = L;
-    const sb = $("#searchBox"); if (sb) sb.placeholder = I18N.searchBox[L];
-    const mb = $("#myBotName"); if (mb) mb.placeholder = I18N.myBotName[L];
-    $$(".bubble-say input").forEach(i => i.placeholder = I18N.sayInput[L]);
+  // Generic engine: sync <html lang>, swap placeholders/aria/option text the
+  // .en/.es spans can't reach (via data-<lang> / data-ph-<lang> / data-aria-<lang>),
+  // remember the choice, and close the worldball after a pick.
+  function applyLang(){
+    const li = curLang();
+    document.documentElement.lang = li;
+    $$("option[data-en]").forEach(o => { if (o.dataset[li] != null) o.textContent = o.dataset[li]; });
+    $$("[data-ph-en]").forEach(el => { const v = el.dataset["ph" + cap(li)]; if (v != null) el.placeholder = v; });
+    $$("[data-aria-en]").forEach(el => { const v = el.dataset["aria" + cap(li)]; if (v != null) el.setAttribute("aria-label", v); });
+    // dynamically-created say-inputs that predate this switch
+    $$(".bubble-say input").forEach(i => { i.placeholder = I18N.sayInput[li] || I18N.sayInput.en; });
+    try { localStorage.setItem(LANG_LS, li); } catch (_) {}
   }
-  $$('input[name="ui-lang"]').forEach(r => r.addEventListener("change", applyLangAttrs));
+  (function initLang(){
+    let saved = null; try { saved = localStorage.getItem(LANG_LS); } catch (_) {}
+    if (saved){ const r = document.getElementById("lang-" + saved); if (r) r.checked = true; }
+    langRadios().forEach(r => r.addEventListener("change", () => {
+      applyLang();
+      const d = $("details.lang"); if (d) d.open = false;   // close the worldball after a pick
+    }));
+  })();
 
   // ===== Multi-select bot filter (body classes mirror checkbox state) =====
   const filterIds = ["all","juanito","maripuri","uxia","encarna","fairy","mine"];
@@ -1563,8 +1605,8 @@
     say.dataset.sayFor = pid;
     say.innerHTML =
       '<span class="say-editor">' +
-        '<input type="text" placeholder="' + I18N.sayInput[curLang()] + '" maxlength="500">' +
-        '<button type="button" class="btn-save-say"><span class="t-en" lang="en">Save</span><span class="t-es" lang="es">Guardar</span></button>' +
+        '<input type="text" data-ph-en="Your reply…" data-ph-es="Tu respuesta…" placeholder="' + (I18N.sayInput[curLang()] || I18N.sayInput.en) + '" maxlength="500">' +
+        '<button type="button" class="btn-save-say"><span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></button>' +
       '</span>';
     container.insertBefore(say, cursor.nextSibling);
     return say;
@@ -1708,7 +1750,7 @@
   function collectBotCorpus(){
     const keys = ["juanito", "maripuri", "uxia", "encarna", "fairy"];
     const questions = $$("details.qa-card").map(card => {
-      const cramP = card.querySelector(":scope > summary .bubble.cram .msg p");
+      const cramP = card.querySelector(":scope > summary .bubble.cram .msg .qtext");
       const bots = {};
       keys.forEach(k => {
         const p = card.querySelector(`:scope > .answers .bubble.bot.${k} .msg p`);
@@ -1755,7 +1797,7 @@
   applyRatings();
   applyMyBot();
   renderAllThreads();
-  applyLangAttrs();
+  applyLang();
 })();
 </script>
 </body>

@@ -1597,6 +1597,29 @@
 
   /* Hide the bare radio/checkbox state inputs from the page */
   .inv-body .ctl{ position:absolute; opacity:0; pointer-events:none; width:1px; height:1px; }
+
+  /* ── translate2 — page-translation engine + worldball switcher ── */
+  /* i18n span toggle (CSS-only): hide every non-active language */
+  .es{display:none}                                  /* default view = .en */
+  body:has(#lang-es:checked) .en{display:none}
+  body:has(#lang-es:checked) .es{display:inline}
+  /* worldball switcher (🌐 opens the language options) */
+  .lang{display:inline-block;position:relative;margin:.2rem 0 .6rem}
+  .lang>summary{list-style:none;cursor:pointer;width:40px;height:40px;border:1px solid #999;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;font-size:1.35rem;line-height:1;-webkit-user-select:none;user-select:none}
+  .lang>summary::-webkit-details-marker{display:none}
+  .lang[open]>summary{border-color:#333;background:#f2f2f2}
+  .lang-opts{position:absolute;right:0;z-index:10;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;
+    background:#fff;border:1px solid #999;border-radius:12px;padding:6px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+  .lang input{position:absolute;opacity:0;pointer-events:none}
+  .lang label{cursor:pointer;padding:0 12px;min-height:40px;display:inline-flex;align-items:center;border:1px solid #999;border-radius:11px;white-space:nowrap}
+  .lang input:checked + label{background:#333;color:#fff;font-weight:bold;border-color:#333}
+  @media (prefers-color-scheme:dark){
+    .lang>summary{border-color:#777} .lang[open]>summary{background:#2a2a2a;border-color:#999}
+    .lang-opts{background:#222;border-color:#777;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+    .lang label{border-color:#777}
+    .lang input:checked + label{background:#e9e9e9;color:#111;border-color:#e9e9e9}
+  }
 </style>
 </head>
 <body>
@@ -1604,7 +1627,7 @@
 <input type="checkbox" id="info-toggle" class="info-toggle">
 
 <div class="flove-bar">
-  <a class="flove-home" href="../index.html" aria-label="Back to flove launcher">←</a>
+  <a class="flove-home" href="../index.html" aria-label="Back to flove launcher" data-aria-en="Back to flove launcher" data-aria-es="Volver al lanzador de flove">←</a>
   <svg class="flove-mark" aria-hidden="true" viewBox="0 0 100 100" width="1em" height="1em">
     <defs>
       <linearGradient id="g-shareful" x1="78" y1="82" x2="48" y2="14" gradientUnits="userSpaceOnUse">
@@ -1620,13 +1643,20 @@
   </svg>
   <label class="flove-app-name app-name-toggle" for="info-toggle">Shareful</label>
   <span class="flove-spacer"></span>
-  <label class="topbar-all" for="sec-all">All</label>
+  <label class="topbar-all" for="sec-all"><span class="en" lang="en">All</span><span class="es" lang="es">Todo</span></label>
+  <details class="lang">
+    <summary class="worldball" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐</summary>
+    <div class="lang-opts">
+      <input type="radio" name="lang" id="lang-en" checked><label for="lang-en">English</label>
+      <input type="radio" name="lang" id="lang-es"><label for="lang-es">Español</label>
+    </div>
+  </details>
 </div>
 
 <section class="app-info" id="app-info">
   <div class="container">
-    <h1>SHAREFUL · <em>lending conditions</em></h1>
-    <p>Pick how, to whom, and under which preferences. A readable sentence builds itself.</p>
+    <h1>SHAREFUL · <em><span class="en" lang="en">lending conditions</span><span class="es" lang="es">condiciones de préstamo</span></em></h1>
+    <p><span class="en" lang="en">Pick how, to whom, and under which preferences. A readable sentence builds itself.</span><span class="es" lang="es">Elige cómo, a quién y bajo qué preferencias. Se construye sola una frase legible.</span></p>
   </div>
 </section>
 
@@ -1636,19 +1666,19 @@
    <!-- ░░ QUE — título, descripción, mapa, worth ░░ -->
    <div class="acc-bar" id="acc-que">
      <div class="acc-summary acc-summary--field">
-       <input class="text-input" id="offerTitle" type="text" placeholder="Offer a thing here">
+       <input class="text-input" id="offerTitle" type="text" placeholder="Offer a thing here" data-ph-en="Offer a thing here" data-ph-es="Ofrece algo aquí">
        <!-- Magia + micrófono colgando del borde inferior del campo, centrados -->
        <div class="acc-field-border-tools">
          <div class="title-magic">
-           <button type="button" class="btn small title-magic-btn" id="titleMagicBtn" aria-pressed="false" title="Magic">✦</button>
+           <button type="button" class="btn small title-magic-btn" id="titleMagicBtn" aria-pressed="false" aria-label="Magic" data-aria-en="Magic" data-aria-es="Magia">✦</button>
            <div class="title-bots" id="titleBots">
-             <button type="button" class="bot-pick" data-title-bot="lovely" title="Lovely">😍</button>
-             <button type="button" class="bot-pick" data-title-bot="joy"    title="Joy">😂</button>
-             <button type="button" class="bot-pick" data-title-bot="wisdom" title="Wisdom">🔥</button>
-             <button type="button" class="bot-pick bot-close" data-bot-close="title" title="Close">✕</button>
+             <button type="button" class="bot-pick" data-title-bot="lovely" aria-label="Lovely" data-aria-en="Lovely" data-aria-es="Cariño">😍</button>
+             <button type="button" class="bot-pick" data-title-bot="joy"    aria-label="Joy" data-aria-en="Joy" data-aria-es="Alegría">😂</button>
+             <button type="button" class="bot-pick" data-title-bot="wisdom" aria-label="Wisdom" data-aria-en="Wisdom" data-aria-es="Sabiduría">🔥</button>
+             <button type="button" class="bot-pick bot-close" data-bot-close="title" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">✕</button>
            </div>
          </div>
-         <label class="acc-mic-btn" title="Audio">🎤<input type="file" accept="audio/*" id="offerTitle-mic" aria-label="Upload audio"></label>
+         <label class="acc-mic-btn" aria-label="Audio" data-aria-en="Audio" data-aria-es="Audio">🎤<input type="file" accept="audio/*" id="offerTitle-mic" aria-label="Upload audio" data-aria-en="Upload audio" data-aria-es="Subir audio"></label>
        </div>
      </div>
      <div class="acc-body">
@@ -1658,57 +1688,57 @@
      <div class="col-desc">
        <div class="desc-row">
          <div class="ta-field">
-           <textarea id="offerName" data-opt-ta="offerName" rows="3" placeholder="Description"></textarea>
+           <textarea id="offerName" data-opt-ta="offerName" rows="3" placeholder="Description" data-ph-en="Description" data-ph-es="Descripción"></textarea>
            <div class="ta-bottom-tools">
-             <label class="ta-tool" title="Audio">🎤<input type="file" accept="audio/*" id="offerName-mic" aria-label="Upload audio"></label>
-             <label class="ta-tool" title="File">📎<input type="file" id="offerName-file" aria-label="Upload file"></label>
-             <button type="button" class="ta-tool opt-magic" data-magic-for="offerName" aria-label="Magic" title="Magic">✦</button>
+             <label class="ta-tool" aria-label="Audio" data-aria-en="Audio" data-aria-es="Audio">🎤<input type="file" accept="audio/*" id="offerName-mic" aria-label="Upload audio" data-aria-en="Upload audio" data-aria-es="Subir audio"></label>
+             <label class="ta-tool" aria-label="File" data-aria-en="File" data-aria-es="Archivo">📎<input type="file" id="offerName-file" aria-label="Upload file" data-aria-en="Upload file" data-aria-es="Subir archivo"></label>
+             <button type="button" class="ta-tool opt-magic" data-magic-for="offerName" aria-label="Magic" data-aria-en="Magic" data-aria-es="Magia">✦</button>
              <div class="bot-row" data-bots-for="offerName">
-               <button type="button" class="bot-pick" data-bot="lovely" title="Lovely">😍</button>
-               <button type="button" class="bot-pick" data-bot="joy"    title="Joy">😂</button>
-               <button type="button" class="bot-pick" data-bot="wisdom" title="Wisdom">🔥</button>
-               <button type="button" class="bot-pick bot-close" data-bot-close="offerName" title="Close">✕</button>
+               <button type="button" class="bot-pick" data-bot="lovely" aria-label="Lovely" data-aria-en="Lovely" data-aria-es="Cariño">😍</button>
+               <button type="button" class="bot-pick" data-bot="joy"    aria-label="Joy" data-aria-en="Joy" data-aria-es="Alegría">😂</button>
+               <button type="button" class="bot-pick" data-bot="wisdom" aria-label="Wisdom" data-aria-en="Wisdom" data-aria-es="Sabiduría">🔥</button>
+               <button type="button" class="bot-pick bot-close" data-bot-close="offerName" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">✕</button>
              </div>
            </div>
          </div>
          <div class="desc-side-tags">
-           <label class="tag-chip"><input type="checkbox" id="ecoloxico"> Ecological</label>
-           <label class="tag-chip"><input type="checkbox" id="artesana"> Crafted</label>
+           <label class="tag-chip"><input type="checkbox" id="ecoloxico"> <span class="en" lang="en">Ecological</span><span class="es" lang="es">Ecológico</span></label>
+           <label class="tag-chip"><input type="checkbox" id="artesana"> <span class="en" lang="en">Crafted</span><span class="es" lang="es">Artesano</span></label>
          </div>
        </div>
 
        <div class="extras-wrap">
          <div class="extras-row">
            <input type="checkbox" class="more-details-toggle" id="more-details-toggle">
-           <label class="btn small more-details-btn" for="more-details-toggle">More details</label>
-           <select class="pill-select offer-cat-select" id="offerCat" aria-label="Sector">
-             <option value="" disabled selected hidden>Sectors</option>
-             <option>Tools</option>
-             <option>Clothes</option>
-             <option>Games</option>
-             <option>Books</option>
-             <option>Food</option>
-             <option>Music</option>
-             <option>Services</option>
+           <label class="btn small more-details-btn" for="more-details-toggle"><span class="en" lang="en">More details</span><span class="es" lang="es">Más detalles</span></label>
+           <select class="pill-select offer-cat-select" id="offerCat" aria-label="Sector" data-aria-en="Sector" data-aria-es="Sector">
+             <option value="" disabled selected hidden data-en="Sectors" data-es="Sectores">Sectors</option>
+             <option data-en="Tools" data-es="Herramientas">Tools</option>
+             <option data-en="Clothes" data-es="Ropa">Clothes</option>
+             <option data-en="Games" data-es="Juegos">Games</option>
+             <option data-en="Books" data-es="Libros">Books</option>
+             <option data-en="Food" data-es="Comida">Food</option>
+             <option data-en="Music" data-es="Música">Music</option>
+             <option data-en="Services" data-es="Servicios">Services</option>
            </select>
            <input type="checkbox" class="worthing-toggle" id="worthing-toggle">
-           <label class="btn small worthing-btn" for="worthing-toggle">✦ Worth it</label>
+           <label class="btn small worthing-btn" for="worthing-toggle">✦ <span class="en" lang="en">Worth it</span><span class="es" lang="es">Merece la pena</span></label>
          </div>
          <div class="more-details-panel">
-           <label class="clause"><input type="checkbox" name="offer-clause" value="essential"><span class="clause-ico">⭐</span>Essential</label>
-           <label class="clause"><input type="checkbox" name="offer-clause" value="useful"><span class="clause-ico">⭐</span>Useful</label>
-           <label class="clause"><input type="checkbox" name="offer-clause" value="purposeful"><span class="clause-ico">⭐</span>Purposeful</label>
-           <label class="clause"><input type="checkbox" name="offer-clause" value="endorsed"><span class="clause-ico">⭐</span>Endorsed by someone</label>
+           <label class="clause"><input type="checkbox" name="offer-clause" value="essential"><span class="clause-ico">⭐</span><span class="en" lang="en">Essential</span><span class="es" lang="es">Esencial</span></label>
+           <label class="clause"><input type="checkbox" name="offer-clause" value="useful"><span class="clause-ico">⭐</span><span class="en" lang="en">Useful</span><span class="es" lang="es">Útil</span></label>
+           <label class="clause"><input type="checkbox" name="offer-clause" value="purposeful"><span class="clause-ico">⭐</span><span class="en" lang="en">Purposeful</span><span class="es" lang="es">Con propósito</span></label>
+           <label class="clause"><input type="checkbox" name="offer-clause" value="endorsed"><span class="clause-ico">⭐</span><span class="en" lang="en">Endorsed by someone</span><span class="es" lang="es">Avalado por alguien</span></label>
            <label class="clause"><input type="checkbox" name="offer-clause" value="climatyful"><span class="clause-ico">⭐</span>Climatyful</label>
            <label class="clause"><input type="checkbox" name="offer-clause" value="socialisty-49"><span class="clause-ico">⭐</span>Socialisty 49</label>
            <label class="clause"><input type="checkbox" name="offer-clause" value="socialisty-99"><span class="clause-ico">⭐</span>Socialisty 99</label>
-           <label class="clause"><input type="checkbox" name="uso-clause" value="transportable"><span class="clause-ico">🏙️</span>Transportable</label>
-           <label class="clause"><input type="checkbox" name="uso-clause" value="all-climates"><span class="clause-ico">🏙️</span>Used under all possible climates</label>
+           <label class="clause"><input type="checkbox" name="uso-clause" value="transportable"><span class="clause-ico">🏙️</span><span class="en" lang="en">Transportable</span><span class="es" lang="es">Transportable</span></label>
+           <label class="clause"><input type="checkbox" name="uso-clause" value="all-climates"><span class="clause-ico">🏙️</span><span class="en" lang="en">Used under all possible climates</span><span class="es" lang="es">Usado en todos los climas posibles</span></label>
          </div>
          <div class="worthing-panel">
            <div class="worth-row" data-cat="sym">
-             <span class="worth-name">Symbolical</span>
-             <div class="worth-bars" role="radiogroup" aria-label="Symbolical">
+             <span class="worth-name"><span class="en" lang="en">Symbolical</span><span class="es" lang="es">Simbólico</span></span>
+             <div class="worth-bars" role="radiogroup" aria-label="Symbolical" data-aria-en="Symbolical" data-aria-es="Simbólico">
                <button type="button" class="worth-bar" data-val="1" aria-label="1"></button>
                <button type="button" class="worth-bar" data-val="2" aria-label="2"></button>
                <button type="button" class="worth-bar" data-val="3" aria-label="3"></button>
@@ -1717,8 +1747,8 @@
              </div>
            </div>
            <div class="worth-row" data-cat="hist">
-             <span class="worth-name">Historical</span>
-             <div class="worth-bars" role="radiogroup" aria-label="Historical">
+             <span class="worth-name"><span class="en" lang="en">Historical</span><span class="es" lang="es">Histórico</span></span>
+             <div class="worth-bars" role="radiogroup" aria-label="Historical" data-aria-en="Historical" data-aria-es="Histórico">
                <button type="button" class="worth-bar" data-val="1" aria-label="1"></button>
                <button type="button" class="worth-bar" data-val="2" aria-label="2"></button>
                <button type="button" class="worth-bar" data-val="3" aria-label="3"></button>
@@ -1727,8 +1757,8 @@
              </div>
            </div>
            <div class="worth-row" data-cat="ideal">
-             <span class="worth-name">Ideal</span>
-             <div class="worth-bars" role="radiogroup" aria-label="Ideal">
+             <span class="worth-name"><span class="en" lang="en">Ideal</span><span class="es" lang="es">Ideal</span></span>
+             <div class="worth-bars" role="radiogroup" aria-label="Ideal" data-aria-en="Ideal" data-aria-es="Ideal">
                <button type="button" class="worth-bar" data-val="1" aria-label="1"></button>
                <button type="button" class="worth-bar" data-val="2" aria-label="2"></button>
                <button type="button" class="worth-bar" data-val="3" aria-label="3"></button>
@@ -1737,8 +1767,8 @@
              </div>
            </div>
            <div class="worth-row" data-cat="pot">
-             <span class="worth-name">Potential</span>
-             <div class="worth-bars" role="radiogroup" aria-label="Potential">
+             <span class="worth-name"><span class="en" lang="en">Potential</span><span class="es" lang="es">Potencial</span></span>
+             <div class="worth-bars" role="radiogroup" aria-label="Potential" data-aria-en="Potential" data-aria-es="Potencial">
                <button type="button" class="worth-bar" data-val="1" aria-label="1"></button>
                <button type="button" class="worth-bar" data-val="2" aria-label="2"></button>
                <button type="button" class="worth-bar" data-val="3" aria-label="3"></button>
@@ -1747,8 +1777,8 @@
              </div>
            </div>
            <div class="worth-row" data-cat="func">
-             <span class="worth-name">Functional</span>
-             <div class="worth-bars" role="radiogroup" aria-label="Functional">
+             <span class="worth-name"><span class="en" lang="en">Functional</span><span class="es" lang="es">Funcional</span></span>
+             <div class="worth-bars" role="radiogroup" aria-label="Functional" data-aria-en="Functional" data-aria-es="Funcional">
                <button type="button" class="worth-bar" data-val="1" aria-label="1"></button>
                <button type="button" class="worth-bar" data-val="2" aria-label="2"></button>
                <button type="button" class="worth-bar" data-val="3" aria-label="3"></button>
@@ -1757,8 +1787,8 @@
              </div>
            </div>
            <div class="worth-row" data-cat="aff">
-             <span class="worth-name">Affordable</span>
-             <div class="worth-bars" role="radiogroup" aria-label="Affordable">
+             <span class="worth-name"><span class="en" lang="en">Affordable</span><span class="es" lang="es">Asequible</span></span>
+             <div class="worth-bars" role="radiogroup" aria-label="Affordable" data-aria-en="Affordable" data-aria-es="Asequible">
                <button type="button" class="worth-bar" data-val="1" aria-label="1"></button>
                <button type="button" class="worth-bar" data-val="2" aria-label="2"></button>
                <button type="button" class="worth-bar" data-val="3" aria-label="3"></button>
@@ -1767,8 +1797,8 @@
              </div>
            </div>
            <div class="worth-row" data-cat="resp">
-             <span class="worth-name">Respectful</span>
-             <div class="worth-bars" role="radiogroup" aria-label="Respectful">
+             <span class="worth-name"><span class="en" lang="en">Respectful</span><span class="es" lang="es">Respetuoso</span></span>
+             <div class="worth-bars" role="radiogroup" aria-label="Respectful" data-aria-en="Respectful" data-aria-es="Respetuoso">
                <button type="button" class="worth-bar" data-val="1" aria-label="1"></button>
                <button type="button" class="worth-bar" data-val="2" aria-label="2"></button>
                <button type="button" class="worth-bar" data-val="3" aria-label="3"></button>
@@ -1777,8 +1807,8 @@
              </div>
            </div>
            <div class="worth-row" data-cat="regen">
-             <span class="worth-name">(Re)generative</span>
-             <div class="worth-bars" role="radiogroup" aria-label="(Re)generative">
+             <span class="worth-name"><span class="en" lang="en">(Re)generative</span><span class="es" lang="es">(Re)generativo</span></span>
+             <div class="worth-bars" role="radiogroup" aria-label="(Re)generative" data-aria-en="(Re)generative" data-aria-es="(Re)generativo">
                <button type="button" class="worth-bar" data-val="1" aria-label="1"></button>
                <button type="button" class="worth-bar" data-val="2" aria-label="2"></button>
                <button type="button" class="worth-bar" data-val="3" aria-label="3"></button>
@@ -1792,15 +1822,15 @@
 
      <div class="col-side">
        <div class="map-top-controls">
-         <select class="pill-select map-zone" id="mapZone">
-           <option value="" disabled selected>Zones</option>
-           <option>East</option><option>West</option><option>North</option><option>South</option>
+         <select class="pill-select map-zone" id="mapZone" aria-label="Zone" data-aria-en="Zone" data-aria-es="Zona">
+           <option value="" disabled selected data-en="Zones" data-es="Zonas">Zones</option>
+           <option data-en="East" data-es="Este">East</option><option data-en="West" data-es="Oeste">West</option><option data-en="North" data-es="Norte">North</option><option data-en="South" data-es="Sur">South</option>
          </select>
          <input type="text" class="coords-field" id="coordsField" placeholder="40.4168° N, 3.7038° W" readonly hidden>
-         <button type="button" class="btn small" id="getCoordsBtn">Get coords</button>
+         <button type="button" class="btn small" id="getCoordsBtn"><span class="en" lang="en">Get coords</span><span class="es" lang="es">Obtener coordenadas</span></button>
        </div>
        <div class="map-wrap" id="mapWrap">
-         <iframe src="https://www.openstreetmap.org/export/embed.html?bbox=-3.74,40.40,-3.66,40.44&amp;layer=mapnik" loading="lazy" title="Map"></iframe>
+         <iframe src="https://www.openstreetmap.org/export/embed.html?bbox=-3.74,40.40,-3.66,40.44&amp;layer=mapnik" loading="lazy" title="Map" aria-label="Map" data-aria-en="Map" data-aria-es="Mapa"></iframe>
        </div>
      </div><!-- /.col-side -->
    </div><!-- /.grid-top -->
@@ -1817,10 +1847,10 @@
   <input type="radio" name="secnav" id="sec-all" class="secnav-radio">
 
   <div class="section-buttons">
-    <label class="section-btn" for="sec-for" data-sec="for">Reasons<span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21C12 21 4 16.5 4 9.7 4 6.7 6 5 8 5c2 0 4 2 4 2s2-2 4-2c2 0 4 1.7 4 4.7C20 16.5 12 21 12 21Z"/></svg></span></label>
-    <label class="section-btn" for="sec-1" data-sec="1">Who<span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><circle cx="17" cy="9.5" r="2.4"/><path d="M16 14.3c2.6.3 4.5 2.3 4.5 4.7"/></svg></span></label>
-    <label class="section-btn" for="sec-3" data-sec="3">Time / Space<span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5.3l3.4 2.2"/></svg></span></label>
-    <label class="section-btn" for="sec-4" data-sec="4">Preferences<span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h8M16 7h4"/><path d="M4 12h3M11 12h9"/><path d="M4 17h7M15 17h5"/><circle cx="14" cy="7" r="2.3"/><circle cx="9" cy="12" r="2.3"/><circle cx="13" cy="17" r="2.3"/></svg></span></label>
+    <label class="section-btn" for="sec-for" data-sec="for"><span class="en" lang="en">Reasons</span><span class="es" lang="es">Razones</span><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21C12 21 4 16.5 4 9.7 4 6.7 6 5 8 5c2 0 4 2 4 2s2-2 4-2c2 0 4 1.7 4 4.7C20 16.5 12 21 12 21Z"/></svg></span></label>
+    <label class="section-btn" for="sec-1" data-sec="1"><span class="en" lang="en">Who</span><span class="es" lang="es">Quién</span><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><circle cx="17" cy="9.5" r="2.4"/><path d="M16 14.3c2.6.3 4.5 2.3 4.5 4.7"/></svg></span></label>
+    <label class="section-btn" for="sec-3" data-sec="3"><span class="en" lang="en">Time / Space</span><span class="es" lang="es">Tiempo / Espacio</span><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5.3l3.4 2.2"/></svg></span></label>
+    <label class="section-btn" for="sec-4" data-sec="4"><span class="en" lang="en">Preferences</span><span class="es" lang="es">Preferencias</span><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h8M16 7h4"/><path d="M4 12h3M11 12h9"/><path d="M4 17h7M15 17h5"/><circle cx="14" cy="7" r="2.3"/><circle cx="9" cy="12" r="2.3"/><circle cx="13" cy="17" r="2.3"/></svg></span></label>
   </div>
 
   <section class="lend-conditions" id="lend">
@@ -1830,12 +1860,12 @@
 
         <div class="for-col" data-expand="0">
           <div class="for-col-head">
-            <button type="button" class="expand-plus" aria-label="Show more reasons" title="Show more reasons">＋</button>
-            <h3 class="for-col-title">Because</h3>
-            <input type="text" class="new-reason-input" placeholder="New reason…" aria-label="New reason">
+            <button type="button" class="expand-plus" aria-label="Show more reasons" data-aria-en="Show more reasons" data-aria-es="Mostrar más razones">＋</button>
+            <h3 class="for-col-title"><span class="en" lang="en">Because</span><span class="es" lang="es">Porque</span></h3>
+            <input type="text" class="new-reason-input" placeholder="New reason…" aria-label="New reason" data-ph-en="New reason…" data-ph-es="Nueva razón…" data-aria-en="New reason" data-aria-es="Nueva razón">
           </div>
           <fieldset>
-            <legend class="vh">Because — reasons for lending</legend>
+            <legend class="vh"><span class="en" lang="en">Because — reasons for lending</span><span class="es" lang="es">Porque — razones para prestar</span></legend>
             <div class="for-reasons reasons-cloud">
               <label class="reason-chip parent-chip" data-pid="0"><input type="checkbox" name="reason"> I have plenty</label>
               <label class="reason-chip parent-chip" data-pid="1"><input type="checkbox" name="reason"> it's just sitting there</label>
@@ -3226,6 +3256,34 @@ em{color:#423066}</style></head>
     );
     refreshSentence();
   }
+})();
+
+// ── translate2 engine — language switch + data-* swap + persistence ──
+(function(){
+  const LS = 'translate2-lang';
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const radios = () => Array.from(document.querySelectorAll('input[name="lang"]'));
+  const curLang = () => { const r = radios().find(x => x.checked); return r ? r.id.replace('lang-', '') : 'en'; };
+  window.floveCurLang = curLang;
+  function applyLang(){
+    const li = curLang();
+    document.documentElement.lang = li;
+    document.querySelectorAll('option[data-en]').forEach(o => { if (o.dataset[li] != null) o.textContent = o.dataset[li]; });
+    document.querySelectorAll('[data-ph-en]').forEach(el => { const v = el.dataset['ph' + cap(li)]; if (v != null) el.placeholder = v; });
+    document.querySelectorAll('[data-aria-en]').forEach(el => { const v = el.dataset['aria' + cap(li)]; if (v != null) el.setAttribute('aria-label', v); });
+    try { localStorage.setItem(LS, li); } catch (_) {}
+    document.dispatchEvent(new CustomEvent('translate2:lang', { detail: li }));
+  }
+  function init(){
+    let saved = null; try { saved = localStorage.getItem(LS); } catch (_) {}
+    if (saved){ const r = document.getElementById('lang-' + saved); if (r) r.checked = true; }
+    radios().forEach(r => r.addEventListener('change', () => {
+      applyLang();
+      const d = document.querySelector('details.lang'); if (d) d.open = false;
+    }));
+    applyLang();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 </script>
 </body>

@@ -354,6 +354,30 @@
     box-shadow:0 0 0 3px var(--accent-glow, rgba(220,38,38,.22));
   }
   .tier-pop-step--current .tier-pop-label{ color:var(--accent-deep); font-weight:700; }
+
+  /* ── translate2 i18n span toggle (CSS-only): hide every non-active language ── */
+  .es{display:none}                                  /* default view = .en */
+  body:has(#lang-es:checked) .en{display:none}
+  body:has(#lang-es:checked) .es{display:inline}
+
+  /* ── worldball switcher (🌐 opens the language options) ── */
+  .lang{display:inline-block;position:relative;margin:.2rem 0 .6rem}
+  .lang>summary{list-style:none;cursor:pointer;width:40px;height:40px;border:1px solid #999;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;font-size:1.35rem;line-height:1;-webkit-user-select:none;user-select:none}
+  .lang>summary::-webkit-details-marker{display:none}
+  .lang[open]>summary{border-color:#333;background:#f2f2f2}
+  .lang-opts{position:absolute;right:0;z-index:10;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;
+    background:#fff;border:1px solid #999;border-radius:12px;padding:6px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+  .lang input{position:absolute;opacity:0;pointer-events:none}
+  .lang label{cursor:pointer;padding:0 12px;min-height:40px;display:inline-flex;align-items:center;border:1px solid #999;border-radius:11px;white-space:nowrap}
+  .lang input:checked + label{background:#333;color:#fff;font-weight:bold;border-color:#333}
+
+  @media (prefers-color-scheme:dark){
+    .lang>summary{border-color:#777} .lang[open]>summary{background:#2a2a2a;border-color:#999}
+    .lang-opts{background:#222;border-color:#777;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+    .lang label{border-color:#777}
+    .lang input:checked + label{background:#e9e9e9;color:#111;border-color:#e9e9e9}
+  }
 </style>
 </head>
 <body>
@@ -376,17 +400,24 @@
   </svg>
   <span class="flove-app-name">MiniDealy</span>
   <span class="flove-spacer"></span>
-  <a class="flove-home" href="../index.html" aria-label="Back to flove launcher">flove</a>
+  <a class="flove-home" href="../index.html" aria-label="Back to flove launcher" data-aria-en="Back to flove launcher" data-aria-es="Volver al menú de flove">flove</a>
+  <details class="lang">
+    <summary class="worldball" title="Language" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐</summary>
+    <div class="lang-opts">
+      <input type="radio" name="lang" id="lang-en" checked><label for="lang-en">English</label>
+      <input type="radio" name="lang" id="lang-es"><label for="lang-es">Español</label>
+    </div>
+  </details>
   <input type="checkbox" id="tier-pop-open" class="tier-pop-ctl">
   <div class="tier-pop">
-    <ul class="tier-pop-rays" role="menu" aria-label="Offer categories">
-      <li><a class="tier-pop-step tier-pop-step--current" href="dealy-mini.html" aria-current="page" title="Minidealy (current)"><span class="tier-pop-node" aria-hidden="true"></span><span class="tier-pop-label">Minidealy</span></a></li>
+    <ul class="tier-pop-rays" role="menu" aria-label="Offer categories" data-aria-en="Offer categories" data-aria-es="Categorías de oferta">
+      <li><a class="tier-pop-step tier-pop-step--current" href="dealy-mini.html" aria-current="page" aria-label="Minidealy (current)" data-aria-en="Minidealy (current)" data-aria-es="Minidealy (actual)"><span class="tier-pop-node" aria-hidden="true"></span><span class="tier-pop-label">Minidealy</span></a></li>
       <li><a class="tier-pop-step" href="inventary.html" title="Inventary"><span class="tier-pop-node" aria-hidden="true"></span><span class="tier-pop-label">Inventary</span></a></li>
       <li><a class="tier-pop-step" href="wanty.html" title="Wanty"><span class="tier-pop-node" aria-hidden="true"></span><span class="tier-pop-label">Wanty</span></a></li>
       <li><a class="tier-pop-step" href="dealy-advanced.html" title="Offeradvanced"><span class="tier-pop-node" aria-hidden="true"></span><span class="tier-pop-label">Offeradvanced</span></a></li>
       <li><a class="tier-pop-step" href="rewardy.html" title="Rewardy"><span class="tier-pop-node" aria-hidden="true"></span><span class="tier-pop-label">Rewardy</span></a></li>
     </ul>
-    <label class="tier-pop-btn" for="tier-pop-open" title="Categories" aria-label="Show offer categories" tabindex="0">
+    <label class="tier-pop-btn" for="tier-pop-open" aria-label="Show offer categories" data-aria-en="Show offer categories" data-aria-es="Mostrar categorías de oferta" tabindex="0">
       <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><g fill="currentColor">
         <rect x="2"    y="16" width="3.2" height="4"/>
         <rect x="6.4"  y="13" width="3.2" height="7"/>
@@ -403,37 +434,41 @@
   <section class="card offer-card" data-offer-index="1">
     <form class="offer-form" action="#" method="get">
       <div class="grid">
-        <label class="field" data-tip="Give it a cute, clear name">
+        <label class="field" data-tip="Give it a cute, clear name" data-tip-en="Give it a cute, clear name" data-tip-es="Ponle un nombre claro y bonito">
           <input type="text" name="title-1" placeholder="" required>
         </label>
 
-        <div class="field" data-tip="Pick the main path">
+        <div class="field" data-tip="Pick the main path" data-tip-en="Pick the main path" data-tip-es="Elige la vía principal">
           <div class="type-pills">
             <input type="checkbox" name="type-1" id="t-gift-1" value="Gift" checked>
-            <label for="t-gift-1" class="pill">Gift</label>
+            <label for="t-gift-1" class="pill"><span class="en" lang="en">Gift</span><span class="es" lang="es">Regalar</span></label>
 
             <input type="checkbox" name="type-1" id="t-lend-1" value="Lend">
-            <label for="t-lend-1" class="pill">Lend</label>
+            <label for="t-lend-1" class="pill"><span class="en" lang="en">Lend</span><span class="es" lang="es">Prestar</span></label>
 
             <input type="checkbox" name="type-1" id="t-exc-1" value="Exchange">
-            <label for="t-exc-1" class="pill">Exchange</label>
+            <label for="t-exc-1" class="pill"><span class="en" lang="en">Exchange</span><span class="es" lang="es">Intercambiar</span></label>
           </div>
         </div>
 
-        <div class="field field-desc" data-tip="A couple of lines people can skim">
+        <div class="field field-desc" data-tip="A couple of lines people can skim" data-tip-en="A couple of lines people can skim" data-tip-es="Un par de líneas que se lean de un vistazo">
           <div class="desc-wrap">
             <textarea name="desc-1" rows="3" placeholder="
 
-Where:"></textarea>
+Where:" data-ph-en="
+
+Where:" data-ph-es="
+
+Dónde:"></textarea>
             <div class="desc-tools">
-              <button type="button" class="desc-tool" aria-label="Add media" data-tip="Attach a photo or video">
+              <button type="button" class="desc-tool" aria-label="Add media" data-aria-en="Add media" data-aria-es="Añadir multimedia" data-tip="Attach a photo or video" data-tip-en="Attach a photo or video" data-tip-es="Adjunta una foto o un vídeo">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="3" y="3" width="18" height="18" rx="2"/>
                   <circle cx="8.5" cy="8.5" r="1.6"/>
                   <path d="M21 15l-5-5L5 21"/>
                 </svg>
               </button>
-              <button type="button" class="desc-tool" aria-label="Voice note" data-tip="Record a voice note">
+              <button type="button" class="desc-tool" aria-label="Voice note" data-aria-en="Voice note" data-aria-es="Nota de voz" data-tip="Record a voice note" data-tip-en="Record a voice note" data-tip-es="Graba una nota de voz">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="9" y="2" width="6" height="11" rx="3"/>
                   <path d="M5 10v1a7 7 0 0 0 14 0v-1"/>
@@ -444,32 +479,32 @@ Where:"></textarea>
           </div>
         </div>
 
-        <div class="field bar-col" data-tip="How loved is it?">
+        <div class="field bar-col" data-tip="How loved is it?" data-tip-en="How loved is it?" data-tip-es="¿Cuánto se ha querido?">
           <div class="range-wrap">
             <input type="range" name="cond-1" min="1" max="5" value="4">
             <div class="range-hints">
-              <small>Poor</small><small>Fair</small><small>Good</small><small>High quality</small>
+              <small><span class="en" lang="en">Poor</span><span class="es" lang="es">Mala</span></small><small><span class="en" lang="en">Fair</span><span class="es" lang="es">Aceptable</span></small><small><span class="en" lang="en">Good</span><span class="es" lang="es">Buena</span></small><small><span class="en" lang="en">High quality</span><span class="es" lang="es">Excelente</span></small>
             </div>
           </div>
         </div>
 
-        <div class="field bar-col" data-tip="How much would you prefer to part with it?">
+        <div class="field bar-col" data-tip="How much would you prefer to part with it?" data-tip-en="How much would you prefer to part with it?" data-tip-es="¿Cuánto te gustaría desprenderte de ello?">
           <div class="range-wrap">
             <input type="range" name="pref-1" min="1" max="5" value="3">
             <div class="range-hints">
-              <small>Reluctant</small><small>Hesitant</small><small>Okay</small><small>Glad</small><small>Eager</small>
+              <small><span class="en" lang="en">Reluctant</span><span class="es" lang="es">A regañadientes</span></small><small><span class="en" lang="en">Hesitant</span><span class="es" lang="es">Con dudas</span></small><small><span class="en" lang="en">Okay</span><span class="es" lang="es">Vale</span></small><small><span class="en" lang="en">Glad</span><span class="es" lang="es">Encantado</span></small><small><span class="en" lang="en">Eager</span><span class="es" lang="es">Con ganas</span></small>
             </div>
           </div>
         </div>
       </div>
 
       <div class="add-row">
-        <button class="btn clone-offer" type="button" data-tip="Duplicate this block to add another item">Add more</button>
+        <button class="btn clone-offer" type="button" data-tip="Duplicate this block to add another item" data-tip-en="Duplicate this block to add another item" data-tip-es="Duplica este bloque para añadir otro artículo"><span class="en" lang="en">Add more</span><span class="es" lang="es">Añadir más</span></button>
       </div>
 
       <div class="pref-rater" hidden>
-        <div class="pref-title">Preference</div>
-        <div class="pref-scale" role="radiogroup" aria-label="Preference">
+        <div class="pref-title"><span class="en" lang="en">Preference</span><span class="es" lang="es">Preferencia</span></div>
+        <div class="pref-scale" role="radiogroup" aria-label="Preference" data-aria-en="Preference" data-aria-es="Preferencia">
           <button type="button" class="pref-dot" value="1">1</button>
           <button type="button" class="pref-dot" value="2">2</button>
           <button type="button" class="pref-dot" value="3">3</button>
@@ -532,6 +567,35 @@ Where:"></textarea>
       if (n < 3) btn.dataset.clicks = String(n + 1);
     });
   });
+})();
+
+// translate2 engine — switches the page language and translates the bits CSS
+// can't (<option> text, placeholders, aria-labels), remembers the choice, and
+// keeps <html lang> in sync. Works for any number of languages.
+(function(){
+  const LS = 'translate2-lang';
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const radios = () => Array.from(document.querySelectorAll('input[name="lang"]'));
+  const curLang = () => { const r = radios().find(x => x.checked); return r ? r.id.replace('lang-', '') : 'en'; };
+  function applyLang(){
+    const li = curLang();
+    document.documentElement.lang = li;
+    document.querySelectorAll('option[data-en]').forEach(o => { if (o.dataset[li] != null) o.textContent = o.dataset[li]; });
+    document.querySelectorAll('[data-ph-en]').forEach(el => { const v = el.dataset['ph' + cap(li)]; if (v != null) el.placeholder = v; });
+    document.querySelectorAll('[data-aria-en]').forEach(el => { const v = el.dataset['aria' + cap(li)]; if (v != null) el.setAttribute('aria-label', v); });
+    document.querySelectorAll('[data-tip-en]').forEach(el => { const v = el.dataset['tip' + cap(li)]; if (v != null) el.setAttribute('data-tip', v); });
+    try { localStorage.setItem(LS, li); } catch (_) {}
+  }
+  function init(){
+    let saved = null; try { saved = localStorage.getItem(LS); } catch (_) {}
+    if (saved){ const r = document.getElementById('lang-' + saved); if (r) r.checked = true; }
+    radios().forEach(r => r.addEventListener('change', () => {
+      applyLang();
+      const d = document.querySelector('details.lang'); if (d) d.open = false;
+    }));
+    applyLang();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 </script>
 
