@@ -1157,6 +1157,33 @@
   body.embed .analyze-panel{ display:none !important; }
   body.embed{ background:transparent; }
 
+  /* ===== ✦ F0 §13.9 — Reset (left) · Update (right) action row ===== */
+  .summary-f0-row{
+    display:flex; align-items:flex-start; justify-content:space-between;
+    gap:.6rem; flex-wrap:wrap; margin:.2rem 0 1rem;
+  }
+  .reset-wrap,.update-wrap{ display:flex; flex-direction:column; gap:.15rem; flex:0 0 auto; }
+  .reset-wrap{ align-items:flex-start; }
+  .update-wrap{ align-items:flex-end; }
+  .summary-f0-row .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:.3rem;
+    height:31px; padding:0 .6rem; border-radius:8px;
+    border:1px solid var(--stroke); background:transparent; color:var(--muted);
+    font:600 .74rem/1 system-ui,sans-serif; cursor:pointer; white-space:nowrap;
+    transition:background .15s ease,color .15s ease,border-color .15s ease;
+  }
+  .summary-f0-row .btn:hover{ color:var(--ink); border-color:var(--accent); }
+  .reset-hint,.update-hint{ font-size:.66rem; line-height:1.1; color:var(--muted); opacity:.7; max-width:11rem; }
+  .reset-hint{ text-align:left; }
+  .update-hint{ text-align:right; }
+  /* out-of-date dot: hidden by default; ~8px accent dot when shown */
+  .stale-dot{
+    display:none; width:8px; height:8px; margin-left:.15rem; border-radius:50%;
+    background:var(--accent); vertical-align:middle;
+    box-shadow:0 0 0 3px rgba(255,95,220,.22);
+  }
+  .stale-dot:not([hidden]){ display:inline-block; }
+
   /* ===== ✦ summary actions (ported from blogyadvanced; Views omitted) ===== */
   .summary-actions{ margin-top:1.1rem; }
   .ctl{ position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
@@ -1479,6 +1506,17 @@
   <details class="summary-sec" id="summary-sec" open>
     <summary>✦ Summary</summary>
     <div class="summary-body" id="summary-body" data-flove-root data-flove-title="My fivys">
+      <!-- ✦ F0 §13.9 — Reset (left, destructive) · Update (right, clears stale dot) -->
+      <div class="summary-f0-row">
+        <span class="reset-wrap">
+          <button class="btn" type="button" data-flove-reset>↺ Reset</button>
+          <small class="reset-hint">Clear all and start a new play</small>
+        </span>
+        <span class="update-wrap">
+          <button class="btn" type="button" data-flove-update>Update <span class="stale-dot" hidden role="img" aria-label="Out of date"></span></button>
+          <small class="update-hint">if you re-edited the play</small>
+        </span>
+      </div>
       <h3>Fivys</h3>
       <div class="sum-table-wrap" id="summary-fivys"></div>
       <!-- Fields-stage time stats -->
@@ -2742,6 +2780,10 @@
     paintSummaryStats();
     paintSummarySnapshot();
     paintSummaryPhrase();
+    // ✦ F0 — every edit funnels through here: persist + light the stale dot.
+    // Guarded so the boot paint (and the board MutationObserver, which already
+    // calls save/markStale itself) don't double-fire or stale on first load.
+    if (_booted && !_restoring){ markStale(); save(); }
   }
   // Build the headline phrase, its "magic" rephrasing, and four insights from the settled fivys.
   function paintSummaryPhrase(){
@@ -2881,10 +2923,221 @@
     else window.print();
   });
 
+  // ════════════════════════════════════════════════════════════
+  //  ✦ F0 §10.3a / §13.9 — local persistence (Update · Reset)
+  //  fivy state is a JS object, so we snapshot the user-meaningful play
+  //  (deck orders/done/whys, fields categories, custom fivys, reasons,
+  //   active toggles, counters/timer) under one own key. Reset clears ONLY
+  //  this app's keys (NEVER localStorage.clear() — the origin is shared).
+  //  Disabled in embed mode: there the parent (keys) owns the lifecycle.
+  // ════════════════════════════════════════════════════════════
+  const STORAGE_KEY     = 'flove:fivy:items';
+  const STORAGE_VER_KEY = 'flove:fivy:v';
+  const SCHEMA_VERSION  = 1;
+  const OWN_KEYS = [STORAGE_KEY, STORAGE_VER_KEY];
+
+  let _restoring = false;   // true while applying a snapshot → suppress re-save
+  let _booted = false;      // true once the first paint is done → enable persistence
+  let _quotaWarned = false;
+
+  // request durable storage once (best-effort, on first save)
+  let _persistAsked = false;
+  function requestPersist(){
+    if (_persistAsked) return; _persistAsked = true;
+    try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(_){}
+  }
+
+  // Build a plain snapshot of everything the player has authored this play.
+  function snapshot(){
+    return {
+      version: SCHEMA_VERSION,
+      decks: {
+        orders:  state.orders,
+        done:    state.done,
+        porQues: state.porQues,
+        // p5 is a blank, player-filled deck: persist its typed title + items
+        p5: (() => { const d = DECKS.find(x => x.id === 'p5'); return d ? { title:d.title, items:d.items } : null; })(),
+      },
+      simplex:    Object.fromEntries(Object.keys(SIMPLEX).map(id => [id, { items:SIMPLEX[id].items, saved:SIMPLEX[id].saved }])),
+      customCats: customCats.map(c => ({ id:c.id, label:c.label, items:c.items, starred:c.starred })),
+      customSeq,
+      activeSets: activeSets.slice(),
+      lastSet,
+      reasons,
+      toggles,
+      counters,
+    };
+  }
+
+  function save(){
+    if (_restoring || EMBED) return;
+    requestPersist();
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot()));
+      localStorage.setItem(STORAGE_VER_KEY, String(SCHEMA_VERSION));
+    } catch(e){
+      const quota = e && (e.name === 'QuotaExceededError' || e.code === 22 || e.code === 1014);
+      if (quota && !_quotaWarned){ _quotaWarned = true; /* exports still work; warn silently */ }
+    }
+  }
+
+  // Apply a parsed snapshot back into the in-memory state (storage wins).
+  // Nav/view and language are NOT restored — the player still starts on the intro.
+  function applySnapshot(snap){
+    if (!snap) return;
+    _restoring = true;
+    try{
+      const dk = snap.decks || {};
+      if (dk.orders)  Object.assign(state.orders,  dk.orders);
+      if (dk.done)    Object.assign(state.done,    dk.done);
+      if (dk.porQues) Object.assign(state.porQues, dk.porQues);
+      if (dk.p5){ const d = DECKS.find(x => x.id === 'p5'); if (d){ if (typeof dk.p5.title === 'string') d.title = dk.p5.title; if (Array.isArray(dk.p5.items)) d.items = dk.p5.items.slice(); } }
+      // guard: every deck must keep a valid order array of its own length
+      DECKS.forEach(d => {
+        const ord = state.orders[d.id];
+        if (!Array.isArray(ord) || ord.length !== d.items.length) state.orders[d.id] = d.items.map((_,i)=>i);
+      });
+
+      if (snap.simplex){
+        Object.keys(SIMPLEX).forEach(id => {
+          const s = snap.simplex[id];
+          if (!s) return;
+          if (Array.isArray(s.items)) SIMPLEX[id].items = s.items.slice();
+          SIMPLEX[id].saved = !!s.saved;
+        });
+      }
+      if (Array.isArray(snap.customCats)){
+        customCats.length = 0;
+        snap.customCats.forEach(c => customCats.push({ id:c.id, label:c.label, items:Array.isArray(c.items)?c.items.slice():['','','','',''], starred:!!c.starred }));
+      }
+      if (typeof snap.customSeq === 'number') customSeq = snap.customSeq;
+      if (Array.isArray(snap.activeSets)){ activeSets.length = 0; snap.activeSets.forEach(x => activeSets.push(x)); }
+      lastSet = (typeof snap.lastSet === 'string' || snap.lastSet === null) ? snap.lastSet : lastSet;
+      if (snap.reasons && typeof snap.reasons === 'object'){ Object.keys(reasons).forEach(k => delete reasons[k]); Object.assign(reasons, snap.reasons); }
+      if (snap.toggles)  Object.assign(toggles,  snap.toggles);
+      if (snap.counters) Object.assign(counters, snap.counters);
+    } finally {
+      _restoring = false;
+    }
+  }
+
+  function loadFromStorage(){
+    if (EMBED) return false;
+    let raw = null;
+    try { raw = localStorage.getItem(STORAGE_KEY); } catch(_){ return false; }
+    if (!raw) return false;
+    try { applySnapshot(JSON.parse(raw)); return true; }
+    catch(_){ return false; }   // corrupt snapshot — start fresh
+  }
+
+  // ── stale-dot (out-of-date) helpers — only meaningful once a play was
+  //    persisted before this run of edits. A fresh, never-saved play that
+  //    just auto-saves must NOT light its own dot.
+  const allStaleDots = () => Array.prototype.slice.call(document.querySelectorAll('.stale-dot'));
+  function showStale(){ allStaleDots().forEach(d => d.hidden = false); }
+  function hideStale(){ allStaleDots().forEach(d => d.hidden = true); }
+  let _hadPriorSave = false;
+  try { _hadPriorSave = !!localStorage.getItem(STORAGE_KEY); } catch(_){}
+  function markStale(){ if (_hadPriorSave && !_restoring && !EMBED) showStale(); }
+
+  // re-apply the toggle/list visual state after a restore (toggles already in state)
+  function reflectToggles(){
+    ['list','cycle','confluence'].forEach(key => {
+      const btn = document.querySelector(`.tbtn[data-toggle="${key}"]`);
+      if (btn) btn.classList.toggle('is-on', !!toggles[key]);
+    });
+    if ($ll) $ll.hidden = !toggles.list;
+    if ($square){ $square.classList.toggle('cycle', !!toggles.cycle); $square.classList.toggle('confluence', !!toggles.confluence); }
+    if ($ll){ $ll.classList.toggle('confluence', !!toggles.confluence); $ll.classList.toggle('cycle', !!toggles.cycle); }
+  }
+  // repaint counter chips from restored values
+  function reflectCounters(){ ['clicks','selections','stars'].forEach(paintCounter); }
+
+  // Re-derive the whole UI from the (possibly restored) state.
+  function rederiveAll(){
+    renderNested();
+    renderCustomsRow();
+    renderNodes();
+    reflectToggles();
+    reflectCounters();
+    paintSummary();
+    render();   // decks board + spotlight + progress
+  }
+
+  // ── Update — re-read the persisted snapshot and re-derive, then clear dots ──
+  function floveUpdate(){
+    const restored = loadFromStorage();
+    rederiveAll();
+    hideStale();
+    if (restored){ try { _hadPriorSave = !!localStorage.getItem(STORAGE_KEY); } catch(_){} }
+  }
+  document.querySelectorAll('[data-flove-update]').forEach(b =>
+    b.addEventListener('click', e => { e.stopPropagation(); floveUpdate(); }));
+
+  // ── Reset — DESTRUCTIVE, confirm()-guarded; clears ONLY this app's keys ──
+  // Wipe this app's own keys (NEVER localStorage.clear() — the origin is shared),
+  // then reload to a genuinely fresh, empty play on step 1 (the intro) — the same
+  // clean-slate idiom fivy's own "Start over" / menu "Restart" already use. The
+  // in-DOM state is also cleared first so the empty re-derive is observable even
+  // if the reload is blocked (e.g. sandboxed).
+  function doReset(){
+    _restoring = true;
+    try{
+      // decks → factory defaults
+      DECKS.forEach(d => {
+        if (d.id === 'p5'){ d.title = ''; d.items = ['','','','','']; }
+        state.orders[d.id] = d.items.map((_,i)=>i);
+      });
+      state.done = {};
+      state.porQues = {};
+      state.openDeckIdx = null;
+      state.porQuePanelOpen = false;
+      state.porQueDraft = '';
+      // fields → factory defaults (Social pre-filled, the rest empty)
+      SIMPLEX['cat-r'].items = ['','','','','']; SIMPLEX['cat-r'].saved = false;
+      SIMPLEX['cat-o'].items = ['','','','','']; SIMPLEX['cat-o'].saved = false;
+      SIMPLEX['cat-y'].items = ['','','','','']; SIMPLEX['cat-y'].saved = false;
+      SIMPLEX['cat-g'].items = ['','','','','']; SIMPLEX['cat-g'].saved = false;
+      SIMPLEX['cat-b'].items = ['','','','','']; SIMPLEX['cat-b'].saved = false;
+      SIMPLEX['cat-i'].items = ['Media','Political','Economical','Judiciary','Militar']; SIMPLEX['cat-i'].saved = true;
+      customCats.length = 0;
+      activeSets.length = 0;
+      lastSet = null;
+      customSeq = 0;
+      Object.keys(reasons).forEach(k => delete reasons[k]);
+      toggles.list = toggles.cycle = toggles.confluence = false;
+      counters.clicks = counters.selections = counters.stars = 0;
+    } finally { _restoring = false; }
+
+    // wipe ONLY this app's own keys — NEVER localStorage.clear()
+    OWN_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch(_){} });
+    _hadPriorSave = false;   // fresh start → next edit is never "out of date"
+
+    // re-derive the now-empty play (fallback if reload is blocked). Keep
+    // _restoring true so this empty re-derive does NOT re-write the keys we
+    // just removed (else a reload would restore an empty-but-present snapshot).
+    _restoring = true;
+    try { rederiveAll(); hideStale(); backToIntro(); } finally { _restoring = false; }
+    // … then reload to step 1 with a clean slate (keys already gone → no restore)
+    try { location.reload(); } catch(_){}
+  }
+  function floveReset(){
+    let ok = true;
+    try { ok = window.confirm('This will clear everything and start over. Continue?'); } catch(_){ ok = true; }
+    if (ok) doReset();
+  }
+  document.querySelectorAll('[data-flove-reset]').forEach(b =>
+    b.addEventListener('click', e => { e.stopPropagation(); floveReset(); }));
+
   // ----- Initial paint -----
+  // Storage wins: restore the play (data only — nav + language untouched) BEFORE
+  // the first paint, so a returning player sees their settled fivys re-derived.
+  loadFromStorage();
   renderNested();
   renderCustomsRow();
   renderNodes();
+  reflectToggles();
+  reflectCounters();
   paintSummary();
   render();
 
@@ -2892,7 +3145,10 @@
   renderIntro();
   hideAllViews();
 
-  // Re-paint Summary whenever the fivys board changes (Done / reopen).
+  _booted = true;   // ✦ F0 — boot paint done; later edits now persist + may go stale
+
+  // Re-paint Summary whenever the fivys board changes (Done / reopen);
+  // paintSummary() now also persists + lights the out-of-date dot (Update clears it).
   new MutationObserver(() => paintSummary())
     .observe(document.getElementById('board'), { childList:true, subtree:true });
 })();
