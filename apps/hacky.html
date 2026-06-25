@@ -1313,6 +1313,54 @@
     }
     .hint-area a { color: var(--app-accent); }
 
+    /* ===== ✦ F0 §13.9 — Update + Reset (minimal action-row) ===== */
+    /* hacky has no "✦ Summary" title row, so the trio lives in a tiny
+       centred action-row under the form (mirrors goddy's minimal placement). */
+    .f0-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 8px 16px;
+      margin: 18px auto 4px;
+      max-width: 980px;
+    }
+    .btn.ghost {
+      background: transparent;
+      border: 1px solid rgba(0,255,136,.3);
+      color: var(--app-accent-soft);
+      text-transform: none;
+      letter-spacing: .02em;
+      font-weight: 600;
+      font-size: .78rem;
+      padding: 7px 14px;
+      transform: none;
+      box-shadow: none;
+    }
+    .btn.ghost > * { transform: none; }
+    .btn.ghost:hover {
+      background: rgba(0,255,136,.1);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .stale-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      margin-left: 4px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0,255,136,.25);
+      vertical-align: middle;
+    }
+    .stale-dot[hidden] { display: none; }
+    .reset-wrap {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .reset-hint { font-size: .68rem; color: var(--muted); }
+
     @media (max-width: 720px) {
       .tri-grid { gap: 6px; }
       textarea { font-size: .9rem; padding: 6px 0; }
@@ -1519,6 +1567,14 @@
       <div class="hint-area" id="hintMessage"></div>
     </div>
   </form>
+
+  <!-- ✦ F0 §13.9 — Update + Reset. Minimal placement: hacky has no "✦ Summary"
+       title row, so the two affordances live together in a small centred row
+       under the form (the form fields are the live source of truth). -->
+  <div class="f0-controls">
+    <button class="btn ghost update-btn" type="button" data-flove-update hidden>Update <span class="stale-dot" hidden role="img" aria-label="Out of date" data-aria-en="Out of date" data-aria-es="Desactualizado"></span></button>
+    <span class="reset-wrap"><button class="btn ghost reset-btn" type="button" data-flove-reset>↺ <span class="en" lang="en">Reset</span><span class="es" lang="es">Reiniciar</span></button><small class="reset-hint"><span class="en" lang="en">Clear all and start fresh</span><span class="es" lang="es">Borra todo y empieza de nuevo</span></small></span>
+  </div>
 </main>
 
 <script>
@@ -1902,18 +1958,141 @@
       e.preventDefault();
       const act = a.dataset.act;
       if (act === 'reset') {
-        document.querySelectorAll('.hacky textarea').forEach(t => { t.value = ''; });
-        const kh = document.getElementById('know-hack'); if (kh) kh.checked = false;
-        clearTimeout(rainTimer);
-        window.floveFX?.setRain(false);
-        document.querySelectorAll('input[name="publishPlatform"], input[name="publishVisibility"]').forEach(r => r.checked = false);
-        setHint('<i class="fas fa-rotate-left"></i> <span class="en" lang="en">Form reset.</span><span class="es" lang="es">Formulario reiniciado.</span>');
+        floveReset();   // shared F0 reset (clears DOM + storage, re-derives empty)
       } else if (act === 'about') {
         setHint('<i class="fas fa-circle-info"></i> <span class="en" lang="en">Hacky · name the dislikes &amp; likes, then unveil the hack.</span><span class="es" lang="es">Hacky · nombra los disgustos y los gustos, y luego revela el hack.</span>');
       }
       setMenu(false);
     });
   });
+
+  // ════════════════════════════════════════════════════════════
+  //  ✦ F0 §10.3a/§13.9 — local persistence · Update · Reset
+  // ════════════════════════════════════════════════════════════
+  // hacky is DOM-controlled: the form fields ARE the live source of truth
+  // (buildModel() reads them on demand). We add durability: persist the data
+  // fields on every edit, re-derive from storage on load (storage wins — never
+  // "first value wins"). The know-hack reveal + publish radios are transient UI
+  // state and are NOT persisted. localStorage is the hot store; Save/Share stay
+  // the real backup (§10.3b).
+  const STORE_KEY = 'flove:hacky:items';
+  const VER_KEY   = 'flove:hacky:v';
+  const SCHEMA    = 1;
+  const FIELD_IDS = ['who', 'dislike1', 'dislike2', 'dislike3', 'like1', 'like2', 'like3'];
+
+  // Request durable storage once, on first user interaction (best-effort).
+  let _persistAsked = false;
+  function askPersist() {
+    if (_persistAsked) return; _persistAsked = true;
+    try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (_) {}
+  }
+
+  function readFields() {
+    const obj = {};
+    FIELD_IDS.forEach(id => {
+      const v = (document.getElementById(id)?.value || '').trim();
+      if (v) obj[id] = v;
+    });
+    return obj;
+  }
+
+  let _quotaWarned = false;
+  function saveItems() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify(readFields()));
+      localStorage.setItem(VER_KEY, String(SCHEMA));
+    } catch (err) {
+      const quota = err && (err.name === 'QuotaExceededError'
+        || err.name === 'NS_ERROR_DOM_QUOTA_REACHED' || err.code === 22 || err.code === 1014);
+      if (!_quotaWarned) {
+        _quotaWarned = true;
+        setHint('<i class="fas fa-triangle-exclamation"></i> ' + (quota
+          ? '<span class="en" lang="en">Local storage is full — use Save to export.</span><span class="es" lang="es">Almacenamiento lleno — usa Guardar para exportar.</span>'
+          : '<span class="en" lang="en">Could not save locally — use Save to export.</span><span class="es" lang="es">No se pudo guardar en local — usa Guardar para exportar.</span>'));
+      }
+    }
+  }
+
+  function loadItems() {
+    let raw = null;
+    try { raw = localStorage.getItem(STORE_KEY); } catch (_) { return {}; }
+    if (!raw) return {};
+    try { const o = JSON.parse(raw); return (o && typeof o === 'object') ? o : {}; }
+    catch (_) { return {}; }   // corrupt → ignore
+  }
+
+  // re-derive the form from storage (storage wins; language untouched)
+  function restoreItems() {
+    const obj = loadItems();
+    FIELD_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = (obj[id] != null) ? obj[id] : '';
+    });
+  }
+
+  // ── stale-dot (§10.3a): lit when an already-persisted play is re-edited;
+  //    Update/Reset hide every dot. No polling — hooked to the input event. ──
+  function markStale()  { document.querySelectorAll('.stale-dot').forEach(d => d.hidden = false); }
+  function clearStale() { document.querySelectorAll('.stale-dot').forEach(d => d.hidden = true); }
+  function hadSaved()   { return Object.keys(loadItems()).length > 0; }
+
+  // persist on every field edit; light the dot only if a board already existed
+  FIELD_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', () => {
+      askPersist();
+      const wasSaved = hadSaved();
+      saveItems();
+      if (wasSaved) markStale();
+    });
+  });
+
+  // ── F0 · Update — re-derive from storage, then drop the stale flag ──
+  function floveUpdate() {
+    askPersist();
+    restoreItems();
+    clearStale();
+    setHint('<i class="fas fa-rotate"></i> <span class="en" lang="en">Up to date.</span><span class="es" lang="es">Actualizado.</span>');
+  }
+  document.querySelectorAll('[data-flove-update]').forEach(b =>
+    b.addEventListener('click', e => { e.stopPropagation(); floveUpdate(); }));
+
+  // ── F0 · Reset — DESTRUCTIVE → confirm()-guarded. Clears in-DOM fields +
+  //    ONLY this app's own flove:hacky:* keys (NEVER localStorage.clear()),
+  //    re-derives the empty form, and returns to step 1. ──
+  function clearForm() {
+    document.querySelectorAll('.hacky textarea').forEach(t => { t.value = ''; });
+    const kh = document.getElementById('know-hack'); if (kh) kh.checked = false;
+    clearTimeout(rainTimer);
+    window.floveFX?.setRain(false);
+    document.querySelectorAll('input[name="publishPlatform"], input[name="publishVisibility"]').forEach(r => r.checked = false);
+    document.querySelectorAll('[contenteditable="true"]').forEach(el => { el.textContent = ''; });
+    // remove ONLY this app's own keys — never localStorage.clear() (§10.3a)
+    try {
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k && k.indexOf('flove:hacky:') === 0) localStorage.removeItem(k);
+      }
+    } catch (_) {}
+    restoreItems();   // re-derive the (now empty) form
+    clearStale();     // a fresh start is never "out of date"
+  }
+  function floveReset() {
+    askPersist();
+    const ok = window.confirm(activeLang() === 'es'
+      ? 'Esto borrará todo y empezará de cero. ¿Continuar?'
+      : 'This will clear everything and start over. Continue?');
+    if (!ok) return;
+    clearForm();
+    setHint('<i class="fas fa-rotate-left"></i> <span class="en" lang="en">Form reset.</span><span class="es" lang="es">Formulario reiniciado.</span>');
+  }
+  document.querySelectorAll('[data-flove-reset]').forEach(b =>
+    b.addEventListener('click', e => { e.stopPropagation(); floveReset(); }));
+
+  // ── boot · re-derive from storage (storage wins), then start un-stale ──
+  restoreItems();
+  clearStale();
 })();
 </script>
 
