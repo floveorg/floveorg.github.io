@@ -1659,6 +1659,8 @@
                                 <button type="button" class="subitem" data-group="save" data-action="text"><span class="en" lang="en">Text</span><span class="es" lang="es">Texto</span></button>
                                 <button type="button" class="subitem" data-group="save" data-action="json">JSON</button>
                                 <button type="button" class="subitem" data-group="save" data-action="csv">CSV</button>
+                                <button type="button" class="subitem" data-group="save" data-action="markdown"><span class="en" lang="en">Markdown</span><span class="es" lang="es">Markdown</span></button>
+                                <button type="button" class="subitem" data-group="save" data-action="xml">XML</button>
                             </div>
                         </div>
                         <div class="btn-with-subs" id="shareWrap">
@@ -2147,9 +2149,43 @@
             try { localStorage.setItem('daty_state', JSON.stringify(collectFormData())); } catch (_) {}
             toggleWrap(wraps.save);
         });
+        // Web Share API — share the summary text + a generated file (Markdown).
+        // Guarded by canShare({files}); on any miss we fall back to the existing
+        // link-only dropdown (WhatsApp / Telegram / Mail), which is never removed.
+        async function tryWebShare() {
+            const text = getSummaryText();
+            if (!text) return false;
+            const nav = navigator;
+            if (!nav.share || typeof File === 'undefined') return false;
+            const title = T('Daty · my profile', 'Daty · mi perfil');
+            try {
+                const file = new File([buildMarkdown()], 'daty_profile.md', { type: 'text/markdown' });
+                const payload = { title, text, files: [file] };
+                if (nav.canShare && nav.canShare({ files: [file] })) {
+                    await nav.share(payload);
+                    return true;
+                }
+                // No file support — share text-only if the platform allows it.
+                if (nav.canShare ? nav.canShare({ title, text }) : true) {
+                    await nav.share({ title, text });
+                    return true;
+                }
+            } catch (err) {
+                // User cancelled (AbortError) → treat as handled; real errors fall back.
+                if (err && err.name === 'AbortError') return true;
+                return false;
+            }
+            return false;
+        }
+
         document.getElementById('shareBtn')?.addEventListener('click', e => {
             e.stopPropagation();
-            toggleWrap(wraps.share);
+            const text = getSummaryText();
+            if (text && navigator.share) {
+                tryWebShare().then(done => { if (!done) toggleWrap(wraps.share); });
+            } else {
+                toggleWrap(wraps.share);
+            }
         });
         document.getElementById('publishBtn')?.addEventListener('click', e => {
             e.stopPropagation();
@@ -2178,6 +2214,42 @@ h1{font-family:Georgia,serif;color:#2c7a6e;margin:0 0 18px}
 pre{background:#fffaf3;border:1px solid #ecd9bd;border-radius:18px;padding:18px;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,monospace}
 footer{margin-top:24px;font-size:.78rem;color:#6e5a44;font-style:italic}</style></head>
 <body><h1>${heading}</h1><pre>${escaped}</pre><footer>flove · daty</footer></body></html>`;
+        }
+
+        // Markdown serializer over the same summary-model as JSON/CSV (parity).
+        // Readable summary on top for humans, then a key/value table of every field.
+        function buildMarkdown() {
+            const heading = T('Daty · my profile', 'Daty · mi perfil');
+            const summary = getSummaryText() || T('(empty profile)', '(perfil vacío)');
+            const data = collectFormData();
+            // Escape Markdown table cell content: pipes break columns; newlines become <br>.
+            const cell = v => String(v ?? '').replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\r?\n/g, '<br>');
+            const lines = [];
+            lines.push(`# ${heading}`, '');
+            lines.push('```', summary, '```', '');
+            lines.push(`## ${T('Fields', 'Campos')}`, '');
+            lines.push(`| ${T('Field', 'Campo')} | ${T('Value', 'Valor')} |`, '| --- | --- |');
+            Object.keys(data).forEach(k => lines.push(`| ${cell(k)} | ${cell(data[k])} |`));
+            lines.push('', '_flove · daty_', '');
+            return lines.join('\n');
+        }
+
+        // XML serializer over the same summary-model (parity). Field names are used
+        // as attributes (always valid XML names here), values are entity-escaped.
+        function buildXML() {
+            const esc = s => String(s ?? '')
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+            const data = collectFormData();
+            const summary = getSummaryText() || '';
+            const out = ['<?xml version="1.0" encoding="UTF-8"?>', '<datyProfile>'];
+            out.push(`  <summary>${esc(summary)}</summary>`);
+            out.push('  <fields>');
+            Object.keys(data).forEach(k => {
+                out.push(`    <field name="${esc(k)}">${esc(data[k])}</field>`);
+            });
+            out.push('  </fields>', '</datyProfile>', '');
+            return out.join('\n');
         }
 
         function renderJPG(cb) {
@@ -2254,6 +2326,14 @@ footer{margin-top:24px;font-size:.78rem;color:#6e5a44;font-style:italic}</style>
                 const csv = headers.map(h => `"${h}"`).join(',') + '\n' + row.join(',');
                 downloadFile(csv, 'daty_profile.csv', 'text/csv;charset=utf-8;');
                 toast(T('CSV downloaded', 'CSV descargado'));
+            },
+            'save:markdown': () => {
+                downloadFile(buildMarkdown(), 'daty_profile.md', 'text/markdown;charset=utf-8;');
+                toast(T('Markdown downloaded', 'Markdown descargado'));
+            },
+            'save:xml': () => {
+                downloadFile(buildXML(), 'daty_profile.xml', 'application/xml;charset=utf-8;');
+                toast(T('XML downloaded', 'XML descargado'));
             },
             'save:jpg': () => {
                 renderJPG(blob => {
@@ -2368,6 +2448,11 @@ footer{margin-top:24px;font-size:.78rem;color:#6e5a44;font-style:italic}</style>
 
         function applyFormData(data) {
             const form = document.getElementById('mainForm');
+            // Rebuild dynamic url_extra_N / media_file_extra_N rows BEFORE assigning,
+            // so exported dynamic fields round-trip back in (mirrors the "+ add" handler).
+            // File inputs can't be set programmatically, so media rows are recreated
+            // (count round-trips) but the file selection itself can't be restored.
+            rebuildDynamicRows(data);
             Object.keys(data).forEach(name => {
                 const value = data[name];
                 // text / number / url / textarea inputs
@@ -2391,6 +2476,38 @@ footer{margin-top:24px;font-size:.78rem;color:#6e5a44;font-style:italic}</style>
                 hasKidsBtn.classList.toggle('is-selected', on);
                 kidsRow?.classList.toggle('is-active', on);
             }
+        }
+
+        // Re-create the dynamic url_extra_N / media_file_extra_N DOM rows that an
+        // export captured, so applyFormData() has elements to assign into. Mirrors
+        // the addUrlBtn / addMediaBtn handlers (create row → append → bump counter →
+        // attach summary events). Clears any existing dynamic rows first.
+        function rebuildDynamicRows(data) {
+            if (urlContainer) urlContainer.innerHTML = '';
+            if (mediaContainer) mediaContainer.innerHTML = '';
+            urlCounter = 1;
+            mediaCounter = 1;
+            // url_extra_1, url_extra_2, … in numeric order
+            const byIndex = (a, b) => (+a.split('_').pop()) - (+b.split('_').pop());
+            // Reuse the exact exported key as the new input's name so the assignment
+            // loop in applyFormData() (which matches [name="url_extra_N"]) lands even
+            // when the exported indices are non-contiguous (a row was removed before export).
+            Object.keys(data).filter(k => /^url_extra_\d+$/.test(k)).sort(byIndex).forEach(key => {
+                const row = createDynamicFieldRow('url');
+                const input = row.querySelector('input');
+                if (input) input.name = key;
+                urlContainer.appendChild(row);
+                urlCounter++;
+                attachSummaryEvents(row);
+            });
+            Object.keys(data).filter(k => /^media_file_extra_\d+$/.test(k)).sort(byIndex).forEach(key => {
+                const row = createDynamicFieldRow('media');
+                const input = row.querySelector('input');
+                if (input) input.name = key;
+                mediaContainer.appendChild(row);
+                mediaCounter++;
+                attachSummaryEvents(row);
+            });
         }
 
         function downloadFile(content, filename, mime) {
