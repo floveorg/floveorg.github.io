@@ -1481,6 +1481,61 @@
     .result-head { text-align: center; margin-bottom: 12px; }
     .result-head h3 { margin: 0; justify-content: center; }
     .result-timestamp { display: block; font-size: 0.85rem; opacity: 0.75; margin-top: 4px; }
+
+    /* ── ✦ F0 §13.9 — Reset (left) · ✦ Summary · Update (right) title row ── */
+    .summary-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+    .summary-head .summary-title {
+      flex: 1 1 auto;
+      margin: 0;
+      text-align: center;
+      justify-content: center;
+    }
+    .reset-wrap--title, .update-wrap--title {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      flex: 0 0 auto;
+    }
+    .reset-wrap--title { align-items: flex-start; }
+    .update-wrap--title { align-items: flex-end; }
+    .reset-hint, .update-hint {
+      font-size: 0.68rem;
+      line-height: 1.15;
+      color: #9aa6dd;
+      max-width: 9rem;
+    }
+    .reset-hint { text-align: left; }
+    .update-hint { text-align: right; }
+    /* ghost F0 buttons reuse .btn.ghost; keep them text-cased, not the uppercase btn-row style */
+    .summary-head .btn.ghost {
+      text-transform: none;
+      letter-spacing: 0.02em;
+      font-weight: 600;
+      font-size: 0.82rem;
+      padding: 8px 14px;
+    }
+    /* out-of-date dot: hidden by default, an ~8px accent dot when lit */
+    .stale-dot {
+      display: none;
+      width: 8px; height: 8px;
+      margin-left: 4px;
+      border-radius: 50%;
+      background: var(--app-accent);
+      box-shadow: 0 0 0 3px rgba(183, 201, 255, 0.25);
+      vertical-align: middle;
+    }
+    .stale-dot:not([hidden]) { display: inline-block; }
+    @media (max-width: 559px) {
+      .summary-head .summary-title { order: -1; flex-basis: 100%; }
+      .reset-hint, .update-hint { max-width: none; }
+    }
     .magic-foot { margin-top: 12px; font-size: 0.8rem; }
 
     @media (max-width: 640px) {
@@ -1593,11 +1648,14 @@
 
   <!-- LEGIBLE PHRASE SECTION (live update) -->
   <div class="results-area" id="resultsArea">
-    <div class="result-card" id="resultCard">
-      <div class="result-head">
-        <h3 id="resultHeader"><span class="en" lang="en">Galactic insight</span><span class="es" lang="es">Visión galáctica</span></h3>
-        <span id="resultTimestamp" class="result-timestamp"></span>
-      </div>
+    <div class="result-card is-summary" id="resultCard">
+      <!-- ✦ F0 §13.9 — Reset (left) · ✦ Summary · Update (right) title row -->
+      <header class="result-head summary-head">
+        <span class="reset-wrap reset-wrap--title"><button class="btn ghost reset-btn" type="button" data-flove-reset>↺ <span class="en" lang="en">Reset</span><span class="es" lang="es">Reiniciar</span></button><small class="reset-hint"><span class="en" lang="en">Clear all and start new play</span><span class="es" lang="es">Borra todo y empieza de nuevo</span></small></span>
+        <h3 id="resultHeader" class="summary-title">✦ <span class="en" lang="en">Summary</span><span class="es" lang="es">Resumen</span></h3>
+        <span class="update-wrap update-wrap--title"><button class="btn ghost update-btn" type="button" data-flove-update><span class="en" lang="en">Update</span><span class="es" lang="es">Actualizar</span> <span class="stale-dot" hidden role="img" aria-label="Out of date" data-aria-en="Out of date" data-aria-es="Desactualizado"></span></button><small class="update-hint"><span class="en" lang="en">if you re-edited the form</span><span class="es" lang="es">si has reeditado el formulario</span></small></span>
+      </header>
+      <span id="resultTimestamp" class="result-timestamp"></span>
       <div id="reflectionContent"></div>
 
       <div class="button-group">
@@ -2036,7 +2094,10 @@
 
     // The live reading, as plain text — the model's phrase.
     function summaryText() {
-      const head = document.querySelector('.result-head');
+      // Read only the ✦ Summary title (not the Reset/Update controls in the
+      // title row) plus the reflection body — the title row's buttons must
+      // never leak into the phrase.
+      const head = document.querySelector('.summary-title');
       const body = document.getElementById('reflectionContent');
       const parts = [head, body]
         .filter(Boolean)
@@ -2223,6 +2284,159 @@
         if (btn.dataset.group !== 'publish') closeAllWraps();
       });
     });
+
+    // ═══════════════════════════════════════════════════════════════
+    //  ✦ F0 §10.3a/b — local persistence · Update · Reset (DOM-state)
+    // ═══════════════════════════════════════════════════════════════
+    // Astry's state lives in the DOM (date/time/text/hidden inputs + the
+    // trad/focus/depth checkboxes). We persist a snapshot of those controls
+    // on every edit and re-derive them from storage on boot (never
+    // "first value wins"). localStorage is the hot store; Save/Share/Publish
+    // remain the real backup (§10.3b). Nav (info panel) and language are NOT
+    // restored here — boot lands on the entry view.
+    const STORE_KEY = 'flove:astry:items';
+    const VER_KEY   = 'flove:astry:v';
+    const OWN_PREFIX = 'flove:astry';
+    const SCHEMA    = 1;
+    // the DOM controls that ARE the form state
+    const FIELD_IDS = ['dobInput', 'timeInput', 'locationInput', 'latHidden', 'lonHidden'];
+    const CHECK_NAMES = ['trad', 'focus', 'depth'];
+
+    // request durable storage once, on first interaction (best-effort §10.3b)
+    let _persistAsked = false;
+    function askPersist() {
+      if (_persistAsked) return; _persistAsked = true;
+      try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (_) {}
+    }
+
+    function snapshotState() {
+      const fields = {};
+      FIELD_IDS.forEach(id => { const el = document.getElementById(id); if (el) fields[id] = el.value; });
+      const checks = {};
+      CHECK_NAMES.forEach(n => { checks[n] = getCheckedValues(n); });
+      return { fields, checks };
+    }
+
+    let _quotaWarned = false;
+    function saveState() {
+      try {
+        localStorage.setItem(STORE_KEY, JSON.stringify(snapshotState()));
+        localStorage.setItem(VER_KEY, String(SCHEMA));
+      } catch (err) {
+        // QuotaExceededError / storage disabled (private mode): warn once,
+        // never silent-lose — Save/export keeps the reading (§10.3b).
+        const quota = err && (err.name === 'QuotaExceededError'
+          || err.name === 'NS_ERROR_DOM_QUOTA_REACHED' || err.code === 22 || err.code === 1014);
+        if (!_quotaWarned) {
+          _quotaWarned = true;
+          setHint('<i class="fas fa-triangle-exclamation"></i> ' + (quota
+            ? t({en:'Local storage is full — use Save to export and keep your reading.',
+                 es:'El almacenamiento local está lleno — usa Guardar para exportar y conservar tu lectura.'})
+            : t({en:'Could not save locally — use Save to keep your reading.',
+                 es:'No se pudo guardar en local — usa Guardar para conservar tu lectura.'})));
+        }
+      }
+    }
+
+    function loadState() {
+      let raw = null;
+      try { raw = localStorage.getItem(STORE_KEY); } catch (_) { return null; }
+      if (!raw) return null;
+      try {
+        const obj = JSON.parse(raw);
+        return (obj && typeof obj === 'object') ? obj : null;
+      } catch (_) { return null; }   // corrupt → ignore
+    }
+
+    // Re-derive the DOM controls from a stored snapshot (storage wins).
+    function restoreState() {
+      const snap = loadState();
+      if (!snap) return;
+      const fields = snap.fields || {};
+      FIELD_IDS.forEach(id => {
+        if (fields[id] == null) return;
+        const el = document.getElementById(id);
+        if (el) el.value = fields[id];
+      });
+      const checks = snap.checks || {};
+      CHECK_NAMES.forEach(n => {
+        const want = Array.isArray(checks[n]) ? checks[n] : null;
+        if (!want) return;   // group absent from snapshot → leave HTML defaults
+        document.querySelectorAll(`input[name="${n}"]`).forEach(cb => {
+          cb.checked = want.includes(cb.value);
+        });
+      });
+      // reflect restored coords into the read-out, then re-derive the summary
+      const lat = latHidden.value, lon = lonHidden.value;
+      coordDisplay.textContent = (lat && lon)
+        ? `${parseFloat(lat).toFixed(2)}, ${parseFloat(lon).toFixed(2)}` : '';
+      updateReflection();
+    }
+
+    // ── stale-dot helpers (§10.3a): lit on an edit of an already-saved
+    //    reading; Update / Reset re-derive and clear it. No polling. ──
+    function markStale()  { document.querySelectorAll('.stale-dot').forEach(d => d.hidden = false); }
+    function clearStale() { document.querySelectorAll('.stale-dot').forEach(d => d.hidden = true); }
+    // only "stale" if a snapshot already existed before this edit, so the very
+    // first edits that create a fresh reading don't wrongly light the dot.
+    function hadSaved() { let r = null; try { r = localStorage.getItem(STORE_KEY); } catch (_) {} return !!r; }
+
+    // one funnel for every in-session form edit: persist + maybe-stale.
+    function afterEdit() {
+      askPersist();
+      const wasSaved = hadSaved();
+      saveState();
+      if (wasSaved) markStale();
+    }
+    // hook persistence onto the SAME controls the live reflection listens to
+    document.querySelectorAll('#astroForm input, #astroForm select').forEach(el => {
+      el.addEventListener('change', afterEdit);
+      el.addEventListener('input', afterEdit);
+    });
+
+    // ── F0 · Update — re-derive from storage, then drop the stale flag ──
+    document.querySelectorAll('[data-flove-update]').forEach(b => b.addEventListener('click', () => {
+      askPersist();
+      restoreState();   // storage wins → re-derive form + summary
+      clearStale();
+      setHint('<i class="fas fa-rotate"></i> ' + t({en:'Summary up to date.', es:'Resumen actualizado.'}));
+    }));
+
+    // ── F0 · Reset — DESTRUCTIVE: clear every in-DOM selection + ONLY this
+    //    app's own keys (never localStorage.clear()), re-derive empty, step 1 ──
+    function resetAstry() {
+      // remove only flove:astry* keys
+      try {
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const k = localStorage.key(i);
+          if (k && k.indexOf(OWN_PREFIX) === 0) localStorage.removeItem(k);
+        }
+      } catch (_) {}
+      // reset the form controls to their HTML defaults (step 1 = entry view)
+      const form = document.getElementById('astroForm');
+      if (form && typeof form.reset === 'function') form.reset();
+      latHidden.value = ''; lonHidden.value = '';
+      coordDisplay.textContent = '';
+      document.querySelectorAll('[contenteditable="true"]').forEach(el => { el.textContent = ''; });
+      // close any open info panel so we land on the plain entry view
+      if (infoPanel.classList.contains('is-open')) setInfoOpen(false);
+      clearStale();
+      updateReflection();   // re-derive the (now default) summary
+      setHint('<i class="fas fa-eraser"></i> ' + t({en:'Cleared — start a new reading.', es:'Borrado — empieza una nueva lectura.'}));
+    }
+    document.querySelectorAll('[data-flove-reset]').forEach(b => b.addEventListener('click', () => {
+      askPersist();
+      const msg = (curLang() === 'es')
+        ? 'Esto borrará todo y empezará de cero. ¿Continuar?'
+        : 'This will clear everything and start over. Continue?';
+      let ok = true;
+      try { ok = window.confirm(msg); } catch (_) { ok = true; }
+      if (ok) resetAstry();
+    }));
+
+    // ── boot: re-derive from storage (script runs at end of body) ──
+    restoreState();
+    clearStale();   // a restored or fresh reading is never "out of date" at boot
 
     // fetch coords also triggers update (already calls updateReflection)
   })();
