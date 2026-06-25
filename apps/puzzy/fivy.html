@@ -1,8 +1,8 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="icon" type="image/svg+xml" href="favicon-fivy.svg">
 <title>FLOVE · FIVY</title>
 <style>
@@ -25,6 +25,34 @@
   }
   *{box-sizing:border-box}
   html,body{margin:0}
+
+  /* ── translate2 i18n engine — span toggle (CSS-only); keys only on #lang-es:checked ── */
+  .es{display:none}                                  /* default view = .en */
+  body:has(#lang-es:checked) .en{display:none}
+  body:has(#lang-es:checked) .es{display:inline}
+  /* ── worldball switcher (🌐 opens the language options) ── */
+  .lang{display:inline-block;position:relative;margin:.2rem 0 .6rem}
+  .lang>summary{list-style:none;cursor:pointer;width:40px;height:40px;border:1px solid #999;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;font-size:1.35rem;line-height:1;-webkit-user-select:none;user-select:none}
+  .lang>summary::-webkit-details-marker{display:none}
+  .lang[open]>summary{border-color:#333;background:#f2f2f2}
+  .lang-opts{position:absolute;right:0;z-index:90;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;
+    background:#fff;border:1px solid #999;border-radius:12px;padding:6px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+  .lang input{position:absolute;opacity:0;pointer-events:none}
+  .lang label{cursor:pointer;padding:0 12px;min-height:40px;display:inline-flex;align-items:center;border:1px solid #999;border-radius:11px;white-space:nowrap}
+  .lang input:checked + label{background:#333;color:#fff;font-weight:bold;border-color:#333}
+  @media (prefers-color-scheme:dark){
+    .lang>summary{border-color:#777} .lang[open]>summary{background:#2a2a2a;border-color:#999}
+    .lang-opts{background:#222;border-color:#777;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+    .lang label{border-color:#777}
+    .lang input:checked + label{background:#e9e9e9;color:#111;border-color:#e9e9e9}
+  }
+  /* fivy is dark-themed; tune the worldball to its palette so it reads in-app */
+  .topbar .lang>summary{border-color:var(--stroke);color:var(--ink)}
+  .topbar .lang[open]>summary{background:var(--fx);border-color:var(--accent)}
+  .topbar .lang-opts{background:var(--panel);border-color:var(--stroke);box-shadow:0 6px 18px rgba(0,0,0,.45)}
+  .topbar .lang label{border-color:var(--stroke);color:var(--ink)}
+  .topbar .lang input:checked + label{background:var(--accent);color:#260a1f;border-color:var(--accent)}
   body{
     background:
       radial-gradient(1200px 700px at 85% -10%, #3a3a58 0%, transparent 55%),
@@ -56,7 +84,7 @@
     transition:transform .15s ease, background .2s ease;
   }
   .brand-link:hover{transform:translateY(-1px);background:rgba(255,255,255,.04)}
-  .brand-mark{width:30px;height:30px;display:block;flex:none}
+  .brand-mark{width:30px;height:30px;display:block;flex:none;filter:drop-shadow(0 0 4px #8d89ff)}
   .brand-text{
     font:600 1.2rem/1 ui-serif,Georgia,serif;letter-spacing:.4px;
     background:linear-gradient(135deg,var(--gold),var(--accent) 60%,var(--sky));
@@ -1308,7 +1336,7 @@
 <header class="topbar">
   <div class="topbar-inner">
     <button class="brand-link" id="brand-menu" type="button" aria-haspopup="true" aria-expanded="false" aria-label="menu">
-      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#8d89ff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 4px #8d89ff)"><path d="M12 18.5V5M12 18.5 6.4 8M12 18.5 17.6 8M12 18.5 4.8 13M12 18.5 19.2 13"/><circle fill="#8d89ff" stroke="none" cx="12" cy="18.5" r="1.6"/></svg>
+      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#8d89ff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 18.5V5M12 18.5 6.4 8M12 18.5 17.6 8M12 18.5 4.8 13M12 18.5 19.2 13"/><circle fill="#8d89ff" stroke="none" cx="12" cy="18.5" r="1.6"/></svg>
       <span class="brand-text">fivy</span>
       <span class="brand-caret" aria-hidden="true">▾</span>
     </button>
@@ -1318,19 +1346,26 @@
         <div class="seg"></div>
         <div class="seg"></div>
       </div>
-      <div class="deck-progress" id="deck-progress" aria-label="decks settled">
+      <div class="deck-progress" id="deck-progress" role="group" aria-label="decks settled">
         <span class="dseg"></span><span class="dseg"></span><span class="dseg"></span><span class="dseg"></span><span class="dseg"></span>
       </div>
     </div>
     <div class="topbar-spacer"></div>
+    <details class="lang">
+      <summary class="worldball" title="Language" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐</summary>
+      <div class="lang-opts">
+        <input type="radio" name="lang" id="lang-en" checked><label for="lang-en">English</label>
+        <input type="radio" name="lang" id="lang-es"><label for="lang-es">Español</label>
+      </div>
+    </details>
     <nav class="app-menu" id="app-menu" role="menu" hidden>
-      <a href="index.html" role="menuitem">◂ All apps</a>
+      <a href="index.html" role="menuitem">◂ <span class="en" lang="en">All apps</span><span class="es" lang="es">Todas las apps</span></a>
       <div class="sep"></div>
-      <button type="button" data-act="decks" role="menuitem">▦ Decks</button>
-      <button type="button" data-act="fields" role="menuitem">⬡ Fields</button>
-      <button type="button" data-act="summary" role="menuitem">✦ Summary</button>
+      <button type="button" data-act="decks" role="menuitem">▦ <span class="en" lang="en">Decks</span><span class="es" lang="es">Mazos</span></button>
+      <button type="button" data-act="fields" role="menuitem">⬡ <span class="en" lang="en">Fields</span><span class="es" lang="es">Campos</span></button>
+      <button type="button" data-act="summary" role="menuitem">✦ <span class="en" lang="en">Summary</span><span class="es" lang="es">Resumen</span></button>
       <div class="sep"></div>
-      <button type="button" data-act="restart" role="menuitem">↺ Restart</button>
+      <button type="button" data-act="restart" role="menuitem">↺ <span class="en" lang="en">Restart</span><span class="es" lang="es">Reiniciar</span></button>
     </nav>
   </div>
 </header>
@@ -1338,15 +1373,15 @@
 <div class="wrap">
 
   <!-- Intro: 3 slides; the last has the Customize panel and reveals "I'm ready" -->
-  <section class="intro-slider" id="intro-slider" aria-label="How fivy works">
+  <section class="intro-slider" id="intro-slider" aria-label="How fivy works" data-aria-en="How fivy works" data-aria-es="Cómo funciona fivy">
     <div class="intro-track" id="intro-track"></div>
     <div class="intro-arrows">
-      <button id="intro-prev" type="button" aria-label="Previous">←</button>
-      <button id="intro-next" type="button" aria-label="Next">→</button>
+      <button id="intro-prev" type="button" aria-label="Previous" data-aria-en="Previous" data-aria-es="Anterior">←</button>
+      <button id="intro-next" type="button" aria-label="Next" data-aria-en="Next" data-aria-es="Siguiente">→</button>
     </div>
-    <div class="intro-dots" id="intro-dots" role="tablist" aria-label="Slides"></div>
+    <div class="intro-dots" id="intro-dots" role="tablist" aria-label="Slides" data-aria-en="Slides" data-aria-es="Diapositivas"></div>
     <div class="intro-cta gated" id="intro-cta">
-      <button class="btn btn-primary" id="intro-start" type="button">I'm ready →</button>
+      <button class="btn btn-primary" id="intro-start" type="button"><span class="en" lang="en">I'm ready →</span><span class="es" lang="es">Estoy listo →</span></button>
     </div>
   </section>
 
@@ -1360,27 +1395,27 @@
   </section>
 
   <!-- Stage 1: Fields (simplex) -->
-  <section class="fields" id="fields" aria-label="Fields">
+  <section class="fields" id="fields" aria-label="Fields" data-aria-en="Fields" data-aria-es="Campos">
 
     <!-- left: List/Cycle/Confluence · right: one button row + subs + square -->
     <div class="fields-grid">
 
-      <aside class="toolbar">
+      <aside class="toolbar" aria-label="Tools and categories" data-aria-en="Tools and categories" data-aria-es="Herramientas y categorías">
         <div class="buttons">
-          <button class="tbtn" data-toggle="list" type="button" title="Show linear list of titles">
-            <span class="btn-text">List</span>
+          <button class="tbtn" data-toggle="list" type="button" aria-label="Show linear list of titles" data-aria-en="Show linear list of titles" data-aria-es="Mostrar lista lineal de títulos">
+            <span class="btn-text"><span class="en" lang="en">List</span><span class="es" lang="es">Lista</span></span>
             <span class="state-indicator"></span>
           </button>
-          <button class="tbtn" data-toggle="cycle" type="button" title="Cycle 1→2→3→4→5→1 loop">
-            <span class="btn-text">Cycle</span>
+          <button class="tbtn" data-toggle="cycle" type="button" aria-label="Cycle 1→2→3→4→5→1 loop" data-aria-en="Cycle 1→2→3→4→5→1 loop" data-aria-es="Ciclo 1→2→3→4→5→1">
+            <span class="btn-text"><span class="en" lang="en">Cycle</span><span class="es" lang="es">Ciclo</span></span>
             <span class="state-indicator"></span>
           </button>
-          <button class="tbtn" data-toggle="confluence" type="button" title="Confluence: arrows flowing into 1">
-            <span class="btn-text">Confluence</span>
+          <button class="tbtn" data-toggle="confluence" type="button" aria-label="Confluence: arrows flowing into 1" data-aria-en="Confluence: arrows flowing into 1" data-aria-es="Confluencia: flechas que confluyen en 1">
+            <span class="btn-text"><span class="en" lang="en">Confluence</span><span class="es" lang="es">Confluencia</span></span>
             <span class="state-indicator"></span>
           </button>
         </div>
-        <aside class="linear-list" id="linear-list" hidden aria-live="polite">
+        <aside class="linear-list" id="linear-list" hidden aria-live="polite" aria-label="Linear list of titles" data-aria-en="Linear list of titles" data-aria-es="Lista lineal de títulos">
           <div class="ll-title" id="ll-title"></div>
           <ol id="list-items">
             <li><span></span></li>
@@ -1395,36 +1430,36 @@
              each parent's sub-buttons drop in below it when it's checked -->
         <nav class="cats" aria-label="Categories" id="cats">
           <div class="cat-group">
-            <button class="cat cat-rb-r" data-cat="cat-r" type="button">Metas</button>
+            <button class="cat cat-rb-r" data-cat="cat-r" type="button"><span class="en" lang="en">Metas</span><span class="es" lang="es">Metas</span></button>
             <div class="cat-children" data-for="cat-r"></div>
           </div>
           <div class="cat-group">
-            <button class="cat cat-rb-o" data-cat="cat-o" type="button">Sci</button>
+            <button class="cat cat-rb-o" data-cat="cat-o" type="button"><span class="en" lang="en">Sci</span><span class="es" lang="es">Ciencia</span></button>
             <div class="cat-children" data-for="cat-o"></div>
           </div>
           <div class="cat-group">
-            <button class="cat cat-rb-y" data-cat="cat-y" type="button">Bio</button>
+            <button class="cat cat-rb-y" data-cat="cat-y" type="button"><span class="en" lang="en">Bio</span><span class="es" lang="es">Bio</span></button>
             <div class="cat-children" data-for="cat-y"></div>
           </div>
           <div class="cat-group">
-            <button class="cat cat-rb-g" data-cat="cat-g" type="button">Lang</button>
+            <button class="cat cat-rb-g" data-cat="cat-g" type="button"><span class="en" lang="en">Lang</span><span class="es" lang="es">Lengua</span></button>
             <div class="cat-children" data-for="cat-g"></div>
           </div>
           <div class="cat-group">
-            <button class="cat cat-rb-b" data-cat="cat-b" type="button">Psico</button>
+            <button class="cat cat-rb-b" data-cat="cat-b" type="button"><span class="en" lang="en">Psico</span><span class="es" lang="es">Psico</span></button>
             <div class="cat-children" data-for="cat-b"></div>
           </div>
           <div class="cat-group">
-            <button class="cat cat-rb-i" data-cat="cat-i" type="button">Social</button>
+            <button class="cat cat-rb-i" data-cat="cat-i" type="button"><span class="en" lang="en">Social</span><span class="es" lang="es">Social</span></button>
             <div class="cat-children" data-for="cat-i"></div>
           </div>
-          <button class="cat cat-add" id="btn-add-cat" type="button" aria-label="Add a new fivy" title="Add a new fivy">+</button>
-          <button class="cat cat-save" id="btn-save-cat" type="button" hidden>Save</button>
+          <button class="cat cat-add" id="btn-add-cat" type="button" aria-label="Add a new fivy" data-aria-en="Add a new fivy" data-aria-es="Añadir un nuevo fivy">+</button>
+          <button class="cat cat-save" id="btn-save-cat" type="button" hidden><span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></button>
         </nav>
         <!-- saved custom chips list (above the title input) -->
         <div class="saved-customs" id="saved-customs"></div>
         <div class="cat-title-row" id="cat-title-row">
-          <input id="cat-title-input" type="text" placeholder="Title of your fivy…" maxlength="32"/>
+          <input id="cat-title-input" type="text" placeholder="Title of your fivy…" data-ph-en="Title of your fivy…" data-ph-es="Título de tu fivy…" maxlength="32">
         </div>
       </aside>
 
@@ -1464,15 +1499,15 @@
     </div><!-- /fields-grid -->
 
     <div class="fields-nav-row" id="fields-nav-row">
-      <button class="btn btn-ghost btn-back" id="btn-fields-back" type="button">← Decks</button>
-      <button class="btn btn-primary" id="btn-to-summary" type="button">Summary →</button>
+      <button class="btn btn-ghost btn-back" id="btn-fields-back" type="button">← <span class="en" lang="en">Decks</span><span class="es" lang="es">Mazos</span></button>
+      <button class="btn btn-primary" id="btn-to-summary" type="button"><span class="en" lang="en">Summary →</span><span class="es" lang="es">Resumen →</span></button>
     </div>
 
   </section>
 
   <!-- Decks view footer: Go back (to intro) + Fields → -->
   <div class="decks-back-row" id="decks-back-row">
-    <button class="btn btn-ghost btn-back" id="btn-go-back" type="button">← Go back</button>
+    <button class="btn btn-ghost btn-back" id="btn-go-back" type="button">← <span class="en" lang="en">Go back</span><span class="es" lang="es">Volver</span></button>
     <div class="stage-cta" id="stage-cta"></div>
   </div>
 
@@ -1504,55 +1539,55 @@
 
   <!-- Summary is its own (final) stage — shown only when navigated to -->
   <details class="summary-sec" id="summary-sec" open>
-    <summary>✦ Summary</summary>
+    <summary>✦ <span class="en" lang="en">Summary</span><span class="es" lang="es">Resumen</span></summary>
     <div class="summary-body" id="summary-body" data-flove-root data-flove-title="My fivys">
       <!-- ✦ F0 §13.9 — Reset (left, destructive) · Update (right, clears stale dot) -->
       <div class="summary-f0-row">
         <span class="reset-wrap">
-          <button class="btn" type="button" data-flove-reset>↺ Reset</button>
-          <small class="reset-hint">Clear all and start a new play</small>
+          <button class="btn" type="button" data-flove-reset>↺ <span class="en" lang="en">Reset</span><span class="es" lang="es">Reiniciar</span></button>
+          <small class="reset-hint"><span class="en" lang="en">Clear all and start a new play</span><span class="es" lang="es">Borra todo y empieza una partida nueva</span></small>
         </span>
         <span class="update-wrap">
-          <button class="btn" type="button" data-flove-update>Update <span class="stale-dot" hidden role="img" aria-label="Out of date"></span></button>
-          <small class="update-hint">if you re-edited the play</small>
+          <button class="btn" type="button" data-flove-update><span class="en" lang="en">Update</span><span class="es" lang="es">Actualizar</span> <span class="stale-dot" hidden role="img" aria-label="Out of date" data-aria-en="Out of date" data-aria-es="Desactualizado"></span></button>
+          <small class="update-hint"><span class="en" lang="en">if you re-edited the play</span><span class="es" lang="es">si has reeditado la partida</span></small>
         </span>
       </div>
-      <h3>Fivys</h3>
+      <h3><span class="en" lang="en">Fivys</span><span class="es" lang="es">Fivys</span></h3>
       <div class="sum-table-wrap" id="summary-fivys"></div>
       <!-- Fields-stage time stats -->
       <div class="sum-stats" id="summary-stats"></div>
       <!-- Last selected display (square snapshot: cycle/confluence arrows, no list) -->
-      <h3>Last selected</h3>
+      <h3><span class="en" lang="en">Last selected</span><span class="es" lang="es">Última selección</span></h3>
       <div class="sum-snapshot" id="summary-snapshot"></div>
 
       <!-- ✦ standard flove summary actions (ported from blogyadvanced; Views omitted) -->
       <div class="summary-actions">
-        <output class="clause clause-default" data-flove-phrase id="fivy-phrase" spellcheck="false" aria-label="Summary phrase"></output>
-        <output class="clause clause-magic" id="fivy-phrase-magic" spellcheck="false" aria-label="Magic phrase"></output>
+        <output class="clause clause-default" data-flove-phrase id="fivy-phrase" spellcheck="false" aria-label="Summary phrase" data-aria-en="Summary phrase" data-aria-es="Frase del resumen"></output>
+        <output class="clause clause-magic" id="fivy-phrase-magic" spellcheck="false" aria-label="Magic phrase" data-aria-en="Magic phrase" data-aria-es="Frase mágica"></output>
         <div class="insight-panel" id="fivy-insight" role="status"></div>
 
         <!-- row 1: Insight · Magic/Phrase · Copy -->
         <div class="action-row">
           <span class="insight-cycle">
-            <label class="btn ghost insight-step" for="insight-1">Insight</label>
-            <label class="btn ghost insight-step" for="insight-2">Insight · 1/4</label>
-            <label class="btn ghost insight-step" for="insight-3">Insight · 2/4</label>
-            <label class="btn ghost insight-step" for="insight-4">Insight · 3/4</label>
-            <label class="btn ghost insight-step" for="insight-0">Insight · 4/4</label>
+            <label class="btn ghost insight-step" for="insight-1"><span class="en" lang="en">Insight</span><span class="es" lang="es">Hallazgo</span></label>
+            <label class="btn ghost insight-step" for="insight-2"><span class="en" lang="en">Insight · 1/4</span><span class="es" lang="es">Hallazgo · 1/4</span></label>
+            <label class="btn ghost insight-step" for="insight-3"><span class="en" lang="en">Insight · 2/4</span><span class="es" lang="es">Hallazgo · 2/4</span></label>
+            <label class="btn ghost insight-step" for="insight-4"><span class="en" lang="en">Insight · 3/4</span><span class="es" lang="es">Hallazgo · 3/4</span></label>
+            <label class="btn ghost insight-step" for="insight-0"><span class="en" lang="en">Insight · 4/4</span><span class="es" lang="es">Hallazgo · 4/4</span></label>
           </span>
           <label class="btn ghost magic-btn-summary" for="magic-toggle">
-            <span class="label-off">Magic</span><span class="label-on">Phrase</span>
+            <span class="label-off"><span class="en" lang="en">Magic</span><span class="es" lang="es">Magia</span></span><span class="label-on"><span class="en" lang="en">Phrase</span><span class="es" lang="es">Frase</span></span>
           </label>
-          <label class="btn ghost copy-btn" for="copy-hint" data-flove-copy="phrase">Copy</label>
+          <label class="btn ghost copy-btn" for="copy-hint" data-flove-copy="phrase"><span class="en" lang="en">Copy</span><span class="es" lang="es">Copiar</span></label>
         </div>
-        <div class="copy-hint-panel" role="status">Select the phrase above (triple-click selects it all), then press <kbd>Ctrl</kbd>+<kbd>C</kbd> on Windows/Linux or <kbd>⌘</kbd>+<kbd>C</kbd> on Mac to copy it.</div>
+        <div class="copy-hint-panel" role="status"><span class="en" lang="en">Select the phrase above (triple-click selects it all), then press <kbd>Ctrl</kbd>+<kbd>C</kbd> on Windows/Linux or <kbd>⌘</kbd>+<kbd>C</kbd> on Mac to copy it.</span><span class="es" lang="es">Selecciona la frase de arriba (un triple clic la selecciona entera) y luego pulsa <kbd>Ctrl</kbd>+<kbd>C</kbd> en Windows/Linux o <kbd>⌘</kbd>+<kbd>C</kbd> en Mac para copiarla.</span></div>
 
         <!-- row 2: Save · Share · Publish -->
         <div class="action-row right">
           <span class="cycle-wrap save-wrap">
             <span class="cycle-trigger">
-              <label class="btn ghost save-btn cycle-step cycle-step--open"  for="cycle-save">💾 Save</label>
-              <label class="btn ghost save-btn cycle-step cycle-step--close" for="cycle-none">💾 Save</label>
+              <label class="btn ghost save-btn cycle-step cycle-step--open"  for="cycle-save">💾 <span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></label>
+              <label class="btn ghost save-btn cycle-step cycle-step--close" for="cycle-none">💾 <span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></label>
               <span class="cycle-row below">
                 <button type="button" class="btn ghost" data-flove-save="txt">TXT</button>
                 <button type="button" class="btn ghost" data-flove-save="md">MD</button>
@@ -1567,22 +1602,22 @@
 
           <span class="cycle-wrap share-wrap">
             <span class="cycle-trigger">
-              <label class="btn ghost share-btn cycle-step cycle-step--open"  for="cycle-share" data-flove-share>📤 Share</label>
-              <label class="btn ghost share-btn cycle-step cycle-step--close" for="cycle-none">📤 Share</label>
+              <label class="btn ghost share-btn cycle-step cycle-step--open"  for="cycle-share" data-flove-share>📤 <span class="en" lang="en">Share</span><span class="es" lang="es">Compartir</span></label>
+              <label class="btn ghost share-btn cycle-step cycle-step--close" for="cycle-none">📤 <span class="en" lang="en">Share</span><span class="es" lang="es">Compartir</span></label>
               <span class="cycle-row below">
-                <button type="button" class="btn ghost share-sub" data-flove-print title="Print">🖨 Print</button>
-                <button type="button" class="btn ghost share-sub" data-flove-share-menu="mobile" title="Share with a mobile app">📱 Mobile</button>
-                <button type="button" class="btn ghost share-sub" data-flove-share-menu title="Share menu (all apps)">🌐 Apps</button>
-                <a class="btn ghost share-sub" href="mailto:?subject=My%20fivys&body=%E2%80%94%20fivy" title="Send by email">📧 Email</a>
+                <button type="button" class="btn ghost share-sub" data-flove-print aria-label="Print" data-aria-en="Print" data-aria-es="Imprimir">🖨 <span class="en" lang="en">Print</span><span class="es" lang="es">Imprimir</span></button>
+                <button type="button" class="btn ghost share-sub" data-flove-share-menu="mobile" aria-label="Share with a mobile app" data-aria-en="Share with a mobile app" data-aria-es="Compartir con una app móvil">📱 <span class="en" lang="en">Mobile</span><span class="es" lang="es">Móvil</span></button>
+                <button type="button" class="btn ghost share-sub" data-flove-share-menu aria-label="Share menu (all apps)" data-aria-en="Share menu (all apps)" data-aria-es="Menú de compartir (todas las apps)">🌐 <span class="en" lang="en">Apps</span><span class="es" lang="es">Apps</span></button>
+                <a class="btn ghost share-sub" href="mailto:?subject=My%20fivys&body=%E2%80%94%20fivy" aria-label="Send by email" data-aria-en="Send by email" data-aria-es="Enviar por correo">📧 <span class="en" lang="en">Email</span><span class="es" lang="es">Correo</span></a>
               </span>
             </span>
           </span>
 
           <div class="cycle-wrap pub-wrap">
             <span class="cycle-trigger">
-              <label class="btn ghost publish-btn cycle-step cycle-step--open"  for="cycle-pub">📨 Publish</label>
-              <label class="btn ghost publish-btn cycle-step cycle-step--close" for="cycle-none">📨 Publish</label>
-              <button type="button" class="btn solid go-btn" id="fivy-pub-go" title="Go">✈ Go</button>
+              <label class="btn ghost publish-btn cycle-step cycle-step--open"  for="cycle-pub">📨 <span class="en" lang="en">Publish</span><span class="es" lang="es">Publicar</span></label>
+              <label class="btn ghost publish-btn cycle-step cycle-step--close" for="cycle-none">📨 <span class="en" lang="en">Publish</span><span class="es" lang="es">Publicar</span></label>
+              <button type="button" class="btn solid go-btn" id="fivy-pub-go" aria-label="Go" data-aria-en="Go" data-aria-es="Ir">✈ <span class="en" lang="en">Go</span><span class="es" lang="es">Ir</span></button>
               <span class="cycle-row below plat-row">
                 <span class="plat-viewport"><span class="plat-track">
                   <span class="plat-set">
@@ -1601,9 +1636,9 @@
                     <label class="btn ghost" for="pub-plat-wizy"   title="Wizy">Wizy</label>
                   </span>
                 </span></span>
-                <label class="plat-nav" for="pub-plat-set-1" data-when-set="0" title="More platforms">＋</label>
-                <label class="plat-nav" for="pub-plat-set-2" data-when-set="1" title="More platforms">＋</label>
-                <label class="plat-nav" for="pub-plat-set-0" data-when-set="2" title="More platforms">＋</label>
+                <label class="plat-nav" for="pub-plat-set-1" data-when-set="0" aria-label="More platforms" data-aria-en="More platforms" data-aria-es="Más plataformas">＋</label>
+                <label class="plat-nav" for="pub-plat-set-2" data-when-set="1" aria-label="More platforms" data-aria-en="More platforms" data-aria-es="Más plataformas">＋</label>
+                <label class="plat-nav" for="pub-plat-set-0" data-when-set="2" aria-label="More platforms" data-aria-en="More platforms" data-aria-es="Más plataformas">＋</label>
               </span>
             </span>
           </div>
@@ -1613,8 +1648,8 @@
   </details>
   <div id="related-wrap">
     <div class="summary-nav-row" id="summary-nav-row">
-      <button class="btn btn-ghost btn-back" id="btn-summary-back" type="button">↺ Start over</button>
-      <button class="btn btn-primary" id="btn-summary-next" type="button">Next →</button>
+      <button class="btn btn-ghost btn-back" id="btn-summary-back" type="button">↺ <span class="en" lang="en">Start over</span><span class="es" lang="es">Empezar de nuevo</span></button>
+      <button class="btn btn-primary" id="btn-summary-next" type="button"><span class="en" lang="en">Next →</span><span class="es" lang="es">Siguiente →</span></button>
     </div>
     <!-- related apps live two rows below the nav buttons -->
     <div class="related-apps" id="related-apps" hidden></div>
@@ -1623,26 +1658,60 @@
 </div>
 
 <div class="float-counters" aria-live="polite">
-  <div class="pc pc-time is-empty is-collapsed" id="chipTime" title="Total elapsed time">
-    <button class="pc-time-display" type="button" id="timeToggle" aria-label="Show / hide elapsed time">
+  <div class="pc pc-time is-empty is-collapsed" id="chipTime" role="group" aria-label="Total elapsed time" data-aria-en="Total elapsed time" data-aria-es="Tiempo total transcurrido">
+    <button class="pc-time-display" type="button" id="timeToggle" aria-label="Show / hide elapsed time" data-aria-en="Show / hide elapsed time" data-aria-es="Mostrar / ocultar el tiempo transcurrido">
       <span class="pc-time-icon" aria-hidden="true">⏱</span>
       <span class="pc-time-num" id="pointsTime">0:00</span>
     </button>
-    <span class="pc-label">Time</span>
+    <span class="pc-label"><span class="en" lang="en">Time</span><span class="es" lang="es">Tiempo</span></span>
   </div>
-  <div class="pc pc-clicks is-empty" id="chipClicks" title="Total clicks">
+  <div class="pc pc-clicks is-empty" id="chipClicks" role="group" aria-label="Total clicks" data-aria-en="Total clicks" data-aria-es="Clics totales">
     <div class="pc-badge"><span class="pc-num" id="pointsClicks">0</span></div>
-    <span class="pc-label">Clicks</span>
+    <span class="pc-label"><span class="en" lang="en">Clicks</span><span class="es" lang="es">Clics</span></span>
   </div>
-  <div class="pc pc-sel is-empty" id="chipSelections" title="Selections — categories chosen + decks finalized">
+  <div class="pc pc-sel is-empty" id="chipSelections" role="group" aria-label="Selections — categories chosen + decks finalized" data-aria-en="Selections — categories chosen + decks finalized" data-aria-es="Selecciones — categorías elegidas + mazos finalizados">
     <div class="pc-badge"><span class="pc-num" id="pointsSelections">0</span></div>
-    <span class="pc-label">Selections</span>
+    <span class="pc-label"><span class="en" lang="en">Selections</span><span class="es" lang="es">Selecciones</span></span>
   </div>
-  <div class="pc pc-stars is-empty" id="chipStars" title="Stars — one per saved why / saved fivy">
+  <div class="pc pc-stars is-empty" id="chipStars" role="group" aria-label="Stars — one per saved why / saved fivy" data-aria-en="Stars — one per saved why / saved fivy" data-aria-es="Estrellas — una por cada porqué guardado / fivy guardado">
     <div class="pc-badge"><span class="pc-num" id="pointsStars">0</span></div>
-    <span class="pc-label">Stars</span>
+    <span class="pc-label"><span class="en" lang="en">Stars</span><span class="es" lang="es">Estrellas</span></span>
   </div>
 </div>
+
+<!-- translate2 engine — language switch + persistence + cross-app handoff -->
+<script>
+(function(){
+  const LS = 'flove:lang', LS_OLD = 'translate2-lang';
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const radios = () => Array.from(document.querySelectorAll('input[name="lang"]'));
+  const curLang = () => { const r = radios().find(x => x.checked); return r ? r.id.replace('lang-', '') : 'en'; };
+  const stored = () => { try { return localStorage.getItem(LS) || localStorage.getItem(LS_OLD); } catch (_) { return null; } };
+  const urlLang = () => { try { return new URLSearchParams(location.search).get('lang'); } catch (_) { return null; } };
+  // expose the active language to fivy's app script so it can localize the bits
+  // it builds in JS (toasts, confirm(), plain-text snapshots) and re-paint on switch.
+  window.fivyLang = curLang;
+  function applyLang(){
+    const li = curLang();
+    document.documentElement.lang = li;
+    document.querySelectorAll('option[data-en]').forEach(o => { if (o.dataset[li] != null) o.textContent = o.dataset[li]; });
+    document.querySelectorAll('[data-ph-en]').forEach(el => { const v = el.dataset['ph' + cap(li)]; if (v != null) el.placeholder = v; });
+    document.querySelectorAll('[data-aria-en]').forEach(el => { const v = el.dataset['aria' + cap(li)]; if (v != null) el.setAttribute('aria-label', v); });
+    try { localStorage.setItem(LS, li); } catch (_) {}
+    try { if (typeof window.__fivyOnLang === 'function') window.__fivyOnLang(li); } catch (_) {}
+  }
+  function init(){
+    const want = urlLang() || stored();
+    if (want){ const r = document.getElementById('lang-' + want); if (r) r.checked = true; }
+    radios().forEach(r => r.addEventListener('change', () => {
+      applyLang();
+      const d = document.querySelector('details.lang'); if (d) d.open = false;
+    }));
+    applyLang();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
 
 <script>
 (() => {
@@ -1651,19 +1720,37 @@
   // hands the ordered decks back to the parent (keys) instead of opening fields.
   const EMBED = location.hash.indexOf('embed') !== -1;
   if (EMBED) document.body.classList.add('embed');
+  // ── i18n helpers (the translate2 engine owns the CSS span swap; these cover the
+  //    plain-text / confirm() strings this script builds in JS). lang() reads the
+  //    engine's active language; t() picks the matching string. dl() builds a
+  //    dual-language span pair that the engine's CSS swaps automatically. ──
+  const lang = () => (typeof window.fivyLang === 'function' ? window.fivyLang() : (document.documentElement.lang || 'en'));
+  const t = (en, es) => (lang() === 'es' ? es : en);
+  const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  // dual-span pair: <span class="en" lang="en">en</span><span class="es" lang="es">es</span> (auto-swapped by CSS)
+  const dl = (en, es) => `<span class="en" lang="en">${esc(en)}</span><span class="es" lang="es">${esc(es)}</span>`;
   // A reload — or a back/forward bfcache restore — must start clean (no prior
   // selections, orderings or typed inputs). State is in-memory, so a fresh load
   // already resets; this defeats the browser's bfcache restoring the old page.
   window.addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
   // ============== Fivy decks (pathologies excluded) ==============
   const DECKS = [
-    { id:'p1', title:'Senses',   items:['Taste','Smell','Hearing','Touch','Sight'] },
-    { id:'p2', title:'Flavors',  items:['Acid','Sour','Sweet','Umami','Salty'] },
-    { id:'p3', title:'Social',   items:['Economy','Judicial','Media','Military','Political'] },
-    { id:'p4', title:'Elements', items:['Water','Air','Fire','Plasma','Earth'] },
+    { id:'p1', title:'Senses',   items:['Taste','Smell','Hearing','Touch','Sight'],
+      titleEs:'Sentidos', itemsEs:['Gusto','Olfato','Oído','Tacto','Vista'] },
+    { id:'p2', title:'Flavors',  items:['Acid','Sour','Sweet','Umami','Salty'],
+      titleEs:'Sabores',  itemsEs:['Ácido','Agrio','Dulce','Umami','Salado'] },
+    { id:'p3', title:'Social',   items:['Economy','Judicial','Media','Military','Political'],
+      titleEs:'Social',   itemsEs:['Economía','Judicial','Medios','Militar','Político'] },
+    { id:'p4', title:'Elements', items:['Water','Air','Fire','Plasma','Earth'],
+      titleEs:'Elementos', itemsEs:['Agua','Aire','Fuego','Plasma','Tierra'] },
     // p5: a blank fifth deck the player fills, titles and orders — revealed after the first four
     { id:'p5', title:'', items:['','','','',''], custom:true },
   ];
+  // ── i18n display helpers for the fixed decks. The custom p5 holds player-typed
+  //    text (never translated). Ordering keys on indices, so the order array works
+  //    for either language. ──
+  const deckTitle = d => (lang() === 'es' && d.titleEs != null) ? d.titleEs : d.title;
+  const deckItem  = (d, i) => (lang() === 'es' && d.itemsEs) ? (d.itemsEs[i] != null ? d.itemsEs[i] : d.items[i]) : d.items[i];
   const BASE4 = ['p1','p2','p3','p4'];
   const base4Done = () => BASE4.every(id => state.done[id]);
 
@@ -1730,10 +1817,10 @@
       if (deck.id === 'p5' && !base4Done()){
         // the fifth deck holds the last space in the row, locked until the first four settle
         slot.classList.add('locked');
-        slot.textContent = '5th';
+        slot.textContent = t('5th','5º');
       } else if (state.openDeckIdx === deckIdx){
         slot.classList.add('placeholder');
-        slot.textContent = 'in the center ↑';
+        slot.textContent = t('in the center ↑','en el centro ↑');
       } else if (state.done[deck.id]){
         slot.appendChild(renderDoneDeck(deckIdx));
       } else {
@@ -1746,14 +1833,14 @@
   function renderClosedDeck(deckIdx){
     const btn = document.createElement('button');
     btn.className = 'deck-closed';
-    btn.setAttribute('aria-label', 'Face-down deck · tap to reveal');
+    btn.setAttribute('aria-label', t('Face-down deck · tap to reveal','Mazo boca abajo · toca para revelar'));
     const d = DECKS[deckIdx];
     btn.innerHTML = `
       <div class="back back-1"></div>
       <div class="back back-2"></div>
       <div class="back back-3"></div>
       <div class="mark${d.custom ? '' : ' logo'}">${d.custom ? '✎' : '<svg class="fivy-logo" viewBox="0 0 100 100" aria-hidden="true"><g fill="url(#brandGrad)" stroke="none"><g transform="rotate(0 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g><g transform="rotate(72 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g><g transform="rotate(288 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g><circle cx="50" cy="50" r="4.5"/></g></svg>'}</div>
-      <div class="hint">${escapeHTML(d.title || (d.custom ? 'New fivy' : ''))}</div>
+      <div class="hint">${escapeHTML(d.custom ? (d.title || t('New fivy','Nuevo fivy')) : deckTitle(d))}</div>
     `;
     btn.addEventListener('click', () => openDeck(deckIdx));
     return btn;
@@ -1765,7 +1852,7 @@
     pq.textContent = text;
     pq.setAttribute('role','button');
     pq.setAttribute('tabindex','0');
-    pq.title = 'tap to expand';
+    pq.setAttribute('aria-label', t('tap to expand','toca para ampliar'));
     pq.addEventListener('click', e => { e.stopPropagation(); pq.classList.toggle('expanded'); });
     pq.addEventListener('keydown', e => {
       if (e.key==='Enter'||e.key===' '){ e.preventDefault(); pq.classList.toggle('expanded'); }
@@ -1780,7 +1867,7 @@
     el.className = 'deck-done';
     el.setAttribute('role','button');
     el.setAttribute('tabindex','0');
-    el.title = 'tap to reopen';
+    el.setAttribute('aria-label', t('tap to reopen','toca para reabrir'));
     el.addEventListener('click', e => {
       if (e.target.closest('.pq-saved')) return;
       openDeck(deckIdx);
@@ -1788,14 +1875,14 @@
     el.addEventListener('keydown', e => {
       if (e.key==='Enter'||e.key===' '){ e.preventDefault(); openDeck(deckIdx); }
     });
-    const t = document.createElement('div');
-    t.className = 'deck-title';
-    t.textContent = deck.title;
-    el.appendChild(t);
+    const tEl = document.createElement('div');
+    tEl.className = 'deck-title';
+    tEl.textContent = deck.custom ? deck.title : deckTitle(deck);
+    el.appendChild(tEl);
     const list = document.createElement('ol');
     order.forEach(itemIdx => {
       const li = document.createElement('li');
-      li.innerHTML = `<span class="nm">${escapeHTML(deck.items[itemIdx])}</span>`;
+      li.innerHTML = `<span class="nm">${escapeHTML(deck.custom ? deck.items[itemIdx] : deckItem(deck, itemIdx))}</span>`;
       list.appendChild(li);
     });
     el.appendChild(list);
@@ -1818,18 +1905,18 @@
 
     $spotlight.classList.add('active');
     $spotlight.innerHTML = `
-      ${deck.custom ? `<input id="deck-title" class="deck-title-input" maxlength="32" placeholder="Title your fivy…" value="${escapeHTML(deck.title)}">` : ''}
+      ${deck.custom ? `<input id="deck-title" class="deck-title-input" maxlength="32" placeholder="${t('Title your fivy…','Titula tu fivy…')}" value="${escapeHTML(deck.title)}">` : ''}
       <div class="hand fivy${deck.custom ? ' custom' : ''}" id="hand"></div>
       <div class="pq-panel" id="pq-panel">
-        <textarea id="pq-text" placeholder="Write why you placed this key in this order…">${escapeHTML(state.porQueDraft || (match ? match.text : ''))}</textarea>
+        <textarea id="pq-text" placeholder="${t('Write why you placed this key in this order…','Escribe por qué colocaste esta carta en este orden…')}">${escapeHTML(state.porQueDraft || (match ? match.text : ''))}</textarea>
         <div class="pq-row">
-          <button class="btn btn-ghost" id="pq-cancel" type="button">Cancel</button>
-          <button class="btn btn-primary" id="pq-save" type="button">Save why</button>
+          <button class="btn btn-ghost" id="pq-cancel" type="button">${t('Cancel','Cancelar')}</button>
+          <button class="btn btn-primary" id="pq-save" type="button">${t('Save why','Guardar porqué')}</button>
         </div>
       </div>
       <div class="spot-actions">
-        <button class="btn btn-soft" id="pq-toggle" type="button">${match ? 'Why (edit)' : 'Why'}</button>
-        <button class="btn btn-primary" id="done-btn" type="button">Done</button>
+        <button class="btn btn-soft" id="pq-toggle" type="button">${match ? t('Why (edit)','Porqué (editar)') : t('Why','Porqué')}</button>
+        <button class="btn btn-primary" id="done-btn" type="button">${t('Done','Hecho')}</button>
       </div>
     `;
 
@@ -1874,19 +1961,19 @@
       card.setAttribute('draggable', deck.custom ? 'false' : 'true');   // custom: reorder by arrows
       card.setAttribute('data-pos', String(pos));
       card.setAttribute('role','listitem');
-      card.setAttribute('aria-label', `${deck.items[itemIdx]} · position ${pos+1}`);
+      card.setAttribute('aria-label', `${deck.custom ? deck.items[itemIdx] : deckItem(deck, itemIdx)} · ${t('position','posición')} ${pos+1}`);
       const isFirst = pos === 0;
       const isLast  = pos === order.length - 1;
-      const leftArrow  = `<button data-action="left"  aria-label="Move left"  title="← one position">←</button>`;
-      const rightArrow = `<button data-action="right" aria-label="Move right" title="one position →">→</button>`;
+      const leftArrow  = `<button data-action="left"  aria-label="${t('Move left · one position','Mover a la izquierda · una posición')}">←</button>`;
+      const rightArrow = `<button data-action="right" aria-label="${t('Move right · one position','Mover a la derecha · una posición')}">→</button>`;
       // middle cards (2,3,4) get both arrows; ends get only the valid direction
       const arrowHTML =
         isFirst ? rightArrow :
         isLast  ? leftArrow  :
         (leftArrow + rightArrow);
       const nameHTML = deck.custom
-        ? `<input class="pcard-input" maxlength="28" placeholder="rank ${pos+1}" value="${escapeHTML(deck.items[itemIdx])}">`
-        : `<div class="name">${escapeHTML(deck.items[itemIdx])}</div>`;
+        ? `<input class="pcard-input" maxlength="28" placeholder="${t('rank','puesto')} ${pos+1}" value="${escapeHTML(deck.items[itemIdx])}">`
+        : `<div class="name">${escapeHTML(deckItem(deck, itemIdx))}</div>`;
       card.innerHTML = `
         ${nameHTML}
         <div class="arrows">${arrowHTML}</div>
@@ -1998,10 +2085,10 @@
     next.className = 'btn btn-primary';
     if (EMBED){
       // Stage 5 inside keys: "Next" hands the ordered decks back to the parent.
-      next.textContent = 'Next →';
+      next.textContent = t('Next →','Siguiente →');
       next.addEventListener('click', sendDecksToParent);
     } else {
-      next.textContent = 'Fields →';
+      next.textContent = t('Fields →','Campos →');
       next.addEventListener('click', enterFields);
     }
     $cta.appendChild(next);
@@ -2110,71 +2197,71 @@
   }
   const CUSTOMIZE_HTML = `
     <div class="customize-wrap">
-      <button class="btn customize-btn" type="button" id="customizeBtn" aria-expanded="false" aria-controls="customizePanel">⚙ Customize</button>
+      <button class="btn customize-btn" type="button" id="customizeBtn" aria-expanded="false" aria-controls="customizePanel">⚙ ${dl('Customize','Personalizar')}</button>
       <div class="customize-panel" id="customizePanel" hidden>
         <div class="cust-group">
           <label class="cust-radio">
             <input type="radio" name="custMode" value="private">
-            <span class="cust-radio-label"><b>Private</b> · Play fivy privately on your device and upload your results later.</span>
+            <span class="cust-radio-label">${dl('<b>Private</b> · Play fivy privately on your device and upload your results later.','<b>Privado</b> · Juega a fivy en privado en tu dispositivo y sube tus resultados más tarde.')}</span>
           </label>
           <div class="cust-download" id="custDownload" hidden>
-            <a class="btn btn-primary cust-download-btn" id="custDownloadBtn" href="fivy.html" download="fivy.html">↓ Download fivy app</a>
+            <a class="btn btn-primary cust-download-btn" id="custDownloadBtn" href="fivy.html" download="fivy.html">↓ ${dl('Download fivy app','Descargar la app fivy')}</a>
           </div>
           <label class="cust-radio">
             <input type="radio" name="custMode" value="open" checked>
-            <span class="cust-radio-label"><b>Open</b> · Play directly here and publish it more privately or publicly at the end. <em>(Default)</em></span>
+            <span class="cust-radio-label">${dl('<b>Open</b> · Play directly here and publish it more privately or publicly at the end. <em>(Default)</em>','<b>Abierto</b> · Juega directamente aquí y publícalo de forma más privada o pública al final. <em>(Por defecto)</em>')}</span>
           </label>
         </div>
         <div class="cust-group cust-row">
-          <span class="cust-label">Listen</span>
-          <label class="cust-switch" aria-label="Listen toggle">
+          <span class="cust-label">${dl('Listen','Escuchar')}</span>
+          <label class="cust-switch" aria-label="Listen toggle" data-aria-en="Listen toggle" data-aria-es="Interruptor de escucha">
             <input type="checkbox" id="custListen">
             <span class="cust-switch-track">
-              <span class="cust-switch-text cust-switch-on">ON</span>
-              <span class="cust-switch-text cust-switch-off">OFF</span>
+              <span class="cust-switch-text cust-switch-on">${dl('ON','SÍ')}</span>
+              <span class="cust-switch-text cust-switch-off">${dl('OFF','NO')}</span>
               <span class="cust-switch-thumb"></span>
             </span>
           </label>
         </div>
         <div class="cust-group">
-          <div class="cust-label">Play with</div>
+          <div class="cust-label">${dl('Play with','Jugar con')}</div>
           <div class="cert-track" role="progressbar" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0">
             <div class="cert-fill"></div>
-            <button type="button" class="cert-node is-on" data-node="0"><span class="cert-dot"></span><span class="cert-name">Text</span></button>
-            <button type="button" class="cert-node" data-node="1"><span class="cert-dot"></span><span class="cert-name">Audio</span></button>
-            <button type="button" class="cert-node" data-node="2"><span class="cert-dot"></span><span class="cert-name">Video</span></button>
-            <button type="button" class="cert-node" data-node="3"><span class="cert-dot"></span><span class="cert-name">Perform</span></button>
+            <button type="button" class="cert-node is-on" data-node="0"><span class="cert-dot"></span><span class="cert-name">${dl('Text','Texto')}</span></button>
+            <button type="button" class="cert-node" data-node="1"><span class="cert-dot"></span><span class="cert-name">${dl('Audio','Audio')}</span></button>
+            <button type="button" class="cert-node" data-node="2"><span class="cert-dot"></span><span class="cert-name">${dl('Video','Vídeo')}</span></button>
+            <button type="button" class="cert-node" data-node="3"><span class="cert-dot"></span><span class="cert-name">${dl('Perform','Actuar')}</span></button>
           </div>
         </div>
         <div class="cust-group">
-          <div class="cust-label">Language</div>
+          <div class="cust-label">${dl('Language','Idioma')}</div>
           <ul class="cust-lang-list">
-            <li><label><input type="radio" name="uiLang" value="en" checked><span class="lang-flag">🇬🇧</span> English</label></li>
-            <li><label><input type="radio" name="uiLang" value="es"><span class="lang-flag">🇪🇸</span> Spanish</label></li>
-            <li class="cust-lang-more"><button type="button" class="lang-add">＋ Add a language</button></li>
+            <li><label><input type="radio" name="uiLang" value="en" checked><span class="lang-flag">🇬🇧</span> ${dl('English','Inglés')}</label></li>
+            <li><label><input type="radio" name="uiLang" value="es"><span class="lang-flag">🇪🇸</span> ${dl('Spanish','Español')}</label></li>
+            <li class="cust-lang-more"><button type="button" class="lang-add">＋ ${dl('Add a language','Añadir un idioma')}</button></li>
           </ul>
         </div>
         <div class="cust-group">
-          <button type="button" class="cust-label cust-collapse-btn" id="custCertifyToggle" aria-expanded="false" aria-controls="custCertifyRow">Certify play ▸</button>
+          <button type="button" class="cust-label cust-collapse-btn" id="custCertifyToggle" aria-expanded="false" aria-controls="custCertifyRow">${dl('Certify play ▸','Certificar la partida ▸')}</button>
           <div class="cert-track" id="custCertifyRow" role="progressbar" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0" hidden>
             <div class="cert-fill"></div>
-            <button type="button" class="cert-node" data-node="0"><span class="cert-dot"></span><span class="cert-name">Trusts</span></button>
-            <button type="button" class="cert-node" data-node="1"><span class="cert-dot"></span><span class="cert-name">Mail</span></button>
-            <button type="button" class="cert-node" data-node="2"><span class="cert-dot"></span><span class="cert-name">Telf</span></button>
-            <button type="button" class="cert-node" data-node="3"><span class="cert-dot"></span><span class="cert-name">Id</span></button>
-            <button type="button" class="cert-node" data-node="4"><span class="cert-dot"></span><span class="cert-name">Bio</span></button>
+            <button type="button" class="cert-node" data-node="0"><span class="cert-dot"></span><span class="cert-name">${dl('Trusts','Confía')}</span></button>
+            <button type="button" class="cert-node" data-node="1"><span class="cert-dot"></span><span class="cert-name">${dl('Mail','Correo')}</span></button>
+            <button type="button" class="cert-node" data-node="2"><span class="cert-dot"></span><span class="cert-name">${dl('Telf','Telf')}</span></button>
+            <button type="button" class="cert-node" data-node="3"><span class="cert-dot"></span><span class="cert-name">${dl('Id','Id')}</span></button>
+            <button type="button" class="cert-node" data-node="4"><span class="cert-dot"></span><span class="cert-name">${dl('Bio','Bio')}</span></button>
           </div>
         </div>
         <div class="moreinfo-wrap">
-          <button class="btn btn-ghost moreinfo-btn" type="button" id="custMoreBtn" aria-expanded="false" aria-controls="custMoreBox">ⓘ More info</button>
-          <div class="moreinfo-box" id="custMoreBox" hidden>Choose how privately you play and publish, the media you play with, your language, and whether you certify the play. The defaults keep everything open and text-only.</div>
+          <button class="btn btn-ghost moreinfo-btn" type="button" id="custMoreBtn" aria-expanded="false" aria-controls="custMoreBox">ⓘ ${dl('More info','Más información')}</button>
+          <div class="moreinfo-box" id="custMoreBox" hidden>${dl('Choose how privately you play and publish, the media you play with, your language, and whether you certify the play. The defaults keep everything open and text-only.','Elige con qué privacidad juegas y publicas, el medio con el que juegas, tu idioma y si certificas la partida. Los valores por defecto lo dejan todo abierto y solo en texto.')}</div>
         </div>
       </div>
     </div>`;
   const INTRO_SLIDES = [
-    { t:"Five isn't too little nor too much", b:'Why do we have 5 senses otherwise?' },
-    { t:'Order senses and other popular high 5s', b:'…in more ways than just 5.' },
-    { t:'Get yourself a comfy space', b:'Check the options below for more.', extra: CUSTOMIZE_HTML },
+    { t:dl("Five isn't too little nor too much",'Cinco no es ni poco ni demasiado'), b:dl('Why do we have 5 senses otherwise?','¿Por qué si no tenemos 5 sentidos?') },
+    { t:dl('Order senses and other popular high 5s','Ordena los sentidos y otros cincos famosos'), b:dl('…in more ways than just 5.','…de más maneras que solo 5.') },
+    { t:dl('Get yourself a comfy space','Hazte con un espacio cómodo'), b:dl('Check the options below for more.','Mira las opciones de abajo para más.'), extra: CUSTOMIZE_HTML },
   ];
   let introSlide = 0, introObserver = null;
 
@@ -2191,7 +2278,7 @@
       const dot = document.createElement('button');
       dot.type = 'button';
       dot.setAttribute('role','tab');
-      dot.setAttribute('aria-label', `Slide ${i+1}`);
+      dot.setAttribute('aria-label', `${t('Slide','Diapositiva')} ${i+1}`);
       dot.addEventListener('click', () => gotoSlide(i));
       $dots.appendChild(dot);
     });
@@ -2315,13 +2402,25 @@
 
   // ----- Field data: only Social pre-filled. Others start empty. -----
   const SIMPLEX = {
-    'cat-r': { label:'Metas',  items:['','','','',''], saved:false },
-    'cat-o': { label:'Sci',    items:['','','','',''], saved:false },
-    'cat-y': { label:'Bio',    items:['','','','',''], saved:false },
-    'cat-g': { label:'Lang',   items:['','','','',''], saved:false },
-    'cat-b': { label:'Psico',  items:['','','','',''], saved:false },
-    'cat-i': { label:'Social', items:['Media','Political','Economical','Judiciary','Militar'], saved:true },
+    'cat-r': { label:'Metas',  labelEs:'Metas',   items:['','','','',''], saved:false },
+    'cat-o': { label:'Sci',    labelEs:'Ciencia', items:['','','','',''], saved:false },
+    'cat-y': { label:'Bio',    labelEs:'Bio',     items:['','','','',''], saved:false },
+    'cat-g': { label:'Lang',   labelEs:'Lengua',  items:['','','','',''], saved:false },
+    'cat-b': { label:'Psico',  labelEs:'Psico',   items:['','','','',''], saved:false },
+    'cat-i': { label:'Social', labelEs:'Social',  items:['Media','Political','Economical','Judiciary','Militar'], saved:true },
   };
+  // ── Spanish display for the one pre-filled category (Social). Shown only while
+  //    its items still match the factory English defaults; once the player edits
+  //    them, their own words are kept verbatim (in either language). ──
+  const SIMPLEX_ES = { 'cat-i': ['Medios','Político','Económico','Judicial','Militar'] };
+  const SOCIAL_DEFAULT_EN = ['Media','Political','Economical','Judiciary','Militar'];
+  const simplexAtFactory = id => id === 'cat-i'
+    && SIMPLEX['cat-i'].items.length === SOCIAL_DEFAULT_EN.length
+    && SIMPLEX['cat-i'].items.every((v,i) => v === SOCIAL_DEFAULT_EN[i]);
+  // label of any SIMPLEX category in the active language
+  const simplexLabel = id => (lang() === 'es' && SIMPLEX[id] && SIMPLEX[id].labelEs != null) ? SIMPLEX[id].labelEs : (SIMPLEX[id] ? SIMPLEX[id].label : id);
+  // localized item array for a source: factory Social → Spanish defaults; else verbatim
+  const localizeItems = (id, items) => (lang() === 'es' && SIMPLEX_ES[id] && simplexAtFactory(id)) ? SIMPLEX_ES[id].slice() : items;
   const CAT_COLOR = {
     'cat-r':'var(--cat-r)', 'cat-o':'var(--cat-o)', 'cat-y':'var(--cat-y)',
     'cat-g':'var(--cat-g)', 'cat-b':'var(--cat-b)', 'cat-i':'var(--cat-i)',
@@ -2373,7 +2472,7 @@
   function getSource(id){
     if (SIMPLEX[id]){
       const c = SIMPLEX[id];
-      return { kind:'cat', id, label:c.label, items:c.items, color:CAT_COLOR[id], editable:true, saved:c.saved };
+      return { kind:'cat', id, label:simplexLabel(id), items:c.items, color:CAT_COLOR[id], editable:true, saved:c.saved };
     }
     if (id && id.startsWith('custom:')){
       const c = customCats.find(x => x.id === id);
@@ -2386,7 +2485,7 @@
       const d = DECKS.find(x => x.id === did);
       if (!d) return null;
       const order = state.orders[did] || d.items.map((_,i)=>i);
-      return { kind:'deck', id, label:d.title, items:order.map(i => d.items[i]), color:deckColor(did), parent:DECK_PARENT[did], editable:false, saved:true };
+      return { kind:'deck', id, label:(d.custom ? d.title : deckTitle(d)), items:order.map(i => (d.custom ? d.items[i] : deckItem(d, i))), color:deckColor(did), parent:DECK_PARENT[did], editable:false, saved:true };
     }
     return null;
   }
@@ -2417,25 +2516,28 @@
       const s = getSource(id);
       if (!s) return;
       const editing = s.editable && !s.saved;     // unfilled category/custom → fill it inline
+      // decks are already localized in getSource; cat/custom keep canonical items
+      // (editable) — localize their display values for the read-only (saved) view.
+      const dispItems = editing ? s.items : localizeItems(id, s.items);
       for (let r = 0; r < 5; r++){
-        const val = s.items[r] || '';
+        const val = dispItems[r] || '';
         let el;
         if (editing){
           el = document.createElement('input');
           el.type = 'text';
           el.className = 'item-input';
           el.maxLength = 28;
-          el.placeholder = 'rank ' + (r + 1);
+          el.placeholder = t('rank ','puesto ') + (r + 1);
           el.value = val;
           el.addEventListener('input', e => { s.items[r] = e.target.value; storeEdit(s); });
           el.addEventListener('blur', () => { if (s.items.every(v => (v||'').trim())) renderNodes(); });
           el.addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); e.target.blur(); } });
-          el.dataset.cat = id; el.title = s.label; el.style.setProperty('--c', s.color);
+          el.dataset.cat = id; el.setAttribute('aria-label', s.label); el.style.setProperty('--c', s.color);
         } else if (!val){
           el = document.createElement('div');
           el.className = 'item empty';
           el.textContent = '·';
-          el.dataset.cat = id; el.title = s.label; el.style.setProperty('--c', s.color);
+          el.dataset.cat = id; el.setAttribute('aria-label', s.label); el.style.setProperty('--c', s.color);
         } else {
           el = makeSquareItem(id, s, r, val);
         }
@@ -2453,37 +2555,37 @@
     const item = document.createElement('div');
     item.className = 'item';
     item.dataset.cat = id; item.dataset.rank = String(r);
-    item.title = s.label; item.style.setProperty('--c', s.color);
+    item.setAttribute('aria-label', s.label); item.style.setProperty('--c', s.color);
     const saved = (reasons[id] && reasons[id][r]) || '';
 
     const row = document.createElement('div');
     row.className = 'item-row';
     const star = document.createElement('button');
     star.type = 'button'; star.className = 'item-star'; star.textContent = '★';
-    star.title = 'show reason'; star.hidden = !saved.trim();
+    star.setAttribute('aria-label', t('show reason','mostrar el porqué')); star.hidden = !saved.trim();
     const word = document.createElement('span');
     word.className = 'item-word'; word.textContent = val;
     const next = document.createElement('button');
     next.type = 'button'; next.className = 'item-next'; next.textContent = '›';
-    next.title = 'move to next position'; next.disabled = r >= 4;
+    next.setAttribute('aria-label', t('move to next position','mover a la siguiente posición')); next.disabled = r >= 4;
     row.append(star, word, next);
 
     const edit = document.createElement('div');
     edit.className = 'item-reason'; edit.hidden = true;
     const input = document.createElement('input');
-    input.type = 'text'; input.className = 'rsn-input'; input.placeholder = 'Reason';
+    input.type = 'text'; input.className = 'rsn-input'; input.placeholder = t('Reason','Motivo');
     input.value = saved;
     const mic = document.createElement('button');
-    mic.type = 'button'; mic.className = 'rsn-mic'; mic.textContent = '🎤'; mic.title = 'record';
+    mic.type = 'button'; mic.className = 'rsn-mic'; mic.textContent = '🎤'; mic.setAttribute('aria-label', t('record','grabar'));
     const save = document.createElement('button');
-    save.type = 'button'; save.className = 'rsn-save'; save.textContent = 'Save';
+    save.type = 'button'; save.className = 'rsn-save'; save.textContent = t('Save','Guardar');
     edit.append(input, mic, save);
 
     const view = document.createElement('div');
     view.className = 'item-reason-view'; view.hidden = true;
     const vtext = document.createElement('span'); vtext.className = 'rsn-text';
     const close = document.createElement('button');
-    close.type = 'button'; close.className = 'rsn-close'; close.textContent = '✕'; close.title = 'hide';
+    close.type = 'button'; close.className = 'rsn-close'; close.textContent = '✕'; close.setAttribute('aria-label', t('hide','ocultar'));
     view.append(vtext, close);
 
     item.append(row, edit, view);
@@ -2532,10 +2634,10 @@
   let _rec = null, _recOn = false, _recMic = null;
   function toggleReasonMic(input, mic){
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR){ input.placeholder = 'no voice support'; return; }
+    if (!SR){ input.placeholder = t('no voice support','sin soporte de voz'); return; }
     if (_recOn){ try { _rec.stop(); } catch(_){} return; }
     _rec = new SR();
-    _rec.lang = 'en-US'; _rec.continuous = true; _rec.interimResults = true;
+    _rec.lang = lang() === 'es' ? 'es-ES' : 'en-US'; _rec.continuous = true; _rec.interimResults = true;
     _recMic = mic;
     const base = input.value ? input.value.replace(/\s+$/,'') + ' ' : '';
     _rec.onresult = ev => {
@@ -2619,7 +2721,7 @@
     const showId = (lastSet && activeSets.includes(lastSet)) ? lastSet : activeSets[activeSets.length - 1];
     if (showId){
       const s = getSource(showId);
-      if (s){ src = s.items; title = s.label; }
+      if (s){ src = localizeItems(showId, s.items); title = s.label; }
     }
     lis.forEach((sp, i) => sp.textContent = src[i] || '');
     if ($title) $title.textContent = title;
@@ -2645,7 +2747,7 @@
         group.appendChild(b); group.appendChild(ch);
         cats.insertBefore(group, addBtn);
       }
-      group.querySelector('button').textContent = (p5 && p5.title) || 'Fivy 5';
+      group.querySelector('button').textContent = (p5 && p5.title) || t('Fivy 5','Fivy 5');
     } else if (group){
       group.remove();
     }
@@ -2669,7 +2771,7 @@
       b.type = 'button';
       b.dataset.src = 'deck:' + d.id;
       b.style.setProperty('--c', deckColor(d.id));   // same colour as its parent category
-      b.textContent = d.title;
+      b.textContent = d.custom ? d.title : deckTitle(d);
       b.addEventListener('click', () => toggleSet('deck:' + d.id));
       slot.appendChild(b);
     });
@@ -2722,7 +2824,7 @@
       btn.className = 'saved-custom';
       btn.type = 'button';
       btn.dataset.cat = c.id;
-      btn.innerHTML = `<span>${escapeHTML(c.label)}</span><span class="x" role="button" aria-label="delete">✕</span>`;
+      btn.innerHTML = `<span>${escapeHTML(c.label)}</span><span class="x" role="button" aria-label="${t('delete','eliminar')}">✕</span>`;
       btn.addEventListener('click', e => {
         if (e.target.closest('.x')){
           const i = customCats.findIndex(x => x.id === c.id);
@@ -2757,12 +2859,15 @@
   });
 
   // ----- Summary content (tables + progressive analyses) -----
-  const ORD = ['1st','2nd','3rd','4th','5th'];
+  const ORD_EN = ['1st','2nd','3rd','4th','5th'];
+  const ORD_ES = ['1º','2º','3º','4º','5º'];
+  const ORD = () => (lang() === 'es' ? ORD_ES : ORD_EN);
   const settledDecks = () => DECKS.filter(d => state.done[d.id]);
-  const deckRanked   = d => state.orders[d.id].map(i => d.items[i]);
+  const deckRanked   = d => state.orders[d.id].map(i => d.items[i]);   // canonical (English) for exports/parent
+  const deckRankedL  = d => state.orders[d.id].map(i => (d.custom ? d.items[i] : deckItem(d, i)));   // localized for display
   function filledFields(){
     const out = [];
-    Object.keys(SIMPLEX).forEach(id => { if (SIMPLEX[id].saved) out.push({ label:SIMPLEX[id].label, items:SIMPLEX[id].items }); });
+    Object.keys(SIMPLEX).forEach(id => { if (SIMPLEX[id].saved) out.push({ label:simplexLabel(id), items:localizeItems(id, SIMPLEX[id].items) }); });
     customCats.forEach(c => out.push({ label:c.label, items:c.items }));
     return out;
   }
@@ -2792,34 +2897,38 @@
     const ins = document.getElementById('fivy-insight');
     if (!ph) return;
     const decks = settledDecks();
+    const dtl = d => d.custom ? d.title : deckTitle(d);   // localized deck title
     if (!decks.length){
-      ph.textContent = 'Order your fivys to see a summary phrase here.';
-      if (mg)  mg.textContent = '✨ Your woven phrase appears once you have ordered some fivys.';
+      ph.textContent = t('Order your fivys to see a summary phrase here.','Ordena tus fivys para ver aquí una frase de resumen.');
+      if (mg)  mg.textContent = t('✨ Your woven phrase appears once you have ordered some fivys.','✨ Tu frase tejida aparece cuando hayas ordenado algunos fivys.');
       if (ins) ins.innerHTML = '';
       return;
     }
-    const parts = decks.map(d => `${d.title}: ${deckRanked(d).filter(Boolean).join(' ▸ ')}`);
-    ph.textContent = `My fivys — ${parts.join('  ·  ')}.`;
+    const parts = decks.map(d => `${dtl(d)}: ${deckRankedL(d).filter(Boolean).join(' ▸ ')}`);
+    ph.textContent = `${t('My fivys','Mis fivys')} — ${parts.join('  ·  ')}.`;
 
     const woven = decks.map(d => {
-      const r = deckRanked(d).filter(Boolean);
-      return r.length ? `in ${d.title.toLowerCase()} you lead with ${r[0]}` : '';
+      const r = deckRankedL(d).filter(Boolean);
+      return r.length ? t(`in ${dtl(d).toLowerCase()} you lead with ${r[0]}`, `en ${dtl(d).toLowerCase()} encabezas con ${r[0]}`) : '';
     }).filter(Boolean);
-    if (mg) mg.textContent = `✨ ${woven.join(', ')}${woven.length ? ' — a small map of how you weigh the world.' : ''}`;
+    if (mg) mg.textContent = `✨ ${woven.join(', ')}${woven.length ? t(' — a small map of how you weigh the world.',' — un pequeño mapa de cómo sopesas el mundo.') : ''}`;
 
     if (ins){
-      const firsts = decks.map(d => deckRanked(d)[0]).filter(Boolean);
-      const lasts  = decks.map(d => deckRanked(d)[4]).filter(Boolean);
+      const firsts = decks.map(d => deckRankedL(d)[0]).filter(Boolean);
+      const lasts  = decks.map(d => deckRankedL(d)[4]).filter(Boolean);
       const end = timer.tSummary || Date.now();
       const fieldsMs = timer.tFields ? (end - timer.tFields) : 0;
+      const n = decks.length;
       const texts = [
-        `You settled ${decks.length} ${decks.length === 1 ? 'fivy' : 'fivys'}, ranking five cards in each — ${decks.length * 5} small decisions in all.`,
-        `Your firsts: ${firsts.join(', ')}.`,
-        `Your lasts: ${lasts.join(', ')}.`,
-        `You spent ${fmtTime(end - timer.t0)} in all${timer.tFields ? `, ${fmtTime(fieldsMs)} of it in Fields` : ''}.`,
+        t(`You settled ${n} ${n === 1 ? 'fivy' : 'fivys'}, ranking five cards in each — ${n * 5} small decisions in all.`,
+          `Asentaste ${n} ${n === 1 ? 'fivy' : 'fivys'}, ordenando cinco cartas en cada uno — ${n * 5} pequeñas decisiones en total.`),
+        t(`Your firsts: ${firsts.join(', ')}.`, `Tus primeros: ${firsts.join(', ')}.`),
+        t(`Your lasts: ${lasts.join(', ')}.`, `Tus últimos: ${lasts.join(', ')}.`),
+        t(`You spent ${fmtTime(end - timer.t0)} in all${timer.tFields ? `, ${fmtTime(fieldsMs)} of it in Fields` : ''}.`,
+          `Dedicaste ${fmtTime(end - timer.t0)} en total${timer.tFields ? `, ${fmtTime(fieldsMs)} de ello en Campos` : ''}.`),
       ];
       ins.innerHTML = '';
-      texts.forEach(t => { const s = document.createElement('span'); s.className = 'insight-text'; s.textContent = t; ins.appendChild(s); });
+      texts.forEach(txt => { const s = document.createElement('span'); s.className = 'insight-text'; s.textContent = txt; ins.appendChild(s); });
     }
   }
   // Fields-stage time stats: time spent on decks, on fields, and total.
@@ -2831,9 +2940,9 @@
     const fields = timer.tFields ? (end - timer.tFields) : 0;
     const total  = end - timer.t0;
     host.innerHTML =
-        `<span class="ss-item"><span class="ss-k">Decks</span><span class="ss-v">${fmtTime(decks)}</span></span>`
-      + `<span class="ss-item ss-hi"><span class="ss-k">Fields</span><span class="ss-v">${fmtTime(fields)}</span></span>`
-      + `<span class="ss-item"><span class="ss-k">Total</span><span class="ss-v">${fmtTime(total)}</span></span>`;
+        `<span class="ss-item"><span class="ss-k">${t('Decks','Mazos')}</span><span class="ss-v">${fmtTime(decks)}</span></span>`
+      + `<span class="ss-item ss-hi"><span class="ss-k">${t('Fields','Campos')}</span><span class="ss-v">${fmtTime(fields)}</span></span>`
+      + `<span class="ss-item"><span class="ss-k">${t('Total','Total')}</span><span class="ss-v">${fmtTime(total)}</span></span>`;
   }
   // Snapshot of the last selected square — keeps cycle/confluence arrows, never the list.
   function paintSummarySnapshot(){
@@ -2855,15 +2964,15 @@
   // one) before the fivy name, then the 1st–5th ordering.
   function fivysTableHTML(){
     const decks = settledDecks();
-    if (!decks.length) return '<div class="empty-line">No fivys ordered yet.</div>';
+    if (!decks.length) return `<div class="empty-line">${t('No fivys ordered yet.','Aún no has ordenado ningún fivy.')}</div>`;
     const now = Date.now();
     const liveId = state.openDeckIdx !== null ? DECKS[state.openDeckIdx].id : null;
-    const head = `<thead><tr><th>Time</th><th>Fivy</th>${ORD.map(o => `<th>${o}</th>`).join('')}</tr></thead>`;
+    const head = `<thead><tr><th>${t('Time','Tiempo')}</th><th>${t('Fivy','Fivy')}</th>${ORD().map(o => `<th>${o}</th>`).join('')}</tr></thead>`;
     const body = '<tbody>' + decks.map(d => {
       let ms = deckTime[d.id] || 0;
       if (d.id === liveId && _openTs) ms += now - _openTs;
-      const cells = deckRanked(d).map(v => `<td>${escapeHTML(v) || '·'}</td>`).join('');
-      return `<tr><td class="dim">${fmtTime(ms)}</td><th>${escapeHTML(d.title)}</th>${cells}</tr>`;
+      const cells = deckRankedL(d).map(v => `<td>${escapeHTML(v) || '·'}</td>`).join('');
+      return `<tr><td class="dim">${fmtTime(ms)}</td><th>${escapeHTML(d.custom ? d.title : deckTitle(d))}</th>${cells}</tr>`;
     }).join('') + '</tbody>';
     return `<table class="sum-table">${head}${body}</table>`;
   }
@@ -2896,7 +3005,7 @@
     if (!$related.children.length){
       $related.innerHTML =
           RELATED_MAIN.map(relCardHTML).join('')
-        + `<div class="ra-more-row"><button class="ra-more-btn" id="ra-more-btn" type="button" aria-expanded="false" aria-label="Show more apps">＋</button></div>`
+        + `<div class="ra-more-row"><button class="ra-more-btn" id="ra-more-btn" type="button" aria-expanded="false" aria-label="${t('Show more apps','Mostrar más apps')}">＋</button></div>`
         + `<div class="related-more" id="related-more" hidden>${RELATED_MORE.map(relCardHTML).join('')}</div>`;
       const moreBtn = document.getElementById('ra-more-btn');
       const moreBox = document.getElementById('related-more');
@@ -3123,7 +3232,7 @@
   }
   function floveReset(){
     let ok = true;
-    try { ok = window.confirm('This will clear everything and start over. Continue?'); } catch(_){ ok = true; }
+    try { ok = window.confirm(t('This will clear everything and start over. Continue?','Esto borrará todo y empezará de nuevo. ¿Continuar?')); } catch(_){ ok = true; }
     if (ok) doReset();
   }
   document.querySelectorAll('[data-flove-reset]').forEach(b =>
@@ -3151,6 +3260,23 @@
   // paintSummary() now also persists + lights the out-of-date dot (Update clears it).
   new MutationObserver(() => paintSummary())
     .observe(document.getElementById('board'), { childList:true, subtree:true });
+
+  // ── i18n: when the worldball flips language, re-paint every view that builds
+  //    plain (non-spanned) text in JS, so the dynamic UI follows the switch.
+  //    Guarded so a switch never re-writes storage or lights the stale dot.
+  window.__fivyOnLang = function(){
+    const wasRestoring = _restoring;
+    _restoring = true;            // suppress save()/markStale() during the re-paint
+    try {
+      renderBoard();
+      renderSpotlight();
+      renderNodes();
+      renderCustomsRow();
+      paintSummary();
+      paintTime();
+    } catch (_) {}
+    _restoring = wasRestoring;
+  };
 })();
 </script>
 </body>
