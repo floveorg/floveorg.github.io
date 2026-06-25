@@ -34,9 +34,9 @@ ladder and its upgrade routing are untouched — *upgrade → basic* opens
 **Goals**
 - Demonstrate **genuine High** (§13.13): F0/F1 content/data at rest is
   ciphertext; without the crypter pass there is nothing to read.
-- The **one-button** surface the simplification asks for: an **"Enable login"**
-  control in an **Account · Privacy** area, plus the **"Crypt on exit"** button
-  and the **"change apps crypter pass"** field §13.13 already names.
+- The **one-button** surface the simplification asks for, **pinned to appy's
+  Privacy tab** (§6): an **"Enable login"** control, plus the **"Crypt on exit"**
+  button and the **"change apps crypter pass"** field §13.13 already names.
 - **One crypter pass for the whole set** (`data-flove-lock-set`), entered once,
   reused to re-encrypt on close.
 - An **optional recovery phrase** so a forgotten pass is survivable (the §13.13
@@ -115,9 +115,15 @@ recovery phrase ──derive──▶ recovery-KEK ─────────�
   confirm. (A second secret to guard — stated plainly.)
 - **Wrong pass / tampered blob** fails closed (GCM auth failure → reject).
 
-## 6. UX flow — Account · Privacy (the one-button surface)
+## 6. UX flow — appy's Privacy tab (the one-button surface)
 
-Reusing §13.13's named hooks:
+**Home: appy's account → Privacy tab.** appy already ships a **Privacy tab**
+(`#tab-privacy`, `switchTab('privacy')`) in `appy-mini.html` (~line 1967) and
+`appy-basic.html`, today a **hidden placeholder** (`d-none`) next to the
+existing **Settings** export (`getSettings()`). The add-on **un-hides and
+populates that tab** with the controls below — no new surface invented. appy is
+the F0/F1 account hub, so this carries through the tiers (mini = F0, basic =
+F1). Reusing §13.13's named hooks:
 
 1. **Enable login** (`lock-enable`, off by default). → create-or-generate the
    crypter pass: type one, or **Generate** (`lock-pass-gen`) re-rolls a fresh
