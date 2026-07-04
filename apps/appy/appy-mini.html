@@ -4,10 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="miniappy — interactive prototype of the nety/appy access system">
-<title>✺ miniappy · access prototype</title>
+<title>✺ Appy Flove · access prototype</title>
+<!-- flove favicon — the winged mark (shared across flove) -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='12' y1='0' x2='88' y2='0' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='%23ff3344'/><stop offset='.5' stop-color='%23ff8a3a'/><stop offset='1' stop-color='%23ffd633'/></linearGradient></defs><path d='M50 60 C 22 60 12 38 16 18 C 38 22 54 38 50 60 Z' fill='url(%23g)'/><path d='M50 60 C 78 60 88 38 84 18 C 62 22 46 38 50 60 Z' fill='url(%23g)'/><path d='M50 58 C 50 72 50 84 50 92' stroke='url(%23g)' stroke-width='6' stroke-linecap='round' fill='none'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<!-- Fonts loaded non-blocking: the page paints instantly on the system fallback stack, then swaps in Fredoka/Space Mono — cuts perceived load time (no render-blocking network round-trip). -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap"></noscript>
 <style>
 *{ margin:0; padding:0; box-sizing:border-box; }
 :root{
@@ -502,7 +506,7 @@ body{
   box-shadow:0 0 18px -2px rgba(141,137,255,.65), inset 0 1px 0 rgba(28,25,42,.15);
 }
 .tab-btn:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
-#tab-mynet:not(.active), #tab-chat:not(.active){ opacity:.6; }   /* demonstrative tabs, lightly faded */
+#tab-nety:not(.active), #tab-mynet:not(.active), #tab-chat:not(.active){ opacity:.6; }   /* demonstrative tabs, lightly faded */
 .tab-panel{ display:none; }
 .tab-panel.active{
   display:block;
@@ -1595,6 +1599,7 @@ body{
 .app-card:focus-visible{ outline:2px solid var(--c); outline-offset:2px; }
 .app-card .ac-title{ font-weight:700; color:var(--c); font-size:.95rem; }
 .app-card .ac-sub{ font-size:.66rem; color:var(--muted); margin-top:.1rem; }
+.app-card .ac-count{ display:inline-block; margin-top:.4rem; font-family:"Space Mono",monospace; font-size:.56rem; font-weight:700; letter-spacing:.04em; border:1px solid currentColor; border-radius:999px; padding:.08rem .4rem; opacity:.92; }
 .app-card .ac-body{ display:none; margin:.5rem 0 0; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.66rem;
   white-space:pre-wrap; word-break:break-word; max-height:220px; overflow:auto; background:var(--panel);
   border-radius:8px; padding:.5rem; color:var(--ink); }
@@ -1605,21 +1610,12 @@ body{
 .apps-head{ font-weight:700; font-size:.9rem; }
 .apps-row{ display:flex; gap:2px; margin-top:.5rem; }
 
-/* --- Profile two-column layout: left = play apps + your card · main = played apps + posts --- */
-.profile-top{ display:flex; gap:1.1rem; align-items:flex-start; flex-wrap:wrap; }
-.profile-col-left{ flex:0 0 268px; max-width:100%; display:flex; flex-direction:column; gap:.9rem; }
-.profile-col-main{ flex:1 1 320px; min-width:0; }
-.profile-col-left .apps-sec{ margin-top:0; }
-@media (max-width:640px){
-  .profile-col-left{ flex-basis:100%; }
-}
-/* vertical play-apps list — pill rows instead of squares */
-.apps-sec-vert .apps-row{ flex-direction:column; gap:.4rem; }
-.apps-sec-vert .appbtn{ flex-direction:row; aspect-ratio:auto; justify-content:flex-start;
-  gap:.6rem; padding:.5rem .75rem; border-radius:11px; }
-.apps-sec-vert .appbtn svg{ width:22px; height:22px; flex:none; }
-.apps-sec-vert .appbtn span{ font-size:.92rem; }
-.apps-sec-vert .appbtn:hover{ transform:translateX(3px); }
+/* --- Profile stacked layout: row 1 = play apps (horizontal) · row 2 = played apps · then your card + posts --- */
+.profile-top{ display:flex; flex-direction:column; gap:.9rem; align-items:stretch; }
+.profile-top > #play-apps{ order:1; margin-top:0; }
+.profile-top > .upload-sec{ order:2; margin-top:0; }
+.profile-top > #pc-marcflove{ order:3; }
+.profile-top > #profile-posts{ order:4; }
 /* the your-card in the left column always expands downward (like the mobile variant) */
 .profile-card.pc-stacked{ display:block; width:100%; }
 .profile-card.pc-stacked .profile-card-header{ min-width:0; }
@@ -2005,14 +2001,11 @@ body:has(#lang-es:checked) .es{display:inline}
     <div class="tab-panel active" id="panel-profile" role="tabpanel">
       <div class="vcard">
 
-        <!-- Two-column profile — left: play apps + your card · main: played apps + posts -->
+        <!-- Stacked profile — row 1: play apps (horizontal) · row 2: played apps · then your card + posts -->
         <div class="profile-top">
 
-          <!-- ── LEFT COLUMN — play apps (vertical) + your card ── -->
-          <div class="profile-col-left">
-
-        <!-- Apps — tap a logo to open the app preview (vertical list) -->
-        <section class="apps-sec apps-sec-vert" id="play-apps" aria-label="Play Flove Apps" data-aria-en="Play Flove Apps" data-aria-es="Jugar apps de Flove">
+        <!-- Apps — tap a logo to open the app preview (horizontal row) -->
+        <section class="apps-sec" id="play-apps" aria-label="Play Flove Apps" data-aria-en="Play Flove Apps" data-aria-es="Jugar apps de Flove">
           <div class="apps-head"><span class="en" lang="en">Play Flove Apps</span><span class="es" lang="es">Jugar apps de Flove</span></div>
           <div class="apps-row" role="group" aria-label="App logos" data-aria-en="App logos" data-aria-es="Logos de apps">
             <a class="appbtn appc-goddy" href="../metas/goddy.html" data-app="Goddy" title="Goddy preview" aria-label="Goddy preview" data-aria-en="Goddy preview" data-aria-es="Vista previa de Goddy" onclick="appJump(event,this)">
@@ -2077,11 +2070,6 @@ body:has(#lang-es:checked) .es{display:inline}
               </div>
             </div>
 
-          </div><!-- /.profile-col-left -->
-
-          <!-- ── MAIN COLUMN — played apps + posts ── -->
-          <div class="profile-col-main">
-
         <!-- Played apps — play an app by uploading its summary -->
         <section class="upload-sec" aria-label="Played apps" data-aria-en="Played apps" data-aria-es="Apps jugadas">
           <div class="upload-head"><span class="en" lang="en">Played apps</span><span class="es" lang="es">Apps jugadas</span> <span class="upload-sub"><span class="en" lang="en">— add an app by its <code>Appname-summary.json</code></span><span class="es" lang="es">— añade una app por su <code>Appname-summary.json</code></span></span></div>
@@ -2107,8 +2095,6 @@ body:has(#lang-es:checked) .es{display:inline}
 
         <!-- submitted posts — pending review, above the authenticate section -->
         <div class="profile-posts" id="profile-posts" aria-live="polite"></div>
-
-          </div><!-- /.profile-col-main -->
 
         </div><!-- /.profile-top -->
 
@@ -2309,6 +2295,12 @@ body:has(#lang-es:checked) .es{display:inline}
     <!-- NETY TAB -->
     <div class="tab-panel" id="panel-nety" role="tabpanel">
       <div class="vcard">
+
+        <!-- demonstrative-only notice — top of Nety (same as MyNet) -->
+        <div class="demo-notice">
+          <span><span class="en" lang="en">These features are only demonstrative here.</span><span class="es" lang="es">Estas funciones aquí son solo demostrativas.</span></span>
+          <button type="button" class="demo-upgrade" onclick="location.href='../../index.html'"><span class="en" lang="en">Enable them by upgrading →</span><span class="es" lang="es">Actívalas mejorando tu nivel →</span></button>
+        </div>
 
         <div class="nety-banner">
           <div class="nety-banner-head">
@@ -4511,13 +4503,19 @@ switchTab('profile');
     const ap = escHtml(app);
     const reader = new FileReader();
     reader.onload = e => {
-      const n = uploadCount[app] = (uploadCount[app] || 0) + 1;   // same app can be uploaded again
+      const prev = uploadCount[app] || 0;
+      if (prev >= 5){                               // cap: at most 5 uploads of the same app
+        msg.innerHTML = bx(ap + ' already uploaded 5× — that’s the max.', ap + ' ya subido 5× — es el máximo.');
+        msg.className = 'upload-msg err'; if (window.applyLang) applyLang(); return;
+      }
+      const n = uploadCount[app] = prev + 1;        // same app can be re-uploaded, up to 5
       addPlayedApp(app, file.name, e.target.result, btn);
       awardPoints(30, 'social');                    // played app uploaded · +30
       refreshUploadUI();
       updateUploadChip(app, n);
+      updateCardCount(app, n);                       // note the amount on the played-apps card
       msg.innerHTML = n > 1
-        ? bx(ap + ' re-uploaded ✓ · now ×' + n, ap + ' resubido ✓ · ahora ×' + n)
+        ? bx(ap + ' re-uploaded ✓ · now ×' + n + (n === 5 ? ' (max)' : ''), ap + ' resubido ✓ · ahora ×' + n + (n === 5 ? ' (máx)' : ''))
         : bx(ap + ' added to Played apps ✓', ap + ' añadido a Apps jugadas ✓');
       msg.className = 'upload-msg ok'; if (window.applyLang) applyLang(); };
     reader.onerror = () => { msg.innerHTML = bx('Could not read ' + fn + '.', 'No se pudo leer ' + fn + '.'); msg.className = 'upload-msg err'; if (window.applyLang) applyLang(); };
@@ -4534,6 +4532,20 @@ switchTab('profile');
     const t = app + ' uploaded ' + n + ' times';
     chip.setAttribute('title', t);
     chip.setAttribute('aria-label', t);
+  }
+
+  // played-card upload badge — note the amount ("×N") on the played card from the first upload
+  function updateCardCount(app, n){
+    const grid = document.getElementById('played-grid');
+    if (!grid || n < 1) return;
+    const card = grid.querySelector('.app-card[data-app="' + app + '"]');
+    if (!card) return;
+    let chip = card.querySelector('.ac-count');
+    if (!chip){ chip = document.createElement('span'); chip.className = 'ac-count'; card.appendChild(chip); }
+    chip.textContent = '×' + n;
+    chip.style.color = RAINBOW[app] || 'var(--accent)';
+    const t = app + ' uploaded ' + n + (n === 1 ? ' time' : ' times');
+    chip.setAttribute('title', t); chip.setAttribute('aria-label', t);
   }
 
   function addPlayedApp(app, fname, raw, btn){
