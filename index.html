@@ -285,6 +285,25 @@ body {
   gap:clamp(4.4rem, 14vmin, 11rem);
   padding:0 4vmin;
 }
+
+/* ── Download → "Go local": after clicking, hide the CTAs and show only the
+   localhost launcher icon + a 3-step how-to (the .desktop icon in the zip). ── */
+.go-local{ display:none; }
+body.downloaded .cta{ display:none; }
+body.downloaded .go-local{
+  display:flex; flex-direction:column; align-items:center; gap:.55rem;
+  margin-top:clamp(1.4rem, 4vmin, 2.4rem); padding:0 4vmin; text-align:center;
+  animation: goLocalIn .45s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes goLocalIn{ from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
+.go-local-icon{ width:clamp(88px,18vmin,120px); height:auto; filter:drop-shadow(0 8px 22px rgba(0,0,0,.35)); animation: goLocalPulse 2.6s ease-in-out infinite; }
+@keyframes goLocalPulse{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+.go-local-lead{ margin:.3rem 0 0; font-weight:600; max-width:34ch; }
+.go-local-steps{ margin:.15rem 0 0; padding:0; list-style:none; display:flex; flex-direction:column; gap:.28rem; font-size:.92rem; opacity:.82; }
+.go-local-steps li::before{ content:"→ "; opacity:.5; }
+.go-local-again{ margin-top:.35rem; font-size:.85rem; opacity:.7; }
+.go-local-again:hover{ opacity:1; }
+@media (prefers-reduced-motion: reduce){ .go-local-icon{ animation:none; } }
 .cta-row {
   position:relative;
   display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-start;
@@ -498,9 +517,9 @@ body {
 :root:has(#s0:checked) .btn-apps .btn-text[data-st~="0"], :root:has(#s1:checked) .btn-apps .btn-text[data-st~="1"], :root:has(#s3:checked) .btn-apps .btn-text[data-st~="3"] { opacity:1; width:5ch;  animation: typeIn 1s   steps(5,  end) forwards; }
 :root:has(#s2:checked) .btn-apps .btn-text[data-st~="2"] { opacity:1; width:8ch;  animation: typeIn 1.6s steps(8,  end) forwards; }
 :root:has(#s4:checked) .btn-apps .btn-text[data-st~="4"] { opacity:1; width:3ch;  animation: typeIn .6s  steps(3,  end) forwards; }
-:root:has(#s0:checked) .btn-both .btn-text[data-st~="0"], :root:has(#s1:checked) .btn-both .btn-text[data-st~="1"], :root:has(#s3:checked) .btn-both .btn-text[data-st~="3"] { opacity:1; width:5ch;  animation: typeIn 1s   steps(5,  end) forwards; }
-:root:has(#s2:checked) .btn-both .btn-text[data-st~="2"] { opacity:1; width:14ch; animation: typeIn 2.8s steps(14, end) forwards; }
-:root:has(#s4:checked) .btn-both .btn-text[data-st~="4"] { opacity:1; width:7ch;  animation: typeIn 1.4s steps(7,  end) forwards; }
+:root:has(#s0:checked) .btn-both .btn-text[data-st~="0"], :root:has(#s1:checked) .btn-both .btn-text[data-st~="1"], :root:has(#s3:checked) .btn-both .btn-text[data-st~="3"] { opacity:1; width:9ch;  animation: typeIn 1.7s steps(9, end) forwards; }
+:root:has(#s2:checked) .btn-both .btn-text[data-st~="2"] { opacity:1; width:8ch;  animation: typeIn 1.6s steps(8, end) forwards; }
+:root:has(#s4:checked) .btn-both .btn-text[data-st~="4"] { opacity:1; width:8ch;  animation: typeIn 1.6s steps(8, end) forwards; }
 
 /* press bloom: fuzzy rainbow flood while a button is held */
 .press-bloom {
@@ -927,15 +946,28 @@ body:has(#lang-es:checked) .slogan .typed{ width:auto !important; animation:none
         <span class="btn-hint"><span class="en" lang="en">browse all the apps</span><span class="es" lang="es">explora todas las apps</span></span>
       </a>
     </div>
-    <a class="btn btn-both" href="#bubbles" role="button">
+    <a class="btn btn-both" href="flove.zip" download role="button" onclick="document.body.classList.add('downloaded')">
       <span class="btn-cycle">
-        <span class="btn-text" data-st="0 1 3"><span class="en" lang="en">Intro</span><span class="es" lang="es">Intro</span></span>
-        <span class="btn-text" data-st="2"><span class="en" lang="en">Bubbles</span><span class="es" lang="es">Burbujas</span></span>
-        <span class="btn-text" data-st="4"><span class="en" lang="en">Welcome</span><span class="es" lang="es">Bienvenida</span></span>
+        <span class="btn-text" data-st="0 1 3"><span class="en" lang="en">Download</span><span class="es" lang="es">Descargar</span></span>
+        <span class="btn-text" data-st="2"><span class="en" lang="en">Go local</span><span class="es" lang="es">En local</span></span>
+        <span class="btn-text" data-st="4"><span class="en" lang="en">Go local</span><span class="es" lang="es">En local</span></span>
       </span>
-      <span class="btn-hint"><span class="en" lang="en">walk both at once</span><span class="es" lang="es">recorre ambos a la vez</span></span>
+      <span class="btn-hint"><span class="en" lang="en">get the whole thing, run it offline</span><span class="es" lang="es">llévate todo y úsalo sin conexión</span></span>
     </a>
   </nav>
+
+  <!-- After Download: collapse the CTAs to just the localhost launcher icon + how-to.
+       The .desktop icon inside the zip is this same flove mark. -->
+  <div class="go-local" id="goLocal" role="status" aria-live="polite">
+    <img class="go-local-icon" src="flove-icon.svg" width="120" height="120" alt="flove launcher icon">
+    <p class="go-local-lead"><span class="en" lang="en">Downloading <b>flove.zip</b> — your whole flove, offline.</span><span class="es" lang="es">Descargando <b>flove.zip</b> — todo tu flove, sin conexión.</span></p>
+    <ol class="go-local-steps">
+      <li><span class="en" lang="en">Unzip it</span><span class="es" lang="es">Descomprímelo</span></li>
+      <li><span class="en" lang="en">Double-click the <b>flove</b> launcher icon</span><span class="es" lang="es">Doble-clic en el icono <b>flove</b></span></li>
+      <li><span class="en" lang="en">It opens locally — pick your language, done</span><span class="es" lang="es">Se abre en local — elige idioma, listo</span></li>
+    </ol>
+    <a class="go-local-again" href="flove.zip" download><span class="en" lang="en">download again ↻</span><span class="es" lang="es">descargar otra vez ↻</span></a>
+  </div>
 </main>
 
 <div class="splash" aria-hidden="true"></div>
