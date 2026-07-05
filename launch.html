@@ -80,15 +80,24 @@
 
 <script>
   (function(){
-    var KEY = 'translate2-lang';
+    // Shared family key (§13.2) so the choice is the default across every flove
+    // app/page; also write + read the legacy key for older apps.
+    var KEY = 'flove:lang', KEY_OLD = 'translate2-lang';
     var ENTRY = 'index.html';   // where the launcher forwards after (or instead of) the choice — the flove home
 
-    function go(){ location.replace(ENTRY); }
+    // Carry the choice forward: localStorage (https/localhost) AND ?lang= (so it
+    // survives file:// navigation in the offline download, where storage is isolated).
+    function go(lang){ location.replace(ENTRY + (lang ? '?lang=' + encodeURIComponent(lang) : '')); }
 
-    // Already chose before? Skip the gate entirely — this is the "only until chosen" rule.
+    // Installed app (PWA / Android APK)? Always show the selector as the landing.
+    var standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+                     || navigator.standalone === true;
+
+    // In a normal browser, if a language was chosen before, skip the gate
+    // ("only until chosen"). In the installed app we never skip — the selector lands.
     var saved = null;
-    try { saved = localStorage.getItem(KEY); } catch (_) {}
-    if (saved === 'en' || saved === 'es') { go(); return; }
+    try { saved = localStorage.getItem(KEY) || localStorage.getItem(KEY_OLD); } catch (_) {}
+    if (!standalone && (saved === 'en' || saved === 'es')) { go(saved); return; }
 
     // No choice yet → reveal the chooser and wire the buttons.
     var gate = document.getElementById('gate');
@@ -96,8 +105,8 @@
     gate.querySelectorAll('.pick').forEach(function(btn){
       btn.addEventListener('click', function(){
         var lang = btn.getAttribute('data-lang');
-        try { localStorage.setItem(KEY, lang); } catch (_) {}   // persistence is best-effort; redirect regardless
-        go();
+        try { localStorage.setItem(KEY, lang); localStorage.setItem(KEY_OLD, lang); } catch (_) {}
+        go(lang);
       });
     });
   })();

@@ -42,7 +42,7 @@ if [ -f "$TARGET/launch.html" ]; then
   sed -i 's#/launch\.html#/START.html#g' "$TARGET/manifest.webmanifest" "$TARGET/sw.js" 2>/dev/null || true
   # Landing page in the download = the language selector on every launch: drop the
   # "auto-skip to index.html when a language is remembered" line (live site keeps it).
-  sed -i "s|.*saved === 'en'.*go(); return;.*|      // download: the language selector stays the landing (no auto-skip)|" "$TARGET/START.html"
+  sed -i "s|.*saved === 'en'.*return;.*|      // download: the language selector stays the landing (no auto-skip)|" "$TARGET/START.html"
 fi
 
 # ── Package-only launchers (generated, not tracked), one per desktop OS, at the
