@@ -161,10 +161,11 @@
   body:has(#ui-lang-en:checked) .lang-others label[for="ui-lang-en"],
   body:has(#ui-lang-es:checked) .lang-others label[for="ui-lang-es"]{color:var(--accent)}
 
-  /* ===== Topbar language picker — the single language control, fixed in the
-     topbar right after the title. 🌐 toggles a dropdown of available languages
-     (the active one is marked ✓); picking one live-switches the whole UI. ===== */
+  /* ===== Worldball language picker — the single language control, in the menu
+     below "About keys". 🌐 unfolds the available languages inline (the active
+     one is marked ✓); picking one live-switches the whole UI. ===== */
   .topbar-lang{position:relative;flex:none}
+  .menu-lang-row{padding:2px 10px}
   .topbar-lang-btn{
     display:inline-flex;align-items:center;justify-content:center;
     width:34px;height:34px;border-radius:10px;
@@ -176,11 +177,9 @@
   .topbar-lang-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .topbar-lang-btn[aria-expanded="true"]{border-color:var(--accent);background:rgba(255,255,255,.06)}
   .topbar-lang-menu{
-    position:absolute;top:calc(100% + 6px);left:0;z-index:90;
-    margin:0;padding:6px;list-style:none;
+    margin:0;padding:6px 0 0;list-style:none;
     display:flex;flex-direction:column;gap:2px;min-width:178px;
-    background:var(--panel);border:1px solid var(--stroke);border-radius:14px;
-    box-shadow:0 14px 36px rgba(0,0,0,.5);animation:menuFade .18s ease;
+    animation:menuFade .18s ease;
   }
   .topbar-lang-menu[hidden]{display:none}
   .topbar-lang-menu li{margin:0}
@@ -2393,15 +2392,9 @@
     .intro-arrows{gap:18px}
   }
 
-  /* ===== "See more" per-slide button + floating chips ===== */
-  /* The button sits below the slider; it fades in 3s, 5s after each slide is
-     shown. Clicking it floats up chips with short texts about that slide. */
-  .intro-seemore{
-    display:block;margin:.2rem auto .5rem;
-    opacity:0;pointer-events:none;transition:opacity 3s ease;
-  }
-  .intro-seemore.show{opacity:1;pointer-events:auto}
-  @media (prefers-reduced-motion: reduce){ .intro-seemore{transition:none} }
+  /* ===== "See more" (slide 3's CTA) floating chips ===== */
+  /* The button lives in the CTA row (shown on slide 3 via updateIntroUI).
+     Clicking it floats up chips with short texts about that slide. */
   /* Chips overlay fills the slider; pointer-events pass through so a click on a
      slide still advances it — only link-chips (last slide) capture clicks. */
   .intro-chips{
@@ -2454,15 +2447,10 @@
   .chooser-card.normal-unlocked .opt-arrow,
   .chooser-card.normal-unlocked .opt-recommend{display:none !important}
 
-  /* ============== Customize panel (ported from souls · last slide) ========
-     The markup below is the souls slide-3 panel kept class-for-class; the only
-     adaptation is the token map here, which paints souls' design variables in
-     keys' palette so the rules render natively without per-rule rewrites. */
+  /* ============== Intro CTA (More info) + new-language modal ========
+     Ported from souls; the token map paints souls' design variables in keys'
+     palette so the rules render natively without per-rule rewrites. */
   @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  @keyframes customizePulse{
-    0%,100%{ box-shadow:0 4px 18px rgba(255,95,220,.28); transform:scale(1); }
-    50%    { box-shadow:0 6px 26px rgba(199,164,255,.45); transform:scale(1.03); }
-  }
   .intro-cta, .newlanguage-modal{
     --app-accent:var(--accent);
     --rose:var(--plum);
@@ -2477,169 +2465,13 @@
   }
   .intro-cta{flex-direction:column;align-items:center}
   .intro-cta-row{display:flex;justify-content:center;gap:.6rem;flex-wrap:wrap}
-  /* the Customize button is the special call-to-action of this slide */
-  .customize-btn{
-    align-self:center;
-    background:linear-gradient(135deg, var(--app-accent), var(--rose));
-    color:#fff;
-    border:0; font-weight:700; letter-spacing:.02em;
-    padding:.8rem 1.6rem; font-size:1rem;
-    box-shadow:0 4px 18px rgba(255,95,220,.30);
-    animation: customizePulse 2.4s ease-in-out infinite;
-  }
-  .customize-btn:hover{ filter:brightness(1.06); background:linear-gradient(135deg, var(--app-accent), var(--rose)); }
-  @media (prefers-reduced-motion: reduce){ .customize-btn{ animation:none } }
-  .customize-btn[aria-expanded="true"]{
-    animation:none;
-    background:rgba(255,95,220,.16);
-    color:var(--ink);
-    box-shadow:inset 0 0 0 1px var(--app-accent), 0 0 0 2px rgba(255,95,220,.25);
-  }
-  .customize-panel{
-    width:100%; max-width:520px;
-    margin-top:.2rem;
-    padding:1rem 1.1rem;
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-left:3px solid var(--app-accent);
-    border-radius:14px;
-    color:var(--ink-soft);
-    animation: rise .3s cubic-bezier(.2,.8,.2,1) both;
-    display:flex; flex-direction:column; gap:10px;
-    text-align:left;
-  }
-  .customize-panel[hidden]{ display:none }
-  /* Revealed info (Play-with / Certify / More info) renders as plain text —
+  /* Revealed info (More info) renders as plain text —
      no boxed border or background. */
   .intro-cta .cert-intro,
   .intro-cta .moreinfo-box{
     background:none; border:0; border-left:0; border-radius:0;
     padding:0; margin-top:.35rem;
   }
-  .cust-group{ display:flex; flex-direction:column; gap:.4rem; }
-  .cust-group.cust-row{ flex-direction:row; align-items:center; gap:.7rem; }
-  .cust-label{
-    font-size:.7rem; letter-spacing:.18em; text-transform:uppercase;
-    color:var(--ink-dim);
-  }
-  .cust-radio{
-    display:flex; align-items:flex-start; gap:.55rem;
-    cursor:pointer; padding:.3rem 0;
-    line-height:1.4;
-  }
-  .cust-radio input[type="radio"]{
-    appearance:none; -webkit-appearance:none;
-    width:1.05rem; height:1.05rem; flex-shrink:0;
-    margin-top:.15rem;
-    border-radius:50%;
-    border:1.5px solid var(--line);
-    background:var(--field);
-    cursor:pointer;
-    position:relative;
-    transition: border-color .15s, background .15s;
-  }
-  .cust-radio input[type="radio"]:checked{ border-color:var(--app-accent); }
-  .cust-radio input[type="radio"]:checked::after{
-    content:''; position:absolute;
-    inset:.18rem;
-    border-radius:50%;
-    background:linear-gradient(135deg, var(--app-accent), var(--rose));
-  }
-  .cust-radio-label{ font-size:.92rem; color:var(--ink-soft); }
-  .cust-radio-label b{ color:var(--ink); font-weight:600; }
-  .cust-radio-label em{ color:var(--app-accent-soft); font-style:normal; }
-  .cust-switch{
-    position:relative; display:inline-flex; cursor:pointer; user-select:none;
-  }
-  .cust-switch input{ position:absolute; opacity:0; width:0; height:0; }
-  .cust-switch-track{
-    width:7.2rem; height:1.95rem;
-    background:var(--field);
-    border:1px solid var(--line);
-    border-radius:999px;
-    position:relative;
-    transition: background .2s, border-color .2s;
-    display:flex; align-items:center;
-  }
-  .cust-switch-thumb{
-    position:absolute; top:50%; left:.27rem;
-    transform:translateY(-50%);
-    width:1.42rem; height:1.42rem;
-    border-radius:50%;
-    background:var(--ink-soft);
-    transition: left .25s cubic-bezier(.2,.8,.2,1), background .25s;
-    z-index:2;
-  }
-  .cust-switch-text{
-    position:absolute; top:50%; transform:translateY(-50%);
-    font: 700 .68rem/1 'Inter', system-ui, sans-serif;
-    letter-spacing:.16em;
-    pointer-events:none;
-    z-index:1;
-    transition: opacity .2s;
-  }
-  .cust-switch-on{ left:.85rem; color:var(--app-ink-on-accent); opacity:0; }
-  .cust-switch-off{ right:.85rem; color:var(--ink-dim); opacity:1; }
-  .cust-switch input:checked + .cust-switch-track{
-    background:linear-gradient(135deg, var(--app-accent), var(--rose));
-    border-color:transparent;
-  }
-  .cust-switch input:checked + .cust-switch-track .cust-switch-thumb{
-    left: calc(100% - 1.69rem); background:#fff;
-  }
-  .cust-switch input:checked + .cust-switch-track .cust-switch-on{ opacity:1; }
-  .cust-switch input:checked + .cust-switch-track .cust-switch-off{ opacity:0; }
-  .cust-certify-row{
-    flex:1; min-width: 220px; align-self: stretch;
-    padding-bottom: 1.1rem;
-    animation: rise .25s cubic-bezier(.2,.8,.2,1) both;
-  }
-  .cust-certify-row[hidden]{ display:none }
-  .cert-track{
-    position:relative;
-    display:flex; justify-content:space-between; align-items:center;
-    padding: 0 .35rem; height: 1.95rem;
-  }
-  .cert-track::before{
-    content:""; position:absolute;
-    left:.65rem; right:.65rem; top:50%;
-    height:3px; transform: translateY(-50%);
-    background: var(--field); border-radius:999px;
-  }
-  .cert-fill{
-    position:absolute; left:.65rem; top:50%;
-    height:3px; width: 0; transform: translateY(-50%);
-    background: linear-gradient(90deg, var(--app-accent), var(--rose));
-    border-radius:999px;
-    transition: width .35s cubic-bezier(.2,.8,.2,1);
-  }
-  .cert-node{
-    appearance:none; cursor:pointer;
-    position:relative; z-index:1;
-    background:transparent; border:0; padding:0;
-    display:flex; flex-direction:column; align-items:center; gap:.25rem;
-    color:var(--ink-soft); font:inherit;
-  }
-  .cert-dot{
-    width:.9rem; height:.9rem; border-radius:50%;
-    background:var(--field); border:2px solid var(--line);
-    transition: background .2s, border-color .2s, transform .15s;
-  }
-  .cert-node:hover .cert-dot{ border-color: var(--app-accent-soft); transform: scale(1.12); }
-  .cert-node.is-on .cert-dot,
-  .cert-node.is-done .cert-dot{
-    background: linear-gradient(135deg, var(--app-accent), var(--rose));
-    border-color: transparent;
-  }
-  .cert-name{
-    position:absolute; top: 1.15rem;
-    font: 600 .62rem/1 'Inter', system-ui, sans-serif;
-    letter-spacing:.1em; text-transform:uppercase;
-    color:var(--ink-dim); white-space:nowrap;
-    transition: color .15s;
-  }
-  .cert-node:hover .cert-name,
-  .cert-node.is-on .cert-name{ color: var(--ink); }
   .cert-intro{
     margin-top:.6rem; padding:.85rem 1rem;
     background:var(--panel);
@@ -2661,78 +2493,11 @@
   .cert-intro em{ color:var(--app-accent-soft); font-style:normal; }
   .cert-intro a{ color:var(--app-accent-soft); text-underline-offset:2px; }
   .moreinfo-wrap{ margin:1rem 0 .2rem; width:100%; display:flex; flex-direction:column; align-items:center; gap:.5rem; }
+  .moreinfo-wrap[hidden]{ display:none }
   .moreinfo-btn{ font-size:.85rem; padding:.4rem .9rem; }
   .moreinfo-btn[aria-expanded="true"]{ background:rgba(255,95,220,.14); border-color:var(--app-accent); }
   .moreinfo-box{ margin-top:.55rem; text-align:left; max-width:520px; }
   .moreinfo-box[hidden]{ display:none }
-  .cert-fields{
-    margin-top:.6rem;
-    display:flex; flex-direction:column; gap:10px;
-    animation: rise .3s cubic-bezier(.2,.8,.2,1) both;
-  }
-  .cert-fields[hidden]{ display:none }
-  .cert-fields .cf-label{
-    font-size:.7rem; letter-spacing:.16em; text-transform:uppercase;
-    color:var(--ink-dim); margin-bottom:-2px;
-  }
-  .cert-fields input[type="text"],
-  .cert-fields input[type="email"],
-  .cert-fields input[type="tel"]{
-    width:100%; padding:.7rem .9rem;
-    background:var(--field); border:1px solid var(--line);
-    border-radius:12px; color:var(--ink); font:inherit; font-size:.95rem;
-  }
-  .cert-fields input:focus{ outline:none; background:var(--field-focus); border-color:var(--app-accent); }
-  .cert-fields input::placeholder{ color:var(--ink-dim) }
-  .cert-fields .cf-btn{
-    align-self:flex-start; appearance:none; cursor:pointer;
-    background:rgba(255,255,255,.05); border:1px solid var(--line);
-    color:var(--ink-soft); padding:.55rem 1rem; border-radius:999px;
-    font:inherit; font-size:.88rem;
-    transition: background .15s, color .15s, border-color .15s;
-  }
-  .cert-fields .cf-btn:hover{ color:var(--ink); border-color:var(--app-accent-soft); }
-  .cert-fields .cf-row{ display:flex; gap:10px; flex-wrap:wrap; }
-  .cert-fields .cf-row input{ flex:1; min-width:140px; }
-  .cert-fields .cf-note{ font-size:.82rem; color:var(--ink-dim); font-style:italic; }
-  .cert-node[data-cert="bio"] .cert-name{ font-size:.5rem; letter-spacing:.06em; }
-  .cust-collapse-btn{
-    appearance:none; background:transparent; border:0; cursor:pointer;
-    display:inline-flex; align-items:center; gap:.4rem; align-self:flex-start;
-    font: inherit; font-size:.7rem; letter-spacing:.18em; text-transform:uppercase;
-    color:var(--ink-dim); padding:0; transition: color .15s;
-  }
-  .cust-collapse-btn::after{
-    content:'›'; font-size:1.1rem; color:var(--ink-dim);
-    transition: transform .2s ease;
-  }
-  .cust-collapse-btn:hover{ color:var(--ink-soft); }
-  .cust-collapse-btn[aria-expanded="true"]{ color:var(--ink); }
-  .cust-collapse-btn[aria-expanded="true"]::after{ transform: rotate(90deg); }
-  .cust-download{ margin: -.2rem 0 .2rem 1.6rem; animation: rise .25s cubic-bezier(.2,.8,.2,1) both; }
-  .cust-download[hidden]{ display:none }
-  .cust-download-btn{ display:inline-flex; align-items:center; gap:.4rem; text-decoration:none; }
-  .cust-lang-list{
-    list-style:none; padding:0; margin:.2rem 0 0;
-    display:flex; flex-wrap:wrap; gap:.35rem;
-  }
-  .cust-lang-list li{ display:flex; }
-  .cust-lang-list label{
-    display:inline-flex; align-items:center; gap:.45rem;
-    padding:.4rem .8rem;
-    background:rgba(255,255,255,.05);
-    border:1px solid var(--line); color:var(--ink-soft);
-    border-radius:999px; font:inherit; font-size:.88rem; cursor:pointer;
-    transition: background .15s, color .15s, border-color .15s;
-  }
-  .cust-lang-list label:hover{ color:var(--ink); border-color:var(--app-accent-soft); }
-  .cust-lang-list .lang-flag{ font-size:1.05rem; line-height:1; }
-  body:has(#ui-lang-en:checked) .cust-lang-list label[for="ui-lang-en"],
-  body:has(#ui-lang-es:checked) .cust-lang-list label[for="ui-lang-es"]{
-    background:linear-gradient(135deg, var(--app-accent), var(--rose));
-    color:#fff; border-color:transparent; font-weight:600;
-  }
-  .cust-lang-more label{ color:var(--ink-dim); border-style:dashed; }
   .newlanguage-modal{
     position:fixed; inset:0; z-index:200;
     display:none; align-items:center; justify-content:center; padding:1rem;
@@ -3826,7 +3591,6 @@ window.I18N = { lang: 'en', strings: { en: {
   "stats.additional_perspective": "Additional perspective",
   "stats.total": "total",
   "stats.intro": "Intro",
-  "stats.cust_start": "Customize → Start",
   "stats.master_mode": "Master mode",
   "mode.adventure": "Adventure Mode",
   "mode.creative": "Creative Mode",
@@ -3866,7 +3630,6 @@ window.I18N = { lang: 'en', strings: { en: {
   "spot.name_group_ph": "name this group",
   "spot.why_ph": "Write or dictate why you placed this key in this order…",
   "item.name_ph": "name it",
-  "cert.witness_email_ph": "email of a witness",
   "menu.search_label": "Search",
   "menu.go": "Go",
   "menu.about": "<span class=\"glyph\">ⓘ</span> About keys",
@@ -3883,36 +3646,14 @@ window.I18N = { lang: 'en', strings: { en: {
 
   "about.title": "About keys",
   "about.p1": "<b>keys</b> is a simple game for ordering ideas. Five triads lie face down with 3 cards in each. Flip one and order its cards however you feel they should go, and (if you wish) record a short <i>why</i> behind that order.",
-  "about.p2": "The Keys belong to you: the order you choose and the reason you give become the artifact.",
   "about.p3": "The more you tell your real views, the more you could learn about them with our tools at the end.",
 
   "intro.prev": "Previous",
   "intro.next": "Next",
   "intro.start": "Start →",
-  "intro.customize": "⚙ Customize",
   "intro.more_info": "ⓘ More info",
 
-  "cust.private": "<b>Private</b> · Play keys completely privately on your device and upload results later",
-  "cust.download": "↓ Download Keys app",
-  "cust.open": "<b>Open</b> · Play it directly here and publish it in more private or public ways at the end. <em>(Default)</em>",
-  "cust.listen": "Listen",
-  "cust.listen_toggle": "Listen toggle",
-  "cust.play_with": "Play with",
-  "cust.play_text": "Text",
-  "cust.play_audio": "Audio",
-  "cust.play_video": "Video",
-  "cust.play_perform": "Perform",
   "cust.language": "Language",
-  "lang.cust_en": "<span class=\"lang-flag\">🇬🇧</span>English",
-  "lang.cust_es": "<span class=\"lang-flag\">🇪🇸</span>Spanish",
-  "cust.lang_add_title": "Add a language",
-  "cert.trusts": "Trusts",
-  "cert.mail": "Mail",
-  "cert.telf_aria": "Phone",
-  "cert.telf": "Telf",
-  "cert.id_aria": "ID",
-  "cert.id": "Id",
-  "cert.bio": "Biometric",
 
   "lang.add_title": "Add a language",
   "lang.add_sub": "Pick a language you'd like to help bring keys into.",
@@ -3937,6 +3678,7 @@ window.I18N = { lang: 'en', strings: { en: {
   "chooser.free_desc": "Add all new words",
   "chooser.insight": "For the full experience, play Master → Free → Creative → Adventure → Normal.",
   "chooser.free_note": "Play these 3 free modes for more insights and points.",
+  "chooser.designed": "We designed keys for you to enjoy it fully, so you have to be willing to take your time in the second and third stages of the <b>Master</b> mode (the one we recommend to do first, before playing it more normally).",
 
   "prelude.primer_title": "Make the 5 groups of 3 you like best right now",
   "prelude.pool_aria": "Card pool",
@@ -4051,7 +3793,6 @@ window.I18N = { lang: 'en', strings: { en: {
   "stats.additional_perspective": "Perspectiva adicional",
   "stats.total": "total",
   "stats.intro": "Intro",
-  "stats.cust_start": "Personalizar → Empezar",
   "stats.master_mode": "Modo Maestro",
   "mode.adventure": "Modo Aventura",
   "mode.creative": "Modo Creativo",
@@ -4091,7 +3832,6 @@ window.I18N = { lang: 'en', strings: { en: {
   "spot.name_group_ph": "nombra este grupo",
   "spot.why_ph": "Escribe o dicta por qué colocaste esta clave en este orden…",
   "item.name_ph": "nómbralo",
-  "cert.witness_email_ph": "correo de un testigo",
   "menu.search_label": "Buscar",
   "menu.go": "Ir",
   "menu.about": "<span class=\"glyph\">ⓘ</span> Acerca de Claves",
@@ -4108,36 +3848,14 @@ window.I18N = { lang: 'en', strings: { en: {
 
   "about.title": "Acerca de Claves",
   "about.p1": "<b>Claves</b> es un juego sencillo para ordenar ideas. Cinco tríadas están boca abajo con 3 cartas cada una. Voltea uno y ordena sus cartas como sientas que deben ir y (si quieres) anota un breve <i>porqué</i> detrás de ese orden.",
-  "about.p2": "Las Claves te pertenecen: el orden que eliges y la razón que das se convierten en el artefacto.",
   "about.p3": "Cuanto más cuentes tu visión real, más podrás aprender sobre ella con nuestras herramientas al final.",
 
   "intro.prev": "Anterior",
   "intro.next": "Siguiente",
   "intro.start": "Empezar →",
-  "intro.customize": "⚙ Personalizar",
   "intro.more_info": "ⓘ Más información",
 
-  "cust.private": "<b>Privado</b> · Juega a Claves de forma totalmente privada en tu dispositivo y sube los resultados más tarde",
-  "cust.download": "↓ Descargar la app Claves",
-  "cust.open": "<b>Abierto</b> · Juega directamente aquí y publícalo de formas más privadas o públicas al final. <em>(Por defecto)</em>",
-  "cust.listen": "Escuchar",
-  "cust.listen_toggle": "Interruptor de escucha",
-  "cust.play_with": "Jugar con",
-  "cust.play_text": "Texto",
-  "cust.play_audio": "Audio",
-  "cust.play_video": "Vídeo",
-  "cust.play_perform": "Actuar",
   "cust.language": "Idioma",
-  "lang.cust_en": "<span class=\"lang-flag\">🇬🇧</span>English",
-  "lang.cust_es": "<span class=\"lang-flag\">🇪🇸</span>Español",
-  "cust.lang_add_title": "Añadir un idioma",
-  "cert.trusts": "Confianzas",
-  "cert.mail": "Correo",
-  "cert.telf_aria": "Teléfono",
-  "cert.telf": "Telf",
-  "cert.id_aria": "ID",
-  "cert.id": "Id",
-  "cert.bio": "Biométrico",
 
   "lang.add_title": "Añadir un idioma",
   "lang.add_sub": "Elige un idioma al que te gustaría ayudar a traer Claves.",
@@ -4162,6 +3880,7 @@ window.I18N = { lang: 'en', strings: { en: {
   "chooser.free_desc": "Añade todas las palabras nuevas",
   "chooser.insight": "Para la experiencia completa, juega Maestro → Libre → Creativo → Aventura → Normal.",
   "chooser.free_note": "Juega estos 3 modos libres para más ideas y puntos.",
+  "chooser.designed": "Diseñamos Claves para que las disfrutes plenamente, así que has de estar dispuesto a tomarte tu tiempo en la segunda y la tercera etapa del modo <b>Maestro</b> (el que recomendamos hacer primero, antes de jugarlo de forma más normal).",
 
   "prelude.primer_title": "Haz los 5 grupos de 3 que más te gusten ahora mismo",
   "prelude.pool_aria": "Conjunto de cartas",
@@ -4327,23 +4046,6 @@ window.tKey = function tKey(k){
       <span class="brand-text" data-i18n="brand.name">Keys</span>
     </button>
 
-    <!-- Language picker — the single language control, fixed in the topbar right
-         after the title. 🌐 opens a dropdown of available languages (the active
-         one is marked); picking one live-switches the whole UI via setLang(). The
-         hidden ui-lang radios + new-language modal remain the underlying engine. -->
-    <div class="topbar-lang" id="topbarLang">
-      <button type="button" class="topbar-lang-btn" id="topbarLangBtn"
-              aria-haspopup="true" aria-expanded="false" aria-controls="topbarLangMenu"
-              aria-label="Language" data-i18n-attr="aria-label:cust.language">
-        <span class="glyph" aria-hidden="true">🌐</span>
-      </button>
-      <ul class="topbar-lang-menu" id="topbarLangMenu" role="menu" aria-label="Language" hidden>
-        <li><label for="ui-lang-en" tabindex="0" role="menuitemradio" data-i18n-html="lang.menu_en"><span class="lang-flag">🇬🇧</span>English</label></li>
-        <li><label for="ui-lang-es" tabindex="0" role="menuitemradio" data-i18n-html="lang.menu_es"><span class="lang-flag">🇪🇸</span>Español</label></li>
-        <li class="topbar-lang-more"><label for="new-language-modal" tabindex="0" role="menuitem" data-i18n-html="lang.add"><span class="lang-flag">＋</span>Add a language</label></li>
-      </ul>
-    </div>
-
     <!-- Single merged stage-progress bar — lives in the topbar (centred). It
          tracks stage progress while playing and the dynamic Analyze labels in
          the summary. -->
@@ -4370,6 +4072,25 @@ window.tKey = function tKey(k){
           <button class="menu-item" id="menuAboutBtn" type="button" role="menuitem" data-i18n-html="menu.about">
             <span class="glyph">ⓘ</span> About keys
           </button>
+        </li>
+
+        <!-- Worldball language picker — the single language control. 🌐 unfolds
+             the available languages inline (the active one is marked); picking
+             one live-switches the whole UI via setLang(). The hidden ui-lang
+             radios + new-language modal remain the underlying engine. -->
+        <li class="menu-lang-row">
+          <div class="topbar-lang" id="topbarLang">
+            <button type="button" class="topbar-lang-btn" id="topbarLangBtn"
+                    aria-haspopup="true" aria-expanded="false" aria-controls="topbarLangMenu"
+                    aria-label="Language" data-i18n-attr="aria-label:cust.language">
+              <span class="glyph" aria-hidden="true">🌐</span>
+            </button>
+            <ul class="topbar-lang-menu" id="topbarLangMenu" role="menu" aria-label="Language" hidden>
+              <li><label for="ui-lang-en" tabindex="0" role="menuitemradio" data-i18n-html="lang.menu_en"><span class="lang-flag">🇬🇧</span>English</label></li>
+              <li><label for="ui-lang-es" tabindex="0" role="menuitemradio" data-i18n-html="lang.menu_es"><span class="lang-flag">🇪🇸</span>Español</label></li>
+              <li class="topbar-lang-more"><label for="new-language-modal" tabindex="0" role="menuitem" data-i18n-html="lang.add"><span class="lang-flag">＋</span>Add a language</label></li>
+            </ul>
+          </div>
         </li>
 
         <li class="menu-divider" role="separator" aria-hidden="true"></li>
@@ -4403,7 +4124,6 @@ window.tKey = function tKey(k){
   <div class="about-inline-inner">
     <h3 data-i18n="about.title">About keys</h3>
     <p data-i18n-html="about.p1"><b>keys</b> is a simple game for ordering ideas. Five triads lie face down with 3 cards in each. Flip one and order its cards however you feel they should go, and (if you wish) record a short <i>why</i> behind that order.</p>
-    <p data-i18n="about.p2">The Keys belong to you: the order you choose and the reason you give become the artifact.</p>
     <p data-i18n="about.p3">The more you tell your real views, the more you could learn about them with our tools at the end.</p>
   </div>
 </div>
@@ -4414,7 +4134,6 @@ window.tKey = function tKey(k){
     <section class="about-panel" id="about-panel" aria-label="About keys">
       <h3 id="about-title" data-i18n="about.title">About keys</h3>
       <p data-i18n-html="about.p1"><b>keys</b> is a simple game for ordering ideas. Five triads lie face down with 3 cards in each. Flip one and order its cards however you feel they should go, and (if you wish) record a short <i>why</i> behind that order.</p>
-      <p data-i18n="about.p2">The Keys belong to you: the order you choose and the reason you give become the artifact.</p>
       <p data-i18n="about.p3">The more you tell your real views, the more you could learn about them with our tools at the end.</p>
       <div class="close-row">
         <button class="btn btn-ghost" id="about-close" type="button" data-i18n="common.close">Close</button>
@@ -4432,74 +4151,22 @@ window.tKey = function tKey(k){
       <button class="btn btn-primary intro-start-arrow" id="intro-start" type="button" hidden data-i18n="intro.start">Start →</button>
     </div>
     <div class="intro-dots" id="intro-dots" role="tablist" aria-label="Slides"></div>
-    <button class="btn btn-soft intro-seemore" id="intro-seemore" type="button" aria-controls="intro-chips" data-i18n="common.see_more">See more</button>
+    <!-- CTA row: "See more" (chips) on slide 3, "More info" on the last slide. -->
     <div class="intro-cta gated" id="intro-cta">
       <div class="intro-cta-row">
-        <button class="btn customize-btn" id="customizeBtn" type="button" aria-expanded="false" aria-controls="customizePanel" data-i18n="intro.customize">⚙ Customize</button>
+        <button class="btn btn-soft intro-seemore" id="intro-seemore" type="button" aria-controls="intro-chips" data-i18n="common.see_more">See more</button>
         <div class="moreinfo-wrap">
           <button class="btn btn-soft moreinfo-btn" id="intro-more" type="button" aria-expanded="false" aria-controls="intro-more-box" data-i18n="intro.more_info">ⓘ More info</button>
           <div class="moreinfo-box cert-intro" id="intro-more-box" hidden></div>
         </div>
       </div>
-      <div class="customize-panel" id="customizePanel" hidden>
-        <!-- hidden language radios drive the CSS-only selected state -->
-        <input type="radio" name="uiLang" id="ui-lang-en" checked hidden>
-        <input type="radio" name="uiLang" id="ui-lang-es" hidden>
-        <div class="cust-group">
-          <label class="cust-radio">
-            <input type="radio" name="custMode" value="private">
-            <span class="cust-radio-label" data-i18n-html="cust.private"><b>Private</b> · Play keys completely privately on your device and upload results later</span>
-          </label>
-          <div class="cust-download" id="custDownload" hidden>
-            <a class="btn btn-primary cust-download-btn" id="custDownloadBtn" href="keys-advanced.html" download="keys-advanced.html" data-i18n="cust.download">↓ Download Keys app</a>
-          </div>
-          <label class="cust-radio">
-            <input type="radio" name="custMode" value="open" checked>
-            <span class="cust-radio-label" data-i18n-html="cust.open"><b>Open</b> · Play it directly here and publish it in more private or public ways at the end. <em>(Default)</em></span>
-          </label>
-        </div>
-        <div class="cust-group cust-row">
-          <span class="cust-label" data-i18n="cust.listen">Listen</span>
-          <label class="cust-switch" aria-label="Listen toggle" data-i18n-attr="aria-label:cust.listen_toggle">
-            <input type="checkbox" id="custListen">
-            <span class="cust-switch-track">
-              <span class="cust-switch-text cust-switch-on" data-i18n="common.on">ON</span>
-              <span class="cust-switch-text cust-switch-off" data-i18n="common.off">OFF</span>
-              <span class="cust-switch-thumb"></span>
-            </span>
-          </label>
-        </div>
-        <div class="cust-group">
-          <div class="cust-label" data-i18n="cust.play_with">Play with</div>
-          <div class="cust-certify-row" id="custPlayRow">
-            <div class="cert-track" role="progressbar" aria-valuemin="0" aria-valuemax="4" aria-valuenow="1" id="playTrack">
-              <div class="cert-fill" id="playFill"></div>
-              <button type="button" class="cert-node play-node is-on" data-play="text"    aria-label="Text" data-i18n-attr="aria-label:cust.play_text"><span class="cert-dot"></span><span class="cert-name" data-i18n="cust.play_text">Text</span></button>
-              <button type="button" class="cert-node play-node"       data-play="audio"   aria-label="Audio" data-i18n-attr="aria-label:cust.play_audio"><span class="cert-dot"></span><span class="cert-name" data-i18n="cust.play_audio">Audio</span></button>
-              <button type="button" class="cert-node play-node"       data-play="video"   aria-label="Video" data-i18n-attr="aria-label:cust.play_video"><span class="cert-dot"></span><span class="cert-name" data-i18n="cust.play_video">Video</span></button>
-              <button type="button" class="cert-node play-node"       data-play="perform" aria-label="Perform" data-i18n-attr="aria-label:cust.play_perform"><span class="cert-dot"></span><span class="cert-name" data-i18n="cust.play_perform">Perform</span></button>
-            </div>
-          </div>
-          <div class="cert-intro" id="custPlayIntro" hidden></div>
-        </div>
-        <div class="cust-group">
-          <div class="cust-certify-row" id="custCertifyRow">
-            <div class="cert-track" role="progressbar" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0" id="certTrack">
-              <div class="cert-fill" id="certFill"></div>
-              <button type="button" class="cert-node" data-cert="trusts" aria-label="Trusts" data-i18n-attr="aria-label:cert.trusts"><span class="cert-dot"></span><span class="cert-name" data-i18n="cert.trusts">Trusts</span></button>
-              <button type="button" class="cert-node" data-cert="mail"   aria-label="Mail" data-i18n-attr="aria-label:cert.mail"><span class="cert-dot"></span><span class="cert-name" data-i18n="cert.mail">Mail</span></button>
-              <button type="button" class="cert-node" data-cert="telf"   aria-label="Phone" data-i18n-attr="aria-label:cert.telf_aria"><span class="cert-dot"></span><span class="cert-name" data-i18n="cert.telf">Telf</span></button>
-              <button type="button" class="cert-node" data-cert="id"     aria-label="ID" data-i18n-attr="aria-label:cert.id_aria"><span class="cert-dot"></span><span class="cert-name" data-i18n="cert.id">Id</span></button>
-              <button type="button" class="cert-node" data-cert="bio"    aria-label="Biometric" data-i18n-attr="aria-label:cert.bio"><span class="cert-dot"></span><span class="cert-name" data-i18n="cert.bio">Biometric</span></button>
-            </div>
-          </div>
-          <div class="cert-intro" id="custCertGeneral" hidden></div>
-          <div class="cert-intro" id="custCertIntro" hidden></div>
-          <div class="cert-fields" id="custCertFields" hidden></div>
-        </div>
-      </div>
     </div>
   </section>
+
+  <!-- Hidden language radios — the underlying engine of the worldball picker
+       (the menu labels flip them; CSS :has() marks the active language). -->
+  <input type="radio" name="uiLang" id="ui-lang-en" checked hidden>
+  <input type="radio" name="uiLang" id="ui-lang-es" hidden>
 
   <!-- New-language modal (pure-CSS toggle via the hidden checkbox) -->
   <input type="checkbox" id="new-language-modal" hidden>
@@ -4577,6 +4244,7 @@ window.tKey = function tKey(k){
     <div class="chooser-insights" id="chooser-insights" hidden>
       <p class="opt-insight" data-i18n="chooser.insight">For the full experience, play Master → Free → Creative → Adventure → Normal.</p>
       <p class="chooser-free-note" data-i18n="chooser.free_note">Play these 3 free modes for more insights and points.</p>
+      <p class="chooser-designed" data-i18n-html="chooser.designed">We designed keys for you to enjoy it fully, so you have to be willing to take your time in the second and third stages of the <b>Master</b> mode (the one we recommend to do first, before playing it more normally).</p>
     </div>
   </section>
 
@@ -6501,7 +6169,6 @@ window.tKey = function tKey(k){
     // One merged, title-less nested list (Analysis + By-section merged).
     let mergedList = '';
     if (introMs)         mergedList += node(tKey('stats.intro'), introMs, 0);
-    if (custMs)          mergedList += node(tKey('stats.cust_start'), custMs, 1);
     // Master mode groups its first two parts (Free triads, Create triads) under a title.
     if (currentModeName() === 'Master'){
       // Master-mode total time (primer + create) shown first, with the parts nested.
@@ -6762,13 +6429,13 @@ window.tKey = function tKey(k){
     en: [
       { t:'Joy and calm come…', b:'…when we clarify how we view the Whole' },
       { t:'Some keywords feel like a whole…', b:'Play the flove ones here…' },
-      { t:'Flove Keys are well-known words…', b:'…in triads you rank up and down' },
+      { t:'Flove Keys are well-known words…', b:'…that you rank up and down in triads' },
       { t:'Get ready for a thrilling experience',     b:'…sharing it with others makes it even more special.' },
     ],
     es: [
       { t:'La alegría y la calma llegan…', b:'…cuando aclaramos cómo vemos el Todo' },
       { t:'Algunas palabras clave se sienten como un todo…', b:'Juega aquí con las de flove…' },
-      { t:'Las Claves de Flove son palabras conocidas…', b:'…en tríadas que ordenas arriba y abajo' },
+      { t:'Las Claves de Flove son palabras conocidas…', b:'…que ordenas arriba y abajo en tríadas' },
       { t:'Prepárate para una experiencia apasionante', b:'…compartirla con otros la hace aún más especial.' },
     ],
   };
@@ -6798,11 +6465,10 @@ window.tKey = function tKey(k){
     applyTriadLang(L);
     INTRO_SLIDES = INTRO_SLIDES_I18N[L];
     // sync controls
-    // Flip the hidden radio that drives the active-language marker (the topbar
-    // picker reflects it via CSS :has()).
+    // Flip the hidden radio that drives the active-language marker (the
+    // worldball picker reflects it via CSS :has()).
     const radio = document.getElementById(L === 'es' ? 'ui-lang-es' : 'ui-lang-en');
     if (radio && !radio.checked) radio.checked = true;
-    if (typeof cust === 'object' && cust) cust.lang = L;
     // re-render the visible view (best-effort, never throw)
     try {
       const summaryEl = document.getElementById('summary');
@@ -6832,8 +6498,8 @@ window.tKey = function tKey(k){
     const $track = document.getElementById('intro-track');
     const $dots  = document.getElementById('intro-dots');
     $track.innerHTML = ''; $dots.innerHTML = '';
-    // The language switcher now lives only in the topbar (the world icon after
-    // the title), so the first slide shows just the Keys logo.
+    // The language switcher now lives only in the menu (the worldball below
+    // About keys), so the first slide shows just the Keys logo.
     INTRO_SLIDES.forEach((s, i) => {
       const slide = document.createElement('div');
       slide.className = 'intro-slide';
@@ -7121,16 +6787,14 @@ window.tKey = function tKey(k){
   const slideMood = () => SLIDE_MOODS[introSlide] || 'pensativo';
   let idleStep = 0;
   let idleTimer = null;
-  let custOpen = false;        // customize panel open → panda stays preocupado
   function idleAdvance(){
-    if (custOpen || $intro.classList.contains('hidden')) return;   // only while the intro shows
+    if ($intro.classList.contains('hidden')) return;   // only while the intro shows
     const cur = IDLE_SEQ[idleStep % IDLE_SEQ.length];
     setPandaEmotion(cur.mood);
     idleStep++;
     idleTimer = setTimeout(idleAdvance, cur.ms);
   }
   function resetIdle(){
-    if (custOpen) return;      // keep preocupado while customizing
     clearTimeout(idleTimer);
     if (idleStep > 0){ idleStep = 0; setPandaEmotion(slideMood()); }
     idleTimer = setTimeout(idleAdvance, 10000);
@@ -7173,22 +6837,26 @@ window.tKey = function tKey(k){
     const $dots = document.getElementById('intro-dots');
     Array.from($dots.children).forEach((d, i) => d.classList.toggle('active', i === introSlide));
     document.getElementById('intro-prev').disabled = introSlide === 0;
-    // Each slide gets its own panda mood (unless an idle/customize mood shows)
-    if (!custOpen && idleStep === 0) setPandaEmotion(slideMood());
-    // On the last slide the Start button substitutes the → arrow; CTA (Customize
-    // + More info) also appears there.
+    // Each slide gets its own panda mood (unless an idle mood shows)
+    if (idleStep === 0) setPandaEmotion(slideMood());
+    // On the last slide the Start button substitutes the → arrow. The CTA row
+    // shows "See more" on slide 3 and "More info" on the last slide.
     const reachedLast = introSlide >= INTRO_SLIDES.length - 1;
+    const seeMoreIdx  = INTRO_SLIDES.length - 2;
     const $next = document.getElementById('intro-next');     // → on every slide but the last
     const $start = document.getElementById('intro-start');   // Start replaces → on the last slide
     if ($next)  $next.hidden  = reachedLast;
     if ($start) $start.hidden = !reachedLast;
-    document.getElementById('intro-cta').classList.toggle('gated', !reachedLast);
+    document.getElementById('intro-cta').classList.toggle('gated', !(introSlide === seeMoreIdx || reachedLast));
+    const $sm = document.getElementById('intro-seemore');
+    if ($sm) $sm.hidden = introSlide !== seeMoreIdx;
+    const $mw = document.querySelector('.moreinfo-wrap');
+    if ($mw) $mw.hidden = !reachedLast;
     if (typeof refreshSeeMore === 'function') refreshSeeMore();
   }
 
   function dismissIntro(){
     if (introStart && !introMs) introMs = Date.now() - introStart;   // freeze intro time
-    if (custT0 != null && !custMs) custMs = Date.now() - custT0;      // Customize→Start
     state.introActive = false;
     setUIMode('chooser');
   }
@@ -7216,22 +6884,17 @@ window.tKey = function tKey(k){
   document.getElementById('intro-start').addEventListener('click', () => dismissIntro());
   document.getElementById('about-close').addEventListener('click', () => setAboutOpen(false));
 
-  // ── "See more" button (per slide) + floating chips + click-to-advance ──
+  // ── "See more" button (slide 3's CTA) + floating chips + click-to-advance ──
   const $seeMore = document.getElementById('intro-seemore');
   const $chips   = document.getElementById('intro-chips');
-  let seeMoreTimer = null, seeMoreSlide = -1, chipClicks = 0, chipShown = 0;
-  // On each new slide: hide the button + clear chips, then 5s later fade it in
-  // over 3s (CSS transition). Reduced motion shows it at once, no delay.
+  let seeMoreSlide = -1, chipClicks = 0, chipShown = 0;
+  // On each slide change: clear the previous slide's chips and restart the
+  // two-at-a-time pop loop (visibility is handled by updateIntroUI).
   function refreshSeeMore(){
     if (!$seeMore || seeMoreSlide === introSlide) return;
     seeMoreSlide = introSlide;
     chipShown = 0;                    // restart the two-at-a-time loop for the new slide
     stopChipBounce();                 // clear the previous slide's bouncing chips
-    clearTimeout(seeMoreTimer);
-    $seeMore.classList.remove('show');
-    if (introSlide >= INTRO_SLIDES.length - 1) return;   // no "See more" on the last slide
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches){ $seeMore.classList.add('show'); return; }
-    seeMoreTimer = setTimeout(() => $seeMore.classList.add('show'), 5000);
   }
   // Bouncing chips live in a fixed, full-viewport layer so they roam the whole
   // screen, reflecting off its edges (never cut off). One rAF loop drives them.
@@ -7311,68 +6974,15 @@ window.tKey = function tKey(k){
     if (introSlide < INTRO_SLIDES.length - 1) gotoSlide(introSlide + 1);
   });
 
-  // ── Customize panel + inline "More info" (ported from souls · last slide) ──
-  (function wireCustomize(){
+  // ── Language radios + inline "More info" ──
+  (function wireIntroExtras(){
     const $ = (sel) => document.querySelector(sel);
-    // Local, non-persisted state (keys has no persistence layer like souls).
-    const cust = { mode:'open', tell:'text', certNode:null, listen:false, lang:'en' };
-    // Tiny TTS so the Listen switch does something self-contained.
-    const speakIfListening = (text) => {
-      if (!cust.listen || !('speechSynthesis' in window)) return;
-      try {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(String(text).replace(/<[^>]+>/g,''));
-        u.lang = cust.lang === 'es' ? 'es-ES' : 'en-GB';
-        window.speechSynthesis.speak(u);
-      } catch (_) {}
-    };
-    const stopSpeak = () => { if ('speechSynthesis' in window) try { window.speechSynthesis.cancel(); } catch(_){} };
 
-    const btn   = $('#customizeBtn');
-    const panel = $('#customizePanel');
-    if (btn && panel){
-      btn.addEventListener('click', () => {
-        if (custT0 == null) custT0 = Date.now();   // start the Customize→Start clock
-        const open = panel.hidden;
-        const p = document.getElementById('intro-panda');
-        // Freeze the panda at its current spot BEFORE the panel expands, so the
-        // growing panel can't push it down.
-        if (open && p){ p.style.top = p.offsetTop + 'px'; p.style.bottom = 'auto'; }
-        panel.hidden = !open;
-        btn.setAttribute('aria-expanded', String(open));
-        if (open){
-          syncPlayFill();
-          custOpen = true; clearTimeout(idleTimer); idleStep = 0;
-          setPandaEmotion('pensativo');           // thoughtful while customizing
-        } else {
-          custOpen = false; setPandaEmotion(slideMood()); resetIdle();
-          if (p){ p.style.top = ''; p.style.bottom = ''; }   // back to bottom-anchored
-        }
-      });
-    }
-
-    // mode radios → cust.mode; Private reveals the download button
-    const dl = $('#custDownload');
-    const refreshDl = () => { if (dl) dl.hidden = cust.mode !== 'private'; };
-    document.querySelectorAll('input[name="custMode"]').forEach(r => {
-      r.addEventListener('change', () => { if (r.checked){ cust.mode = r.value; refreshDl(); } });
-    });
-    refreshDl();
-
-    // listen switch → speech flag (speaks the next revealed info box)
-    const listen = $('#custListen');
-    if (listen) listen.addEventListener('change', () => {
-      cust.listen = listen.checked;
-      if (!cust.listen) stopSpeak();
-    });
-
-    // language radios → cust.lang (CSS handles the selected chip styling)
+    // language radios → live-switch the whole UI (CSS marks the active label)
     document.querySelectorAll('input[name="uiLang"]').forEach(r => {
       r.addEventListener('change', () => {
         if (!r.checked) return;
-        const L = r.id === 'ui-lang-es' ? 'es' : 'en';
-        cust.lang = L;
-        setLang(L);   // live-switch the whole UI to the picked language
+        setLang(r.id === 'ui-lang-es' ? 'es' : 'en');
       });
     });
     // new-language modal: any choice just acknowledges + closes the modal
@@ -7383,130 +6993,6 @@ window.tKey = function tKey(k){
       });
     });
 
-    // shared helpers for the two progress-bar pickers (Play with + Certify play)
-    const renderIntro = (el, info) => {
-      if (!el || !info) return;
-      el.hidden = false;
-      el.innerHTML = `<h4>${info.h}</h4>` + info.body.map(p => `<p>${p}</p>`).join('');
-      speakIfListening([info.h, ...info.body].join('. '));
-    };
-    const setFill = (fillEl, trackEl, node, nodes) => {
-      if (!fillEl || !trackEl || !node) return;
-      const trackW = trackEl.clientWidth - 2 * 0.65 * 16; // minus .65rem padding each side
-      const nodeCenter = node.offsetLeft + node.offsetWidth/2 - 0.65 * 16;
-      const pct = trackW > 0 ? Math.max(0, Math.min(1, nodeCenter / trackW)) : 0;
-      fillEl.style.width = (pct * 100) + '%';
-      trackEl.setAttribute('aria-valuenow', String(nodes.indexOf(node) + 1));
-    };
-
-    // ── "Play with" progress bar → cust.tell, info box per node ──
-    const playRow   = $('#custPlayRow');
-    const playIntro = $('#custPlayIntro');
-    const playNodes = playRow ? [...playRow.querySelectorAll('.cert-node')] : [];
-    const playFill  = $('#playFill');
-    const playTrack = $('#playTrack');
-    const PLAY_INFO = {
-      text:    { h:'✎ Text · write it',
-                 body:['Tell your keys in writing — type freely at each step. The calmest, most private way to play.'] },
-      audio:   { h:'🎙 Audio · speak it',
-                 body:['Record your voice at each step instead of typing. Your tone carries what words alone can\'t.'] },
-      video:   { h:'🎬 Video · film it',
-                 body:['Capture yourself on camera at each step — face, gesture, surroundings. The fullest portrait.'] },
-      perform: { h:'✺ Perform · act it out',
-                 body:['Play it live, as a performance — alone or with others. The most embodied, ephemeral way to tell your keys.'] }
-    };
-    playNodes.forEach(n => {
-      n.addEventListener('click', () => {
-        playNodes.forEach(o => o.classList.toggle('is-on', o === n));
-        setFill(playFill, playTrack, n, playNodes);
-        cust.tell = n.dataset.play;
-        renderIntro(playIntro, PLAY_INFO[n.dataset.play]);
-      });
-    });
-    function syncPlayFill(){
-      const sel = playNodes.find(n => n.classList.contains('is-on')) || playNodes[0];
-      setFill(playFill, playTrack, sel, playNodes);
-    }
-
-    // ── "Certify play" — collapsible; general info on expand, node info on pick ──
-    const certToggle  = $('#custCertifyToggle');
-    const certRow     = $('#custCertifyRow');
-    const certGeneral = $('#custCertGeneral');
-    const certIntro   = $('#custCertIntro');
-    const certNodes   = certRow ? [...certRow.querySelectorAll('.cert-node')] : [];
-    const certFill    = $('#certFill');
-    const certTrack   = $('#certTrack');
-    const certFields  = $('#custCertFields');
-    const CERT_GENERAL = { h:'✦ Authenticate · optional proof you\'re a real person',
-      body:['Authenticating is optional.',
-            'Pick a step to see how it works. <em>Nothing leaves your device unless you choose it.</em>'] };
-    const CERT_INFO = {
-      trusts: { h:'✦ Trusts · vouching ring',
-        body:['Ask a few people who already know you to vouch for you here — a ring of witnesses. <em>No documents, no codes.</em> Just a thread of trust between people.',
-              'You hold the ring. You can untie it anytime.'] },
-      mail:   { h:'✉ Mail · single email',
-        body:['Type a working email. We send a one-time code; you type it back here.',
-              '<em>Nothing is stored beyond the moment of verifying.</em>'] },
-      telf:   { h:'☎ Telf · phone SMS',
-        body:['Type your phone number. A short SMS code arrives; you confirm it.'] },
-      id:     { h:'🪪 Id · signature or card check',
-        body:['Prove who you are by signing an official paper, or with a <em>void payment</em> — a tiny card charge that is refunded at once and never collected.',
-              'Only a yes/no proof is kept; no document or card number is stored.'] },
-      bio:    { h:'🖐 Biometric · a body signature',
-        body:['Confirm with a biometric trait — a fingerprint, your face, the iris, or a voiceprint. The reading is matched <em>on your device</em>; the raw biometric never leaves it.',
-              'Only a pass/fail proof is kept. The most personal layer — and entirely optional.'] }
-    };
-    const CERT_FIELDS = {
-      trusts: ['<div class="cf-label">Invite people who can vouch for you</div>',
-               '<input type="email" placeholder="email of a witness" data-i18n-attr="placeholder:cert.witness_email_ph">',
-               '<input type="email" placeholder="email of another witness">',
-               '<input type="email" placeholder="email of another witness">',
-               '<button type="button" class="cf-btn">Send invitations</button>'],
-      mail:   ['<div class="cf-label">Your email</div>',
-               '<div class="cf-row"><input type="email" placeholder="you@example.com"><button type="button" class="cf-btn">Send code</button></div>',
-               '<input type="text" inputmode="numeric" placeholder="6-digit code">'],
-      telf:   ['<div class="cf-label">Your phone</div>',
-               '<div class="cf-row"><input type="tel" placeholder="+34 600 000 000"><button type="button" class="cf-btn">Send SMS</button></div>',
-               '<input type="text" inputmode="numeric" placeholder="SMS code">'],
-      id:     ['<div class="cf-label">Sign an official paper</div>',
-               '<button type="button" class="cf-btn">Open document to sign</button>',
-               '<div class="cf-label">…or a void card payment</div>',
-               '<div class="cf-row"><input type="text" inputmode="numeric" placeholder="card number"><button type="button" class="cf-btn">Verify with void payment</button></div>',
-               '<div class="cf-note">The charge is refunded immediately — nothing is collected or stored.</div>'],
-      bio:    ['<div class="cf-label">Biometric trait</div>',
-               '<div class="cf-row"><button type="button" class="cf-btn">Scan fingerprint</button><button type="button" class="cf-btn">Scan face</button></div>',
-               '<div class="cf-note">Matched locally — the raw biometric never leaves your device.</div>']
-    };
-    const renderCertFields = (key) => {
-      if (!certFields) return;
-      const f = CERT_FIELDS[key];
-      if (!f){ certFields.hidden = true; certFields.innerHTML = ''; return; }
-      certFields.hidden = false;
-      certFields.innerHTML = f.join('');
-    };
-    if (certToggle && certRow) certToggle.addEventListener('click', () => {
-      const open = certRow.hidden;
-      certRow.hidden = !open;
-      certToggle.setAttribute('aria-expanded', String(open));
-      if (open){
-        if (!certNodes.some(n => n.classList.contains('is-on'))) renderIntro(certGeneral, CERT_GENERAL);
-      } else {
-        if (certGeneral) certGeneral.hidden = true;
-        if (certIntro) certIntro.hidden = true;
-        if (certFields){ certFields.hidden = true; certFields.innerHTML = ''; }
-      }
-    });
-    certNodes.forEach(n => {
-      n.addEventListener('click', () => {
-        certNodes.forEach(o => o.classList.toggle('is-on', o === n));
-        setFill(certFill, certTrack, n, certNodes);
-        cust.certNode = n.dataset.cert;
-        if (certGeneral) certGeneral.hidden = true;
-        renderIntro(certIntro, CERT_INFO[n.dataset.cert]);
-        renderCertFields(n.dataset.cert);
-      });
-    });
-
     // ── inline "More info": the about copy, revealed below (no modal) ──
     // Bilingual: the box follows the active UI language and re-renders live when
     // the worldball switches it (via window.renderMoreInfo, called from setLang).
@@ -7514,15 +7000,11 @@ window.tKey = function tKey(k){
     const moreBox = $('#intro-more-box');
     const ABOUT = {
       en: { h:'ⓘ About keys',
-        body:['<b>keys</b> is a simple game for ordering ideas. You flip one, order its cards however you feel they should go, and (if you wish) record a short <em>why</em> behind that order.',
-              'The Keys belong to you: the order you choose and the reason you give become the artifact.',
-              'The more you tell your real views, the more you could learn about them with our tools at the end.',
-              'We designed it for you to enjoy it fully, so you have to be willing to take your time in the second and third stages of the <b>Master</b> mode (the one we recommend to do first, before playing it more normally).'] },
+        body:['<b>keys</b> is a simple game for ordering ideas. You flip one "deck", order its cards however you feel they should go, and (if you wish) record a short <em>why</em> behind that order.',
+              'The more you tell your real views, the more you could learn about them with our tools at the end.'] },
       es: { h:'ⓘ Acerca de Claves',
-        body:['<b>Claves</b> es un juego sencillo para ordenar ideas. Volteas uno, ordenas sus cartas como sientas que deben ir y (si quieres) anotas un breve <em>porqué</em> detrás de ese orden.',
-              'Las Claves te pertenecen: el orden que eliges y la razón que das se convierten en el artefacto.',
-              'Cuanto más cuentes tu visión real, más podrás aprender sobre ella con nuestras herramientas al final.',
-              'Lo diseñamos para que lo disfrutes plenamente, así que has de estar dispuesto a tomarte tu tiempo en la segunda y la tercera etapa del modo <b>Maestro</b> (el que recomendamos hacer primero, antes de jugarlo de forma más normal).'] }
+        body:['<b>Claves</b> es un juego sencillo para ordenar ideas. Volteas un "mazo", ordenas sus cartas como sientas que deben ir y (si quieres) anotas un breve <em>porqué</em> detrás de ese orden.',
+              'Cuanto más cuentes tu visión real, más podrás aprender sobre ella con nuestras herramientas al final.'] }
     };
     const aboutCopy = () => ABOUT[(window.I18N && window.I18N.lang === 'es') ? 'es' : 'en'];
     if (moreBtn && moreBox){
@@ -7538,13 +7020,7 @@ window.tKey = function tKey(k){
         moreBtn.setAttribute('aria-expanded', String(open));
         const ip = document.getElementById('intro-panda');   // hide the (celebrating) panda
         if (ip) ip.style.display = open ? 'none' : '';
-        if (open){
-          build();   // rebuild each open so it always matches the current language
-          const a = aboutCopy();
-          speakIfListening([a.h, ...a.body].join('. '));
-        } else {
-          stopSpeak();
-        }
+        if (open) build();   // rebuild each open so it always matches the current language
       });
     }
   })();
@@ -7640,10 +7116,11 @@ window.tKey = function tKey(k){
       });
     }
 
-    // Topbar language picker (the single language control, after the title). The
-    // 🌐 button toggles the dropdown; the labels flip the hidden uiLang radios —
-    // whose change listener live-switches the UI via setLang — and the active
-    // language is marked via CSS :has(). Selecting any item closes the dropdown.
+    // Worldball language picker (the single language control, in the menu below
+    // About keys). The 🌐 button unfolds the languages inline; the labels flip
+    // the hidden uiLang radios — whose change listener live-switches the UI via
+    // setLang — and the active language is marked via CSS :has(). Selecting any
+    // item folds the list again.
     const langBtn  = document.getElementById('topbarLangBtn');
     const langMenu = document.getElementById('topbarLangMenu');
     if (langBtn && langMenu){
@@ -9852,10 +9329,10 @@ window.tKey = function tKey(k){
   let secondPlayStart = null, secondPlayMs = 0;   // new-perspective timing
   let seeResultsAt = null, analysisMs = 0;        // time from See results → Summary-More
   let introStart = null, introMs = 0;             // time spent in the intro (timer hidden there)
-  let custT0 = null, custMs = 0;                   // first Customize click → Start click
 
-  // Per-slide "See more" chip texts. Slides 0–2 are plain chips; the last slide
-  // is a set of link-boxes pointing at lighter apps to play less seriously.
+  // Per-slide "See more" chip texts. The button now lives in the CTA row and
+  // only shows on slide 3, so only that set is reachable (the earlier sets are
+  // kept in case the button returns to those slides).
   const CHIP_SETS = [
     ['A clearer view, a lighter mind','Order quiets the noise'],
     ['Order them your way','No wrong answers','Reorder = reframe','flove words, your way','One word, many doors'],
@@ -11272,8 +10749,7 @@ window.tKey = function tKey(k){
     INTRO_SLIDES = INTRO_SLIDES_I18N[L];
     applyTriadLang(L);
     const radio = document.getElementById(L === 'es' ? 'ui-lang-es' : 'ui-lang-en');
-    if (radio) radio.checked = true;   // drives the topbar picker's active marker
-    if (typeof cust === 'object' && cust) cust.lang = L;
+    if (radio) radio.checked = true;   // drives the worldball picker's active marker
   })();
   initPrelude();
   // Hard local persistence: rehydrate the user's play-state AFTER the engine is
