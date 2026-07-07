@@ -898,6 +898,59 @@ body:has(#lang-es:checked) .es{display:inline}
 :root:has(#lang-es:checked):has(#s3:checked) .btn-both .btn-text[data-st~="3"],
 :root:has(#lang-es:checked):has(#s2:checked) .btn-both .btn-text[data-st~="2"],
 :root:has(#lang-es:checked):has(#s4:checked) .btn-both .btn-text[data-st~="4"]{width:auto;animation:none}
+
+/* ─── Intro → video modal ─────────────────────────────────────────────
+   Anchored to the Docs–Apps row: JS copies the row's rect (left/width) and
+   hangs the panel from the row's bottom edge down to the bottom of the page.
+   The × lives OUTSIDE the video, on its right; under the video a slot stays
+   reserved for the "see more videos" link that appears when playback ends. */
+.ivm[hidden]{ display:none; }
+.ivm-backdrop{
+  position:fixed; inset:0; z-index:70;
+  background:rgba(26,24,32,.38); backdrop-filter:blur(3px);
+}
+.ivm-panel{
+  position:fixed; z-index:71; bottom:.9rem;   /* left/top/width set by JS from .cta-row */
+  display:flex; flex-direction:column; gap:.55rem;
+}
+.ivm-stage{ position:relative; flex:1; min-height:0; display:flex; }
+.ivm-video{
+  flex:1; min-width:0; height:100%; object-fit:contain;
+  background:#0e0c14; border-radius:18px;
+  box-shadow:0 18px 50px -16px rgba(20,16,32,.55);
+}
+/* the column OUTSIDE the video's right edge (past the Apps border): × + expand */
+.ivm-side{
+  position:absolute; left:calc(100% + .45rem); top:0;
+  display:flex; flex-direction:column; gap:.5rem;
+}
+.ivm-x, .ivm-expand{
+  border:0; background:transparent; cursor:pointer; color:var(--ink);
+  border-radius:14px; padding:0; line-height:1;
+  transition:transform .14s ease, opacity .2s ease; opacity:.75;
+}
+.ivm-x{ font:200 3.2rem/1 'Inter',sans-serif; width:3.2rem; }
+.ivm-expand{ font-size:1.5rem; width:3.2rem; }
+.ivm-x:hover, .ivm-expand:hover, .ivm-x:focus-visible, .ivm-expand:focus-visible{
+  opacity:1; transform:scale(1.12); outline:none;
+}
+/* reserved slot below the video — empty until the video finishes */
+.ivm-more{ flex:none; min-height:2.3rem; display:flex; align-items:center; justify-content:center; }
+.ivm-more-link{
+  font-weight:600; text-decoration:none; color:var(--ink);
+  padding:.35rem .9rem; border-radius:999px;
+  background:linear-gradient(90deg, var(--accent-soft), #d9e4ff);
+  box-shadow:0 6px 18px -8px rgba(20,16,32,.35);
+  animation:ivmMoreIn .5s cubic-bezier(.2,.8,.2,1) both;
+}
+.ivm-more-link:hover{ filter:brightness(1.04); }
+@keyframes ivmMoreIn{ from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
+/* expanded: the panel grows to (nearly) the whole viewport — stylesheet
+   !important outranks the JS-set inline geometry, so no JS cleanup needed */
+.ivm.expanded .ivm-panel{
+  left:max(1rem,3vw) !important; top:max(1rem,3vh) !important;
+  width:min(94vw, calc(100vw - 2rem)) !important; bottom:max(1rem,3vh);
+}
 </style>
 </head>
 <body>
@@ -1084,6 +1137,79 @@ body:has(#lang-es:checked) .es{display:inline}
   <aside class="info-box" id="ib-art" aria-label="art" style="--bub:#ff9b6a"><label class="ib-close" for="b-none" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</label><div class="ib-kind"><span class="en" lang="en">Insight</span><span class="es" lang="es">Perspectiva</span></div><h2 class="ib-title"><span class="en" lang="en">art</span><span class="es" lang="es">arte</span></h2><p class="ib-text"><span class="en" lang="en">Keys and Holóniké treat glyphs and gestures as art — meaning you can see and hold.</span><span class="es" lang="es">Keys y Holóniké tratan glifos y gestos como arte — significado que puedes ver y sostener.</span></p></aside>
   <aside class="info-box" id="ib-we" aria-label="we" style="--bub:#8affd0"><label class="ib-close" for="b-none" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</label><div class="ib-kind"><span class="en" lang="en">Introductory</span><span class="es" lang="es">Introductorio</span></div><h2 class="ib-title"><span class="en" lang="en">we</span><span class="es" lang="es">nosotros</span></h2><p class="ib-text"><span class="en" lang="en">flove is a we: crowdparenting, crowdcrafting, confluences — many hands, one garden.</span><span class="es" lang="es">flove es un nosotros: crianza colectiva, creación colectiva, confluencias — muchas manos, un jardín.</span></p></aside>
 </section>
+
+<!-- Intro → video modal (CosmoSystems demo). Opened by the Intro button; the
+     #bubbles view stays as the no-JS fallback and keeps its keys.html deep-link. -->
+<div class="ivm" id="introVideoModal" hidden>
+  <div class="ivm-backdrop" data-ivm-close></div>
+  <div class="ivm-panel" role="dialog" aria-modal="true" aria-label="Intro video" data-aria-en="Intro video" data-aria-es="Vídeo de introducción">
+    <div class="ivm-stage">
+      <video class="ivm-video" id="ivmVideo" controls playsinline preload="metadata"
+             src="https://res.cloudinary.com/dw61cpi4k/video/upload/v1779590785/flove/02ONTOLOGY/cosmosystems25.mp4"
+             poster="https://res.cloudinary.com/dw61cpi4k/image/upload/v1779590784/flove/02ONTOLOGY/cosmosystems25.9.gif"
+             aria-label="CosmoSystems — nested-systems cosmos animation" data-aria-en="CosmoSystems — nested-systems cosmos animation" data-aria-es="CosmoSystems — animación del cosmos de sistemas anidados"></video>
+      <div class="ivm-side">
+        <button type="button" class="ivm-x" data-ivm-close aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</button>
+        <button type="button" class="ivm-expand" id="ivmExpand" aria-label="Expand" data-aria-en="Expand" data-aria-es="Ampliar">⛶</button>
+      </div>
+    </div>
+    <div class="ivm-more">
+      <a class="ivm-more-link" id="ivmMore" href="./docs/index.html" hidden>
+        <span class="en" lang="en">Liked it? See more videos →</span><span class="es" lang="es">¿Te ha gustado? Ver más vídeos →</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Intro video modal — sized live to the Docs–Apps row (left edge of Docs to
+  // right edge of Apps, row bottom down to the page bottom). ⛶ toggles a
+  // near-fullscreen expand; the "more videos" link appears when playback ends.
+  (function(){
+    var modal  = document.getElementById('introVideoModal');
+    var intro  = document.querySelector('.cta .btn-both');
+    var row    = document.querySelector('.cta-row');
+    var panel  = modal && modal.querySelector('.ivm-panel');
+    var video  = document.getElementById('ivmVideo');
+    var expand = document.getElementById('ivmExpand');
+    var more   = document.getElementById('ivmMore');
+    if (!modal || !intro || !row || !panel || !video) return;
+
+    function place(){
+      if (modal.hidden || modal.classList.contains('expanded')) return;
+      var r = row.getBoundingClientRect();
+      panel.style.left  = r.left + 'px';
+      panel.style.width = r.width + 'px';
+      panel.style.top   = Math.max(0, r.bottom) + 'px';
+    }
+    function open(e){
+      e.preventDefault();
+      modal.hidden = false;
+      place();
+      video.play().catch(function(){});
+      modal.querySelector('.ivm-x').focus();
+    }
+    function close(){
+      video.pause();
+      modal.hidden = true;
+      modal.classList.remove('expanded');
+      intro.focus();
+    }
+    intro.addEventListener('click', open);
+    modal.querySelectorAll('[data-ivm-close]').forEach(function(el){ el.addEventListener('click', close); });
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !modal.hidden) close(); });
+    expand.addEventListener('click', function(){
+      var on = modal.classList.toggle('expanded');
+      expand.textContent = on ? '⤡' : '⛶';
+      expand.setAttribute('aria-label', on ? (document.documentElement.lang === 'es' ? 'Reducir' : 'Shrink')
+                                           : (document.documentElement.lang === 'es' ? 'Ampliar' : 'Expand'));
+      if (!on) place();
+    });
+    video.addEventListener('ended', function(){ more.hidden = false; });
+    window.addEventListener('resize', place);
+    window.addEventListener('scroll', place, {passive:true});
+  })();
+</script>
 
 <script>
   // Register the service worker so flove works fully offline once installed.
