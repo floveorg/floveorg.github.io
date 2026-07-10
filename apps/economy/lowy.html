@@ -92,6 +92,11 @@
   .vtab:hover{color:var(--ink); border-color:var(--rule); background:var(--paper)}
   .vtab .ico{font-size:1.05em; line-height:1}
   .catnav{display:flex; flex-direction:column; gap:.2rem}
+  .catnav .lowy-row{display:flex; gap:.3rem; align-items:stretch}
+  .catnav .lowy-row .cat-tab{flex:1 1 auto}
+  .all-btn{flex:0 0 auto; width:auto; color:var(--clay); font-size:.85rem;
+    padding:.4rem .55rem; justify-content:center}
+  .all-btn:hover{color:var(--leaf)}
 
   .theme-btn{cursor:pointer; background:none; border:1px solid var(--rule); color:var(--ink-soft);
     border-radius:2px; padding:.25rem .5rem; font-size:1rem; line-height:1;
@@ -473,13 +478,17 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 let _seed=0x2545F491; function nextRand(){_seed^=_seed<<13;_seed^=_seed>>>17;_seed^=_seed<<5;return((_seed>>>0)/4294967296);}
 
 /* ============ CATEGORIES (left vertical tabs, multiselect) ============
-   Lowy is the root, not a tab: it shows by default when nothing is selected. */
-let catSel=new Set(store.get('cats',[]).filter(id=>CATS.some(c=>c.id===id&&!c.center)));
+   Lowy is the core category, checked by default; "All" lights every one up. */
+let catSel=new Set(store.get('cats',['lowy']).filter(id=>CATS.some(c=>c.id===id)));
 function renderCatNav(){
   const list=document.getElementById('catList');
-  list.innerHTML=CATS.filter(c=>!c.center).map(c=>
-    `<button type="button" class="vtab cat-tab" data-cat="${c.id}" aria-pressed="false">
-       <span class="ico" aria-hidden="true">${c.ico}</span><span>${esc(c.name)}</span></button>`).join('');
+  const lowy=CATS.find(c=>c.center), rest=CATS.filter(c=>!c.center);
+  const tab=c=>`<button type="button" class="vtab cat-tab" data-cat="${c.id}" aria-pressed="false">
+       <span class="ico" aria-hidden="true">${c.ico}</span><span>${esc(c.name)}</span></button>`;
+  list.innerHTML=
+    `<div class="lowy-row">${tab(lowy)}<button type="button" class="vtab all-btn" id="allCats"
+       title="Select every category">All</button></div>`
+    +rest.map(tab).join('');
   list.querySelectorAll('.cat-tab').forEach(n=>{
     n.onclick=()=>{
       const id=n.dataset.cat;
@@ -490,6 +499,11 @@ function renderCatNav(){
         if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
     };
   });
+  document.getElementById('allCats').onclick=()=>{
+    CATS.forEach(c=>catSel.add(c.id));
+    store.set('cats',[...catSel]);
+    syncCatNav();renderBlocks();
+  };
   syncCatNav();
 }
 function syncCatNav(){
@@ -504,8 +518,7 @@ function syncCatNav(){
 const conceptById=Object.fromEntries(CONCEPTS.map(c=>[c.id,c]));
 function renderBlocks(){
   const host=document.getElementById('cat-blocks');
-  // default view = Lowy (the root) when no category tab is selected
-  const sel=catSel.size?CATS.filter(c=>catSel.has(c.id)):[CATS.find(c=>c.center)];
+  const sel=CATS.filter(c=>catSel.has(c.id));
   host.innerHTML=sel.map(cat=>`
     <section class="catblock" id="cat-${cat.id}">
       <h2 class="cat-title"><span class="ico">${cat.ico}</span>${esc(cat.name)}</h2>
