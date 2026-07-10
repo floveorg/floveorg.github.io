@@ -12,7 +12,7 @@
 
 <style>
   :root{
-    --paper:#f2e8d5; --paper-2:#ece0c9; --ink:#2c2318; --ink-soft:#5c5040;
+    --paper:#ffffff; --paper-2:#ece0c9; --ink:#2c2318; --ink-soft:#5c5040;
     --rule:#cbb994; --clay:#a24a2b; --leaf:#5c7a35; --gold:#b98a2e;
     --card:#f7efdd; --shadow:rgba(60,44,20,.14);
     --serif:Iowan Old Style,"Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
@@ -32,7 +32,7 @@
     --card:#211a12; --shadow:rgba(0,0,0,.4);
   }
   :root[data-theme="light"]{
-    --paper:#f2e8d5; --paper-2:#ece0c9; --ink:#2c2318; --ink-soft:#5c5040;
+    --paper:#ffffff; --paper-2:#ece0c9; --ink:#2c2318; --ink-soft:#5c5040;
     --rule:#cbb994; --clay:#a24a2b; --leaf:#5c7a35; --gold:#b98a2e;
     --card:#f7efdd; --shadow:rgba(60,44,20,.14);
   }
@@ -86,11 +86,6 @@
   details.menu{position:relative}
   details.menu > summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:.3rem}
   details.menu > summary::-webkit-details-marker{display:none}
-  .brand{display:inline-flex; align-items:center; gap:.4rem;
-    font-family:var(--serif); font-weight:700; font-size:1.5rem; letter-spacing:.02em;
-    color:var(--ink)}
-  .brand-logo{width:1.5rem; height:1.5rem; flex:0 0 auto}
-  .brand b{color:var(--clay)}
   .menu-caret{font-size:.7rem; color:var(--ink-soft); transition:transform .15s}
   details.menu[open] .menu-caret{transform:rotate(180deg)}
   .menu-list{position:absolute; top:calc(100% + .4rem); left:0; min-width:9rem;
@@ -135,6 +130,70 @@
   .catnav .vtab.sel{
     color:var(--ink); border-color:var(--ink); background:var(--paper);
     box-shadow:inset 3px 0 0 var(--clay);
+  }
+
+  /* ---- animated "lowy" wordmarks (3·sunrise at title, 9·fold at footer) ---- */
+  .wm{position:relative; font-family:var(--serif); font-weight:600; font-size:var(--s,1.5rem);
+    line-height:1; letter-spacing:-.01em; color:var(--ink); display:inline-flex;
+    align-items:baseline; white-space:nowrap}
+  .wm .g{position:relative; display:inline-block}
+  .wm .go{color:var(--ink)}
+  .wm .gy{color:var(--clay)}
+  .m-sun .go .sun{position:absolute; left:50%; bottom:.16em; width:.26em; height:.26em;
+    border-radius:50%; background:var(--gold);
+    transform:translate(-50%,.5em) scale(.4); animation:rise 4.6s ease-in-out infinite}
+  @keyframes rise{0%,8%{transform:translate(-50%,.5em) scale(.4); opacity:0}
+    38%,72%{transform:translate(-50%,0) scale(1); opacity:1}
+    100%{transform:translate(-50%,-.4em) scale(.4); opacity:0}}
+  .m-fold .grp{display:inline-flex; align-items:baseline; transform-origin:100% 100%;
+    animation:fold 4.4s cubic-bezier(.4,0,.3,1) infinite}
+  .m-fold .gy{animation:hold 4.4s ease-in-out infinite}
+  @keyframes fold{0%,14%{transform:rotate(0)}40%{transform:rotate(9deg)}
+    58%{transform:rotate(-3deg)}74%,100%{transform:rotate(0)}}
+  @keyframes hold{0%,100%{color:var(--clay)}48%{color:var(--leaf)}}
+
+  /* ---- animated SVG category icons in the tabs ---- */
+  .cat-tab .ico{width:1.15rem; height:1.15rem; fill:none; stroke:currentColor; stroke-width:1.7;
+    stroke-linecap:round; stroke-linejoin:round; overflow:visible; flex:0 0 auto}
+  .cat-tab.sel .ico{stroke:var(--clay)}
+  /* draw each stroke in once (staggered) on load, then keep it visible */
+  .cat-tab .ico [data-draw]{stroke-dasharray:var(--len,90); stroke-dashoffset:0;
+    animation:draw-in .9s ease-out both; animation-delay:var(--d,0s)}
+  @keyframes draw-in{from{stroke-dashoffset:var(--len,90)}to{stroke-dashoffset:0}}
+  .cat-tab .ico .accent{stroke:var(--clay)}
+  .cat-tab .ico .leafc{stroke:var(--leaf)}
+  .cat-tab .ico .goldc{stroke:var(--gold)}
+  .cat-tab[data-cat=lowy] .sway{transform-origin:50% 90%; animation:sway 4s ease-in-out infinite}
+  @keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+  .cat-tab[data-cat=water] .fall{animation:bob 3s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(-1px)}50%{transform:translateY(1.5px)}}
+  .cat-tab[data-cat=energy] .rays{transform-origin:50% 50%; animation:spin 22s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .cat-tab[data-cat=energy] .core{animation:bank 3s ease-in-out infinite}
+  @keyframes bank{0%,100%{opacity:.45}50%{opacity:1}}
+  .cat-tab[data-cat=health] .beat{transform-origin:50% 50%; animation:beat 2.4s ease-in-out infinite}
+  @keyframes beat{0%,72%,100%{transform:scale(1)}80%{transform:scale(1.12)}88%{transform:scale(1.02)}}
+  .cat-tab[data-cat=sanitation] .cycle{transform-origin:50% 50%; animation:spin 14s linear infinite}
+  .cat-tab[data-cat=community] .wave{animation:ping 2.8s ease-out infinite}
+  .cat-tab[data-cat=community] .wave:nth-of-type(2){animation-delay:.35s}
+  @keyframes ping{0%{opacity:0}30%{opacity:1}100%{opacity:.15}}
+  .cat-tab[data-cat=food] .grow{transform-origin:50% 100%; animation:sway 5s ease-in-out infinite}
+  .cat-tab[data-cat=knowledge] .page{transform-origin:50% 50%; animation:leaf 5s ease-in-out infinite}
+  @keyframes leaf{0%,70%,100%{transform:scaleX(1)}85%{transform:scaleX(.86)}}
+  .cat-tab[data-cat=shelter] .smoke{animation:ping 3.4s ease-out infinite}
+  .cat-tab[data-cat=tools] .tap{transform-origin:20% 80%; animation:tap 3s ease-in-out infinite}
+  @keyframes tap{0%,55%,100%{transform:rotate(0)}70%{transform:rotate(-16deg)}80%{transform:rotate(4deg)}}
+
+  /* ---- footer holding the 9·fold mark ---- */
+  .site-foot{text-align:center; margin-top:3.5rem; padding:2.4rem 0 3rem;
+    border-top:1px solid var(--rule)}
+  .site-foot .foot-wm{--s:2.4rem}
+  .site-foot .foot-note{margin:.7rem 0 0; font-size:.8rem; color:var(--ink-soft)}
+
+  @media (prefers-reduced-motion:reduce){
+    .wm *,.cat-tab .ico *{animation:none!important}
+    .cat-tab .ico [data-draw]{stroke-dashoffset:0}
+    .m-sun .sun{transform:translate(-50%,0) scale(1); opacity:1}
   }
 
   /* narrow screens: header, then categories row, then content */
@@ -266,7 +325,7 @@
 <header class="topbar">
   <details class="menu" id="brandMenu">
     <summary aria-label="lowy menu">
-      <span class="brand"><svg class="brand-logo" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 58V30" stroke="var(--leaf)" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M31 34C18 34 12 23 15 12 28 12 34 23 31 34Z" fill="var(--leaf)"/><path d="M33 34C46 34 52 23 49 12 36 12 30 23 33 34Z" fill="var(--gold)"/></svg></span><span class="menu-caret">▾</span>
+      <span class="wm m-sun" style="--s:1.5rem"><span class="g">l</span><span class="g go">o<i class="sun"></i></span><span class="g">w</span><span class="g gy">y</span></span><span class="menu-caret">▾</span>
     </summary>
     <div class="menu-list">
       <label for="r-main">Home</label>
@@ -313,6 +372,11 @@
       or write to <a href="mailto:hola@lowai.org?subject=lowy%20contribution">hola@lowai.org</a>.</p>
     <p class="footer">lowy · flove · <a href="../lowai/index.html">LowAI</a> · low-ink by design.</p>
   </section>
+
+  <footer class="site-foot">
+    <span class="wm m-fold foot-wm" aria-label="lowy"><span class="grp"><span class="g">l</span><span class="g go">o</span><span class="g">w</span></span><span class="g gy">y</span></span>
+    <p class="foot-note">living on less · part of <a href="../../index.html">flove</a></p>
+  </footer>
 
 </main>
 
@@ -507,11 +571,49 @@ let _seed=0x2545F491; function nextRand(){_seed^=_seed<<13;_seed^=_seed>>>17;_se
 /* ============ CATEGORIES (left vertical tabs, multiselect) ============
    Lowy is the core category, checked by default; "All" lights every one up. */
 let catSel=new Set(store.get('cats',['lowy']).filter(id=>CATS.some(c=>c.id===id)));
+/* animated line-drawn icons per category (ported from images/logos/lowy) */
+const IP=(d,cls,len,delay)=>`<path d="${d}" ${cls?`class="${cls}"`:''} data-draw `
+  +`style="--len:${len||90};--d:${delay||0}s"/>`;
+const CAT_ICONS={
+  lowy:IP('M12 21V9.4','leafc',13)
+    +'<g class="sway">'+IP('M12 13.6C6.6 13.6 4.4 10.2 4.4 6.6c4.6 0 7.6 2.8 7.6 7z','leafc',30,.2)
+    +IP('M12 11.2c4.6 0 6.8-3 6.8-6.1-4.2 0-6.8 2.3-6.8 6.1z','accent',26,.4)+'</g>',
+  water:'<g class="fall">'+IP('M12 3.4c0 0-6 6.8-6 10.6a6 6 0 0 0 12 0c0-3.8-6-10.6-6-10.6z',null,52)+'</g>'
+    +IP('M9.2 14.6a2.8 2.8 0 0 0 2.8 2.8','accent',10,.4),
+  food:IP('M3.6 12.6h16.8a8.4 8.4 0 0 1-16.8 0z',null,44)
+    +'<g class="grow">'+IP('M12 12.4V5','leafc',9,.2)
+    +IP('M12 9.2C9.6 9.2 8.4 7.6 8.4 5.8c2.4 0 3.6 1.4 3.6 3.4z','leafc',18,.35)
+    +IP('M12 7.8c2.2 0 3.4-1.5 3.4-3.2-2 0-3.4 1.2-3.4 3.2z','accent',16,.5)+'</g>',
+  shelter:IP('M3.6 11.4L12 4.2l8.4 7.2',null,26)
+    +IP('M6 10.2V20h12v-9.8',null,32,.2)
+    +IP('M10.2 20v-5.2h3.6V20','accent',16,.4)
+    +'<g class="smoke">'+IP('M16.4 6.4V3.6h2v4.4','goldc',10,.55)+'</g>',
+  energy:'<g class="core">'+IP('M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8z','goldc',26)+'</g>'
+    +'<g class="rays">'+IP('M12 2v2.6M12 19.4V22M2 12h2.6M19.4 12H22','accent',22,.25)
+    +IP('M5 5l1.9 1.9M17.1 17.1L19 19M19 5l-1.9 1.9M6.9 17.1L5 19','accent',22,.4)+'</g>',
+  tools:'<g class="tap">'+IP('M3.6 20.4L13 11',null,16)
+    +IP('M12 7.6l4-4 4.4 4.4-4 4z',null,26,.2)
+    +IP('M10.6 9.4l4 4','accent',8,.4)+'</g>',
+  health:'<g class="beat">'+IP('M12 5v14','accent',15)+IP('M5 12h14','accent',15,.15)+'</g>'
+    +IP('M3.4 12h2.2M18.4 12h2.2',null,6,.4),
+  sanitation:'<g class="cycle">'+IP('M12 3.6l2.8 4.8h-5.6z','leafc',18)
+    +IP('M20 16.2l-5.5.2 2.8-4.9z','leafc',18,.2)
+    +IP('M4 16.2l5.5.2-2.8-4.9z','accent',18,.4)+'</g>'
+    +IP('M8.6 19.8h6.8',null,8,.6),
+  community:IP('M12 20.4v-6.6','',8)
+    +IP('M12 10.4a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4z','accent',12,.15)
+    +'<g class="wave">'+IP('M7.8 8a5.9 5.9 0 0 1 8.4 0',null,16,.3)+'</g>'
+    +'<g class="wave">'+IP('M4.8 5.2a10.1 10.1 0 0 1 14.4 0','goldc',24,.45)+'</g>'
+    +IP('M8.6 20.4h6.8',null,8,.6),
+  knowledge:'<g class="page">'+IP('M12 6.8C10 4.8 7 4.2 3.8 4.2v13c3.2 0 6.2.6 8.2 2.6',null,44)
+    +IP('M12 6.8c2-2 5-2.6 8.2-2.6v13c-3.2 0-6.2.6-8.2 2.6',null,44,.25)+'</g>'
+    +IP('M12 6.8v12.6','accent',13,.5),
+};
 function renderCatNav(){
   const list=document.getElementById('catList');
   const lowy=CATS.find(c=>c.center), rest=CATS.filter(c=>!c.center);
   const tab=c=>`<button type="button" class="vtab cat-tab" data-cat="${c.id}" aria-pressed="false">
-       <span class="ico" aria-hidden="true">${c.ico}</span><span>${esc(c.short)}</span></button>`;
+       <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${CAT_ICONS[c.id]||''}</svg><span>${esc(c.short)}</span></button>`;
   list.innerHTML=
     `<div class="lowy-row">${tab(lowy)}<button type="button" class="vtab all-btn" id="allCats"
        title="Select every category">All</button></div>`
