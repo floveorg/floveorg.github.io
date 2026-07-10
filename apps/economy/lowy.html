@@ -1,10 +1,11 @@
 <!-- lowy.html · economy/ · flove
      A calm almanac of low-living: simple living, low tech, low consumption, LowAI
-     and their kin — plus an open Pack of survival blueprints and a deck of advice.
-     Single file, offline, low-ink. CSS-only navigation; JS only for dynamic UI. -->
+     and their kin. One network of categories (Lowy at the centre); per category:
+     its Concepts, its Tools (basic→advanced blueprints) and its Culture (sayings).
+     Single file, offline, low-ink. CSS-only tab/page switching; JS for dynamic UI. -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="lowy — an almanac of simple living, low tech, low consumption and LowAI, with an open pack of low-tech survival blueprints and everyday advice for a simpler life.">
+<meta name="description" content="lowy — an almanac of simple living, low tech, low consumption and LowAI: a network of categories, each with its concepts, its open low-tech blueprints and its everyday culture of living with less.">
 <meta name="keywords" content="simple living, low tech, low consumption, LowAI, degrowth, appropriate technology, GVCS, permaculture, frugality, small web">
 <title>lowy — the low-living almanac</title>
 
@@ -40,6 +41,7 @@
   body{
     margin:0; background:var(--paper); color:var(--ink);
     font-family:var(--sans); font-size:17px; line-height:1.6;
+    display:flex; align-items:flex-start;
   }
   h1,h2,h3,h4{font-family:var(--serif); font-weight:600; line-height:1.15; margin:0 0 .4em}
   h1{font-size:2.5rem} h2{font-size:1.8rem} h3{font-size:1.25rem}
@@ -48,84 +50,103 @@
   p{margin:0 0 1em}
   small{color:var(--ink-soft)}
   .wrap{max-width:var(--maxw); margin:0 auto; padding:0 1.25rem}
+  .content{flex:1 1 auto; min-width:0; width:100%; max-width:var(--maxw); margin:0 auto;
+    padding:0 1.5rem}
   .label{font-family:var(--sans); text-transform:uppercase; letter-spacing:.12em;
     font-size:.72rem; color:var(--ink-soft)}
   hr{border:0; border-top:1px solid var(--rule); margin:2rem 0}
 
-  /* ---- CSS-only tab navigation ---- */
-  .tab-radio{position:absolute; opacity:0; pointer-events:none}
-  header.topbar{
-    position:sticky; top:0; z-index:20; background:var(--paper-2);
-    border-bottom:2px solid var(--ink); box-shadow:0 1px 0 var(--rule);
+  /* ---- Left vertical navigation: sidebar with section tabs + category tabs ---- */
+  .tab-check,.page-radio{position:absolute; opacity:0; pointer-events:none}
+  aside.sidenav{
+    position:sticky; top:0; align-self:stretch; z-index:20;
+    flex:0 0 15rem; width:15rem; max-height:100vh; overflow-y:auto;
+    background:var(--paper-2); border-right:2px solid var(--ink);
+    padding:1.1rem .9rem; display:flex; flex-direction:column; gap:1.1rem;
   }
-  .topbar .wrap{display:flex; align-items:center; gap:.5rem 1.2rem; flex-wrap:wrap;
-    padding-top:.55rem; padding-bottom:.55rem}
+
+  /* brand = a standard menu, opened on click on the logo */
+  details.menu{position:relative}
+  details.menu > summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:.3rem}
+  details.menu > summary::-webkit-details-marker{display:none}
   .brand{font-family:var(--serif); font-weight:700; font-size:1.5rem; letter-spacing:.02em;
-    margin-right:auto; color:var(--ink); text-decoration:none}
+    color:var(--ink)}
   .brand b{color:var(--clay)}
-  nav.tabs{display:flex; gap:.35rem; flex-wrap:wrap}
-  nav.tabs label{
-    cursor:pointer; padding:.28rem .7rem; border:1px solid transparent; border-radius:2px;
+  .menu-caret{font-size:.7rem; color:var(--ink-soft); transition:transform .15s}
+  details.menu[open] .menu-caret{transform:rotate(180deg)}
+  .menu-list{position:absolute; top:calc(100% + .4rem); left:0; min-width:9rem;
+    background:var(--paper); border:1px solid var(--ink); border-radius:3px;
+    box-shadow:0 4px 14px var(--shadow); padding:.3rem; z-index:30;
+    display:flex; flex-direction:column}
+  .menu-list label{cursor:pointer; padding:.4rem .7rem; border-radius:2px; color:var(--ink)}
+  .menu-list label:hover{background:var(--paper-2); color:var(--clay)}
+
+  /* nav groups (Sections, Categories) share one left-aligned vertical-tab look */
+  .nav-group{display:flex; flex-direction:column; gap:.2rem}
+  .nav-group > .label{margin-bottom:.25rem}
+  .vtab{cursor:pointer; text-align:left; width:100%; font:inherit; background:none;
+    padding:.4rem .6rem; border:1px solid transparent; border-radius:3px;
     font-size:.95rem; color:var(--ink-soft); white-space:nowrap;
+    display:flex; align-items:center; gap:.5rem;
   }
-  nav.tabs label:hover{color:var(--ink); border-color:var(--rule)}
+  .vtab:hover{color:var(--ink); border-color:var(--rule); background:var(--paper)}
+  .vtab .ico{font-size:1.05em; line-height:1}
+  .catnav{display:flex; flex-direction:column; gap:.2rem}
+
   .theme-btn{cursor:pointer; background:none; border:1px solid var(--rule); color:var(--ink-soft);
-    border-radius:2px; padding:.25rem .5rem; font-size:1rem; line-height:1}
+    border-radius:2px; padding:.25rem .5rem; font-size:1rem; line-height:1;
+    align-self:flex-start; margin-top:auto}
   .theme-btn:hover{color:var(--ink)}
 
-  .view{display:none; padding:2.2rem 0 4rem}
-  .view.static-fallback{display:block}
-  #t-home:checked    ~ main #v-home,
-  #t-concepts:checked~ main #v-concepts,
-  #t-pack:checked    ~ main #v-pack,
-  #t-advice:checked  ~ main #v-advice,
-  #t-about:checked   ~ main #v-about{display:block}
-  #t-home:checked    ~ header nav label[for=t-home],
-  #t-concepts:checked~ header nav label[for=t-concepts],
-  #t-pack:checked    ~ header nav label[for=t-pack],
-  #t-advice:checked  ~ header nav label[for=t-advice],
-  #t-about:checked   ~ header nav label[for=t-about]{
+  /* active state — section tabs (checkboxes) and selected category tabs */
+  #t-concepts:checked ~ .sidenav label[for=t-concepts],
+  #t-tools:checked    ~ .sidenav label[for=t-tools],
+  #t-culture:checked  ~ .sidenav label[for=t-culture],
+  .catnav .vtab.sel{
     color:var(--ink); border-color:var(--ink); background:var(--paper);
-    box-shadow:0 2px 0 var(--clay);
+    box-shadow:inset 3px 0 0 var(--clay);
   }
 
-  /* ---- Home ---- */
-  .hero{text-align:center; padding:1.5rem 0 1rem}
-  .hero h1{font-size:clamp(2.4rem,7vw,4rem)}
-  .hero .tagline{font-size:1.3rem; color:var(--ink-soft); max-width:36ch; margin:0 auto 1.4rem}
-  .doors{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
-    gap:1rem; margin:2rem 0}
-  .door{display:block; cursor:pointer; text-align:left; background:var(--card);
-    border:1px solid var(--rule); border-left:4px solid var(--clay); border-radius:3px;
-    padding:1.1rem 1.2rem; box-shadow:0 1px 3px var(--shadow); transition:transform .12s}
-  .door:hover{transform:translateY(-2px); border-left-color:var(--leaf)}
-  .door h3{margin-bottom:.2em}
-  .door p{margin:0; color:var(--ink-soft); font-size:.95rem}
-  .creed{max-width:46ch; margin:2.5rem auto 0; text-align:center; font-family:var(--serif);
-    font-size:1.15rem; font-style:italic; color:var(--ink-soft)}
+  /* narrow screens: the sidebar folds into a wrapping top bar */
+  @media(max-width:720px){
+    body{flex-direction:column}
+    aside.sidenav{position:static; flex-basis:auto; width:auto; max-height:none;
+      border-right:0; border-bottom:2px solid var(--ink);
+      flex-direction:row; flex-wrap:wrap; align-items:center; gap:.5rem .9rem}
+    .nav-group{flex-direction:row; flex-wrap:wrap; align-items:center; gap:.3rem}
+    .nav-group > .label{margin-bottom:0}
+    .catnav{flex-direction:row; flex-wrap:wrap}
+    .theme-btn{margin-top:0; margin-left:auto}
+  }
+  /* page switching (Home = the network, About) */
+  main > .page{display:none; padding:1.6rem 0 4rem}
+  #r-main:checked  ~ main #v-main{display:block}
+  #r-about:checked ~ main #v-about{display:block}
 
-  /* ---- Concept map ---- */
-  .map-frame{background:var(--card); border:1px solid var(--rule); border-radius:4px;
-    padding:.5rem; margin:1.5rem 0 2.5rem; box-shadow:0 1px 3px var(--shadow)}
-  .map-frame svg{display:block; width:100%; height:auto}
-  .map-node{cursor:pointer}
-  .map-node circle{fill:var(--paper); stroke:var(--clay); stroke-width:2; transition:.15s}
-  .map-node:hover circle,.map-node:focus circle{fill:var(--clay)}
-  .map-node text{font-family:var(--sans); font-size:13px; fill:var(--ink); font-weight:600;
-    text-anchor:middle; pointer-events:none}
-  .map-node:hover text,.map-node:focus text{fill:var(--paper)}
-  .map-edge{stroke:var(--rule); stroke-width:1.5}
+  /* sections inside each category block follow the checked tabs */
+  .sec{display:none}
+  #t-concepts:checked ~ main .sec-concepts{display:block}
+  #t-tools:checked    ~ main .sec-tools{display:block}
+  #t-culture:checked  ~ main .sec-culture{display:block}
+  #t-tools:checked    ~ main .basket{display:block}
+  #t-culture:checked  ~ main .mine-wrap{display:block}
 
-  /* ---- Concept groups & cards ---- */
-  .group{margin:2.4rem 0; scroll-margin-top:5rem}
-  .group > h2{border-bottom:2px solid var(--ink); padding-bottom:.2em; display:flex;
+  /* ---- Category blocks ---- */
+  .catblock{margin:2.6rem 0; scroll-margin-top:5rem; border-top:2px solid var(--ink); padding-top:1rem}
+  .cat-title{font-size:clamp(2.4rem,6vw,3.6rem); margin:.1em 0 .3em; display:flex;
+    align-items:center; gap:.4em}
+  .cat-title .ico{font-size:.55em}
+  .sec{margin:1.6rem 0 2.2rem}
+  .sec > h3{border-bottom:1px solid var(--rule); padding-bottom:.2em; display:flex;
     align-items:baseline; gap:.6rem}
-  .group > h2 .label{font-weight:400}
+  .sec > h3 .label{font-weight:400}
+
+  /* concepts: cards + chips + links */
   .cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:1rem;
     margin-top:1.1rem}
   .card{background:var(--card); border:1px solid var(--rule); border-radius:3px; padding:1rem 1.1rem;
     box-shadow:0 1px 2px var(--shadow)}
-  .card h3{margin-bottom:.25em}
+  .card h4{margin-bottom:.25em; font-size:1.15rem}
   .card .def{margin:0 0 .5em}
   .card .why{margin:0 0 .6em; font-size:.9rem; color:var(--ink-soft); font-style:italic}
   .chips{display:flex; flex-wrap:wrap; gap:.3rem; margin-bottom:.5rem}
@@ -134,31 +155,43 @@
   .chip:hover{border-color:var(--leaf); color:var(--leaf)}
   .card .src{font-size:.82rem}
 
-  /* ---- Pack ---- */
-  .pack-intro{max-width:60ch}
-  .level-filter{display:flex; gap:.4rem; flex-wrap:wrap; margin:1.2rem 0}
-  .level-filter button{cursor:pointer; border:1px solid var(--rule); background:var(--card);
-    color:var(--ink-soft); padding:.3rem .8rem; border-radius:2px; font-size:.9rem}
-  .level-filter button.on{border-color:var(--ink); color:var(--ink); box-shadow:0 2px 0 var(--gold)}
-  .domain-row{margin:1.4rem 0; border-top:1px solid var(--rule); padding-top:1rem}
-  .domain-row > h3{display:flex; align-items:center; gap:.5rem}
-  .domain-row > h3 .ico{font-size:1.3rem}
+  /* tools: basic / intermediate / advanced columns */
   .cells{display:grid; grid-template-columns:repeat(3,1fr); gap:.8rem; margin-top:.7rem}
   @media(max-width:640px){.cells{grid-template-columns:1fr}}
-  .cell{background:var(--card); border:1px solid var(--rule); border-radius:3px; padding:.6rem .8rem}
-  .cell.dim{opacity:.35}
+  .cell{background:var(--card); border:1px solid var(--rule); border-radius:3px; padding:.6rem .8rem;
+    display:flex; flex-direction:column}
   .cell > .label{display:block; margin-bottom:.4rem}
   .cell ul{list-style:none; margin:0; padding:0}
   .cell li{display:flex; gap:.5rem; align-items:flex-start; padding:.3rem 0;
     border-top:1px dotted var(--rule)}
   .cell li:first-child{border-top:0}
+  .cell li[hidden]{display:none}
   .cell li label{flex:1; font-size:.9rem; cursor:pointer}
   .cell li .bl-title{font-weight:600}
   .cell li .bl-blurb{color:var(--ink-soft); font-size:.82rem; display:block}
   .cell input[type=checkbox]{margin-top:.25rem; accent-color:var(--clay)}
+  .see-more{margin-top:auto; align-self:center}
 
-  /* ---- Pack basket / advice list ---- */
-  .basket{position:sticky; bottom:0; background:var(--paper-2); border-top:2px solid var(--ink);
+  /* culture: two saying columns + propose */
+  .sayings{display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1rem}
+  @media(max-width:640px){.sayings{grid-template-columns:1fr}}
+  .saying-col{display:flex; flex-direction:column; gap:.8rem}
+  .saying-card{background:var(--card); border:1px solid var(--rule); border-radius:5px;
+    box-shadow:0 2px 8px var(--shadow); padding:1.8rem 1.4rem; text-align:center; min-height:8rem;
+    display:flex; flex-direction:column; justify-content:center; gap:.6rem; flex:1}
+  .saying-card .text{font-family:var(--serif); font-size:1.3rem; line-height:1.3}
+  .saying-card .meta{font-size:.75rem; color:var(--ink-soft)}
+  .saying-actions{display:flex; gap:.5rem; justify-content:center}
+  .propose-row{display:flex; justify-content:center; margin-top:1.2rem}
+  .add-form{display:none; max-width:40rem; margin:1.2rem auto 0; gap:.5rem; flex-direction:column}
+  .add-form.open{display:flex}
+  .add-form textarea{width:100%; font:inherit; padding:.6rem; border:1px solid var(--rule);
+    border-radius:3px; background:var(--paper); color:var(--ink); resize:vertical}
+  .add-form select{font:inherit; padding:.35rem; border:1px solid var(--rule); border-radius:3px;
+    background:var(--paper); color:var(--ink)}
+
+  /* ---- Tools basket / kept sayings (shown by their tab) ---- */
+  .basket{display:none; position:sticky; bottom:0; background:var(--paper-2); border-top:2px solid var(--ink);
     padding:.7rem 0; margin-top:2rem; z-index:10}
   .basket .wrap{display:flex; align-items:center; gap:.6rem; flex-wrap:wrap}
   .basket .count{font-weight:600}
@@ -169,26 +202,11 @@
   .btn.primary:hover{background:var(--leaf); border-color:var(--leaf)}
   .btn:disabled{opacity:.4; cursor:not-allowed}
   .fmt{display:flex; gap:.3rem; flex-wrap:wrap; align-items:center}
-
-  /* ---- Advice deck ---- */
-  .deck{max-width:40rem; margin:1rem auto}
-  .advice-card{background:var(--card); border:1px solid var(--rule); border-radius:5px;
-    box-shadow:0 2px 8px var(--shadow); padding:2.4rem 2rem; text-align:center; min-height:9rem;
-    display:flex; flex-direction:column; justify-content:center; gap:.8rem}
-  .advice-card .text{font-family:var(--serif); font-size:1.55rem; line-height:1.3}
-  .advice-card .meta{font-size:.75rem}
-  .deck-actions{display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-top:1.2rem}
-  .mine-list{margin:2rem auto 0; max-width:40rem}
-  .mine-list ul{list-style:none; padding:0; margin:.6rem 0}
-  .mine-list li{display:flex; gap:.5rem; align-items:flex-start; padding:.5rem .2rem;
+  .mine-wrap{display:none; margin:2.5rem auto 0; max-width:40rem}
+  .mine-wrap ul{list-style:none; padding:0; margin:.6rem 0}
+  .mine-wrap li{display:flex; gap:.5rem; align-items:flex-start; padding:.5rem .2rem;
     border-bottom:1px solid var(--rule)}
-  .mine-list li .x{cursor:pointer; border:0; background:none; color:var(--ink-soft); font-size:1rem}
-  .add-form{display:none; max-width:40rem; margin:1.2rem auto 0; gap:.5rem; flex-direction:column}
-  .add-form.open{display:flex}
-  .add-form textarea{width:100%; font:inherit; padding:.6rem; border:1px solid var(--rule);
-    border-radius:3px; background:var(--paper); color:var(--ink); resize:vertical}
-  .add-form select{font:inherit; padding:.35rem; border:1px solid var(--rule); border-radius:3px;
-    background:var(--paper); color:var(--ink)}
+  .mine-wrap li .x{cursor:pointer; border:0; background:none; color:var(--ink-soft); font-size:1rem}
 
   /* ---- Onboarding ---- */
   .onboard{position:fixed; inset:0; background:rgba(20,15,8,.55); z-index:50; display:none;
@@ -202,137 +220,64 @@
   .footer{border-top:1px solid var(--rule); margin-top:3rem; padding:1.5rem 0; text-align:center;
     font-size:.85rem; color:var(--ink-soft)}
   @media print{
-    header.topbar,.basket,.deck-actions,.level-filter,.onboard{display:none!important}
+    aside.sidenav,.basket,.saying-actions,.propose-row,.see-more,.onboard{display:none!important}
     body{background:#fff; color:#000}
   }
 </style>
 
-<!-- Tab state (CSS-only navigation) -->
-<input class="tab-radio" type="radio" name="tab" id="t-home" checked>
-<input class="tab-radio" type="radio" name="tab" id="t-concepts">
-<input class="tab-radio" type="radio" name="tab" id="t-pack">
-<input class="tab-radio" type="radio" name="tab" id="t-advice">
-<input class="tab-radio" type="radio" name="tab" id="t-about">
+<!-- Tab state: three multiselect tabs (checkboxes) + Home/About page (radios) -->
+<input class="tab-check" type="checkbox" id="t-concepts" checked>
+<input class="tab-check" type="checkbox" id="t-tools" checked>
+<input class="tab-check" type="checkbox" id="t-culture" checked>
+<input class="page-radio" type="radio" name="page" id="r-main" checked>
+<input class="page-radio" type="radio" name="page" id="r-about">
 
-<header class="topbar">
-  <div class="wrap">
-    <label class="brand" for="t-home"><b>low</b>y</label>
-    <nav class="tabs" aria-label="Sections">
-      <label for="t-home">Home</label>
-      <label for="t-concepts">Concepts</label>
-      <label for="t-pack">The Pack</label>
-      <label for="t-advice">Advice</label>
-      <label for="t-about">About</label>
-    </nav>
-    <button class="theme-btn" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">◐</button>
+<aside class="sidenav">
+  <details class="menu" id="brandMenu">
+    <summary aria-label="lowy menu">
+      <span class="brand"><b>low</b>y</span><span class="menu-caret">▾</span>
+    </summary>
+    <div class="menu-list">
+      <label for="r-main">Home</label>
+      <label for="r-about">About</label>
+    </div>
+  </details>
+
+  <nav class="tabs nav-group" aria-label="Sections (multi-select)">
+    <span class="label">Sections</span>
+    <label class="vtab" for="t-concepts">Concepts</label>
+    <label class="vtab" for="t-tools">Tools</label>
+    <label class="vtab" for="t-culture">Culture</label>
+  </nav>
+
+  <div class="nav-group" aria-label="Categories">
+    <span class="label">Categories</span>
+    <div class="catnav" id="catList"><!-- category tabs injected --></div>
   </div>
-</header>
 
-<main class="wrap">
+  <button class="theme-btn" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">◐</button>
+</aside>
 
-  <!-- ============ HOME ============ -->
-  <section class="view" id="v-home">
-    <div class="hero">
-      <h1><b style="color:var(--clay)">low</b>y</h1>
-      <p class="tagline">An almanac of living well with less — and the tools to do it.</p>
-    </div>
-    <p class="creed">Simple living, low tech, low consumption, LowAI. One family of ideas,
-      one open pack of blueprints, one small change at a time.</p>
-    <div class="doors">
-      <label class="door" for="t-concepts">
-        <h3>The Concepts →</h3>
-        <p>A map of the movements — how simplicity, low tech, degrowth and LowAI connect.</p>
-      </label>
-      <label class="door" for="t-pack">
-        <h3>The Pack →</h3>
-        <p>Open blueprints for water, food, shelter, energy — simple to village-scale.</p>
-      </label>
-      <label class="door" for="t-advice">
-        <h3>The Advice →</h3>
-        <p>One piece of everyday advice at a time. Keep the ones you'll try. Add your own.</p>
-      </label>
-    </div>
-    <hr>
-    <p class="view-note">lowy is itself an example of what it preaches: one small file, no
-      trackers, no fetches, works offline, runs on almost nothing. Part of
-      <a href="../../index.html">flove</a>; sibling to <a href="../lowai/index.html">LowAI</a>.</p>
-  </section>
+<main class="content">
 
-  <!-- ============ CONCEPTS ============ -->
-  <section class="view" id="v-concepts">
-    <h2>The web of ideas</h2>
-    <p class="view-note">These movements are not rivals — they lean on one another. Tap a star to
-      jump to its family; every card points to its neighbours.</p>
-    <div class="map-frame" id="conceptMap"><!-- svg injected --></div>
-    <div id="concept-groups"><!-- groups injected --></div>
-  </section>
-
-  <!-- ============ PACK ============ -->
-  <section class="view" id="v-pack">
-    <h2>The Pack</h2>
-    <p class="pack-intro view-note">An open, growing set of low-tech blueprints for the basics of a
-      good life — from a jar of sprouts to a village workshop. Nothing is sold here: everything links
-      to open plans you can build, learn and share. Tick what you want and export your own pack sheet.</p>
-    <div class="level-filter" id="levelFilter" role="group" aria-label="Focus a level">
-      <button data-level="all" class="on">All levels</button>
-      <button data-level="simple">Simple</button>
-      <button data-level="intermediate">Intermediate</button>
-      <button data-level="advanced">Advanced</button>
-    </div>
-    <div id="pack-grid"><!-- rows injected --></div>
-  </section>
-
-  <!-- ============ ADVICE ============ -->
-  <section class="view" id="v-advice">
-    <h2>One small change</h2>
-    <p class="view-note" style="text-align:center;max-width:44ch;margin-inline:auto">
-      Not a wall of a hundred tips. Just one — then, if you like, another.</p>
-    <div class="deck">
-      <div class="advice-card">
-        <p class="text" id="adviceText">…</p>
-        <p class="meta" id="adviceMeta"></p>
-      </div>
-      <div class="deck-actions">
-        <button class="btn" id="anotherBtn">Another →</button>
-        <button class="btn" id="starBtn" title="Keep this one">☆ Keep</button>
-        <button class="btn" id="addBtn">✎ Add your own</button>
-        <button class="btn" id="proposeBtn" title="Suggest it for everyone">↗ Propose</button>
-      </div>
-      <form class="add-form" id="addForm">
-        <textarea id="addText" rows="2" placeholder="Your advice for a simpler life…" maxlength="200" required></textarea>
-        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
-          <label>Theme
-            <select id="addTheme">
-              <option value="money">money</option><option value="stuff">stuff</option>
-              <option value="food">food</option><option value="energy">energy</option>
-              <option value="tech">tech</option><option value="time">time</option>
-              <option value="community">community</option>
-            </select>
-          </label>
-          <button class="btn primary" type="submit">Add to my deck</button>
-        </div>
-      </form>
-    </div>
-    <div class="mine-list" id="mineList" hidden>
-      <h3>My simpler living <small id="mineCount"></small></h3>
-      <ul id="mineItems"></ul>
-      <div class="fmt" id="adviceExport"></div>
-    </div>
+  <!-- ============ MAIN (category blocks; Lowy shown by default) ============ -->
+  <section class="page" id="v-main">
+    <div id="cat-blocks"><!-- category blocks injected --></div>
   </section>
 
   <!-- ============ ABOUT ============ -->
-  <section class="view" id="v-about">
+  <section class="page" id="v-about">
     <h2>About lowy</h2>
     <p><b>lowy</b> gathers a family of movements — simple living, low tech, low consumption, LowAI,
       and their roots and practices — into one calm place. It links them, offers an open pack of
       survival-and-self-reliance blueprints in the spirit of the
       <a href="https://www.opensourceecology.org/gvcs/" rel="noopener">Global Village Construction Set</a>,
-      and hands out small, practical advice for living more simply.</p>
+      and hands out the small everyday culture of living more simply.</p>
     <p>It is built the way it argues you should build: one small file, no tracking, no external calls,
       readable and repairable, working offline and printable on paper. It is part of
-      <a href="../../index.html">flove</a>.</p>
+      <a href="../../index.html">flove</a>; sibling to <a href="../lowai/index.html">LowAI</a>.</p>
     <h3>Contribute</h3>
-    <p>Have a blueprint or a piece of advice worth sharing? Use <em>↗ Propose</em> on any advice card,
+    <p>Have a blueprint or a saying worth sharing? Use <em>✎ Propose one</em> in any Culture section,
       or write to <a href="mailto:hola@lowai.org?subject=lowy%20contribution">hola@lowai.org</a>.</p>
     <p class="footer">lowy · flove · <a href="../lowai/index.html">LowAI</a> · low-ink by design.</p>
   </section>
@@ -343,11 +288,12 @@
 <div class="onboard" id="onboard">
   <div class="panel">
     <h2>Welcome to lowy</h2>
-    <p>Three doors, one idea — a good life on less:</p>
+    <p>One idea — a good life on less:</p>
     <ol>
-      <li><b>Concepts</b> — the map of movements, and how they connect.</li>
-      <li><b>The Pack</b> — open low-tech blueprints; tick some and export your own kit.</li>
-      <li><b>Advice</b> — one small change at a time; keep the ones you'll try.</li>
+      <li><b>Lowy</b> opens by default. Pick any <b>category</b> in the left column to switch —
+        you can light up several at once.</li>
+      <li>The <b>Sections</b> tabs — <b>Concepts</b>, <b>Tools</b>, <b>Culture</b> — choose what each shows below.</li>
+      <li>Tick tools for your pack, keep the sayings you'll live by, propose your own.</li>
     </ol>
     <p>Everything stays on your device unless you choose to propose it. Nothing is tracked.</p>
     <button class="btn primary" id="onboardOk">Start simple →</button>
@@ -356,8 +302,9 @@
 
 <noscript>
   <div class="wrap" style="padding:2rem 0">
-    <p><b>lowy</b> uses a little JavaScript to draw its map, deck and pack. The reading matter —
-    the concepts, the blueprints and the advice — is listed below with all its links.</p>
+    <p><b>lowy</b> uses a little JavaScript to list its categories and their contents.
+    The reading matter — the concepts, the blueprints and the sayings — needs it to appear; the
+    About page above works without it.</p>
   </div>
 </noscript>
 
@@ -367,15 +314,6 @@
    ============================================================ */
 
 /* ---------- 1 · CONCEPTS ---------- */
-const GROUPS = [
-  {id:'simple-living', name:'Simple living', sub:'why it matters'},
-  {id:'low-tech',      name:'Low tech',      sub:'human-scale tools'},
-  {id:'practice',name:'Everyday practice', sub:'how you live'},
-  {id:'building',name:'Building & systems', sub:'making, together'},
-  {id:'land',    name:'Land & food',   sub:'growing & dwelling'},
-  {id:'digital', name:'The digital angle', sub:'lighter tech'},
-];
-
 const CONCEPTS = [
   // Simple living
   {id:'voluntary-simplicity',g:'simple-living',name:'Voluntary simplicity',def:'Deliberately living with less to gain time, meaning and freedom.',why:'The modern philosophy behind simple living.',see:['minimalism','slow-living'],src:{l:'Duane Elgin',u:'https://en.wikipedia.org/wiki/Simple_living#Voluntary_simplicity'}},
@@ -397,7 +335,7 @@ const CONCEPTS = [
   {id:'buy-nothing',g:'practice',name:'Buy Nothing',def:'Sharing, gifting and borrowing within your neighbourhood.',why:'Enough, held in common.',see:['zero-waste','transition-towns'],src:{l:'Buy Nothing Project',u:'https://buynothingproject.org/'}},
   {id:'right-to-repair',g:'practice',name:'Right to repair',def:'The freedom and the means to fix what you own.',why:'A tool you can’t open isn’t really yours.',see:['convivial-tools','open-hardware','appropriate-tech'],src:{l:'iFixit',u:'https://www.ifixit.com/Right-to-Repair'}},
   // Building
-  {id:'ose-gvcs',g:'building',name:'OSE / GVCS',def:'50 open blueprints for the machines a small civilisation needs.',why:'The heart of the Pack.',see:['open-hardware','appropriate-tech','cosmolocalism'],src:{l:'Open Source Ecology',u:'https://www.opensourceecology.org/gvcs/'}},
+  {id:'ose-gvcs',g:'building',name:'OSE / GVCS',def:'50 open blueprints for the machines a small civilisation needs.',why:'The heart of the tools here.',see:['open-hardware','appropriate-tech','cosmolocalism'],src:{l:'Open Source Ecology',u:'https://www.opensourceecology.org/gvcs/'}},
   {id:'open-hardware',g:'building',name:'Open-source hardware',def:'Physical designs anyone can study, build and improve.',why:'Blueprints as a commons.',see:['ose-gvcs','right-to-repair'],src:{l:'OSHWA',u:'https://www.oshwa.org/'}},
   {id:'cosmolocalism',g:'building',name:'Cosmolocalism',def:'Design global, manufacture local.',why:'Shared knowledge, local hands.',see:['ose-gvcs','transition-towns'],src:{l:'P2P Foundation',u:'https://wiki.p2pfoundation.net/Cosmo-Localization'}},
   {id:'transition-towns',g:'building',name:'Transition Towns',def:'Communities building local resilience together.',why:'Simplicity scaled to a neighbourhood.',see:['self-sufficiency','buy-nothing','cosmolocalism'],src:{l:'Transition Network',u:'https://transitionnetwork.org/'}},
@@ -412,79 +350,93 @@ const CONCEPTS = [
   {id:'calm-tech',g:'digital',name:'Calm technology',def:'Tech that respects attention and stays in the background.',why:'What frugal computing should feel like.',see:['digital-minimalism','lowai'],src:{l:'calmtech.com',u:'https://calmtech.com/'}},
 ];
 
-/* ---------- 2 · THE PACK ---------- */
-const DOMAINS = [
-  {id:'water',name:'Water',ico:'\u{1F4A7}'},
-  {id:'food',name:'Food',ico:'\u{1F33E}'},
-  {id:'shelter',name:'Shelter',ico:'\u{1F3E0}'},
-  {id:'energy',name:'Energy',ico:'\u{2600}\u{FE0F}'},
-  {id:'tools',name:'Tools',ico:'\u{1F528}'},
-  {id:'health',name:'Health',ico:'\u{271A}'},
-  {id:'sanitation',name:'Sanitation & waste',ico:'\u{267B}\u{FE0F}'},
-  {id:'community',name:'Community & comms',ico:'\u{1F4E1}'},
-  {id:'knowledge',name:'Knowledge',ico:'\u{1F4D6}'},
+/* ---------- 2 · CATEGORIES (the network: Lowy at the centre) ----------
+   concepts: related concept ids · themes: related saying themes (null = all) */
+const CATS = [
+  {id:'lowy',name:'Lowy',short:'Lowy',ico:'\u{1F331}',center:true,themes:null,
+   concepts:['voluntary-simplicity','degrowth','low-consumption','doughnut','footprint-measurers','appropriate-tech','convivial-tools','lowai']},
+  {id:'water',name:'Water',short:'Water',ico:'\u{1F4A7}',themes:['money','energy'],
+   concepts:['self-sufficiency','off-grid','appropriate-tech']},
+  {id:'food',name:'Food',short:'Food',ico:'\u{1F33E}',themes:['food'],
+   concepts:['permaculture','agroecology','seed-saving','self-sufficiency','zero-waste']},
+  {id:'shelter',name:'Shelter',short:'Shelter',ico:'\u{1F3E0}',themes:['energy','stuff'],
+   concepts:['tiny-house','off-grid','minimalism']},
+  {id:'energy',name:'Energy',short:'Energy',ico:'\u{2600}\u{FE0F}',themes:['energy'],
+   concepts:['off-grid','low-consumption','footprint-measurers','appropriate-tech']},
+  {id:'tools',name:'Tools',short:'Tools',ico:'\u{1F528}',themes:['stuff'],
+   concepts:['convivial-tools','right-to-repair','open-hardware','ose-gvcs']},
+  {id:'health',name:'Health',short:'Health',ico:'\u{271A}',themes:['time','food'],
+   concepts:['slow-living','self-sufficiency','minimalism']},
+  {id:'sanitation',name:'Sanitation & waste',short:'Sanitation',ico:'\u{267B}\u{FE0F}',themes:['stuff','food'],
+   concepts:['zero-waste','permaculture','low-consumption']},
+  {id:'community',name:'Community & comms',short:'Community',ico:'\u{1F4E1}',themes:['community','money'],
+   concepts:['buy-nothing','transition-towns','cosmolocalism','frugality']},
+  {id:'knowledge',name:'Knowledge',short:'Knowledge',ico:'\u{1F4D6}',themes:['tech','time'],
+   concepts:['low-tech-web','digital-minimalism','calm-tech','open-hardware','lowai']},
 ];
-const LEVELS = ['simple','intermediate','advanced'];
+
+/* ---------- 3 · TOOLS (open blueprints; core:1 = Lowy’s own picks) ---------- */
+const LEVELS = ['basic','intermediate','advanced'];
 const AP='https://www.appropedia.org/', OSE='https://www.opensourceecology.org/gvcs/';
-const PACK = [
+const TOOLS = [
   // water
-  {d:'water',l:'simple',t:'Rainwater catchment barrel',b:'Collect and store roof runoff.',s:{l:'Appropedia',u:AP+'Rainwater_harvesting'}},
-  {d:'water',l:'simple',t:'Cloth + charcoal pre-filter',b:'First-stage sediment & taste filter.',s:{l:'Appropedia',u:AP}},
+  {d:'water',l:'basic',t:'Rainwater catchment barrel',b:'Collect and store roof runoff.',s:{l:'Appropedia',u:AP+'Rainwater_harvesting'}},
+  {d:'water',l:'basic',t:'Cloth + charcoal pre-filter',b:'First-stage sediment & taste filter.',s:{l:'Appropedia',u:AP}},
   {d:'water',l:'intermediate',t:'Slow-sand biofilter',b:'Biological filtration in a barrel.',s:{l:'Appropedia',u:AP+'Biosand_filter'}},
   {d:'water',l:'intermediate',t:'Solar still',b:'Distil clean water with the sun.',s:{l:'Appropedia',u:AP+'Solar_still'}},
   {d:'water',l:'advanced',t:'Hand-pump borehole well',b:'Reliable groundwater for a community.',s:{l:'Appropedia',u:AP+'Hand_pump'}},
   // food
-  {d:'food',l:'simple',t:'Sprouting jar',b:'Fresh greens in days, no soil.',s:{l:'Appropedia',u:AP}},
-  {d:'food',l:'simple',t:'Container / raised bed',b:'Grow food in any small space.',s:{l:'Appropedia',u:AP+'Raised_bed_gardening'}},
-  {d:'food',l:'intermediate',t:'Solar food dryer',b:'Preserve harvest without power.',s:{l:'Appropedia',u:AP+'Solar_food_dryer'}},
+  {d:'food',l:'basic',t:'Sprouting jar',b:'Fresh greens in days, no soil.',s:{l:'Appropedia',u:AP}},
+  {d:'food',l:'basic',t:'Container / raised bed',b:'Grow food in any small space.',s:{l:'Appropedia',u:AP+'Raised_bed_gardening'}},
+  {d:'food',l:'intermediate',t:'Solar food dryer',b:'Preserve harvest without power.',core:1,s:{l:'Appropedia',u:AP+'Solar_food_dryer'}},
   {d:'food',l:'intermediate',t:'Root cellar',b:'Cold storage with no electricity.',s:{l:'Appropedia',u:AP+'Root_cellar'}},
   {d:'food',l:'advanced',t:'Aquaponics loop',b:'Fish + plants in a closed system.',s:{l:'Appropedia',u:AP+'Aquaponics'}},
   {d:'food',l:'advanced',t:'GVCS seed press & oven',b:'Village-scale oil and baking.',s:{l:'OSE',u:OSE}},
   // shelter
-  {d:'shelter',l:'simple',t:'Draught-proof & insulate',b:'Repair what you have; keep heat in.',s:{l:'Appropedia',u:AP}},
+  {d:'shelter',l:'basic',t:'Draught-proof & insulate',b:'Repair what you have; keep heat in.',s:{l:'Appropedia',u:AP}},
   {d:'shelter',l:'intermediate',t:'Rocket mass heater',b:'Wood heat that sips fuel.',s:{l:'Appropedia',u:AP+'Rocket_mass_heater'}},
   {d:'shelter',l:'intermediate',t:'Earthbag / cob wall',b:'Build with earth under your feet.',s:{l:'Appropedia',u:AP+'Earthbag_construction'}},
-  {d:'shelter',l:'advanced',t:'GVCS CEB press',b:'Compressed-earth bricks by the thousand.',s:{l:'OSE',u:OSE}},
+  {d:'shelter',l:'advanced',t:'GVCS CEB press',b:'Compressed-earth bricks by the thousand.',core:1,s:{l:'OSE',u:OSE}},
   {d:'shelter',l:'advanced',t:'Hand-tool timber frame',b:'A durable home from local wood.',s:{l:'Appropedia',u:AP}},
   // energy
-  {d:'energy',l:'simple',t:'Haybox / retained-heat cooker',b:'Finish cooking with no fuel.',s:{l:'Appropedia',u:AP+'Haybox'}},
-  {d:'energy',l:'simple',t:'Solar USB charger',b:'Keep small devices alive off-grid.',s:{l:'Appropedia',u:AP}},
-  {d:'energy',l:'intermediate',t:'12V solar + battery kit',b:'Lights and charging from the sun.',s:{l:'Appropedia',u:AP+'Solar_electricity'}},
+  {d:'energy',l:'basic',t:'Haybox / retained-heat cooker',b:'Finish cooking with no fuel.',s:{l:'Appropedia',u:AP+'Haybox'}},
+  {d:'energy',l:'basic',t:'Solar USB charger',b:'Keep small devices alive off-grid.',s:{l:'Appropedia',u:AP}},
+  {d:'energy',l:'intermediate',t:'12V solar + battery kit',b:'Lights and charging from the sun.',core:1,s:{l:'Appropedia',u:AP+'Solar_electricity'}},
   {d:'energy',l:'intermediate',t:'Batch solar water heater',b:'Hot water without a boiler.',s:{l:'Appropedia',u:AP+'Solar_water_heater'}},
   {d:'energy',l:'advanced',t:'Micro-hydro / small wind',b:'Steady local power from flow.',s:{l:'Appropedia',u:AP+'Micro_hydro'}},
   {d:'energy',l:'advanced',t:'GVCS wind turbine',b:'Open-source community wind.',s:{l:'OSE',u:OSE}},
   // tools
-  {d:'tools',l:'simple',t:'Repair kit & knife care',b:'Sharpen, glue, patch, mend.',s:{l:'iFixit',u:'https://www.ifixit.com/'}},
+  {d:'tools',l:'basic',t:'Repair kit & knife care',b:'Sharpen, glue, patch, mend.',core:1,s:{l:'iFixit',u:'https://www.ifixit.com/'}},
   {d:'tools',l:'intermediate',t:'Treadle / foot-powered lathe',b:'Shape wood without electricity.',s:{l:'Appropedia',u:AP}},
   {d:'tools',l:'intermediate',t:'Hand-tool workbench',b:'A full kit that needs no plug.',s:{l:'Appropedia',u:AP}},
-  {d:'tools',l:'advanced',t:'Open-source CNC / 3D printer',b:'Make precise parts locally.',s:{l:'OSE',u:OSE}},
+  {d:'tools',l:'advanced',t:'Open-source CNC / 3D printer',b:'Make precise parts locally.',core:1,s:{l:'OSE',u:OSE}},
   {d:'tools',l:'advanced',t:'Backyard foundry',b:'Recast metal into new tools.',s:{l:'Appropedia',u:AP}},
   // health
-  {d:'health',l:'simple',t:'Home first-aid kit',b:'The basics, kept ready.',s:{l:'Appropedia',u:AP+'First_aid'}},
+  {d:'health',l:'basic',t:'Home first-aid kit',b:'The basics, kept ready.',s:{l:'Appropedia',u:AP+'First_aid'}},
   {d:'health',l:'intermediate',t:'Medicinal herb garden',b:'Grow common remedies.',s:{l:'Appropedia',u:AP}},
   {d:'health',l:'intermediate',t:'Oral rehydration know-how',b:'A life-saving, low-cost skill.',s:{l:'Appropedia',u:AP+'Oral_rehydration_therapy'}},
   {d:'health',l:'advanced',t:'Open-source medical devices',b:'Repairable clinical hardware (Glia).',s:{l:'Glia',u:'https://glia.org/'}},
   // sanitation
-  {d:'sanitation',l:'simple',t:'Compost your food scraps',b:'Turn waste into soil.',s:{l:'Appropedia',u:AP+'Composting'}},
+  {d:'sanitation',l:'basic',t:'Compost your food scraps',b:'Turn waste into soil.',core:1,s:{l:'Appropedia',u:AP+'Composting'}},
   {d:'sanitation',l:'intermediate',t:'Composting (dry) toilet',b:'Sanitation without water or sewers.',s:{l:'Appropedia',u:AP+'Composting_toilet'}},
   {d:'sanitation',l:'intermediate',t:'Greywater garden',b:'Reuse washing water on plants.',s:{l:'Appropedia',u:AP+'Greywater'}},
   {d:'sanitation',l:'advanced',t:'Biogas digester',b:'Cooking gas from organic waste.',s:{l:'Appropedia',u:AP+'Biogas'}},
   {d:'sanitation',l:'advanced',t:'Constructed wetland',b:'Clean wastewater with plants.',s:{l:'Appropedia',u:AP+'Constructed_wetland'}},
   // community
-  {d:'community',l:'simple',t:'Tool-share / Buy Nothing group',b:'Own less by sharing more.',s:{l:'Buy Nothing',u:'https://buynothingproject.org/'}},
-  {d:'community',l:'intermediate',t:'Repair café',b:'Fix things together, monthly.',s:{l:'Repair Café',u:'https://www.repaircafe.org/'}},
+  {d:'community',l:'basic',t:'Tool-share / Buy Nothing group',b:'Own less by sharing more.',s:{l:'Buy Nothing',u:'https://buynothingproject.org/'}},
+  {d:'community',l:'intermediate',t:'Repair café',b:'Fix things together, monthly.',core:1,s:{l:'Repair Café',u:'https://www.repaircafe.org/'}},
   {d:'community',l:'intermediate',t:'LoRa long-range radio',b:'Off-grid text over kilometres.',s:{l:'Meshtastic',u:'https://meshtastic.org/'}},
-  {d:'community',l:'advanced',t:'Community mesh network',b:'Local internet the people own.',s:{l:'Appropedia',u:AP+'Mesh_network'}},
+  {d:'community',l:'advanced',t:'Community mesh network',b:'Local internet the people own.',core:1,s:{l:'Appropedia',u:AP+'Mesh_network'}},
   {d:'community',l:'advanced',t:'Co-op & local currency',b:'Keep value circulating locally.',s:{l:'Transition Network',u:'https://transitionnetwork.org/'}},
   // knowledge
-  {d:'knowledge',l:'simple',t:'Offline reference library',b:'Wikipedia & how-tos, no internet (Kiwix).',s:{l:'Kiwix',u:'https://www.kiwix.org/'}},
+  {d:'knowledge',l:'basic',t:'Offline reference library',b:'Wikipedia & how-tos, no internet (Kiwix).',core:1,s:{l:'Kiwix',u:'https://www.kiwix.org/'}},
   {d:'knowledge',l:'intermediate',t:'Skill-shares & swaps',b:'Trade know-how, seeds and recipes.',s:{l:'Transition Network',u:'https://transitionnetwork.org/'}},
   {d:'knowledge',l:'advanced',t:'Local maker / fab space',b:'Shared tools and documentation.',s:{l:'Appropedia',u:AP}},
   {d:'knowledge',l:'advanced',t:'Document everything you build',b:'Open your plans back to the commons.',s:{l:'Appropedia',u:AP}},
 ];
 
-/* ---------- 3 · ADVICE (seed) ---------- */
-const ADVICE_SEED = [
+/* ---------- 4 · CULTURE (seed sayings) ---------- */
+const SAYINGS_SEED = [
   {t:'Repair before you replace — find your nearest repair café.',th:'stuff'},
   {t:'Wait 30 days before any non-essential purchase.',th:'money'},
   {t:'One in, one out: bring nothing home without letting something go.',th:'stuff'},
@@ -511,31 +463,112 @@ const ADVICE_SEED = [
   {t:'Say no to one thing this week to protect your time.',th:'time'},
 ];
 
-/* ---------- storage helpers ---------- */
+/* ---------- storage helpers (keys keep their historic names for continuity) ---------- */
 const store={
   get(k,f){try{const v=localStorage.getItem('lowy.'+k);return v?JSON.parse(v):f}catch(e){return f}},
   set(k,v){try{localStorage.setItem('lowy.'+k,JSON.stringify(v))}catch(e){}}
 };
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+// tiny PRNG (no Math.random) for deck shuffling
+let _seed=0x2545F491; function nextRand(){_seed^=_seed<<13;_seed^=_seed>>>17;_seed^=_seed<<5;return((_seed>>>0)/4294967296);}
 
-/* ============ CONCEPTS render ============ */
-function renderConcepts(){
-  const byId=Object.fromEntries(CONCEPTS.map(c=>[c.id,c]));
-  const host=document.getElementById('concept-groups');
-  host.innerHTML=GROUPS.map(gr=>{
-    const cards=CONCEPTS.filter(c=>c.g===gr.id).map(c=>`
-      <article class="card" id="c-${c.id}">
-        <h3>${esc(c.name)}</h3>
-        <p class="def">${esc(c.def)}</p>
-        <p class="why">${esc(c.why)}</p>
-        <div class="chips">${c.see.map(id=>byId[id]
-          ?`<button class="chip" data-jump="c-${id}">${esc(byId[id].name)}</button>`:'').join('')}</div>
-        ${c.src?`<p class="src"><a href="${c.src.u}" rel="noopener">${esc(c.src.l)} ↗</a></p>`:''}
-      </article>`).join('');
-    return `<section class="group" id="grp-${gr.id}">
-      <h2>${esc(gr.name)} <span class="label">${esc(gr.sub)}</span></h2>
-      <div class="cards">${cards}</div></section>`;
+/* ============ CATEGORIES (left vertical tabs, multiselect) ============
+   Lowy is the root, not a tab: it shows by default when nothing is selected. */
+let catSel=new Set(store.get('cats',[]).filter(id=>CATS.some(c=>c.id===id&&!c.center)));
+function renderCatNav(){
+  const list=document.getElementById('catList');
+  list.innerHTML=CATS.filter(c=>!c.center).map(c=>
+    `<button type="button" class="vtab cat-tab" data-cat="${c.id}" aria-pressed="false">
+       <span class="ico" aria-hidden="true">${c.ico}</span><span>${esc(c.name)}</span></button>`).join('');
+  list.querySelectorAll('.cat-tab').forEach(n=>{
+    n.onclick=()=>{
+      const id=n.dataset.cat;
+      catSel.has(id)?catSel.delete(id):catSel.add(id);
+      store.set('cats',[...catSel]);
+      syncCatNav();renderBlocks();
+      if(catSel.has(id)){const el=document.getElementById('cat-'+id);
+        if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+    };
+  });
+  syncCatNav();
+}
+function syncCatNav(){
+  document.querySelectorAll('#catList .cat-tab').forEach(n=>{
+    const on=catSel.has(n.dataset.cat);
+    n.classList.toggle('sel',on);
+    n.setAttribute('aria-pressed',on);
+  });
+}
+
+/* ============ CATEGORY BLOCKS ============ */
+const conceptById=Object.fromEntries(CONCEPTS.map(c=>[c.id,c]));
+function renderBlocks(){
+  const host=document.getElementById('cat-blocks');
+  // default view = Lowy (the root) when no category tab is selected
+  const sel=catSel.size?CATS.filter(c=>catSel.has(c.id)):[CATS.find(c=>c.center)];
+  host.innerHTML=sel.map(cat=>`
+    <section class="catblock" id="cat-${cat.id}">
+      <h2 class="cat-title"><span class="ico">${cat.ico}</span>${esc(cat.name)}</h2>
+      <div class="sec sec-concepts">
+        <h3>Concepts <span class="label">the ideas behind it</span></h3>
+        ${conceptCards(cat)}
+      </div>
+      <div class="sec sec-tools">
+        <h3>Tools <span class="label">open blueprints, tick yours</span></h3>
+        <div class="cells">${LEVELS.map(lv=>toolCell(cat,lv)).join('')}</div>
+      </div>
+      <div class="sec sec-culture">
+        <h3>Culture <span class="label">sayings to live by</span></h3>
+        <div class="sayings">${[0,1].map(slot=>`
+          <div class="saying-col" data-cat="${cat.id}" data-slot="${slot}">
+            <div class="saying-card"><p class="text">…</p><p class="meta"></p></div>
+            <div class="saying-actions">
+              <button class="btn keep-btn" title="Keep this one">☆ Keep</button>
+              <button class="btn another-btn">Another →</button>
+            </div>
+          </div>`).join('')}
+        </div>
+        <div class="propose-row"><button class="btn propose-btn" data-cat="${cat.id}">✎ Propose one</button></div>
+        <form class="add-form" data-cat="${cat.id}">
+          <textarea rows="2" placeholder="Your saying for a simpler life…" maxlength="200" required></textarea>
+          <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+            <label>Theme
+              <select>
+                <option value="money">money</option><option value="stuff">stuff</option>
+                <option value="food">food</option><option value="energy">energy</option>
+                <option value="tech">tech</option><option value="time">time</option>
+                <option value="community">community</option>
+              </select>
+            </label>
+            <button class="btn" type="submit">Add to my deck</button>
+            <button class="btn primary propose-send" type="button">↗ Propose to everyone</button>
+          </div>
+        </form>
+      </div>
+    </section>`).join('');
+  wireConceptChips(host);
+  wireTools(host);
+  wireCulture(host);
+}
+
+/* ---- concepts section: cards + chips + links ---- */
+function conceptCards(cat){
+  const set=new Set(cat.concepts);
+  const cards=cat.concepts.map(id=>{
+    const c=conceptById[id];if(!c)return'';
+    const chips=c.see.filter(s=>set.has(s)).map(s=>
+      `<button class="chip" data-jump="c-${cat.id}-${s}">${esc(conceptById[s].name)}</button>`).join('');
+    return `<article class="card" id="c-${cat.id}-${c.id}">
+      <h4>${esc(c.name)}</h4>
+      <p class="def">${esc(c.def)}</p>
+      <p class="why">${esc(c.why)}</p>
+      ${chips?`<div class="chips">${chips}</div>`:''}
+      ${c.src?`<p class="src"><a href="${c.src.u}" rel="noopener">${esc(c.src.l)} ↗</a></p>`:''}
+    </article>`;
   }).join('');
+  return `<div class="cards">${cards}</div>`;
+}
+function wireConceptChips(host){
   host.querySelectorAll('[data-jump]').forEach(b=>b.onclick=()=>{
     const el=document.getElementById(b.dataset.jump);
     if(el){el.scrollIntoView({behavior:'smooth',block:'center'});
@@ -544,133 +577,140 @@ function renderConcepts(){
   });
 }
 
-/* ============ CONCEPT MAP (svg) ============ */
-function renderMap(){
-  const pos={'simple-living':[300,150],'low-tech':[120,70],practice:[130,235],
-    building:[480,80],land:[300,265],digital:[490,225]};
-  const edges=[['simple-living','low-tech'],['simple-living','practice'],['simple-living','building'],
-    ['simple-living','digital'],['simple-living','land'],['low-tech','building'],
-    ['practice','land'],['building','land'],['low-tech','practice']];
-  const W=600,H=310;
-  let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Map of the concept groups">`;
-  edges.forEach(([a,b])=>{svg+=`<line class="map-edge" x1="${pos[a][0]}" y1="${pos[a][1]}" x2="${pos[b][0]}" y2="${pos[b][1]}"/>`;});
-  GROUPS.forEach(gr=>{const[x,y]=pos[gr.id];const big=gr.id==='simple-living'?38:30;
-    svg+=`<g class="map-node" tabindex="0" role="button" data-grp="grp-${gr.id}" aria-label="${esc(gr.name)}">
-      <circle cx="${x}" cy="${y}" r="${big}"/>
-      <text x="${x}" y="${y+4}">${esc(gr.name.replace(/^The /,''))}</text></g>`;});
-  svg+='</svg>';
-  const frame=document.getElementById('conceptMap');
-  frame.innerHTML=svg;
-  const jump=id=>{const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth'});};
-  frame.querySelectorAll('.map-node').forEach(n=>{
-    n.onclick=()=>jump(n.dataset.grp);
-    n.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();jump(n.dataset.grp);}};
+/* ---- tools section: basic/intermediate/advanced, 3 at a time + see more ---- */
+let toolSel=new Set(store.get('pack.selected',[]).map(k=>k.replace('|simple|','|basic|')));
+function toolKey(p){return p.d+'|'+p.l+'|'+p.t;}
+function toolsFor(cat,lv){
+  return cat.id==='lowy'
+    ? TOOLS.filter(p=>p.core&&p.l===lv)
+    : TOOLS.filter(p=>p.d===cat.id&&p.l===lv);
+}
+function toolCell(cat,lv){
+  const items=toolsFor(cat,lv);
+  const lis=items.map((p,i)=>{const k=toolKey(p);
+    const id='p-'+cat.id+'-'+btoa(unescape(encodeURIComponent(k))).replace(/=/g,'');
+    return `<li${i>=3?' hidden':''}><input type="checkbox" id="${id}" data-key="${esc(k)}" ${toolSel.has(k)?'checked':''}>
+      <label for="${id}"><span class="bl-title">${esc(p.t)}</span>
+      <span class="bl-blurb">${esc(p.b)} · <a href="${p.s.u}" rel="noopener">${esc(p.s.l)}↗</a></span></label></li>`;}).join('')
+    ||'<li><small>—</small></li>';
+  const more=items.length>3?`<button class="btn see-more" type="button">See more ↓</button>`:'';
+  return `<div class="cell" data-level="${lv}"><span class="label">${lv}</span><ul>${lis}</ul>${more}</div>`;
+}
+function wireTools(host){
+  host.querySelectorAll('.cell input[type=checkbox]').forEach(cb=>cb.onchange=()=>{
+    cb.checked?toolSel.add(cb.dataset.key):toolSel.delete(cb.dataset.key);
+    store.set('pack.selected',[...toolSel]);updateBasket();
+  });
+  host.querySelectorAll('.see-more').forEach(btn=>btn.onclick=()=>{
+    const hidden=[...btn.parentElement.querySelectorAll('li[hidden]')];
+    hidden.slice(0,3).forEach(li=>li.hidden=false);
+    if(hidden.length<=3)btn.remove();
   });
 }
 
-/* ============ THE PACK ============ */
-let packSel=new Set(store.get('pack.selected',[]));
-function packKey(p){return p.d+'|'+p.l+'|'+p.t;}
-function renderPack(){
-  const host=document.getElementById('pack-grid');
-  host.innerHTML=DOMAINS.map(dom=>{
-    const cells=LEVELS.map(lv=>{
-      const items=PACK.filter(p=>p.d===dom.id&&p.l===lv);
-      const lis=items.map(p=>{const k=packKey(p);const id='p-'+btoa(unescape(encodeURIComponent(k))).replace(/=/g,'');
-        return `<li><input type="checkbox" id="${id}" data-key="${esc(k)}" ${packSel.has(k)?'checked':''}>
-          <label for="${id}"><span class="bl-title">${esc(p.t)}</span>
-          <span class="bl-blurb">${esc(p.b)} · <a href="${p.s.u}" rel="noopener">${esc(p.s.l)}↗</a></span></label></li>`;}).join('')
-        ||'<li><small>—</small></li>';
-      return `<div class="cell" data-level="${lv}"><span class="label">${lv}</span><ul>${lis}</ul></div>`;
-    }).join('');
-    return `<div class="domain-row"><h3><span class="ico">${dom.ico}</span> ${esc(dom.name)}</h3>
-      <div class="cells">${cells}</div></div>`;
-  }).join('');
-  host.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.onchange=()=>{
-    cb.checked?packSel.add(cb.dataset.key):packSel.delete(cb.dataset.key);
-    store.set('pack.selected',[...packSel]);updateBasket();
-  });
-}
-// level focus filter
-document.getElementById('levelFilter').addEventListener('click',e=>{
-  const btn=e.target.closest('button');if(!btn)return;
-  document.querySelectorAll('#levelFilter button').forEach(b=>b.classList.toggle('on',b===btn));
-  const lv=btn.dataset.level;
-  document.querySelectorAll('#pack-grid .cell').forEach(c=>
-    c.classList.toggle('dim',lv!=='all'&&c.dataset.level!==lv));
-});
-
-/* ---- basket (sticky export bar) ---- */
+/* ---- tools basket (sticky export bar, §13.12) ---- */
 function updateBasket(){
-  let bar=document.getElementById('packBasket');
-  const n=packSel.size;
-  if(!bar){bar=document.createElement('div');bar.className='basket';bar.id='packBasket';
-    document.getElementById('v-pack').appendChild(bar);}
-  bar.innerHTML=`<div class="wrap"><span class="count">${n}</span> blueprint${n===1?'':'s'} in your pack
+  let bar=document.getElementById('toolBasket');
+  const n=toolSel.size;
+  if(!bar){bar=document.createElement('div');bar.className='basket';bar.id='toolBasket';
+    document.getElementById('v-main').appendChild(bar);}
+  bar.innerHTML=`<div class="wrap"><span class="count">${n}</span> tool${n===1?'':'s'} in your pack
     <span class="fmt" style="margin-left:auto"></span></div>`;
   const fmt=bar.querySelector('.fmt');
-  fmt.appendChild(makeExportControls('My lowy Pack',()=>packRows(),n===0));
+  fmt.appendChild(makeExportControls('My lowy tools',()=>toolRows(),n===0));
   const clr=el('button','btn','Clear');clr.disabled=n===0;
-  clr.onclick=()=>{packSel.clear();store.set('pack.selected',[]);renderPack();updateBasket();};
+  clr.onclick=()=>{toolSel.clear();store.set('pack.selected',[]);renderBlocks();updateBasket();};
   fmt.appendChild(clr);
 }
-function packRows(){
-  return PACK.filter(p=>packSel.has(packKey(p))).map(p=>({
-    domain:DOMAINS.find(d=>d.id===p.d).name,level:p.l,item:p.t,note:p.b,source:p.s.l,url:p.s.u}));
+function toolRows(){
+  return TOOLS.filter(p=>toolSel.has(toolKey(p))).map(p=>({
+    category:CATS.find(c=>c.id===p.d).name,level:p.l,item:p.t,note:p.b,source:p.s.l,url:p.s.u}));
 }
 
-/* ============ ADVICE DECK ============ */
-function allAdvice(){
+/* ---- culture section: two decks per category + propose ---- */
+function allSayings(){
   const mine=store.get('advice.mine',[]);
-  return ADVICE_SEED.map((a,i)=>({id:'seed-'+i,text:a.t,theme:a.th,source:'seed'}))
+  return SAYINGS_SEED.map((a,i)=>({id:'seed-'+i,text:a.t,theme:a.th,source:'seed'}))
     .concat(mine.map((a,i)=>({id:'mine-'+i,text:a.text,theme:a.theme,source:'you'})));
 }
-let deckOrder=[],deckPos=0,current=null;
-function shuffleDeck(){const a=allAdvice();for(let i=a.length-1;i>0;i--){const j=Math.floor(nextRand()*(i+1));[a[i],a[j]]=[a[j],a[i]];}deckOrder=a;deckPos=0;}
-// deterministic-free tiny PRNG seeded from time-independent counter so we avoid Math.random ban concerns
-let _seed=0x2545F491; function nextRand(){_seed^=_seed<<13;_seed^=_seed>>>17;_seed^=_seed<<5;return((_seed>>>0)/4294967296);}
-function showAdvice(a){current=a;
-  document.getElementById('adviceText').textContent='“'+a.text+'”';
-  const starred=store.get('advice.starred',[]).some(s=>s.text===a.text);
-  document.getElementById('adviceMeta').innerHTML=
-    `${esc(a.theme)}${a.source==='you'?' · yours':''}`;
-  document.getElementById('starBtn').textContent=starred?'★ Kept':'☆ Keep';
+function poolFor(cat){
+  const all=allSayings();
+  return cat.themes?all.filter(a=>cat.themes.includes(a.theme)):all;
 }
-function nextAdvice(){if(deckPos>=deckOrder.length){shuffleDeck();}showAdvice(deckOrder[deckPos++]);}
-document.getElementById('anotherBtn').onclick=nextAdvice;
-document.getElementById('starBtn').onclick=()=>{
-  if(!current)return;const list=store.get('advice.starred',[]);
-  const i=list.findIndex(s=>s.text===current.text);
-  if(i>=0)list.splice(i,1);else list.push({text:current.text,theme:current.theme});
-  store.set('advice.starred',list);showAdvice(current);renderMine();
-};
-document.getElementById('addBtn').onclick=()=>document.getElementById('addForm').classList.toggle('open');
-document.getElementById('addForm').onsubmit=e=>{e.preventDefault();
-  const t=document.getElementById('addText').value.trim();if(!t)return;
-  const mine=store.get('advice.mine',[]);mine.push({text:t,theme:document.getElementById('addTheme').value});
-  store.set('advice.mine',mine);document.getElementById('addText').value='';
-  document.getElementById('addForm').classList.remove('open');shuffleDeck();
-  showAdvice({text:t,theme:document.getElementById('addTheme').value,source:'you'});renderMine();
-};
-document.getElementById('proposeBtn').onclick=()=>{
-  if(!current)return;
-  const body=encodeURIComponent('I’d like to propose this advice for lowy:\n\n“'+current.text+'”\n\nTheme: '+current.theme);
-  location.href='mailto:hola@lowai.org?subject='+encodeURIComponent('lowy advice proposal')+'&body='+body;
-};
-function renderMine(){
-  const starred=store.get('advice.starred',[]);
-  const box=document.getElementById('mineList');
-  box.hidden=starred.length===0;
-  document.getElementById('mineCount').textContent=starred.length?'· '+starred.length+' kept':'';
-  document.getElementById('mineItems').innerHTML=starred.map((s,i)=>
-    `<li><span>${esc(s.text)}</span><button class="x" data-i="${i}" title="Remove">✕</button></li>`).join('');
-  document.getElementById('mineItems').querySelectorAll('.x').forEach(b=>b.onclick=()=>{
-    const list=store.get('advice.starred',[]);list.splice(+b.dataset.i,1);
-    store.set('advice.starred',list);renderMine();if(current)showAdvice(current);
+function shuffled(arr){const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(nextRand()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;}
+const decks={}; // per cat+slot: {order,pos,current}
+function deckFor(cat,slot){
+  const key=cat.id+'/'+slot;
+  if(!decks[key]||!decks[key].order.length){decks[key]={order:shuffled(poolFor(cat)),pos:slot,current:null};}
+  return decks[key];
+}
+function showSaying(col,deck){
+  if(!deck.order.length){col.querySelector('.text').textContent='— no sayings here yet —';return;}
+  if(deck.pos>=deck.order.length){deck.order=shuffled(deck.order);deck.pos=0;}
+  deck.current=deck.order[deck.pos];
+  const a=deck.current;
+  col.querySelector('.text').textContent='“'+a.text+'”';
+  col.querySelector('.meta').textContent=a.theme+(a.source==='you'?' · yours':'');
+  const kept=store.get('advice.starred',[]).some(s=>s.text===a.text);
+  col.querySelector('.keep-btn').textContent=kept?'★ Kept':'☆ Keep';
+}
+function wireCulture(host){
+  host.querySelectorAll('.saying-col').forEach(col=>{
+    const cat=CATS.find(c=>c.id===col.dataset.cat),slot=+col.dataset.slot;
+    const deck=deckFor(cat,slot);
+    showSaying(col,deck);
+    col.querySelector('.another-btn').onclick=()=>{deck.pos++;showSaying(col,deck);};
+    col.querySelector('.keep-btn').onclick=()=>{
+      const a=deck.current;if(!a)return;
+      const list=store.get('advice.starred',[]);
+      const i=list.findIndex(s=>s.text===a.text);
+      if(i>=0)list.splice(i,1);else list.push({text:a.text,theme:a.theme});
+      store.set('advice.starred',list);showSaying(col,deck);renderMine();
+    };
   });
-  const exp=document.getElementById('adviceExport');exp.innerHTML='';
+  host.querySelectorAll('.propose-btn').forEach(btn=>btn.onclick=()=>{
+    host.querySelector(`.add-form[data-cat="${btn.dataset.cat}"]`).classList.toggle('open');
+  });
+  host.querySelectorAll('.add-form').forEach(form=>{
+    const save=()=>{
+      const t=form.querySelector('textarea').value.trim();if(!t)return null;
+      const theme=form.querySelector('select').value;
+      const mine=store.get('advice.mine',[]);mine.push({text:t,theme});
+      store.set('advice.mine',mine);
+      form.querySelector('textarea').value='';form.classList.remove('open');
+      Object.keys(decks).forEach(k=>delete decks[k]); // refresh pools
+      renderBlocks();renderMine();
+      return {t,theme};
+    };
+    form.onsubmit=e=>{e.preventDefault();save();};
+    form.querySelector('.propose-send').onclick=()=>{
+      const t=form.querySelector('textarea').value.trim();if(!t)return;
+      const theme=form.querySelector('select').value;
+      const body=encodeURIComponent('I’d like to propose this saying for lowy:\n\n“'+t+'”\n\nTheme: '+theme);
+      save();
+      location.href='mailto:hola@lowai.org?subject='+encodeURIComponent('lowy culture proposal')+'&body='+body;
+    };
+  });
+}
+function renderMine(){
+  const kept=store.get('advice.starred',[]);
+  let box=document.getElementById('mineList');
+  if(!box){box=document.createElement('div');box.className='mine-wrap';box.id='mineList';
+    document.getElementById('v-main').insertBefore(box,document.getElementById('toolBasket'));}
+  box.hidden=kept.length===0;
+  box.innerHTML=`<h3>My simpler living <small>${kept.length?'· '+kept.length+' kept':''}</small></h3>
+    <ul>${kept.map((s,i)=>`<li><span>${esc(s.text)}</span>
+      <button class="x" data-i="${i}" title="Remove">✕</button></li>`).join('')}</ul>
+    <div class="fmt" id="mineExport"></div>`;
+  box.querySelectorAll('.x').forEach(b=>b.onclick=()=>{
+    const list=store.get('advice.starred',[]);list.splice(+b.dataset.i,1);
+    store.set('advice.starred',list);renderMine();renderBlocks();
+  });
+  const exp=box.querySelector('#mineExport');
   exp.appendChild(makeExportControls('My simpler living',()=>
-    store.get('advice.starred',[]).map(s=>({advice:s.text,theme:s.theme})),starred.length===0));
+    store.get('advice.starred',[]).map(s=>({saying:s.text,theme:s.theme})),kept.length===0));
 }
 
 /* ============ EXPORT (§13.12 formats: md·json·xml·html·jpg·csv + share) ============ */
@@ -694,7 +734,7 @@ function exportRows(title,rows,fmt){
   const slug=title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
   const keys=rows.length?Object.keys(rows[0]):[];
   let data,mime,ext=fmt;
-  if(fmt==='md'){data='# '+title+'\n\n'+rows.map(r=>'- **'+(r.item||r.advice||Object.values(r)[0])+'**'+
+  if(fmt==='md'){data='# '+title+'\n\n'+rows.map(r=>'- **'+(r.item||r.saying||Object.values(r)[0])+'**'+
       (r.note?' — '+r.note:'')+(r.url?' ['+(r.source||'link')+']('+r.url+')':'')).join('\n');mime='text/markdown';}
   else if(fmt==='json'){data=JSON.stringify({title,items:rows},null,2);mime='application/json';}
   else if(fmt==='csv'){const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
@@ -726,6 +766,10 @@ function shareRows(title,rows){
   if(navigator.share)navigator.share({title,text}).catch(()=>{});
 }
 
+/* ============ MENU (close the dropdown after choosing) ============ */
+document.querySelectorAll('#brandMenu .menu-list label').forEach(l=>
+  l.addEventListener('click',()=>{document.getElementById('brandMenu').open=false;}));
+
 /* ============ THEME ============ */
 (function initTheme(){
   const saved=store.get('theme',null);if(saved)document.documentElement.dataset.theme=saved;
@@ -747,6 +791,6 @@ function shareRows(title,rows){
 })();
 
 /* ============ INIT ============ */
-renderConcepts();renderMap();renderPack();updateBasket();
-shuffleDeck();nextAdvice();renderMine();
+store.set('pack.selected',[...toolSel]); // persist the simple→basic level migration
+renderCatNav();renderBlocks();updateBasket();renderMine();
 </script>
