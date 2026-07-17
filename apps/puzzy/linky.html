@@ -845,6 +845,7 @@
 
     .actions-wrap{ margin-top:26px; }
     .flove-action-bar{ justify-content:center; }
+    .clear-btn{ margin-left:auto; }   /* pushes Clear all to the right end */
 
     /* save format popover */
     .flove-popover{ position:absolute; }
@@ -921,6 +922,7 @@
       <button type="button" class="flove-action-btn" id="saveBtn" aria-haspopup="true" aria-expanded="false">💾 <span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></button>
       <button type="button" class="flove-action-btn" id="shareBtn">🔗 <span class="en" lang="en">Share</span><span class="es" lang="es">Compartir</span></button>
       <button type="button" class="flove-action-btn flove-action-btn--primary" id="publishBtn">📤 <span class="en" lang="en">Publish</span><span class="es" lang="es">Publicar</span></button>
+      <button type="button" class="flove-action-btn clear-btn" id="clearBtn">🧹 <span class="en" lang="en">Clear all</span><span class="es" lang="es">Borrar todo</span></button>
     </div>
   </div>
 </main>
@@ -1291,13 +1293,14 @@
   document.getElementById('aboutBtn').addEventListener('click', ()=>{ aboutPanel.hidden = !aboutPanel.hidden; closeMenu(); });
   document.getElementById('aboutClose').addEventListener('click', ()=>{ aboutPanel.hidden = true; });
 
-  /* Reset */
-  document.getElementById('resetBtn').addEventListener('click', ()=>{
+  /* Reset / Clear all — menu item and action-bar button share one path */
+  function clearAll(){
     if (!committed.length || confirm(T('Clear all links?','¿Borrar todos los enlaces?'))){
       committed = []; persist(); hintEl.hidden = true; render(); toast(T('Cleared','Borrado'));
     }
-    closeMenu();
-  });
+  }
+  document.getElementById('resetBtn').addEventListener('click', ()=>{ clearAll(); closeMenu(); });
+  document.getElementById('clearBtn').addEventListener('click', clearAll);
 
   /* global click / Escape: close menu, save popover */
   document.addEventListener('click', (e)=>{
