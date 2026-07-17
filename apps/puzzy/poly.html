@@ -828,8 +828,8 @@
     }
     .btn-xl .x{ font-weight:900 }
 
-    /* TUNE — the whole rating surface collapses into this one button */
-    .tune{ margin-top:1.8rem; text-align:center }
+    /* TUNE — the whole rating surface collapses into this one button (sits beside Balance) */
+    .tune{ text-align:center }
     .tune > summary{ list-style:none; display:inline-flex }
     .tune > summary::-webkit-details-marker{ display:none }
     .tune[open] > summary{ opacity:.85 }
@@ -1141,51 +1141,48 @@
       </div>
       <div class="run">
         <a class="btn" href="#" aria-label="Mock action">
-          <span class="t-en">Balance my text →</span><span class="t-es">Equilibrar mi texto →</span>
+          <span class="t-en">Balance text →</span><span class="t-es">Equilibrar texto →</span>
         </a>
-        <a class="btn alt" href="#" aria-label="Mock action"><span class="t-en">Summarize</span><span class="t-es">Resumir</span></a>
-        <a class="btn alt" href="#" aria-label="Mock action"><span class="t-en">Copy</span><span class="t-es">Copiar</span></a>
+
+        <!-- TUNE: the whole rating surface lives behind this one button, beside Balance -->
+        <details class="tune">
+          <summary class="btn"><span class="x">◇</span> <span class="t-en">Tune</span><span class="t-es">Afinar</span></summary>
+
+          <div class="tune-panel">
+            <p class="tune-intro">
+              <span class="t-en">Qualify added content</span>
+              <span class="t-es">Califica el contenido añadido</span>
+              <small>
+                <span class="t-en">One click marks a point · two clicks select a region.</span>
+                <span class="t-es">Un clic marca un punto · dos clics seleccionan una región.</span>
+              </small>
+            </p>
+
+            <!-- all 8 tuners in their original order; each open and selectable. -->
+            <div class="bars" id="bars"></div>
+
+            <!-- More raters: reveal 12 extra rating bars + a make-your-own bar -->
+            <div class="raters-zone">
+              <button type="button" class="btn-md" id="moreRaters">
+                <span class="t-en">＋ More raters</span><span class="t-es">＋ Más raters</span>
+              </button>
+              <div class="raters" id="raters" hidden>
+                <div class="rater-btns" id="raterBtns"></div>
+                <div class="creator-wrap" id="creatorWrap"></div>
+                <div class="bars extra-bars" id="extraBars"></div>
+              </div>
+            </div>
+
+            <div class="go-wrap">
+              <button type="button" class="btn-xl" id="go"><span class="t-en">Go</span><span class="t-es">Adelante</span> →</button>
+            </div>
+
+            <!-- generated opposite-content fields land here -->
+            <div class="opp-out" id="oppOut"></div>
+          </div>
+        </details>
       </div>
     </section>
-
-    <!-- TUNE: the whole rating surface lives behind this one big button -->
-    <details class="tune">
-      <summary class="btn-xl"><span class="x">◇</span> <span class="t-en">Tune</span><span class="t-es">Afinar</span></summary>
-
-      <div class="tune-panel">
-        <p class="tune-intro">
-          <span class="t-en">Qualify my added content above</span>
-          <span class="t-es">Califica el contenido que añadí arriba</span>
-          <small>
-            <span class="t-en">One click marks a point · two clicks select a region.</span>
-            <span class="t-es">Un clic marca un punto · dos clics seleccionan una región.</span>
-          </small>
-        </p>
-
-        <!-- all 8 tuners in their original order; each collapsible in place.
-             Only Similar–Different and Important–Trivial open by default. -->
-        <div class="bars" id="bars"></div>
-
-        <!-- More raters: reveal 12 extra rating bars + a make-your-own bar -->
-        <div class="raters-zone">
-          <button type="button" class="btn-md" id="moreRaters">
-            <span class="t-en">＋ More raters</span><span class="t-es">＋ Más raters</span>
-          </button>
-          <div class="raters" id="raters" hidden>
-            <div class="rater-btns" id="raterBtns"></div>
-            <div class="creator-wrap" id="creatorWrap"></div>
-            <div class="bars extra-bars" id="extraBars"></div>
-          </div>
-        </div>
-
-        <div class="go-wrap">
-          <button type="button" class="btn-xl" id="go"><span class="t-en">Go</span><span class="t-es">Adelante</span> →</button>
-        </div>
-
-        <!-- generated opposite-content fields land here -->
-        <div class="opp-out" id="oppOut"></div>
-      </div>
-    </details>
   </div>
 
   <script>
@@ -1218,7 +1215,6 @@
     const isES = ()=> document.getElementById('ui-lang-es').checked;
 
     /* ---- bars: a reusable builder so base + extra + custom all share code ---- */
-    const PRIMARY    = new Set([0, 3]);   // Similar–Different and Important–Trivial open by default
     const barsEl     = document.getElementById('bars');
     const extraBarsEl= document.getElementById('extraBars');
     const raterBtnsEl= document.getElementById('raterBtns');
@@ -1257,7 +1253,7 @@
     /* a collapsible tuner: the two poles sit at the row ends; the whole row
        toggles the bar, and clicking a pole opens it AND checks that pole */
     function buildTuner(p,i){
-      const wrap = el('div','tuner'); if(PRIMARY.has(i)) wrap.classList.add('open');
+      const wrap = el('div','tuner'); wrap.classList.add('open');   // all tuners open & selectable
       const head = el('div','tuner-sum');
       const lp = el('span','pole l'); lp.append(bi(p.en[0], p.es[0]));
       const rp = el('span','pole r'); rp.append(bi(p.en[4], p.es[4]));
