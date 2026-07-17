@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="author" content="Marc (marcflove)">
-<meta name="description" content="Ten candidate logo marks for pracsys — the body-systems practice board. Spine, paired rows, threading and the eleven-system body, drawn as scalable SVG.">
-<title>✺ pracsys · ten possible marks</title>
+<meta name="description" content="Four candidate logo marks for pracsys — the body-systems practice board. The spine, the paired exchange, the eleven-system constellation and the assembled figure, drawn as scalable animated SVG.">
+<title>✺ pracsys · four possible marks</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><g fill='none' stroke='%234dd0e1' stroke-width='3' stroke-linecap='round'><circle cx='32' cy='32' r='21'/><line x1='32' y1='11' x2='32' y2='53'/></g><line x1='13' y1='32' x2='51' y2='32' stroke='%23ff8a65' stroke-width='2.4' stroke-linecap='round'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -93,6 +93,26 @@
   .mk .fg{ fill:var(--g); }   .mk .fp{ fill:var(--p); }
   .mk .fs{ fill:var(--a-soft); }
 
+  /* ── mark animations (main stage only — the 16/24/44 proofs stay still,
+        so they keep reading as static legibility tests) ───────────────── */
+  @media (prefers-reduced-motion:no-preference){
+    /* Spine — writes itself top-to-bottom, like laying the board out row by row */
+    .stage .anim-spine .ns{ stroke-dasharray:64; animation:spine-draw 3.4s ease-in-out infinite; }
+    /* Pair — the two systems hand activity back and forth across the reason node */
+    .stage .anim-pair .fa{ animation:pair-beat 2.6s ease-in-out infinite; }
+    .stage .anim-pair .fc{ animation:pair-beat 2.6s ease-in-out infinite; animation-delay:1.3s; }
+    .stage .anim-pair .fs{ animation:pair-core 2.6s ease-in-out infinite; }
+    /* Eleven — the constellation turns slowly around the centred body */
+    .stage .anim-ring11{ transform-origin:50% 50%; animation:ring-spin 16s linear infinite; }
+    /* Figure — the assembled body breathes */
+    .stage .anim-figure{ transform-origin:50% 55%; animation:fig-breathe 3.8s ease-in-out infinite; }
+  }
+  @keyframes spine-draw{ 0%{ stroke-dashoffset:64; } 55%,100%{ stroke-dashoffset:0; } }
+  @keyframes pair-beat{ 0%,100%{ opacity:.4; } 50%{ opacity:1; } }
+  @keyframes pair-core{ 0%,100%{ opacity:.5; } 50%{ opacity:1; } }
+  @keyframes ring-spin{ to{ transform:rotate(360deg); } }
+  @keyframes fig-breathe{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.07); } }
+
   footer{ max-width:1180px; margin:clamp(1.8rem,5vw,3rem) auto 0; color:var(--dim);
     font-size:.82rem; line-height:1.7; border-top:1px solid var(--faint); padding-top:1.2rem; }
   footer b{ color:var(--ink); font-weight:600; }
@@ -105,8 +125,8 @@
 
 <header>
   <span class="kicker">flove · brand study</span>
-  <h1>pracsys — ten possible <em>marks</em></h1>
-  <p class="lede">Ten candidate logos for the app that lays the <b>eleven biological systems</b> onto a board as a living body — <b>paired rows around a central spine</b>, threaded with reasons, verbs and immune subsystems. Every mark is pure SVG and holds down to <b>16&nbsp;px</b>.</p>
+  <h1>pracsys — four possible <em>marks</em></h1>
+  <p class="lede">Four candidate logos for the app that lays the <b>eleven biological systems</b> onto a board as a living body — <b>paired rows around a central spine</b>, threaded with reasons, verbs and immune subsystems. Each mark is pure SVG, holds down to <b>16&nbsp;px</b>, and carries a small motion of its own.</p>
 </header>
 
 <section class="hero" id="hero" aria-label="Leading candidate lockup"></section>
@@ -131,16 +151,6 @@ const rows5 = [15,24,33.5,43,52.5];
 
 const MARKS = [
   {
-    id:'axis', name:'Axis', accent:'var(--a)',
-    note:'The favicon, matured: the ring is the body, the vertical is the spine, the lit horizontal is one active row of the board.',
-    svg:`<circle class="ns a" cx="32" cy="32" r="21"/>
-         <line class="ns a" x1="32" y1="11" x2="32" y2="53"/>
-         <line class="ns c" x1="13" y1="32" x2="51" y2="32" stroke-width="2.6"/>
-         <circle class="fa" cx="32" cy="11" r="2.7"/><circle class="fa" cx="32" cy="53" r="2.7"/>
-         <circle class="fc" cx="13" cy="32" r="2.7"/><circle class="fc" cx="51" cy="32" r="2.7"/>
-         <circle class="fc" cx="32" cy="32" r="3.4"/>`
-  },
-  {
     id:'spine', name:'Spine', accent:'var(--a)',
     note:'The truest picture of the game — five paired rows branching off a vertebral spine, each pair meeting at a centroid.',
     svg:`<line class="ns a" x1="32" y1="11" x2="32" y2="55"/>` +
@@ -159,16 +169,6 @@ const MARKS = [
          <circle class="fs" cx="32" cy="32" r="2.6"/>`
   },
   {
-    id:'board', name:'Board', accent:'var(--c)',
-    note:'The 3×5 board itself: two columns of systems flanking a coral centre spine, one row lit as the pair you are working.',
-    svg:`<line class="ns c" x1="32" y1="14" x2="32" y2="54"/>
-         <line class="ns a t" x1="18" y1="34" x2="46" y2="34"/>` +
-        [14,24,34,44,54].map(y=>`
-          <circle class="fa" cx="18" cy="${y}" r="3"/>
-          <circle class="fc" cx="32" cy="${y}" r="3.4"/>
-          <circle class="fa" cx="46" cy="${y}" r="3"/>`).join('')
-  },
-  {
     id:'ring11', name:'Eleven', accent:'var(--a)',
     note:'The eleven systems as a constellation ringing the body, one lit as your starting card — a count that is unmistakably pracsys.',
     svg:(()=>{ let p=`<circle class="ns a t" cx="32" cy="32" r="20"/><circle class="fc" cx="32" cy="32" r="3.2"/>`;
@@ -176,26 +176,6 @@ const MARKS = [
         const x=(32+20*Math.cos(th)).toFixed(2), y=(32+20*Math.sin(th)).toFixed(2);
         p+=`<circle class="${i===0?'fc':'fa'}" cx="${x}" cy="${y}" r="${i===0?3:2.6}"/>`; }
       return p; })()
-  },
-  {
-    id:'monogram', name:'P-spine', accent:'var(--a)',
-    note:'A working monogram: the P stem is a ticked spine, its bowl a closed loop of systems — reads as a letter and as a body.',
-    svg:`<line class="ns a" x1="22" y1="12" x2="22" y2="54"/>
-         <path class="ns a" d="M22 13 h11 a11 11 0 0 1 0 22 h-11"/>
-         <line class="ns a t" x1="16" y1="22" x2="22" y2="22"/>
-         <line class="ns a t" x1="16" y1="32" x2="22" y2="32"/>
-         <line class="ns a t" x1="16" y1="42" x2="22" y2="42"/>
-         <circle class="fc" cx="33" cy="24" r="3"/>`
-  },
-  {
-    id:'thread', name:'Thread', accent:'var(--g)',
-    note:'The immune subsystem woven across the body — one continuous line lacing through five systems it touches.',
-    svg:`<path class="ns g" d="M12 46 Q 22 18 32 38 T 52 22"/>
-         <circle class="fg" cx="12" cy="46" r="3"/>
-         <circle class="fa" cx="22" cy="30" r="2.8"/>
-         <circle class="fa" cx="32" cy="38" r="2.8"/>
-         <circle class="fa" cx="42" cy="27" r="2.8"/>
-         <circle class="fg" cx="52" cy="22" r="3"/>`
   },
   {
     id:'figure', name:'Figure', accent:'var(--a)',
@@ -208,26 +188,6 @@ const MARKS = [
          <line class="ns a t" x1="32" y1="42" x2="41" y2="54"/>
          <circle class="fa" cx="17" cy="33" r="2.7"/><circle class="fc" cx="47" cy="33" r="2.7"/>
          <circle class="fc" cx="23" cy="54" r="2.7"/><circle class="fa" cx="41" cy="54" r="2.7"/>`
-  },
-  {
-    id:'rings', name:'Practise', accent:'var(--a)',
-    note:'Repetition made visible — concentric passes closing on a centred target, the "prac" in pracsys.',
-    svg:`<path class="ns a" d="M32 12 A20 20 0 1 1 15 22"/>
-         <path class="ns a t" d="M42 16 A14 14 0 1 1 20 22"/>
-         <circle class="ns c t" cx="32" cy="32" r="7"/>
-         <line class="ns c t" x1="32" y1="27" x2="32" y2="37"/>
-         <line class="ns c t" x1="27" y1="32" x2="37" y2="32"/>
-         <circle class="fc" cx="32" cy="32" r="2.4"/>`
-  },
-  {
-    id:'tile', name:'App tile', accent:'var(--a)',
-    note:'The installed-app icon — pracsys is a PWA; the spine mark on a rounded tile is how it lands on a home screen.',
-    svg:`<rect x="4" y="4" width="56" height="56" rx="15"
-           fill="#0e1016" stroke="rgba(77,208,225,.28)" stroke-width="1.5"/>
-         <line class="ns a" x1="32" y1="16" x2="32" y2="48"/>` +
-        [18,27,36,45].map(y=>`<line class="ns a t" x1="22" y1="${y}" x2="42" y2="${y}"/>
-          <circle class="fa" cx="21" cy="${y}" r="2.6"/><circle class="fa" cx="43" cy="${y}" r="2.6"/>
-          <circle class="fc" cx="32" cy="${y}" r="2"/>`).join('')
   }
 ];
 
@@ -245,7 +205,7 @@ document.getElementById('hero').innerHTML =
 document.getElementById('grid').innerHTML = MARKS.map((m,i)=>`
   <article class="card" style="--card-a:${m.accent}">
     <span class="num">${String(i+1).padStart(2,'0')}</span>
-    <div class="stage">${svgEl('', m.svg)}</div>
+    <div class="stage">${svgEl('anim-'+m.id, m.svg)}</div>
     <div class="lock">${svgEl('', m.svg)}<span class="w">prac<em>sys</em></span></div>
     <div class="meta">
       <div class="name"><b>${m.name}</b></div>
