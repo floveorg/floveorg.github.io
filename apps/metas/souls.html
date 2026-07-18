@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>FLOVE · SOULS</title>
+<title>Souls · FLOVE</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27><path d=%27M32.0 8.0 L37.9 9.1 L43.2 11.6 L47.7 15.2 L51.1 19.9 L53.2 25.1 L53.9 30.6 L53.2 36.1 L51.3 41.1 L48.1 45.3 L44.1 48.7 L39.5 50.8 L34.5 51.8 L29.5 51.4 L24.9 49.9 L20.9 47.3 L17.7 43.8 L15.5 39.8 L14.4 35.4 L14.5 30.9 L15.6 26.7 L17.8 23.0 L20.7 20.0 L24.2 17.8 L28.1 16.7 L32.0 16.5 L35.8 17.3 L39.1 19.0 L41.9 21.4 L43.9 24.4 L45.1 27.7 L45.4 31.2 L44.9 34.5 L43.6 37.4 L41.6 39.9 L39.1 41.8 L36.3 42.9 L33.4 43.3 L30.6 43.0 L28.0 42.0 L25.9 40.4 L24.2 38.4 L23.2 36.1 L22.8 33.8 L23.0 31.4 L23.7 29.3 L24.9 27.5 L26.5 26.2 L28.3 25.3 L30.2 24.9 L32.0 25.0 L33.7 25.5 L35.0 26.5 L36.1 27.6 L36.8 29.0 L37.0 30.4 L37.0 31.7 L36.5 32.9 L35.9 33.8 L35.0 34.5 L34.1 34.9%27 fill=%27none%27 stroke=%27%236ee7b7%27 stroke-width=%272.2%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/><circle cx=%2732%27 cy=%2732%27 r=%273.4%27 fill=%27%23f3a76b%27/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1048,6 +1048,38 @@
   /* first welcome slide: minimal — a centred Next, no Back button */
   .view[data-view="welcome"]:has(.slide[data-slide="0"].is-on) #slidePrev{ display:none; }
   .view[data-view="welcome"]:has(.slide[data-slide="0"].is-on) .nav{ justify-content:center; }
+
+  /* ── entrance animation (welcome, on load) ─────────────────────── */
+  /* a white sheet that rapidly colours away into the real background */
+  .intro-flash{
+    position:fixed; inset:0; z-index:9999; background:#fff; pointer-events:none;
+    animation: introFlash .8s ease forwards;
+  }
+  @keyframes introFlash{ from{ opacity:1 } to{ opacity:0; visibility:hidden } }
+  /* the logo slides in rightwards + "souls" rises up, after the flash (button
+     moves so the spiral inside keeps spinning) */
+  .flove-bar .flove-mark-btn{ animation: introLogo 2s cubic-bezier(.2,.85,.25,1) .8s backwards; }
+  .flove-bar .flove-app-name{ animation: introName 2s cubic-bezier(.2,.85,.25,1) .8s backwards; }
+  @keyframes introLogo{ from{ opacity:0; transform:translateX(-26px) } to{ opacity:1; transform:none } }
+  @keyframes introName{ from{ opacity:0; transform:translateY(16px) }  to{ opacity:1; transform:none } }
+  /* typewriter lines + blinking caret while typing */
+  .tw-line{ min-height:1.2em; }
+  .tw-line.typing::after{ content:'▍'; margin-left:.05em; color:var(--app-accent);
+    animation: twCaret .7s step-end infinite; }
+  @keyframes twCaret{ 0%,100%{ opacity:1 } 50%{ opacity:0 } }
+  /* Next stays hidden while the lines type, then fades in while it grows */
+  body.intro-running #slideNext{ opacity:0; pointer-events:none; }
+  #slideNext.intro-reveal{ animation: nextReveal 3s ease forwards; }
+  @keyframes nextReveal{
+    0%{ opacity:0; transform:scale(.5) }
+    66%{ opacity:.85; transform:scale(1.1) }
+    100%{ opacity:1; transform:scale(1) }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .intro-flash{ animation-duration:.01s }
+    .flove-bar .flove-mark-btn, .flove-bar .flove-app-name,
+    .tw-line.typing::after, #slideNext.intro-reveal{ animation:none }
+  }
 
   /* ── translate2 — i18n span toggle (CSS-only) ── */
   .es{ display:none; }                               /* default view = .en */
@@ -2495,6 +2527,8 @@
 
 <div class="real-stars" id="realStars" aria-hidden="true"></div>
 <div class="aurora" id="aurora" aria-hidden="true"></div>
+<!-- entrance: a white flash that rapidly colours away into the real background -->
+<div class="intro-flash" aria-hidden="true"></div>
 
 <nav class="flove-bar">
   <button class="flove-mark-btn" id="floveMarkBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="floveMenu" aria-label="Menu">
@@ -2539,7 +2573,8 @@
   <section class="view" data-view="welcome" aria-labelledby="welcomeTitle">
     <div class="slides" id="slides">
       <article class="slide is-on" data-slide="0">
-        <h2 id="welcomeTitle"><span class="en" lang="en">Many special things only happens once</span><span class="es" lang="es">Muchas cosas especiales sólo ocurren una vez</span></h2>
+        <h2 id="welcomeTitle" class="tw-line" data-en="Many special things only happens once" data-es="Muchas cosas especiales sólo ocurren una vez"></h2>
+        <p class="tw-line tw-line--2" data-en="You are one of them…" data-es="Eres una de ellas…" hidden></p>
       </article>
       <article class="slide" data-slide="1">
         <h2><span class="en" lang="en">An extreme intimacy</span><span class="es" lang="es">Una intimidad extrema</span></h2>
@@ -6092,6 +6127,62 @@
     btn.addEventListener('click', () => expandCloud(btn.dataset.magicAdd));
   });
 
+  // ── welcome entrance: type the two opening lines, then reveal Next ──
+  const twLang = () => {
+    try { const s = localStorage.getItem('translate2-lang'); if (s === 'es' || s === 'en') return s; } catch (_) {}
+    return (document.documentElement.lang || 'en').slice(0, 2) === 'es' ? 'es' : 'en';
+  };
+  let introDone = false;
+  function twType(el, text, speed){
+    return new Promise(res => {
+      el.textContent = ''; el.classList.add('typing');
+      let i = 0;
+      (function step(){
+        if (introDone){ el.textContent = text; el.classList.remove('typing'); return res(); }
+        el.textContent = text.slice(0, i);
+        if (i++ < text.length) setTimeout(step, speed);
+        else { el.classList.remove('typing'); res(); }
+      })();
+    });
+  }
+  function runIntro(){
+    const l1 = $('#welcomeTitle');
+    const l2 = document.querySelector('.tw-line--2');
+    if (!l1 || !l2) return;
+    const t1 = () => l1.dataset[twLang()] || l1.dataset.en;
+    const t2 = () => l2.dataset[twLang()] || l2.dataset.en;
+    // keep the typed lines in sync if the language is switched afterwards
+    document.querySelectorAll('input[name="lang"]').forEach(r => r.addEventListener('change', () => {
+      if (!r.checked) return;
+      if (l1.textContent) l1.textContent = t1();
+      if (!l2.hidden && l2.textContent) l2.textContent = t2();
+    }));
+    const finish = () => {
+      introDone = true;
+      l1.textContent = t1(); l1.classList.remove('typing');
+      l2.hidden = false; l2.textContent = t2(); l2.classList.remove('typing');
+      document.body.classList.remove('intro-running');
+      slideNext.classList.add('intro-reveal');
+    };
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce){ finish(); return; }
+    document.body.classList.add('intro-running');
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+    (async () => {
+      await wait(1000);                 // let the white flash + logo entrance play
+      await twType(l1, t1(), 55);
+      if (introDone) return;
+      await wait(2000);                 // a beat, then the line below
+      if (introDone) return;
+      l2.hidden = false;
+      await twType(l2, t2(), 55);
+      if (!introDone) finish();
+    })();
+    // a click anywhere on the first slide skips the typing
+    const slideEl = document.querySelector('.slide[data-slide="0"]');
+    if (slideEl) slideEl.addEventListener('click', () => { if (!introDone) finish(); }, { once:true });
+  }
+
   // ── boot · reload always returns to the welcome view (data is kept) ──
   state.view = 'welcome';
   state.slide = 0;
@@ -6110,6 +6201,7 @@
   reflectListen();
   goTo(state.view);
   updateNightStage();
+  runIntro();          // play the welcome entrance (typewriter → reveal Next)
 })();
 </script>
 <!-- translate2 engine — language switch + persistence + <html lang> sync -->
