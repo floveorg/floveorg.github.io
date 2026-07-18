@@ -47,6 +47,46 @@
     background:linear-gradient(180deg, rgba(255,255,255,.02), transparent);
     border-bottom:1px solid var(--line);
   }
+
+  /* ── Layers mark: sits below the empty placeholders while placing ───────── */
+  .layers-mark{
+    display:none; justify-content:center; margin:10px auto 0;
+    opacity:1; transform:none; pointer-events:none;
+    transition:opacity .6s ease, transform .6s ease;
+  }
+  .layers-mark svg{ width:46px; height:46px; overflow:visible; display:block; opacity:.82; }
+  body.placing .layers-mark{ display:flex; }
+  /* the Pair button appearing (board complete) sends the mark up & away */
+  body.placing:has(#checkWrap.show) .layers-mark{ opacity:0; transform:translateY(-24px); }
+
+  /* ── Entrance choreography ──────────────────────────────────────────────
+     Plays on every load (body.intro-play, set in the markup and re-armed on
+     Reset). All offsets are from load. Motion-safe only: reduced-motion shows
+     the assembled app immediately. The light-sweep overlay is inert otherwise. */
+  .intro-splash{
+    position:fixed; top:0; bottom:0; left:0; width:44vw;
+    pointer-events:none; z-index:60; opacity:0; will-change:transform,opacity;
+    background:linear-gradient(90deg, transparent,
+      rgba(77,208,225,.10) 34%, rgba(255,138,101,.15) 54%,
+      rgba(105,240,174,.10) 72%, transparent);
+    filter:blur(2px); mix-blend-mode:screen;
+  }
+  @media (prefers-reduced-motion:no-preference){
+    body.intro-play .flove-bar   { animation:intro-topbar .9s cubic-bezier(.2,.85,.25,1)  4s backwards; }
+    body.intro-play .deck-col    { animation:intro-cards  5s cubic-bezier(.15,.8,.25,1)   7s backwards; }
+    body.intro-play .intro-splash{ animation:intro-splash 5s ease-in-out               12s backwards; }
+    body.intro-play #boardGrid .slot{ animation:intro-borders 5s ease-out              20s backwards; }
+  }
+  @keyframes intro-topbar{ from{ opacity:0; transform:translateY(-115%); } to{ opacity:1; transform:none; } }
+  @keyframes intro-cards { 0%{ opacity:0; transform:translateX(-72px); } 60%{ opacity:1; } 100%{ opacity:1; transform:none; } }
+  @keyframes intro-splash{
+    0%{ opacity:0; transform:translateX(-46vw); }
+    12%{ opacity:1; } 88%{ opacity:1; }
+    100%{ opacity:0; transform:translateX(106vw); } }
+  @keyframes intro-borders{
+    0%{ border-color:transparent; box-shadow:0 0 0 0 rgba(77,208,225,0); }
+    70%{ border-color:var(--accent); box-shadow:0 0 0 2px rgba(77,208,225,.35), 0 0 14px rgba(77,208,225,.3); }
+    100%{ border-color:var(--faint); box-shadow:0 0 0 0 rgba(77,208,225,0); } }
   .flove-bar .flove-mark{ width:1.6em; height:1.6em; filter:drop-shadow(0 0 6px rgba(77,208,225,.35)); }
   .flove-bar .flove-app-name{ font-family:var(--font-ui); font-weight:700; font-size:1.15rem; letter-spacing:.01em; }
   .flove-bar .flove-spacer{ flex:1 1 auto }
@@ -907,7 +947,10 @@
   .lang input:checked + label{background:var(--accent);color:#001018;font-weight:700;border-color:var(--accent)}
 </style>
 </head>
-<body>
+<body class="intro-play">
+
+<!-- entrance light-sweep: a wave that travels rightward across the page as the cards land -->
+<div class="intro-splash" aria-hidden="true"></div>
 
 <input type="checkbox" id="about-toggle" class="about-ctl">
 <input type="checkbox" id="menu-toggle" class="about-ctl">
@@ -990,6 +1033,22 @@
   <!-- center: board — 5 rows, each: left slot · middle (reason + centre slot) · right slot -->
   <section class="board" id="board">
     <div class="board-grid" id="boardGrid"></div>
+
+    <!-- Layers mark: rides below the empty placeholders while placing (stage 1);
+         fades up & away the moment the Pair button appears (board complete). -->
+    <div class="layers-mark" id="layersMark" aria-hidden="true">
+      <svg viewBox="0 0 64 64">
+        <g fill="none" stroke="#4dd0e1" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="32" y1="12" x2="32" y2="52" stroke-width="3"/>
+          <line x1="18" y1="15"   x2="46" y2="15"   stroke-width="1.7"/>
+          <line x1="18" y1="24"   x2="46" y2="24"   stroke-width="1.7"/>
+          <line x1="18" y1="33.5" x2="46" y2="33.5" stroke-width="1.7"/>
+          <line x1="18" y1="43"   x2="46" y2="43"   stroke-width="1.7"/>
+          <line x1="18" y1="52.5" x2="46" y2="52.5" stroke-width="1.7"/>
+        </g>
+        <circle cx="32" cy="32" r="3.6" fill="#ff8a65"/>
+      </svg>
+    </div>
 
     <!-- subsystem items fan downward from the two bottom corners; this grows the board -->
     <div class="sub-flow" id="subFlow">
@@ -1835,6 +1894,8 @@
     // toggle is on (collapsed by default)
     const verbsVisible = state.stage === 3 || (state.stage >= 4 && state.verbsShown);
     document.body.classList.toggle('show-verbs', verbsVisible);
+    // the Layers mark rides below the empty placeholders — only while placing
+    document.body.classList.toggle('placing', state.stage === 1);
     // system icons appear from stage 3 (not the reasons stage); in stage 4 they
     // collapse under the Reasons toggle — and once every subsystem is threaded,
     // the Reasons view drops the right-column system symbols entirely.
@@ -2820,6 +2881,14 @@ footer a{color:#4dd0e1;text-decoration:none}
     hideStale();
   }
 
+  // re-arm the entrance choreography (used on Reset; a reload arms it via markup)
+  function playIntro(){
+    const b = document.body;
+    b.classList.remove('intro-play');
+    void b.offsetWidth;               // force reflow so the CSS animations restart
+    b.classList.add('intro-play');
+  }
+
   // Reset: destructive fresh start — defaults + cleared DOM + ONLY this app's own keys.
   function floveReset(){
     if (!confirm(T('Clear the whole board and start a new play? This cannot be undone.',
@@ -2845,6 +2914,7 @@ footer a{color:#4dd0e1;text-decoration:none}
     afterChange();      // re-derive the empty summary surfaces (re-writes the empty board)
     hideStale();
     toast(T('Board cleared — start placing systems','Tablero vaciado: empieza a colocar sistemas'));
+    playIntro();        // reset re-runs the entrance animation, just like a reload
   }
 
   // request durable storage on the first user interaction (guarded once)
