@@ -1115,14 +1115,17 @@ function shareRows(title,rows){
 document.querySelectorAll('#brandMenu .menu-list label').forEach(l=>
   l.addEventListener('click',()=>{document.getElementById('brandMenu').open=false;}));
 
-/* ============ THEME ============ */
+/* ============ THEME (§13.14 · shared family-wide flove:theme key) ============ */
 (function initTheme(){
-  const saved=store.get('theme',null);if(saved)document.documentElement.dataset.theme=saved;
+  const KEY='flove:theme';
+  let saved=null;try{saved=localStorage.getItem(KEY)}catch(e){}
+  if(saved)document.documentElement.dataset.theme=saved;
   document.getElementById('themeBtn').onclick=()=>{
     const cur=document.documentElement.dataset.theme
       ||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
     const next=cur==='dark'?'light':'dark';
-    document.documentElement.dataset.theme=next;store.set('theme',next);
+    document.documentElement.dataset.theme=next;
+    try{localStorage.setItem(KEY,next)}catch(e){}
   };
 })();
 
