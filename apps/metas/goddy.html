@@ -901,7 +901,11 @@
             .flove-bar .goddy-brand { animation: intro-up 6s var(--flove-ease) both 20s; }
             /* 3) gaze icon + buttons rise in after that (~26s) */
             .gaze-invite  { animation: intro-up 6s var(--flove-ease) both 26s; }
-            .button-group { animation: intro-up 6s var(--flove-ease) both 26s; }
+            /* the buttons aren't part of the timed intro — they rise in the
+               moment a cell is first selected */
+            body:has(.cell-input[data-lvl="1"]:checked) .button-group,
+            body:has(.cell-input[data-lvl="2"]:checked) .button-group,
+            body:has(.cell-input[data-lvl="3"]:checked) .button-group { animation: intro-up .6s var(--flove-ease) both; }
         }
         @keyframes intro-click {
             0%   { opacity: 0; }
@@ -923,12 +927,16 @@
         }
 
         .button-group {
-            display: grid;
+            display: none;                 /* shown only once a cell is selected */
             grid-template-columns: repeat(3, 1fr);
             gap: 8px;
             margin: 16px 0 20px;
             align-items: flex-start;
         }
+        /* reveal the action buttons as soon as any cell is selected (level 1+) */
+        body:has(.cell-input[data-lvl="1"]:checked) .button-group,
+        body:has(.cell-input[data-lvl="2"]:checked) .button-group,
+        body:has(.cell-input[data-lvl="3"]:checked) .button-group { display: grid; }
         .btn-with-subs {
             display: flex;
             flex-direction: column;
