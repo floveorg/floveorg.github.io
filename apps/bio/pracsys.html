@@ -649,11 +649,15 @@
   @keyframes confWave-edge { 0%,100%{ transform:scale(1)    } 40%,60%{ transform:scale(1.5) } }
   @keyframes dloop { 0%,100%{ transform:scale(1) } 25%{ transform:scale(.78) } 50%{ transform:scale(1.18) } 75%{ transform:scale(.88) } }
   .checking .slot:not(.centre-spine){ transform-origin:center center; }
-  .checking .slot:not(.centre-spine)[data-row="0"],
-  .checking .slot:not(.centre-spine)[data-row="4"]{ animation:confWave-edge 7s ease-in-out infinite; z-index:1; }
-  .checking .slot:not(.centre-spine)[data-row="1"],
-  .checking .slot:not(.centre-spine)[data-row="3"]{ animation:confWave-flank 7s ease-in-out infinite; z-index:2; }
-  .checking .slot:not(.centre-spine)[data-row="2"]{ animation:confWave-mid 7s ease-in-out infinite; z-index:3; }
+  /* #boardGrid in the selector so these outrank the entrance rule
+     `body.intro-play #boardGrid .slot{ animation:intro-borders }` (line ~89),
+     which carries an ID and would otherwise permanently win the cascade and
+     freeze the wave (only the centre .card escaped, via its own dloop). */
+  .checking #boardGrid .slot:not(.centre-spine)[data-row="0"],
+  .checking #boardGrid .slot:not(.centre-spine)[data-row="4"]{ animation:confWave-edge 7s ease-in-out infinite; z-index:1; }
+  .checking #boardGrid .slot:not(.centre-spine)[data-row="1"],
+  .checking #boardGrid .slot:not(.centre-spine)[data-row="3"]{ animation:confWave-flank 7s ease-in-out infinite; z-index:2; }
+  .checking #boardGrid .slot:not(.centre-spine)[data-row="2"]{ animation:confWave-mid 7s ease-in-out infinite; z-index:3; }
   .checking .slot.centre-spine .card{ transform-origin:center center; animation:dloop 3.2s ease-in-out infinite; }
   @media (prefers-reduced-motion: reduce){
     .checking .slot, .checking .slot.centre-spine .card{ animation:none !important; }
