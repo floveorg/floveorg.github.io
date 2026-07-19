@@ -677,6 +677,7 @@ footer p, footer li{font-size:.84rem; line-height:1.7}
   </div>
 </footer>
 
+<script src="banco.js"></script>
 <script>
 (function(){
   "use strict";
@@ -729,6 +730,10 @@ footer p, footer li{font-size:.84rem; line-height:1.7}
       ]},
   ];
 
+  // 6ª playlist: se llena con banco.json (fetch más abajo).
+  const bancoPl = { id:'banco', emoji:'😹', name:'Banco de la risa', desc:'Las risas de la gente', tracks:[] };
+  playlists.push(bancoPl);
+
   /* ============ RENDER DE PLAYLISTS ============ */
   const plGrid = document.getElementById('pl-grid');
   playlists.forEach((pl,i)=>{
@@ -766,7 +771,7 @@ footer p, footer li{font-size:.84rem; line-height:1.7}
         '<span class="tag '+(isDL?'dl':'link')+'"'+(isDL?' title="Descargada" aria-label="Pista descargada"':'')+'>'+(isDL?'▶':'enlace')+'</span>'+
         '<span class="ti">'+t.t+' <span class="by">'+t.by+'</span></span>'+
         (isDL
-          ? '<a class="orig" href="'+t.orig+'" target="_blank" rel="noopener">original ↗</a>'
+          ? '<a class="orig" href="'+t.orig+'" target="_blank" rel="noopener">'+(t.origLabel||'original')+' ↗</a>'
           : '<a class="orig" href="'+t.link+'" target="_blank" rel="noopener">escuchar original ↗</a>');
       if(isDL){
         li.style.cursor='pointer';
@@ -792,7 +797,12 @@ footer p, footer li{font-size:.84rem; line-height:1.7}
     nowPl.textContent = playlists[i].name+' '+playlists[i].emoji;
     renderTracks();
     if(playing){ startTrack(); }
-    else { const n=playableTracks(playlists[i]).length; nowTrack.textContent = n+(n===1?' pista lista':' pistas listas')+' · pulsa play'; highlightTrack(); }
+    else {
+      const n=playableTracks(playlists[i]).length;
+      if(playlists[i].id==='banco' && !n){ nowTrack.textContent='Aún no hay risas en el banco · sé la primera 💛'; }
+      else { nowTrack.textContent = n+(n===1?' pista lista':' pistas listas')+' · pulsa play'; }
+      highlightTrack();
+    }
   }
 
   function startTrack(){
@@ -825,6 +835,23 @@ footer p, footer li{font-size:.84rem; line-height:1.7}
   });
 
   selectPlaylist(0); // init
+
+  // Carga el banco de la risa (mismo origen). Rellena la 6ª playlist y el feed.
+  function refreshBancoCard(){
+    const idx = playlists.indexOf(bancoPl);
+    const card = plGrid.children[idx];
+    if(card){ const c=card.querySelector('.count'); if(c) c.textContent=bancoPl.tracks.length+' pistas'; }
+    if(playlists[cur]===bancoPl) selectPlaylist(idx);
+  }
+  fetch(window.Banco.BANCO_URL, {cache:'no-store'})
+    .then(r=>r.ok?r.json():[])
+    .then(data=>{
+      const banco = Array.isArray(data)?data:[];
+      bancoPl.tracks = window.Banco.buildBancoTracks(banco);
+      refreshBancoCard();
+      renderFeedFrom(banco);
+    })
+    .catch(()=>{ renderFeedFrom([]); });
 
   /* ============ BOTÓN BENEFICIOS · 5 toques (heredado del globo) ============ */
   const benefits = [
@@ -925,48 +952,37 @@ footer p, footer li{font-size:.84rem; line-height:1.7}
 
   /* ============ FEED · ÚLTIMAS RISAS ============ */
   const feedEl = document.getElementById('latest-feed');
-  const FEED_KEY = 'risa-liberada-feed';
-  const seedFeed = [
-    {name:'Marta',  tags:'contagiosa, de grupo', when:'hace 2 h'},
-    {name:'Yusuf',  tags:'carcajada, de vientre', when:'hace 5 h'},
-    {name:'Lucía',  tags:'de bebé, tierna', when:'ayer'},
-    {name:'Nils',   tags:'yoga de la risa', when:'ayer'},
-    {name:'Anónima',tags:'malvada, traviesa', when:'hace 2 días'},
-  ];
-  function savedFeed(){
-    try{ return JSON.parse(localStorage.getItem(FEED_KEY)) || []; }catch(e){ return []; }
-  }
-  function renderFeed(){
-    const items = savedFeed().concat(seedFeed);
+  function renderFeedFrom(banco){
+    const items = window.Banco.latestFeed(banco, 6);
     feedEl.innerHTML='';
+    if(!items.length){
+      const empty=document.createElement('p');
+      empty.className='feed-empty';
+      empty.textContent='Aún no hay risas en el banco. ¿Y si eres la primera? 💛';
+      feedEl.appendChild(empty);
+      return;
+    }
     items.forEach((it,i)=>{
       const d=document.createElement('div');
-      d.className='feed-item'+(it.mine?' mine':'');
+      d.className='feed-item';
       d.tabIndex=0; d.setAttribute('role','button');
       d.style.animationDelay=(i*0.04)+'s';
       d.innerHTML=
         '<span class="fi-play" aria-hidden="true">▶</span>'+
-        '<span class="fi-main"><span class="fi-name">'+esc(it.name||'Anónima')+'</span>'+
-        '<span class="fi-tags">'+esc(it.tags||'risa libre')+'</span></span>'+
-        '<span class="fi-when">'+esc(it.when||'ahora')+'</span>';
-      const goPlay=()=>document.getElementById('risas').scrollIntoView({behavior:reduce?'auto':'smooth'});
+        '<span class="fi-main"><span class="fi-name">'+esc(it.name)+'</span>'+
+        '<span class="fi-tags">'+esc(it.tags)+'</span></span>'+
+        '<span class="fi-when">'+esc(it.when)+'</span>';
+      const goPlay=()=>{
+        const idx=playlists.indexOf(bancoPl);
+        if(idx>=0) selectPlaylist(idx);
+        document.getElementById('risas').scrollIntoView({behavior:reduce?'auto':'smooth'});
+      };
       d.addEventListener('click', goPlay);
       d.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); goPlay(); } });
       feedEl.appendChild(d);
     });
   }
-  document.getElementById('upload-form').addEventListener('submit', e=>{
-    e.preventDefault();
-    const name=(document.getElementById('um-name').value||'').trim() || 'Anónima';
-    const tags=(document.getElementById('um-tags').value||'').trim() || 'risa libre';
-    const list=savedFeed();
-    list.unshift({name:name, tags:tags, when:'ahora mismo', mine:true});
-    try{ localStorage.setItem(FEED_KEY, JSON.stringify(list.slice(0,20))); }catch(err){}
-    renderFeed();
-    e.target.reset(); fileName.textContent='';
-    closeModal(uploadModal);
-  });
-  renderFeed();
+  renderFeedFrom([]); // estado inicial hasta que llegue banco.json
 
   /* ============ SLIDERS (carruseles de fotos) ============ */
   document.querySelectorAll('.slider').forEach(sl=>{
