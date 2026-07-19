@@ -90,24 +90,6 @@
   .site-trigger .caret{ font-size: .7rem; color: var(--muted); transition: transform .15s ease }
   .site-trigger[aria-expanded="true"] .caret{ transform: rotate(180deg) }
 
-  /* "All" sections toggle — pushed to the far right of the bar */
-  .topbar-all{
-    margin-left: auto;
-    cursor: pointer; user-select: none;
-    padding: 5px 13px;
-    border: 1px solid var(--line-strong);
-    border-radius: var(--radius-pill);
-    background: #fff; color: var(--ink-soft);
-    font: 700 .68rem/1 var(--font-ui); letter-spacing: .06em; text-transform: uppercase;
-    transition: all var(--fast);
-  }
-  .topbar-all:hover{ border-color: var(--accent); color: var(--accent-deep) }
-  body:has(#sec-all:checked) .topbar-all{
-    background: linear-gradient(180deg, var(--accent), var(--accent-deep));
-    color: #fff; border-color: transparent;
-    box-shadow: 0 6px 14px -4px var(--accent-glow);
-  }
-
   /* site menu (dropdown anchored under the logo) */
   .top-menu{ position: relative; display: inline-block }
   .site-trigger:focus-visible{ outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 8px }
@@ -595,7 +577,7 @@
   .secnav-radio{ position:absolute; opacity:0; pointer-events:none; width:1px; height:1px }
   .section-buttons{
     display:flex; align-items:flex-start;
-    gap:0; margin: 4px 0 20px; padding: 0 6px;
+    gap:0; margin: 6px 0 8px; padding: 0 6px;
   }
   .section-btn{
     position:relative;
@@ -644,14 +626,47 @@
     box-shadow: 0 6px 14px -6px var(--accent-glow);
   }
 
-  /* only the active section's card is shown */
+  /* only the active section's card is shown — one big, focused panel at a time */
   #decl > .card{ display:none }
   #decl:has(#sec-for:checked) > .card[data-sec="for"],
   #decl:has(#sec-1:checked) > .card[data-sec="1"],
   #decl:has(#sec-2:checked) > .card[data-sec="2"],
   #decl:has(#sec-3:checked) > .card[data-sec="3"],
-  #decl:has(#sec-4:checked) > .card[data-sec="4"],
-  #decl:has(#sec-all:checked) > .card{ display:block }
+  #decl:has(#sec-4:checked) > .card[data-sec="4"]{ display:block }
+  /* the section cards are the focus now — larger and more spacious */
+  #decl > .card{
+    padding: 38px 34px;
+    min-height: 420px;
+    border-radius: var(--radius-lg);
+  }
+  @media (max-width: 480px){ #decl > .card{ padding: 24px 18px; min-height: 340px } }
+
+  /* ===== Next / Back — centred sequential navigation below the section ===== */
+  .section-nav{
+    display:flex; justify-content:center; align-items:center; gap:12px;
+    margin: 18px 0 4px;
+  }
+  .sec-move{
+    display:inline-flex; align-items:center; gap:7px;
+    padding: 11px 24px; border-radius: var(--radius-pill);
+    border: 1px solid var(--line-strong); background: #fff; color: var(--ink);
+    font: 700 .9rem/1 var(--font-ui); cursor: pointer;
+    box-shadow: var(--shadow-xs); transition: all var(--fast);
+  }
+  .sec-move:hover{ border-color: var(--accent); color: var(--accent-deep); transform: translateY(-1px) }
+  .sec-next{
+    background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+    color:#fff; border-color: transparent;
+    box-shadow: 0 8px 18px -6px var(--accent-glow);
+  }
+  .sec-next:hover{ color:#fff; filter: brightness(1.06) }
+  /* Back only from the 2nd section on; Next hidden on the last section */
+  .sec-back{ display:none }
+  #decl:has(#sec-1:checked) .sec-back,
+  #decl:has(#sec-2:checked) .sec-back,
+  #decl:has(#sec-3:checked) .sec-back,
+  #decl:has(#sec-4:checked) .sec-back{ display:inline-flex }
+  #decl:has(#sec-4:checked) .sec-next{ display:none }
 
   /* ===== Reasons section (data-sec="for") — drifting Because / For clouds
      ported from shareful: chips float in a physics cloud, the "+" beside
@@ -1294,7 +1309,7 @@
   .inv-body .ctl{ position:absolute; opacity:0; pointer-events:none; width:1px; height:1px; }
 
   @media print{
-    .flove-bar, .actions-bar, .btn, .top-menu, .section-buttons{ display:none !important }
+    .flove-bar, .actions-bar, .btn, .top-menu, .section-buttons, .section-nav{ display:none !important }
     body{ background:#fff }
     #decl > .card{ display:block !important }
     .inv-body{ max-height:none !important; opacity:1 !important }
@@ -1378,7 +1393,6 @@
       </li>
     </ul>
   </div>
-  <label class="topbar-all" for="sec-all" aria-label="Show all sections" data-aria-en="Show all sections" data-aria-es="Mostrar todas las secciones"><span class="en" lang="en">All</span><span class="es" lang="es">Todo</span></label>
 </div>
 
 <section id="introSection" hidden aria-label="About Freed" data-aria-en="About Freed" data-aria-es="Acerca de Freed">
@@ -1396,15 +1410,6 @@
     <input type="radio" name="secnav" id="sec-2"   class="secnav-radio">
     <input type="radio" name="secnav" id="sec-3"   class="secnav-radio">
     <input type="radio" name="secnav" id="sec-4"   class="secnav-radio">
-    <input type="radio" name="secnav" id="sec-all" class="secnav-radio">
-
-    <div class="section-buttons">
-      <label class="section-btn" for="sec-for" data-sec="for"><span class="en" lang="en">Reasons</span><span class="es" lang="es">Motivos</span><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21C12 21 4 16.5 4 9.7 4 6.7 6 5 8 5c2 0 4 2 4 2s2-2 4-2c2 0 4 1.7 4 4.7C20 16.5 12 21 12 21Z"/></svg></span></label>
-      <label class="section-btn" for="sec-1" data-sec="1"><span class="en" lang="en">Thing</span><span class="es" lang="es">Cosa</span><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5 21 7v10l-9 4.5L3 17V7z"/><path d="M3 7l9 4.5L21 7M12 11.5V21.5"/></svg></span></label>
-      <label class="section-btn" for="sec-2" data-sec="2"><span class="en" lang="en">Farewell</span><span class="es" lang="es">Despedida</span><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13V5a1 1 0 0 1 1-1h8l7 7-9 9z"/><circle cx="8.5" cy="8.5" r="1.5"/></svg></span></label>
-      <label class="section-btn" for="sec-3" data-sec="3"><span class="en" lang="en">Wishes</span><span class="es" lang="es">Deseos</span><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.7 6.2.7-4.6 4.2 1.3 6.1L12 16.9 6.5 19.7l1.3-6.1L3.2 9.4l6.2-.7z"/></svg></span></label>
-      <label class="section-btn" for="sec-4" data-sec="4"><span class="en" lang="en">Beware</span><span class="es" lang="es">Advertencia</span><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2z"/><path d="M12 10v4.5M12 17.2v.3"/></svg></span></label>
-    </div>
 
     <section class="card" data-sec="for">
       <div class="for-grid">
@@ -1630,6 +1635,19 @@
         <p class="curse-link"><span class="en" lang="en">Customize your Cursing further with </span><span class="es" lang="es">Personaliza aún más tu Maldición con </span><a href="../crumbly.html">Crumbly</a></p>
       </div>
     </section>
+
+    <div class="section-nav">
+      <button type="button" class="sec-move sec-back" id="secBack" aria-label="Previous section" data-aria-en="Previous section" data-aria-es="Sección anterior"><span aria-hidden="true">←</span> <span class="en" lang="en">Back</span><span class="es" lang="es">Atrás</span></button>
+      <button type="button" class="sec-move sec-next" id="secNext" aria-label="Next section" data-aria-en="Next section" data-aria-es="Sección siguiente"><span class="en" lang="en">Next</span><span class="es" lang="es">Siguiente</span> <span aria-hidden="true">→</span></button>
+    </div>
+
+    <div class="section-buttons">
+      <label class="section-btn" for="sec-for" data-sec="for"><span class="en" lang="en">Reasons</span><span class="es" lang="es">Motivos</span><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21C12 21 4 16.5 4 9.7 4 6.7 6 5 8 5c2 0 4 2 4 2s2-2 4-2c2 0 4 1.7 4 4.7C20 16.5 12 21 12 21Z"/></svg></span></label>
+      <label class="section-btn" for="sec-1" data-sec="1"><span class="en" lang="en">Thing</span><span class="es" lang="es">Cosa</span><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5 21 7v10l-9 4.5L3 17V7z"/><path d="M3 7l9 4.5L21 7M12 11.5V21.5"/></svg></span></label>
+      <label class="section-btn" for="sec-2" data-sec="2"><span class="en" lang="en">Farewell</span><span class="es" lang="es">Despedida</span><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13V5a1 1 0 0 1 1-1h8l7 7-9 9z"/><circle cx="8.5" cy="8.5" r="1.5"/></svg></span></label>
+      <label class="section-btn" for="sec-3" data-sec="3"><span class="en" lang="en">Wishes</span><span class="es" lang="es">Deseos</span><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.7 6.2.7-4.6 4.2 1.3 6.1L12 16.9 6.5 19.7l1.3-6.1L3.2 9.4l6.2-.7z"/></svg></span></label>
+      <label class="section-btn" for="sec-4" data-sec="4"><span class="en" lang="en">Beware</span><span class="es" lang="es">Advertencia</span><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2z"/><path d="M12 10v4.5M12 17.2v.3"/></svg></span></label>
+    </div>
 
     <section class="invitation" id="invitationBlock">
       <input type="checkbox" id="inv-toggle" class="inv-toggle">
@@ -2414,6 +2432,18 @@ em{color:#14503e}</style></head>
   });
 
   const introSection = $("#introSection");
+
+  // ===== Section wizard — Next / Back step through the sections in order =====
+  const SEC_ORDER = ["sec-for","sec-1","sec-2","sec-3","sec-4"];
+  const curSecIndex = () => SEC_ORDER.findIndex(id => document.getElementById(id)?.checked);
+  function gotoSec(i){
+    i = Math.max(0, Math.min(SEC_ORDER.length - 1, i));
+    const r = document.getElementById(SEC_ORDER[i]);
+    if (r){ r.checked = true; r.dispatchEvent(new Event("change", { bubbles: true })); }
+    $(".container")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  $("#secNext")?.addEventListener("click", () => gotoSec((curSecIndex() < 0 ? 0 : curSecIndex()) + 1));
+  $("#secBack")?.addEventListener("click", () => gotoSec((curSecIndex() < 0 ? 0 : curSecIndex()) - 1));
 
   // Site menu — the logo + name button opens the dropdown
   const menuBtn  = $("#menuBtn");
