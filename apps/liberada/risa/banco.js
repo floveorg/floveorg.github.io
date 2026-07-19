@@ -38,7 +38,7 @@
   var api = {
     buildBancoTracks: buildBancoTracks,
     latestFeed: latestFeed,
-    BANCO_URL: 'banco.json',
+    BANCO_URL: 'https://floveorg.github.io/banco-risa/banco.json',
     TELEGRAM_BOT: 'https://t.me/RisaLiberadaBot',
     LICENSE: LICENSE,
     LICENSE_URL: LICENSE_URL
