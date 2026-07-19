@@ -343,6 +343,47 @@
     color:var(--ink); display:inline-flex; align-items:center; gap:.5rem; }
   .about-panel h2 .brand-mark{ width:28px; height:28px; }
   .about-panel p{ margin:0; color:var(--muted); line-height:1.55; }
+
+  /* ── Motion (flove standard §): the Pentad mark animates wherever it
+     lives, the "Sensy" wordmark shimmers, and each sense stirs with its
+     own signature micro-motion. Hover pauses the mark. All of it is
+     disabled under prefers-reduced-motion — calm shouldn't mean careless. */
+  @media (prefers-reduced-motion:no-preference){
+    .brand-mark{ transform-origin:50% 50%;
+      animation:pentad-live 18s linear infinite, mark-glow 4s ease-in-out infinite; }
+    .brand-mark circle[fill="#ff2fd6"]{ transform-box:fill-box; transform-origin:center;
+      animation:mark-throb 2.6s ease-in-out infinite; }
+    .brand-mark circle[r="3.1"]{ animation:mark-twinkle 3s ease-in-out infinite; }
+    .brand:hover .brand-mark{ animation-play-state:paused; }
+
+    /* the word — a mint glint sweeps across "Sensy" */
+    .site-title, .about-panel h2 .wordmark{
+      background:linear-gradient(100deg, var(--ink) 0%, var(--ink) 42%, var(--brand) 50%, var(--ink) 58%, var(--ink) 100%);
+      background-size:250% 100%; -webkit-background-clip:text; background-clip:text;
+      -webkit-text-fill-color:transparent; color:transparent;
+      animation:sensy-shimmer 4.2s linear infinite; }
+
+    /* each sense — one signature motion, all sharing the glow */
+    .ic-eye{ animation:mark-glow 3.6s ease-in-out infinite, sense-eye 3s ease-in-out infinite; }
+    .ic-ear{ transform-origin:50% 50%; animation:mark-glow 3.6s ease-in-out infinite, sense-ear 3s ease-in-out infinite; }
+    .ic-nose{ transform-origin:50% 60%; animation:mark-glow 3.6s ease-in-out infinite, sense-nose 3.4s ease-in-out infinite; }
+    .ic-tongue{ transform-origin:50% 32%; animation:mark-glow 3.6s ease-in-out infinite, sense-tongue 2.6s ease-in-out infinite; }
+    .ic-hand{ transform-origin:50% 88%; animation:mark-glow 3.6s ease-in-out infinite, sense-hand 2.8s ease-in-out infinite; }
+  }
+  @keyframes pentad-live{
+    0%{ transform:rotate(0deg) scale(1); }   25%{ transform:rotate(90deg)  scale(1.05); }
+    50%{ transform:rotate(180deg) scale(1); } 75%{ transform:rotate(270deg) scale(1.05); }
+    100%{ transform:rotate(360deg) scale(1); } }
+  @keyframes mark-throb{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.22); } }
+  @keyframes mark-twinkle{ 0%,100%{ opacity:.5; } 50%{ opacity:1; } }
+  @keyframes mark-glow{ 0%,100%{ filter:drop-shadow(0 0 3px rgba(0,247,167,.3)); }
+                        50%{ filter:drop-shadow(0 0 10px rgba(0,247,167,.6)); } }
+  @keyframes sensy-shimmer{ 0%{ background-position:130% 0; } 100%{ background-position:-30% 0; } }
+  @keyframes sense-eye{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.12); } }
+  @keyframes sense-ear{ 0%,100%{ transform:rotate(0deg) scale(1); } 50%{ transform:rotate(-5deg) scale(1.05); } }
+  @keyframes sense-nose{ 0%,100%{ transform:scaleY(1) translateY(0); } 50%{ transform:scaleY(1.06) translateY(-1px); } }
+  @keyframes sense-tongue{ 0%,100%{ transform:rotate(0deg) scaleY(1); } 30%{ transform:rotate(3deg) scaleY(1.04); } 60%{ transform:rotate(-3deg) scaleY(1.02); } }
+  @keyframes sense-hand{ 0%,100%{ transform:rotate(0deg); } 25%{ transform:rotate(7deg); } 75%{ transform:rotate(-7deg); } }
 </style>
 </head>
 <body>
@@ -395,7 +436,7 @@
   <!-- About Sensy panel (holds the intro text) -->
   <label class="ui-backdrop about-backdrop" for="ui-none" aria-label="Close About" data-aria-en="Close About" data-aria-es="Cerrar Acerca de"></label>
   <aside class="about-panel" role="dialog" aria-label="About Sensy" data-aria-en="About Sensy" data-aria-es="Acerca de Sensy">
-    <h2><svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="19" fill="none" stroke="#00f7a7" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><line x1="32" y1="32" x2="32.00" y2="13.00" fill="none" stroke="#00f7a7" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32.00" cy="13.00" r="3.1" fill="#00f7a7"/><line x1="32" y1="32" x2="50.07" y2="26.13" fill="none" stroke="#00f7a7" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50.07" cy="26.13" r="3.1" fill="#00f7a7"/><line x1="32" y1="32" x2="43.17" y2="47.37" fill="none" stroke="#00f7a7" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="43.17" cy="47.37" r="3.1" fill="#00f7a7"/><line x1="32" y1="32" x2="20.83" y2="47.37" fill="none" stroke="#00f7a7" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20.83" cy="47.37" r="3.1" fill="#00f7a7"/><line x1="32" y1="32" x2="13.93" y2="26.13" fill="none" stroke="#00f7a7" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13.93" cy="26.13" r="3.1" fill="#00f7a7"/><circle cx="32" cy="32" r="3.6" fill="#ff2fd6"/></svg> Sensy</h2>
+    <h2><svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="19" fill="none" stroke="#00f7a7" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><line x1="32" y1="32" x2="32.00" y2="13.00" fill="none" stroke="#00f7a7" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32.00" cy="13.00" r="3.1" fill="#00f7a7"/><line x1="32" y1="32" x2="50.07" y2="26.13" fill="none" stroke="#00f7a7" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50.07" cy="26.13" r="3.1" fill="#00f7a7"/><line x1="32" y1="32" x2="43.17" y2="47.37" fill="none" stroke="#00f7a7" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="43.17" cy="47.37" r="3.1" fill="#00f7a7"/><line x1="32" y1="32" x2="20.83" y2="47.37" fill="none" stroke="#00f7a7" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20.83" cy="47.37" r="3.1" fill="#00f7a7"/><line x1="32" y1="32" x2="13.93" y2="26.13" fill="none" stroke="#00f7a7" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13.93" cy="26.13" r="3.1" fill="#00f7a7"/><circle cx="32" cy="32" r="3.6" fill="#ff2fd6"/></svg> <span class="wordmark">Sensy</span></h2>
     <p><span class="en" lang="en">Sensorility Requests Assistant: Polite, Playful &amp; Formal.</span><span class="es" lang="es">Asistente de peticiones de sensorialidad: cortés, lúdico y formal.</span></p>
   </aside>
 
