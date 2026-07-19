@@ -44,6 +44,6 @@ test('latestFeed defaults n to 6 and tolerates non-arrays', () => {
 
 test('constants carry the fixed license and config', () => {
   assert.equal(Banco.LICENSE, 'CC BY-SA 4.0');
-  assert.equal(Banco.BANCO_URL, 'banco.json');
+  assert.equal(Banco.BANCO_URL, 'https://floveorg.github.io/banco-risa/banco.json');
   assert.equal(Banco.TELEGRAM_BOT, 'https://t.me/RisaLiberadaBot');
 });
