@@ -250,7 +250,7 @@
 
   /* "For" reason chips — shown in the "For" category section */
   .for-reasons{ position:relative; width:100%; height:320px; transition: height .35s ease }
-  .for-col[data-expand="0"] .for-reasons{ height:300px }
+  .for-col[data-expand="0"] .for-reasons{ height:200px }
   .for-col[data-expand="1"] .for-reasons{ height:750px }    /* first click */
   .for-col[data-expand="2"] .for-reasons{ height:1500px }   /* second click */
   .for-reasons > .reason-chip{
@@ -264,12 +264,12 @@
 
   /* parent / sub chips — parents are 2× the size of subs (2× overall) */
   .reason-chip.parent-chip{
-    font: 600 2.24rem/1.15 var(--font-ui);
-    padding: 18px 28px;
+    font: 600 1.12rem/1.15 var(--font-ui);
+    padding: 9px 14px;
   }
   .reason-chip.child-chip{
-    font: 500 1.12rem/1.2 var(--font-ui);
-    padding: 8px 14px;
+    font: 500 .56rem/1.2 var(--font-ui);
+    padding: 4px 7px;
   }
   /* sub-chips — show selection by fill only, never highlight the border */
   .reason-chip.child-chip:hover,
@@ -335,12 +335,12 @@
   .new-reason-input.is-open{ display:inline-block }
   .new-reason-input:focus{ outline:none; box-shadow:0 0 0 3px var(--accent-glow) }
   .reason-chip{
-    display:inline-flex; align-items:center; gap:12px;
-    padding: 12px 20px;
+    display:inline-flex; align-items:center; gap:7px;
+    padding: 6px 10px;
     border: 1px solid var(--line-strong);
     border-radius: var(--radius-pill);
     background:#fff; color: var(--ink);
-    font: 500 1.36rem/1.2 var(--font-ui);
+    font: 500 .68rem/1.2 var(--font-ui);
     cursor:pointer;
     transition: all var(--fast);
   }
@@ -1738,6 +1738,10 @@
   body:has(#lang-es:checked) .en{display:none}
   body:has(#lang-es:checked) .es{display:inline}
   /* worldball switcher (🌐 opens the language options) */
+  /* language selector lives inside the topbar menu now */
+  .menu-lang{ padding:4px 12px 6px }
+  .menu-lang .lang{ margin:0 }
+  .menu-lang .lang-opts{ position:static; margin-top:8px; padding:0; border:0; background:transparent; box-shadow:none }
   .lang{display:inline-block;position:relative;margin:.2rem 0 .6rem}
   .lang>summary{list-style:none;cursor:pointer;width:40px;height:40px;border:1px solid #999;border-radius:50%;
     display:inline-flex;align-items:center;justify-content:center;font-size:1.35rem;line-height:1;-webkit-user-select:none;user-select:none}
@@ -1789,16 +1793,17 @@
       <a class="menu-item" href="../index.html">🏠 <span class="en" lang="en">flove launcher</span><span class="es" lang="es">lanzador de flove</span></a>
       <a class="menu-item" href="../../appy/appy-basic.html">👤 <span class="en" lang="en">Profile</span><span class="es" lang="es">Perfil</span></a>
       <a class="menu-item" href="https://flove.org" target="_blank" rel="noopener">🌐 flove.org</a>
+      <div class="menu-lang">
+        <details class="lang">
+          <summary class="worldball" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐</summary>
+          <div class="lang-opts">
+            <input type="radio" name="lang" id="lang-en" checked><label for="lang-en">English</label>
+            <input type="radio" name="lang" id="lang-es"><label for="lang-es">Español</label>
+          </div>
+        </details>
+      </div>
     </div>
   </div>
-  <span class="flove-spacer"></span>
-  <details class="lang">
-    <summary class="worldball" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐</summary>
-    <div class="lang-opts">
-      <input type="radio" name="lang" id="lang-en" checked><label for="lang-en">English</label>
-      <input type="radio" name="lang" id="lang-es"><label for="lang-es">Español</label>
-    </div>
-  </details>
 </div>
 
 <section class="app-info" id="app-info">
@@ -2557,6 +2562,8 @@
     menuBtn.addEventListener("click", e => { e.stopPropagation(); setMenu(menuPop.hidden); });
     // clicking any item (or outside) closes the menu; label toggles still fire
     menuPop.addEventListener("click", () => setMenu(false));
+    // …but interacting with the language selector keeps the menu open
+    menuPop.querySelector(".menu-lang")?.addEventListener("click", e => e.stopPropagation());
     document.addEventListener("click", e => {
       if (!menuPop.hidden && !e.target.closest(".topmenu")) setMenu(false);
     });
