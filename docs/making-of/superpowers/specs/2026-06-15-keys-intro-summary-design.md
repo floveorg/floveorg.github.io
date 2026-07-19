@@ -64,7 +64,7 @@ Paths relative to `apps/puzzy/keys.html`:
 | Joy | `../bubbles.html` | How | `../nety.html` |
 | Wisdom | `sety.html` | Gift | `../economy/dealy/freed.html` |
 | Ecologic(al) | `../economy/worthing.html` | Exchange | `../economy/dealy/rewardy.html` |
-| Craft | `../economy/crafty.html` | Share-lend (Lend) | `../economy/dealy/shareful.html` |
+| Craft | `../economy/crafty.html` | Share-lend (Lend) | `../economy/dealy/shary.html` |
 | Offer | `../economy/dealy/` | Why | `../metas/souls.html` |
 | Personal | `../profily.html` | Local | `../trusty/parenty.html` |
 | Social | `../trusty/trusty.html` | | |
