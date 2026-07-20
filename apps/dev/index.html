@@ -14,6 +14,19 @@
     }
     .app-name-link{ font-weight:700; }
     .sidebar-nav strong{ color:#8d89ff; }
+    /* Latest dev-log posts — filled client-side from the Development-category RSS feed. */
+    #dev-blog{ max-width:48rem; margin:2.5rem auto 3rem; padding:0 1.5rem; }
+    #dev-blog[hidden]{ display:none; }
+    .dev-blog-head{ font-weight:700; font-size:1.1rem; color:#8d89ff; margin-bottom:.8rem; }
+    #dev-blog-list{ list-style:none; margin:0; padding:0; display:grid; gap:.6rem; }
+    .dev-blog-link{ display:flex; flex-direction:column; gap:4px; padding:.8rem 1rem; text-decoration:none;
+      color:inherit; border:1px solid rgba(141,137,255,.28); border-radius:12px; transition:border-color .15s, transform .15s; }
+    .dev-blog-link:hover{ border-color:#8d89ff; transform:translateY(-1px); }
+    .dev-blog-top{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:.72rem; }
+    .dev-blog-cat{ font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:#fff; background:#8d89ff; padding:2px 9px; border-radius:999px; }
+    .dev-blog-date{ margin-left:auto; opacity:.6; white-space:nowrap; }
+    .dev-blog-title{ font-weight:700; font-size:1rem; }
+    .dev-blog-desc{ opacity:.68; font-size:.9rem; line-height:1.45; }
   </style>
 </head>
 <body>
@@ -41,5 +54,42 @@
   <script src="vendor/docsify.min.js"></script>
   <script src="vendor/search.min.js"></script>
   <script src="vendor/docsify-copy-code.min.js"></script>
+
+  <footer id="dev-blog" hidden>
+    <div class="dev-blog-head">Latest from the dev log</div>
+    <ul id="dev-blog-list"></ul>
+  </footer>
+  <script>
+  // Dev-log feed — newest Development-category posts from the blog RSS. Absolute
+  // URL so it works from localhost / the offline copy when online. Fails silent.
+  (function(){
+    var box=document.getElementById('dev-blog'), list=document.getElementById('dev-blog-list');
+    if(!box||!list) return;
+    var FEED='https://flove.org/blog/categories/development/index.xml';
+    function stripHtml(s){ try{ return (new DOMParser().parseFromString(s||'','text/html').body.textContent||'').replace(/\s+/g,' ').trim(); }catch(_){ return ''; } }
+    function truncate(s,n){ return s.length>n ? s.slice(0,n).replace(/\s+\S*$/,'')+'…' : s; }
+    function fmtDate(s){ var d=new Date(s); if(isNaN(d.getTime())) return ''; try{ return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); }catch(_){ return ''; } }
+    fetch(FEED,{mode:'cors'}).then(function(r){ return r.ok?r.text():Promise.reject(); }).then(function(xml){
+      var doc=new DOMParser().parseFromString(xml,'application/xml');
+      if(doc.querySelector('parsererror')) return;
+      var items=Array.prototype.slice.call(doc.querySelectorAll('item')).filter(function(it){ var l=it.querySelector('link'); return l&&l.textContent.indexOf('/posts/')!==-1; }).slice(0,5);
+      if(!items.length) return;
+      var frag=document.createDocumentFragment();
+      items.forEach(function(it){
+        function txt(sel){ var el=it.querySelector(sel); return el?el.textContent:''; }
+        var li=document.createElement('li');
+        var a=document.createElement('a'); a.className='dev-blog-link'; a.href=txt('link');
+        var top=document.createElement('span'); top.className='dev-blog-top';
+        var cat=txt('category'); if(cat){ var c=document.createElement('span'); c.className='dev-blog-cat'; c.textContent=cat; top.appendChild(c); }
+        var date=fmtDate(txt('pubDate')); if(date){ var dt=document.createElement('span'); dt.className='dev-blog-date'; dt.textContent=date; top.appendChild(dt); }
+        a.appendChild(top);
+        var t=document.createElement('span'); t.className='dev-blog-title'; t.textContent=txt('title'); a.appendChild(t);
+        var desc=truncate(stripHtml(txt('description')),120); if(desc){ var ds=document.createElement('span'); ds.className='dev-blog-desc'; ds.textContent=desc; a.appendChild(ds); }
+        li.appendChild(a); frag.appendChild(li);
+      });
+      list.appendChild(frag); box.hidden=false;
+    }).catch(function(){});
+  })();
+  </script>
 </body>
 </html>
