@@ -4749,12 +4749,26 @@ body:has(#addfocus-state:checked) .clean-add { display:flex; position:fixed; ins
     body.appendChild(a);
     return a;
   }
-  // add + highlight the new item + open its popover so it's visible on the table
+  // ── persistence: additions survive close/reopen, but a RELOAD resets them (flove F0 rule) ──
+  const ADDS_KEY = 'flove:docs-whole-adds';
+  const loadAdds = () => { try { return JSON.parse(localStorage.getItem(ADDS_KEY) || '[]'); } catch(_){ return []; } };
+  const saveAdds = (arr) => { try { localStorage.setItem(ADDS_KEY, JSON.stringify(arr)); } catch(_){} };
+  function persistAdd(field, isApps, name){
+    if (!field || !name) return;
+    const arr = loadAdds();
+    const key = (r) => r.f + '|' + (r.a ? 'a' : 'p') + '|' + String(r.n).toLowerCase();
+    const rec = { f: field, a: isApps ? 1 : 0, n: name };
+    if (arr.some(r => key(r) === key(rec))) return;
+    arr.push(rec); saveAdds(arr);
+  }
+
+  // add + highlight the new item + open its popover so it's visible on the table (+ persist)
   function addAndMark(cell, name, isApps){
     const a = addRelated(cell, name, isApps);
     if (!a) return false;
     a.classList.add('wt-new');
     const cb = cell.querySelector(':scope > .more .more-toggle'); if (cb) cb.checked = true;
+    const item = cell.closest('.item'); if (item) persistAdd(enText($('.field', item)), isApps, name);
     return true;
   }
   function setPrimary(cell, sel, name){
@@ -4784,8 +4798,8 @@ body:has(#addfocus-state:checked) .clean-add { display:flex; position:fixed; ins
         const item = findItem(substance, field);
         if (!item){ ignored++; continue; }
         const parCell = $('.par', item), appCell = $('.app-cell', item);
-        if (iRPar >= 0) splitList(cells[iRPar]).forEach(n => { if (addRelated(parCell, n, false)) added++; });
-        if (iRApp >= 0) splitList(cells[iRApp]).forEach(n => { if (addRelated(appCell, n, true))  added++; });
+        if (iRPar >= 0) splitList(cells[iRPar]).forEach(n => { if (addRelated(parCell, n, false)) { added++; persistAdd(field, false, n); } });
+        if (iRApp >= 0) splitList(cells[iRApp]).forEach(n => { if (addRelated(appCell, n, true))  { added++; persistAdd(field, true,  n); } });
         const par = iPar >= 0 ? (cells[iPar]||'').trim() : '';
         const app = iApp >= 0 ? (cells[iApp]||'').trim() : '';
         if (overwrite){
@@ -4793,8 +4807,8 @@ body:has(#addfocus-state:checked) .clean-add { display:flex; position:fixed; ins
           if (app){ setPrimary(appCell, 'a.app-btn',  app); changed++; }
         } else {
           const cp = primary(parCell, 'a.std-link'), ca = primary(appCell, 'a.app-btn');
-          if (par && cp && norm(cp.textContent) !== norm(par)) { if (addRelated(parCell, par, false)) added++; }
-          if (app && ca && norm(ca.textContent) !== norm(app)) { if (addRelated(appCell, app, true))  added++; }
+          if (par && cp && norm(cp.textContent) !== norm(par)) { if (addRelated(parCell, par, false)) { added++; persistAdd(field, false, par); } }
+          if (app && ca && norm(ca.textContent) !== norm(app)) { if (addRelated(appCell, app, true))  { added++; persistAdd(field, true,  app); } }
         }
       }
       ev.target.value = '';
@@ -4887,6 +4901,20 @@ body:has(#addfocus-state:checked) .clean-add { display:flex; position:fixed; ins
       setTimeout(() => touched.forEach(it => it.classList.remove('wt-updated')), 3500);
     });
   }
+
+  // Restore persisted additions on open — but a RELOAD wipes them (reset), per the flove F0 rule
+  (function restore(){
+    let navType = 'navigate';
+    try {
+      const nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+      navType = nav ? nav.type : ((performance.navigation && performance.navigation.type === 1) ? 'reload' : 'navigate');
+    } catch(_){}
+    if (navType === 'reload'){ saveAdds([]); return; }          // reload = clean slate
+    loadAdds().forEach(rec => {
+      const item = findItem('', rec.f); if (!item) return;
+      addRelated($(rec.a ? '.app-cell' : '.par', item), rec.n, !!rec.a);
+    });
+  })();
 })();
 
 // ── translate2 engine — switches language, translates the bits CSS can't
