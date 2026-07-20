@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Explorar · FLOVE</title>
+<meta name="description" content="Elige cómo explorar las apps de flove: grafo 3D, entrada guiada o todas en cuadrícula.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='12' y1='0' x2='88' y2='0' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='%23ff3344'/><stop offset='.5' stop-color='%23ff8a3a'/><stop offset='1' stop-color='%23ffd633'/></linearGradient></defs><path d='M50 60 C 22 60, 12 38, 16 18 C 38 22, 54 38, 50 60 Z' fill='url(%23g)'/><path d='M50 60 C 78 60, 88 38, 84 18 C 62 22, 46 38, 50 60 Z' fill='url(%23g)'/><path d='M50 58 C 50 72, 50 84, 50 92' stroke='url(%23g)' stroke-width='5' stroke-linecap='round' fill='none'/></svg>">
+<style>
+  /* ── apps-intro · self-contained ──────────────────────────────────────
+     Three techy icons — graph · entrance(rainbow) · box-grid — on the exact
+     flove/index rainbow background (dream-veil, blooming on its 62% delay).
+     Icon SVGs are the copies of apps-intro-logos.html (the master); fills use
+     --k* vars so colour/size effects are easy. Reveal one at a time, then
+     flow around growing/shrinking. Click empty space → one of 10 effects on
+     them; every 10th → a 6s thank-you splash. Navigating an icon takes TWO
+     clicks: 1st grows it ×3, a 2nd (while growing) links away, else it resets.
+     Motion is split across independent props so no two animations fight. */
+  :root{
+    --ease:cubic-bezier(.22,.61,.36,1);
+    --ink:#1a1820; --bg-1:#fff8f1; --bg-2:#f4f1ff; --bg-3:#effdf7;
+    --dream-1:#ff8aae; --dream-2:#8ab4ff; --dream-3:#b48aff; --dream-4:#8affd0; --dream-5:#ffd28a;
+    --edge:#241f36;
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{
+    min-height:100dvh; color:var(--ink); overflow:hidden;
+    background:
+      radial-gradient(1100px 700px at 110% -10%, var(--bg-3) 0, transparent 55%),
+      radial-gradient(900px 600px at -10% 110%, var(--bg-2) 0, transparent 55%),
+      var(--bg-1);
+    display:flex; align-items:center; justify-content:center; padding:2rem 1rem;
+  }
+
+  /* ── dream-veil · verbatim from flove/index (delay lives in dreamCycle) ─ */
+  .dream-veil{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0;overflow:hidden;
+    animation:dreamCycle 40s linear infinite}
+  .dream-blob{position:absolute;width:80vmax;height:80vmax;border-radius:50%;
+    filter:blur(80px);mix-blend-mode:multiply;opacity:.55;will-change:transform}
+  .dream-blob.b1{background:radial-gradient(circle,var(--dream-1) 0,transparent 65%);top:-30%;left:-25%;animation:drift1 26s ease-in-out infinite}
+  .dream-blob.b2{background:radial-gradient(circle,var(--dream-2) 0,transparent 65%);top:10%;right:-30%;animation:drift2 32s ease-in-out infinite}
+  .dream-blob.b3{background:radial-gradient(circle,var(--dream-3) 0,transparent 65%);bottom:-30%;left:5%;animation:drift3 28s ease-in-out infinite}
+  .dream-blob.b4{background:radial-gradient(circle,var(--dream-4) 0,transparent 65%);top:45%;left:35%;animation:drift4 24s ease-in-out infinite}
+  .dream-blob.b5{background:radial-gradient(circle,var(--dream-5) 0,transparent 65%);bottom:10%;right:10%;animation:drift5 36s ease-in-out infinite}
+  @keyframes drift1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(18vw,12vh) scale(1.25)}}
+  @keyframes drift2{0%,100%{transform:translate(0,0) scale(1.05)}50%{transform:translate(-14vw,16vh) scale(.85)}}
+  @keyframes drift3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(12vw,-14vh) scale(1.18)}}
+  @keyframes drift4{0%,100%{transform:translate(-6vw,6vh) scale(.95)}50%{transform:translate(10vw,-10vh) scale(1.2)}}
+  @keyframes drift5{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-16vw,-12vh) scale(1.1)}}
+  @keyframes dreamCycle{
+    0%,62%{opacity:0;   transform:scale(1)    rotate(0)     skew(0,0);        filter:hue-rotate(0deg)   blur(0)}
+    78%   {opacity:1;   transform:scale(1)    rotate(0)     skew(0,0);        filter:hue-rotate(60deg)  blur(0)}
+    92%   {opacity:1;   transform:scale(1)    rotate(0)     skew(0,0);        filter:hue-rotate(380deg) blur(0)}
+    93.5% {opacity:1;   transform:scale(1.08) rotate(2deg)  skew(-2deg,1deg); filter:hue-rotate(400deg) blur(2px)}
+    95%   {opacity:1;   transform:scale(.86)  rotate(-4deg) skew(3deg,-2deg); filter:hue-rotate(420deg) blur(4px)}
+    96.5% {opacity:.85; transform:scale(1.18) rotate(6deg)  skew(-4deg,2deg); filter:hue-rotate(440deg) blur(8px)}
+    100%  {opacity:0;   transform:scale(.04)  rotate(-22deg);                 filter:hue-rotate(460deg) blur(40px)}
+  }
+
+  /* ── field of icons ───────────────────────────────────────────────── */
+  .field{position:relative;z-index:2;display:flex;flex-wrap:wrap;
+    gap:clamp(1.5rem,7vw,6rem);align-items:center;justify-content:center;max-width:1100px}
+  .slot{display:flex;transition:transform 2s var(--ease)}          /* swap unit (JS FLIP) */
+  .choice{position:relative;display:block;line-height:0;opacity:0;
+    animation-duration:.8s;animation-timing-function:var(--ease);animation-fill-mode:forwards;
+    transition:scale 1.6s var(--ease),filter .3s var(--ease)}
+  .choice:hover,.choice:focus-visible{outline:none;filter:drop-shadow(0 6px 18px var(--ac6))}
+  /* two-click navigation: 1st click grows ×3, 2nd (while grown) links away */
+  .choice.arming{scale:3;z-index:20;filter:drop-shadow(0 14px 40px var(--ac6))}
+  .mover{display:block}
+  .ico{width:clamp(120px,19vw,170px);height:clamp(120px,19vw,170px);display:block}
+
+  /* reveal (transform on .choice), sequenced one at a time */
+  .c-graph{--ac:#8d89ff;--ac6:#8d89ff88;animation-name:revZoom;animation-delay:.5s}
+  .c-cards{--ac:#ff8a3a;--ac6:#ff8a3a88;animation-name:revSlide;animation-delay:1.35s}
+  .c-boxes{--ac:#4fd6cc;--ac6:#4fd6cc88;animation-name:revFlip;animation-delay:2.2s}
+  @keyframes revZoom{0%{opacity:0;transform:scale(.55) rotate(-6deg)}60%{opacity:1}100%{opacity:1;transform:none}}
+  @keyframes revSlide{0%{opacity:0;transform:translateX(-90px) rotate(-9deg)}100%{opacity:1;transform:none}}
+  @keyframes revFlip{0%{opacity:0;transform:rotateY(85deg)}100%{opacity:1;transform:none}}
+
+  /* wander (translate) + breathe (scale) — 3× slower, more varied dirs */
+  .m1{animation:wanderA 57s ease-in-out 1.4s infinite, breathe 13s ease-in-out infinite}
+  .m2{animation:wanderB 69s ease-in-out 2.2s infinite, breathe 16s ease-in-out -4s infinite}
+  .m3{animation:wanderC 63s ease-in-out 3.1s infinite, breathe 15s ease-in-out -8s infinite}
+  @keyframes wanderA{0%,100%{translate:0 0}12%{translate:34px -22px}25%{translate:-26px -40px}38%{translate:-46px 10px}50%{translate:-16px 40px}62%{translate:30px 34px}75%{translate:50px -8px}88%{translate:18px -36px}}
+  @keyframes wanderB{0%,100%{translate:0 0}12%{translate:-32px 26px}25%{translate:28px 44px}38%{translate:48px 6px}50%{translate:20px -34px}62%{translate:-30px -40px}75%{translate:-50px 4px}88%{translate:-18px 34px}}
+  @keyframes wanderC{0%,100%{translate:0 0}12%{translate:30px 32px}25%{translate:-38px 14px}38%{translate:-20px -38px}50%{translate:34px -30px}62%{translate:48px 12px}75%{translate:6px 46px}88%{translate:-40px 24px}}
+  @keyframes breathe{0%,100%{scale:.86}50%{scale:1.16}}
+
+  /* ── 10 click effects (applied to .ico) ───────────────────────────── */
+  .ico.e-spin  {animation:eSpin  .9s var(--ease)}
+  .ico.e-flip  {animation:eFlip  1s  var(--ease)}
+  .ico.e-shake {animation:eShake .7s}
+  .ico.e-jump  {animation:eJump  .85s var(--ease)}
+  .ico.e-grow  {animation:eGrow  .9s var(--ease)}
+  .ico.e-shrink{animation:eShrink .9s var(--ease)}
+  .ico.e-wobble{animation:eWobble .8s}
+  .ico.e-pulse {animation:ePulse .8s var(--ease)}
+  .ico.e-swing {animation:eSwing 1s  var(--ease)}
+  .ico.e-flash {animation:eFlash .9s}
+  @keyframes eSpin{to{rotate:360deg}}
+  @keyframes eFlip{0%{transform:rotateY(0)}100%{transform:rotateY(360deg)}}
+  @keyframes eShake{0%,100%{translate:0}18%{translate:-9px}36%{translate:8px}54%{translate:-6px}72%{translate:5px}}
+  @keyframes eJump{0%,100%{translate:0 0}40%{translate:0 -30px}70%{translate:0 8px}}
+  @keyframes eGrow{0%{scale:1}45%{scale:1.55}100%{scale:1}}
+  @keyframes eShrink{0%{scale:1}45%{scale:.5}100%{scale:1}}
+  @keyframes eWobble{0%,100%{rotate:0}25%{rotate:-18deg}50%{rotate:13deg}75%{rotate:-8deg}}
+  @keyframes ePulse{0%,100%{scale:1}30%{scale:1.35}62%{scale:.88}}
+  @keyframes eSwing{0%{transform:rotate(0)}30%{transform:rotate(20deg) translateY(-8px)}62%{transform:rotate(-15deg)}100%{transform:rotate(0)}}
+  @keyframes eFlash{0%,100%{filter:none}42%{filter:hue-rotate(190deg) saturate(2.4) drop-shadow(0 0 22px var(--ac))}}
+
+  /* ── 6s thank-you splash ──────────────────────────────────────────── */
+  .thanks{position:fixed;inset:0;z-index:6;pointer-events:none;display:grid;place-items:center;overflow:hidden}
+  .thanks::before{content:"";position:absolute;left:50%;top:50%;width:0;height:0;border-radius:50%;
+    transform:translate(-50%,-50%);mix-blend-mode:screen;
+    background:radial-gradient(circle,#fff,#ffce3a 18%,#ff5a3a 34%,#c133ff 52%,#5ea4e6 66%,transparent 74%);
+    animation:tBurst 1.2s ease-out forwards}
+  @keyframes tBurst{0%{opacity:.9;width:0;height:0}100%{opacity:0;width:180vmax;height:180vmax}}
+  .thanks-txt{position:relative;font-weight:900;font-size:clamp(2.4rem,11vw,6rem);letter-spacing:-.03em;
+    background:linear-gradient(90deg,#ff3344,#ff8a3a,#ffd633,#33d97a,#5ea4e6,#8d89ff,#c133ff);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:tTxt 6s var(--ease) forwards}
+  @keyframes tTxt{0%{opacity:0;transform:scale(.6) rotate(-4deg)}12%{opacity:1;transform:scale(1) rotate(0)}82%{opacity:1}100%{opacity:0;transform:scale(1.12)}}
+  .thanks i{position:absolute;left:50%;top:48%;width:12px;height:12px;border-radius:2px;background:var(--c);opacity:0;
+    animation:tConf var(--d,3s) var(--delay,0s) cubic-bezier(.15,.7,.3,1) forwards}
+  @keyframes tConf{0%{opacity:1;transform:translate(-50%,-50%) scale(.4) rotate(0)}12%{opacity:1}
+    100%{opacity:0;transform:translate(calc(-50% + var(--tx)),calc(-50% + var(--ty))) scale(1) rotate(var(--rot))}}
+
+  @media (prefers-reduced-motion:reduce){
+    .dream-veil,.dream-blob,.choice,.m1,.m2,.m3{animation:none!important;transition:none!important}
+    .choice{opacity:1!important;transform:none!important}
+    .slot{transition:none!important}
+  }
+</style>
+</head>
+<body>
+
+<div class="dream-veil" aria-hidden="true">
+  <div class="dream-blob b1"></div><div class="dream-blob b2"></div><div class="dream-blob b3"></div>
+  <div class="dream-blob b4"></div><div class="dream-blob b5"></div>
+</div>
+
+<nav class="field" aria-label="Elige cómo explorar las apps de flove">
+
+  <!-- 1 · GRAPH → apps-graph.html · (master: apps-intro-logos.html #ic-graph) -->
+  <div class="slot">
+  <a class="choice c-graph" href="apps-graph.html" aria-label="Grafo · mapa 3D de categorías">
+   <span class="mover m1">
+    <svg class="ico" viewBox="0 0 100 100" aria-hidden="true">
+      <g stroke="var(--edge)" stroke-width="2.4" fill="none" opacity=".85">
+        <path d="M50 50 H25 V25"/><path d="M50 50 V19"/><path d="M50 50 H79 V27"/>
+        <path d="M50 50 V75 H24"/><path d="M50 50 L79 73"/>
+      </g>
+      <rect x="19" y="19" width="12" height="12" fill="var(--k1,#c133ff)" stroke="var(--edge)" stroke-width="1.5"/>
+      <rect x="44" y="13" width="11" height="11" fill="var(--k2,#5ea4e6)" stroke="var(--edge)" stroke-width="1.5"/>
+      <rect x="73" y="21" width="12" height="12" fill="var(--k3,#ff8a3a)" stroke="var(--edge)" stroke-width="1.5"/>
+      <rect x="18" y="69" width="12" height="12" fill="var(--k4,#33d97a)" stroke="var(--edge)" stroke-width="1.5"/>
+      <rect x="73" y="67" width="12" height="12" fill="var(--k5,#4fd6cc)" stroke="var(--edge)" stroke-width="1.5"/>
+      <path d="M50 37 L61 43.5 V56.5 L50 63 L39 56.5 V43.5 Z" fill="var(--k6,#8d89ff)" stroke="var(--edge)" stroke-width="2.2"/>
+    </svg>
+   </span>
+  </a>
+  </div>
+
+  <!-- 2 · ENTRANCE (rainbow) → index.html · (master #ic-entrance) -->
+  <div class="slot">
+  <a class="choice c-cards" href="index.html" aria-label="Entrada · elige categoría (rainbow)">
+   <span class="mover m2">
+    <svg class="ico" viewBox="0 0 100 100" aria-hidden="true">
+      <!-- foldable map: accordion panels, one per rainbow colour, + route & pin -->
+      <g stroke="var(--edge)" stroke-width="1.4" stroke-linejoin="round">
+        <path d="M10 30 L21.43 36 L21.43 72 L10 66 Z"    fill="var(--k1,#ff3344)"/>
+        <path d="M21.43 36 L32.86 30 L32.86 66 L21.43 72 Z" fill="var(--k2,#ff8a3a)"/>
+        <path d="M32.86 30 L44.29 36 L44.29 72 L32.86 66 Z" fill="var(--k3,#ffd633)"/>
+        <path d="M44.29 36 L55.71 30 L55.71 66 L44.29 72 Z" fill="var(--k4,#33d97a)"/>
+        <path d="M55.71 30 L67.14 36 L67.14 72 L55.71 66 Z" fill="var(--k5,#5ea4e6)"/>
+        <path d="M67.14 36 L78.57 30 L78.57 66 L67.14 72 Z" fill="var(--k6,#8d89ff)"/>
+        <path d="M78.57 30 L90 36 L90 72 L78.57 66 Z"    fill="var(--k7,#c133ff)"/>
+      </g>
+      <path d="M18 60 Q34 40 50 54 T82 46" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-dasharray="1.4 5" opacity=".92"/>
+      <circle cx="82" cy="46" r="4.4" fill="#fff"/><circle cx="82" cy="46" r="1.9" fill="var(--edge)"/>
+    </svg>
+   </span>
+  </a>
+  </div>
+
+  <!-- 3 · BOX GRID → index.html#all · borderless · (master #ic-boxes) -->
+  <div class="slot">
+  <a class="choice c-boxes" href="index.html#all" aria-label="Cuadrícula · todas las apps">
+   <span class="mover m3">
+    <svg class="ico" viewBox="0 0 100 100" aria-hidden="true">
+      <rect x="18" y="18" width="34" height="34" rx="2" fill="var(--k1,#4fd6cc)"/>
+      <rect x="56" y="18" width="26" height="16" rx="2" fill="var(--k2,#5ea4e6)"/>
+      <rect x="56" y="38" width="26" height="14" rx="2" fill="var(--k3,#8d89ff)"/>
+      <rect x="18" y="56" width="16" height="26" rx="2" fill="var(--k4,#33d97a)"/>
+      <rect x="38" y="56" width="44" height="26" rx="2" fill="var(--k5,#ffce3a)"/>
+    </svg>
+   </span>
+  </a>
+  </div>
+
+</nav>
+
+<script>
+/* Small JS:
+   • click empty space → fire one of 10 effects on the icons (cycling); every
+     10th click → a 6s colour "thank you" splash.
+   • navigating an icon takes TWO clicks: 1st grows it ×3 (arming); a 2nd while
+     it's grown links away; if no 2nd click within ~1.8s it resets.
+   • now and then (5× less than before) two icons swap places (smooth FLIP).
+   All disabled under prefers-reduced-motion. */
+(function(){
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var field  = document.querySelector('.field');
+  var slots  = Array.prototype.slice.call(field.querySelectorAll('.slot'));
+  var icos   = Array.prototype.slice.call(field.querySelectorAll('.ico'));
+  var links  = Array.prototype.slice.call(field.querySelectorAll('a.choice'));
+  var FX = ['e-spin','e-flip','e-shake','e-jump','e-grow','e-shrink','e-wobble','e-pulse','e-swing','e-flash'];
+  var clicks = 0, armed = null, armTimer = null;
+
+  icos.forEach(function(ic){
+    ic.addEventListener('animationend', function(){ FX.forEach(function(c){ ic.classList.remove(c); }); });
+  });
+  function fire(idx){
+    var cls = FX[idx % FX.length];
+    icos.forEach(function(ic){
+      FX.forEach(function(c){ ic.classList.remove(c); });
+      void ic.offsetWidth;
+      ic.classList.add(cls);
+    });
+  }
+  function disarm(){ if(armed){ armed.classList.remove('arming'); armed = null; } clearTimeout(armTimer); }
+
+  function thankYou(){
+    var w = document.createElement('div'); w.className = 'thanks';
+    var t = document.createElement('span'); t.className = 'thanks-txt'; t.textContent = 'thank you';
+    w.appendChild(t);
+    var cols = ['#c133ff','#6a3aff','#ff8a3a','#33d97a','#5ea4e6','#ffce3a','#4fd6cc','#ff5a5a','#ffffff'];
+    for(var i = 0; i < 80; i++){
+      var p = document.createElement('i');
+      p.style.setProperty('--c', cols[i % cols.length]);
+      p.style.setProperty('--tx', Math.round(Math.random()*170 - 85) + 'vw');
+      p.style.setProperty('--ty', Math.round(Math.random()*90 + 12) + 'vh');
+      p.style.setProperty('--rot', Math.round(Math.random()*1080 - 540) + 'deg');
+      p.style.setProperty('--d', (1.8 + Math.random()*1.4).toFixed(2) + 's');
+      p.style.setProperty('--delay', (Math.random()*3.6).toFixed(2) + 's');
+      w.appendChild(p);
+    }
+    document.body.appendChild(w);
+    setTimeout(function(){ w.remove(); }, 6000);
+  }
+
+  // per-icon: two-click navigation
+  links.forEach(function(a){
+    a.addEventListener('click', function(e){
+      if(reduce) return;                       // reduced motion → normal single-click nav
+      e.preventDefault();
+      if(a === armed){                         // second click while grown → go
+        var href = a.getAttribute('href');
+        disarm();
+        window.location.href = href;
+        return;
+      }
+      disarm();                                // first click → arm & grow ×3
+      armed = a;
+      a.classList.add('arming');
+      armTimer = setTimeout(disarm, 1800);     // no 2nd click → reset
+    });
+  });
+
+  // empty-space clicks → effects + thank-you (and cancel any arming)
+  document.addEventListener('click', function(e){
+    if(reduce) return;
+    if(e.target.closest('a.choice')) return;   // icon clicks handled above
+    disarm();
+    fire(clicks);
+    clicks++;
+    if(clicks % 10 === 0) thankYou();
+  });
+
+  // swaps — 5× less often than before (was 9s → now 45s)
+  if(!reduce && slots.length >= 2){
+    setInterval(function(){
+      var i = Math.floor(Math.random()*slots.length), j;
+      do { j = Math.floor(Math.random()*slots.length); } while(j === i);
+      var a = slots[i], b = slots[j];
+      var first = slots.map(function(s){ return s.getBoundingClientRect(); });
+      var mark = document.createComment('');
+      field.insertBefore(mark, a); field.insertBefore(a, b); field.insertBefore(b, mark); field.removeChild(mark);
+      slots.forEach(function(s, k){
+        var last = s.getBoundingClientRect();
+        var dx = first[k].left - last.left, dy = first[k].top - last.top;
+        if(!dx && !dy) return;
+        s.style.transition = 'none';
+        s.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+        s.getBoundingClientRect();
+        s.style.transition = '';
+        s.style.transform = '';
+      });
+    }, 45000);
+  }
+})();
+</script>
+
+</body>
+</html>
