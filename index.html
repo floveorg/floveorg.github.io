@@ -32,6 +32,12 @@
   --accent:#ff8a8a; --accent-soft:#ffd9d9;
   --dream-1:#ff8aae; --dream-2:#8ab4ff; --dream-3:#b48aff; --dream-4:#8affd0; --dream-5:#ffd28a;
 }
+:root.dark {
+  --bg-1:#1a1820; --bg-2:#221e2a; --bg-3:#1e1a26;
+  --ink:#f0ecf4;  --mut:#9a94a8;  --line:rgba(240,236,244,.12);
+  --accent:#ff8a8a; --accent-soft:#4a2030;
+  --dream-1:#ff8aae; --dream-2:#8ab4ff; --dream-3:#b48aff; --dream-4:#8affd0; --dream-5:#ffd28a;
+}
 /* @property = registered vars that interpolate via transition (Houdini) */
 @property --c1 { syntax:'<number>'; initial-value:0; inherits:false; }
 @property --c2 { syntax:'<number>'; initial-value:0; inherits:false; }
@@ -48,6 +54,7 @@ body {
     radial-gradient(900px 600px at -10% 110%, var(--bg-2) 0, transparent 55%),
     var(--bg-1);
   min-height:100svh;
+  transition: background .5s ease, color .3s ease;
   -webkit-font-smoothing:antialiased;
   overflow-x:hidden;   /* keep the blurred bg blobs from spawning a sideways scrollbar */
   overflow-y:auto;     /* but let the page scroll down when content grows past the viewport */
@@ -441,6 +448,21 @@ body {
   100% { opacity:0; transform:scale(1.95) rotate(110deg); filter:blur(3px); }
 }
 
+/* ─── theme toggle ────────────────────────────────────────────────── */
+.theme-btn {
+  width:2.4rem; height:2.4rem; border-radius:50%;
+  border:1px solid var(--line); background:rgba(255,255,255,.74);
+  cursor:pointer; font-size:1.1rem; line-height:1;
+  display:grid; place-items:center;
+  box-shadow:0 2px 8px rgba(20,16,32,.12);
+  transition: background .3s ease, box-shadow .3s ease, transform .3s ease;
+}
+.theme-btn:hover { transform:scale(1.1); box-shadow:0 4px 14px rgba(20,16,32,.18); }
+.theme-icon-dark { display:none; }
+:root.dark .theme-icon-light { display:none; }
+:root.dark .theme-icon-dark { display:inline; }
+:root.dark .theme-btn { background:rgba(40,36,50,.85); border-color:rgba(240,236,244,.15); }
+
 /* ─── house animation (replaces Intro button) ─────────────────────── */
 .house-btn {
   display:flex; flex-direction:column; align-items:center;
@@ -474,11 +496,14 @@ body {
 }
 
 .house-svg .h-stroke {
-  fill:none; stroke:var(--ink); stroke-width:3; stroke-linecap:round; stroke-linejoin:round;
+  fill:none; stroke:var(--ink); stroke-width:2; stroke-linecap:round; stroke-linejoin:round;
   stroke-dasharray:var(--len); stroke-dashoffset:var(--len);
 }
 .h-roof    { --len:108; animation: houseDraw 3s ease-out 28s forwards; }
-.h-wall    { --len:120; animation: houseDraw 3s ease-out 31s forwards; }
+.h-wall-l  { --len:40;  animation: houseDraw 3s ease-out 31s forwards; }
+.h-wall-t  { --len:60;  animation: houseDraw 3s ease-out 31s forwards; }
+.h-wall-r  { --len:40;  animation: houseDraw 3s ease-out 31s forwards; }
+.h-door    { --len:56;  animation: houseDraw 1.5s ease-out 33s forwards; stroke:var(--accent); stroke-width:2; }
 @keyframes houseDraw { to { stroke-dashoffset:0; } }
 
 .h-wall-fill {
@@ -584,12 +609,11 @@ body {
 :root:has(#s2:checked) .btn-apps .btn-text[data-st~="2"] { opacity:1; width:8ch;  animation: typeIn 1.6s steps(8,  end) forwards; }
 :root:has(#s4:checked) .btn-apps .btn-text[data-st~="4"] { opacity:1; width:3ch;  animation: typeIn .6s  steps(3,  end) forwards; }
 
-/* press bloom: fuzzy rainbow flood while a button is held */
+/* press bloom: subtle opacity flash while a button is held */
 .press-bloom {
   position:fixed; inset:0; z-index:1;
   pointer-events:none;
-  opacity:0; transform: scale(.7);
-  filter: blur(36px) saturate(1.2);
+  opacity:0;
   background:
     radial-gradient(circle at 14% 22%, #ff8aa0 0, transparent 40%),
     radial-gradient(circle at 30% 30%, #ffb27a 0, transparent 40%),
@@ -598,11 +622,11 @@ body {
     radial-gradient(circle at 72% 70%, #8ac6ff 0, transparent 40%),
     radial-gradient(circle at 86% 80%, #a08aff 0, transparent 40%),
     radial-gradient(circle at 50% 92%, #d68aff 0, transparent 40%);
-  transition: opacity .55s ease, transform 1s ease, filter 1s ease;
+  transition: opacity .3s ease;
 }
 body:has(.btn:active) .press-bloom {
-  opacity:1; transform: scale(1.18); filter: blur(22px) saturate(1.6);
-  transition: opacity 1.6s cubic-bezier(.2,.8,.3,1), transform 2.6s cubic-bezier(.2,.7,.3,1), filter 2.6s cubic-bezier(.2,.7,.3,1);
+  opacity:.18;
+  transition: opacity .15s ease;
 }
 
 .btn-hint {
@@ -628,28 +652,28 @@ body:has(.btn:active) .press-bloom {
 body:has(.btn:hover) .dream-veil, body:has(.btn:hover) .dream-veil *,
 body:has(.btn:active) .dream-veil, body:has(.btn:active) .dream-veil * { animation-play-state: paused; }
 .dream-blob {
-  position:absolute; width:80vmax; height:80vmax;
-  border-radius:50%; filter: blur(32px);
-  opacity:.42;
+  position:absolute; width:90vmax; height:90vmax;
+  border-radius:50%;
+  opacity:.32;
 }
-.dream-blob.b1 { background: radial-gradient(circle, var(--dream-1) 0, transparent 65%); top:-30%; left:-25%;  animation: drift1 26s ease-in-out infinite; }
-.dream-blob.b2 { background: radial-gradient(circle, var(--dream-2) 0, transparent 65%); top: 10%; right:-30%; animation: drift2 32s ease-in-out infinite; }
-.dream-blob.b3 { background: radial-gradient(circle, var(--dream-3) 0, transparent 65%); bottom:-30%; left:5%; animation: drift3 28s ease-in-out infinite; }
-.dream-blob.b4 { background: radial-gradient(circle, var(--dream-4) 0, transparent 65%); top: 45%; left:35%;   animation: drift4 24s ease-in-out infinite; }
-.dream-blob.b5 { background: radial-gradient(circle, var(--dream-5) 0, transparent 65%); bottom:10%; right:10%;animation: drift5 36s ease-in-out infinite; }
+.dream-blob.b1 { background: radial-gradient(circle, var(--dream-1) 0, transparent 80%); top:-30%; left:-25%;  animation: drift1 26s ease-in-out infinite; }
+.dream-blob.b2 { background: radial-gradient(circle, var(--dream-2) 0, transparent 80%); top: 10%; right:-30%; animation: drift2 32s ease-in-out infinite; }
+.dream-blob.b3 { background: radial-gradient(circle, var(--dream-3) 0, transparent 80%); bottom:-30%; left:5%; animation: drift3 28s ease-in-out infinite; }
+.dream-blob.b4 { background: radial-gradient(circle, var(--dream-4) 0, transparent 80%); top: 45%; left:35%;   animation: drift4 24s ease-in-out infinite; }
+.dream-blob.b5 { background: radial-gradient(circle, var(--dream-5) 0, transparent 80%); bottom:10%; right:10%;animation: drift5 36s ease-in-out infinite; }
 @keyframes drift1 { 0%,100%{transform:translate(0,0) scale(1)}    50%{transform:translate(18vw,12vh) scale(1.25)} }
 @keyframes drift2 { 0%,100%{transform:translate(0,0) scale(1.05)} 50%{transform:translate(-14vw,16vh) scale(.85)} }
 @keyframes drift3 { 0%,100%{transform:translate(0,0) scale(1)}    50%{transform:translate(12vw,-14vh) scale(1.18)} }
 @keyframes drift4 { 0%,100%{transform:translate(-6vw,6vh) scale(.95)} 50%{transform:translate(10vw,-10vh) scale(1.2)} }
 @keyframes drift5 { 0%,100%{transform:translate(0,0) scale(1)}    50%{transform:translate(-16vw,-12vh) scale(1.1)} }
 @keyframes dreamCycle {
-  0%, 62% { opacity:0;   transform:scale(1)    rotate(0)     skew(0,0);          filter:hue-rotate(0deg)   blur(0); }
-  78%     { opacity:1;   transform:scale(1)    rotate(0)     skew(0,0);          filter:hue-rotate(60deg)  blur(0); }
-  92%     { opacity:1;   transform:scale(1)    rotate(0)     skew(0,0);          filter:hue-rotate(380deg) blur(0); }
-  93.5%   { opacity:1;   transform:scale(1.08) rotate(2deg)  skew(-2deg,1deg);   filter:hue-rotate(400deg) blur(2px); }
-  95%     { opacity:1;   transform:scale(.86)  rotate(-4deg) skew(3deg,-2deg);   filter:hue-rotate(420deg) blur(4px); }
-  96.5%   { opacity:.85; transform:scale(1.18) rotate(6deg)  skew(-4deg,2deg);   filter:hue-rotate(440deg) blur(8px); }
-  100%    { opacity:0;   transform:scale(.04)  rotate(-22deg);                   filter:hue-rotate(460deg) blur(40px); }
+  0%, 62% { opacity:0;   transform:scale(1)    rotate(0)     skew(0,0);          filter:hue-rotate(0deg);  }
+  78%     { opacity:1;   transform:scale(1)    rotate(0)     skew(0,0);          filter:hue-rotate(60deg); }
+  92%     { opacity:1;   transform:scale(1)    rotate(0)     skew(0,0);          filter:hue-rotate(380deg);}
+  93.5%   { opacity:1;   transform:scale(1.08) rotate(2deg)  skew(-2deg,1deg);   filter:hue-rotate(400deg);}
+  95%     { opacity:1;   transform:scale(.86)  rotate(-4deg) skew(3deg,-2deg);   filter:hue-rotate(420deg);}
+  96.5%   { opacity:.85; transform:scale(1.18) rotate(6deg)  skew(-4deg,2deg);   filter:hue-rotate(440deg);}
+  100%    { opacity:0;   transform:scale(.04)  rotate(-22deg);                   filter:hue-rotate(460deg);}
 }
 
 /* ─── Bubbles door (pure-CSS :target reveal) ──────────────────────── */
@@ -797,9 +821,8 @@ body:has(.bubbles-view:target) .flove-foot {
   position:fixed; z-index:6; left:50%; bottom:10vh;
   width:min(340px, 86vw); max-width:86vw;
   padding:1rem 1.1rem 1.05rem; border-radius:18px;
-  background:rgba(255,255,255,.82); border:1px solid rgba(255,255,255,.7);
+  background:rgba(255,255,255,.92); border:1px solid rgba(255,255,255,.7);
   box-shadow:0 18px 44px rgba(80,40,120,.20), inset 0 0 0 1px rgba(255,255,255,.5);
-  backdrop-filter:blur(14px) saturate(150%); -webkit-backdrop-filter:blur(14px) saturate(150%);
   color:var(--ink);
   opacity:0; transform:translate(-50%,14px) scale(.96); filter:blur(8px); pointer-events:none;
   transition:opacity .5s ease, transform .5s cubic-bezier(.2,.8,.2,1), filter .5s ease;
@@ -854,8 +877,7 @@ body:has(.bubbles-view:target) .flove-foot {
   .btn { width:100%; padding:1.15em 1.6em; }
   .btn-hint { font-size:.78rem; }
   .splash { filter: blur(30px) saturate(2) !important; }
-  .dream-blob { filter: blur(24px) !important; }
-  .press-bloom { filter: blur(28px) !important; }
+  .dream-blob { filter: none !important; }
   .logo { filter: drop-shadow(0 0 20px rgba(200,150,230,.3)) !important; text-shadow:none !important; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -912,21 +934,6 @@ body:has(.bubbles-view:target) .flove-foot {
 .es{display:none}
 body:has(#lang-es:checked) .en{display:none}
 body:has(#lang-es:checked) .es{display:inline}
-/* Worldball reveals 5s after load (pure CSS), so the home breathes first. */
-.lang-switch{opacity:0;animation:worldballIn .6s ease 5s forwards}
-@keyframes worldballIn{to{opacity:1}}
-.lang{display:inline-block;position:relative}
-/* Bare worldball — just the 🌐, no background or border. */
-.lang>summary{list-style:none;cursor:pointer;width:40px;height:40px;border:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:1.35rem;line-height:1;-webkit-user-select:none;user-select:none;background:transparent}
-.lang>summary::-webkit-details-marker{display:none}
-.lang[open]>summary{transform:scale(1.06)}
-/* Open list: no background, no borders, black text. */
-.lang-opts{position:absolute;right:0;z-index:10;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;background:transparent;border:0;border-radius:12px;padding:6px}
-.lang input{position:absolute;opacity:0;pointer-events:none}
-.lang label{cursor:pointer;padding:0 12px;min-height:40px;display:inline-flex;align-items:center;border:0;border-radius:11px;white-space:nowrap;color:#000;text-shadow:0 1px 2px rgba(255,255,255,.7)}
-/* The chosen (and remembered) language is shown by weight, not a filled chip. */
-.lang input:checked + label{font-weight:bold;text-decoration:underline}
-@media (prefers-reduced-motion:reduce){.lang-switch{animation:none;opacity:1}}
 /* Spanish: text differs in length, so drop the English-tuned ch-width clip + type-in */
 :root:has(#lang-es:checked):has(#s0:checked) .slogan .typed[data-st="0"],
 :root:has(#lang-es:checked):has(#s1:checked) .slogan .typed[data-st="1"],
@@ -947,14 +954,11 @@ body:has(#lang-es:checked) .es{display:inline}
 </style>
 </head>
 <body>
-<div class="lang-switch" style="position:fixed;top:12px;right:12px;z-index:60">
-  <details class="lang">
-    <summary class="worldball" title="Language" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐</summary>
-    <div class="lang-opts">
-      <input type="radio" name="lang" id="lang-en" checked><label for="lang-en">English</label>
-      <input type="radio" name="lang" id="lang-es"><label for="lang-es">Español</label>
-    </div>
-  </details>
+<div class="theme-toggle" style="position:fixed;top:12px;right:12px;z-index:60">
+  <button type="button" class="theme-btn" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark/light">
+    <span class="theme-icon-light">☀️</span>
+    <span class="theme-icon-dark">🌙</span>
+  </button>
 </div>
 
 <!-- 5 cycling state radios — pure-CSS click counter (0 → 4 → 0 → …) -->
@@ -1046,7 +1050,10 @@ body:has(#lang-es:checked) .es{display:inline}
           <rect class="h-wall-fill" x="20" y="45" width="60" height="40"/>
           <rect class="h-door-fill" x="42" y="62" width="12" height="23" rx="2"/>
           <polyline class="h-stroke h-roof" points="14,47 50,18 86,47"/>
-          <polyline class="h-stroke h-wall" points="20,85 20,45 80,45 80,85"/>
+          <polyline class="h-stroke h-wall-l" points="20,85 20,45"/>
+          <polyline class="h-stroke h-wall-t" points="20,45 80,45"/>
+          <polyline class="h-stroke h-wall-r" points="80,45 80,85"/>
+          <rect class="h-stroke h-door" x="42" y="62" width="12" height="23" rx="2"/>
         </svg>
       </span>
       <span class="house-label"><span class="en" lang="en">Download</span><span class="es" lang="es">Descargar</span></span>
@@ -1238,7 +1245,23 @@ body:has(#lang-es:checked) .es{display:inline}
 })();
 </script>
 <script>
-/* house button: toggles icons visibility + label text */
+/* theme toggle: light (default) ↔ dark */
+(function(){
+  var btn = document.getElementById('themeToggle');
+  if (!btn) return;
+  var root = document.documentElement;
+  var stored = tryGet('flove-theme');
+  if (stored === 'dark') root.classList.add('dark');
+  btn.addEventListener('click', function(){
+    root.classList.toggle('dark');
+    trySet('flove-theme', root.classList.contains('dark') ? 'dark' : 'light');
+  });
+  function tryGet(k){ try { return localStorage.getItem(k); } catch(_){ return null; } }
+  function trySet(k,v){ try { localStorage.setItem(k,v); } catch(_){} }
+})();
+</script>
+<script>
+/* house button: toggles icons visibility + label text + "Offline first" */
 (function(){
   var house = document.querySelector('.house-btn');
   var icons = document.querySelector('.house-icons');
@@ -1252,8 +1275,8 @@ body:has(#lang-es:checked) .es{display:inline}
     icons.style.opacity = open ? '1' : '0';
     icons.style.pointerEvents = open ? 'auto' : 'none';
     icons.style.transform = open ? 'translateY(0)' : 'translateY(8px)';
-    if (en) en.textContent = open ? 'Install' : 'Download';
-    if (es) es.textContent = open ? 'Instalar' : 'Descargar';
+    if (en) en.textContent = open ? 'Install · Offline first' : 'Download';
+    if (es) es.textContent = open ? 'Instalar · Primero offline' : 'Descargar';
   });
 })();
 </script>
