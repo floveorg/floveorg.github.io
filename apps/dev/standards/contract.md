@@ -151,7 +151,27 @@ Marc's browser.
 Re-read `flove.css` and `index.html` (the launcher) — they are the
 canonical reference for the family look. Match their restraint.
 
-## 9. The harvested catalogue → `frontend.md`
+## 9. Versioning
+
+Flove uses **adoption-driven versioning**: versions are tagged when standard
+completions are adopted, not by arbitrary dates.
+
+| Element | Format | Example |
+|---------|--------|---------|
+| Version number | `YY-M` (year-month) | `26-6` |
+| Intra-month releases | `YY-M.N` | `26-6.1`, `26-6.2` |
+| Changelog button | Footer of every page | `<button id="changelog-btn">` |
+
+**Rules:**
+1. Version bumps on **standard adoption completions** (§14 checklist items).
+2. The version number is the **adoption date**: `26-6` = June 2026.
+3. If multiple adoptions happen in one month, append `.1`, `.2`, etc.
+4. Every page carries a **changelog button** in the footer linking to the
+   version history (see `frontend.md §13.x` for implementation).
+5. **Android APK** (`update-apk`) version aligns with milestones — recompile
+   and publish to GitHub Releases when adoption milestones are reached.
+
+## 10. The harvested catalogue → `frontend.md`
 
 The opt-in patterns (tier model, i18n, compass, topbar, onboarding, canonical
 vocabulary, counters, summary, surfaces, export, locking, theme —

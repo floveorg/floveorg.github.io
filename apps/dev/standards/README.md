@@ -63,4 +63,5 @@ folder is that home's source of truth.
   change a standard. When you add or rename a doc, update `apps/dev/_sidebar.md`
   so it shows in the docsify nav.
 - **Publish** — commit + push (scoped) to Gitea `marc/flove`; the live site
-  updates via a separate `update-web`.
+  updates via a separate `update-web`. The Android TWA app updates via `update-apk`
+  (rebuild + GitHub Release); content updates automatically (web wrapper).

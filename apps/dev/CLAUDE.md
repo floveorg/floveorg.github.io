@@ -1,5 +1,7 @@
 # ✺ flove — context map (for Claude)
 
+**Working directory:** Always `/home/kdeneon/Documents/flove` — never other flove folders (e.g. `flove-apk`).
+
 This folder is the **flove** chapter of the context book. This file is **only a
 map** — the actual standards are not here; they live in their own named files.
 Open the one you need:
