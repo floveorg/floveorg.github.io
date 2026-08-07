@@ -1,0 +1,2235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Evily · FLOVE</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff4500' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M12 18.5 C5.5 13 5.5 8 8.7 8 10.7 8 12 9.9 12 9.9 12 9.9 13.3 8 15.3 8 18.5 8 18.5 13 12 18.5Z'/><path d='M9.2 7.6 q-.7 -1.8 .1 -2.9'/><path d='M14.8 7.6 q.7 -1.8 -.1 -2.9'/><path d='M12 18.5 q3.2 1 3.2 -2.2'/><path fill='%23ff4500' stroke='none' d='M13.6 13.8 l1.8 -.5 -.5 1.9z'/></svg>">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    :root{
+      --ink:#eaeaf0; --muted:#a0a3ad;
+      --app-accent:#ff4500;
+      --app-accent-soft:#ffb380;
+      --app-ink-on-accent:#2a0a00;
+      --accent:#ff4500;
+      --danger:#ef4444;
+    }
+    *{box-sizing:border-box}
+    html,body{min-height:100%}
+    body{
+      margin:0;
+      background:transparent;
+      color:var(--ink);
+      font:16px/1.5 system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      padding-top:8px;
+    }
+
+    /* fullscreen FX canvas */
+    #fxCanvas{
+      position:fixed;inset:0;
+      width:100vw;height:100vh;
+      z-index:-1;
+      pointer-events:none;
+    }
+
+    /* ===== Top bar ===== */
+    .flove-bar{
+      position:fixed;top:0;left:0;right:0;z-index:50;
+      display:flex;align-items:center;gap:14px;
+      padding:14px 22px;
+      font:600 26px/1.2 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+      letter-spacing:.3px;
+      background:transparent;
+      pointer-events:none;
+    }
+    .flove-bar > *{pointer-events:auto}
+    .flove-bar .evily-mark-link{
+      display:inline-flex;align-items:center;gap:14px;
+      text-decoration:none;color:inherit;
+      padding:6px 16px;border-radius:999px;
+      border:0;font:inherit;cursor:pointer;
+    }
+    .flove-bar .evily-mark-link,
+    .flove-bar .evily-mark-link:hover,
+    .flove-bar .evily-mark-link:focus,
+    .flove-bar .evily-mark-link:focus-visible,
+    .flove-bar .evily-mark-link:active{
+      background:transparent;
+      transform:none;
+      outline:none;
+      box-shadow:none;
+    }
+    .flove-bar .evil-mark{
+      width:2em;height:2em;
+      vertical-align:-.15em;
+      overflow:visible;
+      filter:drop-shadow(0 0 8px rgba(255,90,0,.6))
+             drop-shadow(0 0 14px rgba(180,0,0,.4));
+      animation:mark-flicker 3.4s ease-in-out infinite;
+    }
+    @keyframes mark-flicker{
+      0%,100%{
+        filter:drop-shadow(0 0 8px rgba(255,90,0,.6))
+               drop-shadow(0 4px 14px rgba(180,0,0,.4));
+      }
+      50%{
+        filter:drop-shadow(0 -4px 14px rgba(255,140,0,.7))
+               drop-shadow(0 4px 10px rgba(120,0,0,.5));
+      }
+    }
+
+    /* Title button: "Evily" toggles the intro (hacky style) */
+    .flove-title-btn{
+      background:transparent;
+      border:0;
+      padding:6px 14px;
+      margin:0;
+      font:inherit;
+      cursor:pointer;
+      border-radius:999px;
+      transition:background .15s, transform .12s;
+      line-height:1.2;
+    }
+    .flove-title-btn:hover{
+      background:rgba(255,69,0,.08);
+      transform:translateY(-1px);
+    }
+    .flove-title-btn:focus-visible{
+      outline:2px solid var(--app-accent);
+      outline-offset:2px;
+    }
+    .flove-title-btn[aria-expanded="true"]{
+      background:rgba(255,69,0,.14);
+    }
+
+    /* "Evily" — orange→red gradient flowing upward inside letters
+       + halo flowing upward around the letters. */
+    .flove-bar .evily-name{
+      font-weight:700;
+      position:relative;
+      background:linear-gradient(
+        to top,
+        #ffae42 0%,
+        #ff8000 18%,
+        #ff5500 38%,
+        #e60000 60%,
+        #a30000 82%,
+        #5c0000 100%
+      );
+      background-size:100% 320%;
+      background-repeat:no-repeat;
+      background-position:0% 100%;
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+      -webkit-text-fill-color:transparent;
+      animation:evil-flow 3.2s ease-in-out infinite,
+                evil-glow 2.6s ease-in-out infinite;
+      isolation:isolate;
+      transition:filter .15s ease;
+    }
+    .flove-bar .evily-name::before{
+      content:attr(data-text);
+      position:absolute;left:0;top:0;right:0;bottom:0;
+      background:linear-gradient(
+        to top,
+        rgba(255,170,60,.85) 0%,
+        rgba(255,90,0,.7) 35%,
+        rgba(220,0,0,.55) 70%,
+        rgba(80,0,0,.0) 100%
+      );
+      background-size:100% 360%;
+      background-position:0% 100%;
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+      -webkit-text-fill-color:transparent;
+      filter:blur(10px);
+      z-index:-1;
+      animation:evil-flow 3.2s ease-in-out infinite;
+    }
+    @keyframes evil-flow{
+      0%   { background-position:0% 100%; }
+      50%  { background-position:0% 0%;   }
+      100% { background-position:0% 100%; }
+    }
+    @keyframes evil-glow{
+      0%,100% {
+        filter:
+          drop-shadow(0 8px 14px rgba(255,140,0,.55))
+          drop-shadow(0 -3px 9px rgba(139,0,0,.45));
+      }
+      50% {
+        filter:
+          drop-shadow(0 -8px 16px rgba(255,80,0,.75))
+          drop-shadow(0 8px 12px rgba(120,0,0,.5));
+      }
+    }
+    @media (prefers-reduced-motion: reduce){
+      .flove-bar .evily-name,
+      .flove-bar .evily-name::before,
+      .flove-bar .evil-mark{
+        animation:none;
+        background-position:0% 50%;
+      }
+    }
+
+    .flove-bar .flove-spacer{flex:1}
+
+    /* top-right menu */
+    .top-menu{position:relative;display:inline-block}
+    .menu-list{
+      position:absolute;right:0;top:calc(100% + 6px);
+      list-style:none;margin:0;padding:6px 0;
+      background:rgba(10,12,18,.85);
+      backdrop-filter:blur(14px) saturate(140%);
+      -webkit-backdrop-filter:blur(14px) saturate(140%);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      min-width:200px;
+      z-index:80;
+      box-shadow:0 12px 30px rgba(0,0,0,.55);
+    }
+    .menu-list[hidden]{display:none}
+    .menu-list li{margin:0}
+    .menu-list li a{
+      display:block;padding:.6em 1em;text-decoration:none;
+      color:#e9ecf3;
+      font:500 16px/1.2 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+      letter-spacing:.2px;
+    }
+    .menu-list li a:hover{
+      background:rgba(255,69,0,.12);
+      color:var(--app-accent);
+    }
+    .menu-sep{height:1px;margin:6px 8px;padding:0;background:rgba(255,255,255,.1)}
+    .menu-star--green{color:#00ff88}
+    .menu-lang-row{padding:.35em 1em}
+    .menu-lang-row .lang{margin:0}
+
+    /* ===== Form ===== */
+    .tree-form{
+      max-width:900px;margin:78px auto 0;padding:8px 16px 16px;
+      background:rgba(18,18,26,.06);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:16px;
+      box-shadow:0 20px 60px -20px rgba(0,0,0,.6);
+    }
+
+    .section{
+      margin:14px 0 18px;
+      padding:10px 12px 8px;
+      border-left:1px dashed rgba(255,255,255,.08);
+    }
+
+    /* utility */
+    .mt-14{margin-top:14px}
+    .visually-hidden{
+      position:absolute !important;
+      width:1px;height:1px;
+      padding:0;margin:-1px;
+      overflow:hidden;clip:rect(0,0,0,0);
+      white-space:nowrap;border:0;
+    }
+
+    /* Generic field */
+    .grid{display:grid;gap:14px}
+    .grid--2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid--3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    @media (max-width:900px){.grid--3{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:640px){.grid--2,.grid--3{grid-template-columns:1fr}}
+
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field__label{font-size:1.235rem;color:var(--muted)}
+    .field__control{
+      background:#1a1a25;border:1px solid #2a2a3a;color:var(--ink);
+      border-radius:10px;padding:.55rem .75rem;font:inherit;
+      transition:border-color .15s ease, box-shadow .15s ease;
+    }
+    .field__control::placeholder{color:#65708a}
+    .field__control:focus{
+      outline:none;
+      border-color:var(--app-accent);
+      box-shadow:0 0 0 2px rgba(255,69,0,.25);
+    }
+
+    /* Bigger "numbers" / values for the During / Visibility / Expires-in fields
+       (matches the 30% bump applied to their labels) */
+    .grid--3 .field__control,
+    .grid--3 .num-stepper input[type="number"]{
+      font-size:1.35rem;
+      padding:.55rem .9rem;
+    }
+    .grid--3 select.field__control{font-size:1.25rem}
+
+    /* ===== Text fields with content: permanent flame ring ===== */
+    /* Subtle border glow anchors the effect; the canvas spawns real
+       flame particles around the perimeter (see FX script). */
+    .inline-input:not(:placeholder-shown),
+    .chip--input input[type="text"]:not(:placeholder-shown){
+      border-color:var(--app-accent);
+      background:rgba(255,69,0,.10);
+      box-shadow:
+        0 0 0 1px rgba(255,69,0,.45),
+        0 -3px 9px -2px rgba(255,180,50,.55),
+        0 3px 9px -2px rgba(220,0,0,.45),
+        0 0 18px rgba(255,80,0,.35);
+      animation:input-flame-ring 1.5s ease-in-out infinite;
+    }
+    @keyframes input-flame-ring{
+      0%,100%{
+        box-shadow:
+          0 0 0 1px rgba(255,69,0,.45),
+          0 -3px 9px -2px rgba(255,180,50,.55),
+          0 3px 9px -2px rgba(220,0,0,.45),
+          0 0 18px rgba(255,80,0,.35);
+      }
+      50%{
+        box-shadow:
+          0 0 0 1px rgba(255,140,0,.7),
+          0 -6px 14px -2px rgba(255,210,90,.85),
+          0 6px 14px -2px rgba(220,30,0,.6),
+          0 0 28px rgba(255,80,0,.55);
+      }
+    }
+    @media (prefers-reduced-motion: reduce){
+      .inline-input:not(:placeholder-shown),
+      .chip--input input[type="text"]:not(:placeholder-shown){animation:none}
+    }
+
+    /* ── Big clickable rows (checkbox / switch) ── */
+    .switch, .checkbox{
+      display:inline-flex;align-items:center;gap:1rem;
+      padding:.45rem .55rem;border-radius:10px;cursor:pointer;
+      font-size:1.25em;
+      line-height:1.35;
+      flex-wrap:wrap;
+    }
+    .checkbox:hover, .switch:hover{background:rgba(255,255,255,.04)}
+    .checkbox input[type="checkbox"],
+    .switch input[type="checkbox"]{
+      width:2rem;height:2rem;
+      accent-color:var(--app-accent);
+      cursor:pointer;
+      flex-shrink:0;
+      transition:transform .12s ease, filter .25s ease;
+    }
+    .checkbox input[type="checkbox"]:checked,
+    .switch input[type="checkbox"]:checked{
+      filter:drop-shadow(0 0 6px rgba(255,69,0,.7));
+      animation:cb-pop .35s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes cb-pop{
+      0%{transform:scale(.7) rotate(-8deg)}
+      55%{transform:scale(1.25) rotate(4deg)}
+      100%{transform:scale(1) rotate(0)}
+    }
+
+    /* Inline-flow row: input/stepper sits in the natural reading line */
+    .inline-flow > span{
+      display:inline-flex;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:.45em;
+      line-height:1.6;
+    }
+
+    /* "I allow [name] to send me to HELL" inline name input */
+    .inline-input{
+      display:inline-block;
+      background:rgba(255,69,0,.07);
+      border:1px solid rgba(255,69,0,.45);
+      color:var(--ink);
+      border-radius:8px;
+      padding:.18em .55em;
+      font:inherit;
+      min-width:8em;
+      width:auto;
+      transition:border-color .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+    .inline-input::placeholder{color:#7a7e8a}
+    .inline-input:focus{
+      outline:none;
+      border-color:var(--app-accent);
+      box-shadow:0 0 0 2px rgba(255,69,0,.3);
+      background:rgba(255,69,0,.12);
+    }
+    .inline-input.wide{min-width:13em}
+
+    /* "Curse me too" → crumbler link */
+    .curse-row{
+      display:inline-flex;
+      align-items:center;
+      gap:1rem;
+      padding:.45rem .55rem;
+      border-radius:10px;
+      font-size:1.25em;
+      line-height:1.2;
+    }
+    .curse-row:hover{background:rgba(239,68,68,.06)}
+    .curse-row input[type="checkbox"]{
+      width:2rem;height:2rem;
+      accent-color:var(--danger);
+      cursor:pointer;
+      flex-shrink:0;
+      transition:transform .12s ease, filter .25s ease;
+    }
+    .curse-row input[type="checkbox"]:checked{
+      filter:drop-shadow(0 0 6px rgba(239,68,68,.75));
+      animation:cb-pop .35s cubic-bezier(.34,1.56,.64,1);
+    }
+    .curse-link{
+      color:var(--danger);
+      text-decoration:none;
+      border-bottom:1px dashed rgba(239,68,68,.55);
+      transition:color .15s ease, border-color .15s ease;
+    }
+    .curse-link:hover{
+      color:#ff9494;
+      border-bottom-color:#ff9494;
+    }
+
+    /* ===== Custom number stepper with TRIPLE big arrows, 3px apart ===== */
+    .num-stepper{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      vertical-align:middle;
+    }
+    .num-stepper input[type="number"]{
+      width:4.5em;
+      text-align:center;
+      background:#1a1a25;
+      border:1px solid #2a2a3a;
+      color:var(--ink);
+      border-radius:10px;
+      padding:.45rem .5rem;
+      font:inherit;
+      -moz-appearance:textfield;
+      appearance:textfield;
+    }
+    .num-stepper input[type="number"]::-webkit-inner-spin-button,
+    .num-stepper input[type="number"]::-webkit-outer-spin-button{
+      -webkit-appearance:none;
+      margin:0;
+    }
+    .num-stepper input[type="number"]:focus{
+      outline:none;
+      border-color:var(--app-accent);
+      box-shadow:0 0 0 2px rgba(255,69,0,.25);
+    }
+    .num-arrows{
+      display:inline-flex;
+      flex-direction:column;
+      gap:3px;
+    }
+    .num-btn{
+      background:rgba(255,69,0,.08);
+      border:1px solid rgba(255,69,0,.4);
+      color:var(--app-accent);
+      font-size:1.05em;
+      line-height:1;
+      width:1.7em;
+      height:1.4em;
+      padding:0;
+      border-radius:6px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
+      transition:background .12s, transform .08s, border-color .12s;
+    }
+    .num-btn:hover{
+      background:rgba(255,69,0,.22);
+      border-color:var(--app-accent);
+      color:#ffd1b3;
+    }
+    .num-btn:active{transform:scale(.92)}
+    .num-btn:focus-visible{outline:2px solid var(--app-accent);outline-offset:2px}
+
+    /* ===== Chips ===== */
+    .chips{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 4px}
+    .chip{
+      display:inline-flex;align-items:center;gap:.5rem;
+      border:1px solid rgba(255,69,0,.35);
+      background:rgba(255,69,0,.06);
+      color:var(--ink);
+      padding:.5rem .8rem;border-radius:999px;cursor:pointer;
+      font-size:1em;
+      transition:background .15s ease, border-color .15s ease;
+    }
+    .chip:hover{
+      background:rgba(255,69,0,.14);
+      border-color:var(--app-accent);
+    }
+    .chip input[type="checkbox"]{
+      width:1.05rem;height:1.05rem;
+      accent-color:var(--app-accent);
+    }
+    .chip--input{padding:.4rem .7rem}
+    .chip--input input[type="text"]{
+      background:transparent;border:0;
+      border-bottom:1px dashed rgba(255,69,0,.5);
+      color:var(--ink);padding:.2rem .15rem;min-width:14ch;
+      font:inherit;
+    }
+    .chip--input input[type="text"]:focus{
+      outline:none;border-bottom-color:var(--app-accent);
+    }
+
+    /* ===== Buttons ===== */
+    .button-group{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+      margin:18px 0 8px;
+      align-items:flex-start;
+    }
+    .btn-with-subs{
+      display:flex;flex-direction:column;align-items:stretch;
+      gap:5px;min-width:0;position:relative;
+    }
+    .btn-with-subs .btn{width:100%}
+    .subitems-above{position:absolute;left:0;right:0;bottom:calc(100% + 5px)}
+    .subitems{
+      display:flex;gap:3px;justify-content:stretch;overflow:hidden;
+      max-height:0;opacity:0;transform:translateY(-4px);
+      transition:max-height .25s ease,opacity .18s ease,transform .2s ease;
+      pointer-events:none;
+    }
+    .btn-with-subs.is-open .subitems{
+      max-height:64px;opacity:1;transform:translateY(0);pointer-events:auto;
+    }
+    .subitem{
+      background:rgba(255,69,0,.06);
+      border:1px solid rgba(255,69,0,.25);
+      color:#ffd1b3;
+      padding:6px 4px;
+      border-radius:10px;
+      font-size:.68rem;
+      font-weight:700;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      cursor:pointer;
+      flex:1 1 0;
+      min-width:0;
+      transition:all .15s;
+    }
+    .subitem:hover{
+      background:rgba(255,69,0,.18);
+      border-color:var(--app-accent);
+      color:#fff;
+    }
+    .subitem-radio{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+    .subitem.is-radio{display:inline-flex;align-items:center;justify-content:center}
+    .subitems:has(.subitem-radio[data-r="0"]:checked) .subitem.is-radio[data-r="0"],
+    .subitems:has(.subitem-radio[data-r="1"]:checked) .subitem.is-radio[data-r="1"],
+    .subitems:has(.subitem-radio[data-r="2"]:checked) .subitem.is-radio[data-r="2"]{
+      background:var(--app-accent);
+      border-color:var(--app-accent);
+      color:var(--app-ink-on-accent);
+    }
+    .btn{
+      position:relative;
+      overflow:hidden;
+      background:rgba(0,0,0,.55);
+      border:1px solid rgba(255,69,0,.45);
+      padding:10px 12px;
+      border-radius:14px;
+      font-family:Georgia,"Times New Roman",serif;
+      font-weight:800;
+      font-size:.98rem;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      color:#ffd1b3;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      transition:all .15s;
+    }
+    .btn i{color:#ffd1b3;font-size:1rem;transition:color .15s ease}
+    .btn:hover{
+      background:rgba(255,69,0,.14);
+      border-color:var(--accent);
+      color:#fff;
+      box-shadow:0 0 14px -2px rgba(255,69,0,.55);
+    }
+    .btn:hover i{color:#fff}
+    .btn:active, .btn.fired{
+      color:#fff;
+      background:rgba(255,140,0,.22);
+      border-color:#ffae42;
+    }
+    .btn:active i, .btn.fired i{color:#fff}
+    .btn:focus-visible{outline:2px solid var(--app-accent);outline-offset:2px}
+    .btn-with-subs.is-open > .btn{
+      background:rgba(255,69,0,.18);
+      border-color:var(--accent);
+      color:#fff;
+    }
+    .btn-with-subs.is-open > .btn i{color:#fff}
+    .btn::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      border-radius:inherit;
+      background:radial-gradient(circle at center, rgba(255,69,0,.55) 0%, rgba(255,69,0,0) 60%);
+      opacity:0;
+      transform:scale(.4);
+      pointer-events:none;
+    }
+    .btn:active::after,
+    .btn.fired::after{animation:btn-ripple .6s ease-out}
+    @keyframes btn-ripple{
+      0%{opacity:.9;transform:scale(.4)}
+      100%{opacity:0;transform:scale(1.6)}
+    }
+    .action-spacer{height:calc(2lh + 8px)}
+    @supports not (height: 1lh){ .action-spacer{height:3rem} }
+
+    .hint-area{
+      margin-top:10px;
+      text-align:center;
+      min-height:24px;
+      font-size:.95rem;
+      color:var(--app-accent-soft);
+      padding:6px 10px;
+    }
+    .hint-area a{color:var(--app-accent)}
+
+    /* ===== Resume block ===== */
+    .review-spacer{height:calc(2lh + 8px)}
+    @supports not (height: 1lh){ .review-spacer{height:3rem} }
+
+    #reviewBlock{
+      margin:18px 0 0 0;
+      border:1px solid rgba(255,69,0,.18);
+      border-radius:16px;
+      background:rgba(255,69,0,.002);
+      padding-left:0;
+      border-left:1px solid rgba(255,69,0,.18);
+      transition:border-color .5s ease, background .5s ease, box-shadow .5s ease;
+    }
+    #reviewBlock > summary.review-summary{
+      list-style:none;
+      cursor:pointer;
+      padding:14px 16px;
+      text-align:center;
+      display:block;
+    }
+    #reviewBlock > summary.review-summary::-webkit-details-marker{display:none}
+    .review-title{
+      display:inline-flex;
+      align-items:baseline;
+      gap:5px;
+      font-size:2em;
+      line-height:1.15;
+      font-weight:700;
+      color:var(--ink);
+      transition:color .5s ease, text-shadow .5s ease, transform .5s ease;
+    }
+    /* (chevron removed) */
+    .review-body{padding:0 14px 14px}
+
+    #reviewBlock[open]{
+      border-color:var(--app-accent);
+      background:rgba(255,69,0,.016);
+      animation:review-flash 1.6s ease-in-out infinite;
+    }
+    #reviewBlock[open] > summary.review-summary .review-title{
+      color:var(--app-accent);
+      text-shadow:0 0 30px rgba(255,69,0,1);
+      animation:title-flash 1.6s ease-in-out infinite;
+    }
+    #reviewBlock[data-level="1"]{
+      border-color:rgba(255,69,0,.32);
+      background:rgba(255,69,0,.0045);
+      box-shadow:0 0 14px -4px rgba(255,69,0,.22);
+    }
+    #reviewBlock[data-level="1"] .review-title{color:#ffd7b8;text-shadow:0 0 8px rgba(255,69,0,.3)}
+    #reviewBlock[data-level="2"]{
+      border-color:rgba(255,69,0,.48);
+      background:rgba(255,69,0,.0065);
+      box-shadow:0 0 20px -4px rgba(255,69,0,.36);
+    }
+    #reviewBlock[data-level="2"] .review-title{color:#ffb084;text-shadow:0 0 12px rgba(255,69,0,.5)}
+    #reviewBlock[data-level="3"]{
+      border-color:rgba(255,69,0,.65);
+      background:rgba(255,69,0,.009);
+      box-shadow:0 0 28px -4px rgba(255,69,0,.55);
+    }
+    #reviewBlock[data-level="3"] .review-title{color:#ff8a4d;text-shadow:0 0 18px rgba(255,69,0,.7)}
+    #reviewBlock[data-level="4"]{
+      border-color:rgba(255,69,0,.85);
+      background:rgba(255,69,0,.012);
+      box-shadow:0 0 36px -2px rgba(255,69,0,.75);
+    }
+    #reviewBlock[data-level="4"] .review-title{color:#ff5a1f;text-shadow:0 0 24px rgba(255,69,0,.9)}
+    #reviewBlock[data-level="5"]{
+      border-color:var(--app-accent);
+      background:rgba(255,69,0,.016);
+      animation:review-flash 1.6s ease-in-out infinite;
+    }
+    #reviewBlock[data-level="5"] .review-title{
+      color:var(--app-accent);
+      text-shadow:0 0 30px rgba(255,69,0,1);
+      animation:title-flash 1.6s ease-in-out infinite;
+    }
+    @keyframes review-flash{
+      0%,100%{box-shadow:0 0 36px -2px rgba(255,69,0,.7)}
+      50%{box-shadow:0 0 60px 4px rgba(255,69,0,1)}
+    }
+    @keyframes title-flash{
+      0%,100%{transform:scale(1)}
+      50%{transform:scale(1.05)}
+    }
+
+    .summary-line{
+      text-align:center;
+      padding:.6rem .8rem;
+      border-top:1px solid #2a2a3a;
+      color:var(--muted);
+    }
+    .summary-line strong{color:var(--ink);margin-right:.3rem}
+    .summary-line .person-out{color:var(--app-accent);font-weight:700}
+
+    /* ===== Intro (hacky style, evily-flavoured) ===== */
+    #introSection{
+      position:relative;
+      max-width:900px;
+      margin:78px auto 6px;
+      padding:28px 28px 22px;
+      background:rgba(255,69,0,.05);
+      border:1px solid rgba(255,69,0,.22);
+      border-radius:14px;
+      color:var(--ink);
+      backdrop-filter:blur(8px) saturate(130%);
+      -webkit-backdrop-filter:blur(8px) saturate(130%);
+      box-shadow:0 8px 24px -10px rgba(0,0,0,.5);
+      text-align:center;
+    }
+    #introSection[hidden]{display:none}
+    #introSection + .tree-form{margin-top:6px}
+
+    /* Big X to close (top-right) */
+    .intro-close{
+      position:absolute;
+      top:10px;right:14px;
+      background:transparent;
+      border:0;
+      font:400 38px/1 Georgia,"Times New Roman",serif;
+      color:var(--app-accent);
+      cursor:pointer;
+      padding:2px 10px;
+      border-radius:999px;
+      text-shadow:0 0 12px rgba(255,69,0,.55);
+      transition:transform .15s ease, color .15s ease, text-shadow .15s ease, background .15s ease;
+    }
+    .intro-close:hover{
+      color:#fff;
+      transform:scale(1.12) rotate(90deg);
+      background:rgba(255,69,0,.12);
+      text-shadow:0 0 18px rgba(255,140,0,.9);
+    }
+    .intro-close:focus-visible{
+      outline:2px solid var(--app-accent);
+      outline-offset:2px;
+    }
+
+    /* Lead text — double size, dramatic serif */
+    #introSection .intro-lead{
+      margin:0 8px 18px;
+      font:600 2.05rem/1.28 Georgia,"Times New Roman","Cinzel",serif;
+      letter-spacing:.005em;
+      color:var(--ink);
+    }
+    #introSection .intro-lead strong{
+      color:var(--app-accent);
+      text-shadow:0 0 18px rgba(255,69,0,.45);
+      font-style:italic;
+    }
+    #introSection .intro-lead em{
+      font-style:italic;
+      color:#ff9494;
+    }
+    #introSection a{color:#ff9494;border-bottom:1px dashed rgba(255,148,148,.45)}
+
+    /* "See more" — VERY intriguing: pulsing ember halo + flicker overlay
+       + flame icon + chevron, all dancing slightly. */
+    .see-more-btn{
+      position:relative;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      isolation:isolate;
+      background:linear-gradient(135deg, rgba(255,69,0,.22), rgba(180,0,0,.10));
+      border:1px solid rgba(255,69,0,.55);
+      color:#ffd1b3;
+      padding:10px 22px;
+      border-radius:999px;
+      font:700 1.02rem/1 Georgia,"Times New Roman",serif;
+      letter-spacing:.08em;
+      cursor:pointer;
+      overflow:hidden;
+      box-shadow:
+        0 0 18px -4px rgba(255,69,0,.45),
+        inset 0 0 12px rgba(255,140,0,.18);
+      animation:see-more-pulse 2.4s ease-in-out infinite;
+      transition:transform .15s ease, color .15s ease, border-color .15s ease;
+    }
+    .see-more-btn::before{
+      content:"";
+      position:absolute;inset:0;
+      background:radial-gradient(ellipse at 50% 120%, rgba(255,170,40,.55) 0%, rgba(255,69,0,.25) 35%, transparent 65%);
+      animation:see-more-flicker 1.6s ease-in-out infinite alternate;
+      z-index:-1;
+    }
+    .see-more-btn::after{
+      content:"";
+      position:absolute;
+      top:-40%;left:-30%;width:160%;height:50%;
+      background:linear-gradient(90deg, transparent 0%, rgba(255,230,160,.0) 30%, rgba(255,230,160,.35) 50%, rgba(255,230,160,.0) 70%, transparent 100%);
+      transform:skewX(-18deg);
+      animation:see-more-sweep 3.4s ease-in-out infinite;
+      pointer-events:none;
+    }
+    .see-more-btn:hover{
+      transform:scale(1.06);
+      color:#fff;
+      border-color:var(--app-accent);
+    }
+    .see-more-btn .flame-i{
+      display:inline-flex;
+      width:1.1em;height:1.1em;
+      align-items:center;justify-content:center;
+      animation:flame-bob 1.1s ease-in-out infinite;
+      color:#ffae42;
+      filter:drop-shadow(0 0 6px rgba(255,140,0,.8));
+    }
+    .see-more-btn .chev{
+      transition:transform .25s ease;
+      display:inline-block;
+    }
+    .see-more-btn[aria-expanded="true"] .chev{transform:rotate(180deg)}
+    @keyframes see-more-pulse{
+      0%,100%{
+        box-shadow:0 0 18px -4px rgba(255,69,0,.45),
+                   inset 0 0 12px rgba(255,140,0,.18);
+      }
+      50%{
+        box-shadow:0 0 36px 2px rgba(255,69,0,.75),
+                   inset 0 0 18px rgba(255,180,30,.4);
+      }
+    }
+    @keyframes see-more-flicker{
+      0%{transform:translateY(4px) scale(1);opacity:.55}
+      100%{transform:translateY(-2px) scale(1.05);opacity:.95}
+    }
+    @keyframes see-more-sweep{
+      0%{left:-130%;opacity:0}
+      18%{opacity:.8}
+      40%{left:130%;opacity:0}
+      100%{left:130%;opacity:0}
+    }
+    @keyframes flame-bob{
+      0%,100%{transform:translateY(0) scale(1)}
+      50%{transform:translateY(-2px) scale(1.08)}
+    }
+    @media (prefers-reduced-motion: reduce){
+      .see-more-btn, .see-more-btn::before, .see-more-btn::after, .see-more-btn .flame-i{
+        animation:none;
+      }
+    }
+
+    .intro-more{
+      overflow:hidden;
+      max-height:0;
+      opacity:0;
+      transition:max-height .45s ease, opacity .35s ease, margin .35s ease;
+      margin-top:0;
+      text-align:left;
+    }
+    .intro-more.is-open{
+      max-height:1600px;
+      opacity:1;
+      margin-top:16px;
+    }
+    .intro-more p{
+      margin:0 0 10px;
+      line-height:1.55;
+      color:var(--ink);
+      text-align:center;
+    }
+    .intro-columns{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+      margin-top:18px;
+    }
+    .intro-col{
+      background:rgba(0,0,0,.45);
+      border:1px solid rgba(255,69,0,.2);
+      border-radius:12px;
+      overflow:hidden;
+      min-height:240px;
+      display:flex;
+      flex-direction:column;
+    }
+    .intro-col h4{
+      margin:0;
+      padding:8px 12px;
+      font:700 .7rem/1.2 Inter,system-ui,sans-serif;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--app-accent-soft);
+      background:rgba(255,69,0,.06);
+      border-bottom:1px solid rgba(255,69,0,.18);
+    }
+
+    /* Photo slides — fire-themed gradients */
+    .slides{
+      position:relative;
+      flex:1;
+      min-height:200px;
+      background:#0a0303;
+    }
+    .slides figure{
+      position:absolute;inset:0;
+      margin:0;
+      display:flex;align-items:center;justify-content:center;
+      opacity:0;
+      transition:opacity .7s ease;
+      color:#ffe6c2;
+      font:600 1rem/1.4 Georgia,"Times New Roman",serif;
+      letter-spacing:.04em;
+      text-align:center;
+      padding:18px;
+      text-shadow:0 2px 8px rgba(0,0,0,.7), 0 0 20px rgba(255,80,0,.35);
+    }
+    .slides figure.is-active{opacity:1}
+    .slides figure.slide-1{background:linear-gradient(135deg, #1a0300, #4a0e00, #ff5500)}
+    .slides figure.slide-2{background:linear-gradient(135deg, #260200, #66001a, #ff2a00)}
+    .slides figure.slide-3{background:linear-gradient(135deg, #2a0a00, #aa0000, #ffae42)}
+    .slides-dots{
+      position:absolute;
+      bottom:8px;left:0;right:0;
+      display:flex;justify-content:center;gap:6px;
+      pointer-events:none;
+    }
+    .slides-dots span{
+      width:6px;height:6px;border-radius:50%;
+      background:rgba(255,255,255,.35);
+      transition:background .2s ease, transform .2s ease;
+    }
+    .slides-dots span.is-on{background:var(--app-accent);transform:scale(1.3);box-shadow:0 0 8px rgba(255,69,0,.7)}
+
+    /* Video */
+    .video-wrap{
+      flex:1;
+      position:relative;
+      background:#0a0303;
+      display:flex;align-items:center;justify-content:center;
+      min-height:200px;
+    }
+    .video-wrap video{
+      width:100%;height:100%;
+      max-height:240px;
+      object-fit:cover;
+      display:block;
+    }
+    .video-wrap .video-placeholder{
+      color:var(--muted);
+      font:500 .9rem/1.4 Georgia,serif;
+      letter-spacing:.03em;
+      text-align:center;
+      padding:18px;
+    }
+    @media (max-width:600px){
+      .intro-columns{grid-template-columns:1fr}
+      #introSection .intro-lead{font-size:1.55rem}
+    }
+
+    @media (max-width:480px){
+      .btn{font-size:.7rem;padding:7px 6px;border-radius:12px}
+      .subitem{border-radius:9px}
+      .flove-bar{font-size:20px;padding:12px 14px}
+    }
+
+    /* ===== translaty — page-translation engine + worldball switcher ===== */
+    /* ── i18n span toggle (CSS-only): hide every non-active language ── */
+    .es{display:none}                                  /* default view = .en */
+    body:has(#lang-es:checked) .en{display:none}
+    body:has(#lang-es:checked) .es{display:inline}
+
+    /* ── worldball switcher (🌐 opens the language options) ── */
+    .lang{display:inline-block;position:relative;margin:.2rem 0 .6rem}
+    .lang>summary{list-style:none;cursor:pointer;width:40px;height:40px;border:1px solid #999;border-radius:50%;
+      display:inline-flex;align-items:center;justify-content:center;font-size:1.35rem;line-height:1;-webkit-user-select:none;user-select:none}
+    .lang>summary::-webkit-details-marker{display:none}
+    .lang[open]>summary{border-color:#333;background:#f2f2f2}
+    .lang-opts{position:absolute;right:0;z-index:10;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;
+      background:#fff;border:1px solid #999;border-radius:12px;padding:6px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+    .lang input{position:absolute;opacity:0;pointer-events:none}
+    .lang label{cursor:pointer;padding:0 12px;min-height:40px;display:inline-flex;align-items:center;border:1px solid #999;border-radius:11px;white-space:nowrap}
+    .lang input:checked + label{background:#333;color:#fff;font-weight:bold;border-color:#333}
+
+    @media (prefers-color-scheme:dark){
+      .lang>summary{border-color:#777} .lang[open]>summary{background:#2a2a2a;border-color:#999}
+      .lang-opts{background:#222;border-color:#777;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+      .lang label{border-color:#777}
+      .lang input:checked + label{background:#e9e9e9;color:#111;border-color:#e9e9e9}
+    }
+  </style>
+</head>
+<body>
+  <canvas id="fxCanvas" aria-hidden="true"></canvas>
+
+  <div class="flove-bar flove-bar--dark">
+    <button type="button" class="evily-mark-link" id="evilyLogo" aria-haspopup="true" aria-expanded="false" aria-controls="menuList" aria-label="Open menu" data-aria-en="Open menu" data-aria-es="Abrir menú" title="Open menu">
+      <svg class="evil-mark" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="#ff4500" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M12 18.5 C5.5 13 5.5 8 8.7 8 10.7 8 12 9.9 12 9.9 12 9.9 13.3 8 15.3 8 18.5 8 18.5 13 12 18.5Z'/><path d='M9.2 7.6 q-.7 -1.8 .1 -2.9'/><path d='M14.8 7.6 q.7 -1.8 -.1 -2.9'/><path d='M12 18.5 q3.2 1 3.2 -2.2'/><path fill='#ff4500' stroke='none' d='M13.6 13.8 l1.8 -.5 -.5 1.9z'/></svg>
+    </button>
+    <button type="button" class="flove-title-btn" id="titleBtn" aria-haspopup="true" aria-expanded="false" aria-controls="menuList">
+      <span class="evily-name" data-text="Evily">Evily</span>
+    </button>
+    <span class="flove-spacer"></span>
+    <div class="top-menu">
+      <ul class="menu-list" id="menuList" hidden role="menu">
+        <li role="none"><a role="menuitem" href="#" data-act="info"><span class="en" lang="en">ⓘ What is Evily?</span><span class="es" lang="es">ⓘ ¿Qué es Evily?</span></a></li>
+        <li role="separator" class="menu-sep"></li>
+        <li role="none"><a role="menuitem" href="#" data-act="reset"><i class="fas fa-rotate-left"></i> &nbsp;<span class="en" lang="en">Reset form</span><span class="es" lang="es">Reiniciar formulario</span></a></li>
+        <li role="none"><a role="menuitem" href="../appy/appy-basic.html"><i class="fas fa-user"></i> &nbsp;<span class="en" lang="en">Profile</span><span class="es" lang="es">Perfil</span></a></li>
+        <li role="none"><a role="menuitem" href="crumbler.html"><span class="menu-star menu-star--green" aria-hidden="true">🌱</span> &nbsp;Crumbler</a></li>
+        <li role="none"><a role="menuitem" href="index.html"><span aria-hidden="true">🌱</span> &nbsp;<span class="en" lang="en">All flove apps</span><span class="es" lang="es">Todas las apps de flove</span></a></li>
+        <li role="none"><a role="menuitem" href="https://flove.org" target="_blank" rel="noopener"><span aria-hidden="true">🌱</span> &nbsp;flove.org</a></li>
+        <li role="none" class="menu-lang-row">
+          <details class="lang">
+            <summary class="worldball" title="Language" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐</summary>
+            <div class="lang-opts">
+              <input type="radio" name="lang" id="lang-en" checked><label for="lang-en">English</label>
+              <input type="radio" name="lang" id="lang-es"><label for="lang-es">Español</label>
+            </div>
+          </details>
+        </li>
+        <li role="none"><a role="menuitem" href="#" onclick="alert('Changelog: FloveDocs26-6')"><i class="fas fa-clipboard-list"></i> &nbsp;<span class="en" lang="en">Changelog</span><span class="es" lang="es">Historial</span></a></li>
+      </ul>
+    </div>
+  </div>
+
+  <section id="introSection" hidden aria-label="About Evily" data-aria-en="About Evily" data-aria-es="Acerca de Evily">
+    <button type="button" class="intro-close" id="introClose" aria-label="Close intro" data-aria-en="Close intro" data-aria-es="Cerrar introducción" title="Close">×</button>
+    <p class="intro-lead">
+      <strong>Evily</strong> —
+      <span class="en" lang="en">the dark twin of <a href="crumbler.html">Crumbler</a>. Sign,
+      in advance, what someone is allowed to <em>do against you</em>, on what scope, and what
+      compensation may put it right.</span><span class="es" lang="es">el gemelo oscuro de <a href="crumbler.html">Crumbler</a>. Firma,
+      por adelantado, qué se le permite a alguien <em>hacer en tu contra</em>, en qué ámbito y qué
+      compensación puede repararlo.</span>
+    </p>
+    <button type="button" class="see-more-btn" id="seeMoreBtn" aria-expanded="false" aria-controls="introMore">
+      <span class="flame-i" aria-hidden="true"><i class="fas fa-fire"></i></span>
+      <span class="see-more-text"><span class="en" lang="en">See more</span><span class="es" lang="es">Ver más</span></span>
+      <span class="chev" aria-hidden="true">▾</span>
+    </button>
+    <div class="intro-more" id="introMore">
+      <p><span class="en" lang="en">An Evily is not permission to be hurt — it's a way to name the worst that can happen and bind it to terms, so its sting is already paid for.</span><span class="es" lang="es">Un Evily no es permiso para que te hagan daño: es una forma de nombrar lo peor que puede pasar y atarlo a unas condiciones, para que su aguijón ya esté pagado de antemano.</span></p>
+      <p><span class="en" lang="en">Type a name. Tick what you allow them to do. Set the time, the visibility, the compensation. The form's <strong>Resume</strong> rewrites itself live as you go.</span><span class="es" lang="es">Escribe un nombre. Marca lo que les permites hacer. Fija el tiempo, la visibilidad, la compensación. El <strong>Resumen</strong> del formulario se reescribe en vivo a medida que avanzas.</span></p>
+      <p><span class="en" lang="en">When you're ready, copy it, save it, or publish it. The fire below grows with each line you sign; the water comes when you take one back.</span><span class="es" lang="es">Cuando estés listo, cópialo, guárdalo o publícalo. El fuego de abajo crece con cada línea que firmas; el agua llega cuando retiras alguna.</span></p>
+      <div class="intro-columns">
+        <div class="intro-col">
+          <h4><span class="en" lang="en">Photos</span><span class="es" lang="es">Fotos</span></h4>
+          <div class="slides" id="slides">
+            <figure class="slide-1 is-active" data-i="0"><span class="en" lang="en">A burning offer · signed in advance</span><span class="es" lang="es">Una oferta ardiente · firmada por adelantado</span></figure>
+            <figure class="slide-2" data-i="1"><span class="en" lang="en">Conditions · compensation · time</span><span class="es" lang="es">Condiciones · compensación · tiempo</span></figure>
+            <figure class="slide-3" data-i="2"><span class="en" lang="en">The price of a curse · made small</span><span class="es" lang="es">El precio de una maldición · vuelto pequeño</span></figure>
+            <div class="slides-dots" id="slidesDots">
+              <span class="is-on"></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+        <div class="intro-col">
+          <h4><span class="en" lang="en">Video</span><span class="es" lang="es">Vídeo</span></h4>
+          <div class="video-wrap">
+            <video id="introVideo" controls playsinline preload="metadata" poster="">
+              <source src="" type="video/mp4">
+              <p class="video-placeholder"><span class="en" lang="en">Video placeholder — set a src on #introVideo.</span><span class="es" lang="es">Marcador de vídeo — define un src en #introVideo.</span></p>
+            </video>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <form class="tree-form" id="evilForm" action="#" novalidate>
+
+    <!-- ===== "I allow [name] to send me to HELL" ===== -->
+    <section class="section">
+      <div class="switch inline-flow">
+        <input type="checkbox" name="send_hell" id="send_hell" checked aria-label="I allow to send me to hell" data-aria-en="I allow to send me to hell" data-aria-es="Permito enviarme al infierno">
+        <span>
+          <span class="en" lang="en">I allow</span><span class="es" lang="es">Permito a</span>
+          <input type="text" class="inline-input" id="person" name="person" placeholder="Name here…" data-ph-en="Name here…" data-ph-es="Nombre aquí…" autocomplete="off">
+          <span class="en" lang="en">to send me to HELL</span><span class="es" lang="es">enviarme al INFIERNO</span>
+        </span>
+      </div>
+
+      <div class="curse-row warn-danger">
+        <input type="checkbox" name="curse_me" id="curse_me">
+        <a href="crumbler.html" class="curse-link"><span class="en" lang="en">Curse me too</span><span class="es" lang="es">Maldíceme también</span></a>
+      </div>
+
+      <div class="grid grid--3 mt-14">
+        <div class="field">
+          <label class="field__label" for="during_days"><span class="en" lang="en">During (days)</span><span class="es" lang="es">Durante (días)</span></label>
+          <div class="num-stepper">
+            <input class="field__control" type="number" name="during_days" id="during_days" min="0" value="100">
+            <span class="num-arrows">
+              <button type="button" class="num-btn" data-step="1" data-target="during_days" aria-label="increase" data-aria-en="increase" data-aria-es="aumentar">▲</button>
+              <button type="button" class="num-btn" data-step="-1" data-target="during_days" aria-label="decrease" data-aria-en="decrease" data-aria-es="disminuir">▼</button>
+            </span>
+          </div>
+        </div>
+        <label class="field">
+          <span class="field__label"><span class="en" lang="en">Visibility</span><span class="es" lang="es">Visibilidad</span></span>
+          <select class="field__control" name="visibility" id="visibility">
+            <option value="private" data-en="Private" data-es="Privada">Private</option>
+            <option value="mediator" data-en="Mediator" data-es="Mediador">Mediator</option>
+            <option value="community" data-en="Community" data-es="Comunitaria">Community</option>
+            <option value="public" data-en="Public" data-es="Pública">Public</option>
+          </select>
+        </label>
+        <div class="field">
+          <label class="field__label" for="expires_days"><span class="en" lang="en">Expires in (days)</span><span class="es" lang="es">Caduca en (días)</span></label>
+          <div class="num-stepper">
+            <input class="field__control" type="number" name="expires_days" id="expires_days" min="0" value="10">
+            <span class="num-arrows">
+              <button type="button" class="num-btn" data-step="1" data-target="expires_days" aria-label="increase" data-aria-en="increase" data-aria-es="aumentar">▲</button>
+              <button type="button" class="num-btn" data-step="-1" data-target="expires_days" aria-label="decrease" data-aria-en="decrease" data-aria-es="disminuir">▼</button>
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Compensable / Fully with [...] / Warn me with [N] days in advance ===== -->
+    <section class="section">
+      <label class="checkbox">
+        <input type="checkbox" name="compensable" id="compensable" checked>
+        <span><span class="en" lang="en">Compensable</span><span class="es" lang="es">Compensable</span></span>
+      </label>
+
+      <div class="checkbox inline-flow">
+        <input type="checkbox" name="fully" id="fully" checked aria-label="Fully with" data-aria-en="Fully with" data-aria-es="Por completo con">
+        <span>
+          <span class="en" lang="en">Fully with</span><span class="es" lang="es">Por completo con</span>
+          <input type="text" class="inline-input wide" name="with_what" id="with_what" placeholder="goods and services…" data-ph-en="goods and services…" data-ph-es="bienes y servicios…" autocomplete="off">
+        </span>
+      </div>
+
+      <div class="checkbox inline-flow">
+        <input type="checkbox" name="warnme" id="warnme" checked aria-label="Warn me with days in advance" data-aria-en="Warn me with days in advance" data-aria-es="Avisame con dias de antelacion">
+        <span>
+          <span class="en" lang="en">Warn me with</span><span class="es" lang="es">Avísame con</span>
+          <span class="num-stepper">
+            <input type="number" min="0" name="warn_days" id="warn_days" value="10">
+            <span class="num-arrows">
+              <button type="button" class="num-btn" data-step="1" data-target="warn_days" aria-label="increase" data-aria-en="increase" data-aria-es="aumentar">▲</button>
+              <button type="button" class="num-btn" data-step="-1" data-target="warn_days" aria-label="decrease" data-aria-en="decrease" data-aria-es="disminuir">▼</button>
+            </span>
+          </span>
+          <span class="en" lang="en">days in advance</span><span class="es" lang="es">días de antelación</span>
+        </span>
+      </div>
+    </section>
+
+    <!-- ===== "I also allow [name] to" + chips + reciprocity ===== -->
+    <section class="section">
+      <label class="checkbox">
+        <input type="checkbox" name="also_allow" id="also_allow" checked>
+        <span><span class="en" lang="en">I also allow</span><span class="es" lang="es">También permito a</span> <span class="person-out" data-bind="person">—</span> <span class="en" lang="en">to</span><span class="es" lang="es"></span></span>
+      </label>
+
+      <div class="chips">
+        <label class="chip">
+          <input type="checkbox" name="know_me_more" id="know_me_more" checked>
+          <span data-en="Know me more" data-es="Conocerme más"><span class="en" lang="en">Know me more</span><span class="es" lang="es">Conocerme más</span></span>
+        </label>
+        <label class="chip">
+          <input type="checkbox" name="get_contact" id="get_contact" checked>
+          <span data-en="Get more contact information" data-es="Obtener más información de contacto"><span class="en" lang="en">Get more contact information</span><span class="es" lang="es">Obtener más información de contacto</span></span>
+        </label>
+        <label class="chip">
+          <input type="checkbox" name="use_grants" id="use_grants">
+          <span data-en="Use my grants" data-es="Usar mis concesiones"><span class="en" lang="en">Use my grants</span><span class="es" lang="es">Usar mis concesiones</span></span>
+        </label>
+        <label class="chip">
+          <input type="checkbox" name="use_things" id="use_things">
+          <span data-en="Use any of my things" data-es="Usar cualquiera de mis cosas"><span class="en" lang="en">Use any of my things</span><span class="es" lang="es">Usar cualquiera de mis cosas</span></span>
+        </label>
+        <label class="chip chip--input">
+          <input type="text" name="other" id="other" placeholder="+ other" data-ph-en="+ other" data-ph-es="+ otro" autocomplete="off">
+        </label>
+      </div>
+
+      <label class="checkbox mt-14">
+        <input type="checkbox" name="reciprocity" id="reciprocity" checked>
+        <span><span class="en" lang="en">I want reciprocity</span><span class="es" lang="es">Quiero reciprocidad</span></span>
+      </label>
+    </section>
+
+    <div class="review-spacer" aria-hidden="true"></div>
+
+    <!-- ===== Resume ===== -->
+    <details id="reviewBlock">
+      <summary class="review-summary"><span class="review-title"><span class="en" lang="en">Resume</span><span class="es" lang="es">Resumen</span></span></summary>
+      <div class="review-body">
+        <div class="summary-line" id="summaryLine">
+          <strong><span class="en" lang="en">I allow</span><span class="es" lang="es">Permito a</span></strong>
+          <span class="person-out" id="outName">—</span>
+          <strong><span class="en" lang="en">to</span><span class="es" lang="es"></span></strong>
+          <span id="outList">— select options to see the detail —</span>
+        </div>
+
+        <div class="button-group action-row">
+          <button type="button" class="btn" id="insightBtn"><i class="fas fa-brain"></i><span><span class="en" lang="en">Insight</span><span class="es" lang="es">Revelación</span></span></button>
+          <button type="button" class="btn" id="magicBtn"><i class="fas fa-magic"></i><span><span class="en" lang="en">Magic</span><span class="es" lang="es">Magia</span></span></button>
+          <button type="button" class="btn" id="copyBtn"><i class="fas fa-copy"></i><span><span class="en" lang="en">Copy</span><span class="es" lang="es">Copiar</span></span></button>
+        </div>
+
+        <div class="action-spacer" aria-hidden="true"></div>
+
+        <div class="button-group">
+          <div class="btn-with-subs" id="saveWrap">
+            <button type="button" class="btn" id="saveBtn"><i class="fas fa-download"></i><span><span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></span></button>
+            <div class="subitems">
+              <button type="button" class="subitem" data-group="save" data-action="jpg">JPG</button>
+              <button type="button" class="subitem" data-group="save" data-action="html">HTML</button>
+              <button type="button" class="subitem" data-group="save" data-action="text"><span class="en" lang="en">Text</span><span class="es" lang="es">Texto</span></button>
+              <button type="button" class="subitem" data-group="save" data-action="json">JSON</button>
+              <button type="button" class="subitem" data-group="save" data-action="csv">CSV</button>
+              <button type="button" class="subitem" data-group="save" data-action="md">MD</button>
+              <button type="button" class="subitem" data-group="save" data-action="xml">XML</button>
+            </div>
+          </div>
+          <div class="btn-with-subs" id="shareWrap">
+            <button type="button" class="btn" id="shareBtn"><i class="fas fa-share-alt"></i><span><span class="en" lang="en">Share</span><span class="es" lang="es">Compartir</span></span></button>
+            <div class="subitems">
+              <button type="button" class="subitem" data-group="share" data-action="device"><span class="en" lang="en">Device</span><span class="es" lang="es">Dispositivo</span></button>
+              <button type="button" class="subitem" data-group="share" data-action="whatsapp">WhatsApp</button>
+              <button type="button" class="subitem" data-group="share" data-action="telegram">Telegram</button>
+              <button type="button" class="subitem" data-group="share" data-action="mail"><span class="en" lang="en">Mail</span><span class="es" lang="es">Correo</span></button>
+            </div>
+          </div>
+          <div class="btn-with-subs" id="publishWrap">
+            <div class="subitems subitems-above">
+              <input class="subitem-radio" type="radio" tabindex="-1" name="publishPlatform" id="pubP0" data-r="0" data-platform="Mastodon" aria-hidden="true">
+              <label class="subitem is-radio" for="pubP0" data-r="0" data-group="publish">Mastodon</label>
+              <input class="subitem-radio" type="radio" tabindex="-1" name="publishPlatform" id="pubP1" data-r="1" data-platform="Bluesky" aria-hidden="true">
+              <label class="subitem is-radio" for="pubP1" data-r="1" data-group="publish">Bluesky</label>
+              <input class="subitem-radio" type="radio" tabindex="-1" name="publishPlatform" id="pubP2" data-r="2" data-platform="X" aria-hidden="true">
+              <label class="subitem is-radio" for="pubP2" data-r="2" data-group="publish">X</label>
+            </div>
+            <button type="button" class="btn" id="publishBtn"><i class="fas fa-cloud-upload-alt"></i><span><span class="en" lang="en">Publish</span><span class="es" lang="es">Publicar</span></span></button>
+            <div class="subitems subitems-below">
+              <input class="subitem-radio" type="radio" tabindex="-1" name="publishVisibility" id="pubV0" data-r="0" data-visibility="Public" aria-hidden="true">
+              <label class="subitem is-radio" for="pubV0" data-r="0" data-group="publish"><span class="en" lang="en">Public</span><span class="es" lang="es">Pública</span></label>
+              <input class="subitem-radio" type="radio" tabindex="-1" name="publishVisibility" id="pubV1" data-r="1" data-visibility="Friends" aria-hidden="true">
+              <label class="subitem is-radio" for="pubV1" data-r="1" data-group="publish"><span class="en" lang="en">Friends</span><span class="es" lang="es">Amigos</span></label>
+              <input class="subitem-radio" type="radio" tabindex="-1" name="publishVisibility" id="pubV2" data-r="2" data-visibility="Private" aria-hidden="true">
+              <label class="subitem is-radio" for="pubV2" data-r="2" data-group="publish"><span class="en" lang="en">Private</span><span class="es" lang="es">Privada</span></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="hint-area" id="hintMessage"></div>
+      </div>
+    </details>
+
+    <button type="submit" class="visually-hidden">
+      <span class="en" lang="en">Sign the Evily</span><span class="es" lang="es">Firmar el Evily</span>
+    </button>
+  </form>
+
+  <script>
+    // ===== i18n helper (shared) — pick the string for the active language =====
+    // The active language is the code after "lang-" in the checked worldball radio.
+    window.flLang = function(){
+      const r = document.querySelector('input[name="lang"]:checked');
+      return r ? r.id.replace('lang-', '') : 'en';
+    };
+    // tx({en:'…', es:'…'}) → the active-language string (falls back to en).
+    window.tx = function(map){ const l = window.flLang(); return map[l] != null ? map[l] : map.en; };
+
+    // ===== Live Resume + name binding =====
+    const form        = document.getElementById('evilForm');
+    const personInput = document.getElementById('person');
+    const bindEls     = document.querySelectorAll('[data-bind="person"]');
+    const outName     = document.getElementById('outName');
+    const outList     = document.getElementById('outList');
+
+    function collect(){
+      const name = personInput.value.trim() || '—';
+      bindEls.forEach(el => el.textContent = name);
+      outName.textContent = name;
+
+      const li = window.flLang();
+      const items = [];
+      if (form.send_hell.checked) items.push(tx({en:'send me to hell', es:'enviarme al infierno'}));
+      if (form.curse_me?.checked) items.push(tx({en:'and curse me', es:'y maldecirme'}));
+
+      const d = form.during_days.value?.trim();
+      const exp = form.expires_days.value?.trim();
+      const scope = form.visibility.value;
+      // visibility label in the active language (from the matching <option>)
+      const scopeOpt = form.visibility.options[form.visibility.selectedIndex];
+      const scopeLabel = scopeOpt ? (scopeOpt.dataset[li] || scopeOpt.textContent) : scope;
+      if (d) items.push(tx({en:`during ${d} days`, es:`durante ${d} días`}));
+      if (scope && scope !== 'private') items.push(tx({en:`visibility: ${scopeLabel}`, es:`visibilidad: ${scopeLabel}`}));
+      if (exp) items.push(tx({en:`offer expires in ${exp} days`, es:`la oferta caduca en ${exp} días`}));
+
+      const cond = [];
+      if (form.compensable.checked) cond.push(tx({en:'compensable', es:'compensable'}));
+      if (form.fully.checked){
+        const w = form.with_what.value.trim();
+        cond.push(w ? tx({en:`fully with «${w}»`, es:`por completo con «${w}»`}) : tx({en:'fully', es:'por completo'}));
+      }
+      if (cond.length) items.push(tx({en:'conditions: ', es:'condiciones: '}) + cond.join(', '));
+
+      if (form.warnme.checked && form.warn_days.value)
+        items.push(tx({en:`warn me with ${form.warn_days.value} days in advance`, es:`avísame con ${form.warn_days.value} días de antelación`}));
+
+      if (form.also_allow.checked){
+        const gets = [];
+        [...form.querySelectorAll('.chips input[type="checkbox"]:checked')].forEach(cb => {
+          const span = cb.parentElement.querySelector('span');
+          if (span) gets.push((span.dataset[li] || span.textContent).trim());
+        });
+        if (form.other.value.trim()) gets.push(form.other.value.trim());
+        if (gets.length) items.push(tx({en:`also let ${name} `, es:`también dejar a ${name} `}) + gets.join(', '));
+      }
+
+      if (form.reciprocity.checked) items.push(tx({en:'I ask for reciprocity', es:'pido reciprocidad'}));
+
+      outList.textContent = items.length ? items.join(' · ') : tx({en:'— select options to see the detail —', es:'— selecciona opciones para ver el detalle —'});
+    }
+
+    form.addEventListener('input', collect);
+    form.addEventListener('change', collect);
+    form.addEventListener('reset', () => setTimeout(collect, 0));
+    // Re-render the live resume when the page language switches.
+    document.querySelectorAll('input[name="lang"]').forEach(r =>
+      r.addEventListener('change', () => setTimeout(collect, 0)));
+    collect();
+
+    // ===== Number steppers =====
+    document.querySelectorAll('.num-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        const input = document.getElementById(btn.dataset.target);
+        if (!input) return;
+        const step = parseInt(btn.dataset.step, 10) || 1;
+        const cur  = parseInt(input.value, 10) || 0;
+        const min  = input.min !== '' ? parseInt(input.min, 10) : -Infinity;
+        const next = Math.max(min, cur + step);
+        input.value = next;
+        input.dispatchEvent(new Event('input',  {bubbles:true}));
+        input.dispatchEvent(new Event('change', {bubbles:true}));
+        // flame burst at the button
+        const r = btn.getBoundingClientRect();
+        window.floveFX?.burst(r.left + r.width/2, r.top + r.height/2, 0.6);
+      });
+    });
+
+    // ===== Inline inputs inside <label>: don't toggle the checkbox =====
+    document.querySelectorAll('.inline-input, .num-stepper input[type="number"], .chip--input input[type="text"]')
+      .forEach(inp => {
+        ['click','mousedown','keydown','keyup'].forEach(evt => {
+          inp.addEventListener(evt, e => e.stopPropagation());
+        });
+      });
+    // Number stepper buttons inside the warnme label: also keep clicks local
+    document.querySelectorAll('.checkbox .num-btn').forEach(btn => {
+      btn.addEventListener('mousedown', e => e.stopPropagation());
+    });
+
+    // ===== Resume level (0..5) =====
+    const reviewBlock = document.getElementById('reviewBlock');
+    function updateReviewLevel(){
+      if (!reviewBlock) return;
+      let n = 0;
+      form.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+        if (!reviewBlock.contains(cb)) n++;
+      });
+      const level = Math.min(Math.floor(n / 2), 5);
+      if (level > 0) reviewBlock.setAttribute('data-level', String(level));
+      else reviewBlock.removeAttribute('data-level');
+    }
+    form.addEventListener('change', updateReviewLevel);
+    updateReviewLevel();
+
+    // ===== Intro panel (opened from the menu's "What is Evily?" item) =====
+    const introSection = document.getElementById('introSection');
+
+    // ===== Close X inside the intro =====
+    const introClose = document.getElementById('introClose');
+    introClose?.addEventListener('click', e => {
+      e.stopPropagation();
+      introSection.setAttribute('hidden','');
+    });
+
+    // ===== "See more" inside the intro =====
+    const seeMoreBtn = document.getElementById('seeMoreBtn');
+    const introMore  = document.getElementById('introMore');
+    const seeMoreText = seeMoreBtn?.querySelector('.see-more-text');
+    const seeMoreEn = seeMoreText?.querySelector('.en');
+    const seeMoreEs = seeMoreText?.querySelector('.es');
+    seeMoreBtn?.addEventListener('click', e => {
+      e.stopPropagation();
+      const open = introMore.classList.toggle('is-open');
+      seeMoreBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      // keep both language spans in sync so the worldball still flips the label
+      if (seeMoreEn) seeMoreEn.textContent = open ? 'See less' : 'See more';
+      if (seeMoreEs) seeMoreEs.textContent = open ? 'Ver menos' : 'Ver más';
+    });
+
+    // ===== Photo slides — auto-cycle while intro is visible =====
+    const slidesEl = document.getElementById('slides');
+    if (slidesEl){
+      const figures = [...slidesEl.querySelectorAll('figure')];
+      const dots    = [...document.querySelectorAll('#slidesDots span')];
+      let slideIdx = 0;
+      setInterval(() => {
+        if (introSection.hasAttribute('hidden')) return;
+        if (!introMore.classList.contains('is-open')) return;
+        slideIdx = (slideIdx + 1) % figures.length;
+        figures.forEach((f, i) => f.classList.toggle('is-active', i === slideIdx));
+        dots.forEach((d, i)    => d.classList.toggle('is-on',    i === slideIdx));
+      }, 3500);
+    }
+  </script>
+
+  <script>
+  // ===== Save / Share / Publish / Insight / Magic / Copy =====
+  (function(){
+    "use strict";
+    const tx = window.tx;
+    const hintMessage = document.getElementById('hintMessage');
+    const saveBtn    = document.getElementById('saveBtn');
+    const shareBtn   = document.getElementById('shareBtn');
+    const publishBtn = document.getElementById('publishBtn');
+    const wraps = {
+      save:    document.getElementById('saveWrap'),
+      share:   document.getElementById('shareWrap'),
+      publish: document.getElementById('publishWrap'),
+    };
+
+    function getFormData(){
+      const form = document.getElementById('evilForm');
+      return {
+        person:       form.person.value.trim(),
+        send_hell:    form.send_hell.checked,
+        curse_me:   form.curse_me.checked,
+        during_days:     form.during_days.value,
+        visibility: form.visibility.value,
+        expires_days: form.expires_days.value,
+        compensable:  form.compensable.checked,
+        fully:        form.fully.checked,
+        with_what:    form.with_what.value.trim(),
+        warnme:       form.warnme.checked,
+        warn_days:    form.warn_days.value,
+        also_allow:       form.also_allow.checked,
+        chips:        (function(){ const li = window.flLang();
+                        return [...form.querySelectorAll('.chips input[type="checkbox"]:checked')]
+                          .map(cb => { const s = cb.parentElement.querySelector('span'); return s ? (s.dataset[li] || s.textContent).trim() : ''; })
+                          .filter(Boolean); })(),
+        other:    form.other.value.trim(),
+        reciprocity:  form.reciprocity.checked,
+      };
+    }
+
+    function summaryText(){
+      return document.getElementById('summaryLine').innerText.replace(/\s+/g,' ').trim();
+    }
+
+    function buildFullHTML(){
+      const d = getFormData();
+      const esc = s => (s||'').toString().replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+      const li = arr => arr.map(x => `<li>${esc(x)}</li>`).join('');
+      const bullets = bulletList(d);
+
+      return `<!doctype html><html><head><meta charset="utf-8"><title>Evily · ${esc(d.person||'')}</title>
+<style>body{background:#0b0b0f;color:#eaeaf0;font-family:system-ui;padding:24px;max-width:680px;margin:auto}
+h1{font-family:Georgia,serif;background:linear-gradient(to top,#ffae42,#ff5500,#8b0000);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{color:#a0a3ad;font-size:.9rem;text-transform:uppercase;letter-spacing:.08em}
+ul{padding-left:1.2em} li{margin:.3em 0} p{color:#a0a3ad}</style></head>
+<body><h1>Evily — ${esc(d.person||'—')}</h1>
+<h2>${esc(tx({en:'Terms', es:'Condiciones'}))}</h2><ul>${li(bullets)}</ul></body></html>`;
+    }
+
+    // Active-language bullet list shared by HTML export and the JPG render.
+    function bulletList(d){
+      const li2 = window.flLang();
+      const scopeLabel = (function(){
+        const sel = document.getElementById('visibility');
+        const o = sel && sel.options[sel.selectedIndex];
+        return o ? (o.dataset[li2] || o.textContent) : d.visibility;
+      })();
+      const bullets = [];
+      if (d.send_hell) bullets.push(tx({en:`Send me to hell (${d.person||'—'})`, es:`Enviarme al infierno (${d.person||'—'})`}));
+      if (d.curse_me) bullets.push(tx({en:'Curse me', es:'Maldecirme'}));
+      if (d.during_days) bullets.push(tx({en:`During ${d.during_days} days`, es:`Durante ${d.during_days} días`}));
+      if (d.visibility && d.visibility !== 'private') bullets.push(tx({en:`Visibility: ${scopeLabel}`, es:`Visibilidad: ${scopeLabel}`}));
+      if (d.expires_days) bullets.push(tx({en:`Expires in ${d.expires_days} days`, es:`Caduca en ${d.expires_days} días`}));
+      if (d.compensable) bullets.push(tx({en:'Compensable', es:'Compensable'}));
+      if (d.fully) bullets.push(d.with_what ? tx({en:`Fully with ${d.with_what}`, es:`Por completo con ${d.with_what}`}) : tx({en:'Fully', es:'Por completo'}));
+      if (d.warnme) bullets.push(tx({en:`Warn me with ${d.warn_days} days in advance`, es:`Avísame con ${d.warn_days} días de antelación`}));
+      if (d.also_allow) bullets.push(tx({en:`Also let ${d.person||'—'}: `, es:`También dejar a ${d.person||'—'}: `}) + (d.chips.concat(d.other ? [d.other] : []).join(', ') || '—'));
+      if (d.reciprocity) bullets.push(tx({en:'Reciprocity requested', es:'Reciprocidad solicitada'}));
+      return bullets;
+    }
+
+    // ── Flat field list shared by CSV / Markdown / XML serializers.
+    // One source of truth: same getFormData() model the JSON export uses, so
+    // every format round-trips the SAME items (parity). "chips" is flattened
+    // (joined with get_other) into a single readable "also_allow_items" row.
+    function flatFields(d){
+      const chips = d.chips.concat(d.other ? [d.other] : []);
+      return [
+        ['person',            d.person || ''],
+        ['send_hell',         d.send_hell],
+        ['curse_me',          d.curse_me],
+        ['during_days',       d.during_days],
+        ['visibility',        d.visibility],
+        ['expires_days',      d.expires_days],
+        ['compensable',       d.compensable],
+        ['fully',             d.fully],
+        ['with_what',         d.with_what || ''],
+        ['warnme',            d.warnme],
+        ['warn_days',         d.warn_days],
+        ['also_allow',        d.also_allow],
+        ['also_allow_items',  chips.join('; ')],
+        ['reciprocity',       d.reciprocity],
+      ];
+    }
+
+    // CSV (RFC-4180): two columns key,value; quote fields containing
+    // " , CR or LF, doubling inner quotes; rows joined with CRLF.
+    function buildCSV(){
+      const d = getFormData();
+      const q = v => {
+        const s = (v === true ? 'true' : v === false ? 'false' : (v == null ? '' : String(v)));
+        return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      };
+      const rows = [['field','value']].concat(flatFields(d));
+      return rows.map(r => r.map(q).join(',')).join('\r\n') + '\r\n';
+    }
+
+    // Markdown: readable title + bullet terms + a key/value detail table.
+    function buildMarkdown(){
+      const d = getFormData();
+      const mdEsc = s => String(s == null ? '' : s).replace(/([\\`*_{}\[\]()#+\-!|])/g, '\\$1');
+      const bullets = bulletList(d);
+      const fields = flatFields(d);
+      let out = `# Evily — ${mdEsc(d.person || '—')}\n\n`;
+      out += `## ${tx({en:'Terms', es:'Condiciones'})}\n\n`;
+      out += bullets.map(b => `- ${mdEsc(b)}`).join('\n') + '\n\n';
+      out += `## ${tx({en:'Details', es:'Detalles'})}\n\n`;
+      out += `| ${tx({en:'Field', es:'Campo'})} | ${tx({en:'Value', es:'Valor'})} |\n| --- | --- |\n`;
+      out += fields.map(([k,v]) => `| ${mdEsc(k)} | ${mdEsc(v === true ? 'true' : v === false ? 'false' : v)} |`).join('\n') + '\n';
+      return out;
+    }
+
+    // XML: well-formed, entities escaped (& < > " '). One <field> per row.
+    function buildXML(){
+      const d = getFormData();
+      const xe = s => String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+      const fields = flatFields(d);
+      let out = '<?xml version="1.0" encoding="UTF-8"?>\n<evily>\n';
+      out += fields.map(([k,v]) =>
+        `  <field name="${xe(k)}">${xe(v === true ? 'true' : v === false ? 'false' : v)}</field>`
+      ).join('\n');
+      out += '\n</evily>\n';
+      return out;
+    }
+
+    // ── Import: alias map lets JSON files exported with the OLD key names
+    // still load after the vocabulary rename. Maps old → new before applying.
+    // Only the keys the JSON export actually serialized are aliased. The
+    // chips were always serialized as a "chips" string array (never as the
+    // per-chip get_offer*/get_service* booleans), so those need no alias.
+    const IMPORT_ALIASES = {
+      public_scope: 'visibility',
+      let_place:    'send_hell',
+      cast_curse:   'curse_me',
+      for_days:     'during_days',
+      get_my:       'also_allow',
+      get_other:    'other',
+    };
+    function normalizeImport(raw){
+      const out = {};
+      Object.keys(raw || {}).forEach(k => {
+        const nk = IMPORT_ALIASES[k] || k;
+        if (out[nk] === undefined) out[nk] = raw[k];
+      });
+      return out;
+    }
+    // Apply a (possibly old-keyed) data object back onto the form.
+    function applyFormData(raw){
+      const data = normalizeImport(raw);
+      const form = document.getElementById('evilForm');
+      const setChk = (name, v) => { const el = form.elements[name]; if (el && v !== undefined) el.checked = !!v; };
+      const setVal = (name, v) => { const el = form.elements[name]; if (el && v !== undefined && v !== null) el.value = v; };
+      setVal('person', data.person);
+      setChk('send_hell', data.send_hell);
+      setChk('curse_me', data.curse_me);
+      setVal('during_days', data.during_days);
+      setVal('visibility', data.visibility);
+      setVal('expires_days', data.expires_days);
+      setChk('compensable', data.compensable);
+      setChk('fully', data.fully);
+      setVal('with_what', data.with_what);
+      setChk('warnme', data.warnme);
+      setVal('warn_days', data.warn_days);
+      setChk('also_allow', data.also_allow);
+      setVal('other', data.other);
+      setChk('reciprocity', data.reciprocity);
+      form.dispatchEvent(new Event('change', {bubbles:true}));
+    }
+    // Import path: drop a previously-saved evily.json anywhere on the page.
+    // Old files (pre-rename keys) load fine via the alias map above.
+    function loadJSONText(text){
+      try{
+        applyFormData(JSON.parse(text));
+        setHint('<i class="fas fa-check-circle"></i> ' + tx({en:'Evily loaded.', es:'Evily cargado.'}));
+      } catch(_){
+        setHint('<i class="fas fa-info-circle"></i> ' + tx({en:'Could not read that file.', es:'No se pudo leer ese archivo.'}));
+      }
+    }
+    window.addEventListener('dragover', e => { e.preventDefault(); });
+    window.addEventListener('drop', e => {
+      const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!f) return;
+      if (!/\.json$/i.test(f.name) && f.type !== 'application/json') return;
+      e.preventDefault();
+      const reader = new FileReader();
+      reader.onload = () => loadJSONText(String(reader.result || ''));
+      reader.readAsText(f);
+    });
+    // Also exposed programmatically (e.g. for tests / tooling).
+    window.evilyImport = applyFormData;
+
+    function downloadBlob(blob, filename){
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+    }
+    function setHint(html){ hintMessage.innerHTML = html; }
+
+    function renderJPG(cb){
+      const W = 720, H = 560;
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#0b0b0f'; ctx.fillRect(0, 0, W, H);
+      const d = getFormData();
+
+      ctx.font = '700 32px Georgia, serif';
+      const grad = ctx.createLinearGradient(0, 60, 0, 20);
+      grad.addColorStop(0, '#ffae42');
+      grad.addColorStop(.5, '#ff5500');
+      grad.addColorStop(1, '#8b0000');
+      ctx.fillStyle = grad;
+      ctx.fillText('Evily', 24, 52);
+
+      ctx.fillStyle = '#a0a3ad';
+      ctx.font = '600 13px system-ui';
+      ctx.fillText(tx({en:`To: ${d.person || '—'}`, es:`Para: ${d.person || '—'}`}), 24, 80);
+      ctx.fillText(tx({en:'TERMS', es:'CONDICIONES'}), 24, 110);
+
+      const bullets = bulletList(d);
+
+      ctx.fillStyle = '#eaeaf0';
+      ctx.font = '500 15px system-ui';
+      const maxRows = Math.floor((H - 160) / 24);
+      bullets.slice(0, maxRows).forEach((t, i) => ctx.fillText(`• ${t}`, 24, 138 + i * 24));
+      if (bullets.length > maxRows){
+        ctx.fillStyle = '#a0a3ad';
+        ctx.fillText(tx({en:`… +${bullets.length - maxRows} more`, es:`… +${bullets.length - maxRows} más`}), 24, 138 + maxRows * 24);
+      }
+      ctx.fillStyle = 'rgba(255,69,0,.45)';
+      ctx.font = 'italic 12px system-ui';
+      ctx.fillText('flove · evily', 24, H - 24);
+      canvas.toBlob(cb, 'image/jpeg', 0.92);
+    }
+
+    function shareUrl(target){
+      const txt = summaryText();
+      const enc = encodeURIComponent(txt);
+      const page = encodeURIComponent(location.href);
+      switch (target){
+        case 'whatsapp': return `https://wa.me/?text=${enc}%20${page}`;
+        case 'telegram': return `https://t.me/share/url?url=${page}&text=${enc}`;
+        case 'mail':     return `mailto:?subject=${encodeURIComponent('Evily')}&body=${enc}%0A%0A${page}`;
+      }
+    }
+
+    // ── Web Share API: share the summary text + a generated file to the
+    // device share sheet. Guarded by navigator.canShare({files}); if files
+    // can't be shared, share text only; if Web Share is absent entirely,
+    // fall back to the existing URL share buttons (re-open the share wrap).
+    async function shareToDevice(){
+      const txt   = summaryText();
+      const title = 'Evily';
+      if (navigator.share){
+        try{
+          const file = new File([buildMarkdown()], 'evily.md', {type:'text/markdown'});
+          if (navigator.canShare && navigator.canShare({files:[file]})){
+            await navigator.share({ title, text: txt, files:[file] });
+          } else {
+            await navigator.share({ title, text: txt, url: location.href });
+          }
+          setHint('<i class="fas fa-share-alt"></i> ' + tx({en:'Shared.', es:'Compartido.'}));
+          return;
+        } catch(err){
+          if (err && err.name === 'AbortError'){
+            setHint('<i class="fas fa-share-alt"></i> ' + tx({en:'Share cancelled.', es:'Compartir cancelado.'}));
+            return;
+          }
+          // fall through to URL buttons on any other error
+        }
+      }
+      // Fallback: open the share wrap so the URL share buttons are available.
+      closeAllWraps();
+      wraps.share.classList.add('is-open');
+      setHint('<i class="fas fa-info-circle"></i> ' + tx({en:'Pick a share target below.', es:'Elige un destino para compartir abajo.'}));
+    }
+
+    function closeAllWraps(except){
+      Object.values(wraps).forEach(w => { if (w !== except) w.classList.remove('is-open'); });
+    }
+    function toggleWrap(wrap){
+      const wasOpen = wrap.classList.contains('is-open');
+      closeAllWraps();
+      if (!wasOpen) wrap.classList.add('is-open');
+    }
+    function fireRipple(btn){
+      btn.classList.remove('fired');
+      void btn.offsetWidth;
+      btn.classList.add('fired');
+      setTimeout(() => btn.classList.remove('fired'), 650);
+    }
+
+    saveBtn.addEventListener('click', e => { e.stopPropagation(); fireRipple(saveBtn); toggleWrap(wraps.save); });
+    shareBtn.addEventListener('click', e => { e.stopPropagation(); fireRipple(shareBtn); toggleWrap(wraps.share); });
+    publishBtn.addEventListener('click', e => {
+      e.stopPropagation(); fireRipple(publishBtn);
+      if (wraps.publish.classList.contains('is-open')){
+        const plat = document.querySelector('input[name="publishPlatform"]:checked');
+        const vis  = document.querySelector('input[name="publishVisibility"]:checked');
+        const platName = plat?.dataset.platform || '—';
+        const visName  = vis?.dataset.visibility || '—';
+        setHint(`<i class="fas fa-cloud-upload-alt"></i> ${tx({en:'Published', es:'Publicado'})} · ${platName} · ${visName}.`);
+        wraps.publish.classList.remove('is-open');
+      } else {
+        closeAllWraps();
+        wraps.publish.classList.add('is-open');
+      }
+    });
+    Object.values(wraps).forEach(w => w.addEventListener('click', e => e.stopPropagation()));
+    document.addEventListener('click', () => closeAllWraps());
+
+    const subActions = {
+      'save:html': () => { downloadBlob(new Blob([buildFullHTML()], {type:'text/html'}), 'evily.html'); setHint('<i class="fas fa-check-circle"></i> ' + tx({en:'HTML downloaded.', es:'HTML descargado.'})); },
+      'save:text': () => { downloadBlob(new Blob([summaryText()+'\n'], {type:'text/plain'}), 'evily.txt'); setHint('<i class="fas fa-check-circle"></i> ' + tx({en:'Text downloaded.', es:'Texto descargado.'})); },
+      'save:json': () => { downloadBlob(new Blob([JSON.stringify(getFormData(), null, 2)], {type:'application/json'}), 'evily.json'); setHint('<i class="fas fa-check-circle"></i> ' + tx({en:'JSON downloaded.', es:'JSON descargado.'})); },
+      'save:jpg':  () => { renderJPG(blob => { if(!blob){ setHint('<i class="fas fa-info-circle"></i> ' + tx({en:'JPG export not supported.', es:'Exportar a JPG no es compatible.'})); return; } downloadBlob(blob, 'evily.jpg'); setHint('<i class="fas fa-check-circle"></i> ' + tx({en:'JPG downloaded.', es:'JPG descargado.'})); }); },
+      'save:csv':  () => { downloadBlob(new Blob([buildCSV()], {type:'text/csv'}), 'evily.csv'); setHint('<i class="fas fa-check-circle"></i> ' + tx({en:'CSV downloaded.', es:'CSV descargado.'})); },
+      'save:md':   () => { downloadBlob(new Blob([buildMarkdown()], {type:'text/markdown'}), 'evily.md'); setHint('<i class="fas fa-check-circle"></i> ' + tx({en:'Markdown downloaded.', es:'Markdown descargado.'})); },
+      'save:xml':  () => { downloadBlob(new Blob([buildXML()], {type:'application/xml'}), 'evily.xml'); setHint('<i class="fas fa-check-circle"></i> ' + tx({en:'XML downloaded.', es:'XML descargado.'})); },
+      'share:device':   () => { shareToDevice(); },
+      'share:whatsapp': () => { window.open(shareUrl('whatsapp'), '_blank', 'noopener'); setHint('<i class="fab fa-whatsapp"></i> ' + tx({en:'Opening WhatsApp…', es:'Abriendo WhatsApp…'})); },
+      'share:telegram': () => { window.open(shareUrl('telegram'), '_blank', 'noopener'); setHint('<i class="fab fa-telegram"></i> ' + tx({en:'Opening Telegram…', es:'Abriendo Telegram…'})); },
+      'share:mail':     () => { location.href = shareUrl('mail'); setHint('<i class="fas fa-envelope"></i> ' + tx({en:'Opening Mail…', es:'Abriendo el correo…'})); },
+    };
+
+    document.querySelectorAll('.subitem').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const fn = subActions[`${btn.dataset.group}:${btn.dataset.action}`];
+        if (fn) fn();
+        if (btn.dataset.group !== 'publish') closeAllWraps();
+      });
+    });
+
+    // ===== Insight / Magic / Copy =====
+    const insightBtn = document.getElementById('insightBtn');
+    const magicBtn   = document.getElementById('magicBtn');
+    const copyBtn    = document.getElementById('copyBtn');
+
+    const insights = [
+      {en:'An Evily, openly signed, defangs half its evil.', es:'Un Evily, firmado abiertamente, desarma la mitad de su maldad.'},
+      {en:'Letting in the worst on purpose makes the rest of the field smaller.', es:'Dejar entrar lo peor a propósito empequeñece todo lo demás.'},
+      {en:'Compensation transforms a curse into a contract.', es:'La compensación convierte una maldición en un contrato.'},
+      {en:'Visibility is not punishment — it\'s witness.', es:'La visibilidad no es castigo: es testimonio.'},
+      {en:'A 10-day warning is the kindest sword.', es:'Un aviso de 10 días es la espada más amable.'},
+      {en:'The reciprocity you ask for is the boundary you keep.', es:'La reciprocidad que pides es el límite que conservas.'},
+    ];
+    let insightIdx = 0;
+    insightBtn.addEventListener('click', e => {
+      e.stopPropagation(); fireRipple(insightBtn);
+      setHint(`<i class="fas fa-brain"></i> ${tx(insights[insightIdx % insights.length])}`);
+      insightIdx++;
+    });
+
+    magicBtn.addEventListener('click', e => {
+      e.stopPropagation(); fireRipple(magicBtn);
+      const form = document.getElementById('evilForm');
+      const tooglables = ['send_hell','curse_me','compensable','fully','warnme','also_allow','reciprocity'];
+      tooglables.forEach(name => {
+        const cb = form.elements[name];
+        if (cb){ cb.checked = Math.random() < 0.6; cb.dispatchEvent(new Event('change',{bubbles:true})); }
+      });
+      [...form.querySelectorAll('.chips input[type="checkbox"]')].forEach(cb => {
+        cb.checked = Math.random() < 0.5;
+        cb.dispatchEvent(new Event('change',{bubbles:true}));
+      });
+      setHint('<i class="fas fa-magic"></i> ' + tx({en:'Magic rerolled your terms.', es:'La magia ha vuelto a tirar los dados de tus condiciones.'}));
+    });
+
+    copyBtn.addEventListener('click', async e => {
+      e.stopPropagation(); fireRipple(copyBtn);
+      try{
+        await navigator.clipboard.writeText(summaryText());
+        const orig = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<i class="fas fa-check"></i><span>' + tx({en:'Copied', es:'Copiado'}) + '</span>';
+        setHint('<i class="fas fa-check-circle"></i> ' + tx({en:'Copied to clipboard.', es:'Copiado al portapapeles.'}));
+        setTimeout(() => { copyBtn.innerHTML = orig; }, 1400);
+      } catch {
+        setHint('<i class="fas fa-info-circle"></i> ' + tx({en:'Clipboard not available.', es:'Portapapeles no disponible.'}));
+      }
+    });
+
+    // ===== Top-bar menu — opened by the brand logo AND the app-name =====
+    const menuList = document.getElementById('menuList');
+    const triggers = [
+      document.getElementById('evilyLogo'),
+      document.getElementById('titleBtn'),
+    ].filter(Boolean);
+    function setMenu(open){
+      if (open){
+        menuList.removeAttribute('hidden');
+      } else {
+        menuList.setAttribute('hidden','');
+      }
+      triggers.forEach(t => t.setAttribute('aria-expanded', open ? 'true' : 'false'));
+    }
+    triggers.forEach(t => t.addEventListener('click', e => {
+      e.stopPropagation();
+      setMenu(menuList.hasAttribute('hidden'));
+    }));
+    menuList.addEventListener('click', e => e.stopPropagation());
+    document.addEventListener('click', e => {
+      if (!triggers.some(t => t.contains(e.target))) setMenu(false);
+    });
+
+    menuList.querySelectorAll('a[data-act]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const act = a.dataset.act;
+        const form = document.getElementById('evilForm');
+        if (act === 'reset'){
+          form.reset();
+          form.dispatchEvent(new Event('change'));
+          setHint('<i class="fas fa-rotate-left"></i> ' + tx({en:'Form reset.', es:'Formulario reiniciado.'}));
+        } else if (act === 'info'){
+          document.getElementById('introSection')?.removeAttribute('hidden');
+        }
+        setMenu(false);
+      });
+    });
+  })();
+  </script>
+
+  <script>
+  // ===== Background: fire that grows with checks, water on uncheck =====
+  (function(){
+    "use strict";
+    const canvas = document.getElementById('fxCanvas');
+    const ctx = canvas.getContext('2d');
+    let DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    let W = 0, H = 0;
+
+    function resize(){
+      DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      W = canvas.width  = Math.floor(window.innerWidth  * DPR);
+      H = canvas.height = Math.floor(window.innerHeight * DPR);
+      canvas.style.width  = window.innerWidth  + 'px';
+      canvas.style.height = window.innerHeight + 'px';
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // ── Counts how many checkboxes are currently checked in the form ──
+    function getCheckedCount(){
+      return document.querySelectorAll('#evilForm input[type="checkbox"]:checked').length;
+    }
+
+    // ── Flame particles (max size halved vs. previous version) ──
+    const flames = [];
+
+    function makeAmbient(speedBoost = 1){
+      flames.push({
+        x: Math.random() * W,
+        y: H + (Math.random() * 20),
+        vy: (0.5 + Math.random() * 1.1) * DPR * speedBoost,
+        vx: (Math.random() - 0.5) * 0.22 * DPR,
+        age: 0,
+        life: 70 + Math.random() * 70,
+        // Half-sized maxima: w0 ≤ ~5.5, h0 ≤ ~18
+        w0: (2 + Math.random() * 3.5) * DPR,
+        h0: (8 + Math.random() * 10) * DPR,
+        seed: Math.random() * 1000,
+        burst: false,
+      });
+    }
+
+    function makeBurstFlame(x, y, angle, scale){
+      const speed = (1.4 + Math.random() * 2.4) * DPR * scale;
+      flames.push({
+        x: x,
+        y: y,
+        vy: Math.cos(angle) * speed + (Math.random()*0.5+0.5) * DPR,
+        vx: Math.sin(angle) * speed,
+        age: 0,
+        life: 26 + Math.random() * 22,
+        // Half-sized maxima for burst flames too
+        w0: (2 + Math.random() * 3.5) * DPR * (0.8 + 0.4*scale),
+        h0: (8 + Math.random() * 9) * DPR * (0.8 + 0.4*scale),
+        seed: Math.random() * 1000,
+        burst: true,
+      });
+    }
+
+    // ── Water particles & splashes ──
+    // Drops fall from above onto the checkbox, and water cascades down from
+    // the checkbox to the bottom of the page when something is unchecked.
+    const drops = [];
+    const splashes = [];
+
+    function makeDrop(x, y, vy, size, color){
+      drops.push({ x, y, vy, vx:0, size, color: color||'sky', age:0 });
+    }
+
+    function spawnWaterAt(clientX, clientY){
+      const x = clientX * DPR;
+      const y = clientY * DPR;
+      // Drops falling FROM ABOVE onto the checkbox
+      for (let i = 0; i < 14; i++){
+        drops.push({
+          x: x + (Math.random() - 0.5) * 36 * DPR,
+          y: y - (40 + Math.random() * 90) * DPR,
+          vy: (2.2 + Math.random() * 3.5) * DPR,
+          vx: (Math.random() - 0.5) * 0.25 * DPR,
+          size: (1.6 + Math.random() * 2.4) * DPR,
+          splashY: y,
+          splashed: false,
+          stopY: H + 20,
+          color: 'sky',
+        });
+      }
+      // Drops cascading FROM the checkbox DOWN to the bottom of the page
+      for (let i = 0; i < 22; i++){
+        drops.push({
+          x: x + (Math.random() - 0.5) * 26 * DPR,
+          y: y + Math.random() * 6 * DPR,
+          vy: (2.8 + Math.random() * 4.2) * DPR,
+          vx: (Math.random() - 0.5) * 0.55 * DPR,
+          size: (1.4 + Math.random() * 2.2) * DPR,
+          splashY: null,
+          splashed: true,
+          stopY: H + 20,
+          color: 'sky-dim',
+        });
+      }
+      // Splash ring at the checkbox itself (the visible "water hit")
+      splashes.push({ x, y, r: 4 * DPR, a: 0.85, age: 0, life: 28 });
+      // Small puff of cool steam — replaces flame burst with a brief cooldown
+      intensity = Math.max(0.6, intensity - 0.4);
+    }
+
+    let intensity = 1;
+
+    // Spawn small ambient flames around text inputs that have content.
+    // Throttled per frame to keep particle count sane.
+    function spawnInputRingFlames(){
+      const inputs = document.querySelectorAll(
+        '.inline-input, .chip--input input[type="text"]'
+      );
+      inputs.forEach(inp => {
+        if (!inp.value || inp.value.trim() === '') return;
+        const r = inp.getBoundingClientRect();
+        if (r.bottom < 0 || r.top > window.innerHeight) return;
+        // ~3-4 flame births per frame per active input, distributed around the perimeter
+        const spawns = 1 + Math.floor(Math.random() * 2);
+        for (let s = 0; s < spawns; s++){
+          if (Math.random() > 0.55) continue;
+          const perimeter = 2 * (r.width + r.height);
+          let p = Math.random() * perimeter;
+          let x, y, upward = true;
+          if (p < r.width){
+            // top edge — flames rise upward
+            x = r.left + p;        y = r.top;
+            upward = true;
+          } else if (p < r.width + r.height){
+            // right edge — flames lick outward to the right and up
+            x = r.right;           y = r.top + (p - r.width);
+            upward = false;
+          } else if (p < 2*r.width + r.height){
+            // bottom edge — flames fall slightly then rise
+            x = r.right - (p - r.width - r.height); y = r.bottom + 2;
+            upward = true;
+          } else {
+            // left edge — outward to the left and up
+            x = r.left;            y = r.bottom - (p - 2*r.width - r.height);
+            upward = false;
+          }
+          flames.push({
+            x: x * DPR,
+            y: y * DPR,
+            vy: ((upward ? 0.7 : 0.35) + Math.random() * 0.7) * DPR,
+            vx: (Math.random() - 0.5) * (upward ? 0.15 : 0.45) * DPR,
+            age: 0,
+            life: 22 + Math.random() * 18,
+            w0: (1.6 + Math.random() * 2.0) * DPR,
+            h0: (4.5 + Math.random() * 6) * DPR,
+            seed: Math.random() * 1000,
+            burst: true,
+          });
+        }
+      });
+    }
+
+    function drawFlame(f){
+      const t_ = f.age / f.life;
+      if (t_ >= 1) return;
+      const fade = 1 - t_;
+      const w = f.w0 * (0.6 + 0.4 * fade);
+      const h = f.h0 * (0.5 + 0.5 * fade);
+      const wobble = Math.sin(f.age * 0.18 + f.seed) * w * 0.6;
+      const x = f.x + wobble;
+      const y = f.y;
+      const g = ctx.createLinearGradient(x, y, x, y - h);
+      const a = (f.burst ? 0.85 : 0.6) * fade;
+      g.addColorStop(0.00, `rgba(80,0,0,${a*0.35})`);
+      g.addColorStop(0.18, `rgba(180,20,0,${a*0.85})`);
+      g.addColorStop(0.45, `rgba(255,80,0,${a})`);
+      g.addColorStop(0.75, `rgba(255,170,30,${a*0.95})`);
+      g.addColorStop(1.00, `rgba(255,240,160,${a*0.55})`);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(x - w/2, y);
+      ctx.bezierCurveTo(x - w*0.95, y - h*0.45, x - w*0.30, y - h*0.85, x, y - h);
+      ctx.bezierCurveTo(x + w*0.30, y - h*0.85, x + w*0.95, y - h*0.45, x + w/2, y);
+      ctx.closePath();
+      ctx.globalCompositeOperation = 'screen';
+      ctx.fill();
+      const gi = ctx.createLinearGradient(x, y, x, y - h*0.75);
+      gi.addColorStop(0, `rgba(255,200,80,0)`);
+      gi.addColorStop(0.5, `rgba(255,230,140,${a*0.55})`);
+      gi.addColorStop(1, `rgba(255,255,200,${a*0.35})`);
+      ctx.fillStyle = gi;
+      ctx.beginPath();
+      ctx.moveTo(x - w*0.22, y - h*0.05);
+      ctx.bezierCurveTo(x - w*0.42, y - h*0.45, x - w*0.10, y - h*0.78, x, y - h*0.85);
+      ctx.bezierCurveTo(x + w*0.10, y - h*0.78, x + w*0.42, y - h*0.45, x + w*0.22, y - h*0.05);
+      ctx.closePath();
+      ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+    }
+
+    function drawDrop(d){
+      // Teardrop pointing down
+      const r = d.size;
+      const x = d.x, y = d.y;
+      const g = ctx.createRadialGradient(x, y - r*0.6, 0, x, y, r * 2.4);
+      const base = d.color === 'sky-dim' ? '120,210,255' : '170,230,255';
+      g.addColorStop(0, `rgba(${base},.95)`);
+      g.addColorStop(0.55, `rgba(${base},.55)`);
+      g.addColorStop(1, `rgba(60,160,230,0)`);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(x, y - r * 2);
+      ctx.bezierCurveTo(x + r, y - r*0.6, x + r*0.9, y + r*0.4, x, y + r);
+      ctx.bezierCurveTo(x - r*0.9, y + r*0.4, x - r, y - r*0.6, x, y - r * 2);
+      ctx.closePath();
+      ctx.globalCompositeOperation = 'screen';
+      ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+    }
+
+    function drawSplash(s){
+      const t_ = s.age / s.life;
+      if (t_ >= 1) return;
+      const fade = 1 - t_;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(170,230,255,${(s.a * fade).toFixed(3)})`;
+      ctx.lineWidth = 2 * DPR;
+      ctx.stroke();
+      // a tiny upward crown
+      ctx.beginPath();
+      ctx.arc(s.x, s.y - s.r*0.3, s.r*0.45, Math.PI, 0);
+      ctx.strokeStyle = `rgba(220,245,255,${(0.7 * fade).toFixed(3)})`;
+      ctx.lineWidth = 1.4 * DPR;
+      ctx.stroke();
+    }
+
+    function step(){
+      // Dark background gradient
+      const bg = ctx.createLinearGradient(0, 0, 0, H);
+      bg.addColorStop(0,   '#06070d');
+      bg.addColorStop(0.55,'#0e0805');
+      bg.addColorStop(1,   '#1c0500');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, W, H);
+
+      // Faint heat haze near the bottom (scales with checked count)
+      const checked = getCheckedCount();
+      const heatA = Math.min(0.05 + checked * 0.012, 0.32);
+      const hz = ctx.createLinearGradient(0, H*0.72, 0, H);
+      hz.addColorStop(0, 'rgba(120,20,0,0)');
+      hz.addColorStop(1, `rgba(180,40,0,${heatA})`);
+      ctx.fillStyle = hz;
+      ctx.fillRect(0, H*0.72, W, H*0.28);
+
+      // Update + draw flames
+      const checkedSpeedMul = 1 + checked * 0.10;
+      for (let i = flames.length - 1; i >= 0; i--){
+        const f = flames[i];
+        drawFlame(f);
+        f.y -= f.vy * intensity * (f.burst ? 1 : checkedSpeedMul);
+        f.x += f.vx;
+        f.vy *= 0.992;
+        f.age++;
+        if (f.age >= f.life || f.y + f.h0 < 0){
+          flames.splice(i, 1);
+        }
+      }
+
+      // Maintain ambient flame target, scaled by checked count:
+      //   none checked → very few flames; many checked → many flames
+      const ambientBase   = 6;
+      const perCheck      = 5;
+      const ambientTarget = Math.min(ambientBase + checked * perCheck, 120);
+      const burstScale    = Math.min(intensity, 2.5);
+      const target        = Math.floor(ambientTarget * burstScale);
+      const ambientCount  = flames.reduce((n,f) => n + (f.burst ? 0 : 1), 0);
+      const toSpawn       = Math.min(3, target - ambientCount);
+      for (let i = 0; i < toSpawn; i++) makeAmbient(checkedSpeedMul);
+
+      // Permanent flame ring around text inputs that have content
+      spawnInputRingFlames();
+
+      // Water drops + splashes
+      for (let i = drops.length - 1; i >= 0; i--){
+        const d = drops[i];
+        drawDrop(d);
+        d.y += d.vy;
+        d.x += d.vx;
+        d.vy += 0.05 * DPR; // gravity
+        // when a falling drop reaches its splash target, leave a splash ring
+        if (d.splashY != null && !d.splashed && d.y >= d.splashY){
+          splashes.push({ x: d.x, y: d.splashY, r: 3 * DPR, a: 0.7, age: 0, life: 22 });
+          d.splashed = true;
+        }
+        if (d.y > d.stopY) drops.splice(i, 1);
+      }
+      for (let i = splashes.length - 1; i >= 0; i--){
+        const s = splashes[i];
+        drawSplash(s);
+        s.r += 1.6 * DPR;
+        s.a *= 0.94;
+        s.age++;
+        if (s.age >= s.life) splashes.splice(i, 1);
+      }
+
+      intensity += (1 - intensity) * 0.04;
+      requestAnimationFrame(step);
+    }
+    step();
+
+    // Click → flame burst (kept for non-checkbox clicks)
+    function burstAt(clientX, clientY, scale = 1, countMul = 1){
+      intensity = Math.min(intensity + 1.0 * scale, 1 + 3.5 * scale);
+      const x = clientX * DPR;
+      const y = clientY * DPR;
+      const n = Math.floor((16 + 16 * scale) * countMul);
+      const spread = Math.PI * (220/360);
+      for (let i = 0; i < n; i++){
+        const a = -Math.PI/2 + (Math.random() - 0.5) * spread;
+        const offset = Math.random() * 6 * DPR;
+        makeBurstFlame(x + Math.sin(a) * offset, y - Math.cos(a) * offset, a, scale);
+      }
+    }
+    window.floveFX = { burst: burstAt, water: spawnWaterAt };
+
+    // Generic clicks → small flame burst (skip checkbox/radio: handled by 'change')
+    document.addEventListener('click', e => {
+      const tgt = e.target;
+      const isCB = tgt && (tgt.type === 'checkbox' || tgt.type === 'radio');
+      if (isCB) return; // change handler decides fire vs water
+      burstAt(e.clientX, e.clientY, 0.7);
+    }, true);
+
+    // Checkbox/radio change → FIRE if newly checked, WATER if just unchecked.
+    document.addEventListener('change', e => {
+      const t = e.target;
+      if (!t || (t.type !== 'checkbox' && t.type !== 'radio')) return;
+      const r = t.getBoundingClientRect();
+      const cx = r.left + r.width/2;
+      const cy = r.top + r.height/2;
+      if (t.checked){
+        burstAt(cx, cy, 1.1, 2); // fire effect — twice the flame count
+      } else {
+        spawnWaterAt(cx, cy); // water effect
+      }
+    });
+  })();
+  </script>
+
+  <script>
+  // ===== translaty engine — language switch + persistence + <html lang> sync =====
+  (function(){
+    const LS = 'translaty-lang';
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+    const radios = () => Array.from(document.querySelectorAll('input[name="lang"]'));
+    const curLang = () => { const r = radios().find(x => x.checked); return r ? r.id.replace('lang-', '') : 'en'; };
+    function applyLang(){
+      const li = curLang();
+      document.documentElement.lang = li;
+      document.querySelectorAll('option[data-en]').forEach(o => { if (o.dataset[li] != null) o.textContent = o.dataset[li]; });
+      document.querySelectorAll('[data-ph-en]').forEach(el => { const v = el.dataset['ph' + cap(li)]; if (v != null) el.placeholder = v; });
+      document.querySelectorAll('[data-aria-en]').forEach(el => { const v = el.dataset['aria' + cap(li)]; if (v != null) el.setAttribute('aria-label', v); });
+      try { localStorage.setItem(LS, li); } catch (_) {}
+    }
+    function init(){
+      let saved = null; try { saved = localStorage.getItem(LS) || localStorage.getItem('translate2-lang'); } catch (_) {}
+      if (saved){ const r = document.getElementById('lang-' + saved); if (r) r.checked = true; }
+      radios().forEach(r => r.addEventListener('change', () => {
+        applyLang();
+        const d = document.querySelector('details.lang'); if (d) d.open = false;
+      }));
+      applyLang();
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  })();
+  </script>
+</body>
+</html>

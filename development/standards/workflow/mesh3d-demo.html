@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Mesh 3D demo · flove</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="description" content="A mesh workflow graph in three real 3D depth layers (Three.js). One word per chip; click a chip to expand it with a short intro phrase while the rest of the mesh recedes." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+<style>
+:root{
+  --bg:#f6f6fa; --surface:#ffffff; --ink:#16161d; --mut:#6c6c82;
+  --line:#e3e3ef; --line2:#c9c9da; --accent:#6c5ce7;
+  --shadow:0 1px 2px rgba(16,16,32,.06), 0 8px 24px rgba(16,16,32,.06);
+  --r:12px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  background:var(--bg); color:var(--ink); min-height:100vh;
+  display:flex; flex-direction:column; -webkit-font-smoothing:antialiased;
+}
+
+/* ── Toolbar (title row) ─────────────────────────────────────────── */
+.toolbar{
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  padding:14px 16px 4px;
+}
+.toolbar .back{
+  flex:0 0 auto; display:inline-grid; place-items:center;
+  width:32px; height:32px; border-radius:10px;
+  border:1px solid var(--line); background:var(--surface);
+  text-decoration:none; color:var(--ink); font-weight:800; font-size:16px;
+  transition:transform .12s ease;
+}
+.toolbar .back:hover{transform:translateX(-2px)}
+.toolbar h1{margin:0; font-size:18px; font-weight:800; letter-spacing:-.01em}
+
+/* ── Legend + reveal (below the toolbar, above the graph) ────────── */
+.controls{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  padding:8px 16px 12px;
+}
+.legend{display:flex; gap:12px; flex-wrap:wrap; align-items:center; font-size:12px; font-weight:700}
+.legend .lbl{display:inline-flex; align-items:center; gap:6px; color:var(--mut)}
+.legend .chip{width:12px; height:12px; border-radius:50%; box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.depth{margin-left:auto; display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--mut)}
+.depth input[type=range]{width:110px; accent-color:var(--accent)}
+.depth b{color:var(--ink)}
+
+/* ── Breadcrumb / navigation bar ─────────────────────────────────── */
+nav.navbar{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:8px 16px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); background:var(--surface);
+}
+.back-btn{
+  border:1px solid var(--line); background:var(--surface); border-radius:9px;
+  padding:5px 12px; font:inherit; font-size:13px; font-weight:700; cursor:pointer;
+  transition:transform .12s ease;
+}
+.back-btn:hover:not(:disabled){transform:translateY(-1px)}
+.back-btn:disabled{opacity:.4; cursor:default}
+#crumb{list-style:none; display:flex; gap:4px; flex-wrap:wrap; align-items:center; margin:0; padding:0}
+#crumb li{display:flex; align-items:center; gap:4px}
+#crumb li:not(:last-child)::after{content:'›'; color:var(--line2)}
+.crumb-item{
+  border:0; background:none; font:inherit; font-size:13px; font-weight:600;
+  color:var(--mut); cursor:pointer; padding:3px 7px; border-radius:7px;
+}
+.crumb-item:hover{background:#f0f0f6; color:var(--ink)}
+.crumb-item.cur{color:var(--ink); font-weight:800; cursor:default}
+#layerInfo{margin-left:auto; font-size:12px; font-weight:700; color:var(--mut); background:#f1f1f7; padding:4px 10px; border-radius:999px; white-space:nowrap}
+
+/* ── Layout ─────────────────────────────────────────────────────── */
+.app{flex:1; display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:12px; padding:14px; min-height:0}
+.stage{
+  position:relative; min-height:0;
+  background:
+    radial-gradient(120% 90% at 50% 0%, #ffffff 0%, #f6f6fb 60%, #ececf6 100%);
+  border:1px solid var(--line); border-radius:var(--r);
+  box-shadow:var(--shadow); overflow:hidden;
+}
+.stage canvas{position:absolute; inset:0; display:block; touch-action:none}
+.panel{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+  box-shadow:var(--shadow); overflow-y:auto; padding:14px; min-height:0;
+}
+footer.hints{padding:8px 16px; font-size:12px; color:var(--mut); border-top:1px solid var(--line); text-align:center}
+
+/* ── Info panel ─────────────────────────────────────────────────── */
+.pempty{color:var(--mut); font-size:13px; text-align:center; padding:30px 10px; line-height:1.7}
+.phead{display:flex; align-items:center; gap:8px; margin-bottom:10px}
+.phead .dot{width:10px; height:10px; border-radius:50%; background:var(--hue,var(--accent)); flex:0 0 auto; box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.phead h2{margin:0; font-size:16px; letter-spacing:-.01em; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.badges{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px}
+.badge{font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; background:#f0f0f6; color:var(--mut)}
+.badge.kind{background:#eef1ff; color:#33314d}
+.pinfo{font-size:13px; line-height:1.55; color:#3a3a4a; margin:0 0 4px; background:#f7f7fb; border:1px solid var(--line); border-radius:10px; padding:10px}
+.core{list-style:none; margin:8px 0 0; padding:0; display:flex; flex-direction:column; gap:6px}
+.core li{display:flex; gap:8px; align-items:flex-start; font-size:13px; color:#3a3a4a; line-height:1.5}
+.core li::before{content:'◈'; color:var(--accent); flex:0 0 auto; font-size:11px; margin-top:2px}
+.psec{margin-top:14px}
+.psec-title{font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--mut); margin:0 0 8px}
+.pchildren{display:flex; flex-direction:column; gap:6px}
+.pchild{
+  text-align:left; border:1px solid var(--line); background:#fff; border-radius:10px;
+  padding:7px 10px; font:inherit; font-size:13px; font-weight:600; cursor:pointer;
+}
+.pchild:hover{border-color:var(--line2); background:#f8f8fc}
+.plinks{display:flex; flex-direction:column; gap:6px}
+.plink{
+  text-align:left; border:1px dashed var(--line2); background:#fbfbfe; border-radius:10px;
+  padding:7px 10px; font:inherit; font-size:13px; font-weight:600; cursor:pointer; color:var(--mut);
+}
+.plink:hover{border-color:var(--accent); color:var(--ink); background:#f7f5ff}
+.pactions{display:flex; gap:6px; flex-wrap:wrap; margin-top:14px}
+.pbtn{
+  flex:1; border:1px solid var(--line); background:#f7f7fb; border-radius:9px;
+  padding:6px 8px; font:inherit; font-size:12px; font-weight:700; cursor:pointer; color:var(--ink);
+}
+.pbtn:hover{background:#fff; border-color:var(--line2)}
+
+@media (max-width:900px){
+  .app{grid-template-columns:1fr; grid-template-rows:minmax(0,1fr) auto}
+  .stage{min-height:420px}
+  .panel{max-height:38vh}
+  .legend,.depth{margin-left:0}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important; transition:none !important}
+}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <a class="back" href="../../../docs/index.html" title="back to docs" aria-label="back to docs">←</a>
+  <h1>Mesh 3D</h1>
+</div>
+
+<div class="controls">
+  <div class="legend" aria-hidden="true">
+    <span class="lbl"><span class="chip" style="background:#6c5ce7"></span>Layer 1 · Near</span>
+    <span class="lbl"><span class="chip" style="background:#5ea4e6"></span>Layer 2 · Mid</span>
+    <span class="lbl"><span class="chip" style="background:#b48aff"></span>Layer 3 · Deep</span>
+  </div>
+  <div class="depth" title="How many layers of subnodes the clicked chip reveals">
+    <label for="depthSlider">Reveal</label>
+    <input id="depthSlider" type="range" min="1" max="3" value="2" />
+    <b id="depthLabel">2</b>
+  </div>
+</div>
+
+<nav class="navbar" aria-label="Level navigation">
+  <button id="backBtn" class="back-btn" title="Go back one level">← Back</button>
+  <ol id="crumb"></ol>
+  <span id="layerInfo"></span>
+</nav>
+
+<div class="app">
+  <div id="stage" class="stage" role="img" aria-label="Three-layer mesh workflow graph"></div>
+  <aside id="panel" class="panel" aria-live="polite"></aside>
+</div>
+
+<footer class="hints">
+  Click a chip to expand it with its intro phrase · the rest of the mesh recedes ·
+  thick edges are parent→child, dashed edges are mesh links · <b>Esc</b> clears · <b>←</b> goes back
+</footer>
+
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const el = (tag, cls, text) => {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+};
+
+/* ── The three depth layers ────────────────────────────────────── */
+const LAYERS = {
+  1: { label:'Layer 1 · Near',  hue:'#6c5ce7', depth: 0,   scale:1,
+       desc:'The near layer — the people, hands and moments you touch directly. It sits closest to the camera in the mesh.' },
+  2: { label:'Layer 2 · Mid',   hue:'#5ea4e6', depth:-75,  scale:.84,
+       desc:'The mid layer — the material: drafts, apps and docs that carry the work between near and deep.' },
+  3: { label:'Layer 3 · Deep',  hue:'#b48aff', depth:-150, scale:.68,
+       desc:'The deep layer — roots, standards and ethos. Farthest away, deeper in the fog, but it holds the mesh together.' }
+};
+
+/* ── Graph data: a three-layer publishing mesh ─────────────────── */
+const NODES = {
+  you:       { layer:1, name:'You',      tag:'touches every layer',
+               core:['Touches everything','Ships the work','The near pole'],
+               info:'The person working the mesh. From here every layer is one click away.' },
+  now:       { layer:1, name:'Now',      tag:'one thing at a time',
+               core:['The present moment','One thing at a time','Feeds every channel'],
+               info:'The here-and-now hub. It nudges drafts, apps and docs forward at the same pace.' },
+  drafts:    { layer:2, name:'Drafts',   tag:'rough to ready',
+               core:['Rough → ready','Plain text first','Always a next pass'],
+               info:'Unfinished writing. Drafts gather in the mid layer until they are solid enough to rise.' },
+  apps:      { layer:2, name:'Apps',     tag:'small self-contained tools',
+               core:['Small tools','Self-contained files','Runnable locally'],
+               info:'The apps that give the work a shape. Each one is a single self-contained HTML file.' },
+  docs:      { layer:2, name:'Docs',     tag:'the reading library',
+               core:['The reading library','Linked notes','Deep material'],
+               info:'The reading library. Docs hold the standards, debates and plans that keep the mesh coherent.' },
+  notes:     { layer:3, name:'Notes',    tag:'seeds of drafts',
+               core:['Seed of drafts','Loose & free','Everywhere'],
+               info:'Fast, messy notes. The deep root of every draft that later rises to the near layer.' },
+  ideas:     { layer:3, name:'Ideas',    tag:'borrow freely, grow by contact',
+               core:['Cross-fertilise','Borrow freely','Grow by contact'],
+               info:'Ideas that travel across the deep layer and surface in more than one app.' },
+  tools:     { layer:3, name:'Tools',    tag:'repeatable small moves',
+               core:['Repeatable moves','Stay small','Worth building twice'],
+               info:'The small reusable tools under the apps. They are only kept when they earn their place.' },
+  marks:     { layer:3, name:'Marks',    tag:'one glyph per app',
+               core:['One glyph per app','Inline SVG','Shared strokes'],
+               info:'The visual identity of each app — a single inline SVG mark drawn with the same vocabulary.' },
+  standards: { layer:3, name:'Standards',tag:'slow it, flow it',
+               core:['Slow it · flow it','Non-negotiable core','Token discipline'],
+               info:'The deep standards. They stay calm and stable so the near layer can move quickly.' },
+  debates:   { layer:3, name:'Debates',  tag:'recorded conflicts',
+               core:['Recorded conflicts','Options weighed','Decisions dated'],
+               info:'The recorded debates and plans behind every decision the mesh runs on.' }
+};
+const CHILDREN = {
+  you:    ['drafts','apps','docs'],
+  now:    ['apps','docs'],
+  drafts: ['notes','ideas'],
+  apps:   ['tools','marks'],
+  docs:   ['standards','debates'],
+  notes: [], ideas: [], tools: [], marks: [], standards: [], debates: []
+};
+const PARENT = {};
+for(const [p, kids] of Object.entries(CHILDREN)){ kids.forEach(k => PARENT[k] = p); }
+const LINKS = [
+  ['you','now'], ['drafts','apps'], ['drafts','docs'], ['apps','docs'],
+  ['notes','ideas'], ['tools','marks'], ['standards','debates'],
+  ['ideas','tools'], ['marks','standards']
+];
+const REL = {
+  'you>now':'side by side', 'drafts>apps':'feeds', 'drafts>docs':'feeds',
+  'apps>docs':'mirrors', 'notes>ideas':'inspires', 'tools>marks':'brands',
+  'standards>debates':'records', 'ideas>tools':'inspires', 'marks>standards':'follows'
+};
+
+/* ── Layout: layered positions in the 3D world ──────────────────── */
+const POS = {};
+const deepX = [150, 265, 380, 520, 635, 750];
+const deepY = [150, 205];
+const deepOrder = ['notes','ideas','tools','marks','standards','debates'];
+deepOrder.forEach((id,i)=>{ POS[id] = { x: deepX[i], y: deepY[i % 2] }; });
+POS.drafts = { x:230, y:340 }; POS.apps  = { x:450, y:330 }; POS.docs = { x:670, y:340 };
+POS.you = { x:450, y:505 }; POS.now = { x:700, y:480 };
+const zOf = id => LAYERS[NODES[id].layer].depth;
+
+const state = {
+  selected:'you', reveal:2, expanded:new Set(['you','now'])
+};
+
+function nodeById(id){ return NODES[id]; }
+function ancestors(id){ const a=[]; let c=id; while(c){ a.unshift(c); c=PARENT[c]; } return a; }
+function descendants(id, depth){
+  const out=[];
+  const walk=(n,d)=>{ if(d<=0) return; (CHILDREN[n]||[]).forEach(k=>{ out.push(k); walk(k,d-1); }); };
+  walk(id, depth);
+  return out;
+}
+function edgeKey(a,b){ return [a,b].sort().join('>'); }
+
+/* ── Three.js: scene, camera, floor ────────────────────────────── */
+const stageEl = $('#stage');
+const panelEl = $('#panel');
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xf6f6fa);
+scene.fog = new THREE.FogExp2(0xf6f6fa, 0.0042);
+
+const camera = new THREE.PerspectiveCamera(42, 1, 1, 3000);
+camera.position.set(450, 430, 360);
+camera.lookAt(450, 310, -70);
+const cam = { x: 450, y: 430 };
+
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+stageEl.appendChild(renderer.domElement);
+
+const grid = new THREE.GridHelper(1100, 12, 0xcfd1e6, 0xdcddea);
+grid.position.set(450, 165, -70);
+scene.add(grid);
+
+const group = new THREE.Group();
+scene.add(group);
+
+/* ── Chip textures (one word; expanded = word + intro phrase) ──── */
+const PX = 2;
+function rr(x, y, w, h, r){
+  x.beginPath();
+  x.moveTo(x + r, y);
+  x.arcTo(x + w, y, x + w, y + h, r);
+  x.arcTo(x + w, y + h, x, y + h, r);
+  x.arcTo(x, y + h, x, y, r);
+  x.arcTo(x, y, x + w, y, r);
+  x.closePath();
+}
+function chipCanvas(id, expanded){
+  const L = NODES[id].layer, hue = LAYERS[L].hue, name = NODES[id].name;
+  const w = 150 * PX, h = (expanded ? 96 : 58) * PX;
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const x = c.getContext('2d');
+  const R = 14 * PX;
+  x.save();
+  x.shadowColor = 'rgba(20,18,40,.18)'; x.shadowBlur = 10 * PX; x.shadowOffsetY = 4 * PX;
+  const g = x.createLinearGradient(0, 0, 0, h);
+  g.addColorStop(0, '#ffffff');
+  g.addColorStop(L === 1 ? .55 : .6, L === 1 ? '#f4f0ff' : '#f5f7ff');
+  g.addColorStop(1, L === 1 ? '#e6e0ff' : L === 2 ? '#e9eefc' : '#eef0fb');
+  rr(x, 0, 0, w, h, R); x.fillStyle = g; x.fill();
+  x.restore();
+  x.strokeStyle = hue; x.lineWidth = 2.5 * PX;
+  rr(x, 1.5 * PX, 1.5 * PX, w - 3 * PX, h - 3 * PX, R); x.stroke();
+  x.textAlign = 'center';
+  x.fillStyle = '#16161d';
+  x.font = `700 ${17 * PX}px Inter, sans-serif`;
+  x.fillText(name, w / 2, expanded ? h * .36 : h / 2 + 6 * PX);
+  if(expanded){
+    x.fillStyle = '#5a5a6a';
+    x.font = `500 ${9.5 * PX}px Inter, sans-serif`;
+    x.fillText(NODES[id].tag, w / 2, h * .72);
+  }
+  return c;
+}
+const chipBase = { 1:[120, 58], 2:[106, 52], 3:[92, 48] };
+const sprites = {};
+Object.keys(NODES).forEach(id => {
+  const mat = new THREE.SpriteMaterial({ map:new THREE.CanvasTexture(chipCanvas(id, false)), transparent:true, depthWrite:false });
+  const sp = new THREE.Sprite(mat);
+  const L = NODES[id].layer;
+  sp.position.set(POS[id].x, POS[id].y, zOf(id));
+  sp.userData = { id, bw:chipBase[L][0], bh:chipBase[L][1], target:1, cur:1, tOp:1, cOp:1, tx:1, expanded:false, wasSel:false };
+  sp.scale.set(chipBase[L][0], chipBase[L][1], 1);
+  group.add(sp); sprites[id] = sp;
+});
+
+/* ── Edges: thick boxes; dashed texture for mesh links ─────────── */
+const edgeMeshes = {};
+function buildEdge(aId, bId, isMesh){
+  const A = new THREE.Vector3(POS[aId].x, POS[aId].y, zOf(aId));
+  const B = new THREE.Vector3(POS[bId].x, POS[bId].y, zOf(bId));
+  const len = A.distanceTo(B);
+  const thick = isMesh ? 2.4 : 3.6;
+  const geo = new THREE.BoxGeometry(len, thick, thick);
+  const hue = LAYERS[Math.max(NODES[aId].layer, NODES[bId].layer)].hue;
+  let mat;
+  if(isMesh){
+    const c = document.createElement('canvas'); c.width = 64; c.height = 8;
+    const x = c.getContext('2d');
+    x.fillStyle = hue; x.fillRect(0, 0, 40, 8);
+    const dt = new THREE.CanvasTexture(c);
+    dt.wrapS = THREE.RepeatWrapping; dt.wrapT = THREE.ClampToEdgeWrapping;
+    dt.repeat.set(Math.max(1, Math.round(len / 16)), 1);
+    mat = new THREE.MeshBasicMaterial({ map:dt, transparent:true, depthWrite:false });
+  } else {
+    mat = new THREE.MeshBasicMaterial({ color:hue, transparent:true, depthWrite:false });
+  }
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.copy(A).add(B).multiplyScalar(.5);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), B.clone().sub(A).normalize());
+  mesh.userData = { a:aId, b:bId, isMesh, target:1, cur:1, tx:1 };
+  group.add(mesh);
+  edgeMeshes[edgeKey(aId, bId)] = mesh;
+}
+Object.keys(NODES).forEach(id => {
+  Object.keys(NODES).forEach(j => {
+    if(id === j || edgeMeshes[edgeKey(id, j)]) return;
+    if(CHILDREN[id].includes(j) || CHILDREN[j].includes(id)) buildEdge(id, j, false);
+  });
+});
+LINKS.forEach(([a, b]) => buildEdge(a, b, true));
+
+/* ── Visual state ──────────────────────────────────────────────── */
+function applyState(){
+  const sel = state.selected, kids = descendants(sel, state.reveal), path = ancestors(sel);
+  Object.keys(NODES).forEach(id => {
+    const sp = sprites[id], u = sp.userData;
+    const isSel = id === sel, isKid = kids.includes(id), inPath = path.includes(id);
+    u.expanded = isSel;
+    if(isSel){ u.target = 1.55; u.tOp = 1; sp.renderOrder = 5; }
+    else if(isKid){ u.target = 1.1; u.tOp = 1; sp.renderOrder = 2; }
+    else if(inPath){ u.target = .9; u.tOp = .6; sp.renderOrder = 1; }
+    else { u.target = .72; u.tOp = .34; sp.renderOrder = 0; }
+    if(isSel !== u.wasSel){
+      u.wasSel = isSel;
+      sp.material.map.dispose();
+      sp.material.map = new THREE.CanvasTexture(chipCanvas(id, isSel));
+      sp.material.needsUpdate = true;
+    }
+  });
+  Object.keys(edgeMeshes).forEach(k => {
+    const m = edgeMeshes[k], { a, b } = m.userData;
+    const involved = a === sel || b === sel;
+    const near = kids.includes(a) || kids.includes(b);
+    const u = m.userData;
+    u.target = involved ? 1 : near ? .55 : .16;
+    u.tx = involved ? 1.25 : 1;
+  });
+}
+
+/* ── Animation loop (eased scale / opacity / parallax) ─────────── */
+renderer.setAnimationLoop(() => {
+  camera.position.x += (cam.x - camera.position.x) * .06;
+  camera.position.y += (cam.y - camera.position.y) * .06;
+  camera.lookAt(450, 310, -70);
+  Object.keys(sprites).forEach(id => {
+    const sp = sprites[id], u = sp.userData;
+    u.cur += (u.target - u.cur) * .12;
+    u.cOp += (u.tOp - u.cOp) * .12;
+    const s = LAYERS[NODES[id].layer].scale * u.cur;
+    const cH = u.expanded ? 96 : 58;
+    sp.scale.set(u.bw * s, u.bw * s * (cH / 150), 1);
+    sp.material.opacity = u.cOp;
+  });
+  Object.keys(edgeMeshes).forEach(k => {
+    const m = edgeMeshes[k], u = m.userData;
+    u.cur += (u.target - u.cur) * .12;
+    m.material.opacity = u.cur;
+    m.scale.y = m.scale.z = u.tx;
+  });
+  renderer.render(scene, camera);
+});
+
+/* ── Pointer: pick + parallax + hover ──────────────────────────── */
+const raycaster = new THREE.Raycaster();
+const ndc = new THREE.Vector2();
+function pick(e){
+  const r = stageEl.getBoundingClientRect();
+  ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  raycaster.setFromCamera(ndc, camera);
+  const chips = raycaster.intersectObjects(Object.values(sprites), false);
+  if(chips.length) return chips[0].object;
+  const edges = raycaster.intersectObjects(Object.values(edgeMeshes), false);
+  return edges.length ? edges[0].object : null;
+}
+stageEl.addEventListener('pointermove', e => {
+  const r = stageEl.getBoundingClientRect();
+  cam.x = 450 + ((e.clientX - r.left) / r.width - .5) * 36;
+  cam.y = 430 - ((e.clientY - r.top) / r.height - .5) * 22;
+  const o = pick(e);
+  stageEl.style.cursor = o && o.isSprite ? 'pointer' : 'default';
+});
+stageEl.addEventListener('click', e => {
+  const o = pick(e);
+  if(!o) select('you');
+  else if(o.isSprite) select(o.userData.id);
+  else selectEdge(o.userData.a, o.userData.b);
+});
+
+/* ── Renderer sizing ───────────────────────────────────────────── */
+function fit(){
+  const w = Math.max(1, stageEl.clientWidth), h = Math.max(1, stageEl.clientHeight);
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', fit);
+if('ResizeObserver' in window) new ResizeObserver(fit).observe(stageEl);
+fit();
+
+/* ── Breadcrumb ────────────────────────────────────────────────── */
+function renderCrumb(){
+  const crumb = $('#crumb'); crumb.innerHTML = '';
+  const path = ancestors(state.selected);
+  path.forEach((id, i) => {
+    const li = el('li');
+    const b = el('button', 'crumb-item', NODES[id].name);
+    b.addEventListener('click', () => select(id));
+    if(i === path.length - 1){ b.classList.add('cur'); li.setAttribute('aria-current', 'step'); }
+    li.appendChild(b);
+    crumb.appendChild(li);
+  });
+  $('#backBtn').disabled = path.length <= 1;
+  $('#layerInfo').textContent = `${LAYERS[NODES[state.selected].layer].label} · reveal ${state.reveal}`;
+}
+
+/* ── Panel ─────────────────────────────────────────────────────── */
+function renderPanel(){
+  const p = $('#panel'); p.innerHTML = '';
+  const id = state.selected, n = NODES[id], L = LAYERS[n.layer];
+  const h = el('div', 'phead');
+  const dot = el('span', 'dot'); dot.style.setProperty('--hue', L.hue);
+  h.append(dot, el('h2', null, n.name));
+  p.appendChild(h);
+
+  const badges = el('div', 'badges');
+  badges.appendChild(el('span', 'badge kind', `Layer ${n.layer}`));
+  badges.appendChild(el('span', 'badge', L.label));
+  badges.appendChild(el('span', 'badge', CHILDREN[id].length ? `${CHILDREN[id].length} subnodes` : 'leaf'));
+  p.appendChild(badges);
+  p.appendChild(el('p', 'pinfo', L.desc));
+  p.appendChild(el('p', 'pinfo', n.info));
+
+  const coreL = el('ul', 'core');
+  n.core.forEach(c => coreL.appendChild(el('li', null, c)));
+  p.appendChild(coreL);
+
+  const kids = CHILDREN[id];
+  if(kids.length){
+    const sec = el('section', 'psec');
+    sec.appendChild(el('h3', 'psec-title', `Subnodes · ${kids.length}`));
+    const list = el('div', 'pchildren');
+    kids.forEach(k => {
+      const b = el('button', 'pchild', `${NODES[k].name} · Layer ${NODES[k].layer}`);
+      b.addEventListener('click', () => select(k));
+      list.appendChild(b);
+    });
+    sec.appendChild(list);
+    p.appendChild(sec);
+  }
+
+  const mine = LINKS.filter(([a, b]) => a === id || b === id);
+  if(mine.length){
+    const sec = el('section', 'psec');
+    sec.appendChild(el('h3', 'psec-title', `Mesh links · ${mine.length}`));
+    const list = el('div', 'plinks');
+    mine.forEach(([a, b]) => {
+      const other = a === id ? b : a;
+      const bth = el('button', 'plink', `↔ ${NODES[other].name} — ${REL[edgeKey(a, b)] || 'linked'}`);
+      bth.addEventListener('click', () => select(other));
+      list.appendChild(bth);
+    });
+    sec.appendChild(list);
+    p.appendChild(sec);
+  }
+
+  const acts = el('div', 'pactions');
+  const up = el('button', 'pbtn', PARENT[id] ? `↑ Up · ${NODES[PARENT[id]].name}` : '↑ Top');
+  up.addEventListener('click', () => select(PARENT[id] || 'you'));
+  const exp = el('button', 'pbtn', '＋ Expand all below');
+  exp.addEventListener('click', () => { const st = new Set(state.expanded); descendants(id, state.reveal).forEach(k => st.add(k)); state.expanded = st; applyState(); });
+  const col = el('button', 'pbtn', '－ Collapse below');
+  col.addEventListener('click', () => { const st = new Set(state.expanded); descendants(id, state.reveal).forEach(k => st.delete(k)); state.expanded = st; applyState(); });
+  acts.append(up, exp, col);
+  p.appendChild(acts);
+}
+
+/* ── Selection / navigation ────────────────────────────────────── */
+function select(id){
+  state.selected = id;
+  const st = new Set(state.expanded);
+  st.add(id);
+  descendants(id, state.reveal).forEach(k => st.add(k));
+  state.expanded = st;
+  applyState();
+  renderCrumb();
+  renderPanel();
+}
+function selectEdge(a, b){ select(a); }
+
+/* ── Wire up UI ────────────────────────────────────────────────── */
+$('#backBtn').addEventListener('click', () => {
+  const path = ancestors(state.selected);
+  if(path.length > 1) select(path[path.length - 2]);
+});
+$('#depthSlider').addEventListener('input', e => {
+  state.reveal = +e.target.value;
+  $('#depthLabel').textContent = state.reveal;
+  select(state.selected);
+});
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape'){ select('you'); }
+  else if(e.key === 'ArrowLeft'){
+    const path = ancestors(state.selected);
+    if(path.length > 1){ e.preventDefault(); select(path[path.length - 2]); }
+  }
+});
+
+select('you');
+</script>
+</body>
+</html>

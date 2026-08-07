@@ -1,0 +1,1950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>questy — Setup Survey</title>
+<link rel="stylesheet" href="../../libs/flove-base.css">
+<style>
+  /* ── questy token overrides (dark-first dev tool) ── */
+  :root {
+    --bg: #0a0e14; --ink: #e6edf3; --muted: #5c6a78;
+    --line: #1c2632; --card: #111820; --panel: #111820;
+    --accent: #58a6ff; --signal: #3fb950;
+    --glow-a: rgba(88,166,255,0.1); --glow-s: rgba(63,185,80,0.1);
+    --glass: rgba(17,24,32,0.85); --glass-border: rgba(88,166,255,0.16);
+    /* questy-specific aliases */
+    --surface: var(--card); --border: var(--line); --text: var(--ink);
+    --green: var(--signal); --glow: var(--glow-a);
+  }
+
+  /* ── body overrides (questy is a standalone tool, no bottom nav) ── */
+  body {
+    font-family: 'SF Mono','Cascadia Code','Fira Code',monospace;
+    padding: 2.5rem 2rem 4rem;
+    max-width: 880px; margin: 0 auto;
+    padding-bottom: 4rem;
+  }
+  h1 { font-size: 1.6rem; margin-bottom: 0.2rem; letter-spacing: -0.02em; }
+  .subtitle { color: var(--muted); font-size: 0.85rem; margin-bottom: 2.5rem; }
+  .section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.8rem 2rem;
+    margin-bottom: 1.8rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .section h2 { font-size: 1.05rem; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem; }
+  #project-section.section { padding: 0.7rem 2rem 0; border-bottom: none; border-radius: 14px 14px 0 0; margin-bottom: 0; }
+  .section h2 .icon { font-size: 1.2rem; }
+  .question { margin-bottom: 1.6rem; }
+  .question:last-child { margin-bottom: 0; }
+  .q-label { font-weight: 600; margin-bottom: 0.6rem; font-size: 0.9rem; }
+  .q-label .num { color: var(--accent); }
+  .multi { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.5rem; }
+  .mb-sm { margin-bottom: 0.6rem; }
+  .mb-xs { margin-bottom: 0; }
+  .mt-sm { margin-top: 0.5rem; }
+  .mt-md { margin-top: 1rem; }
+  .center { text-align: center; margin: 0.5rem 0; }
+  .inline-flex { display: inline-flex; margin: 0; }
+  .label-sm { font-size: 0.8rem; }
+  .label-nowrap { font-size: 0.8rem; white-space: nowrap; }
+  .messy-info { color: var(--signal); font-size: 0.72rem; margin-top: 0.3rem; }
+  .accent-link { color: var(--accent); text-decoration: none; }
+  .rel { position: relative; }
+  .mono-label { font-family: 'SF Mono','Cascadia Code','Fira Code',monospace; margin-bottom: 0.6rem; }
+  .flex-wrap { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.6rem; }
+  .hat-dot { background: var(--dot-color); }
+  .hat-dot[data-color="facts"] { background: #ffffff; border: 1px solid #ccc; }
+  .hat-dot[data-color="heart"] { background: #ff4d4d; }
+  .hat-dot[data-color="risk"] { background: #1a1a1a; }
+  .hat-dot[data-color="optimism"] { background: #ffc41f; }
+  .hat-dot[data-color="creative"] { background: #3fb950; }
+  .hat-dot[data-color="make"] { background: #3aa0ff; }
+  .add-btn {
+    background: transparent; border: 1px dashed var(--border); border-radius: 50%;
+    width: 48px; height: 48px; font-size: 2rem; color: var(--muted);
+    cursor: pointer; padding: 0; line-height: 1;
+  }
+  textarea {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.6rem 0.8rem; color: var(--text); font-family: inherit;
+    font-size: 0.8rem; width: 100%; min-height: 65px; resize: vertical; line-height: 1.6;
+  }
+  textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
+  .extra-label {
+    font-size: 0.72rem; color: var(--muted); margin-bottom: 0.4rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .extra-label::before { content: '⚙'; }
+  input[type="text"] {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.5rem 0.8rem; color: var(--text); font-family: inherit;
+    font-size: 0.82rem; width: 100%;
+  }
+  input[type="text"]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
+  input[type="number"] {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.5rem 0.8rem; color: var(--text); font-family: inherit;
+    font-size: 0.82rem; width: 65px;
+  }
+  input[type="number"]:focus { outline: none; border-color: var(--accent); }
+  select {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.5rem 0.8rem; color: var(--text); font-family: inherit;
+    font-size: 0.82rem; cursor: pointer;
+  }
+  select:focus { outline: none; border-color: var(--accent); }
+  .row { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+  .row label { font-size: 0.85rem; }
+  .options { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+  .opt {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.5rem 1rem; cursor: pointer; font-size: 0.85rem;
+    font-family: inherit; color: var(--text); transition: all 0.2s;
+  }
+  .opt:hover { border-color: var(--accent); background: rgba(88,166,255,0.05); }
+  .opt.selected { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600; }
+  /* checkbox-style multiselect opts */
+  .opt.check-opt::before { display: none; }
+  .opt.check-opt { display: inline-flex; align-items: center; }
+  .opt.check-opt.selected { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .project-toggle {
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; user-select: none;
+    color: #fff; font-family: inherit;
+    font-size: 1.1rem; font-weight: 700;
+  }
+
+  /* perspective cards */
+  .persp-grid { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .persp-grid.types-row { flex-wrap: nowrap; }
+  .persp-grid.hats-row { flex-wrap: nowrap; }
+  .persp-card {
+    flex: 1 1 auto; min-width: 0;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+    cursor: pointer; transition: all 0.2s; overflow: hidden; position: relative;
+  }
+  .types-row .persp-card { min-width: 100px; }
+  .hats-row .persp-card { min-width: 90px; }
+  .persp-card:hover { border-color: var(--accent); background: rgba(88,166,255,0.04); }
+  .persp-card.selected { border-width: 2px; border-color: var(--accent); }
+  .persp-head { padding: 0.6rem 0.7rem; display: flex; align-items: center; gap: 0.4rem; }
+  .hat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  #html-messy-info { opacity: 0; height: 0; overflow: hidden; transition: opacity 0.2s, height 0.2s; }
+  #html-messy-info.show { opacity: 1; height: auto; }
+  .persp-card .p-name { font-size: 0.82rem; font-weight: 600; }
+  .persp-desc { font-size: 0.7rem; color: var(--muted); line-height: 1.4; padding: 0 0.9rem 0.7rem; display: none; }
+  .persp-card.selected .persp-desc { display: block; color: var(--text); }
+  .types-row .persp-card, .hats-row .persp-card { border-width: 2px; }
+  .types-row .persp-card.selected, .hats-row .persp-card.selected { border-width: 3px; }
+  .persp-card.weighted { border-width: 3px; border-color: var(--green); box-shadow: 0 0 16px rgba(63,185,80,0.3); }
+  .persp-card.weighted::after { content: 'x2'; position: absolute; top: -7px; right: -7px; background: var(--bg); color: var(--green); font-size: 0.65rem; font-weight: 700; padding: 2px 5px; border-radius: 5px; border: 1px solid var(--green); }
+  .hats-row .persp-card[data-val="facts"] { --hat-color: #ffffff; }
+  .hats-row .persp-card[data-val="heart"] { --hat-color: #ff4d4d; }
+  .hats-row .persp-card[data-val="risk"] { --hat-color: #1a1a1a; }
+  .hats-row .persp-card[data-val="optimism"] { --hat-color: #ffc41f; }
+  .hats-row .persp-card[data-val="creative"] { --hat-color: #3fb950; }
+  .hats-row .persp-card[data-val="make"] { --hat-color: #3aa0ff; }
+  .hats-row .persp-card.selected { background: var(--hat-color); color: #fff; border-color: var(--hat-color); }
+  .hats-row .persp-card.selected .p-name { color: #fff; }
+  .hats-row .persp-card.selected .persp-desc { color: rgba(255,255,255,0.85); }
+  .hats-row .persp-card.weighted { background: var(--hat-color); color: #fff; border-color: var(--green); box-shadow: 0 0 16px rgba(63,185,80,0.3); }
+  .hats-row .persp-card.weighted .p-name { color: #fff; }
+  .hats-row .persp-card.weighted .persp-desc { color: rgba(255,255,255,0.85); }
+  .wisy-toggle {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--text); font-family: inherit; font-size: 0.85rem;
+    cursor: pointer; transition: all 0.2s; margin-top: 1rem;
+  }
+  .wisy-toggle:hover { border-color: var(--accent); }
+  .wisy-toggle.active { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600; }
+  .wisy-extended { display: none; margin-top: 1rem; }
+  .wisy-extended.show { display: block; }
+  .wisy-group { margin-bottom: 0.8rem; }
+  .wisy-group:last-child { margin-bottom: 0; }
+  .wisy-group-label { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .wisy-chips { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+  .wisy-chip {
+    flex: 1 1 auto; min-width: 0;
+    padding: 0.6rem 1rem; border-radius: 10px; border: 2px solid var(--border);
+    background: var(--bg); color: var(--text); font-family: inherit;
+    font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center;
+  }
+  .wisy-chip:hover { border-color: var(--accent); }
+  .wisy-chip.selected { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .wisy-chip.weighted { background: var(--green); color: var(--bg); border-color: var(--green); box-shadow: 0 0 16px rgba(63,185,80,0.3); position: relative; }
+  .wisy-chip.weighted::after { content: 'x2'; position: absolute; top: -7px; right: -7px; background: var(--bg); color: var(--green); font-size: 0.65rem; font-weight: 700; padding: 2px 5px; border-radius: 5px; border: 1px solid var(--green); }
+  .weightable { position: relative; }
+  .weightable.selected { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .weightable.weighted { background: var(--green); color: var(--bg); border-color: var(--green); box-shadow: 0 0 16px rgba(63,185,80,0.3); }
+  .weightable.weighted::after { content: 'x2'; position: absolute; top: -7px; right: -7px; background: var(--bg); color: var(--green); font-size: 0.65rem; font-weight: 700; padding: 2px 5px; border-radius: 5px; border: 1px solid var(--green); }
+
+  /* bottom action bar — always visible */
+  .bottom-bar {
+    position: sticky; bottom: 0; z-index: 20;
+    background: linear-gradient(to top, var(--bg) 85%, transparent);
+    padding: 1.2rem 0 0.5rem; margin-top: 2rem;
+  }
+  .bottom-btns { display: flex; gap: 0.6rem; margin-bottom: 0; }
+  .copy-btn {
+    display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+    padding: 0.85rem 1.2rem; border: none; border-radius: 10px;
+    font-family: inherit; font-size: 0.9rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; flex: 1;
+  }
+  .copy-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .copy-btn:active { transform: scale(0.98); }
+  .copy-btn.copied { background: var(--green) !important; }
+  .btn-generate {
+    background: linear-gradient(135deg, var(--accent), #79c0ff);
+    color: var(--bg); font-size: 0.95rem; padding: 1rem;
+  }
+  .btn-generate.updated {
+    background: linear-gradient(135deg, #3aa0ff, var(--accent));
+  }
+  .btn-save, .btn-download {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+  }
+
+  /* prompt preview */
+  .prompt-preview {
+    border: 2px solid var(--accent); border-radius: 12px;
+    background: var(--surface); overflow: hidden; margin-bottom: 0.8rem;
+  }
+  .prompt-preview-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.7rem 1rem; border-bottom: 1px solid var(--border);
+    background: rgba(88,166,255,0.05);
+  }
+  .prompt-preview-label {
+    font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .copy-icon-btn {
+    background: none; border: 1px solid var(--border); border-radius: 6px;
+    padding: 0.5rem 0.9rem; font-size: 1.65rem; color: var(--muted);
+    cursor: pointer; transition: all 0.2s; line-height: 1;
+  }
+  .copy-icon-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--glow); }
+  .copy-icon-btn.copied { color: var(--green); border-color: var(--green); }
+  .close-preview-btn { font-size: 1.4rem; padding: 0.5rem 0.8rem; border-color: var(--signal); color: var(--signal); }
+  .close-preview-btn:hover { background: var(--signal); color: var(--bg); border-color: var(--signal); }
+  .prompt-preview-actions { display: flex; align-items: center; gap: 0.5rem; }
+  .btn-sm { padding: 0.3rem 0.7rem; font-size: 0.75rem; }
+  .prompt-preview pre {
+    margin: 0; padding: 1rem 1.2rem; font-size: 0.73rem; line-height: 1.65;
+    color: var(--text); white-space: pre-wrap; word-break: break-word;
+    max-height: 400px; overflow-y: auto; background: transparent;
+  }
+
+  .plugin-desc {
+    font-size: 0.72rem; color: var(--accent); line-height: 1.5;
+    padding: 0.5rem 0.8rem; margin-top: 0.5rem;
+    background: rgba(88,166,255,0.05); border-left: 2px solid var(--accent);
+    border-radius: 0 6px 6px 0; display: none;
+  }
+  .plugin-desc.show { display: block; }
+  .section h2 .logo-hex { width: 22px; height: 22px; flex-shrink: 0; }
+  .addon-tree { font-size: 0.82rem; margin-top: 0.5rem; }
+  .addon-tree-title { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .addon-file { display: flex; align-items: center; gap: 0.6rem; padding: 0.3rem 0; }
+  .addon-file input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; }
+  .addon-file.unchecked { opacity: 0.4; }
+  .addon-file .file-from { font-size: 0.68rem; color: var(--muted); margin-left: auto; }
+  #project-section .row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+  #project-section .row label { font-size: 0.8rem; white-space: nowrap; color: var(--muted); }
+  #project-section input[type="text"] {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.6rem 0.9rem; font-size: 0.85rem; color: var(--text); font-family: inherit;
+  }
+  #project-section input[type="text"]:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--glow); }
+  #project-section .options { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+  #project-section .opt {
+    padding: 0.4rem 0.85rem; font-size: 0.82rem;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: transparent; color: var(--text); font-family: inherit; cursor: pointer;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  #project-section .opt:hover { border-color: var(--accent); background: rgba(88,166,255,0.05); }
+  #project-section .opt.selected { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600; }
+  .tab-bar { display: flex; gap: 0; margin: 0; border-bottom: 2px solid var(--border); }
+  .tab-btn {
+    flex: 1; padding: 0.85rem 1.4rem; border: none; background: transparent;
+    color: rgba(255,255,255,0.55); font-family: inherit; font-size: 1.1rem; font-weight: 700;
+    cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .tab-btn:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.03); }
+  .tab-btn.active { color: #fff; border-bottom-color: var(--accent); background: rgba(255,255,255,0.04); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  #tab-skill .options[data-q="addons"] .opt {
+    font-size: 0.95rem; padding: 0.6rem 1.1rem; font-weight: 600;
+    border-width: 2px; border-color: var(--border);
+  }
+  #tab-skill .options[data-q="addons"] .opt.selected { border-width: 2px; font-weight: 700; }
+  .addons-config { display: none; margin-top: 1rem; padding: 1.2rem; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+  .addons-config.show { display: block; }
+  .addons-config-title { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .addon-config-item { display: flex; align-items: center; gap: 0.7rem; padding: 0.45rem 0; font-size: 0.85rem; }
+  .addon-config-item label { min-width: 105px; color: var(--muted); font-size: 0.82rem; }
+  .addon-config-item input, .addon-config-item select { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.35rem 0.6rem; color: var(--text); font-family: inherit; font-size: 0.82rem; }
+  .addon-info-row { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.9rem; margin-top: 0.5rem; background: rgba(88,166,255,0.05); border-left: 2px solid var(--accent); border-radius: 0 6px 6px 0; font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+  .addon-info-text { flex: 1; }
+  .addon-info-close { background: none; border: none; color: var(--muted); font-size: 1.1rem; cursor: pointer; padding: 0 0.3rem; line-height: 1; opacity: 0.6; transition: opacity 0.2s; }
+  .addon-info-close:hover { opacity: 1; color: var(--text); }
+  .human-icon { position: absolute; top: 0.9rem; right: 0.9rem; background: none; border: 1px solid var(--border); border-radius: 50%; width: 34px; height: 34px; font-size: 1.15rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; z-index: 5; }
+  .human-icon:hover { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+  .human-icon.active { background: var(--accent); border-color: var(--accent); }
+  .human-desc { margin-top: 0.5rem; padding: 0.6rem 0.9rem; background: rgba(63,185,80,0.06); border-left: 2px solid var(--green); border-radius: 0 6px 6px 0; font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+  .human-desc-text { color: var(--text); }
+  .script-row { display: flex; align-items: center; gap: 0.8rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); cursor: pointer; transition: all 0.2s; }
+  .script-row:last-child { border-bottom: none; }
+  .script-row:hover { background: rgba(255,255,255,0.02); }
+  .script-name { font-size: 0.85rem; font-weight: 600; min-width: 120px; color: var(--text); }
+  .script-desc { font-size: 0.78rem; color: var(--muted); flex: 1; display: none; }
+  .script-row.active .script-desc { display: block; color: var(--text); }
+  .script-check { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+  .action-buttons { display: flex; gap: 0.5rem; margin-top: 1rem; }
+  .action-btn { padding: 0.7rem 1.2rem; border: 2px solid var(--border); border-radius: 8px; background: transparent; color: var(--text); font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .action-btn:hover { border-color: var(--accent); }
+  .action-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .action-btn-primary { flex: 2; }
+  /* usage info collapsible */
+  .usage-info { margin-top: 0.6rem; }
+  .usage-toggle {
+    background: none; border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.5rem 0.9rem; color: var(--muted); font-family: inherit;
+    font-size: 0.78rem; cursor: pointer; transition: all 0.2s; width: 100%;
+    text-align: left;
+  }
+  .usage-toggle:hover { border-color: var(--accent); color: var(--text); }
+  .usage-body {
+    display: none; padding: 0.8rem 1rem; margin-top: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    font-size: 0.78rem; color: var(--muted); line-height: 1.6;
+  }
+  .template-info {
+    display: none; font-size: 0.78rem; color: var(--muted); margin: 0.5rem 0 0.2rem;
+    padding: 0.5rem 0.8rem; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .template-info a { color: var(--accent); text-decoration: underline; }
+  .usage-body.show { display: block; }
+  .usage-body b { color: var(--text); }
+  .usage-body code { color: var(--accent); font-size: 0.75rem; }
+  .usage-body ol { margin: 0.4rem 0; padding-left: 1.2rem; }
+  .usage-body li { margin-bottom: 0.3rem; }
+  .usage-hint { margin-top: 0.5rem; font-style: italic; opacity: 0.7; }
+  /* create-skill button */
+  .create-skill-btn {
+    display: inline-block; width: 48%; margin: 0.8rem 0.4% 0.8rem 0;
+    padding: 0.9rem 1.2rem; border: 2px solid var(--accent); border-radius: 10px;
+    background: linear-gradient(135deg, rgba(88,166,255,0.1), rgba(88,166,255,0.05));
+    color: var(--accent); font-family: inherit;
+    font-size: 1.1rem; font-weight: 700; cursor: pointer;
+    transition: all 0.2s; text-align: center;
+  }
+  .create-skill-btn:last-of-type { margin-right: 0; margin-left: 0.4%; }
+  .create-skill-btn:hover { background: linear-gradient(135deg, rgba(88,166,255,0.2), rgba(88,166,255,0.1)); border-color: var(--accent); }
+  .create-skill-btn.active { background: var(--accent); color: var(--bg); }
+  .top-links {
+    position: absolute; top: 1rem; right: 1.5rem;
+    display: flex; gap: 0.3rem; align-items: center;
+    z-index: 10;
+  }
+  .top-link {
+    padding: 0.35rem 0.7rem; border-radius: 6px;
+    font-size: 0.7rem; font-family: inherit; cursor: pointer;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--muted); text-decoration: none;
+    transition: all 0.2s; letter-spacing: 0.04em;
+  }
+  .top-link:hover { border-color: var(--accent); color: var(--text); background: rgba(88,166,255,0.05); }
+  .top-link.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  #advancedCaseContent {
+    display: none; margin-bottom: 1.5rem;
+    background: var(--surface); border: 1px solid var(--accent); border-radius: 14px;
+    padding: 1.5rem 2rem; max-height: 70vh; overflow-y: auto;
+    font-size: 0.8rem; line-height: 1.7;
+    box-shadow: 0 0 30px rgba(88,166,255,0.08);
+  }
+  #advancedCaseContent pre {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 1rem; overflow-x: auto; font-size: 0.72rem;
+  }
+  #advancedCaseContent table {
+    border-collapse: collapse; width: 100%; margin: 0.8rem 0;
+    font-size: 0.75rem;
+  }
+  #advancedCaseContent th, #advancedCaseContent td {
+    border: 1px solid var(--border); padding: 0.4rem 0.6rem; text-align: left;
+  }
+  #advancedCaseContent th { background: var(--panel); color: var(--muted); font-weight: 600; }
+  #advancedCaseContent h1 { font-size: 1.2rem; margin: 1rem 0 0.5rem; }
+  #advancedCaseContent h2 { font-size: 1rem; margin: 0.8rem 0 0.4rem; }
+  #advancedCaseContent h3 { font-size: 0.9rem; margin: 0.6rem 0 0.3rem; }
+  #advancedCaseContent code { color: var(--accent); font-size: 0.72rem; }
+  #advancedCaseContent a { color: var(--accent); }
+  #advancedCaseContent .close-adv {
+    float: right; background: none; border: 1px solid var(--border); border-radius: 6px;
+    color: var(--muted); cursor: pointer; padding: 0.2rem 0.5rem; font-size: 0.8rem;
+    font-family: inherit;
+  }
+  #advancedCaseContent .close-adv:hover { border-color: var(--signal); color: var(--signal); }
+</style>
+</head>
+<body>
+
+<div class="top-links">
+  <a href="tour.html" class="top-link">Tour</a>
+  <button type="button" class="top-link" id="advancedCaseBtn">Advanced case</button>
+</div>
+
+<div id="advancedCaseContent"></div>
+
+<div class="section" id="project-section">
+  <div class="project-toggle" id="projectToggle">Project</div>
+  <div class="project-body" id="projectBody" data-collapse="projectBody" style="display:none">
+  <div class="row mb-sm">
+    <button type="button" class="opt" id="createNewBtn" data-val="new" data-desc="starting from scratch — skill creates the folder structure and templates">Create</button>
+    <input type="text" id="project-name" placeholder="Project name..." class="flex-1">
+    <input type="text" id="doc-roots" placeholder="Route(s)" class="flex-1">
+  </div>
+  <div id="duplicate-fields"></div>
+  <div class="center">
+    <button type="button" id="addProjectBtn" class="add-btn">+</button>
+  </div>
+  <div class="row mb-sm">
+    <label class="label-nowrap">It's about</label>
+    <div class="options inline-flex" data-q="project-type" data-multi="true">
+      <button type="button" class="opt check-opt" data-val="docs" data-desc="writing specs, plans, architecture docs — no code changes">docs</button>
+      <button type="button" class="opt check-opt" data-val="code" data-desc="working with source code, builds, dependencies">code</button>
+    </div>
+    <button type="button" class="opt radio-unselect" data-val="messy" data-desc="stuff exists but needs reorganizing — skill will suggest a new structure">messy</button>
+  </div>
+  <div class="plugin-desc messy-info" id="html-messy-info"></div>
+  </div>
+</div>
+
+<div class="tab-bar">
+  <button type="button" class="tab-btn active" data-tab="questions">Questions</button>
+  <button type="button" class="tab-btn" data-tab="skill">Skill</button>
+</div>
+
+<div class="tab-panel active" id="tab-questions">
+<!-- QUESTIONS -->
+<div class="section">
+  <div class="question">
+    <div class="row">
+      <label>I want</label>
+      <select id="q-per-type">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="30">30</option>
+        <option value="40">40</option>
+        <option value="50" selected>50</option>
+        <option value="60">60</option>
+        <option value="70">70</option>
+        <option value="80">80</option>
+        <option value="90">90</option>
+        <option value="100">100</option>
+      </select>
+      <div class="options inline-flex" data-q="default-mode" data-multi="true">
+        <button type="button" class="opt radio-unselect" data-val="simple">simple</button>
+        <button type="button" class="opt radio-unselect" data-val="explained">explained</button>
+        <button type="button" class="opt checkbox" data-val="numbered">numbered</button>
+      </div>
+    </div>
+    <div class="row">
+      <label class="label-nowrap">total questions</label>
+      <input type="number" id="total-questions" value="50" min="5" max="1000" style="width:70px">
+      <label class="label-nowrap">questions per time</label>
+      <select id="batch-size">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3" selected>3</option>
+        <option value="5">5</option>
+        <option value="10">10</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="extra-label">For — click once for normal, twice for x2 weight</div>
+    <div class="options" data-q="session-depth" data-multi="true">
+      <button type="button" class="opt weightable" data-val="review" data-desc="standards/README.md · frontend.md · central.md — find blind spots, missing context, what's not being thought about">vision — Review docs for gaps</button>
+      <button type="button" class="opt weightable" data-val="challenge" data-desc="plans/central-backend.md · plans/conflicts.md · central.md §2 — stress-test architecture, boundary issues, broken contracts">arch — Challenge decisions</button>
+      <button type="button" class="opt weightable" data-val="deepdive" data-desc="central.md §8·§9 · contract.md §2 · pendings.md — thoroughly map structure, lifecycle, relationships">data — Deep dive topic</button>
+      <button type="button" class="opt weightable" data-val="sanity" data-desc="central.md §3·§4 · plans/conflicts.md H4·H6 — verify protocols, sync, A↔B contracts hold">integration — Quick sanity check</button>
+      <button type="button" class="opt weightable" data-val="perspectives" data-desc="central.md §1·§7 · plans/conflicts.md S5·S1 — explore failure modes, edge cases, shift viewpoint per question">trust — More perspectives</button>
+      <button type="button" class="opt weightable" data-val="setup" data-desc="create initial docs, folder structure, templates from scratch">Set up structure</button>
+      <button type="button" class="opt weightable" data-val="export" data-desc="package findings for others — docs, tickets, reports">Generate for others</button>
+    </div>
+    <div class="plugin-desc" id="desc-session-depth"></div>
+  </div>
+
+  <div class="question">
+    <div class="extra-label">additional session settings</div>
+    <textarea id="extra-session"></textarea>
+  </div>
+</div>
+
+<!-- PERSPECTIVES -->
+<div class="section">
+  <h2>
+    <svg class="logo-hex" viewBox="0 0 120 120"><defs><linearGradient id="rh3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff4d4d"/><stop offset=".2" stop-color="#ff9a3a"/><stop offset=".4" stop-color="#ffc41f"/><stop offset=".6" stop-color="#3fb950"/><stop offset=".8" stop-color="#3aa0ff"/><stop offset="1" stop-color="#b06bff"/></linearGradient></defs><polygon points="60,8 102,30 102,74 60,96 18,74 18,30" fill="none" stroke="url(#rh3)" stroke-width="3.5"/><text x="60" y="62" text-anchor="middle" font-family="Georgia,serif" font-size="38" font-weight="700" fill="url(#rh3)">?</text><line x1="60" y1="96" x2="60" y2="114" stroke="url(#rh3)" stroke-width="3" stroke-linecap="round"/><polygon points="53,109 60,118 67,109" fill="url(#rh3)"/></svg>
+    Perspectives
+  </h2>
+  <div class="multi">what to ask about — click to select, click again to see description</div>
+
+  <div class="question">
+    <div class="multi">KISS</div>
+    <div class="persp-grid types-row" data-q="active-types" data-multi="true">
+      <div class="persp-card" data-val="vision">
+        <div class="persp-head"><span class="p-name">vision</span></div>
+        <div class="persp-desc">standards/README.md · frontend.md — why, who, context, what others do, what we miss</div>
+      </div>
+      <div class="persp-card" data-val="arch">
+        <div class="persp-head"><span class="p-name">arch</span></div>
+        <div class="persp-desc">central.md §2 · plans/ — components, boundaries, data flow, scope, blind spots</div>
+      </div>
+      <div class="persp-card" data-val="trust">
+        <div class="persp-head"><span class="p-name">trust</span></div>
+        <div class="persp-desc">central.md §1·§7 · conflicts.md — threats, privacy, edge cases, failure, recovery</div>
+      </div>
+      <div class="persp-card" data-val="data">
+        <div class="persp-head"><span class="p-name">data</span></div>
+        <div class="persp-desc">central.md §8·§9 · contract.md §2 — structure, lifecycle, migration, retention, relationships</div>
+      </div>
+      <div class="persp-card" data-val="integration">
+        <div class="persp-head"><span class="p-name">integration</span></div>
+        <div class="persp-desc">central.md §3·§4 · conflicts.md H4·H6 — contracts, protocols, sync, A↔B boundary, API</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="multi">Thinking Hats</div>
+    <div class="persp-grid hats-row" data-q="active-hats" data-multi="true">
+      <div class="persp-card" data-val="facts">
+        <div class="persp-head"><span class="hat-dot" data-color="facts"></span><span class="p-name">facts</span></div>
+        <div class="persp-desc">what do we know? data? specs? what's missing?</div>
+      </div>
+      <div class="persp-card" data-val="heart">
+        <div class="persp-head"><span class="hat-dot" data-color="heart"></span><span class="p-name">heart</span></div>
+        <div class="persp-desc">how does it feel? user fear? gut reaction? trust?</div>
+      </div>
+      <div class="persp-card" data-val="risk">
+        <div class="persp-head"><span class="hat-dot" data-color="risk"></span><span class="p-name">risk</span></div>
+        <div class="persp-desc">what could go wrong? threats? failure modes? blast radius?</div>
+      </div>
+      <div class="persp-card" data-val="optimism">
+        <div class="persp-head"><span class="hat-dot" data-color="optimism"></span><span class="p-name">optimism</span></div>
+        <div class="persp-desc">benefits? value? why build this? user gain?</div>
+      </div>
+      <div class="persp-card" data-val="creative">
+        <div class="persp-head"><span class="hat-dot" data-color="creative"></span><span class="p-name">creative</span></div>
+        <div class="persp-desc">alternatives? wild ideas? flipped perspective?</div>
+      </div>
+      <div class="persp-card" data-val="make">
+        <div class="persp-head"><span class="hat-dot" data-color="make"></span><span class="p-name">make</span></div>
+        <div class="persp-desc">flow? connection? contract? how A talks to B?</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="plugin-desc show mt-sm">
+    <a href="../../docs/index.html" target="_blank" class="accent-link">↗ Whole table</a> — exportable JSON reference for reasoning patterns per category
+  </div>
+
+  <button type="button" class="wisy-toggle" id="wisyToggle">See more</button>
+
+  <div class="wisy-extended" id="wisyExtended">
+    <div class="wisy-group">
+      <div class="wisy-group-label">explainers</div>
+      <div class="wisy-chips" data-q="wisy-lens" data-multi="true">
+        <button type="button" class="wisy-chip" data-val="why">why</button>
+        <button type="button" class="wisy-chip" data-val="what">what</button>
+        <button type="button" class="wisy-chip" data-val="how">how</button>
+        <button type="button" class="wisy-chip" data-val="what-for">what for</button>
+        <button type="button" class="wisy-chip" data-val="who">who</button>
+        <button type="button" class="wisy-chip" data-val="where">where</button>
+        <button type="button" class="wisy-chip" data-val="when">when</button>
+      </div>
+    </div>
+    <div class="wisy-group">
+      <div class="wisy-group-label">formalise</div>
+      <div class="wisy-chips" data-q="wisy-formalise" data-multi="true">
+        <button type="button" class="wisy-chip" data-val="axiom">axiom</button>
+        <button type="button" class="wisy-chip" data-val="evidence">evidence</button>
+        <button type="button" class="wisy-chip" data-val="prediction">prediction</button>
+        <button type="button" class="wisy-chip" data-val="proposal">proposal</button>
+        <button type="button" class="wisy-chip" data-val="challenge">challenge</button>
+      </div>
+    </div>
+    <div class="wisy-group">
+      <div class="wisy-group-label">tone</div>
+      <div class="wisy-chips" data-q="wisy-tone" data-multi="true">
+        <button type="button" class="wisy-chip" data-val="normal">normal</button>
+        <button type="button" class="wisy-chip" data-val="funny">funny</button>
+        <button type="button" class="wisy-chip" data-val="formal">formal</button>
+        <button type="button" class="wisy-chip" data-val="trivial">trivial</button>
+      </div>
+    </div>
+    <div class="wisy-group">
+      <div class="wisy-group-label">teleology</div>
+      <div class="wisy-chips" data-q="wisy-teleology" data-multi="true">
+        <button type="button" class="wisy-chip" data-val="experimental">experimental</button>
+        <button type="button" class="wisy-chip" data-val="random">random</button>
+        <button type="button" class="wisy-chip" data-val="fine">fine</button>
+        <button type="button" class="wisy-chip" data-val="fatal">fatal</button>
+      </div>
+    </div>
+    <div class="wisy-group">
+      <div class="wisy-group-label">field</div>
+      <div class="wisy-chips" data-q="wisy-field" data-multi="true">
+        <button type="button" class="wisy-chip" data-val="metaphysics">metaphysics</button>
+        <button type="button" class="wisy-chip" data-val="science">science</button>
+        <button type="button" class="wisy-chip" data-val="biology">biology</button>
+        <button type="button" class="wisy-chip" data-val="psychology">psychology</button>
+        <button type="button" class="wisy-chip" data-val="sociology">sociology</button>
+      </div>
+    </div>
+    <div class="wisy-group">
+      <div class="wisy-group-label">time span</div>
+      <div class="wisy-chips" data-q="wisy-time-span" data-multi="true">
+        <button type="button" class="wisy-chip" data-val="past">past</button>
+        <button type="button" class="wisy-chip" data-val="present">present</button>
+        <button type="button" class="wisy-chip" data-val="future">future</button>
+        <button type="button" class="wisy-chip" data-val="short">short</button>
+        <button type="button" class="wisy-chip" data-val="mid">mid</button>
+        <button type="button" class="wisy-chip" data-val="long">long</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="question mt-md">
+    <div class="extra-label">additional perspectives settings</div>
+    <textarea id="extra-types"></textarea>
+  </div>
+</div>
+</div><!-- /tab-questions -->
+
+<div class="tab-panel" id="tab-skill">
+<div class="section rel">
+  <button type="button" class="human-icon" id="humanIcon" title="Show human descriptions">👤</button>
+  <button type="button" class="create-skill-btn" id="createSkillBtn">🛠 Create new</button>
+  <button type="button" class="create-skill-btn" id="haveSkillBtn">🔧 Customize</button>
+  <div id="addonsSection" style="display:none">
+  <div class="question">
+    <div class="options" data-q="addons" data-multi="true">
+      <button type="button" class="opt selected" data-val="index" data-desc="generates a README.md or INDEX.md mapping your folder structure and file purposes">Index</button>
+      <button type="button" class="opt selected" data-val="agents" data-desc="creates agents.md with your preferences — shortcuts, constraints, themes, aliases">Agents.md</button>
+      <button type="button" class="opt selected" data-val="tree" data-desc="creates project folder structure: docs/, plans/, standards/, agents.md template">Tree</button>
+      <button type="button" class="opt selected" data-val="git" data-desc="syncs with your existing git repository — commits, branches, rollback">Git</button>
+      <button type="button" class="opt" data-val="github" data-desc="adds .github/ with issue templates, PR templates, and workflows">.github/</button>
+      <button type="button" class="opt" data-val="html" data-desc="generates web-viewable output — HTML export, live preview">HTML</button>
+    </div>
+    <div class="addon-info-row" id="info-index" style="display:flex">
+      <div class="addon-info-text"><b>Index</b> — generates a README.md or INDEX.md mapping your folder structure and file purposes</div>
+      <button type="button" class="addon-info-close" onclick="this.parentElement.style.display='none'">×</button>
+    </div>
+    <div class="addon-info-row" id="info-agents" style="display:flex">
+      <div class="addon-info-text"><b>Agents.md</b> — creates agents.md with your preferences — shortcuts, constraints, themes, aliases</div>
+      <button type="button" class="addon-info-close" onclick="this.parentElement.style.display='none'">×</button>
+    </div>
+    <div class="addon-info-row" id="info-tree" style="display:flex">
+      <div class="addon-info-text"><b>Tree</b> — creates project folder structure: docs/, plans/, standards/, agents.md template</div>
+      <button type="button" class="addon-info-close" onclick="this.parentElement.style.display='none'">×</button>
+    </div>
+    <div class="addon-info-row" id="info-git" style="display:flex">
+      <div class="addon-info-text"><b>Git</b> — syncs with your existing git repository — commits, branches, rollback</div>
+      <button type="button" class="addon-info-close" onclick="this.parentElement.style.display='none'">×</button>
+    </div>
+    <div class="addon-info-row" id="info-github" style="display:none">
+      <div class="addon-info-text"><b>.github/</b> — adds .github/ with issue templates, PR templates, and workflows</div>
+      <button type="button" class="addon-info-close" onclick="this.parentElement.style.display='none'">×</button>
+    </div>
+    <div class="addon-info-row" id="info-html" style="display:none">
+      <div class="addon-info-text"><b>HTML</b> — generates web-viewable output — HTML export, live preview</div>
+      <button type="button" class="addon-info-close" onclick="this.parentElement.style.display='none'">×</button>
+    </div>
+    <div class="plugin-desc" id="desc-addons"></div>
+    <div class="human-desc" id="human-desc-addons" style="display:none">
+      <div class="human-desc-text">Index: Your project's table of contents — so you remember what's where. Agents.md: Your cheat codes — skip setup next time. Tree: Folders that make sense. Git: Tracks your mess so you can undo it. .github: Templates so issues don't suck. HTML: View it in a browser before sharing.</div>
+    </div>
+  </div>
+
+  <div class="question" id="q-tree-folders">
+    <div class="addon-tree">
+      <div class="addon-tree-title">files to add</div>
+      <div id="tree-legend"></div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="extra-label">archive</div>
+    <div class="options" data-q="archive-mode" data-multi="false">
+      <button type="button" class="opt radio-unselect" data-val="simple" data-desc="minimal — resolved items marked in-place, no separate archive file">Simple</button>
+      <button type="button" class="opt radio-unselect" data-val="archive" data-desc="resolved items move to archived-questions.md, main files stay clean">Normal</button>
+      <button type="button" class="opt radio-unselect" data-val="advanced" data-desc="full governance — archive + .github/ templates + docs/adr/ for ADR records">Advanced</button>
+    </div>
+    <div class="human-desc" id="human-desc-archive" style="display:none">
+      <div class="human-desc-text">Simple: Just mark done. Archive: Put it in the attic. Advanced: The attic with a filing system.</div>
+    </div>
+  </div>
+
+  <div class="question hidden" id="q-agents-md">
+    <div class="q-label mono-label">agents.md</div>
+    <div class="options" data-q="agents-md" data-multi="true">
+      <button type="button" class="opt" data-val="shortcuts" data-desc="saves your preferences so you can skip the survey next time — one-liner to resume">Shortcuts</button>
+      <button type="button" class="opt" data-val="constraints" data-desc="marks files as frozen or no-edit zones so the skill never touches them">Constraints</button>
+      <button type="button" class="opt" data-val="pending-resolutions" data-desc="tracks unresolved questions and decisions across sessions so nothing gets lost">Pending resolutions</button>
+      <button type="button" class="opt" data-val="batch-overrides" data-desc="override question count per type — e.g. ask 10 vision questions but only 2 data questions">Batch overrides</button>
+      <button type="button" class="opt" data-val="export-prefs" data-desc="remembers where and how you want sessions exported (md, json, folder)">Export prefs</button>
+      <button type="button" class="opt" data-val="doc-paths" data-desc="custom paths to your docs, plans, and standards folders">Territory</button>
+      <button type="button" class="opt" data-val="aliases" data-desc="rename or alias perspective types — e.g. treat 'ux' as 'vision' automatically">Aliases</button>
+      <button type="button" class="opt" data-val="risk-register" data-desc="tracks identified risks, their impact, likelihood, and mitigation strategies">Danger zone</button>
+      <button type="button" class="opt" data-val="decision-log" data-desc="architecture decision records (ADR) — captures context, decision, and consequences">Decision log</button>
+    </div>
+    <div class="plugin-desc" id="desc-agents-md"></div>
+    <div class="human-desc" id="human-desc-agents" style="display:none">
+      <div class="human-desc-text">Shortcuts: "I already told you this." Constraints: "Don't touch my stuff." Pending: The stuff we're avoiding. Batch: Ask more about X, less about Y. Export: Save it before it's gone. Territory: Where things live. Aliases: Same thing, different word. Risk: What keeps you up at night. Decision log: Why we did the thing.</div>
+    </div>
+  </div>
+
+  <div class="question" id="q-workflows">
+    <div class="extra-label">templates</div>
+    <div class="options flex-wrap">
+      <button type="button" class="opt preset-template" data-preset="react">React App</button>
+      <button type="button" class="opt preset-template" data-preset="node">Node.js API</button>
+      <button type="button" class="opt preset-template" data-preset="python">Python Package</button>
+      <button type="button" class="opt preset-template" data-preset="minitree">Minitree App</button>
+      <button type="button" class="opt preset-template" data-preset="cli">CLI Tool</button>
+      <button type="button" class="opt preset-template" data-preset="docs">Documentation</button>
+    </div>
+    <div class="template-info" id="template-info"></div>
+    <div class="extra-label">workflows</div>
+    <div class="options" data-q="workflows" data-multi="true">
+      <button type="button" class="opt" data-val="synced" data-desc="sync newly created files to your local git repo — no .gitignore, commits everything">Synced (recommended)</button>
+      <button type="button" class="opt" data-val="pr-standards" data-desc="defines PR title format, description template, review checklist, and merge rules — applies to minitree standards">Merge rules</button>
+      <button type="button" class="opt" data-val="pre-commit" data-desc="runs linting, formatting, and tests automatically before each git commit">Commit guard</button>
+      <button type="button" class="opt" data-val="definition-of-done" data-desc="checklist for when a task is complete — tests pass, docs updated, reviewed">Finish line</button>
+      <button type="button" class="opt" data-val="blueprint" data-desc="iteration planning structure — goals, tasks, velocity tracking">Blueprint</button>
+    </div>
+    <div class="plugin-desc" id="desc-workflows"></div>
+    <div class="human-desc" id="human-desc-workflows" style="display:none">
+      <div class="human-desc-text">Synced: New files go straight to git. Merge rules: PRs that don't make reviewers cry. Commit guard: Catches typos before they ship. Finish line: "Am I done?" checklist. Blueprint: Plan work without the meeting.</div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="options" data-q="plugin-output" data-multi="true">
+      <button type="button" class="opt" data-val="export-md" data-desc="saves session results as a clean markdown file with frontmatter">Story</button>
+      <button type="button" class="opt" data-val="export-json" data-desc="saves structured session data as JSON for programmatic use">Data dump</button>
+      <button type="button" class="opt" data-val="csv" data-desc="exports question/answer pairs as CSV for spreadsheet analysis">Spreadsheet</button>
+      <button type="button" class="opt" data-val="notion" data-desc="pushes session results directly to a Notion database via API">Notion sync</button>
+      <button type="button" class="opt" data-val="obsidian" data-desc="writes session files into your Obsidian vault with proper linking">Obsidian vault</button>
+    </div>
+    <div class="plugin-desc" id="desc-plugin-output"></div>
+    <div class="human-desc" id="human-desc-output" style="display:none">
+      <div class="human-desc-text">Story: Readable summary. Data dump: Machine-readable. Spreadsheet: For the Excel people. Notion: Lives in your wiki. Obsidian: Lives in your brain.</div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="options" data-q="plugin-integration" data-multi="true">
+      <button type="button" class="opt" data-val="github-issues" data-desc="auto-creates GitHub Issues from unresolved 'pending' questions">Tickets</button>
+      <button type="button" class="opt" data-val="jira" data-desc="creates Jira tickets from pending resolutions — maps priority and labels">Jira</button>
+      <button type="button" class="opt" data-val="linear" data-desc="creates Linear issues from pendings — uses your team's project and labels">Linear</button>
+      <button type="button" class="opt" data-val="slack" data-desc="posts a summary to Slack when a questy session ends">Slack</button>
+      <button type="button" class="opt" data-val="webhook" data-desc="fires a custom webhook with session decisions — point it at any URL">Pulse</button>
+    </div>
+    <div class="plugin-desc" id="desc-plugin-integration"></div>
+    <div class="human-desc" id="human-desc-integration" style="display:none">
+      <div class="human-desc-text">Tickets: Questions become tasks. Jira: Same but for Jira people. Linear: Same but for Linear people. Slack: Ping when done. Pulse: Tell your robot.</div>
+    </div>
+  </div>
+
+  <div class="action-buttons">
+    <button type="button" class="action-btn action-btn-primary" id="continueConfigBtn">Scripts</button>
+  </div>
+
+  <div class="addons-config" id="addonsConfig" data-collapse="addonsConfig">
+    <div class="addons-config-title">scripts</div>
+    <div id="addons-config-content"></div>
+  </div>
+
+  <div class="question hidden" id="pr-standards-questions">
+    <div class="extra-label">PR standards questions</div>
+    <div class="question mb-sm">
+      <label class="label-sm">PR title format</label>
+      <div class="options" data-q="pr-title-format" data-multi="false">
+        <button type="button" class="opt radio-unselect" data-val="conventional" data-desc="feat: add new feature — standardized prefix">conventional</button>
+        <button type="button" class="opt radio-unselect" data-val="ticket-number" data-desc="[PROJ-123] short description — includes ticket reference">ticket number</button>
+        <button type="button" class="opt radio-unselect" data-val="branch-name" data-desc="use branch name as PR title — simple, direct">branch name</button>
+      </div>
+    </div>
+    <div class="question mb-sm">
+      <label class="label-sm">Description template</label>
+      <div class="options" data-q="pr-desc-template" data-multi="false">
+        <button type="button" class="opt radio-unselect" data-val="basic" data-desc="what changed and why — minimal structure">basic</button>
+        <button type="button" class="opt radio-unselect" data-val="detailed" data-desc="what, why, how, testing, screenshots — thorough">detailed</button>
+        <button type="button" class="opt radio-unselect" data-val="none" data-desc="no template — freeform description">none</button>
+      </div>
+    </div>
+    <div class="question mb-sm">
+      <label class="label-sm">Review checklist</label>
+      <div class="options" data-q="pr-review-checklist" data-multi="true">
+        <button type="button" class="opt" data-val="code-quality" data-desc="linting, formatting, no warnings">code quality</button>
+        <button type="button" class="opt" data-val="tests-pass" data-desc="all tests green, coverage maintained">tests pass</button>
+        <button type="button" class="opt" data-val="docs-updated" data-desc="README, changelog, API docs updated if needed">docs updated</button>
+        <button type="button" class="opt" data-val="no-breaking" data-desc="no breaking changes without discussion">no breaking</button>
+        <button type="button" class="opt" data-val="screenshot" data-desc="UI changes include before/after screenshots">screenshot</button>
+      </div>
+    </div>
+    <div class="question mb-sm">
+      <label class="label-sm">Merge rules</label>
+      <div class="options" data-q="pr-merge-rules" data-multi="false">
+        <button type="button" class="opt radio-unselect" data-val="squash" data-desc="squash commits — clean linear history">squash</button>
+        <button type="button" class="opt radio-unselect" data-val="merge-commit" data-desc="merge commit — preserve branch history">merge commit</button>
+        <button type="button" class="opt radio-unselect" data-val="rebase" data-desc="rebase — linear history, no merge commits">rebase</button>
+      </div>
+    </div>
+    <div class="question mb-sm">
+      <label class="label-sm">Branch naming</label>
+      <div class="options" data-q="pr-branch-naming" data-multi="false">
+        <button type="button" class="opt radio-unselect" data-val="feature-ticket" data-desc="feature/PROJ-123-short-desc — type/ticket-description">feature/ticket</button>
+        <button type="button" class="opt radio-unselect" data-val="feature-desc" data-desc="feature/add-auth-flow — type/description">feature/description</button>
+        <button type="button" class="opt radio-unselect" data-val="none" data-desc="no convention — freeform">none</button>
+      </div>
+    </div>
+    <div class="question mb-sm">
+      <label class="label-sm">Commit message format</label>
+      <div class="options" data-q="pr-commit-format" data-multi="false">
+        <button type="button" class="opt radio-unselect" data-val="conventional" data-desc="feat: add login — prefix + description">conventional</button>
+        <button type="button" class="opt radio-unselect" data-val="imperative" data-desc="Add login feature — imperative mood">imperative</button>
+        <button type="button" class="opt radio-unselect" data-val="none" data-desc="no convention — freeform">none</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="extra-label">additional settings</div>
+    <textarea id="extra-plugins"></textarea>
+  </div>
+  </div><!-- /addonsSection -->
+</div>
+</div><!-- /tab-skill -->
+
+<div id="promptPreviewWrap" style="display:none">
+  <div class="prompt-preview">
+    <div class="prompt-preview-head">
+      <span class="prompt-preview-label">prompt preview</span>
+      <div class="prompt-preview-actions">
+        <button type="button" class="copy-btn btn-save btn-sm" id="saveConfigBtn">💾 JSON</button>
+        <button type="button" class="copy-btn btn-download btn-sm" id="downloadBtn">⬇ Questy-skill.md</button>
+        <button type="button" class="copy-icon-btn" id="copyPreviewBtn" title="Copy to clipboard">📋</button>
+        <button type="button" class="copy-icon-btn close-preview-btn" id="closePreviewBtn" title="Close preview">✕</button>
+      </div>
+    </div>
+    <pre id="preview"></pre>
+  </div>
+  <div class="usage-info" id="usageInfo">
+    <button type="button" class="usage-toggle" id="usageToggle">ℹ How to use this prompt</button>
+    <div class="usage-body" id="usageBody">
+      <p><b>Copy</b> the prompt above and paste it into your agent's chat (Claude, Cursor, etc.). The agent will:</p>
+      <ol>
+        <li>Fetch the questy skill from <code>flove.org/development/standards/skills/questy/SKILL.md</code></li>
+        <li>Set up your project structure based on your selections</li>
+        <li>Customize the skill with your addon choices below</li>
+      </ol>
+      <p>You can <b>Download</b> it as a <code>.md</code> file to save locally, or <b>JSON</b> to reuse these settings later.</p>
+      <p class="usage-hint">Tip: Run this form again anytime to tweak your config — the agent will re-apply changes.</p>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="bottom-btns">
+    <button type="button" class="copy-btn btn-generate" id="generateBtn">🚀 Generate Prompt</button>
+  </div>
+</div>
+
+<script>
+// Auto-save to localStorage
+const AUTO_SAVE_KEY = 'questy-autosave';
+const COLLAPSED_KEY = 'questy-collapsed';
+let autoSaveTimeout;
+
+function saveCollapsed() {
+  const states = {};
+  document.querySelectorAll('[data-collapse]').forEach(el => {
+    states[el.dataset.collapse] = el.style.display === 'none';
+  });
+  localStorage.setItem(COLLAPSED_KEY, JSON.stringify(states));
+}
+
+function loadCollapsed() {
+  const raw = localStorage.getItem(COLLAPSED_KEY);
+  const states = raw ? JSON.parse(raw) : {};
+  document.querySelectorAll('[data-collapse]').forEach(el => {
+    const id = el.dataset.collapse;
+    const collapsed = states[id] !== undefined ? states[id] : true;
+    if (el.classList.contains('addons-config')) {
+      el.classList.toggle('show', !collapsed);
+      const btn = document.getElementById('continueConfigBtn');
+      if (btn) btn.classList.toggle('active', !collapsed);
+    } else {
+      el.style.display = collapsed ? 'none' : 'block';
+    }
+    const toggle = el.previousElementSibling;
+    if (toggle && toggle.classList.contains('project-toggle')) {
+      toggle.classList.toggle('open', !collapsed);
+    }
+  });
+}
+
+function autoSave() {
+  clearTimeout(autoSaveTimeout);
+  autoSaveTimeout = setTimeout(() => {
+    const answers = getAnswers();
+    localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify(answers));
+    saveCollapsed();
+  }, 500);
+}
+
+// Prompt preview
+const promptPreviewWrap = document.getElementById('promptPreviewWrap');
+const preview = document.getElementById('preview');
+const copyPreviewBtn = document.getElementById('copyPreviewBtn');
+
+copyPreviewBtn.addEventListener('click', () => {
+  const prompt = preview.textContent;
+  navigator.clipboard.writeText(prompt).then(() => {
+    copyPreviewBtn.textContent = '✓';
+    copyPreviewBtn.classList.add('copied');
+    setTimeout(() => { copyPreviewBtn.textContent = '📋'; copyPreviewBtn.classList.remove('copied'); }, 1500);
+  });
+});
+
+// Auto-save on text input changes
+document.getElementById('project-name').addEventListener('input', autoSave);
+document.getElementById('doc-roots').addEventListener('input', autoSave);
+document.getElementById('extra-session').addEventListener('input', autoSave);
+document.getElementById('extra-types').addEventListener('input', autoSave);
+document.getElementById('extra-plugins').addEventListener('input', autoSave);
+document.getElementById('q-per-type').addEventListener('input', autoSave);
+document.getElementById('total-questions').addEventListener('input', autoSave);
+document.getElementById('batch-size').addEventListener('input', autoSave);
+
+// Preset templates
+const presetTemplates = {
+  react: {
+    'project-type': ['code'],
+    'addons': ['index', 'agents', 'tree', 'git', 'github'],
+    'agents-md': ['shortcuts', 'constraints', 'doc-paths'],
+    'workflows': ['synced'],
+    'plugin-output': ['export-md'],
+    demo: 'templates/react.json'
+  },
+  node: {
+    'project-type': ['code'],
+    'addons': ['index', 'agents', 'tree', 'git', 'github'],
+    'agents-md': ['shortcuts', 'constraints', 'doc-paths'],
+    'workflows': ['synced', 'pr-standards'],
+    'plugin-output': ['export-md'],
+    demo: 'templates/node.json'
+  },
+  python: {
+    'project-type': ['code'],
+    'addons': ['index', 'agents', 'tree', 'git', 'github'],
+    'agents-md': ['shortcuts', 'constraints', 'doc-paths'],
+    'workflows': ['synced'],
+    'plugin-output': ['export-md', 'csv'],
+    demo: 'templates/python.json'
+  },
+  minitree: {
+    'project-type': ['docs', 'code'],
+    'addons': ['index', 'agents', 'tree', 'git', 'html'],
+    'agents-md': ['shortcuts', 'constraints', 'pending-resolutions', 'decision-log', 'doc-paths'],
+    'workflows': ['synced', 'pr-standards', 'definition-of-done'],
+    'plugin-output': ['export-md'],
+    demo: 'templates/minitree.json'
+  },
+  cli: {
+    'project-type': ['code'],
+    'addons': ['index', 'agents', 'tree', 'git', 'github'],
+    'agents-md': ['shortcuts', 'constraints', 'doc-paths'],
+    'workflows': ['synced'],
+    'plugin-output': ['export-md'],
+    'plugin-integration': ['github-issues'],
+    demo: 'templates/cli.json'
+  },
+  docs: {
+    'project-type': ['docs'],
+    'addons': ['index', 'agents', 'tree', 'git'],
+    'agents-md': ['shortcuts', 'pending-resolutions', 'doc-paths'],
+    'workflows': ['synced'],
+    'plugin-output': ['export-md', 'obsidian'],
+    demo: 'templates/docs.json'
+  },
+  questy: {
+    'project-type': ['docs'],
+    'addons': ['index', 'agents', 'tree'],
+    'agents-md': ['shortcuts', 'constraints', 'pending-resolutions', 'doc-paths'],
+    'workflows': ['synced'],
+    'plugin-output': ['export-md'],
+    demo: 'templates/questy.json'
+  }
+};
+
+document.querySelectorAll('.preset-template').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const preset = presetTemplates[btn.dataset.preset];
+    if (!preset) return;
+    
+    // Apply preset
+    if (preset['project-type']) {
+      const group = document.querySelector('[data-q="project-type"]');
+      group.querySelectorAll('.opt').forEach(b => {
+        b.classList.toggle('selected', preset['project-type'].includes(b.dataset.val));
+      });
+    }
+    if (preset['existing-structure']) {
+      const messyBtn = document.querySelector('.opt[data-val="messy"]');
+      if (messyBtn) {
+        messyBtn.classList.toggle('selected', preset['existing-structure'].includes('messy'));
+      }
+    }
+    if (preset['addons']) {
+      const group = document.querySelector('[data-q="addons"]');
+      group.querySelectorAll('.opt').forEach(b => {
+        b.classList.toggle('selected', preset['addons'].includes(b.dataset.val));
+      });
+    }
+    if (preset['agents-md']) {
+      const group = document.querySelector('[data-q="agents-md"]');
+      group.querySelectorAll('.opt').forEach(b => {
+        b.classList.toggle('selected', preset['agents-md'].includes(b.dataset.val));
+      });
+    }
+    if (preset['workflows']) {
+      const group = document.querySelector('[data-q="workflows"]');
+      group.querySelectorAll('.opt').forEach(b => {
+        b.classList.toggle('selected', preset['workflows'].includes(b.dataset.val));
+      });
+    }
+    if (preset['plugin-output']) {
+      const group = document.querySelector('[data-q="plugin-output"]');
+      group.querySelectorAll('.opt').forEach(b => {
+        b.classList.toggle('selected', preset['plugin-output'].includes(b.dataset.val));
+      });
+    }
+    
+    autoSave();
+    updateTreeLegend();
+    checkWorkflowsVisible();
+    checkAgentsSelected();
+    
+    // Show info text with demo link
+    const infoEl = document.getElementById('template-info');
+    const demoLink = preset.demo || '#';
+    const label = btn.textContent.trim();
+    infoEl.innerHTML = `<span class="template-info-text">${label} preset applied — <a href="${demoLink}" target="_blank">see example</a></span>`;
+    infoEl.style.display = 'block';
+  });
+});
+
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    // update all tab-bars
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.tab === tab);
+    });
+    // update panels
+    document.querySelectorAll('.tab-panel').forEach(p => {
+      p.classList.toggle('active', p.id === 'tab-' + tab);
+    });
+  });
+});
+
+const treeFoldersRow = document.getElementById('q-tree-folders');
+const agentsMdRow = document.getElementById('q-agents-md');
+const treeLegend = document.getElementById('tree-legend');
+const wisyToggle = document.getElementById('wisyToggle');
+const wisyExtended = document.getElementById('wisyExtended');
+
+// Wisy toggle
+wisyToggle.addEventListener('click', () => {
+  const isActive = wisyToggle.classList.toggle('active');
+  wisyExtended.classList.toggle('show', isActive);
+  if (!isActive) {
+    wisyExtended.querySelectorAll('.wisy-chip').forEach(c => {
+      c.classList.remove('selected');
+      c.classList.remove('weighted');
+    });
+  }
+});
+
+// Wisy chips — weightable toggle behavior
+document.querySelectorAll('.wisy-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    // weightable: click once = selected, twice = weighted (x2), thrice = deselect
+    if (chip.classList.contains('weighted')) {
+      chip.classList.remove('weighted');
+    } else if (chip.classList.contains('selected')) {
+      chip.classList.remove('selected');
+      chip.classList.add('weighted');
+    } else {
+      chip.classList.add('selected');
+    }
+  });
+});
+
+// Project section toggle
+const projectToggle = document.getElementById('projectToggle');
+const projectBody = document.getElementById('projectBody');
+projectToggle.addEventListener('click', () => {
+  const isOpen = projectBody.style.display !== 'none';
+  projectBody.style.display = isOpen ? 'none' : 'block';
+  projectToggle.classList.toggle('open', !isOpen);
+  saveCollapsed();
+});
+
+// Create new button
+const createNewBtn = document.getElementById('createNewBtn');
+createNewBtn.addEventListener('click', () => {
+  createNewBtn.classList.toggle('active');
+});
+
+// Messy button toggle
+const messyBtn = document.querySelector('.opt[data-val="messy"]');
+if (messyBtn) {
+  messyBtn.addEventListener('click', () => {
+    messyBtn.classList.toggle('selected');
+    if (messyBtn.classList.contains('selected')) {
+      createNewBtn.classList.remove('selected');
+    }
+    checkMessyHTML();
+    updateTreeLegend();
+    autoSave();
+  });
+}
+
+// plus button — duplicate project name and docs route fields
+const addProjectBtn = document.getElementById('addProjectBtn');
+const duplicateFields = document.getElementById('duplicate-fields');
+let projectCount = 1;
+
+addProjectBtn.addEventListener('click', () => {
+  projectCount++;
+  const row = document.createElement('div');
+  row.className = 'row';
+  row.style.marginBottom = '0.6rem';
+  row.innerHTML = `
+    <button type="button" class="opt" style="background:var(--green);color:var(--bg);border-color:var(--green)">project ${projectCount}</button>
+    <input type="text" class="project-name" placeholder="Project name..." class="flex-1">
+    <input type="text" class="doc-roots" placeholder="Route(s)" class="flex-1">
+    <button type="button" class="remove-project" style="background:transparent;border:1px solid var(--border);border-radius:50%;width:24px;height:24px;font-size:0.9rem;color:var(--muted);cursor:pointer;padding:0;line-height:1">×</button>
+  `;
+  duplicateFields.appendChild(row);
+  
+  // add remove button functionality
+  row.querySelector('.remove-project').addEventListener('click', () => {
+    row.remove();
+    projectCount--;
+  });
+});
+
+// addon → files mapping
+const addonFiles = {
+  index: ['README.md', 'INDEX.md'],
+  agents: ['agents.md'],
+  tree: ['docs/', 'plans/', 'standards/', 'pendings.md', 'conflicts.md'],
+  git: ['.gitignore'],
+  html: ['html/'],
+  github: ['.github/ISSUE_TEMPLATE/', '.github/PULL_REQUEST_TEMPLATE/', '.github/workflows/'],
+  archive: ['archived-questions.md'],
+  pro: ['docs/adr/', 'docs/adr/001-example-adr.md'],
+  scripts: ['scripts/build.sh', 'scripts/test.sh', 'scripts/deploy.sh', 'scripts/lint.sh', 'scripts/format.sh', 'scripts/typecheck.sh', 'scripts/docker.sh', 'scripts/audit.sh', 'scripts/benchmark.sh', 'scripts/docs.sh', 'scripts/release.sh', 'scripts/deps.sh']
+};
+
+function updateTreeLegend() {
+  const addonsGroup = document.querySelector('[data-q="addons"]');
+  const selected = [...addonsGroup.querySelectorAll('.opt.selected')].map(b => b.dataset.val);
+  // include html if messy
+  const messyBtn = document.querySelector('.opt[data-val="messy"]');
+  const isMessy = messyBtn && messyBtn.classList.contains('selected');
+  const allAddons = isMessy && !selected.includes('html') ? [...selected, 'html'] : selected;
+
+  treeLegend.innerHTML = '';
+  if (allAddons.length === 0) {
+    treeFoldersRow.classList.add('hidden');
+    return;
+  }
+  treeFoldersRow.classList.remove('hidden');
+  const addonLabels = { index: 'Index', agents: 'Agents.md', tree: 'Tree', git: 'Git', html: 'HTML', github: '.github/', archive: 'Archive', pro: 'Pro', scripts: 'scripts/' };
+  allAddons.forEach(a => {
+    (addonFiles[a] || []).forEach(f => {
+      const div = document.createElement('div');
+      div.className = 'addon-file';
+      const id = `file-${a}-${f.replace(/[^a-z0-9]/gi,'')}`;
+      div.innerHTML = `<input type="checkbox" id="${id}" checked> <label for="${id}" style="cursor:pointer">${f}</label><span class="file-from">← ${addonLabels[a] || a}</span>`;
+      const cb = div.querySelector('input');
+      cb.addEventListener('change', () => {
+        div.classList.toggle('unchecked', !cb.checked);
+      });
+      treeLegend.appendChild(div);
+    });
+  });
+}
+
+// perspective cards — toggle selected + show/hide desc
+document.querySelectorAll('.persp-card').forEach(card => {
+  card.addEventListener('click', () => {
+    // weightable: click once = selected, twice = weighted (x2), thrice = deselect
+    if (card.classList.contains('weighted')) {
+      card.classList.remove('weighted');
+    } else if (card.classList.contains('selected')) {
+      card.classList.remove('selected');
+      card.classList.add('weighted');
+    } else {
+      card.classList.add('selected');
+    }
+    autoSave();
+  });
+});
+
+// regular option groups
+document.querySelectorAll('.options').forEach(group => {
+  const isMulti = group.dataset.multi === 'true';
+  group.querySelectorAll('.opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      // weightable: click once = selected, twice = weighted (x2), thrice = deselect
+      if (btn.classList.contains('weightable')) {
+        if (btn.classList.contains('weighted')) {
+          btn.classList.remove('weighted');
+        } else if (btn.classList.contains('selected')) {
+          btn.classList.remove('selected');
+          btn.classList.add('weighted');
+        } else {
+          btn.classList.add('selected');
+        }
+      } else if (btn.classList.contains('radio-unselect')) {
+        // radio that can be unselected: if already selected, unselect; else select and unselect other radios in same group
+        if (btn.classList.contains('selected')) {
+          btn.classList.remove('selected');
+        } else {
+          group.querySelectorAll('.radio-unselect').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+        }
+      } else if (btn.classList.contains('checkbox')) {
+        // independent checkbox toggle
+        btn.classList.toggle('selected');
+      } else if (isMulti) {
+        btn.classList.toggle('selected');
+      } else {
+        group.querySelectorAll('.opt').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+      }
+      updatePluginDesc(group);
+      checkAgentsSelected();
+      checkWorkflowsVisible();
+      autoSave();
+      // addon info rows — show/hide when checked/unchecked
+      if (group.dataset.q === 'addons') {
+        const val = btn.dataset.val;
+        if (['index', 'agents', 'tree', 'git', 'github', 'html'].includes(val)) {
+          const infoRow = document.getElementById('info-' + val);
+          if (infoRow) {
+            infoRow.style.display = btn.classList.contains('selected') ? 'flex' : 'none';
+          }
+        }
+      }
+      // git detection — check for local git repo
+      if (group.dataset.q === 'addons' && btn.dataset.val === 'git') {
+        if (btn.classList.contains('selected')) {
+          // Would need backend to detect .git folder — for now show info
+          const gitInfo = document.createElement('div');
+          gitInfo.className = 'addon-info-row';
+          gitInfo.id = 'git-detect-info';
+          gitInfo.innerHTML = `
+            <div class="addon-info-text">Detecting local git... If .git exists, files will sync automatically. If not, I can provide guidelines to set up git (recommended).</div>
+            <button type="button" class="addon-info-close" onclick="this.parentElement.style.display='none'">×</button>
+          `;
+          btn.parentElement.after(gitInfo);
+        } else {
+          const gitInfo = document.getElementById('git-detect-info');
+          if (gitInfo) gitInfo.remove();
+        }
+      }
+      // archive chip auto-selects .github/ and docs/adr/ in addons
+      if (group.dataset.q === 'agents-md' && btn.dataset.val === 'archive') {
+        const addonsGroup = document.querySelector('[data-q="addons"]');
+        if (btn.classList.contains('selected')) {
+          ['github', 'adr'].forEach(v => {
+            const b = addonsGroup.querySelector(`.opt[data-val="${v}"]`);
+            if (b && !b.classList.contains('selected')) b.classList.add('selected');
+          });
+        }
+        updateTreeLegend();
+      }
+      // PR standards questions — show/hide when selected
+      if (group.dataset.q === 'workflows') {
+        const prRow = document.getElementById('pr-standards-questions');
+        const prSelected = group.querySelector('.opt[data-val="pr-standards"]');
+        if (prRow) {
+          prRow.classList.toggle('hidden', !(prSelected && prSelected.classList.contains('selected')));
+        }
+      }
+      updateTreeLegend();
+      checkMessyHTML();
+      // HTML detection — ask about questy-html skill
+      if (group.dataset.q === 'addons' && btn.dataset.val === 'html') {
+        if (btn.classList.contains('selected')) {
+          const htmlInfo = document.createElement('div');
+          htmlInfo.className = 'addon-info-row';
+          htmlInfo.id = 'html-questy-html-info';
+          htmlInfo.innerHTML = `
+            <div class="addon-info-text">HTML output works best with the questy-html skill for live preview. Install questy-html skill? (recommended)</div>
+            <button type="button" class="addon-info-close" onclick="this.parentElement.style.display='none'">×</button>
+          `;
+          btn.parentElement.after(htmlInfo);
+        } else {
+          const htmlInfo = document.getElementById('html-questy-html-info');
+          if (htmlInfo) htmlInfo.remove();
+        }
+      }
+    });
+  });
+});
+
+function checkMessyHTML() {
+  const messyBtn = document.querySelector('.opt[data-val="messy"]');
+  const isMessy = messyBtn && messyBtn.classList.contains('selected');
+  // auto-check html addon when messy
+  if (isMessy) {
+    const htmlBtn = document.querySelector('[data-q="addons"] .opt[data-val="html"]');
+    if (htmlBtn && !htmlBtn.classList.contains('selected')) {
+      htmlBtn.classList.add('selected');
+    }
+  }
+  // show info below HTML addon
+  const htmlInfo = document.getElementById('html-messy-info');
+  if (htmlInfo) {
+    if (isMessy) {
+      htmlInfo.textContent = 'HTML will be auto-added to your addons for reorganization output';
+      htmlInfo.classList.add('show');
+    } else {
+      htmlInfo.classList.remove('show');
+    }
+  }
+  updateTreeLegend();
+}
+
+function checkWorkflowsVisible() {
+  // always visible
+}
+
+// Archive mode — auto-select chain: Advanced → Archive + Simple, Archive → Simple
+document.querySelectorAll('[data-q="archive-mode"] .opt').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const group = btn.closest('.options');
+    // radio-unselect behavior
+    if (btn.classList.contains('selected')) {
+      btn.classList.remove('selected');
+    } else {
+      group.querySelectorAll('.opt').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+    const val = btn.dataset.val;
+    const addonsGroup = document.querySelector('[data-q="addons"]');
+    if (val === 'advanced') {
+      // auto-select archive + pro in addons
+      ['archive', 'pro'].forEach(v => {
+        const b = addonsGroup.querySelector(`.opt[data-val="${v}"]`);
+        if (b && !b.classList.contains('selected')) b.classList.add('selected');
+      });
+      // auto-select archive + simple in archive-mode
+      group.querySelectorAll('.opt').forEach(b => {
+        if (b.dataset.val === 'archive' || b.dataset.val === 'simple') b.classList.add('selected');
+      });
+    } else if (val === 'archive') {
+      // auto-select archive in addons, auto-select simple
+      const archBtn = addonsGroup.querySelector('.opt[data-val="archive"]');
+      if (archBtn && !archBtn.classList.contains('selected')) archBtn.classList.add('selected');
+      const simpleBtn = group.querySelector('.opt[data-val="simple"]');
+      if (simpleBtn && !simpleBtn.classList.contains('selected')) simpleBtn.classList.add('selected');
+    }
+    updateTreeLegend();
+    // show/hide info rows
+    ['archive', 'pro'].forEach(v => {
+      const infoRow = document.getElementById('info-' + v);
+      const b = addonsGroup.querySelector(`.opt[data-val="${v}"]`);
+      if (infoRow && b) infoRow.style.display = b.classList.contains('selected') ? 'flex' : 'none';
+    });
+  });
+});
+
+function checkAgentsSelected() {
+  const addonsGroup = document.querySelector('[data-q="addons"]');
+  const agentsSelected = addonsGroup?.querySelector('.opt[data-val="agents"].selected');
+  if (agentsSelected) {
+    agentsMdRow.classList.remove('hidden');
+  } else {
+    agentsMdRow.classList.add('hidden');
+    agentsMdRow.querySelectorAll('.opt').forEach(b => b.classList.remove('selected'));
+  }
+}
+
+function updatePluginDesc(group) {
+  const q = group.dataset.q;
+  const descEl = document.getElementById('desc-' + q);
+  if (!descEl) return;
+  const sel = group.querySelectorAll('.opt.selected');
+  if (sel.length === 0) { descEl.classList.remove('show'); return; }
+  const descs = [...sel].map(b => b.dataset.desc).filter(Boolean);
+  descEl.textContent = descs.join(' · ');
+  descEl.classList.add('show');
+}
+
+function getSelectedCards(container) {
+  return [...container.querySelectorAll('.selected')].map(el => el.dataset.val);
+}
+
+function getWeightedCards(container) {
+  return [...container.querySelectorAll('.weighted')].map(el => el.dataset.val);
+}
+
+function getAnswers() {
+  const answers = {};
+  document.querySelectorAll('.options').forEach(group => {
+    const q = group.dataset.q;
+    const selected = [...group.querySelectorAll('.opt.selected')].map(b => b.dataset.val);
+    const weighted = [...group.querySelectorAll('.opt.weighted')].map(b => b.dataset.val);
+    if (selected.length > 0) answers[q] = group.dataset.multi === 'true' ? selected : selected[0];
+    if (weighted.length > 0) answers[q + '-weighted'] = weighted;
+  });
+  answers['active-types'] = getSelectedCards(document.querySelector('[data-q="active-types"]'));
+  answers['active-types-weighted'] = getWeightedCards(document.querySelector('[data-q="active-types"]'));
+  answers['active-hats'] = getSelectedCards(document.querySelector('[data-q="active-hats"]'));
+  answers['active-hats-weighted'] = getWeightedCards(document.querySelector('[data-q="active-hats"]'));
+  // wisy categories
+  answers['wisy-lens'] = getSelectedCards(document.querySelector('[data-q="wisy-lens"]'));
+  answers['wisy-lens-weighted'] = getWeightedCards(document.querySelector('[data-q="wisy-lens"]'));
+  answers['wisy-formalise'] = getSelectedCards(document.querySelector('[data-q="wisy-formalise"]'));
+  answers['wisy-formalise-weighted'] = getWeightedCards(document.querySelector('[data-q="wisy-formalise"]'));
+  answers['wisy-tone'] = getSelectedCards(document.querySelector('[data-q="wisy-tone"]'));
+  answers['wisy-tone-weighted'] = getWeightedCards(document.querySelector('[data-q="wisy-tone"]'));
+  answers['wisy-teleology'] = getSelectedCards(document.querySelector('[data-q="wisy-teleology"]'));
+  answers['wisy-teleology-weighted'] = getWeightedCards(document.querySelector('[data-q="wisy-teleology"]'));
+  answers['wisy-field'] = getSelectedCards(document.querySelector('[data-q="wisy-field"]'));
+  answers['wisy-field-weighted'] = getWeightedCards(document.querySelector('[data-q="wisy-field"]'));
+  answers['wisy-time-span'] = getSelectedCards(document.querySelector('[data-q="wisy-time-span"]'));
+  answers['wisy-time-span-weighted'] = getWeightedCards(document.querySelector('[data-q="wisy-time-span"]'));
+  answers['q-per-type'] = document.getElementById('q-per-type').value;
+  answers['total-questions'] = document.getElementById('total-questions').value;
+  answers['batch-size'] = document.getElementById('batch-size').value;
+  answers['project-name'] = document.getElementById('project-name').value;
+  answers['doc-roots'] = document.getElementById('doc-roots').value;
+  // duplicate fields — batch mode
+  const duplicateProjects = [];
+  document.querySelectorAll('#duplicate-fields .row').forEach(row => {
+    const name = row.querySelector('.project-name')?.value;
+    const roots = row.querySelector('.doc-roots')?.value;
+    if (name || roots) {
+      duplicateProjects.push({ name: name || '', roots: roots || '' });
+    }
+  });
+  if (duplicateProjects.length) answers['duplicate-projects'] = duplicateProjects;
+  // Create new / messy button state
+  const messyBtn = document.querySelector('.opt[data-val="messy"]');
+  const messy = messyBtn && messyBtn.classList.contains('selected');
+  if (messy) answers['existing-structure'] = ['messy'];
+  if (document.getElementById('createNewBtn').classList.contains('active')) {
+    const es = answers['existing-structure'] || [];
+    if (!es.includes('new')) es.push('new');
+    answers['existing-structure'] = es;
+  }
+  answers['extra-session'] = document.getElementById('extra-session').value;
+  answers['extra-types'] = document.getElementById('extra-types').value;
+  answers['extra-plugins'] = document.getElementById('extra-plugins').value;
+  return answers;
+}
+
+function buildPrompt(a) {
+  const lines = [];
+  const name = a['project-name'] || 'my-project';
+  const addons = a['addons'] || [];
+  const workflows = a['workflows'] || [];
+  const duplicateProjects = a['duplicate-projects'] || [];
+  
+  // If batch mode (multiple projects), generate prompts for each
+  if (duplicateProjects.length > 0) {
+    lines.push(`## questy — batch mode (${duplicateProjects.length + 1} projects)`);
+    lines.push('');
+    lines.push('### agent instructions');
+    lines.push('you are receiving questy configs for multiple projects. for each project:');
+    lines.push('1. create the folder structure if not present');
+    lines.push('2. generate agents.md with the settings below');
+    lines.push('3. set up any selected addons (git, github, scripts, etc.)');
+    lines.push('4. skip the setup survey — config is already provided');
+    lines.push('');
+    
+    // Generate prompt for each project
+    duplicateProjects.forEach((p, i) => {
+      lines.push(`--- project ${i + 1}: ${p.name || 'unnamed'} ---`);
+      lines.push(`doc-roots: ${p.roots || 'none'}`);
+      lines.push('');
+    });
+    lines.push(`--- project ${duplicateProjects.length + 1}: ${name} (primary) ---`);
+    lines.push('');
+  } else {
+    lines.push(`## questy — ${name}`);
+    lines.push('');
+    
+    // Agent instructions — what to do with this config
+    lines.push('### agent instructions');
+    lines.push('you are receiving a questy config for a project. follow these steps:');
+    if (createSkillBtn.classList.contains('active')) {
+      lines.push('1. fetch the questy skill from https://flove.org/development/standards/skills/questy/SKILL.md and read it');
+      lines.push('2. install the skill in ~/.agents/skills/questy/ (or equivalent for your agent)');
+      lines.push('3. read the config below to understand the project');
+      lines.push('4. create the folder structure if not present (see commit instructions)');
+      lines.push('5. generate agents.md with the settings below');
+      lines.push('6. set up any selected addons (git, github, scripts, etc.)');
+      lines.push('7. skip the setup survey — config is already provided');
+      lines.push('8. ask clarifying questions if anything is ambiguous');
+    } else if (haveSkillBtn.classList.contains('active')) {
+      lines.push('1. you already have the questy skill — skip fetching it');
+      lines.push('2. read the config below to understand the project');
+      lines.push('3. create the folder structure if not present (see commit instructions)');
+      lines.push('4. generate agents.md with the settings below');
+      lines.push('5. set up any selected addons (git, github, scripts, etc.)');
+      lines.push('6. skip the setup survey — config is already provided');
+      lines.push('7. ask clarifying questions if anything is ambiguous');
+    } else {
+      lines.push('1. read the config below to understand the project');
+      lines.push('2. create the folder structure if not present (see commit instructions)');
+      lines.push('3. generate agents.md with the settings below');
+      lines.push('4. set up any selected addons (git, github, scripts, etc.)');
+      lines.push('5. skip the setup survey — config is already provided');
+      lines.push('6. ask clarifying questions if anything is ambiguous');
+    }
+    lines.push('');
+  }
+  
+  // Project context
+  lines.push('### project context');
+  lines.push(`name: ${name}`);
+  lines.push(`type: ${(a['project-type'] || []).join(', ') || 'none'}`);
+  lines.push(`structure: ${(a['existing-structure'] || []).join(', ') || 'none'}`);
+  if (a['doc-roots']) lines.push(`doc-roots: ${a['doc-roots']}`);
+  if (a['depth-mode']) lines.push(`depth: ${a['depth-mode']}`);
+  if (a['human-mode']) lines.push(`human: ${a['human-mode']}`);
+  lines.push('');
+  
+  // Session config
+  lines.push('### session');
+  lines.push(`questions-per-type: ${a['q-per-type'] || '50'}`);
+  lines.push(`total-questions: ${a['total-questions'] || '50'}`);
+  lines.push(`batch-size: ${a['batch-size'] || '3'}`);
+  const sessionModes = (a['session-depth'] || []).map(m => {
+    const weighted = a['session-depth-weighted'] || [];
+    return weighted.includes(m) ? `${m} (x2)` : m;
+  });
+  lines.push(`modes: ${sessionModes.join(', ') || 'review'}`);
+  const defaultMode = a['default-mode'] || [];
+  const modeStr = Array.isArray(defaultMode) ? defaultMode.join(', ') : defaultMode;
+  lines.push(`default-mode: ${modeStr || 'none'}`);
+  if (a['extra-session']) lines.push(`extra: ${a['extra-session'].replace(/\n/g, ' | ')}`);
+  lines.push('');
+  
+  // Perspectives
+  lines.push('### perspectives');
+  lines.push('types:');
+  (a['active-types'] || []).forEach(t => {
+    const weighted = a['active-types-weighted'] || [];
+    lines.push(weighted.includes(t) ? `  - ${t} (x2)` : `  - ${t}`);
+  });
+  lines.push('hats:');
+  (a['active-hats'] || []).forEach(h => {
+    const weighted = a['active-hats-weighted'] || [];
+    lines.push(weighted.includes(h) ? `  - ${h} (x2)` : `  - ${h}`);
+  });
+  if (a['extra-types']) lines.push(`extra: ${a['extra-types'].replace(/\n/g, ' | ')}`);
+  // wisy extended
+  if (a['wisy-lens'] && a['wisy-lens'].length) {
+    lines.push('lens:');
+    a['wisy-lens'].forEach(l => {
+      const weighted = a['wisy-lens-weighted'] || [];
+      lines.push(weighted.includes(l) ? `  - ${l} (x2)` : `  - ${l}`);
+    });
+  }
+  if (a['wisy-formalise'] && a['wisy-formalise'].length) {
+    lines.push('formalise:');
+    a['wisy-formalise'].forEach(f => {
+      const weighted = a['wisy-formalise-weighted'] || [];
+      lines.push(weighted.includes(f) ? `  - ${f} (x2)` : `  - ${f}`);
+    });
+  }
+  if (a['wisy-tone'] && a['wisy-tone'].length) {
+    lines.push('tone:');
+    a['wisy-tone'].forEach(t => {
+      const weighted = a['wisy-tone-weighted'] || [];
+      lines.push(weighted.includes(t) ? `  - ${t} (x2)` : `  - ${t}`);
+    });
+  }
+  if (a['wisy-teleology'] && a['wisy-teleology'].length) {
+    lines.push('teleology:');
+    a['wisy-teleology'].forEach(t => {
+      const weighted = a['wisy-teleology-weighted'] || [];
+      lines.push(weighted.includes(t) ? `  - ${t} (x2)` : `  - ${t}`);
+    });
+  }
+  if (a['wisy-field'] && a['wisy-field'].length) {
+    lines.push('field:');
+    a['wisy-field'].forEach(f => {
+      const weighted = a['wisy-field-weighted'] || [];
+      lines.push(weighted.includes(f) ? `  - ${f} (x2)` : `  - ${f}`);
+    });
+  }
+  if (a['wisy-time-span'] && a['wisy-time-span'].length) {
+    lines.push('time span:');
+    a['wisy-time-span'].forEach(t => {
+      const weighted = a['wisy-time-span-weighted'] || [];
+      lines.push(weighted.includes(t) ? `  - ${t} (x2)` : `  - ${t}`);
+    });
+  }
+  lines.push('');
+  
+  // Addons
+  if (addons.length) {
+    lines.push('### addons');
+    lines.push(addons.join(', '));
+    lines.push('');
+  }
+  
+  // Workflows
+  if (workflows.length) {
+    lines.push('### workflows');
+    lines.push(workflows.join(', '));
+    // PR standards details
+    if (workflows.includes('pr-standards')) {
+      lines.push('');
+      lines.push('### PR standards');
+      if (a['pr-title-format']) lines.push(`title format: ${a['pr-title-format']}`);
+      if (a['pr-desc-template']) lines.push(`description: ${a['pr-desc-template']}`);
+      if (a['pr-review-checklist']) lines.push(`review checklist: ${a['pr-review-checklist'].join(', ')}`);
+      if (a['pr-merge-rules']) lines.push(`merge rules: ${a['pr-merge-rules']}`);
+      if (a['pr-branch-naming']) lines.push(`branch naming: ${a['pr-branch-naming']}`);
+      if (a['pr-commit-format']) lines.push(`commit format: ${a['pr-commit-format']}`);
+    }
+    lines.push('');
+  }
+  
+  // Agents.md — full file content
+  if (addons.includes('agents')) {
+    lines.push('### agents.md — generate this file');
+    lines.push('');
+    lines.push('generate agents.md with the following structure:');
+    lines.push('');
+    lines.push('```markdown');
+    lines.push(`# ${name} — agents.md`);
+    lines.push('');
+    lines.push('## shortcuts');
+    (a['agents-md'] || []).forEach(opt => {
+      if (opt === 'shortcuts') lines.push('- /q: run questy survey');
+    });
+    lines.push('');
+    lines.push('## constraints');
+    (a['agents-md'] || []).forEach(opt => {
+      if (opt === 'constraints') lines.push('- follow questy config above');
+    });
+    lines.push('');
+    lines.push('## territory');
+    (a['agents-md'] || []).forEach(opt => {
+      if (opt === 'doc-paths') lines.push('- docs/: documentation only');
+    });
+    lines.push('');
+    lines.push('## pending resolutions');
+    (a['agents-md'] || []).forEach(opt => {
+      if (opt === 'pending-resolutions') lines.push('- none yet');
+    });
+    lines.push('');
+    lines.push('## decision log');
+    (a['agents-md'] || []).forEach(opt => {
+      if (opt === 'decision-log') lines.push('- ' + new Date().toISOString().split('T')[0] + ': project initialized via questy');
+    });
+    lines.push('```');
+    lines.push('');
+  }
+  
+  // Output
+  lines.push('### output');
+  lines.push(`format: ${(a['plugin-output'] || []).join(', ') || 'none'}`);
+  if (a['plugin-integration']) lines.push(`integrations: ${a['plugin-integration'].join(', ')}`);
+  if (a['extra-plugins']) lines.push(`extra: ${a['extra-plugins'].replace(/\n/g, ' | ')}`);
+  lines.push('');
+  
+  // Skill integration
+  lines.push('### skill integration');
+  lines.push('after setup, run these skills in order:');
+  lines.push('1. /validaty — check structure, a11y, mobile, i18n');
+  lines.push('2. /optimizy — polish code, vocabulary, translations');
+  lines.push('3. /translaty — add languages if needed');
+  lines.push('4. /updaty-web — publish to web');
+  lines.push('');
+  
+  // Commit instructions
+  lines.push('### commit instructions');
+  lines.push('create the following structure if not already present:');
+  if (addons.includes('tree')) {
+    lines.push('- docs/');
+    lines.push('- plans/');
+    lines.push('- standards/');
+  }
+  if (addons.includes('git')) {
+    if (!workflows.includes('synced')) {
+      lines.push('- .gitignore');
+    } else {
+      lines.push('- (no .gitignore — files sync to existing git repo)');
+    }
+  }
+  if (addons.includes('agents')) {
+    lines.push('- agents.md (see agents.md section above for content)');
+  }
+  if (addons.includes('github')) {
+    lines.push('- .github/');
+  }
+  if (addons.includes('pro')) {
+    lines.push('- docs/adr/');
+  }
+  if (addons.includes('scripts')) {
+    lines.push('- scripts/');
+    const scripts = ['build', 'test', 'deploy', 'lint', 'format', 'typecheck', 'docker', 'audit', 'benchmark', 'docs', 'release', 'deps'];
+    scripts.forEach(script => {
+      if (document.getElementById(`script-${script}`)?.checked) {
+        lines.push(`  - ${script}.sh`);
+      }
+    });
+  }
+  if (addons.includes('archive')) {
+    lines.push('- archived-questions.md');
+  }
+  lines.push('');
+  lines.push('skip setup survey — config above.');
+  return lines.join('\n');
+}
+
+const generateBtn = document.getElementById('generateBtn');
+const saveConfigBtn = document.getElementById('saveConfigBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const closePreviewBtn = document.getElementById('closePreviewBtn');
+
+generateBtn.addEventListener('click', () => {
+  const answers = getAnswers();
+  const prompt = buildPrompt(answers);
+  preview.textContent = prompt;
+  promptPreviewWrap.style.display = 'block';
+  generateBtn.textContent = '🔄 Update Prompt';
+  generateBtn.classList.add('updated');
+  promptPreviewWrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+});
+
+closePreviewBtn.addEventListener('click', () => {
+  promptPreviewWrap.style.display = 'none';
+  generateBtn.textContent = '🚀 Generate Prompt';
+  generateBtn.classList.remove('updated');
+});
+
+saveConfigBtn.addEventListener('click', () => {
+  const answers = getAnswers();
+  const json = JSON.stringify(answers, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'questy-config.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  saveConfigBtn.textContent = '✓ Saved!';
+  saveConfigBtn.classList.add('copied');
+  setTimeout(() => {
+    saveConfigBtn.textContent = '💾 JSON';
+    saveConfigBtn.classList.remove('copied');
+  }, 2000);
+});
+
+downloadBtn.addEventListener('click', () => {
+  const answers = getAnswers();
+  const prompt = buildPrompt(answers);
+  const blob = new Blob([prompt], { type: 'text/markdown' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'questy-skill.md';
+  a.click();
+  URL.revokeObjectURL(url);
+  downloadBtn.textContent = '✓ Downloaded!';
+  downloadBtn.classList.add('copied');
+  setTimeout(() => {
+    downloadBtn.textContent = '⬇ Questy-skill.md';
+    downloadBtn.classList.remove('copied');
+  }, 2000);
+});
+
+// Continue Addons Config button
+const continueConfigBtn = document.getElementById('continueConfigBtn');
+const addonsConfig = document.getElementById('addonsConfig');
+const addonsConfigContent = document.getElementById('addons-config-content');
+
+continueConfigBtn.addEventListener('click', () => {
+  const isActive = continueConfigBtn.classList.toggle('active');
+  addonsConfig.classList.toggle('show', isActive);
+  if (isActive) {
+    buildAddonsConfig();
+  }
+  saveCollapsed();
+});
+
+// Human icon toggle
+const humanIcon = document.getElementById('humanIcon');
+humanIcon.addEventListener('click', () => {
+  const isActive = humanIcon.classList.toggle('active');
+  document.querySelectorAll('.human-desc').forEach(el => {
+    el.style.display = isActive ? 'block' : 'none';
+  });
+});
+
+function buildAddonsConfig() {
+  addonsConfigContent.innerHTML = '';
+
+  const scripts = [
+    { id: 'script-build', name: 'build.sh', desc: 'Compile and bundle your project for production. Runs your build tool (esbuild, webpack, tsc) and outputs optimized files to dist/.' },
+    { id: 'script-test', name: 'test.sh', desc: 'Run your test suite with coverage. Fails if coverage drops below threshold. Outputs reports for CI integration.' },
+    { id: 'script-deploy', name: 'deploy.sh', desc: 'Publish to your target environment. Supports Vercel, GitHub Pages, SSH, Docker — pick your platform.' },
+    { id: 'script-lint', name: 'lint.sh', desc: 'Check code style and catch errors before they ship. Auto-fixes what it can, reports the rest.' },
+    { id: 'script-format', name: 'format.sh', desc: 'Auto-format code, sort imports, normalize line endings. Makes your code look like you care.' },
+    { id: 'script-typecheck', name: 'typecheck.sh', desc: 'Run TypeScript type checker without emitting. Catches type errors before they become bugs.' },
+    { id: 'script-docker', name: 'docker.sh', desc: 'Build and run Docker containers. Handles multi-stage builds, tagging, and local development.' },
+    { id: 'script-audit', name: 'audit.sh', desc: 'Scan dependencies for known vulnerabilities. Blocks deployment if critical issues found.' },
+    { id: 'script-benchmark', name: 'benchmark.sh', desc: 'Run performance benchmarks and compare against baseline. Tracks regression over time.' },
+    { id: 'script-docs', name: 'docs.sh', desc: 'Generate documentation from code and comments. Outputs markdown or HTML.' },
+    { id: 'script-release', name: 'release.sh', desc: 'Automate versioning, changelogs, and tag creation. Supports semver and conventional commits.' },
+    { id: 'script-deps', name: 'deps.sh', desc: 'Update dependencies, check for breaking changes, and run tests. Safe mode reverts if tests fail.' }
+  ];
+
+  scripts.forEach(script => {
+    const row = document.createElement('div');
+    row.className = 'script-row';
+    row.innerHTML = `
+      <input type="checkbox" class="script-check" id="${script.id}">
+      <span class="script-name">${script.name}</span>
+      <span class="script-desc">${script.desc}</span>
+    `;
+    const cb = row.querySelector('input');
+    // Show description when checked
+    cb.addEventListener('change', () => {
+      row.classList.toggle('active', cb.checked);
+    });
+    // Also allow click on row to toggle
+    row.addEventListener('click', (e) => {
+      if (e.target.type === 'checkbox') return;
+      cb.checked = !cb.checked;
+      row.classList.toggle('active', cb.checked);
+    });
+    addonsConfigContent.appendChild(row);
+  });
+}
+
+// Initialize on page load
+updateTreeLegend();
+loadCollapsed();
+
+// Usage info toggle
+document.getElementById('usageToggle').addEventListener('click', () => {
+  document.getElementById('usageBody').classList.toggle('show');
+});
+
+// Advanced case — load UseCase-adv.md
+const advancedCaseBtn = document.getElementById('advancedCaseBtn');
+const advancedCaseContent = document.getElementById('advancedCaseContent');
+let advLoaded = false;
+let advOpen = false;
+
+advancedCaseBtn.addEventListener('click', async () => {
+  if (advOpen) {
+    advancedCaseContent.style.display = 'none';
+    advancedCaseBtn.classList.remove('active');
+    advOpen = false;
+    return;
+  }
+  if (!advLoaded) {
+    advancedCaseContent.innerHTML = '<div style="padding:1rem;text-align:center;color:var(--muted)">Loading…</div>';
+    advancedCaseContent.style.display = 'block';
+    try {
+      const resp = await fetch('../dev/questy/UseCase-adv.md');
+      if (!resp.ok) throw new Error('Not found');
+      const md = await resp.text();
+      const html = md
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+        .replace(/\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|/g, (m, a, b, c) => {
+          if (a.trim().startsWith('---')) return '';
+          return `<tr><td>${a.trim()}</td><td>${b.trim()}</td><td>${c.trim()}</td></tr>`;
+        })
+        .replace(/^---$/gm, '')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n/g, '<br>');
+      advancedCaseContent.innerHTML = `<button type="button" class="close-adv" id="closeAdvBtn">✕ close</button><p>${html}</p>`;
+      document.getElementById('closeAdvBtn').addEventListener('click', () => {
+        advancedCaseContent.style.display = 'none';
+        advancedCaseBtn.classList.remove('active');
+        advOpen = false;
+      });
+      advLoaded = true;
+    } catch(e) {
+      advancedCaseContent.innerHTML = `<div style="padding:1rem;color:var(--danger)">Could not load UseCase-adv.md (<a href="../dev/questy/UseCase-adv.md" style="color:var(--accent)">open directly</a>)</div>`;
+    }
+  } else {
+    advancedCaseContent.style.display = 'block';
+  }
+  advancedCaseBtn.classList.add('active');
+  advOpen = true;
+});
+
+// Create new / Customize — radio-like toggles
+const createSkillBtn = document.getElementById('createSkillBtn');
+const haveSkillBtn = document.getElementById('haveSkillBtn');
+const addonsSection = document.getElementById('addonsSection');
+function toggleSkillBtn(active) {
+  createSkillBtn.classList.toggle('active', active === 'create');
+  haveSkillBtn.classList.toggle('active', active === 'have');
+  createSkillBtn.textContent = active === 'create' ? '✓ Create new' : '🛠 Create new';
+  haveSkillBtn.textContent = active === 'have' ? '✓ Customize' : '🔧 Customize';
+  addonsSection.style.display = active ? 'block' : 'none';
+  if (active) updateTreeLegend();
+}
+createSkillBtn.addEventListener('click', () => {
+  toggleSkillBtn(createSkillBtn.classList.contains('active') ? null : 'create');
+});
+haveSkillBtn.addEventListener('click', () => {
+  toggleSkillBtn(haveSkillBtn.classList.contains('active') ? null : 'have');
+});
+</script>
+</body>
+</html>

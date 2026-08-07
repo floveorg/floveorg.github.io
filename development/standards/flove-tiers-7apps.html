@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>flove · 7 apps vocabulary + code labels matrix</title>
+<style>
+  :root{
+    --bg:#faf8f5; --ink:#2a2622; --line:#e3ddd4; --accent:#7b6cf6; --accent3:#1f9e6b;
+    --num:#b6ab9c; --head:#f1ece4; --grp:#e7e0fb; --grpx:#cdeede; --edit:#fffdf8;
+    --mother:#9a8cf0; --abs:#fbe7c6;
+    font-family: system-ui, "Inter", sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);padding:1.2rem;line-height:1.4}
+  h1{font-size:1.15rem;margin:0 0 .2rem}
+  h2{font-size:1rem;margin:1.3rem 0 .4rem}
+  p.sub{margin:.1rem 0 1rem;color:#7d7468;font-size:.85rem}
+  .toolbar{padding:.5rem 0;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+  .topbar{position:sticky;top:0;background:var(--bg);z-index:9;border-bottom:1px solid var(--line);margin-bottom:.6rem}
+  button{font:inherit;font-size:.82rem;padding:.5rem .8rem;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  button.secondary{background:var(--accent3);color:#fff;border-color:var(--accent3)}
+  select{font:inherit;font-size:.82rem;padding:.45rem .6rem;border:1px solid var(--line);border-radius:10px;background:#fff}
+  button:hover{filter:brightness(.97)}
+  .wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fff}
+  table{border-collapse:collapse;width:max-content;min-width:100%;font-size:.78rem}
+  th,td{border:1px solid var(--line);vertical-align:top;min-width:120px}
+  th{background:var(--head);padding:.45rem;text-align:left;font-size:.74rem}
+  th.grp{background:var(--grp);text-align:center;text-transform:uppercase;letter-spacing:.05em;font-size:.68rem;color:#5b4fae;position:sticky;top:0;z-index:3}
+  th.grp.x{background:var(--grpx);color:#157a52}
+  thead tr:nth-child(2) th{position:sticky;top:30px;z-index:2}
+  th.tier,td.tier{position:sticky;left:0;background:var(--head);min-width:118px;font-weight:600;z-index:2}
+  th.corner{left:0;z-index:6;background:var(--grp)}
+  th.grp, th.gb, td.gb{ border-left:3px solid var(--mother); }
+  td .num{display:block;font-size:.6rem;color:var(--num);font-weight:600;padding:.25rem .4rem 0;user-select:none}
+  td .cell{padding:.15rem .4rem .3rem;min-height:1.5em;outline:none}
+  td .cell:focus{background:var(--edit);box-shadow:inset 0 0 0 2px var(--accent)}
+  td.empty .cell:empty::before{content:"—";color:#cfc6b8}
+  select.cellpick{display:block;width:100%;margin-top:1px;font-size:.64rem;border:0;border-top:1px dashed var(--line);background:#fbf9ff;color:#7a73a8;padding:1px 3px;border-radius:0 0 4px 4px}
+  .hint{font-size:.78rem;color:#7d7468;margin:.6rem 0 0}
+  .app-section{margin-top:2rem;border-top:2px dashed var(--line);padding-top:.6rem}
+  .app-section h2{margin-top:0}
+  dialog{border:1px solid var(--line);border-radius:12px;max-width:90vw;width:680px;padding:0}
+  dialog header{padding:.7rem 1rem;border-bottom:1px solid var(--line);font-weight:600}
+  dialog textarea{width:100%;height:48vh;border:0;padding:1rem;font-family:ui-monospace,monospace;font-size:.8rem;resize:vertical;outline:none}
+  dialog .row{display:flex;gap:.5rem;padding:.7rem 1rem;border-top:1px solid var(--line);justify-content:flex-end}
+  .ok{color:#2b8a3e;font-size:.8rem;align-self:center}
+  .edit-note{background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:.5rem .8rem;margin:.5rem 0;font-size:.8rem}
+  .code-label{font-family:ui-monospace,monospace;font-size:.72rem;color:#6c5ce7;background:#f8f6ff;padding:.1rem .3rem;border-radius:4px}
+  .section-divider{margin:2rem 0;border-top:3px double var(--line);padding-top:1rem}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <h1>🌱 flove · 7 apps vocabulary + code labels matrix</h1>
+    <p class="sub">Editable vocabulary for the 7 apps from appy-mini.html. Includes UI labels, code identifiers, and bilingual text. Click cells to edit, then copy the prompt.</p>
+    <div class="toolbar">
+      <button class="primary" onclick="copyVocabPrompt()">📋 Copy vocab prompt</button>
+      <button class="secondary" onclick="copyCodePrompt()">🔧 Copy code labels prompt</button>
+      <button onclick="showJSON()">{ } JSON</button>
+      <span class="ok" id="ok"></span>
+    </div>
+  </div>
+
+  <div class="edit-note">
+    <strong>How to use:</strong> Click any cell to edit its value. 
+    <strong>📋 Copy vocab prompt</strong> = UI labels + slot names for flove-vocaby.html.
+    <strong>🔧 Copy code labels prompt</strong> = CSS classes, input IDs, JS identifiers, data attributes for appy-mini.html.
+  </div>
+
+  <!-- SECTION 1: CODE LABELS MAP -->
+  <h2>Section 1 — Code labels map <span style="font-size:.78rem;color:#7d7468">CSS · JS · HTML attributes per app</span></h2>
+  <div class="wrap"><table id="codelabels"></table></div>
+
+  <!-- SECTION 2: UI VOCABULARY PER APP -->
+  <div class="section-divider"></div>
+  <h2>Section 2 — UI vocabulary per app <span style="font-size:.78rem;color:#7d7468">slots × labelers (editable)</span></h2>
+  <div id="app-sections"></div>
+
+  <dialog id="dlg">
+    <header>Copy this prompt and paste it to Claude</header>
+    <textarea id="dump" readonly></textarea>
+    <div class="row"><span class="ok" id="ok2"></span>
+      <button onclick="copyDump()">Copy</button>
+      <button onclick="document.getElementById('dlg').close()">Close</button></div>
+  </dialog>
+
+<script>
+// ===== 7 APPS DATA =========================================================
+const APPS = ["goddy","souls","pracsys","myfamily","inventary","realy","keys"];
+const SLOTS = ["App title","Tagline","Entry label","Add (CTA)","Wizard label","Rater prompt","Summary heading","About (body)"];
+const LABELERS = ["Default","Formal","Casual","Hotter","Lovely","Fatal","Lucky","Random"];
+
+// Code labels: CSS class, JS key, data-app value, color, href path
+const codeLabels = {
+  goddy:{ css:".appc-goddy", jsKey:"Goddy", dataApp:"Goddy", color:"#e23b3b", href:"../metas/goddy.html", ariaEn:"Goddy preview", ariaEs:"Vista previa de Goddy" },
+  souls:{ css:".appc-souls", jsKey:"Souls", dataApp:"Souls", color:"#ef7d1a", href:"../metas/souls.html", ariaEn:"Souls preview", ariaEs:"Vista previa de Souls" },
+  pracsys:{ css:".appc-pracsys", jsKey:"Pracsys", dataApp:"Pracsys", color:"#e3bb12", href:"../bio/pracsys.html", ariaEn:"Pracsys preview", ariaEs:"Vista previa de Pracsys" },
+  myfamily:{ css:".appc-myfamily", jsKey:"Myfamily", dataApp:"Myfamily", color:"#34b36b", href:"../trusty/myfamily.html", ariaEn:"Myfamily preview", ariaEs:"Vista previa de Myfamily" },
+  inventary:{ css:".appc-inventary", jsKey:"Inventary", dataApp:"Inventary", color:"#2f7fd6", href:"../economy/dealy/inventary.html", ariaEn:"Inventary preview", ariaEs:"Vista previa de Inventary" },
+  realy:{ css:".appc-realy", jsKey:"Realy", dataApp:"Realy", color:"#5a4fd0", href:"../realy.html", ariaEn:"Realy preview", ariaEs:"Vista previa de Realy" },
+  keys:{ css:".appc-keys", jsKey:"Keys", dataApp:"Keys", color:"#9b51e0", href:"../puzzy/keys/keys-advanced.html", ariaEn:"Keys preview", ariaEs:"Vista previa de Keys" }
+};
+
+// App-specific vocabulary slots
+const appSlots = {
+  goddy:["Matrix axes","Cell levels","Save","Share","Insights"],
+  souls:["Stage 1 · You","Stage 2 · Species + sense","Senses","Species tree","Stage 3 · Biological system","Stage 4 · Matter","Stage 5 · Particle","Stage 5 · Immune subsystem","Privacy mode","Play with","Certify play"],
+  pracsys:["Systems","Nervous subsystems","Immune subsystems","Stages","Stage nav","Subsystem toggles","Reason field","Verb field"],
+  myfamily:["Attention","Contact","Influence","Feedback","Gifting","Sharing","Money","Your friend is…"],
+  inventary:["Columns","Categories","Selected things","Have options","Want/Need options","Wish options","Item note","Worth it bars","Suggestion bots"],
+  realy:["Realms","Realm subtitles","Real column","Fictional column","More","Phrase actions"],
+  keys:["Ways to start","Triads","Philosophy","Service","Journalism","Fivy decks","Extra decks","Privacy mode","Play with"]
+};
+
+// Vocabulary: UI labels per slot × labeler
+const vocab = {
+  goddy:{
+    "App title":{Default:"GODDY"},
+    "Tagline":{Default:"God(dess) Matrix — Goddess, God and Us. Click each cell to map who sees who: a bipolar whole read through its unique part (1/2/1)."},
+    "Matrix axes":{Default:"Goddess · God · Us"},
+    "Cell levels":{Default:"see · see more · see fully · reset"},
+    "Save":{Default:"JPG · HTML · Text · JSON"},
+    "Share":{Default:"WhatsApp · Telegram · Mail"},
+    "Insights":{Default:"Insights"}
+  },
+  souls:{
+    "App title":{Default:"Souls"},
+    "Tagline":{Default:"An old projective game in five layers. An animal, a colour, a species you'd inhabit, a sense you'd feel through, and down further — into matter, particles and immune subsystems."},
+    "Entry label":{Default:"Think of an animal."},
+    "About (body)":{Default:"An old projective game in five layers — animal, colour, species, sense, then matter, particles and immune subsystems."},
+    "Stage 1 · You":{Default:"Think of an animal · Three things about that animal · Now a colour · Three qualities of that colour"},
+    "Stage 2 · Species + sense":{Default:"Pick the specie that my animal belongs to · Pick another specie · Three things from my creature · Pick one of the five senses"},
+    "Senses":{Default:"👁 Sight · 👂 Hearing · 👃 Smell · 👅 Taste · ✋ Touch"},
+    "Species tree":{Default:"Mammal · Bird · Reptile · Amphibian · Fish · Insect · Spider & kin · Sea creature · Tree · Flower · Fungus · Microbe"},
+    "Stage 3 · Biological system":{Default:"🧠 Nervous · 🧪 Endocrine · 💪 Muscular · 🦴 Skeletal · 🌬️ Respiratory · 🩸 Circulatory · 💧 Excretory · 🍃 Digestive · 🤝 Integumentary · 🛡 Immune · 🌱 Reproductive"},
+    "Stage 4 · Matter":{Default:"💎 Crystal · 🪨 Solid · 🧬 Macromolecule · ⚗️ Molecule · ⚛️ Atom"},
+    "Stage 5 · Particle":{Default:"Quark · Electron · Neutrino · Photon · Gluon · W boson · Z boson · Higgs"},
+    "Stage 5 · Immune subsystem":{Default:"🫀 Adaptative · 🧠 Neuroimmune · 🛡 Innate · 💧 Lymphatic"},
+    "Privacy mode":{Default:"Private · Open"},
+    "Play with":{Default:"Text · Audio · Video · Perform"},
+    "Certify play":{Default:"Trusts · Mail · Telf · Id · Biometric"}
+  },
+  pracsys:{
+    "App title":{Default:"pracsys"},
+    "Tagline":{Default:"Lay the eleven biological systems onto the board, give each row a reason, then thread nervous and immune subsystems across the body."},
+    "About (body)":{Default:"Practise the systems · The eleven biological systems from souls, laid out as a living body you arrange by hand."},
+    "Systems":{Default:"Circulatory 🩸 · Digestive 🍃 · Endocrine 🧪 · Excretory 💧 · Immune 🛡 · Integumentary 🤝 · Muscular 💪 · Nervous 🧠 · Reproductive 🌱 · Respiratory 🌬️ · Skeletal 🦴"},
+    "Nervous subsystems":{Default:"Central 🧠 · Peripheral 🕸 · Autonomic ⚡ · Enteric 🍃"},
+    "Immune subsystems":{Default:"Adaptative 🫀 · Neuroimmune 🧠 · Innate 🛡 · Lymphatic 💧"},
+    "Stages":{Default:"Place · Reasons · Verbs · Subsystems"},
+    "Stage nav":{Default:"← Back · Reasons · Verbs · Next → · Check · Next stage →"},
+    "Subsystem toggles":{Default:"🧠 SubNervous · 🛡 SubImmune"},
+    "Reason field":{Default:"Add a reason"},
+    "Verb field":{Default:"Add verb"}
+  },
+  myfamily:{
+    "App title":{Default:"MyFamily"},
+    "Tagline":{Default:"A quiet space to reflect on the bonds in your life. Pick a friend, then mark what feels true across each row."},
+    "Entry label":{Default:"Write a friend's name here."},
+    "Attention":{Default:"Friendship & colaborativity · Regular cheers & help · Strong emotional companionship · Intimate friendship & complicity · Regular care & affection"},
+    "Contact":{Default:"Attend me sometimes · Pass free time together · See or hear me · Call me anytime · Give me attention preference"},
+    "Influence":{Default:"Reply & send me messages · Counsel me about anything · Tell me what purposes to have · Prescribe me attitudes · Limit me from doing things"},
+    "Feedback":{Default:"Criticize me constructively · Show being upset with me · Show me disapproval · Comment on me negatively · Criticize me hard"},
+    "Gifting":{Default:"Invite me sometimes · Give me some regular presents · Surprise me with regular gifts · Gift me much if I behave well · Gift me as much as possible"},
+    "Sharing":{Default:"Share some things with me · Grant me something · Share much with me · Grant me much · Share all with me"},
+    "Money":{Default:"Lend me money if urgent · Lend me money sometimes · Give me some if I need it · Give me sometimes, always lend · All money is shared with me"},
+    "Your friend is…":{Default:"Cousin · Sibling · Grandparent · Parent · Couple"}
+  },
+  inventary:{
+    "App title":{Default:"Inventary"},
+    "Tagline":{Default:"Your things across HAVE · WISH · WANT · NEED"},
+    "Entry label":{Default:"New thing here"},
+    "Columns":{Default:"HAVE · WISH · WANT · NEED"},
+    "Categories":{Default:"Health · Food · Home · Comms · Work · Education · Clothing · Outdoor · Travel · Services · Music · Hobbies · Events · Pets · Other"},
+    "Selected things":{Default:"Haves · Wishes · Wants · Needs"},
+    "Have options":{Default:"Shareable · Preference 1–5 · maybe · unlikely · Worth it"},
+    "Want/Need options":{Default:"Much · very · Urgent"},
+    "Wish options":{Default:"Much · very · Fully"},
+    "Item note":{Default:"add additional info… · Save · voice note · attach file"},
+    "Worth it bars":{Default:"Symbolical · Historical · Ideal · Potential · Functional · Affordable · Respectful · (Re)generative"},
+    "Suggestion bots":{Default:"😍 lovely · 😂 joy · 🔥 wisdom"}
+  },
+  realy:{
+    "App title":{Default:"Realy"},
+    "Tagline":{Default:"A two-column space to weave the Real and the Fictional across your life realms — work, love, friendship, body, dreams, and more."},
+    "Entry label":{Default:"Add words to the realms…"},
+    "Summary heading":{Default:"Woven phrase"},
+    "Realms":{Default:"Event · Fact · Idea · Project"},
+    "Realm subtitles":{Default:"Happened / could happen · Clear statement · Concept / principle · Organized effort"},
+    "Real column":{Default:"Community garden opening… · Seeds sprout in 3–7 days… · Mutual aid as resilience… · Build a seed library…"},
+    "Fictional column":{Default:"Moonlight festival on a floating island… · Moths deliver tiny letters at dawn… · Rivers remember names whispered to them… · Cartography of dreams in starlight ink…"},
+    "More":{Default:"Whispers & notes · Context, transmissions… · Realm name…"},
+    "Phrase actions":{Default:"✦ Insight · ⟳ Get creative · ⎘ Copy"}
+  },
+  keys:{
+    "App title":{Default:"keys"},
+    "Tagline":{Default:"A simple game for ordering ideas — ten decks of three cards, flipped and ordered however you feel they should go."},
+    "Entry label":{Default:"Choose a way to start"},
+    "About (body)":{Default:"keys is a simple game for ordering ideas. Ten decks lie face down with 3 cards in each. Flip one and order its cards however you feel they should go."},
+    "Ways to start":{Default:"Start from Step 0 · Skip to Step 1 · Adventure · Creative · Master"},
+    "Triads":{Default:"Philosophy · Psicosocial · Service · Economy · Journalism"},
+    "Philosophy":{Default:"Joy · Love · Wisdom"},
+    "Service":{Default:"Gift · Lend · Exchange"},
+    "Journalism":{Default:"Why · What · How"},
+    "Fivy decks":{Default:"Senses · Flavors · Powers · Pathologies · Elements"},
+    "Extra decks":{Default:"Time · Metaphysics · Space · Sectors"},
+    "Privacy mode":{Default:"Private · Open"},
+    "Play with":{Default:"Text · Audio · Video · Perform"}
+  }
+};
+
+// ===== SECTION 1: CODE LABELS TABLE =========================================
+function renderCodeLabels(){
+  const cols = ["App","CSS class","JS key","data-app","Color","href path","aria EN","aria ES"];
+  let html = "<thead><tr>";
+  cols.forEach(c => html += `<th>${esc(c)}</th>`);
+  html += "</tr></thead><tbody>";
+  
+  APPS.forEach(app => {
+    const cl = codeLabels[app];
+    html += `<tr>`;
+    html += `<td class='tier'>${esc(app)}</td>`;
+    html += `<td><span class='code-label'>${esc(cl.css)}</span></td>`;
+    html += `<td><span class='code-label'>${esc(cl.jsKey)}</span></td>`;
+    html += `<td><span class='code-label'>${esc(cl.dataApp)}</span></td>`;
+    html += `<td><div style="display:flex;align-items:center;gap:.4rem"><div style="width:16px;height:16px;border-radius:4px;background:${cl.color}"></div><span class='code-label'>${esc(cl.color)}</span></div></td>`;
+    html += `<td><span class='code-label'>${esc(cl.href)}</span></td>`;
+    html += `<td><div class='cell' contenteditable data-app='${esc(app)}' data-field='ariaEn'>${esc(cl.ariaEn)}</div></td>`;
+    html += `<td><div class='cell' contenteditable data-app='${esc(app)}' data-field='ariaEs'>${esc(cl.ariaEs)}</div></td>`;
+    html += `</tr>`;
+  });
+  
+  html += "</tbody>";
+  document.getElementById("codelabels").innerHTML = html;
+  
+  // Attach listeners
+  document.querySelectorAll("#codelabels .cell").forEach(el => {
+    el.addEventListener("input", e => {
+      const app = e.target.dataset.app;
+      const field = e.target.dataset.field;
+      codeLabels[app][field] = e.target.innerText.trim();
+    });
+  });
+}
+
+// ===== SECTION 2: UI VOCABULARY TABLES ======================================
+function renderAppSections(){
+  const container = document.getElementById("app-sections");
+  let html = "";
+  
+  APPS.forEach(app => {
+    const slots = SLOTS.concat(appSlots[app]||[]);
+    const voc = vocab[app] || {};
+    
+    html += `<div class="app-section">`;
+    html += `<h2>${esc(app)} — vocabulary <span style="font-size:.78rem;color:#7d7468">labelers × slots</span></h2>`;
+    html += `<div class="wrap"><table>`;
+    
+    // Header
+    html += `<thead><tr><th class='corner tier' style='min-width:140px'>slot</th>`;
+    LABELERS.forEach(l => {
+      html += `<th style='min-width:120px'>${esc(l)}</th>`;
+    });
+    html += `</tr></thead><tbody>`;
+    
+    // Rows
+    slots.forEach(slot => {
+      html += `<tr><td class='tier'>${esc(slot)}</td>`;
+      LABELERS.forEach(labeler => {
+        const val = (voc[slot] && voc[slot][labeler]) || "";
+        html += `<td class='${val?"":"empty"}'>`
+          + `<div class='cell' contenteditable data-app='${esc(app)}' data-slot='${esc(slot)}' data-labeler='${esc(labeler)}'>${esc(val)}</div>`
+          + `</td>`;
+      });
+      html += `</tr>`;
+    });
+    
+    html += `</tbody></table></div>`;
+    html += `</div>`;
+  });
+  
+  container.innerHTML = html;
+  
+  // Attach event listeners
+  container.querySelectorAll(".cell").forEach(el => {
+    el.addEventListener("input", e => {
+      const app = e.target.dataset.app;
+      const slot = e.target.dataset.slot;
+      const labeler = e.target.dataset.labeler;
+      if (!vocab[app]) vocab[app] = {};
+      if (!vocab[app][slot]) vocab[app][slot] = {};
+      vocab[app][slot][labeler] = e.target.innerText.trim();
+      e.target.parentElement.classList.toggle("empty", !e.target.innerText.trim());
+    });
+  });
+}
+
+// ===== EXPORT FUNCTIONS =====================================================
+function esc(s){return (s||"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m]));}
+
+function copyVocabPrompt(){
+  let s = "# Update flove-vocaby.html vocabulary for 7 apps\n\n";
+  s += "Update the `vocab` object in `flove-vocaby.html` to match these changes:\n\n";
+  s += "```javascript\nconst vocab = {\n";
+  
+  APPS.forEach(app => {
+    s += `  ${app}:{\n`;
+    const voc = vocab[app] || {};
+    Object.keys(voc).forEach(slot => {
+      s += `    "${slot}":{`;
+      Object.keys(voc[slot]).forEach(labeler => {
+        s += `${labeler}:"${voc[slot][labeler]}",`;
+      });
+      s += `},\n`;
+    });
+    s += `  },\n`;
+  });
+  
+  s += "};\n```\n\n";
+  s += "Also update `appSlots` to match:\n\n";
+  s += "```javascript\nconst appSlots = {\n";
+  APPS.forEach(app => {
+    s += `  ${app}:${JSON.stringify(appSlots[app]||[])},\n`;
+  });
+  s += "};\n```\n";
+  
+  navigator.clipboard.writeText(s).then(() => flash("ok", "✓ vocab prompt copied"));
+}
+
+function copyCodePrompt(){
+  let s = "# Update appy-mini.html code labels for 7 apps\n\n";
+  s += "Update the code identifiers in `appy-mini.html` to match these changes:\n\n";
+  s += "## Global APP_COLORS map\n\n";
+  s += "```javascript\nconst APP_COLORS = {\n";
+  APPS.forEach(app => {
+    const cl = codeLabels[app];
+    s += `  '${cl.jsKey}':'${cl.color}',`;
+  });
+  s += "\n};\n```\n\n";
+  
+  s += "## Per-app code labels\n\n";
+  APPS.forEach(app => {
+    const cl = codeLabels[app];
+    s += `### ${app}\n`;
+    s += `- CSS class: \`${cl.css}\`\n`;
+    s += `- JS key: \`${cl.jsKey}\`\n`;
+    s += `- data-app: \`${cl.dataApp}\`\n`;
+    s += `- Color: \`${cl.color}\`\n`;
+    s += `- href: \`${cl.href}\`\n`;
+    s += `- aria EN: \`${cl.ariaEn}\`\n`;
+    s += `- aria ES: \`${cl.ariaEs}\`\n\n`;
+  });
+  
+  s += "## Bilingual aria labels (bx() calls)\n\n";
+  s += "Update all `bx()` calls that contain app preview labels:\n\n";
+  APPS.forEach(app => {
+    const cl = codeLabels[app];
+    s += `- \`${app}\`: \`bx('${cl.ariaEn}','${cl.ariaEs}')\`\n`;
+  });
+  s += "\n";
+  
+  navigator.clipboard.writeText(s).then(() => flash("ok", "✓ code labels prompt copied"));
+}
+
+function showJSON(){
+  document.getElementById("dump").value = JSON.stringify({
+    codeLabels,
+    appSlots,
+    vocab
+  }, null, 2);
+  document.getElementById("dlg").showModal();
+}
+function copyDump(){navigator.clipboard.writeText(document.getElementById("dump").value).then(()=>flash("ok2","✓ copied"));}
+function flash(id,m){const e=document.getElementById(id);e.textContent=m;setTimeout(()=>e.textContent="",1800);}
+
+renderCodeLabels(); renderAppSections();
+</script>
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!doctype html>
+<!--
+  TEMPLATE for the "questy-html" skill — display questy surveys as HTML.
+  Part of the questy flove theory: guiding people through questions on flove.org.
+  Fill the three PLACEHOLDER spots marked  === FILL n/3 ===  below:
+    1. <title> (minimal)
+    2. const PROJECT_NAME — project identifier
+    3. const LS_KEY — localStorage key (no spaces)
+  Import questy .md surveys via the "Import questy" button above.
+  Self-contained: no build, no network. Saves answers to the browser.
+  Publish to flove.org for public persistence.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title><!-- === FILL 1/3 === -->survey</title>
+<style>
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --bg:#0b0b0f; --ink:#e9eaf2; --muted:#a3a7b4; --line:#1e2133;
+    --card:#11131a; --panel:#13162a; --accent:#8d89ff; --accent-soft:#c9c6ff; --signal:#00f7a7;
+  }
+  body{
+    font-family:ui-monospace,monospace; color:var(--ink); line-height:1.6;
+    background:var(--bg); min-height:100vh; padding:1rem;
+  }
+  .bar{ display:flex; gap:.5rem; align-items:center; margin-bottom:1rem; padding-bottom:.5rem; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  button{ font-family:inherit; cursor:pointer; font-size:.72rem; padding:.4rem .7rem; border-radius:999px; border:1px solid var(--line); background:transparent; color:var(--ink); transition:.16s; }
+  button:hover{ border-color:var(--accent); color:var(--accent-soft); }
+  button.solid{ background:var(--accent); color:#fff; border-color:transparent; }
+  button.import{ border-color:var(--signal); color:var(--signal); }
+  button.share{ border-color:#0088cc; color:#0088cc; }
+  button.share:hover{ background:rgba(0,136,204,.14); }
+  .bar .grow{ flex:1; }
+  .count{ font-size:.62rem; color:var(--muted); }
+  .progress{ font-size:.62rem; color:var(--signal); }
+  .toast{ position:fixed; left:50%; bottom:1rem; transform:translateX(-50%) translateY(140%); background:var(--panel); border:1px solid var(--accent); color:var(--accent-soft); padding:.5rem .8rem; border-radius:8px; font-size:.72rem; transition:transform .3s; z-index:40; }
+  .toast.show{ transform:translateX(-50%) translateY(0); }
+
+  .reply-tab{ position:fixed; top:.5rem; right:.5rem; z-index:50; background:var(--panel); border:1px solid var(--line); border-radius:999px; padding:.3rem .7rem; font-size:.68rem; color:var(--accent-soft); cursor:pointer; }
+  .reply-tab:hover{ border-color:var(--accent); }
+  .reply-tab.saved{ border-color:var(--signal); color:var(--signal); }
+  .reply-panel{ position:fixed; top:2.5rem; right:.5rem; z-index:49; width:280px; max-height:70vh; overflow-y:auto; background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:.8rem; display:none; }
+  .reply-panel.show{ display:block; }
+  .reply-item{ margin:.3rem 0; padding:.3rem; background:var(--card); border-radius:6px; }
+  .reply-item .q{ font-size:.65rem; color:var(--muted); }
+  .reply-item .a{ font-size:.68rem; color:var(--signal); }
+
+  .q{ background:var(--card); border:1px solid var(--line); border-radius:10px; padding:.8rem; margin-bottom:.8rem; }
+  .q .qn{ font-size:.5rem; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); }
+  .q .qn .warn{ color:#ff6b6b; }
+  .q h3{ font-size:.85rem; margin:.2rem 0 .5rem; }
+  .opts{ display:flex; flex-direction:column; gap:.3rem; }
+  .opt{ border:1px solid var(--line); background:rgba(255,255,255,.015); border-radius:8px; transition:.14s; }
+  .opt:hover{ border-color:var(--accent); }
+  .opt .row{ display:flex; align-items:center; gap:.5rem; padding:.4rem .6rem; cursor:pointer; font-size:.75rem; }
+  .opt .row input{ accent-color:var(--accent); }
+  .opt .row .lab{ flex:1; }
+  .opt .desc{ display:none; padding:0 .6rem .4rem 1.8rem; font-size:.65rem; color:var(--muted); }
+  .opt.open .desc{ display:block; }
+  .opt.chosen{ border-color:var(--accent); background:rgba(141,137,255,.12); }
+
+  .empty{ text-align:center; padding:2rem; color:var(--muted); font-size:.75rem; }
+  .actions{ display:flex; gap:.5rem; margin-top:1rem; flex-wrap:wrap; }
+</style>
+</head>
+<body>
+
+<div class="reply-tab" id="replyTab">replies</div>
+<div class="reply-panel" id="replyPanel">
+  <div id="replyContent"></div>
+</div>
+
+<div class="bar">
+  <button id="importBtn" class="import">Import questy</button>
+  <input type="file" id="fileInput" accept=".md" style="display:none">
+  <button id="reimportBtn" style="display:none">Re-import answers</button>
+  <input type="file" id="reimportInput" accept=".md,.json" style="display:none">
+  <span class="grow"></span>
+  <span class="progress" id="progress"></span>
+  <span class="count" id="count">0/0</span>
+</div>
+
+<div id="surveyContainer">
+  <div class="empty">No survey loaded</div>
+</div>
+
+<form id="form" style="display:none"></form>
+
+<div class="actions">
+  <button id="save" class="solid">Save</button>
+  <button id="copyBtn">Copy</button>
+  <button id="mdBtn">MD</button>
+  <button id="shareBtn" class="share">Share</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* === FILL 2/3 === */
+const PROJECT_NAME = 'CHANGEME';
+
+/* === FILL 3/3 === */
+const LS_KEY = 'CHANGEME-replies';
+
+let store = {};
+try{ store = JSON.parse(localStorage.getItem(LS_KEY) || '{}'); }catch(e){ store = {}; }
+const saveStore = () => localStorage.setItem(LS_KEY, JSON.stringify(store));
+let qIndex = 0;
+let questions = [];
+
+const importBtn = document.getElementById('importBtn');
+const fileInput = document.getElementById('fileInput');
+const reimportBtn = document.getElementById('reimportBtn');
+const reimportInput = document.getElementById('reimportInput');
+const surveyContainer = document.getElementById('surveyContainer');
+const form = document.getElementById('form');
+
+importBtn.addEventListener('click', () => fileInput.click());
+reimportBtn.addEventListener('click', () => reimportInput.click());
+
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    questions = parseQuestyMd(ev.target.result);
+    renderSurvey();
+    reimportBtn.style.display = 'inline-block';
+    toast('imported ✓');
+  };
+  reader.readAsText(file);
+});
+
+reimportInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      Object.assign(store, data);
+      saveStore();
+      renderSurvey();
+      toast('answers re-imported ✓');
+    } catch(err) {
+      toast('invalid file format');
+    }
+  };
+  reader.readAsText(file);
+});
+
+function parseQuestyMd(md) {
+  const lines = md.split('\n');
+  const questions = [];
+  let current = null;
+  for (const line of lines) {
+    const t = line.trim();
+    if (t.toLowerCase().startsWith('question:')) {
+      if (current) questions.push(current);
+      current = { q: t.slice(9).trim(), options: [], multi: false, suggest: [] };
+    } else if (current && t.toLowerCase().startsWith('option:')) {
+      const opt = t.slice(7).trim();
+      const m = opt.match(/^(.+?)\s*\((.+)\)$/);
+      current.options.push(m ? { label: m[1].trim(), desc: m[2].trim() } : { label: opt, desc: '' });
+    } else if (current && t.toLowerCase().startsWith('description:') && current.options.length) {
+      current.options[current.options.length - 1].desc = t.slice(12).trim();
+    } else if (current && t.toLowerCase().startsWith('multi:')) {
+      current.multi = t.slice(6).trim().toLowerCase() === 'true';
+    } else if (current && t.toLowerCase().startsWith('suggest:')) {
+      current.suggest = t.slice(8).trim().split(',').map(s => s.trim());
+    }
+  }
+  if (current) questions.push(current);
+  return questions;
+}
+
+function renderSurvey() {
+  surveyContainer.innerHTML = '';
+  form.innerHTML = '';
+  form.style.display = questions.length ? 'block' : 'none';
+  qIndex = 0;
+  questions.forEach(item => {
+    qIndex++;
+    const name = 'q' + qIndex;
+    const saved = store[name] || [];
+    const isAnswered = saved.length > 0;
+    const card = document.createElement('div'); card.className = 'q';
+    const warn = isAnswered ? '' : '<span class="warn">*</span>';
+    card.innerHTML = `<div class="qn">Q${qIndex}${item.multi?' · multi':''}${warn}</div><h3>${esc(item.q)}</h3>`;
+    const opts = document.createElement('div'); opts.className = 'opts';
+    item.options.forEach(opt => {
+      const wrap = document.createElement('div'); wrap.className = 'opt';
+      if (item.suggest.includes(opt.label)) wrap.classList.add('sugg');
+      const row = document.createElement('label'); row.className = 'row';
+      const inp = document.createElement('input');
+      inp.type = item.multi ? 'checkbox' : 'radio';
+      inp.name = name; inp.value = opt.label;
+      if (saved.includes(opt.label)) { inp.checked = true; wrap.classList.add('chosen'); }
+      inp.addEventListener('change', () => { persist(name); syncChosen(opts); updateCount(); updateReplies(); });
+      const lab = document.createElement('span'); lab.className = 'lab'; lab.textContent = opt.label;
+      row.append(inp, lab);
+      if (opt.desc) {
+        const desc = document.createElement('div'); desc.className = 'desc'; desc.textContent = opt.desc;
+        row.addEventListener('click', () => wrap.classList.toggle('open'));
+        wrap.append(row, desc);
+      } else {
+        wrap.appendChild(row);
+      }
+      opts.appendChild(wrap);
+    });
+    card.appendChild(opts); form.appendChild(card);
+  });
+  updateCount(); updateReplies();
+}
+
+const replyTab = document.getElementById('replyTab');
+const replyPanel = document.getElementById('replyPanel');
+const replyContent = document.getElementById('replyContent');
+replyTab.addEventListener('click', () => {
+  replyPanel.classList.toggle('show');
+});
+
+function updateReplies() {
+  const items = [];
+  questions.forEach((item, idx) => {
+    const picks = store['q' + (idx + 1)] || [];
+    if (picks.length) items.push({ q: item.q, a: picks.join(', ') });
+  });
+  replyContent.innerHTML = items.length
+    ? items.map(i => `<div class="reply-item"><div class="q">${esc(i.q)}</div><div class="a">${esc(i.a)}</div></div>`).join('')
+    : '<div class="reply-item"><div class="q">no replies yet</div></div>';
+}
+
+function persist(name) {
+  store[name] = [...form.querySelectorAll(`input[name="${name}"]:checked`)].map(i => i.value);
+  if (!store[name].length) delete store[name];
+  saveStore();
+}
+function syncChosen(opts) {
+  opts.querySelectorAll('.opt').forEach(o => o.classList.toggle('chosen', o.querySelector('input').checked));
+}
+function updateCount() {
+  const answered = Object.keys(store).filter(k => /^q\d+$/.test(k)).length;
+  const unanswered = qIndex - answered;
+  document.getElementById('count').textContent = answered + '/' + qIndex;
+  document.getElementById('progress').textContent = unanswered > 0 ? unanswered + ' remaining' : 'all answered ✓';
+}
+
+/* save with validation */
+document.getElementById('save').addEventListener('click', () => {
+  const unanswered = qIndex - Object.keys(store).filter(k => /^q\d+$/.test(k)).length;
+  if (unanswered > 0 && !confirm(unanswered + ' question(s) unanswered. Save anyway?')) return;
+  replyTab.classList.add('saved');
+  replyTab.textContent = 'saved ✓';
+  toast('saved ✓');
+});
+
+/* copy answers */
+document.getElementById('copyBtn').addEventListener('click', () => {
+  const text = buildMd();
+  navigator.clipboard.writeText(text).then(() => toast('copied ✓'));
+});
+
+/* download as .md */
+document.getElementById('mdBtn').addEventListener('click', () => {
+  const text = buildMd();
+  const blob = new Blob([text], { type: 'text/markdown' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = PROJECT_NAME + '-answers.md';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('downloaded ✓');
+});
+
+/* share via telegram */
+document.getElementById('shareBtn').addEventListener('click', () => {
+  const text = buildMd();
+  const url = 'https://t.me/share/url?url=' + encodeURIComponent(window.location.href) + '&text=' + encodeURIComponent(text);
+  window.open(url, '_blank');
+  toast('opening telegram...');
+});
+
+function buildMd() {
+  let md = '# ' + PROJECT_NAME + ' Answers\n\n';
+  questions.forEach((item, idx) => {
+    const picks = store['q' + (idx + 1)] || [];
+    md += '## Q' + (idx + 1) + ': ' + item.q + '\n\n';
+    if (picks.length) {
+      md += '**Answer:** ' + picks.join(', ') + '\n\n';
+    } else {
+      md += '**Answer:** (unanswered)\n\n';
+    }
+    if (item.suggest.length) {
+      md += '*Suggested:* ' + item.suggest.join(', ') + '\n\n';
+    }
+  });
+  return md;
+}
+
+function esc(s) { return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+let toastT;
+function toast(msg) {
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2000);
+}
+</script>
+</body>
+</html>

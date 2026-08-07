@@ -1,0 +1,1865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Goddy · FLOVE</title>
+    <meta name="description" content="Goddy — Goddess, God and Us. Click each cell to map who sees who: a bipolar whole read through its unique part (1/2/1).">
+    <meta name="author" content="flove">
+    <meta name="theme-color" content="#8b5cf6">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path d='M32 18.73 A15 15 0 0 0 32 45.27 A15 15 0 0 0 32 18.73 Z' fill='%23ff8aae'/><circle cx='25' cy='32' r='15' fill='none' stroke='%23c133ff' stroke-width='3.6'/><circle cx='39' cy='32' r='15' fill='none' stroke='%236a3aff' stroke-width='3.6'/><circle cx='32' cy='32' r='2.6' fill='%238b5cf6'/></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap">
+    <style data-flove-inlined="flove.css">
+/* inlined from apps/flove.css */
+/* ============================================================
+   🌱 flove.css · shared identity layer for all FLOVE demos
+   --------------------------------------------------------------
+   Design intent
+   - One cohesive frame around 13 very different apps.
+   - Each app keeps its own palette by overriding `--app-*` tokens
+     in its local `:root`. This file only paints the common skin.
+   - Two visual primitives identify the family everywhere:
+       1. The 🌱 sprout mark (brand)
+       2. The flove-bar at the very top (back to launcher + app name)
+   - A common motion vocabulary (gentle lift, soft fade, wiggle).
+   ============================================================ */
+
+:root {
+  /* The sprout — flove brand mark. Used as logo glyph everywhere. */
+  --flove-mark: "🌱";
+
+  /* Per-app overridable accent. Apps redeclare these. */
+  --app-accent:        #6ee7b7;
+  --app-accent-soft:   #a7f3d0;
+  --app-ink-on-accent: #042418;
+
+  /* Family geometry & motion (constant across apps) */
+  --flove-radius-sm: 12px;
+  --flove-radius:    20px;
+  --flove-radius-lg: 28px;
+  --flove-radius-pill: 999px;
+  --flove-ease:    cubic-bezier(.2,.8,.2,1);
+  --flove-fast:    .15s var(--flove-ease);
+  --flove-medium:  .25s var(--flove-ease);
+  --flove-slow:    .4s  var(--flove-ease);
+
+  /* Family typography. Apps may override font-family but should keep these scales. */
+  --flove-font-ui: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --flove-font-display: 'Georgia', 'Times New Roman', serif;
+}
+
+/* ============================================================
+   THE FLOVE BAR — a thin sticky strip at the very top of every
+   app. Holds the back-to-launcher link, the sprout brand,
+   and the app name. Lives ABOVE every app's own header.
+   ============================================================ */
+.flove-bar {
+  position: sticky;
+  top: 0;
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  font-family: var(--flove-font-ui);
+  font-size: 13px;
+  letter-spacing: .3px;
+  background: rgba(255,255,255,.55);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  color: #1a1a1a;
+}
+
+/* Auto dark variant when app body is dark */
+@media (prefers-color-scheme: dark) {
+  .flove-bar.flove-bar--auto {
+    background: rgba(10,12,18,.55);
+    border-bottom-color: rgba(255,255,255,.08);
+    color: #e9ecf3;
+  }
+}
+.flove-bar--dark {
+  background: rgba(10,12,18,.6);
+  border-bottom-color: rgba(255,255,255,.08);
+  color: #e9ecf3;
+}
+
+.flove-bar a.flove-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: inherit;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--flove-radius-pill);
+  transition: background var(--flove-fast), transform var(--flove-fast);
+}
+.flove-bar a.flove-home:hover {
+  background: var(--app-accent-soft);
+  color: var(--app-ink-on-accent);
+  transform: translateX(-2px);
+}
+.flove-bar .flove-mark {
+  font-size: 16px;
+  color: var(--app-accent);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--app-accent) 35%, transparent));
+}
+.flove-bar .flove-app-name {
+  font-weight: 500;
+  opacity: .85;
+}
+.flove-bar .flove-spacer { flex: 1; }
+.flove-bar .flove-tag {
+  font-size: 11px;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  opacity: .55;
+}
+
+/* ============================================================
+   SPROUT ANIMATION — used wherever a `.flove-sprout` lives
+   (launcher hero, footer badges, splash). Subtle slow rotation.
+   ============================================================ */
+.flove-sprout {
+  display: inline-block;
+  font-style: normal;
+  animation: flove-spin 12s linear infinite;
+  transform-origin: center;
+  color: var(--app-accent);
+}
+.flove-sprout.flove-sprout--still { animation: none; }
+@keyframes flove-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   FLOVE FOOTER BADGE — small "back to launcher" pill that any
+   app can drop in at the bottom of the page.
+   ============================================================ */
+.flove-footer-badge {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-family: var(--flove-font-ui);
+  font-size: 12px;
+  letter-spacing: .4px;
+  color: #1a1a1a;
+  text-decoration: none;
+  background: rgba(255,255,255,.7);
+  border: 1px solid rgba(0,0,0,.06);
+  border-radius: var(--flove-radius-pill);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 20px rgba(0,0,0,.08);
+  transition: transform var(--flove-fast), box-shadow var(--flove-fast);
+}
+.flove-footer-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0,0,0,.12);
+}
+.flove-footer-badge--dark {
+  background: rgba(20,24,32,.7);
+  color: #e9ecf3;
+  border-color: rgba(255,255,255,.08);
+}
+
+/* ============================================================
+   COMMON UTILITIES — kept tiny on purpose so that each app's
+   own bespoke styles still rule. These are opt-in classes.
+   ============================================================ */
+
+/* Soft glass card */
+.flove-card {
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+  border: 1px solid rgba(127,127,127,.18);
+  border-radius: var(--flove-radius-lg);
+  padding: 18px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.08);
+}
+
+/* Pill shape for tags / chips / nav items */
+.flove-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.22);
+  background: rgba(255,255,255,.04);
+  cursor: pointer;
+  transition: transform var(--flove-fast), background var(--flove-fast), border-color var(--flove-fast);
+}
+.flove-pill:hover { transform: translateY(-1px); border-color: var(--app-accent); }
+.flove-pill[aria-pressed="true"], .flove-pill.is-active {
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  border-color: var(--app-accent);
+}
+
+/* A primary action button — shared shape, app paints color */
+.flove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid var(--app-accent);
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  font-weight: 600;
+  font-family: var(--flove-font-ui);
+  cursor: pointer;
+  transition: transform var(--flove-fast), box-shadow var(--flove-fast), filter var(--flove-fast);
+}
+.flove-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px color-mix(in srgb, var(--app-accent) 40%, transparent); }
+.flove-btn:active { transform: translateY(0); filter: brightness(.95); }
+.flove-btn--ghost {
+  background: transparent;
+  color: inherit;
+  border-color: rgba(127,127,127,.3);
+}
+.flove-btn--ghost:hover { border-color: var(--app-accent); color: var(--app-accent); }
+
+/* Tiny floating toast feedback (optional, used by some apps) */
+.flove-toast {
+  position: fixed;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(20,22,30,.92);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: var(--flove-radius-pill);
+  font-size: 13px;
+  font-family: var(--flove-font-ui);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--flove-medium), transform var(--flove-medium);
+  z-index: 999;
+  box-shadow: 0 12px 30px rgba(0,0,0,.25);
+}
+.flove-toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Wiggle on tap, used by playful elements (launcher tiles, brand mark, …) */
+@keyframes flove-wiggle {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-3deg); }
+  40% { transform: rotate(3deg); }
+  60% { transform: rotate(-2deg); }
+  80% { transform: rotate(2deg); }
+}
+.flove-wiggle { animation: flove-wiggle .4s ease-out; }
+
+/* Soft float used in the launcher tiles and avatars */
+@keyframes flove-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Reduced motion: disable all flove animations */
+@media (prefers-reduced-motion: reduce) {
+  .flove-sprout, .flove-wiggle { animation: none !important; }
+  *, *::before, *::after { transition-duration: .01ms !important; }
+}
+
+/* Mobile: hide the bottom badge so it doesn't compete with app UI */
+@media (max-width: 480px) {
+  .flove-footer-badge { display: none; }
+  .flove-bar { font-size: 12px; padding: 6px 10px; }
+}
+
+/* ============================================================
+   FLOVE-IO ACTION BAR — emitted by flove-io.js (F0).
+   Sits inside a form, gives the user Copy / Save / Share / Publish
+   over the form's current FloveElement payload.
+   ============================================================ */
+.flove-action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  margin-top: 14px;
+  border-radius: var(--flove-radius);
+  background: rgba(127,127,127,.06);
+  border: 1px solid rgba(127,127,127,.18);
+  font-family: var(--flove-font-ui);
+}
+.flove-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid rgba(127,127,127,.3);
+  background: rgba(255,255,255,.04);
+  color: inherit;
+  font-family: inherit;
+  font-size: 13px;
+  border-radius: var(--flove-radius-pill);
+  cursor: pointer;
+  transition: transform var(--flove-fast),
+              border-color var(--flove-fast),
+              background var(--flove-fast);
+}
+.flove-action-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--app-accent);
+}
+.flove-action-btn:active { transform: translateY(0); }
+.flove-action-btn--primary {
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  border-color: var(--app-accent);
+  font-weight: 600;
+}
+.flove-action-btn--primary:hover { filter: brightness(1.05); }
+.flove-action-btn[hidden] { display: none; }
+
+/* Toast variant used by flove-io (slightly tighter, top of footer) */
+.flove-toast--io { bottom: 80px; }
+
+/* ============================================================
+   FLOVE SHELL — feature-driven UI rendered by flove-shell.js.
+   Per-textarea voice + add-another · phrase card · 6-button bar ·
+   insight result · publish modal · format popover.
+   ============================================================ */
+
+/* per-textarea / per-input controls ────────────────────────── */
+.flove-field-wrap {
+  position: relative;
+  display: block;
+}
+.flove-field-wrap > textarea,
+.flove-field-wrap > input {
+  width: 100%;
+  padding-right: 88px;     /* room for the two field buttons */
+}
+.flove-field-tools {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 4px;
+  z-index: 1;
+}
+.flove-field-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.25);
+  background: rgba(255,255,255,.7);
+  color: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--flove-fast), border-color var(--flove-fast),
+              background var(--flove-fast);
+  padding: 0;
+  line-height: 1;
+}
+.flove-field-btn:hover {
+  border-color: var(--app-accent);
+  transform: translateY(-1px);
+}
+.flove-field-btn--voice.is-recording {
+  background: #fb7185;
+  color: #fff;
+  border-color: #fb7185;
+  animation: flove-pulse 1.4s infinite;
+}
+@keyframes flove-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251,113,133,.45); }
+  50%      { box-shadow: 0 0 0 8px rgba(251,113,133,0); }
+}
+
+/* phrase card (phrase + 6-button bar + result panel) ────────── */
+.flove-phrase-card {
+  margin: 18px 0;
+  padding: 16px;
+  background: linear-gradient(180deg, var(--app-accent-soft) 0%,
+                                      color-mix(in srgb, var(--app-accent-soft) 30%, transparent) 100%);
+  border: 1px solid color-mix(in srgb, var(--app-accent) 35%, transparent);
+  border-radius: var(--flove-radius-lg);
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+  font-family: var(--flove-font-ui);
+}
+.flove-phrase {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  font-family: ui-monospace, 'JetBrains Mono', Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--app-ink-on-accent);
+  background: rgba(255,255,255,.6);
+  border-radius: var(--flove-radius);
+  word-break: break-word;
+  min-height: 1.55em;
+}
+.flove-phrase.is-magic {
+  background: linear-gradient(110deg, rgba(255,255,255,.55), rgba(255,255,255,.85));
+  font-style: italic;
+}
+
+/* six-button action bar (overrides the 4-button defaults) ──── */
+.flove-action-bar--six {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  padding: 6px;
+  background: rgba(255,255,255,.5);
+  border-radius: var(--flove-radius);
+  border: 1px solid rgba(127,127,127,.18);
+  margin-top: 0;
+}
+.flove-action-bar--six .flove-action-btn {
+  justify-content: center;
+  padding: 10px 6px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+@media (max-width: 540px) {
+  .flove-action-bar--six .flove-action-btn span:nth-child(2) { display: none; }
+}
+
+/* result panel (insight, publish progress) ─────────────────── */
+.flove-result {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,.7);
+  border: 1px solid rgba(127,127,127,.22);
+  border-radius: var(--flove-radius);
+}
+.flove-result[hidden] { display: none; }
+.flove-result__title {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-ink-on-accent);
+}
+.flove-result__lede {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(0,0,0,.6);
+}
+.flove-result__body {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+.flove-result__list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.flove-result__error {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 13px;
+}
+.flove-result__row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* modal (insight config, publish multi-select) ─────────────── */
+.flove-modal {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  font-family: var(--flove-font-ui);
+}
+.flove-modal__backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.flove-modal__panel {
+  position: relative;
+  width: min(540px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: #fff;
+  color: #1a1a1a;
+  border-radius: var(--flove-radius-lg);
+  padding: 22px;
+  box-shadow: 0 30px 60px rgba(0,0,0,.3);
+  display: grid;
+  gap: 12px;
+}
+.flove-modal__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.flove-modal__lede {
+  margin: 0;
+  color: #52606d;
+  font-size: .9rem;
+}
+.flove-modal label {
+  display: grid;
+  gap: 4px;
+  font-size: .85rem;
+  color: #52606d;
+}
+.flove-modal input,
+.flove-modal textarea,
+.flove-modal select {
+  padding: 10px 12px;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: var(--flove-radius);
+  font: inherit;
+  background: #fff;
+  color: #1a1a1a;
+}
+.flove-modal__row {
+  display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;
+  padding-top: 6px;
+  border-top: 1px solid rgba(0,0,0,.06);
+}
+
+/* publish multi-select list ────────────────────────────────── */
+.flove-publish-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.flove-publish-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: var(--flove-radius);
+  background: rgba(0,0,0,.02);
+}
+.flove-publish-row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-direction: row;
+  font-size: .92rem;
+}
+.flove-publish-kind {
+  font-size: .72rem;
+  letter-spacing: .3px;
+  color: #6b7280;
+  text-transform: uppercase;
+  background: rgba(0,0,0,.04);
+  border-radius: var(--flove-radius-pill);
+  padding: 2px 8px;
+}
+.flove-publish-add {
+  border: 1px dashed rgba(0,0,0,.15);
+  border-radius: var(--flove-radius);
+  padding: 10px 12px;
+}
+.flove-publish-add summary {
+  cursor: pointer;
+  font-size: .85rem;
+  color: #4b5563;
+}
+.flove-publish-add[open] summary { margin-bottom: 8px; }
+.flove-publish-add label { margin-bottom: 6px; }
+
+/* enhanced flove-bar — center categories + right menu ───────── */
+.flove-bar--enhanced .flove-mark,
+.flove-bar--enhanced .flove-sprout {
+  user-select: none;
+  transition: transform var(--flove-fast);
+}
+.flove-bar--enhanced .flove-mark:hover,
+.flove-bar--enhanced .flove-sprout:hover { transform: rotate(20deg) scale(1.08); }
+
+.flove-categories {
+  flex: 1 1 auto;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0 6px;
+  scroll-snap-type: x proximity;
+  justify-content: center;
+}
+.flove-categories::-webkit-scrollbar { display: none; }
+.flove-cat-chip {
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+  padding: 4px 12px;
+  font-size: 12px;
+  letter-spacing: .2px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.25);
+  background: rgba(255,255,255,.5);
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform var(--flove-fast),
+              background var(--flove-fast),
+              border-color var(--flove-fast);
+}
+.flove-cat-chip:hover { border-color: var(--app-accent); transform: translateY(-1px); }
+.flove-cat-chip.is-active {
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  border-color: var(--app-accent);
+}
+
+.flove-menu-btn {
+  width: 36px; height: 36px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.22);
+  background: rgba(255,255,255,.5);
+  color: inherit;
+  font-size: 18px;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--flove-fast), border-color var(--flove-fast);
+}
+.flove-menu-btn:hover { background: var(--app-accent-soft); border-color: var(--app-accent); }
+.flove-menu-btn[aria-expanded="true"] { background: var(--app-accent); color: var(--app-ink-on-accent); }
+
+.flove-menu {
+  width: min(280px, calc(100vw - 24px));
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: var(--flove-radius);
+  box-shadow: 0 18px 40px rgba(0,0,0,.18);
+  padding: 6px;
+  z-index: 200;
+  font-family: var(--flove-font-ui);
+}
+.flove-menu[hidden] { display: none; }
+.flove-menu__section {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.flove-menu__section:last-child { border-bottom: 0; }
+.flove-menu__title {
+  margin: 0 8px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: #6b7280;
+}
+.flove-menu__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 9px 10px;
+  font: inherit;
+  font-size: .9rem;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: var(--flove-radius);
+  cursor: pointer;
+  text-decoration: none;
+}
+.flove-menu__item:hover {
+  background: var(--app-accent-soft);
+  color: var(--app-ink-on-accent);
+}
+
+@media (max-width: 540px) {
+  .flove-categories { gap: 4px; padding: 0 2px; }
+  .flove-cat-chip { padding: 3px 10px; font-size: 11px; }
+}
+
+/* format popover ────────────────────────────────────────────── */
+.flove-popover {
+  z-index: 999;
+  width: 220px;
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: var(--flove-radius);
+  box-shadow: 0 14px 30px rgba(0,0,0,.18);
+  padding: 4px;
+  font-family: var(--flove-font-ui);
+}
+.flove-popover__item {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: var(--flove-radius);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.flove-popover__item:hover {
+  background: var(--app-accent-soft);
+  color: var(--app-ink-on-accent);
+}
+
+</style>
+    <style>
+        :root {
+            /* flove identity overrides — lavender God(dess) */
+            --app-accent:        #8b5cf6;
+            --app-accent-soft:   #ddd2ff;
+            --app-ink-on-accent: #1f0f4a;
+            --gothic-modern:     'Cinzel', Georgia, serif;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: #f8f9fc;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 16px 12px 32px;
+        }
+
+        /* fixed top bar override — fully transparent & borderless, so the
+           table can sit right at the top and read through it */
+        .flove-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: transparent;
+            border-bottom: none;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+        }
+        /* sprout: pause when idle, run only on user interaction */
+        .flove-bar .flove-sprout { animation-play-state: paused; }
+        body:hover .flove-bar .flove-sprout,
+        body:active .flove-bar .flove-sprout,
+        body:focus-within .flove-bar .flove-sprout { animation-play-state: running; }
+
+        /* logo: 2× the bar's font-size, click reloads (anchor below) */
+        .flove-bar .flove-mark-link {
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            color: inherit;
+        }
+        .flove-bar .flove-mark { font-size: 32px; }
+        /* the brand SVG mark: optical baseline nudge + allow gradient overflow
+           (moved off an inline style) */
+        .flove-bar .goddy-brand .flove-mark { vertical-align: -.15em; overflow: visible; }
+
+        .app {
+            max-width: 580px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* matrix — flat, no borders, no fills */
+        .matrix-section { margin: 8px 0 6px; }
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: 130px repeat(3, 1fr);
+            padding: 6px;
+        }
+        /* row-header column gets its own taller height — keeps click on
+           data cells from visually crowding the vertical "Goddess/God/Us" labels */
+        .matrix-grid .row-header { min-height: 96px; }
+        /* data cells flush together — no gaps, no rounded corners between cells */
+        .matrix-grid .data-cell { margin: 0; border-radius: 0; }
+        .grid-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 12px 4px;
+            font-weight: 500;
+            min-height: 64px;
+            transition: all 0.15s;
+        }
+        .row-header {
+            font-family: var(--gothic-modern);
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: #4a385e;
+            font-size: 1rem;
+            justify-content: flex-start;
+            padding-left: 16px;
+            text-transform: uppercase;
+        }
+        /* soft right-pointing arrow after each row name — "who this one sees →".
+           Gently glides right and fades in a loop; still for reduced-motion. */
+        .row-arrow {
+            display: inline-block;
+            margin-left: 9px;
+            font-size: 0.82em;
+            font-weight: 400;
+            color: var(--app-accent);
+            opacity: 0.55;
+            will-change: transform;
+            animation: row-arrow-glide 2.6s var(--flove-ease) infinite;
+        }
+        @keyframes row-arrow-glide {
+            0%, 100% { transform: translateX(0); opacity: 0.4; }
+            50%      { transform: translateX(5px); opacity: 0.9; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .row-arrow { animation: none; opacity: 0.6; }
+        }
+        .col-header {
+            font-family: var(--gothic-modern);
+            font-weight: 700;
+            color: #2d253b;
+            font-size: 1rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .data-cell {
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+            font-size: 1.5rem;
+            color: #2e1e42;
+            transition: background 0.25s ease;
+            min-height: 64px;
+        }
+        /* hidden state radios + cycling labels (4 clicks per cell, pure CSS) */
+        .cell-input { position: absolute; opacity: 0; pointer-events: none; inset: 0; width: 0; height: 0; }
+        .cell-cycle { position: absolute; inset: 0; cursor: pointer; display: none; }
+        .data-cell:has(.cell-input[data-lvl="0"]:checked) .cell-cycle[data-from="0"],
+        .data-cell:has(.cell-input[data-lvl="1"]:checked) .cell-cycle[data-from="1"],
+        .data-cell:has(.cell-input[data-lvl="2"]:checked) .cell-cycle[data-from="2"],
+        .data-cell:has(.cell-input[data-lvl="3"]:checked) .cell-cycle[data-from="3"] { display: block; }
+        /* tri-state gray fill: 33% · 66% · 100% (4th click resets) */
+        .data-cell:has(.cell-input[data-lvl="1"]:checked) { background: rgba(60, 60, 75, 0.33); }
+        .data-cell:has(.cell-input[data-lvl="2"]:checked) { background: rgba(60, 60, 75, 0.66); }
+        .data-cell:has(.cell-input[data-lvl="3"]:checked) { background: rgba(60, 60, 75, 1.00); color: #fff; }
+
+        /* ══ Intro sequence (plays once on load) ═══════════════════════════
+           1) cells "click" in a diagonal wave from the bottom-right corner up
+              to the top-left over 10s;
+           2) at the top, logo + title fade in upward (3s);
+           3) then the gaze icon + buttons fade in upward (3s).
+           All gated behind no-preference so reduced-motion shows everything
+           at rest immediately. ═══════════════════════════════════════════ */
+        @media (prefers-reduced-motion: no-preference) {
+            /* diagonal index of each cell, counted from the bottom-right corner */
+            .data-cell[data-row="us"][data-col="us"]           { --diag: 0; }
+            .data-cell[data-row="us"][data-col="god"],
+            .data-cell[data-row="god"][data-col="us"]          { --diag: 1; }
+            .data-cell[data-row="us"][data-col="goddess"],
+            .data-cell[data-row="god"][data-col="god"],
+            .data-cell[data-row="goddess"][data-col="us"]      { --diag: 2; }
+            .data-cell[data-row="god"][data-col="goddess"],
+            .data-cell[data-row="goddess"][data-col="god"]     { --diag: 3; }
+            .data-cell[data-row="goddess"][data-col="goddess"] { --diag: 4; }
+
+            /* each cell flashes a gray fill in turn — a click travelling the
+               anti-diagonal, one step every 2s (5 steps ≈ 10s) */
+            .data-cell::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: rgba(60, 60, 75, 0.5);
+                opacity: 0;
+                pointer-events: none;
+                z-index: 0;
+                animation: intro-click 4s ease-out both;
+                animation-delay: calc(var(--diag, 0) * 4s);
+            }
+
+            /* the Goddess / God / Us labels (row + column headers) fade in over 35s (5× slower) */
+            .col-header, .row-header { animation: intro-fade 35s var(--flove-ease) both; }
+
+            /* 2) logo + title rise in once the wave reaches the top (~20s) */
+            .flove-bar .goddy-brand { animation: intro-up 6s var(--flove-ease) both 20s; }
+            /* 3) gaze icon + buttons rise in after that (~26s) */
+            .gaze-invite  { animation: intro-up 6s var(--flove-ease) both 26s; }
+            /* the buttons aren't part of the timed intro — they rise in the
+               moment a cell is first selected */
+            body:has(.cell-input[data-lvl="1"]:checked) .button-group,
+            body:has(.cell-input[data-lvl="2"]:checked) .button-group,
+            body:has(.cell-input[data-lvl="3"]:checked) .button-group { animation: intro-up .6s var(--flove-ease) both; }
+        }
+        @keyframes intro-click {
+            0%   { opacity: 0; }
+            20%  { opacity: 1; }
+            55%  { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        @keyframes intro-fade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes intro-up {
+            0%   { opacity: 0; transform: translateY(24px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 420px) {
+            .matrix-grid { grid-template-columns: 70px repeat(3, 1fr); }
+            .row-header { padding-left: 10px; font-size: 0.9rem; }
+            .col-header { font-size: 0.9rem; }
+            .data-cell { min-height: 56px; font-size: 1.3rem; }
+        }
+
+        .button-group {
+            display: none;                 /* shown only once a cell is selected */
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 16px 0 20px;
+            align-items: flex-start;
+        }
+        /* reveal the action buttons as soon as any cell is selected (level 1+) */
+        body:has(.cell-input[data-lvl="1"]:checked) .button-group,
+        body:has(.cell-input[data-lvl="2"]:checked) .button-group,
+        body:has(.cell-input[data-lvl="3"]:checked) .button-group { display: grid; }
+        .btn-with-subs {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 4px;
+            min-width: 0;
+            position: relative;
+        }
+        /* subitems-above: floats above the button without shifting it */
+        .subitems-above {
+            position: absolute;
+            left: 0; right: 0;
+            bottom: calc(100% + 4px);
+        }
+        .btn-with-subs .btn { width: 100%; }
+        .subitems {
+            display: flex;
+            gap: 2px;
+            justify-content: stretch;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transform: translateY(-4px);
+            transition: max-height 0.25s ease, opacity 0.18s ease, transform 0.2s ease;
+            pointer-events: none;
+        }
+        .btn-with-subs.is-open .subitems {
+            max-height: 64px;
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .subitem {
+            background: rgba(255,255,255,0.85);
+            border: 1px solid #e2d6f5;
+            color: #3a2c4e;
+            padding: 5px 1px;
+            border-radius: 0;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0;
+            cursor: pointer;
+            flex: 1 1 0;
+            min-width: 0;
+            transition: all 0.15s;
+        }
+        .subitem:hover {
+            background: #fff;
+            border-color: #b59ed6;
+        }
+        /* publish radio behaviour: hide native input, style label */
+        .subitem-radio { position: absolute; opacity: 0; pointer-events: none; width:0; height:0; }
+        .subitem.is-radio { display: inline-flex; align-items: center; justify-content: center; }
+        .subitems:has(.subitem-radio[data-r="0"]:checked) .subitem.is-radio[data-r="0"],
+        .subitems:has(.subitem-radio[data-r="1"]:checked) .subitem.is-radio[data-r="1"],
+        .subitems:has(.subitem-radio[data-r="2"]:checked) .subitem.is-radio[data-r="2"] {
+            background: var(--app-accent);
+            border-color: var(--app-accent);
+            color: #fff;
+        }
+        .btn {
+            background: rgba(255,255,255,0.9);
+            border: 1px solid #d9c9f0;
+            padding: 9px 8px;
+            border-radius: 0;
+            font-family: var(--gothic-modern);
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #2d253b;
+            box-shadow: 0 4px 10px -6px rgba(0,0,0,0.08);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            backdrop-filter: blur(4px);
+            transition: all 0.15s;
+        }
+        .btn i { color: #7c6a9c; font-size: 0.8rem; }
+        .btn:hover {
+            background: #ffffff;
+            border-color: #b59ed6;
+            box-shadow: 0 8px 14px -8px rgba(102,70,140,0.18);
+        }
+        .btn-with-subs.is-open > .btn {
+            background: #ffffff;
+            border-color: #b59ed6;
+            box-shadow: 0 6px 12px -6px rgba(102,70,140,0.15);
+        }
+
+        .hint-area {
+            margin-top: 18px;
+            text-align: center;
+            min-height: 48px;
+            font-size: 1rem;
+            color: #3a2c4e;
+            padding: 12px 18px;
+        }
+
+        /* ── Brand (logo + title) opens a normal menu — no caret/triangle ── */
+        .flove-bar .goddy-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: 0;
+            padding: 2px 4px;
+            cursor: pointer;
+            color: inherit;
+            font: inherit;
+        }
+        .flove-bar .flove-app-name {
+            font-family: var(--gothic-modern);
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            font-size: 1.05rem;
+            color: #2d253b;
+            text-transform: uppercase;
+        }
+        .goddy-menu {
+            position: fixed;
+            top: 48px;
+            left: 12px;
+            z-index: 60;
+            display: flex;
+            flex-direction: column;
+            min-width: 190px;
+            background: #ffffff;
+            border: 1px solid #d9c9f0;
+            box-shadow: 0 18px 28px -12px rgba(61,44,85,0.35);
+            overflow: hidden;
+        }
+        .goddy-menu[hidden] { display: none; }
+        .goddy-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: none;
+            border: 0;
+            text-align: left;
+            font: 500 0.95rem system-ui, -apple-system, sans-serif;
+            color: #2d253b;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .goddy-menu-item:hover { background: #f1ebfb; }
+        .goddy-menu-item i { color: #7c6a9c; width: 16px; text-align: center; }
+
+        /* ── "About goddy" — the 1/2/1 insight typed above the table ── */
+        .about-goddy {
+            margin: 4px 0 14px;
+            padding: 12px 2px;
+            color: #2d253b;
+            font-size: 1rem;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        /* hidden until opened; the ✕ collapses it back — pure CSS */
+        body:not(:has(#aboutToggle:checked)) .about-goddy { display: none; }
+        .about-text { display: block; }
+        /* each line wipes in left-to-right (stepped = typed feel), staggered — pure CSS */
+        .about-line {
+            display: block;
+            clip-path: inset(0 100% 0 0);
+            animation: about-wipe .8s steps(28, end) var(--d, 0s) both;
+        }
+        /* staggered reveal delays (moved off inline styles) */
+        .about-line.d0 { --d: 0s; }
+        /* the united phrase shows at once — no typed wipe, no caret */
+        .about-line--static { clip-path: none; animation: none; }
+        @keyframes about-wipe { to { clip-path: inset(0 0 0 0); } }
+        .about-close {
+            margin-top: .7rem;
+            font-size: 1.05rem;
+            line-height: 1;
+            color: var(--app-accent);
+            cursor: pointer;
+            user-select: none;
+            transition: color .15s;
+        }
+        .about-close:hover { color: #6d28d9; }
+        @media (prefers-reduced-motion: reduce) {
+            .about-line { clip-path: none; animation: none; }
+        }
+
+        /* ── Matrix mark — the "About goddy" section's glyph (its own 3×3 grid,
+              self-seeing diagonal lit: goddess · god · us) ── */
+        .about-mark {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 12px;
+            overflow: visible;
+            flex: 0 0 auto;
+        }
+        @media (prefers-reduced-motion: no-preference) {
+            .about-mark .dg { animation: about-mx-twinkle 2.4s ease-in-out infinite; }
+            .about-mark .d0 { animation-delay: 0s; }
+            .about-mark .d1 { animation-delay: .8s; }
+            .about-mark .d2 { animation-delay: 1.6s; }
+        }
+        @keyframes about-mx-twinkle { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+
+        /* ── Gaze invite — centered below the action buttons; clicking it opens
+              the "About goddy" text (pure-CSS toggle via the #aboutToggle label) ── */
+        .gaze-invite { display: flex; justify-content: center; margin: 18px 0; }
+        .gaze-btn {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 16px;
+            border-radius: 18px;
+            cursor: pointer;
+            background: none;
+            border: 0;
+            transition: transform .15s ease, background .15s ease;
+        }
+        .gaze-btn:hover { transform: translateY(-2px); background: rgba(139, 92, 246, .07); }
+        .gaze-mark { width: 69px; height: 69px; overflow: visible; }
+        @media (prefers-reduced-motion: no-preference) {
+            .gaze-btn .gaze-cradle { transform-box: fill-box; transform-origin: center; animation: gaze-cradle 3.4s ease-in-out infinite; }
+            .gaze-btn .gaze-us { transform-box: fill-box; transform-origin: center; animation: gaze-us 2.6s ease-in-out infinite; }
+        }
+        @keyframes gaze-cradle { 0%, 100% { transform: scale(.94); } 50% { transform: scale(1.05); } }
+        @keyframes gaze-us { 0%, 100% { opacity: .8; } 50% { opacity: 1; } }
+
+        /* ── translaty — page-translation engine + worldball switcher ── */
+        /* i18n span toggle (CSS-only): hide every non-active language */
+        .es{display:none}                                  /* default view = .en */
+        body:has(#lang-es:checked) .en{display:none}
+        body:has(#lang-es:checked) .es{display:inline}
+
+        /* worldball switcher (🌐 opens the language options) */
+        .lang{display:inline-block;position:relative;margin:.2rem 0 .6rem}
+        .lang>summary{list-style:none;cursor:pointer;width:40px;height:40px;border:1px solid #999;border-radius:50%;
+          display:inline-flex;align-items:center;justify-content:center;font-size:1.35rem;line-height:1;-webkit-user-select:none;user-select:none}
+        .lang>summary::-webkit-details-marker{display:none}
+        .lang[open]>summary{border-color:#333;background:#f2f2f2}
+        .lang-opts{position:absolute;right:0;z-index:10;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;
+          background:#fff;border:1px solid #999;border-radius:12px;padding:6px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+        .lang input{position:absolute;opacity:0;pointer-events:none}
+        .lang label{cursor:pointer;padding:0 12px;min-height:40px;display:inline-flex;align-items:center;border:1px solid #999;border-radius:11px;white-space:nowrap}
+        .lang input:checked + label{background:#333;color:#fff;font-weight:bold;border-color:#333}
+
+        @media (prefers-color-scheme:dark){
+          .lang>summary{border-color:#777} .lang[open]>summary{background:#2a2a2a;border-color:#999}
+          .lang-opts{background:#222;border-color:#777;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+          .lang label{border-color:#777}
+          .lang input:checked + label{background:#e9e9e9;color:#111;border-color:#e9e9e9}
+        }
+        /* worldball as a normal menu row inside the goddy menu */
+        .goddy-menu .lang{display:block;margin:0;padding:12px 16px;border-top:1px solid #ece4f7}
+        .goddy-menu .lang-opts{position:static;margin:8px 0 0;border:0;padding:0;box-shadow:none;background:none}
+    </style>
+</head>
+<body>
+
+<div class="flove-bar">
+  <button type="button" class="flove-mark-link goddy-brand" id="goddyMenuBtn" aria-haspopup="true" aria-expanded="false" aria-controls="goddyMenu">
+    <svg class="flove-mark goddy-vesica" aria-hidden="true" focusable="false" viewBox="0 0 64 64" width="1em" height="1em"><path d="M32 18.73 A15 15 0 0 0 32 45.27 A15 15 0 0 0 32 18.73 Z" fill="#ff8aae" opacity=".85"/><circle cx="25" cy="32" r="15" fill="none" stroke="#c133ff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="39" cy="32" r="15" fill="none" stroke="#6a3aff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="32" r="2.1" fill="#8b5cf6"/></svg>
+    <span class="flove-app-name">Goddy</span>
+  </button>
+  <span class="flove-spacer"></span>
+  <nav class="goddy-menu" id="goddyMenu" hidden aria-label="Goddy menu">
+    <a class="goddy-menu-item" href="../appy/appy-basic.html" role="menuitem"><i class="fas fa-user"></i> <span class="en" lang="en">Profile</span><span class="es" lang="es">Perfil</span></a>
+    <a class="goddy-menu-item" href="https://flove.org" target="_blank" rel="noopener" role="menuitem"><i class="fas fa-heart"></i> <span class="en" lang="en">flove.org</span><span class="es" lang="es">flove.org</span></a>
+    <button type="button" class="goddy-menu-item" data-flove-reset role="menuitem"><i class="fas fa-eraser"></i> <span class="en" lang="en">Reset</span><span class="es" lang="es">Reiniciar</span></button>
+    <!-- translaty worldball — pure-CSS language switch (a menu row) -->
+    <details class="lang">
+      <summary class="worldball" title="Language" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐</summary>
+      <div class="lang-opts">
+        <input type="radio" name="lang" id="lang-en" checked><label for="lang-en">English</label>
+        <input type="radio" name="lang" id="lang-es"><label for="lang-es">Español</label>
+      </div>
+    </details>
+  </nav>
+</div>
+
+<div class="app">
+    <!-- About goddy — the 1/2/1 insight; opened by the Gaze mark below the buttons; ✕ collapses it. 100% CSS. -->
+    <input type="checkbox" id="aboutToggle" hidden>
+    <div class="about-goddy" id="aboutGoddy" aria-live="polite">
+      <svg class="about-mark" aria-hidden="true" viewBox="0 0 64 64">
+        <circle cx="32" cy="19" r="2.6" fill="#8b5cf6" opacity=".34"/>
+        <circle cx="45" cy="19" r="2.6" fill="#8b5cf6" opacity=".34"/>
+        <circle cx="19" cy="32" r="2.6" fill="#8b5cf6" opacity=".34"/>
+        <circle cx="45" cy="32" r="2.6" fill="#8b5cf6" opacity=".34"/>
+        <circle cx="19" cy="45" r="2.6" fill="#8b5cf6" opacity=".34"/>
+        <circle cx="32" cy="45" r="2.6" fill="#8b5cf6" opacity=".34"/>
+        <circle class="dg d0" cx="19" cy="19" r="3.7" fill="#c133ff"/>
+        <circle class="dg d1" cx="32" cy="32" r="3.7" fill="#6a3aff"/>
+        <circle class="dg d2" cx="45" cy="45" r="3.7" fill="#ff8aae"/>
+      </svg>
+      <span class="about-text">
+        <span class="about-line d0"><span class="en" lang="en">We normally see the whole divided by its parts (1/n).</span><span class="es" lang="es">Normalmente vemos el todo dividido entre sus partes (1/n).</span></span>
+        <span class="about-line about-line--static"><span class="en" lang="en">This Goddy app rather shows you a bipolar whole (goddess and god) for a unique part (us) and invites you to tell what each part sees or not.</span><span class="es" lang="es">Esta app Goddy más bien te muestra un todo bipolar (diosa y dios) para una parte única (nosotros) y te invita a decir qué ve o no ve cada parte.</span></span>
+      </span>
+      <label class="about-close" for="aboutToggle" aria-label="Collapse" title="Collapse" data-aria-en="Collapse" data-aria-es="Cerrar">✕</label>
+    </div>
+
+    <!-- Interactive Matrix -->
+    <div class="matrix-section">
+        <div class="matrix-grid" id="matrixGrid">
+            <div class="grid-cell"></div>
+            <div class="grid-cell col-header"><span class="en" lang="en">Goddess</span><span class="es" lang="es">Diosa</span></div>
+            <div class="grid-cell col-header"><span class="en" lang="en">God</span><span class="es" lang="es">Dios</span></div>
+            <div class="grid-cell col-header"><span class="en" lang="en">Us</span><span class="es" lang="es">Nosotros</span></div>
+
+            <div class="grid-cell row-header"><span class="en" lang="en">Goddess</span><span class="es" lang="es">Diosa</span><span class="row-arrow" aria-hidden="true">→</span></div>
+            <div class="grid-cell data-cell" data-row="goddess" data-col="goddess">
+                <input class="cell-input" type="radio" name="c00" id="c00-0" data-lvl="0" checked aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c00" id="c00-1" data-lvl="1" aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c00" id="c00-2" data-lvl="2" aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c00" id="c00-3" data-lvl="3" aria-hidden="true" tabindex="-1">
+                <label class="cell-cycle" for="c00-1" data-from="0" aria-label="see" data-aria-en="see" data-aria-es="ver"></label>
+                <label class="cell-cycle" for="c00-2" data-from="1" aria-label="see more" data-aria-en="see more" data-aria-es="ver más"></label>
+                <label class="cell-cycle" for="c00-3" data-from="2" aria-label="see fully" data-aria-en="see fully" data-aria-es="ver del todo"></label>
+                <label class="cell-cycle" for="c00-0" data-from="3" aria-label="reset" data-aria-en="reset" data-aria-es="reiniciar"></label>
+            </div>
+            <div class="grid-cell data-cell" data-row="goddess" data-col="god">
+                <input class="cell-input" type="radio" name="c01" id="c01-0" data-lvl="0" checked aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c01" id="c01-1" data-lvl="1" aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c01" id="c01-2" data-lvl="2" aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c01" id="c01-3" data-lvl="3" aria-hidden="true" tabindex="-1">
+                <label class="cell-cycle" for="c01-1" data-from="0"></label>
+                <label class="cell-cycle" for="c01-2" data-from="1"></label>
+                <label class="cell-cycle" for="c01-3" data-from="2"></label>
+                <label class="cell-cycle" for="c01-0" data-from="3"></label>
+            </div>
+            <div class="grid-cell data-cell" data-row="goddess" data-col="us">
+                <input class="cell-input" type="radio" name="c02" id="c02-0" data-lvl="0" checked aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c02" id="c02-1" data-lvl="1" aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c02" id="c02-2" data-lvl="2" aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c02" id="c02-3" data-lvl="3" aria-hidden="true" tabindex="-1">
+                <label class="cell-cycle" for="c02-1" data-from="0"></label>
+                <label class="cell-cycle" for="c02-2" data-from="1"></label>
+                <label class="cell-cycle" for="c02-3" data-from="2"></label>
+                <label class="cell-cycle" for="c02-0" data-from="3"></label>
+            </div>
+
+            <div class="grid-cell row-header"><span class="en" lang="en">God</span><span class="es" lang="es">Dios</span><span class="row-arrow" aria-hidden="true">→</span></div>
+            <div class="grid-cell data-cell" data-row="god" data-col="goddess">
+                <input class="cell-input" type="radio" name="c10" id="c10-0" data-lvl="0" checked aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c10" id="c10-1" data-lvl="1" aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c10" id="c10-2" data-lvl="2" aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c10" id="c10-3" data-lvl="3" aria-hidden="true" tabindex="-1">
+                <label class="cell-cycle" for="c10-1" data-from="0"></label>
+                <label class="cell-cycle" for="c10-2" data-from="1"></label>
+                <label class="cell-cycle" for="c10-3" data-from="2"></label>
+                <label class="cell-cycle" for="c10-0" data-from="3"></label>
+            </div>
+            <div class="grid-cell data-cell" data-row="god" data-col="god">
+                <input class="cell-input" type="radio" name="c11" id="c11-0" data-lvl="0" checked aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c11" id="c11-1" data-lvl="1" aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c11" id="c11-2" data-lvl="2" aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c11" id="c11-3" data-lvl="3" aria-hidden="true" tabindex="-1">
+                <label class="cell-cycle" for="c11-1" data-from="0"></label>
+                <label class="cell-cycle" for="c11-2" data-from="1"></label>
+                <label class="cell-cycle" for="c11-3" data-from="2"></label>
+                <label class="cell-cycle" for="c11-0" data-from="3"></label>
+            </div>
+            <div class="grid-cell data-cell" data-row="god" data-col="us">
+                <input class="cell-input" type="radio" name="c12" id="c12-0" data-lvl="0" checked aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c12" id="c12-1" data-lvl="1" aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c12" id="c12-2" data-lvl="2" aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c12" id="c12-3" data-lvl="3" aria-hidden="true" tabindex="-1">
+                <label class="cell-cycle" for="c12-1" data-from="0"></label>
+                <label class="cell-cycle" for="c12-2" data-from="1"></label>
+                <label class="cell-cycle" for="c12-3" data-from="2"></label>
+                <label class="cell-cycle" for="c12-0" data-from="3"></label>
+            </div>
+
+            <div class="grid-cell row-header"><span class="en" lang="en">Us</span><span class="es" lang="es">Nosotros</span><span class="row-arrow" aria-hidden="true">→</span></div>
+            <div class="grid-cell data-cell" data-row="us" data-col="goddess">
+                <input class="cell-input" type="radio" name="c20" id="c20-0" data-lvl="0" checked aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c20" id="c20-1" data-lvl="1" aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c20" id="c20-2" data-lvl="2" aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c20" id="c20-3" data-lvl="3" aria-hidden="true" tabindex="-1">
+                <label class="cell-cycle" for="c20-1" data-from="0"></label>
+                <label class="cell-cycle" for="c20-2" data-from="1"></label>
+                <label class="cell-cycle" for="c20-3" data-from="2"></label>
+                <label class="cell-cycle" for="c20-0" data-from="3"></label>
+            </div>
+            <div class="grid-cell data-cell" data-row="us" data-col="god">
+                <input class="cell-input" type="radio" name="c21" id="c21-0" data-lvl="0" checked aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c21" id="c21-1" data-lvl="1" aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c21" id="c21-2" data-lvl="2" aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c21" id="c21-3" data-lvl="3" aria-hidden="true" tabindex="-1">
+                <label class="cell-cycle" for="c21-1" data-from="0"></label>
+                <label class="cell-cycle" for="c21-2" data-from="1"></label>
+                <label class="cell-cycle" for="c21-3" data-from="2"></label>
+                <label class="cell-cycle" for="c21-0" data-from="3"></label>
+            </div>
+            <div class="grid-cell data-cell" data-row="us" data-col="us">
+                <input class="cell-input" type="radio" name="c22" id="c22-0" data-lvl="0" checked aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c22" id="c22-1" data-lvl="1" aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c22" id="c22-2" data-lvl="2" aria-hidden="true" tabindex="-1">
+                <input class="cell-input" type="radio" name="c22" id="c22-3" data-lvl="3" aria-hidden="true" tabindex="-1">
+                <label class="cell-cycle" for="c22-1" data-from="0"></label>
+                <label class="cell-cycle" for="c22-2" data-from="1"></label>
+                <label class="cell-cycle" for="c22-3" data-from="2"></label>
+                <label class="cell-cycle" for="c22-0" data-from="3"></label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gaze — the 1·2·1 mark; click to open "About goddy" (pure-CSS toggle).
+         Sits between the table and the buttons, filling the gap. -->
+    <div class="gaze-invite">
+      <label class="gaze-btn" for="aboutToggle" title="About goddy" aria-label="About goddy" data-aria-en="About goddy" data-aria-es="Acerca de goddy">
+        <svg class="gaze-mark" aria-hidden="true" viewBox="0 0 64 64">
+          <g class="gaze-cradle">
+            <path d="M25 15 A20 20 0 0 0 25 49" fill="none" stroke="#c133ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M39 15 A20 20 0 0 1 39 49" fill="none" stroke="#6a3aff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+          <circle class="gaze-us" cx="32" cy="32" r="4" fill="#ff8aae"/>
+        </svg>
+      </label>
+    </div>
+
+    <!-- Action buttons with reveal-subitems pattern -->
+    <div class="button-group">
+        <div class="btn-with-subs" id="saveWrap">
+            <button type="button" class="btn" id="saveBtn"><i class="fas fa-download"></i> <span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></button>
+            <div class="subitems">
+                <button type="button" class="subitem" data-group="save" data-action="md">MD</button>
+                <button type="button" class="subitem" data-group="save" data-action="json">JSON</button>
+                <button type="button" class="subitem" data-group="save" data-action="xml">XML</button>
+                <button type="button" class="subitem" data-group="save" data-action="html">HTML</button>
+                <button type="button" class="subitem" data-group="save" data-action="jpg">JPG</button>
+                <button type="button" class="subitem" data-group="save" data-action="csv">CSV</button>
+            </div>
+        </div>
+        <div class="btn-with-subs" id="shareWrap">
+            <button type="button" class="btn" id="shareBtn"><i class="fas fa-share-alt"></i> <span class="en" lang="en">Share</span><span class="es" lang="es">Compartir</span></button>
+            <div class="subitems">
+                <button type="button" class="subitem" data-group="share" data-action="mobile" data-flove-share="mobile"><span class="en" lang="en">To phone</span><span class="es" lang="es">Al móvil</span></button>
+                <button type="button" class="subitem" data-group="share" data-action="whatsapp">WhatsApp</button>
+                <button type="button" class="subitem" data-group="share" data-action="telegram">Telegram</button>
+                <button type="button" class="subitem" data-group="share" data-action="mail"><span class="en" lang="en">Mail</span><span class="es" lang="es">Correo</span></button>
+            </div>
+        </div>
+        <div class="btn-with-subs" id="publishWrap">
+            <button type="button" class="btn" id="publishBtn"><i class="fas fa-cloud-upload-alt"></i> <span class="en" lang="en">Publish</span><span class="es" lang="es">Publicar</span></button>
+            <div class="subitems subitems-above">
+                <button type="button" class="subitem" data-flove-publish="appy"><i class="fas fa-user"></i> Appy</button>
+                <button type="button" class="subitem" data-flove-publish="wizy"><i class="fas fa-wand-magic-sparkles"></i> Wizy</button>
+                <button type="button" class="subitem" data-flove-publish="more"><i class="fas fa-ellipsis"></i> <span class="en" lang="en">More</span><span class="es" lang="es">Más</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- hint area -->
+    <div class="hint-area" id="hintMessage" data-flove-hint></div>
+</div>
+
+<!-- Appy profile bridge (receiver-style, no floating button) — powers Publish → Appy/Wizy -->
+<script src="../appy/flove-appy.js" defer></script>
+<script>
+    (function(){
+        "use strict";
+
+        const rows = ['goddess', 'god', 'us'];
+        const cols = ['goddess', 'god', 'us'];
+        const APP_TITLE = 'Goddy';
+
+        const hintMessage = document.getElementById('hintMessage');
+        const saveBtn = document.getElementById('saveBtn');
+        const shareBtn = document.getElementById('shareBtn');
+        const publishBtn = document.getElementById('publishBtn');
+        const wraps = {
+            save: document.getElementById('saveWrap'),
+            share: document.getElementById('shareWrap'),
+            publish: document.getElementById('publishWrap'),
+        };
+
+        function getKey(row, col) { return `${row}:${col}`; }
+        function radioName(key) {
+            const [r, c] = key.split(':');
+            return `c${rows.indexOf(r)}${cols.indexOf(c)}`;
+        }
+        function levelOf(key) {
+            const checked = document.querySelector(`input[name="${radioName(key)}"]:checked`);
+            return checked ? +checked.dataset.lvl : 0;
+        }
+        function levelMap() {
+            // Snapshot of all non-zero cells: Map<key, lvl>
+            const m = new Map();
+            for (const r of rows) for (const c of cols) {
+                const k = getKey(r, c);
+                const l = levelOf(k);
+                if (l > 0) m.set(k, l);
+            }
+            return m;
+        }
+
+        // ── F0 · local persistence (backend_plan.md §10.3a/b) ──────────
+        // The matrix radios ARE the live source of truth, so the summary /
+        // export are always read live — there is no frozen snapshot, hence
+        // no staleness, no polling and no Update button needed here (§10.3a
+        // Update is N/A for live-state apps). What was missing is durability:
+        // we persist on every change and re-derive the matrix from storage
+        // on load (never "first value wins"). localStorage is the hot store;
+        // Save / Appy stay the real backup (§10.3b).
+        const STORE_KEY = 'flove:goddy:matrix';
+        const VER_KEY   = 'flove:goddy:v';
+        const SCHEMA    = 1;
+
+        function saveMatrix() {
+            const obj = {};
+            levelMap().forEach((lvl, key) => { obj[key] = lvl; });
+            try {
+                localStorage.setItem(STORE_KEY, JSON.stringify(obj));
+                localStorage.setItem(VER_KEY, String(SCHEMA));
+            } catch (err) {
+                // QuotaExceededError / storage disabled (private mode): warn,
+                // never crash — Save/export keeps the matrix (§10.3b).
+                const quota = err && (err.name === 'QuotaExceededError'
+                    || err.name === 'NS_ERROR_DOM_QUOTA_REACHED' || err.code === 22);
+                setHint('<i class="fas fa-triangle-exclamation"></i> ' + (quota
+                    ? bx('Local storage is full — use Save to export and keep your board.',
+                         'El almacenamiento local está lleno — usa Guardar para exportar y conservar tu tablero.')
+                    : bx('Could not save locally — use Save to keep your board.',
+                         'No se pudo guardar en local — usa Guardar para conservar tu tablero.')));
+            }
+        }
+
+        function loadMatrix() {
+            let raw = null;
+            try { raw = localStorage.getItem(STORE_KEY); } catch (_) { return {}; }
+            if (!raw) return {};
+            try {
+                const obj = JSON.parse(raw);                       // defensive parse
+                return (obj && typeof obj === 'object') ? obj : {};
+            } catch (_) { return {}; }                             // corrupt → ignore
+        }
+
+        function restoreMatrix() {
+            const obj = loadMatrix();
+            Object.keys(obj).forEach(key => {
+                const lvl = +obj[key];
+                if (!(lvl >= 1 && lvl <= 3)) return;
+                const radio = document.querySelector(
+                    `input[name="${radioName(key)}"][data-lvl="${lvl}"]`);
+                if (radio) radio.checked = true;   // CSS :has() repaints; no change event
+            });
+        }
+
+        // ── Subitems reveal pattern ─────────────────────────────────
+        function closeAllWraps(except) {
+            Object.values(wraps).forEach(w => { if (w !== except) w.classList.remove('is-open'); });
+        }
+        function toggleWrap(wrap) {
+            const wasOpen = wrap.classList.contains('is-open');
+            closeAllWraps();
+            if (!wasOpen) wrap.classList.add('is-open');
+        }
+        saveBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleWrap(wraps.save); });
+        shareBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleWrap(wraps.share); });
+        publishBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleWrap(wraps.publish); });
+        // clicks inside any open wrap shouldn't bubble to closeAllWraps
+        Object.values(wraps).forEach(w => w.addEventListener('click', e => e.stopPropagation()));
+        document.addEventListener('click', () => closeAllWraps());
+
+        // ── Subitem actions ─────────────────────────────────────────
+        function activeKeys() {
+            return Array.from(levelMap().keys());
+        }
+        function summaryText() {
+            const keys = activeKeys();
+            if (!keys.length) return 'no sees';
+            return keys.map(k => `${k.replace(':', '↔')}·${levelOf(k)}`).join(', ');
+        }
+        function downloadBlob(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = filename; a.click();
+            URL.revokeObjectURL(url);
+        }
+        function setHint(html) { hintMessage.innerHTML = html; }
+        // bilingual inline fragment — both spans toggle with the worldball (CSS)
+        function bx(en, es) { return `<span class="en" lang="en">${en}</span><span class="es" lang="es">${es}</span>`; }
+
+        // ── §13.12 export helpers (one copy, reused by every format) ──────
+        // Escaping — ONE pair, used by BOTH xml and html. Never hand-rolled per format.
+        const esc     = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+        const escAttr = s => esc(s).replace(/"/g, '&quot;');
+        // Filesystem-safe app slug
+        const safeName = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        // The active-language word for "summary" (extend per translaty language)
+        const SUMMARY_WORD = { en: 'summary', es: 'resumen' };
+        const activeLang = () => document.documentElement.lang || 'en';
+        const fileBase = m => `${safeName(m.app)}-${SUMMARY_WORD[activeLang()] || 'summary'}`;
+
+        // ── §13.12 serializers — ALL read the single floveSummary() model ──
+        // model.cells = [{from,to,level}] → export rows: from, to, level.
+        function toMd(m) {
+            let s = `# ${m.app}\n\n${m.phrase}\n\n`;
+            s += `| from | to | level |\n|---|---|---|\n`;
+            m.cells.forEach(c => s += `| ${c.from} | ${c.to} | ${c.level}/3 |\n`);
+            return s;
+        }
+        const toJson = m => JSON.stringify(m, null, 2);
+        function toXml(m) {
+            let s = `<?xml version="1.0" encoding="UTF-8"?>\n<flove app="${escAttr(m.app)}" max="${m.max}" count="${m.count}" intensity="${m.intensity}">\n`;
+            s += `  <phrase>${esc(m.phrase)}</phrase>\n  <cells>\n`;
+            m.cells.forEach(c => s += `    <cell from="${escAttr(c.from)}" to="${escAttr(c.to)}" level="${c.level}"/>\n`);
+            s += `  </cells>\n</flove>\n`;
+            return s;
+        }
+        function toHtml(m) {
+            const rows = m.cells.map(c =>
+                `<tr><td>${esc(c.from)}</td><td>${esc(c.to)}</td><td>${c.level}/3</td></tr>`).join('');
+            return `<!doctype html><html lang="${activeLang()}"><head><meta charset="utf-8">`
+                + `<meta name="viewport" content="width=device-width,initial-scale=1">`
+                + `<title>${esc(m.app)} · ${SUMMARY_WORD[activeLang()] || 'summary'}</title>`
+                + `<style>body{font:15px/1.6 system-ui,sans-serif;max-width:640px;margin:2rem auto;padding:1rem}`
+                + `h1{font-weight:600}table{border-collapse:collapse;width:100%}`
+                + `th,td{border:1px solid rgba(127,127,127,.3);padding:6px 10px;text-align:left}</style></head>`
+                + `<body><h1>${esc(m.app)}</h1><p>${esc(m.phrase)}</p>`
+                + `<table><thead><tr><th>from</th><th>to</th><th>level</th></tr></thead><tbody>${rows}</tbody></table>`
+                + `</body></html>`;
+        }
+        function toCsv(m) {
+            const q = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+            const lines = ['from,to,level'];
+            m.cells.forEach(c => lines.push([c.from, c.to, c.level].map(q).join(',')));
+            return lines.join('\n');
+        }
+
+        // Render the matrix to a JPG blob via canvas
+        function renderMatrixJPG(cb) {
+            const W = 600, H = 480;
+            const canvas = document.createElement('canvas');
+            canvas.width = W; canvas.height = H;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#f8f9fc';
+            ctx.fillRect(0, 0, W, H);
+
+            const cellW = (W - 140) / 3;
+            const cellH = 100;
+            const startX = 140, startY = 110;
+
+            ctx.fillStyle = '#2d253b';
+            ctx.font = '700 24px Cinzel, Georgia, serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('GODDY', W/2, 40);
+            ctx.font = 'italic 13px system-ui';
+            ctx.fillStyle = '#8b8398';
+            ctx.fillText('Goddess · God · Us — who sees who (1/2/1)', W/2, 64);
+
+            ctx.font = '600 16px system-ui';
+            ctx.fillStyle = '#2d253b';
+            cols.forEach((c, i) => {
+                ctx.fillText(c.charAt(0).toUpperCase()+c.slice(1), startX + cellW * (i + 0.5), startY - 14);
+            });
+
+            rows.forEach((r, ri) => {
+                ctx.textAlign = 'left';
+                ctx.font = '700 14px Cinzel, Georgia, serif';
+                ctx.fillStyle = '#4a385e';
+                ctx.fillText(r.toUpperCase(), 16, startY + cellH * (ri + 0.5) + 5);
+
+                cols.forEach((c, ci) => {
+                    const lvl = levelOf(getKey(r, c));
+                    const fill = lvl === 1 ? 'rgba(60,60,75,0.33)' :
+                                 lvl === 2 ? 'rgba(60,60,75,0.66)' :
+                                 lvl === 3 ? 'rgba(60,60,75,1.00)' : 'rgba(255,255,255,0.6)';
+                    const x = startX + cellW * ci, y = startY + cellH * ri;
+                    ctx.fillStyle = fill;
+                    ctx.fillRect(x, y, cellW, cellH);
+                    ctx.strokeStyle = 'rgba(60,60,75,0.12)';
+                    ctx.strokeRect(x, y, cellW, cellH);
+                });
+            });
+
+            canvas.toBlob(cb, 'image/jpeg', 0.92);
+        }
+
+        // Share intents — open the platform's web/app URL with prefilled text
+        function shareUrl(target) {
+            const txt = `Goddy · ${summaryText()}`;
+            const enc = encodeURIComponent(txt);
+            const page = encodeURIComponent(location.href);
+            switch (target) {
+                case 'whatsapp': return `https://wa.me/?text=${enc}%20${page}`;
+                case 'telegram': return `https://t.me/share/url?url=${page}&text=${enc}`;
+                case 'mail':     return `mailto:?subject=${encodeURIComponent('Goddy')}&body=${enc}%0A%0A${page}`;
+            }
+        }
+
+        // ── §13.12 download dispatcher — every text format serialized from
+        //    the SINGLE floveSummary() model; JPG is the visual-only sibling. ──
+        const TEXT_FMT = {
+            md:   [toMd,   'text/markdown'],
+            json: [toJson, 'application/json'],
+            xml:  [toXml,  'application/xml'],
+            html: [toHtml, 'text/html'],
+            csv:  [toCsv,  'text/csv'],
+        };
+        function saveFormat(fmt) {
+            const m = window.floveSummary();
+            const base = fileBase(m);
+            if (fmt === 'jpg') {
+                renderMatrixJPG(blob => {
+                    if (!blob) { setHint('<i class="fas fa-info-circle"></i> ' + bx('JPG export not supported.', 'Exportación JPG no compatible.')); return; }
+                    downloadBlob(blob, `${base}.jpg`);
+                    setHint('<i class="fas fa-check-circle"></i> ' + bx('JPG file downloaded.', 'Archivo JPG descargado.'));
+                });
+                return;
+            }
+            const spec = TEXT_FMT[fmt];
+            if (!spec) return;
+            downloadBlob(new Blob([spec[0](m)], { type: spec[1] + ';charset=utf-8' }), `${base}.${fmt}`);
+            setHint('<i class="fas fa-check-circle"></i> ' + bx(`${fmt.toUpperCase()} file downloaded.`, `Archivo ${fmt.toUpperCase()} descargado.`));
+        }
+
+        // ── §13.12 share-to-mobile — Web Share with the standalone HTML File,
+        //    canShare-guarded; intent rows remain the fallback ladder. ──
+        async function shareMobile() {
+            const m = window.floveSummary();
+            const title = `flove · ${m.app}`;
+            const html = new File([toHtml(m)], fileBase(m) + '.html', { type: 'text/html' });
+            if (navigator.canShare && navigator.canShare({ files: [html] })) {
+                try { await navigator.share({ title, text: m.phrase, files: [html] }); return; } catch (_) {}
+            }
+            if (navigator.share) {
+                try { await navigator.share({ title, text: m.phrase }); return; } catch (_) {}
+            }
+            try {
+                await navigator.clipboard.writeText(`${m.app} · ${m.phrase}`);
+                setHint('<i class="fas fa-clipboard-check"></i> ' + bx('Copied — paste to share. Or pick an app below.', 'Copiado — pega para compartir. O elige una app abajo.'));
+                return;
+            } catch (_) {}
+            setHint('<i class="fas fa-share-alt"></i> ' + bx('Pick an app below to share.', 'Elige una app abajo para compartir.'));
+        }
+
+        const subActions = {
+            'save:md':   () => saveFormat('md'),
+            'save:json': () => saveFormat('json'),
+            'save:xml':  () => saveFormat('xml'),
+            'save:html': () => saveFormat('html'),
+            'save:jpg':  () => saveFormat('jpg'),
+            'save:csv':  () => saveFormat('csv'),
+            'share:mobile':   () => { shareMobile(); },
+            'share:whatsapp': () => { window.open(shareUrl('whatsapp'), '_blank', 'noopener'); setHint('<i class="fab fa-whatsapp"></i> ' + bx('Opening WhatsApp…', 'Abriendo WhatsApp…')); },
+            'share:telegram': () => { window.open(shareUrl('telegram'), '_blank', 'noopener'); setHint('<i class="fab fa-telegram"></i> ' + bx('Opening Telegram…', 'Abriendo Telegram…')); },
+            'share:mail':     () => { location.href = shareUrl('mail'); setHint('<i class="fas fa-envelope"></i> ' + bx('Opening Mail…', 'Abriendo el correo…')); },
+            // Publish → Appy · Wizy · More is handled by the shared flove-appy.js
+            // bridge via the data-flove-publish hooks — no per-app wiring here.
+        };
+
+        // Wizy extra — a Goddy-specific agent block, exposed for the shared
+        // bridge (window.floveAgentBlock). flove-appy.js folds it into the SAME
+        // summary record on a Wizy publish so any agent (local MyWizy or an
+        // external one) can act on a Goddy result without guessing the structure.
+        window.floveAgentBlock = function buildAgentBlock(m) {
+            return {
+                prompt: 'You are handed a Goddy matrix: a 3×3 grid of who-sees-who across '
+                    + 'goddess · god · us, each connection rated 1–3 (level). '
+                    + 'Read the cells and the phrase, then help the user reflect on the '
+                    + 'pattern of attention — where intensity concentrates, what is unmapped, '
+                    + 'and one gentle question about a cell they might revisit.',
+                schema: {
+                    app: 'app slug (Goddy)',
+                    phrase: 'one-line human summary the app composed',
+                    count: 'number of mapped connections',
+                    intensity: 'sum of all cell levels',
+                    max: 'maximum possible intensity (27)',
+                    cells: 'array of { from, to, level } — from/to are goddess|god|us, level 1–3'
+                },
+                context: {
+                    source: 'goddy · FLOVE',
+                    url: 'https://flove.org/apps/metas/goddy.html',
+                    axis: 'meta (goddess · god · us)'
+                },
+                suggestions: [
+                    'Point out where attention concentrates (highest-level cells).',
+                    'Name any unmapped pairings and ask if that absence is intentional.',
+                    'Offer one question about a single cell the user might revisit.'
+                ]
+            };
+        };
+
+        document.querySelectorAll('.subitem').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const fn = subActions[`${btn.dataset.group}:${btn.dataset.action}`];
+                if (fn) fn();
+                closeAllWraps();
+            });
+        });
+
+        // ── Brand menu (logo + title) — a normal dropdown, no caret/triangle ──
+        const goddyMenuBtn = document.getElementById('goddyMenuBtn');
+        const goddyMenu = document.getElementById('goddyMenu');
+        function setMenu(open) {
+            goddyMenu.hidden = !open;
+            goddyMenuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+        goddyMenuBtn.addEventListener('click', (e) => { e.stopPropagation(); setMenu(goddyMenu.hidden); });
+        // menu items close the menu on click (bubbles up to the document handler)
+        document.addEventListener('click', () => setMenu(false));
+        // the worldball lives inside the menu now — its clicks must not close it
+        goddyMenu.querySelector('.lang')?.addEventListener('click', (e) => e.stopPropagation());
+
+        // ── F0 wiring: persist on every cell change, restore on load ──
+        // Request durable storage once, on the first user interaction (§10.3b).
+        let persistAsked = false;
+        function askPersist() {
+            if (persistAsked) return;
+            persistAsked = true;
+            try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+        }
+
+        // Live-state app (§10.3a): the matrix radios ARE the source of truth,
+        // so there is no Update button — we just persist on every change.
+        document.querySelectorAll('.cell-input').forEach(r =>
+            r.addEventListener('change', () => {
+                askPersist();
+                saveMatrix();
+                // §13.15 F1 — live-state app (no Update button): sync the fresh matrix to Appy
+                if (window.floveAppy) window.floveAppy.autoSync();
+            }));
+
+        // ── F0 · Reset — clear-my-data: empty ONLY goddy's own keys ──────────
+        // never localStorage.clear() — only this app's own flove:goddy* keys
+        function clearGoddyKeys() {
+            try {
+                for (let i = localStorage.length - 1; i >= 0; i--) {
+                    const k = localStorage.key(i);
+                    if (k && k.indexOf('flove:goddy') === 0) localStorage.removeItem(k);
+                }
+            } catch (e) {}
+        }
+        // Both the menu item and the summary button carry [data-flove-reset]
+        // and share this ONE confirm-guarded fresh-start handler.
+        document.querySelectorAll('[data-flove-reset]').forEach(resetBtn => resetBtn.addEventListener('click', () => {
+            askPersist();
+            // DESTRUCTIVE → guard
+            const ok = confirm('Clear all cells and start a new play? / ¿Borrar todas las celdas y empezar de nuevo?');
+            if (!ok) return;
+            clearGoddyKeys();
+            location.reload();   // fresh start (§5.3 / §10.3a): reload starts empty
+        }));
+
+        // ── Load (§5.3 / §10.3a): a genuine open/reopen restores saved state,
+        // but a RELOAD (F5 / reload logo) overrides persistence and starts fresh.
+        function navIsReload() {
+            try {
+                const nav = performance.getEntriesByType &&
+                            performance.getEntriesByType('navigation')[0];
+                if (nav && nav.type) return nav.type === 'reload';
+                if (performance.navigation) return performance.navigation.type === 1; // legacy
+            } catch (_) {}
+            return false;
+        }
+        if (navIsReload()) {
+            clearGoddyKeys();     // reload → drop own keys, skip restore (empty default)
+        } else {
+            restoreMatrix();      // genuine open/reopen → re-derive saved state
+        }
+
+        // ── Summary model (§13.12) — read by Save / Share serializers ──
+        // Snapshot of the matrix: which cells see who and at what level (1–3).
+        window.floveSummary = function () {
+            const cells = Array.from(levelMap(), ([key, level]) => {
+                const [from, to] = key.split(':');
+                return { from, to, level };
+            });
+            const intensity = cells.reduce((s, c) => s + c.level, 0);
+            return {
+                app: 'Goddy',
+                title: APP_TITLE,
+                phrase: cells.length
+                    ? `${cells.length} connection${cells.length !== 1 ? 's' : ''} mapped · intensity ${intensity}/27`
+                    : 'empty — nothing mapped yet',
+                count: cells.length,
+                intensity: intensity,
+                max: 27,
+                cells: cells
+            };
+        };
+    })();
+</script>
+
+<script>
+// translaty engine — switches the page language and translates the bits CSS
+// can't (<option> text, placeholders, aria-labels), remembers the choice, and
+// keeps <html lang> in sync. Works for any number of languages: the active
+// language is the code after "lang-" in the checked radio's id.
+(function(){
+  const LS = 'translaty-lang';
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);            // es -> Es
+  const radios = () => Array.from(document.querySelectorAll('input[name="lang"]'));
+  const curLang = () => { const r = radios().find(x => x.checked); return r ? r.id.replace('lang-', '') : 'en'; };
+  function applyLang(){
+    const li = curLang();
+    document.documentElement.lang = li;
+    // attributes/text the .en/.es span swap can't reach — carried on data-<lang>
+    document.querySelectorAll('option[data-en]').forEach(o => { if (o.dataset[li] != null) o.textContent = o.dataset[li]; });
+    document.querySelectorAll('[data-ph-en]').forEach(el => { const v = el.dataset['ph' + cap(li)]; if (v != null) el.placeholder = v; });
+    document.querySelectorAll('[data-aria-en]').forEach(el => { const v = el.dataset['aria' + cap(li)]; if (v != null) el.setAttribute('aria-label', v); });
+    try { localStorage.setItem(LS, li); } catch (_) {}
+  }
+  function init(){
+    let saved = null; try { saved = localStorage.getItem(LS) || localStorage.getItem('translate2-lang'); } catch (_) {}
+    if (saved){ const r = document.getElementById('lang-' + saved); if (r) r.checked = true; }
+    radios().forEach(r => r.addEventListener('change', () => {
+      applyLang();
+      const d = document.querySelector('details.lang'); if (d) d.open = false;   // close the worldball after a pick
+    }));
+    applyLang();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+</body>
+</html>

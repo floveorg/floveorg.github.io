@@ -1,0 +1,1853 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crumbly · FLOVE</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ff88' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M12 18.5 C5.5 13 5.5 8 8.7 8 10.7 8 12 9.9 12 9.9 12 9.9 13.3 8 15.3 8 18.5 8 18.5 13 12 18.5Z'/><path d='M12 10 v3.2'/><circle fill='%2300ff88' stroke='none' cx='12' cy='15.4' r='0.85'/></svg>">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    :root{
+      --bg:#0b0b0f; --panel:#12121a; --ink:#eaeaf0; --muted:#a0a3ad;
+      --stroke:#1f1f2b; --a:#00ff88;
+      --app-accent:#00ff88;
+      --app-accent-soft:#b3ffd6;
+      --app-ink-on-accent:#001a0d;
+      --accent:#00ff88;
+    }
+    *{box-sizing:border-box}
+    html,body{min-height:100%}
+    body{
+      margin:0;
+      background:transparent;
+      color:var(--ink);
+      font:16px/1.5 system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      padding-top:8px;
+    }
+
+    /* fullscreen FX canvas behind everything */
+    #fxCanvas{
+      position:fixed;inset:0;
+      width:100vw;height:100vh;
+      z-index:-1;
+      pointer-events:none;
+    }
+
+    /* hacky-style top bar — doubled, fully transparent.
+       The bar itself doesn't catch clicks so the form behind it stays
+       interactive; only its children (logo + menu) accept clicks. */
+    .flove-bar{
+      position:fixed;top:0;left:0;right:0;z-index:50;
+      display:flex;align-items:center;gap:14px;
+      padding:14px 22px;
+      font:600 19.5px/1.2 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+      letter-spacing:.3px;
+      background:transparent;
+      backdrop-filter:none;
+      -webkit-backdrop-filter:none;
+      border-bottom:none;
+      color:var(--app-accent);
+      pointer-events:none;
+    }
+    .flove-bar > *{pointer-events:auto}
+    .flove-bar .flove-mark-link{
+      display:inline-flex;align-items:center;gap:14px;
+      text-decoration:none;color:inherit;
+      padding:6px 16px;border-radius:999px;
+    }
+    /* No button-like pill / outline on hover, focus or active — colour
+       transitions (drained/draining) and canvas circles do all the work. */
+    .flove-bar .flove-mark-link,
+    .flove-bar .flove-mark-link:hover,
+    .flove-bar .flove-mark-link:focus,
+    .flove-bar .flove-mark-link:focus-visible,
+    .flove-bar .flove-mark-link:active{
+      background:transparent;
+      transform:none;
+      outline:none;
+      box-shadow:none;
+    }
+    .flove-bar .flove-mark{
+      width:2em;height:2em;
+      vertical-align:-.15em;
+      overflow:visible;
+      filter:drop-shadow(0 0 6px color-mix(in srgb, var(--app-accent) 45%, transparent));
+    }
+    .flove-bar .flove-app-name{
+      font-weight:700;
+      color:var(--app-accent);
+      text-shadow:0 0 12px color-mix(in srgb, var(--app-accent) 50%, transparent);
+    }
+    .flove-bar .flove-spacer{flex:1}
+
+    /* menu — now anchored under the logo (the logo is its trigger) */
+    .top-menu{position:relative;display:inline-flex}
+    .menu-list{
+      position:absolute;left:0;top:calc(100% + 6px);
+      list-style:none;margin:0;padding:6px 0;
+      background:rgba(10,12,18,.85);
+      backdrop-filter:blur(14px) saturate(140%);
+      -webkit-backdrop-filter:blur(14px) saturate(140%);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      min-width:180px;
+      z-index:80;
+      box-shadow:0 12px 30px rgba(0,0,0,.55);
+    }
+    .menu-list[hidden]{display:none}
+    .menu-list li{margin:0}
+    .menu-list li a{
+      display:block;padding:.6em 1em;text-decoration:none;
+      color:#e9ecf3;
+      font:500 16px/1.2 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+      letter-spacing:.2px;
+    }
+    .menu-list li a:hover{background:rgba(0,255,136,.12);color:var(--app-accent)}
+
+    .tree-form{
+      max-width:900px;margin:0 auto;padding:8px 16px 16px;
+      background:rgba(18,18,26,.06);
+      backdrop-filter:none;
+      -webkit-backdrop-filter:none;
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:16px;
+      box-shadow:0 20px 60px -20px rgba(0,0,0,.6);
+    }
+
+    .name-row{
+      display:flex;gap:1.1rem;align-items:center;
+      margin:0 0 20px 0;
+      padding:6px 100px 6px 6px; /* keep clear of the top-right menu */
+      flex-wrap:wrap;
+      font-size:1.5em; /* first row (reduced 25%) */
+      line-height:1.15;
+      position:relative;
+    }
+    .name-row .name-fix{
+      color:var(--ink);font-weight:700;
+      font-size:1em;
+    }
+    .name-row input,
+    .name-row .me-ta{
+      background:#1a1a25;border:1px solid #2a2a3a;color:var(--ink);
+      border-radius:10px;padding:.45rem .7rem;
+      font:inherit;
+      width:auto;
+      min-width:6ch;
+      resize:horizontal;
+      overflow:hidden;
+    }
+    .name-row .me-ta{
+      border-color:rgba(0,255,136,.5);
+      background:rgba(255,255,255,.05);
+    }
+    .name-row input:focus,
+    .name-row .me-ta:focus{outline:none;border-color:var(--a);box-shadow:0 0 0 2px #00ff8830}
+    .name-row .me-ta:invalid{
+      border-color:#ff6b6b;
+      box-shadow:0 0 0 2px rgba(255,107,107,.18);
+    }
+
+    details{margin:.3rem 0 .3rem 1rem;padding-left:.75rem;border-left:1px dashed #2a2a3a}
+    summary{list-style:none}
+    summary::-webkit-details-marker{display:none}
+
+    /* summary row: bigger checkbox + clickable title */
+    summary.node{
+      display:flex;align-items:center;gap:1.4rem;
+      padding:.5rem .6rem;border-radius:8px;
+      cursor:default;
+    }
+    summary.node:hover{background:rgba(255,255,255,.04)}
+    summary.node .title{
+      cursor:pointer;
+      flex:1;
+      padding:.15rem .25rem;
+      border-radius:6px;
+      user-select:none;
+      font-size:1.5em;
+      line-height:1.15;
+      /* inline-flex with an explicit 5px gap → guarantees the chevron
+         sits exactly 5px from the end of the title text. */
+      display:inline-flex;
+      align-items:baseline;
+      gap:5px;
+    }
+    summary.node .title:hover{color:var(--a)}
+    summary.node .title::after{
+      content:"▸";
+      display:inline-block;
+      color:var(--muted);
+      font-size:1.5em;
+      line-height:1;
+      transition:transform .15s ease;
+    }
+    details[open] > summary.node .title::after{transform:rotate(90deg)}
+
+    /* leaves scaled to keep visual hierarchy with the titles */
+    .leaf > span{font-size:1.5em;line-height:1.15}
+
+    /* inline textareas inside a leaf ("X time in advance", "In x way") */
+    .x-ta{
+      display:inline-block;
+      vertical-align:baseline;
+      font:inherit;
+      color:var(--ink);
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(0,255,136,.35);
+      border-radius:8px;
+      padding:.1em .45em;
+      margin:0 .15em;
+      min-width:6ch;
+      width:auto;
+      resize:horizontal;
+      overflow:hidden;
+      line-height:1.15;
+    }
+    .x-ta:focus{outline:none;border-color:var(--a);box-shadow:0 0 0 2px rgba(0,255,136,.25)}
+
+    /* much bigger, very clickable checkboxes throughout the tree */
+    summary.node input[type="checkbox"],
+    .leaf input[type="checkbox"]{
+      width:1.8rem;height:1.8rem;
+      accent-color:var(--a);
+      cursor:pointer;
+      flex-shrink:0;
+      margin:0 .4rem 0 0;
+      padding:.5rem;
+      position:relative;
+      z-index:1;
+      transition:transform .12s ease, filter .25s ease;
+    }
+    /* enlarge the hit area without inflating the visual box */
+    summary.node input[type="checkbox"]::before,
+    .leaf input[type="checkbox"]::before{
+      content:"";
+      position:absolute;
+      inset:-.5rem;
+    }
+    summary.node input[type="checkbox"]:checked,
+    .leaf input[type="checkbox"]:checked{
+      filter:drop-shadow(0 0 6px rgba(0,255,136,.65));
+      animation:cb-pop .35s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes cb-pop{
+      0%{transform:scale(.7) rotate(-8deg)}
+      55%{transform:scale(1.25) rotate(4deg)}
+      100%{transform:scale(1) rotate(0)}
+    }
+
+    .leaf{
+      display:flex;align-items:center;gap:1.4rem;
+      padding:.4rem .6rem;margin:.18rem 0 0 1rem;border-radius:8px;cursor:pointer;
+    }
+    .leaf:hover{background:#171722}
+
+    /* ── Notifying section: hidden until the user has clicked once ── */
+    #notifyingBlock{display:none}
+    body.clicked-once #notifyingBlock{
+      display:block;
+      animation:fade-slide-in .35s ease;
+    }
+    @keyframes fade-slide-in{
+      from{opacity:0;transform:translateY(-6px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+
+    /* "to me" row, sitting just below the checkboxes list */
+    .me-row{
+      display:flex;align-items:center;gap:1rem;
+      margin:18px 0 0 0;padding:6px;
+      font-size:2.25em;
+      line-height:1.15;
+    }
+    .me-row .name-fix{
+      color:var(--ink);font-weight:700;
+    }
+    .me-row .me-ta{
+      background:rgba(255,255,255,.05);
+      border:2px solid rgba(0,255,136,.5);
+      border-radius:10px;
+      padding:.4rem .7rem;
+      font:inherit;
+      color:var(--ink);
+      min-width:8ch;
+      resize:horizontal;
+      overflow:hidden;
+    }
+    .me-row .me-ta:focus{outline:none;border-color:var(--a);box-shadow:0 0 0 2px #00ff8830}
+    .me-row .me-ta:invalid{
+      border-color:#ff6b6b;
+      box-shadow:0 0 0 2px rgba(255,107,107,.18);
+    }
+
+    /* ── Grant-level term fields: "During (n) days" / "Rights expire in (n) days" ── */
+    .term-row{
+      display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;
+      margin:14px 0 0 6px;padding:4px 6px;
+      font-size:1.35em;
+      line-height:1.15;
+      color:var(--ink);
+    }
+    .term-row .term-days{
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(0,255,136,.5);
+      border-radius:10px;
+      padding:.3rem .5rem;
+      font:inherit;
+      color:var(--ink);
+      width:4.5ch;
+      text-align:center;
+    }
+    .term-row .term-days:focus{outline:none;border-color:var(--a);box-shadow:0 0 0 2px #00ff8830}
+    /* hide the native number spinners for a cleaner inline field */
+    .term-row .term-days::-webkit-outer-spin-button,
+    .term-row .term-days::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+    .term-row .term-days{-moz-appearance:textfield;appearance:textfield}
+
+    /* ── Summary date (today) ── */
+    .summary-date{
+      text-align:center;color:var(--app-accent-soft);
+      font-size:.82rem;letter-spacing:.05em;text-transform:uppercase;
+      padding-top:.6rem;
+    }
+    .summary-date:empty{display:none}
+
+    /* ── Summary line ── */
+    .summary-line{
+      margin-top:0;padding:.6rem .8rem;border-top:1px solid #2a2a3a;color:var(--muted)
+    }
+    .summary-line strong{color:var(--ink);margin-right:.3rem}
+
+    /* ── Intriguing burst that emanates from the checkbox on check ── */
+    .check-pulse{
+      position:absolute;
+      pointer-events:none;
+      width:8px;height:8px;
+      border-radius:50%;
+      transform:translate(-50%,-50%);
+      background:radial-gradient(circle,
+        rgba(0,255,136,.75) 0%,
+        rgba(0,255,136,.45) 35%,
+        rgba(0,255,136,0) 70%);
+      box-shadow:0 0 22px 4px rgba(0,255,136,.45);
+      animation:check-burst .65s cubic-bezier(.2,.7,.2,1) forwards;
+      z-index:9999;
+      mix-blend-mode:screen;
+    }
+    .check-pulse::before,
+    .check-pulse::after{
+      content:"";
+      position:absolute;inset:0;
+      border-radius:50%;
+      border:1px solid rgba(0,255,136,.55);
+      transform:scale(.4);
+      opacity:.85;
+      animation:check-ring .8s ease-out forwards;
+    }
+    .check-pulse::after{
+      animation-delay:.12s;
+      border-color:rgba(179,255,214,.55);
+    }
+    @keyframes check-burst{
+      0%{width:6px;height:6px;opacity:1}
+      60%{width:60px;height:60px;opacity:.55}
+      100%{width:96px;height:96px;opacity:0}
+    }
+    @keyframes check-ring{
+      0%{transform:scale(.4);opacity:.85}
+      100%{transform:scale(4);opacity:0}
+    }
+    @media (prefers-reduced-motion: reduce){
+      .check-pulse, .check-pulse::before, .check-pulse::after{animation:none;opacity:0}
+      summary.node input[type="checkbox"]:checked,
+      .leaf input[type="checkbox"]:checked{animation:none}
+    }
+
+    /* ===== Buttons (Save / Share / Publish — hacky-style, more rounded) ===== */
+    .button-group{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+      margin:18px 0 8px;
+      align-items:flex-start;
+    }
+    .btn-with-subs{
+      display:flex;flex-direction:column;align-items:stretch;
+      gap:5px;min-width:0;position:relative;
+    }
+    .btn-with-subs .btn{width:100%}
+    .subitems-above{position:absolute;left:0;right:0;bottom:calc(100% + 5px)}
+    .subitems{
+      display:flex;gap:3px;justify-content:stretch;overflow:hidden;
+      max-height:0;opacity:0;transform:translateY(-4px);
+      transition:max-height .25s ease,opacity .18s ease,transform .2s ease;
+      pointer-events:none;
+    }
+    .btn-with-subs.is-open .subitems{
+      max-height:64px;opacity:1;transform:translateY(0);pointer-events:auto;
+    }
+    .subitem{
+      background:rgba(0,255,136,.06);
+      border:1px solid rgba(0,255,136,.25);
+      color:#b3ffd6;
+      padding:6px 4px;
+      border-radius:10px;
+      font-size:.68rem;
+      font-weight:700;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      cursor:pointer;
+      flex:1 1 0;
+      min-width:0;
+      transition:all .15s;
+    }
+    .subitem:hover{
+      background:rgba(0,255,136,.18);
+      border-color:var(--app-accent);
+      color:#fff;
+    }
+    .subitem-radio{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+    .subitem.is-radio{display:inline-flex;align-items:center;justify-content:center}
+    .subitems:has(.subitem-radio[data-r="0"]:checked) .subitem.is-radio[data-r="0"],
+    .subitems:has(.subitem-radio[data-r="1"]:checked) .subitem.is-radio[data-r="1"],
+    .subitems:has(.subitem-radio[data-r="2"]:checked) .subitem.is-radio[data-r="2"]{
+      background:var(--app-accent);
+      border-color:var(--app-accent);
+      color:var(--app-ink-on-accent);
+    }
+    .btn{
+      position:relative;
+      overflow:hidden;
+      background:rgba(0,0,0,.5);
+      border:1px solid rgba(0,255,136,.4);
+      padding:8px 10px;
+      border-radius:14px;
+      font-family:Georgia,serif;
+      font-weight:700;
+      font-size:.78rem;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:var(--accent);
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      transition:all .15s;
+    }
+    .btn i{color:var(--accent);font-size:.78rem}
+    .btn:hover{
+      background:rgba(0,255,136,.12);
+      border-color:var(--accent);
+      color:#fff;
+      box-shadow:0 0 14px -2px rgba(0,255,136,.45);
+    }
+    .btn:focus-visible{outline:2px solid var(--app-accent);outline-offset:2px}
+    .btn-with-subs.is-open > .btn{
+      background:rgba(0,255,136,.16);
+      border-color:var(--accent);
+      color:#fff;
+    }
+    .btn::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      border-radius:inherit;
+      background:radial-gradient(circle at center, rgba(0,255,136,.55) 0%, rgba(0,255,136,0) 60%);
+      opacity:0;
+      transform:scale(.4);
+      pointer-events:none;
+    }
+    .btn:active::after,
+    .btn.fired::after{animation:btn-ripple .6s ease-out}
+    @keyframes btn-ripple{
+      0%{opacity:.9;transform:scale(.4)}
+      100%{opacity:0;transform:scale(1.6)}
+    }
+
+    /* two rows of space between Insight/Magic/Copy row and Save/Share/Publish row */
+    .action-spacer{height:calc(2lh + 8px)}
+    @supports not (height: 1lh){
+      .action-spacer{height:3rem}
+    }
+
+    .hint-area{
+      margin-top:10px;
+      text-align:center;
+      min-height:24px;
+      font-size:.9rem;
+      color:var(--app-accent-soft);
+      padding:6px 10px;
+    }
+    .hint-area a{color:var(--app-accent)}
+
+    /* 2 rows of breathing room before the Review block */
+    .review-spacer{height:calc(2lh + 8px)}
+    @supports not (height: 1lh){ .review-spacer{height:3rem} }
+
+    /* ── Review collapsible: holds the legible phrase + action buttons ── */
+    #reviewBlock{
+      margin:18px 0 0 0;
+      border:1px solid rgba(0,255,136,.18);
+      border-radius:16px;
+      background:rgba(0,255,136,.002);
+      padding-left:0;
+      border-left:1px solid rgba(0,255,136,.18);
+      transition:border-color .5s ease, background .5s ease, box-shadow .5s ease;
+    }
+    #reviewBlock > summary.review-summary{
+      list-style:none;
+      cursor:pointer;
+      padding:14px 16px;
+      text-align:center;
+      display:block;
+    }
+    #reviewBlock > summary.review-summary::-webkit-details-marker{display:none}
+    .review-title{
+      display:inline-flex;
+      align-items:baseline;
+      gap:5px;
+      font-size:2em;
+      line-height:1.15;
+      font-weight:700;
+      color:var(--ink);
+      transition:color .5s ease, text-shadow .5s ease, transform .5s ease;
+    }
+    .review-body{padding:0 14px 14px}
+
+    /* Open state: always green flashy regardless of level */
+    #reviewBlock[open]{
+      border-color:var(--app-accent);
+      background:rgba(0,255,136,.016);
+      animation:review-flash 1.6s ease-in-out infinite;
+    }
+    #reviewBlock[open] > summary.review-summary .review-title{
+      color:var(--app-accent);
+      text-shadow:0 0 30px rgba(0,255,136,1);
+      animation:title-flash 1.6s ease-in-out infinite;
+    }
+
+    #reviewBlock[data-level="1"]{
+      border-color:rgba(0,255,136,.32);
+      background:rgba(0,255,136,.0045);
+      box-shadow:0 0 14px -4px rgba(0,255,136,.22);
+    }
+    #reviewBlock[data-level="1"] .review-title{color:#cffce4;text-shadow:0 0 8px rgba(0,255,136,.3)}
+    #reviewBlock[data-level="2"]{
+      border-color:rgba(0,255,136,.48);
+      background:rgba(0,255,136,.0065);
+      box-shadow:0 0 20px -4px rgba(0,255,136,.36);
+    }
+    #reviewBlock[data-level="2"] .review-title{color:#a7f7cc;text-shadow:0 0 12px rgba(0,255,136,.5)}
+    #reviewBlock[data-level="3"]{
+      border-color:rgba(0,255,136,.65);
+      background:rgba(0,255,136,.009);
+      box-shadow:0 0 28px -4px rgba(0,255,136,.55);
+    }
+    #reviewBlock[data-level="3"] .review-title{color:#7af0b3;text-shadow:0 0 18px rgba(0,255,136,.7)}
+    #reviewBlock[data-level="4"]{
+      border-color:rgba(0,255,136,.85);
+      background:rgba(0,255,136,.012);
+      box-shadow:0 0 36px -2px rgba(0,255,136,.75);
+    }
+    #reviewBlock[data-level="4"] .review-title{color:#4eea9e;text-shadow:0 0 24px rgba(0,255,136,.9)}
+    #reviewBlock[data-level="5"]{
+      border-color:var(--app-accent);
+      background:rgba(0,255,136,.016);
+      animation:review-flash 1.6s ease-in-out infinite;
+    }
+    #reviewBlock[data-level="5"] .review-title{
+      color:var(--app-accent);
+      text-shadow:0 0 30px rgba(0,255,136,1);
+      animation:title-flash 1.6s ease-in-out infinite;
+    }
+    @keyframes review-flash{
+      0%,100%{box-shadow:0 0 36px -2px rgba(0,255,136,.7)}
+      50%{box-shadow:0 0 60px 4px rgba(0,255,136,1)}
+    }
+    @keyframes title-flash{
+      0%,100%{transform:scale(1)}
+      50%{transform:scale(1.05)}
+    }
+
+    /* center the legible phrase */
+    .summary-line{text-align:center}
+
+    /* ── Intro section: hidden by default, toggled by clicking the logo ── */
+    #introSection{
+      max-width:900px;
+      margin:6px auto 12px;
+      padding:14px 20px;
+      background:rgba(0,255,136,.05);
+      border:1px solid rgba(0,255,136,.22);
+      border-radius:14px;
+      color:var(--ink);
+      font-size:.98rem;
+      line-height:1.55;
+      backdrop-filter:blur(8px) saturate(130%);
+      -webkit-backdrop-filter:blur(8px) saturate(130%);
+      box-shadow:0 8px 24px -10px rgba(0,0,0,.5);
+    }
+    #introSection[hidden]{display:none}
+    #introSection p{margin:0 0 .5em 0}
+    #introSection p:last-child{margin-bottom:0}
+    #introSection strong{color:var(--app-accent)}
+
+    /* ── Logo "drained" state on click (pill background off, colour fades) ── */
+    .flove-bar .flove-app-name{
+      transition:color .15s ease, text-shadow .15s ease;
+    }
+    .flove-bar .flove-mark{
+      transition:opacity .15s ease, filter .15s ease;
+    }
+    .flove-bar .flove-mark-link.is-drained,
+    .flove-bar .flove-mark-link.is-drained:hover{
+      background:transparent;
+      transform:none;
+    }
+    .flove-bar .flove-mark-link.is-drained .flove-app-name,
+    .flove-bar .flove-mark-link.is-drained:hover .flove-app-name{
+      color:#9aa3b2;
+      text-shadow:none;
+    }
+    .flove-bar .flove-mark-link.is-drained .flove-mark,
+    .flove-bar .flove-mark-link.is-drained:hover .flove-mark{
+      opacity:.45;
+      filter:grayscale(1) drop-shadow(0 0 6px transparent);
+    }
+    .flove-bar .flove-mark-link.is-draining,
+    .flove-bar .flove-mark-link.is-draining:hover{
+      background:transparent;
+      transform:none;
+      transition:background 3s ease, transform 3s ease;
+    }
+    .flove-bar .flove-mark-link.is-draining .flove-app-name{
+      transition:color 3s ease, text-shadow 3s ease;
+    }
+    .flove-bar .flove-mark-link.is-draining .flove-mark{
+      transition:opacity 3s ease, filter 3s ease;
+    }
+
+    @media (max-width:480px){
+      .btn{font-size:.7rem;padding:7px 6px;border-radius:12px}
+      .subitem{border-radius:9px}
+    }
+
+    /* ── translaty: i18n span toggle (CSS-only) ── */
+    .es{display:none}                                  /* default view = .en */
+    body:has(#lang-es:checked) .en{display:none}
+    body:has(#lang-es:checked) .es{display:inline}
+
+    /* ── translaty: worldball switcher (🌐 opens the language options) ── */
+    .lang{display:block;position:relative;margin:0;padding:.35em 1em}
+    .lang>summary{list-style:none;cursor:pointer;width:40px;height:40px;border:1px solid #999;border-radius:50%;
+      display:inline-flex;align-items:center;justify-content:center;font-size:1.35rem;line-height:1;-webkit-user-select:none;user-select:none}
+    .lang>summary::-webkit-details-marker{display:none}
+    .lang[open]>summary{border-color:#333;background:#f2f2f2}
+    .lang-opts{position:absolute;right:0;z-index:10;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;
+      background:#fff;border:1px solid #999;border-radius:12px;padding:6px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+    .lang input{position:absolute;opacity:0;pointer-events:none}
+    .lang label{cursor:pointer;padding:0 12px;min-height:40px;display:inline-flex;align-items:center;border:1px solid #999;border-radius:11px;white-space:nowrap}
+    .lang input:checked + label{background:#333;color:#fff;font-weight:bold;border-color:#333}
+    @media (prefers-color-scheme:dark){
+      .lang>summary{border-color:#777} .lang[open]>summary{background:#2a2a2a;border-color:#999}
+      .lang-opts{background:#222;border-color:#777;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+      .lang label{border-color:#777}
+      .lang input:checked + label{background:#e9e9e9;color:#111;border-color:#e9e9e9}
+    }
+
+    /* visually hidden but available to assistive tech */
+    .visually-hidden{
+      position:absolute;
+      width:1px;height:1px;
+      padding:0;margin:-1px;
+      overflow:hidden;
+      clip:rect(0,0,0,0);
+      white-space:nowrap;
+      border:0;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="fxCanvas" aria-hidden="true"></canvas>
+
+  <div class="flove-bar flove-bar--dark">
+    <div class="top-menu">
+      <a href="#" class="flove-mark-link" id="logoTrigger" aria-haspopup="true" aria-expanded="false" aria-label="Crumbly menu">
+        <svg class="flove-mark" aria-hidden="true" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="#00ff88" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M12 18.5 C5.5 13 5.5 8 8.7 8 10.7 8 12 9.9 12 9.9 12 9.9 13.3 8 15.3 8 18.5 8 18.5 13 12 18.5Z'/><path d='M12 10 v3.2'/><circle fill='#00ff88' stroke='none' cx='12' cy='15.4' r='0.85'/></svg>
+        <span class="flove-app-name">Crumbly</span>
+      </a>
+      <ul class="menu-list" id="menuList" hidden role="menu">
+        <li role="none"><a role="menuitem" href="#" data-act="expand"><i class="fas fa-chevron-down"></i> &nbsp;<span class="en" lang="en">Expand all</span><span class="es" lang="es">Expandir todo</span></a></li>
+        <li role="none"><a role="menuitem" href="#" data-act="collapse"><i class="fas fa-chevron-up"></i> &nbsp;<span class="en" lang="en">Collapse all</span><span class="es" lang="es">Contraer todo</span></a></li>
+        <li role="none"><a role="menuitem" href="#" data-act="about"><i class="fas fa-circle-info"></i> &nbsp;<span class="en" lang="en">About Crumbly</span><span class="es" lang="es">Acerca de Crumbly</span></a></li>
+        <li role="none"><a role="menuitem" href="../appy/appy-basic.html"><i class="fas fa-user"></i> &nbsp;<span class="en" lang="en">Profile</span><span class="es" lang="es">Perfil</span></a></li>
+        <li role="none"><a role="menuitem" href="../../../index.html"><span aria-hidden="true">🌱</span> &nbsp;<span class="en" lang="en">All flove apps</span><span class="es" lang="es">Todas las apps de flove</span></a></li>
+        <li role="none"><a role="menuitem" href="https://flove.org" target="_blank" rel="noopener"><i class="fas fa-globe"></i> &nbsp;<span class="en" lang="en">flove.org</span><span class="es" lang="es">flove.org</span></a></li>
+        <li role="none">
+          <details class="lang">
+            <summary class="worldball" title="Language" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐</summary>
+            <div class="lang-opts">
+              <input type="radio" name="lang" id="lang-en" checked><label for="lang-en">English</label>
+              <input type="radio" name="lang" id="lang-es"><label for="lang-es">Español</label>
+            </div>
+          </details>
+        </li>
+        <li role="none"><a role="menuitem" href="#" data-act="reset"><i class="fas fa-rotate-left"></i> &nbsp;<span class="en" lang="en">Reset form</span><span class="es" lang="es">Reiniciar formulario</span></a></li>
+        <li role="none"><a role="menuitem" href="#" onclick="alert('Changelog: FloveDocs26-6')"><i class="fas fa-clipboard-list"></i> &nbsp;<span class="en" lang="en">Changelog</span><span class="es" lang="es">Historial</span></a></li>
+      </ul>
+    </div>
+    <span class="flove-spacer"></span>
+  </div>
+
+  <section id="introSection" hidden aria-label="About Crumbly" data-aria-en="About Crumbly" data-aria-es="Acerca de Crumbly">
+    <p><strong>Crumbly</strong><span class="en" lang="en"> — set what you allow others to do, on what conditions, and how you want to be told if they overstep.</span><span class="es" lang="es"> — define qué permites que otros hagan, bajo qué condiciones y cómo quieres que te avisen si se pasan de la raya.</span></p>
+    <p><span class="en" lang="en">Tick what fits, leave the rest. Click any title to expand its sub-items. Your selections feed the </span><span class="es" lang="es">Marca lo que encaje y deja el resto. Pulsa cualquier título para desplegar sus subapartados. Tus elecciones alimentan la </span><strong><span class="en" lang="en">Review</span><span class="es" lang="es">Revisión</span></strong><span class="en" lang="en"> at the bottom.</span><span class="es" lang="es"> del final.</span></p>
+    <p><span class="en" lang="en">Open the menu from the logo and choose “About Crumbly” again to collapse this intro.</span><span class="es" lang="es">Abre el menú desde el logo y elige de nuevo «Acerca de Crumbly» para contraer esta introducción.</span></p>
+  </section>
+
+  <form class="tree-form" id="treeForm" action="#">
+    <label class="name-row">
+      <span class="name-fix"><span class="en" lang="en">I allow</span><span class="es" lang="es">Permito a</span></span>
+      <input type="text" id="nombre" name="nombre" size="20" maxlength="100" placeholder="Name here…" data-ph-en="Name here…" data-ph-es="Nombre aquí…">
+      <span class="name-fix"><span class="en" lang="en">to</span><span class="es" lang="es"></span></span>
+    </label>
+
+    <!-- ============== CRUMBLE ============== -->
+    <div id="crumbleBlock">
+    <details open>
+      <summary class="node">
+        <input type="checkbox" id="cb-crumble" checked>
+        <span class="title"><span class="en" lang="en">Crumble</span><span class="es" lang="es">Desmoronar</span></span>
+      </summary>
+
+      <details>
+        <summary class="node">
+          <input type="checkbox" id="cb-criticize">
+          <span class="title"><span class="en" lang="en">Criticize</span><span class="es" lang="es">Criticar</span></span>
+        </summary>
+
+        <label class="leaf">
+          <input type="checkbox" id="cb-complaint">
+          <span><span class="en" lang="en">Complaint</span><span class="es" lang="es">Queja</span></span>
+        </label>
+        <label class="leaf">
+          <input type="checkbox" id="cb-blackmail">
+          <span><span class="en" lang="en">Blackmail</span><span class="es" lang="es">Chantaje</span></span>
+        </label>
+
+        <details>
+          <summary class="node">
+            <input type="checkbox" id="cb-press">
+            <span class="title"><span class="en" lang="en">Press</span><span class="es" lang="es">Presionar</span></span>
+          </summary>
+          <label class="leaf"><input type="checkbox" id="cb-seize"><span><span class="en" lang="en">Seize</span><span class="es" lang="es">Embargar</span></span></label>
+          <label class="leaf"><input type="checkbox" id="cb-constrain"><span><span class="en" lang="en">Constrain</span><span class="es" lang="es">Coartar</span></span></label>
+          <label class="leaf"><input type="checkbox" id="cb-denounce"><span><span class="en" lang="en">Denounce</span><span class="es" lang="es">Denunciar</span></span></label>
+        </details>
+      </details>
+
+      <label class="leaf"><input type="checkbox" id="cb-disfavor"><span><span class="en" lang="en">Disfavor</span><span class="es" lang="es">Desfavorecer</span></span></label>
+
+      <details>
+        <summary class="node">
+          <input type="checkbox" id="cb-boycot">
+          <span class="title"><span class="en" lang="en">Boycot</span><span class="es" lang="es">Boicotear</span></span>
+        </summary>
+
+        <details>
+          <summary class="node">
+            <input type="checkbox" id="cb-curse">
+            <span class="title"><span class="en" lang="en">Curse</span><span class="es" lang="es">Maldecir</span></span>
+          </summary>
+
+          <details>
+            <summary class="node">
+              <input type="checkbox" id="cb-blame">
+              <span class="title"><span class="en" lang="en">Blame</span><span class="es" lang="es">Culpar</span></span>
+            </summary>
+            <label class="leaf"><input type="checkbox" id="cb-ignore"><span><span class="en" lang="en">Ignore</span><span class="es" lang="es">Ignorar</span></span></label>
+            <label class="leaf"><input type="checkbox" id="cb-insult"><span><span class="en" lang="en">Insult</span><span class="es" lang="es">Insultar</span></span></label>
+            <label class="leaf"><input type="checkbox" id="cb-flame"><span><span class="en" lang="en">Flame</span><span class="es" lang="es">Provocar</span></span></label>
+            <label class="leaf"><input type="checkbox" id="cb-other-blame"><span><span class="en" lang="en">Other</span><span class="es" lang="es">Otro</span></span></label>
+          </details>
+
+
+          <details>
+            <summary class="node">
+              <input type="checkbox" id="cb-taunt">
+              <span class="title"><span class="en" lang="en">Taunt</span><span class="es" lang="es">Burlarse</span></span>
+            </summary>
+            <label class="leaf"><input type="checkbox" id="cb-trash"><span><span class="en" lang="en">Trash talk</span><span class="es" lang="es">Menospreciar</span></span></label>
+            <label class="leaf"><input type="checkbox" id="cb-bluster"><span><span class="en" lang="en">Bluster</span><span class="es" lang="es">Fanfarronear</span></span></label>
+            <label class="leaf"><input type="checkbox" id="cb-defamate"><span><span class="en" lang="en">Defamate</span><span class="es" lang="es">Difamar</span></span></label>
+          </details>
+        </details>
+
+        <details>
+          <summary class="node">
+            <input type="checkbox" id="cb-hit">
+            <span class="title"><span class="en" lang="en">Hit</span><span class="es" lang="es">Golpear</span></span>
+          </summary>
+          <label class="leaf"><input type="checkbox" id="cb-damage"><span><span class="en" lang="en">Damage</span><span class="es" lang="es">Dañar</span></span></label>
+          <label class="leaf"><input type="checkbox" id="cb-punish"><span><span class="en" lang="en">Punish</span><span class="es" lang="es">Castigar</span></span></label>
+          <label class="leaf"><input type="checkbox" id="cb-destroy"><span><span class="en" lang="en">Destroy</span><span class="es" lang="es">Destruir</span></span></label>
+        </details>
+
+        <details>
+          <summary class="node">
+            <input type="checkbox" id="cb-sue">
+            <span class="title"><span class="en" lang="en">Sue</span><span class="es" lang="es">Demandar</span></span>
+          </summary>
+          <label class="leaf"><input type="checkbox" id="cb-atpolice"><span><span class="en" lang="en">At police</span><span class="es" lang="es">Ante la policía</span></span></label>
+          <label class="leaf"><input type="checkbox" id="cb-atcourt"><span><span class="en" lang="en">At court</span><span class="es" lang="es">Ante el juzgado</span></span></label>
+          <label class="leaf"><input type="checkbox" id="cb-other-sue"><span><span class="en" lang="en">Other</span><span class="es" lang="es">Otro</span></span></label>
+        </details>
+      </details>
+    </details>
+    </div>
+
+    <!-- ============== NOTIFYING (only visible if something above is checked) ============== -->
+    <div id="notifyingBlock">
+    <details>
+      <summary class="node">
+        <input type="checkbox" id="cb-notifying">
+        <span class="title"><span class="en" lang="en">Notifying</span><span class="es" lang="es">Notificar</span></span>
+      </summary>
+
+      <details>
+        <summary class="node">
+          <input type="checkbox" id="cb-public">
+          <span class="title"><span class="en" lang="en">Public</span><span class="es" lang="es">Público</span></span>
+        </summary>
+        <label class="leaf"><input type="checkbox" id="cb-xperson"><span><span class="en" lang="en">To x person</span><span class="es" lang="es">A x persona</span></span></label>
+        <label class="leaf"><input type="checkbox" id="cb-trustee"><span><span class="en" lang="en">To x trustee</span><span class="es" lang="es">A x persona de confianza</span></span></label>
+        <label class="leaf"><input type="checkbox" id="cb-subscribers"><span><span class="en" lang="en">Subscribers</span><span class="es" lang="es">Suscriptores</span></span></label>
+        <label class="leaf"><input type="checkbox" id="cb-restorers"><span><span class="en" lang="en">Restorers</span><span class="es" lang="es">Restauradores</span></span></label>
+      </details>
+
+      <details>
+        <summary class="node">
+          <input type="checkbox" id="cb-warning">
+          <span class="title"><span class="en" lang="en">Warning</span><span class="es" lang="es">Aviso</span></span>
+        </summary>
+
+        <div class="leaf">
+          <input type="checkbox" id="cb-whowhat">
+          <span>
+            <textarea class="x-ta" id="ta-whowhat" rows="1" placeholder="Who - What" aria-label="Who - What" data-ph-en="Who - What" data-ph-es="Quién - Qué" data-aria-en="Who - What" data-aria-es="Quién - Qué"></textarea>
+          </span>
+        </div>
+
+        <div class="leaf">
+          <input type="checkbox" id="cb-xtime">
+          <span>
+            <textarea class="x-ta" id="ta-xtime" rows="1" placeholder="how long" aria-label="time in advance" data-ph-en="how long" data-ph-es="cuánto tiempo" data-aria-en="time in advance" data-aria-es="tiempo de antelación"></textarea>
+            <span class="en" lang="en">in advance</span><span class="es" lang="es">de antelación</span>
+          </span>
+        </div>
+        <div class="leaf">
+          <input type="checkbox" id="cb-inxway">
+          <span>
+            <span class="en" lang="en">In</span><span class="es" lang="es">De</span>
+            <textarea class="x-ta" id="ta-inxway" rows="1" placeholder="how" aria-label="way" data-ph-en="how" data-ph-es="cómo" data-aria-en="way" data-aria-es="modo"></textarea>
+            <span class="en" lang="en">way</span><span class="es" lang="es">modo</span>
+          </span>
+        </div>
+
+        <details>
+          <summary class="node">
+            <input type="checkbox" id="cb-onlyif">
+            <span class="title"><span class="en" lang="en">Only if</span><span class="es" lang="es">Solo si</span></span>
+          </summary>
+
+          <details>
+            <summary class="node">
+              <input type="checkbox" id="cb-much">
+              <span class="title"><span class="en" lang="en">Much</span><span class="es" lang="es">Mucho</span></span>
+            </summary>
+            <label class="leaf"><input type="checkbox" id="cb-failure"><span><span class="en" lang="en">Failure</span><span class="es" lang="es">Incumplimiento</span></span></label>
+            <label class="leaf"><input type="checkbox" id="cb-offense"><span><span class="en" lang="en">Offense</span><span class="es" lang="es">Ofensa</span></span></label>
+            <label class="leaf"><input type="checkbox" id="cb-harm"><span><span class="en" lang="en">Harm</span><span class="es" lang="es">Daño</span></span></label>
+
+            <details>
+              <summary class="node">
+                <input type="checkbox" id="cb-previous">
+                <span class="title"><span class="en" lang="en">Previous</span><span class="es" lang="es">Previo</span></span>
+              </summary>
+              <label class="leaf"><input type="checkbox" id="cb-prev-failure"><span><span class="en" lang="en">Failure</span><span class="es" lang="es">Incumplimiento</span></span></label>
+              <label class="leaf"><input type="checkbox" id="cb-prev-offense"><span><span class="en" lang="en">Offense</span><span class="es" lang="es">Ofensa</span></span></label>
+              <label class="leaf"><input type="checkbox" id="cb-prev-harm"><span><span class="en" lang="en">Harm</span><span class="es" lang="es">Daño</span></span></label>
+            </details>
+
+            <label class="leaf"><input type="checkbox" id="cb-disadv"><span><span class="en" lang="en">Disadvantages for the trustee</span><span class="es" lang="es">Perjuicios para la persona de confianza</span></span></label>
+            <label class="leaf"><input type="checkbox" id="cb-others"><span><span class="en" lang="en">Other people involved</span><span class="es" lang="es">Otras personas implicadas</span></span></label>
+          </details>
+
+        </details>
+      </details>
+    </details>
+
+    <!-- "Other" — sibling of Notifying, expressed as a text input + "actions and/or conditions" -->
+    <div class="leaf">
+      <input type="checkbox" id="cb-other-notify">
+      <span>
+        <textarea class="x-ta" id="ta-other-notify" rows="1" placeholder="Other" aria-label="Other actions and/or conditions" data-ph-en="Other" data-ph-es="Otro" data-aria-en="Other actions and/or conditions" data-aria-es="Otras acciones o condiciones"></textarea>
+        <span class="en" lang="en">actions and/or conditions</span><span class="es" lang="es">acciones o condiciones</span>
+      </span>
+    </div>
+    </div>
+
+    <!-- "Me" field, below the whole checkboxes list -->
+    <label class="me-row">
+      <textarea class="x-ta me-ta" id="ta-me" rows="1" maxlength="40" required aria-label="Me" data-aria-en="Me" data-aria-es="Yo">Me</textarea>
+    </label>
+
+    <!-- "During (n) days" — grant-level term, below "Me" -->
+    <label class="term-row">
+      <span class="en" lang="en">During</span><span class="es" lang="es">Durante</span>
+      <input type="text" class="term-days" id="during-days" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="n" aria-label="During how many days" data-aria-en="During how many days" data-aria-es="Durante cuántos días">
+      <span class="en" lang="en">days</span><span class="es" lang="es">días</span>
+    </label>
+
+    <!-- "Rights expire in (n) days" — grant-level term, below "Me" -->
+    <label class="term-row">
+      <span class="en" lang="en">Rights expire in</span><span class="es" lang="es">Los derechos caducan en</span>
+      <input type="text" class="term-days" id="rights-days" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="n" aria-label="Rights expire in how many days" data-aria-en="Rights expire in how many days" data-aria-es="Los derechos caducan en cuántos días">
+      <span class="en" lang="en">days</span><span class="es" lang="es">días</span>
+    </label>
+
+    <div class="review-spacer" aria-hidden="true"></div>
+
+    <!-- Review: collapsed by default; gets more coloured/flashy as items above are checked -->
+    <details id="reviewBlock">
+      <summary class="review-summary"><span class="review-title"><span class="en" lang="en">Review</span><span class="es" lang="es">Revisión</span></span></summary>
+      <div class="review-body">
+
+      <!-- Resumen -->
+      <div class="summary-date" id="outDate"></div>
+      <div class="summary-line" id="summaryLine">
+        <strong><span class="en" lang="en">I allow</span><span class="es" lang="es">Permito a</span></strong>
+        <span id="outName">—</span>
+        <strong><span class="en" lang="en">to</span><span class="es" lang="es"></span></strong>
+        <span id="outCrumble"></span>
+        <strong id="outMe">Me</strong>
+        <span id="outNotify"></span>
+      </div>
+
+
+      <!-- Insight / Magic / Copy row (above the save row, with two rows of space) -->
+      <div class="button-group action-row">
+        <button type="button" class="btn" id="insightBtn"><i class="fas fa-brain"></i><span><span class="en" lang="en">Insight</span><span class="es" lang="es">Reflexión</span></span></button>
+        <button type="button" class="btn" id="magicBtn"><i class="fas fa-magic"></i><span><span class="en" lang="en">Magic</span><span class="es" lang="es">Magia</span></span></button>
+        <button type="button" class="btn" id="copyBtn"><i class="fas fa-copy"></i><span><span class="en" lang="en">Copy</span><span class="es" lang="es">Copiar</span></span></button>
+      </div>
+
+      <div class="action-spacer" aria-hidden="true"></div>
+
+      <!-- naughty buttons (Save / Share / Publish – hacky-style functionality, rounded) -->
+      <div class="button-group">
+        <div class="btn-with-subs" id="saveWrap">
+        <button type="button" class="btn" id="saveBtn"><i class="fas fa-download"></i><span><span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></span></button>
+        <div class="subitems">
+          <button type="button" class="subitem" data-group="save" data-action="jpg">JPG</button>
+          <button type="button" class="subitem" data-group="save" data-action="html">HTML</button>
+          <button type="button" class="subitem" data-group="save" data-action="text"><span class="en" lang="en">Text</span><span class="es" lang="es">Texto</span></button>
+          <button type="button" class="subitem" data-group="save" data-action="json">JSON</button>
+          <button type="button" class="subitem" data-group="save" data-action="csv">CSV</button>
+          <button type="button" class="subitem" data-group="save" data-action="xml">XML</button>
+          <button type="button" class="subitem" data-group="save" data-action="md">MD</button>
+        </div>
+      </div>
+      <div class="btn-with-subs" id="shareWrap">
+        <button type="button" class="btn" id="shareBtn"><i class="fas fa-share-alt"></i><span><span class="en" lang="en">Share</span><span class="es" lang="es">Compartir</span></span></button>
+        <div class="subitems">
+          <button type="button" class="subitem" data-group="share" data-action="device"><span class="en" lang="en">Device</span><span class="es" lang="es">Dispositivo</span></button>
+          <button type="button" class="subitem" data-group="share" data-action="whatsapp">WhatsApp</button>
+          <button type="button" class="subitem" data-group="share" data-action="telegram">Telegram</button>
+          <button type="button" class="subitem" data-group="share" data-action="mail"><span class="en" lang="en">Mail</span><span class="es" lang="es">Correo</span></button>
+        </div>
+      </div>
+      <div class="btn-with-subs" id="publishWrap">
+        <div class="subitems subitems-above">
+          <input class="subitem-radio" type="radio" name="publishPlatform" id="pubP0" data-r="0" data-platform="Mastodon" tabindex="-1" aria-hidden="true">
+          <label class="subitem is-radio" for="pubP0" data-r="0" data-group="publish">Mastodon</label>
+          <input class="subitem-radio" type="radio" name="publishPlatform" id="pubP1" data-r="1" data-platform="Bluesky" tabindex="-1" aria-hidden="true">
+          <label class="subitem is-radio" for="pubP1" data-r="1" data-group="publish">Bluesky</label>
+          <input class="subitem-radio" type="radio" name="publishPlatform" id="pubP2" data-r="2" data-platform="X" tabindex="-1" aria-hidden="true">
+          <label class="subitem is-radio" for="pubP2" data-r="2" data-group="publish">X</label>
+        </div>
+        <button type="button" class="btn" id="publishBtn"><i class="fas fa-cloud-upload-alt"></i><span><span class="en" lang="en">Publish</span><span class="es" lang="es">Publicar</span></span></button>
+        <div class="subitems subitems-below">
+          <input class="subitem-radio" type="radio" name="publishVisibility" id="pubV0" data-r="0" data-visibility="Public" data-visibility-es="Público" tabindex="-1" aria-hidden="true">
+          <label class="subitem is-radio" for="pubV0" data-r="0" data-group="publish"><span class="en" lang="en">Public</span><span class="es" lang="es">Público</span></label>
+          <input class="subitem-radio" type="radio" name="publishVisibility" id="pubV1" data-r="1" data-visibility="Friends" data-visibility-es="Amigos" tabindex="-1" aria-hidden="true">
+          <label class="subitem is-radio" for="pubV1" data-r="1" data-group="publish"><span class="en" lang="en">Friends</span><span class="es" lang="es">Amigos</span></label>
+          <input class="subitem-radio" type="radio" name="publishVisibility" id="pubV2" data-r="2" data-visibility="Private" data-visibility-es="Privado" tabindex="-1" aria-hidden="true">
+          <label class="subitem is-radio" for="pubV2" data-r="2" data-group="publish"><span class="en" lang="en">Private</span><span class="es" lang="es">Privado</span></label>
+        </div>
+      </div>
+    </div>
+
+      <div class="hint-area" id="hintMessage"></div>
+
+      </div>
+    </details>
+
+    <button type="submit" class="visually-hidden" tabindex="-1" aria-hidden="true">Save</button>
+  </form>
+
+  <script>
+    // ── i18n helpers (shared with translaty engine) ──
+    // Active language code from the worldball radios.
+    window.floveLang = function(){
+      const r = document.querySelector('input[name="lang"]:checked');
+      return r ? r.id.replace('lang-', '') : 'en';
+    };
+    // Pick a bilingual string for the active language.
+    window.floveTx = function(en, es){ return window.floveLang() === 'es' ? es : en; };
+    // Today's date, formatted for the active language.
+    window.floveToday = function(){
+      const loc = window.floveLang() === 'es' ? 'es-ES' : 'en-US';
+      try { return new Date().toLocaleDateString(loc, {year:'numeric', month:'long', day:'numeric'}); }
+      catch (_) { return new Date().toISOString().slice(0, 10); }
+    };
+    // Read the active-language text out of an element that holds .en/.es spans
+    // (falls back to the element's own text when it isn't wrapped).
+    function visibleLabel(el){
+      if (!el) return '';
+      const li = window.floveLang();
+      const span = el.querySelector(':scope > span.' + li + ', span.' + li);
+      return (span ? span.textContent : el.textContent).trim();
+    }
+
+    // Build "I allow to <name> to: item1, item2, ... me"
+    const form = document.getElementById('treeForm');
+    const nameInput = document.getElementById('nombre');
+    const outName = document.getElementById('outName');
+    const outCrumble = document.getElementById('outCrumble');
+    const outNotify  = document.getElementById('outNotify');
+    const outDate    = document.getElementById('outDate');
+    const notifyingBlock = document.getElementById('notifyingBlock');
+    const duringInput = document.getElementById('during-days');
+    const rightsInput = document.getElementById('rights-days');
+
+    // Read a leaf's visible phrase in the active language, splicing in any
+    // free-text typed into its inline textareas so it shows on-screen too.
+    function leafLabelText(spanWrap){
+      if (!spanWrap) return '';
+      const li = window.floveLang();
+      let out = '';
+      spanWrap.childNodes.forEach(node => {
+        if (node.nodeType === Node.TEXT_NODE){
+          out += node.textContent;
+        } else if (node.nodeType === Node.ELEMENT_NODE){
+          if (node.tagName === 'TEXTAREA'){
+            const v = (node.value || node.placeholder || '').trim();
+            if (v) out += ' ' + v + ' ';
+          } else if (node.classList && node.classList.contains(li)){
+            out += node.textContent;
+          } else if (!(node.classList && (node.classList.contains('en') || node.classList.contains('es')))){
+            out += node.textContent;
+          }
+        }
+      });
+      return out.replace(/\s+/g, ' ').trim();
+    }
+
+    function labelTextFor(input){
+      const leaf = input.closest('.leaf');
+      if (leaf){
+        const span = leaf.querySelector(':scope > span');
+        return span && span.querySelector('textarea') ? leafLabelText(span) : visibleLabel(span);
+      }
+      const node = input.closest('summary.node');
+      if (node) return visibleLabel(node.querySelector('.title'));
+      return '';
+    }
+
+    const meTa  = document.getElementById('ta-me');
+    const outMe = document.getElementById('outMe');
+    function refreshSummary(){
+      if (outDate) outDate.textContent = window.floveToday();
+      outName.textContent = (nameInput.value || '—');
+      // Split the ticked items: everything under Notifying goes AFTER "Me";
+      // the rest (the Crumble tree) stays before it.
+      const checked = [...form.querySelectorAll('input[type="checkbox"]:checked')];
+      const crumble = [], notify = [];
+      checked.forEach(cb => {
+        const label = labelTextFor(cb);
+        if (!label) return;
+        if (notifyingBlock && notifyingBlock.contains(cb)) notify.push(label);
+        else crumble.push(label);
+      });
+      outCrumble.textContent = crumble.length ? ' ' + crumble.join(', ') : '';
+      const meDefault = window.floveTx('Me', 'Yo');
+      outMe.textContent = (meTa?.value || meDefault).trim() || meDefault;
+      // After "Me": Notifying selections, then the two term phrases, all shown
+      // as regular comma-separated items like the other options.
+      const after = notify.slice();
+      const dN = parseInt(duringInput && duringInput.value, 10);
+      if (dN > 0) after.push(window.floveTx(`During ${dN} days`, `Durante ${dN} días`));
+      const rN = parseInt(rightsInput && rightsInput.value, 10);
+      if (rN > 0) after.push(window.floveTx(`Rights expire in ${rN} days`, `Los derechos caducan en ${rN} días`));
+      outNotify.textContent = after.length ? ' — ' + after.join(', ') : '';
+    }
+
+    // Re-render the summary (and language-dependent labels) when the worldball
+    // switches language.
+    document.querySelectorAll('input[name="lang"]').forEach(r =>
+      r.addEventListener('change', () => refreshSummary()));
+
+    // The form has a (visually hidden) submit button only to satisfy markup
+    // validity; this is a JS-driven app with no server round-trip, so never
+    // actually submit/reload.
+    form.addEventListener('submit', e => e.preventDefault());
+
+    form.addEventListener('change', refreshSummary);
+    nameInput.addEventListener('input', refreshSummary);
+    meTa?.addEventListener('input', refreshSummary);
+    // Term fields accept digits only: strip anything else as it's typed/pasted.
+    [duringInput, rightsInput].forEach(inp => {
+      inp?.addEventListener('input', () => {
+        const cleaned = inp.value.replace(/\D/g, '');
+        if (inp.value !== cleaned) inp.value = cleaned;
+        refreshSummary();
+      });
+    });
+    refreshSummary();
+
+    // ── Review level: 0..5 based on items checked above (3 per level, capped at 15) ──
+    const reviewBlock = document.getElementById('reviewBlock');
+    function updateReviewLevel(){
+      if (!reviewBlock) return;
+      let n = 0;
+      form.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+        if (cb.id !== 'cb-crumble' && !reviewBlock.contains(cb)) n++;
+      });
+      const level = Math.min(Math.floor(n / 3), 5);
+      if (level > 0) reviewBlock.setAttribute('data-level', String(level));
+      else reviewBlock.removeAttribute('data-level');
+    }
+    form.addEventListener('change', updateReviewLevel);
+    updateReviewLevel();
+
+    // ── Logo: click drains the colour (pill background goes); 3s after the
+    //    last click, the original colour fades back over 3s. The canvas
+    //    "circles" ripple still fires from the global click handler. ──
+    const logoLink = document.querySelector('.flove-bar .flove-mark-link');
+    if (logoLink){
+      let logoIdleT = null, logoFadeT = null;
+      logoLink.addEventListener('click', e => {
+        e.preventDefault();
+        // The logo now opens the menu (wired in the actions script); here we
+        // only run its colour-drain animation. Drain, then fade back after 3s.
+        clearTimeout(logoIdleT); clearTimeout(logoFadeT);
+        logoLink.classList.remove('is-draining');
+        logoLink.classList.add('is-drained');
+        logoIdleT = setTimeout(() => {
+          logoLink.classList.add('is-draining');
+          // ensure the 3s transition is registered before the colour swap
+          requestAnimationFrame(() => logoLink.classList.remove('is-drained'));
+          logoFadeT = setTimeout(() => {
+            logoLink.classList.remove('is-draining');
+          }, 3000);
+        }, 3000);
+      });
+    }
+
+    // ── Differentiate clicks inside summary.node ──
+    // Checkbox click → toggles the check only. We stopPropagation on the
+    // checkbox itself so the click never reaches <summary> and the
+    // <details> toggle never fires. The checkbox's own default action
+    // (toggling the check) still runs → every category checkbox is
+    // selectable, regardless of nesting depth.
+    // Title click (or empty space in the row) → falls through to summary's
+    // default and toggles expand/collapse.
+    document.querySelectorAll('summary.node input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('click', e => { e.stopPropagation(); });
+    });
+
+    // ── Locked Crumble: defaultly checked + static. Every attempt to
+    //    toggle it amplifies the rain & button intensity instead. ──
+    const crumbleCb  = document.getElementById('cb-crumble');
+    let crumbleTries = 0;
+    function escalateCrumble(e){
+      crumbleTries++;
+      const scale = Math.min(1 + crumbleTries * 0.5, 6);
+      const rect = (e.currentTarget || crumbleCb).getBoundingClientRect();
+      window.floveFX?.burst(rect.left + rect.width / 2, rect.top + rect.height / 2, scale);
+      // visual hint on the Insight/Magic/Copy + Save/Share/Publish rows
+      document.querySelectorAll('.button-group .btn').forEach((b, i) => {
+        b.style.setProperty('--shake', crumbleTries);
+        b.classList.remove('fired');
+        void b.offsetWidth;
+        b.classList.add('fired');
+        b.style.boxShadow = `0 0 ${10 + crumbleTries * 4}px rgba(0,255,136,${Math.min(.25 + crumbleTries * .08, .9)})`;
+        setTimeout(() => { b.style.boxShadow = ''; }, 900);
+      });
+    }
+    // Block the toggle: capture the click before the native default runs.
+    crumbleCb.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      crumbleCb.checked = true;
+      escalateCrumble(e);
+    });
+    // Also catch keyboard space/enter on the checkbox.
+    crumbleCb.addEventListener('keydown', e => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        escalateCrumble(e);
+      }
+    });
+
+    // ── Inline textareas inside .leaf labels: typing/clicking inside
+    //    them must NOT toggle the parent label's checkbox. ──
+    document.querySelectorAll('.x-ta').forEach(ta => {
+      ['click','mousedown','keydown','keyup','input'].forEach(evt => {
+        ta.addEventListener(evt, e => e.stopPropagation());
+      });
+    });
+
+    // ── If any subitem of "Only if" is checked, also check Only if + Notifying ──
+    const onlyIfCb     = document.getElementById('cb-onlyif');
+    const notifyingCb  = document.getElementById('cb-notifying');
+    const onlyIfDetails = onlyIfCb?.closest('details');
+    if (onlyIfDetails && onlyIfCb && notifyingCb){
+      form.addEventListener('change', e => {
+        const t = e.target;
+        if (!(t instanceof HTMLInputElement) || t.type !== 'checkbox') return;
+        if (!onlyIfDetails.contains(t)) return;
+        if (t === onlyIfCb) return;
+        // only act when something below Only if is now checked
+        const anyChecked = [...onlyIfDetails.querySelectorAll('input[type="checkbox"]')]
+          .some(cb => cb !== onlyIfCb && cb.checked);
+        if (anyChecked){
+          if (!onlyIfCb.checked){ onlyIfCb.checked = true; }
+          if (!notifyingCb.checked){ notifyingCb.checked = true; }
+        }
+      });
+    }
+
+    // ── Intriguing burst when a checkbox becomes checked ──
+    function spawnPulse(input){
+      const rect = input.getBoundingClientRect();
+      const pulse = document.createElement('span');
+      pulse.className = 'check-pulse';
+      pulse.style.left = (rect.left + rect.width / 2 + window.scrollX) + 'px';
+      pulse.style.top  = (rect.top  + rect.height / 2 + window.scrollY) + 'px';
+      document.body.appendChild(pulse);
+      setTimeout(() => pulse.remove(), 800);
+    }
+
+    form.addEventListener('change', e => {
+      const cb = e.target;
+      if (cb instanceof HTMLInputElement && cb.type === 'checkbox' && cb.checked) {
+        spawnPulse(cb);
+      }
+    });
+  </script>
+
+  <script>
+  // ===== Save / Share / Publish (hacky-style) =====
+  (function(){
+    "use strict";
+
+    const hintMessage = document.getElementById('hintMessage');
+    const saveBtn    = document.getElementById('saveBtn');
+    const shareBtn   = document.getElementById('shareBtn');
+    const publishBtn = document.getElementById('publishBtn');
+    const wraps = {
+      save:    document.getElementById('saveWrap'),
+      share:   document.getElementById('shareWrap'),
+      publish: document.getElementById('publishWrap'),
+    };
+
+    // active-language text from an element holding .en/.es spans
+    function visTxt(el){
+      if (!el) return '';
+      const li = (window.floveLang ? window.floveLang() : 'en');
+      const span = el.querySelector('span.' + li);
+      return (span ? span.textContent : el.textContent).trim();
+    }
+
+    // Read a leaf's visible phrase in the active language, splicing in any
+    // free-text the user typed into its inline textareas (ta-whowhat, ta-xtime,
+    // ta-inxway, ta-other-notify) so those values round-trip into every export.
+    function leafLabel(spanWrap){
+      if (!spanWrap) return '';
+      const li = (window.floveLang ? window.floveLang() : 'en');
+      let out = '';
+      spanWrap.childNodes.forEach(node => {
+        if (node.nodeType === Node.TEXT_NODE){
+          out += node.textContent;
+        } else if (node.nodeType === Node.ELEMENT_NODE){
+          if (node.tagName === 'TEXTAREA'){
+            const v = (node.value || node.placeholder || '').trim();
+            if (v) out += ' ' + v + ' ';
+          } else if (node.classList && node.classList.contains(li)){
+            out += node.textContent;
+          } else if (!(node.classList && (node.classList.contains('en') || node.classList.contains('es')))){
+            out += node.textContent;
+          }
+        }
+      });
+      return out.replace(/\s+/g, ' ').trim();
+    }
+
+    const notifyingBlock = document.getElementById('notifyingBlock');
+    function labelOf(cb){
+      const leaf = cb.closest('.leaf');
+      if (leaf){
+        const span = leaf.querySelector(':scope > span');
+        // Leaves that carry an inline textarea need their typed value spliced in.
+        return span && span.querySelector('textarea') ? leafLabel(span) : visTxt(span);
+      }
+      const node = cb.closest('summary.node');
+      if (node) return visTxt(node.querySelector('.title'));
+      return '';
+    }
+    function getFormData(){
+      const name = (document.getElementById('nombre')?.value || '').trim();
+      // Crumble-tree items sit before "Me"; Notifying items after it.
+      const crumble = [], notify = [];
+      [...document.querySelectorAll('#treeForm input[type="checkbox"]:checked')].forEach(cb => {
+        const label = labelOf(cb);
+        if (!label) return;
+        if (notifyingBlock && notifyingBlock.contains(cb)) notify.push(label);
+        else crumble.push(label);
+      });
+      const meEl = document.getElementById('ta-me');
+      const meDefault = (window.floveTx ? window.floveTx('Me','Yo') : 'Me');
+      const me = ((meEl?.value || '').trim()) || meDefault;
+      const dN = parseInt((document.getElementById('during-days') || {}).value, 10);
+      const rN = parseInt((document.getElementById('rights-days') || {}).value, 10);
+      const during = (dN > 0) ? dN : null;
+      const rights = (rN > 0) ? rN : null;
+      const date = (window.floveToday ? window.floveToday() : '');
+      // `items` (crumble + notify) kept for the format builders below.
+      return { name, date, crumble, notify, items: crumble.concat(notify), during, rights, me };
+    }
+
+    function summaryText(){
+      const d = getFormData();
+      const tx = (en, es) => (window.floveTx ? window.floveTx(en, es) : en);
+      const crumbleStr = d.crumble.length ? ': ' + d.crumble.join(', ') : '';
+      const after = d.notify.slice();
+      if (d.during) after.push(tx(`During ${d.during} days`, `Durante ${d.during} días`));
+      if (d.rights) after.push(tx(`Rights expire in ${d.rights} days`, `Los derechos caducan en ${d.rights} días`));
+      const afterStr = after.length ? ' — ' + after.join(', ') : '';
+      const phrase = tx(
+        `I allow ${d.name || '—'} to${crumbleStr} — ${d.me}${afterStr}`,
+        `Permito a ${d.name || '—'}${crumbleStr} — ${d.me}${afterStr}`
+      );
+      return d.date ? `${d.date}\n${phrase}` : phrase;
+    }
+
+    const esc = s => (s || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+    function buildFullHTML(){
+      const d = getFormData();
+      const li = arr => arr.map(x => `<li>${esc(x)}</li>`).join('');
+      return `<!doctype html><html><head><meta charset="utf-8"><title>Crumbly · ${esc(d.name)}</title>
+<style>body{background:#0b0b0f;color:#eaeaf0;font-family:system-ui;padding:24px;max-width:680px;margin:auto}
+h1{color:#00ff88;font-family:Georgia,serif} h2{color:#a0a3ad;font-size:.9rem;text-transform:uppercase;letter-spacing:.08em}
+ul{padding-left:1.2em} li{margin:.3em 0} p{color:#a0a3ad}</style></head>
+<body><h1>Crumbly · ${esc(d.name) || '—'}</h1>
+<p>${esc(summaryText())}</p>
+<h2>${window.floveTx ? window.floveTx('Selected','Seleccionado') : 'Selected'}</h2><ul>${li(d.items)}</ul></body></html>`;
+    }
+
+    // ── CSV (RFC-4180): one row per selected item, plus name/me/summary rows.
+    //    Quote every field, doubling any internal double-quote. CRLF line ends.
+    function buildCSV(){
+      const d = getFormData();
+      const q = s => '"' + String(s == null ? '' : s).replace(/"/g, '""') + '"';
+      const tx = (en, es) => (window.floveTx ? window.floveTx(en, es) : en);
+      const rows = [];
+      rows.push([q(tx('field','campo')), q(tx('value','valor'))].join(','));
+      rows.push([q(tx('date','fecha')), q(d.date)].join(','));
+      rows.push([q(tx('name','nombre')), q(d.name || '—')].join(','));
+      rows.push([q(tx('summary','resumen')), q(summaryText())].join(','));
+      d.items.forEach(it => rows.push([q(tx('item','elemento')), q(it)].join(',')));
+      if (d.during) rows.push([q(tx('during (days)','durante (días)')), q(d.during)].join(','));
+      rows.push([q(tx('me','yo')), q(d.me)].join(','));
+      if (d.rights) rows.push([q(tx('rights expire (days)','caducan (días)')), q(d.rights)].join(','));
+      return rows.join('\r\n') + '\r\n';
+    }
+
+    // ── XML: entity-escape & < > " in every text node/attribute.
+    function buildXML(){
+      const d = getFormData();
+      const x = s => String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      const itemsXml = d.items.map(it => `    <item>${x(it)}</item>`).join('\n');
+      return `<?xml version="1.0" encoding="UTF-8"?>\n` +
+`<crumbly>\n` +
+`  <date>${x(d.date)}</date>\n` +
+`  <name>${x(d.name || '—')}</name>\n` +
+`  <summary>${x(summaryText())}</summary>\n` +
+`  <items>\n${itemsXml}${itemsXml ? '\n' : ''}  </items>\n` +
+`  <during>${d.during != null ? d.during : ''}</during>\n` +
+`  <me>${x(d.me)}</me>\n` +
+`  <rights-expire>${d.rights != null ? d.rights : ''}</rights-expire>\n` +
+`</crumbly>\n`;
+    }
+
+    // ── Markdown: readable heading + bullet list of the same item set.
+    function buildMarkdown(){
+      const d = getFormData();
+      const tx = (en, es) => (window.floveTx ? window.floveTx(en, es) : en);
+      // Escape characters that would otherwise start markdown syntax.
+      const mdEsc = s => String(s == null ? '' : s).replace(/([\\`*_{}\[\]()#+\-.!|>])/g, '\\$1');
+      const lines = [];
+      lines.push(`# Crumbly · ${mdEsc(d.name || '—')}`);
+      lines.push('');
+      lines.push(summaryText());
+      lines.push('');
+      lines.push(`## ${tx('Selected','Seleccionado')}`);
+      if (d.items.length) d.items.forEach(it => lines.push(`- ${mdEsc(it)}`));
+      else lines.push(`- ${tx('(nothing selected)','(nada seleccionado)')}`);
+      lines.push('');
+      if (d.during) lines.push(`**${tx('During','Durante')}:** ${d.during} ${tx('days','días')}`);
+      lines.push(`**${tx('Me','Yo')}:** ${mdEsc(d.me)}`);
+      if (d.rights) lines.push(`**${tx('Rights expire in','Los derechos caducan en')}:** ${d.rights} ${tx('days','días')}`);
+      return lines.join('\n') + '\n';
+    }
+
+    function downloadBlob(blob, filename){
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+    }
+    function setHint(html){ hintMessage.innerHTML = html; }
+
+    function renderJPG(cb){
+      const W = 720, H = 520;
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#0b0b0f'; ctx.fillRect(0, 0, W, H);
+      const d = getFormData();
+      ctx.fillStyle = '#00ff88';
+      ctx.font = '700 28px Georgia, serif';
+      ctx.fillText(`Crumbly · ${d.name || '—'}`, 24, 50);
+      if (d.date){
+        ctx.fillStyle = '#7a7d87';
+        ctx.font = '500 13px system-ui';
+        ctx.fillText(d.date, 24, 74);
+      }
+      ctx.fillStyle = '#a0a3ad';
+      ctx.font = '600 13px system-ui';
+      ctx.fillText(window.floveTx ? window.floveTx('SELECTED','SELECCIONADO') : 'SELECTED', 24, 96);
+      ctx.fillStyle = '#eaeaf0';
+      ctx.font = '500 15px system-ui';
+      const maxRows = Math.floor((H - 210) / 24);
+      d.items.slice(0, maxRows).forEach((t, i) => ctx.fillText(`• ${t}`, 24, 128 + i * 24));
+      if (d.items.length > maxRows) {
+        ctx.fillStyle = '#a0a3ad';
+        const moreN = d.items.length - maxRows;
+        ctx.fillText(window.floveTx ? window.floveTx(`… +${moreN} more`, `… +${moreN} más`) : `… +${moreN} more`, 24, 128 + maxRows * 24);
+      }
+      // Grant-level terms — "During (n) days" / "Rights expire in (n) days"
+      const jtx = (en, es) => (window.floveTx ? window.floveTx(en, es) : en);
+      let ty = H - 74;
+      ctx.fillStyle = '#b3ffd6';
+      ctx.font = '600 13px system-ui';
+      if (d.during){ ctx.fillText(`${jtx('During','Durante')} ${d.during} ${jtx('days','días')}`, 24, ty); ty += 20; }
+      if (d.rights){ ctx.fillText(`${jtx('Rights expire in','Los derechos caducan en')} ${d.rights} ${jtx('days','días')}`, 24, ty); }
+      ctx.fillStyle = 'rgba(0,255,136,.4)';
+      ctx.font = 'italic 12px system-ui';
+      ctx.fillText('flove · trustful crumbly', 24, H - 24);
+      canvas.toBlob(cb, 'image/jpeg', 0.92);
+    }
+
+    function shareUrl(target){
+      const txt = summaryText();
+      const enc = encodeURIComponent(txt);
+      const page = encodeURIComponent(location.href);
+      switch (target) {
+        case 'whatsapp': return `https://wa.me/?text=${enc}%20${page}`;
+        case 'telegram': return `https://t.me/share/url?url=${page}&text=${enc}`;
+        case 'mail':     return `mailto:?subject=${encodeURIComponent('Crumbly')}&body=${enc}%0A%0A${page}`;
+      }
+    }
+
+    function closeAllWraps(except){
+      Object.values(wraps).forEach(w => { if (w !== except) w.classList.remove('is-open'); });
+    }
+    function toggleWrap(wrap){
+      const wasOpen = wrap.classList.contains('is-open');
+      closeAllWraps();
+      if (!wasOpen) wrap.classList.add('is-open');
+    }
+    function fireRipple(btn){
+      btn.classList.remove('fired');
+      void btn.offsetWidth;
+      btn.classList.add('fired');
+      setTimeout(() => btn.classList.remove('fired'), 650);
+    }
+
+    saveBtn.addEventListener('click', e => { e.stopPropagation(); fireRipple(saveBtn); toggleWrap(wraps.save); });
+    shareBtn.addEventListener('click', e => { e.stopPropagation(); fireRipple(shareBtn); toggleWrap(wraps.share); });
+    publishBtn.addEventListener('click', e => {
+      e.stopPropagation(); fireRipple(publishBtn);
+      if (wraps.publish.classList.contains('is-open')) {
+        const plat = document.querySelector('input[name="publishPlatform"]:checked');
+        const vis  = document.querySelector('input[name="publishVisibility"]:checked');
+        const li = window.floveLang ? window.floveLang() : 'en';
+        const platName = plat?.dataset.platform  || '—';
+        const visName  = (vis && (vis.dataset['visibility' + (li === 'es' ? 'Es' : '')] || vis.dataset.visibility)) || '—';
+        setHint(`<i class="fas fa-cloud-upload-alt"></i> ${window.floveTx('Published','Publicado')} · ${platName} · ${visName}.`);
+        wraps.publish.classList.remove('is-open');
+      } else {
+        closeAllWraps();
+        wraps.publish.classList.add('is-open');
+      }
+    });
+    Object.values(wraps).forEach(w => w.addEventListener('click', e => e.stopPropagation()));
+    document.addEventListener('click', () => closeAllWraps());
+
+    const tx = (en, es) => (window.floveTx ? window.floveTx(en, es) : en);
+    const subActions = {
+      'save:html': () => { downloadBlob(new Blob([buildFullHTML()], {type:'text/html'}), 'crumbly.html'); setHint('<i class="fas fa-check-circle"></i> ' + tx('HTML downloaded.','HTML descargado.')); },
+      'save:text': () => { downloadBlob(new Blob([summaryText()+'\n'], {type:'text/plain'}), 'crumbly.txt'); setHint('<i class="fas fa-check-circle"></i> ' + tx('Text downloaded.','Texto descargado.')); },
+      'save:json': () => { downloadBlob(new Blob([JSON.stringify(getFormData(), null, 2)], {type:'application/json'}), 'crumbly.json'); setHint('<i class="fas fa-check-circle"></i> ' + tx('JSON downloaded.','JSON descargado.')); },
+      'save:csv':  () => { downloadBlob(new Blob(['﻿'+buildCSV()], {type:'text/csv'}), 'crumbly.csv'); setHint('<i class="fas fa-check-circle"></i> ' + tx('CSV downloaded.','CSV descargado.')); },
+      'save:xml':  () => { downloadBlob(new Blob([buildXML()], {type:'application/xml'}), 'crumbly.xml'); setHint('<i class="fas fa-check-circle"></i> ' + tx('XML downloaded.','XML descargado.')); },
+      'save:md':   () => { downloadBlob(new Blob([buildMarkdown()], {type:'text/markdown'}), 'crumbly.md'); setHint('<i class="fas fa-check-circle"></i> ' + tx('Markdown downloaded.','Markdown descargado.')); },
+      'save:jpg':  () => { renderJPG(blob => { if(!blob){ setHint('<i class="fas fa-info-circle"></i> ' + tx('JPG export not supported.','Exportación a JPG no disponible.')); return; } downloadBlob(blob, 'crumbly.jpg'); setHint('<i class="fas fa-check-circle"></i> ' + tx('JPG downloaded.','JPG descargado.')); }); },
+      'share:device':   () => { shareToDevice(); },
+      'share:whatsapp': () => { window.open(shareUrl('whatsapp'), '_blank', 'noopener'); setHint('<i class="fab fa-whatsapp"></i> ' + tx('Opening WhatsApp…','Abriendo WhatsApp…')); },
+      'share:telegram': () => { window.open(shareUrl('telegram'), '_blank', 'noopener'); setHint('<i class="fab fa-telegram"></i> ' + tx('Opening Telegram…','Abriendo Telegram…')); },
+      'share:mail':     () => { location.href = shareUrl('mail'); setHint('<i class="fas fa-envelope"></i> ' + tx('Opening Mail…','Abriendo el correo…')); },
+    };
+
+    // ── Web Share (mobile share sheet): share the summary text + the generated
+    //    HTML file when the platform can share files; otherwise share text + URL;
+    //    if Web Share is wholly unavailable, fall back to the deep-link buttons. ──
+    async function shareToDevice(){
+      const text = summaryText();
+      const title = 'Crumbly';
+      try {
+        const htmlFile = new File([buildFullHTML()], 'crumbly.html', {type:'text/html'});
+        if (navigator.canShare && navigator.canShare({files:[htmlFile]})){
+          await navigator.share({title, text, files:[htmlFile]});
+          setHint('<i class="fas fa-share-alt"></i> ' + tx('Shared.','Compartido.'));
+          return;
+        }
+        if (navigator.share){
+          await navigator.share({title, text, url: location.href});
+          setHint('<i class="fas fa-share-alt"></i> ' + tx('Shared.','Compartido.'));
+          return;
+        }
+      } catch (err){
+        if (err && err.name === 'AbortError') return; // user dismissed the sheet
+      }
+      // No Web Share support → reveal the deep-link share buttons.
+      closeAllWraps();
+      wraps.share.classList.add('is-open');
+      setHint('<i class="fas fa-info-circle"></i> ' + tx('Share sheet not available — pick a target.','Panel de compartir no disponible — elige un destino.'));
+    }
+
+    document.querySelectorAll('.subitem').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const fn = subActions[`${btn.dataset.group}:${btn.dataset.action}`];
+        if (fn) fn();
+        if (btn.dataset.group !== 'publish') closeAllWraps();
+      });
+    });
+
+    // ── Insight / Magic / Copy ──
+    const insightBtn = document.getElementById('insightBtn');
+    const magicBtn   = document.getElementById('magicBtn');
+    const copyBtn    = document.getElementById('copyBtn');
+
+    const insights = [
+      ['A boundary you can name is a boundary you can hold.',
+       'Un límite que sabes nombrar es un límite que puedes sostener.'],
+      ['Crumbling is a slow grammar — it has parts, and you can decline some.',
+       'Desmoronarse es una gramática lenta: tiene partes, y puedes rechazar algunas.'],
+      ['Tick only what you would actually allow today, not what you fear tomorrow.',
+       'Marca solo lo que de verdad permitirías hoy, no lo que temes para mañana.'],
+      ['Notifying is the gentlest form of consequence.',
+       'Avisar es la forma más amable de poner una consecuencia.'],
+      ['Every Sue costs more silence than it earns voice. Check with care.',
+       'Cada demanda cuesta más silencio del que da voz. Marca con cuidado.'],
+      ['What you don\'t check stays whole.',
+       'Lo que no marcas permanece intacto.'],
+    ];
+    let insightIdx = 0;
+    insightBtn.addEventListener('click', e => {
+      e.stopPropagation(); fireRipple(insightBtn);
+      const pair = insights[insightIdx % insights.length];
+      setHint(`<i class="fas fa-brain"></i> ${tx(pair[0], pair[1])}`);
+      insightIdx++;
+    });
+
+    magicBtn.addEventListener('click', e => {
+      e.stopPropagation(); fireRipple(magicBtn);
+      // Clear and randomly select 3–6 checkboxes
+      const all = [...document.querySelectorAll('#crumbleBlock input[type="checkbox"]')];
+      all.forEach(cb => { if (cb.id !== 'cb-crumble') cb.checked = false; });
+      const pool = all.filter(cb => cb.id !== 'cb-crumble');
+      const target = 3 + Math.floor(Math.random() * 4);
+      const shuffled = pool.slice().sort(() => Math.random() - 0.5).slice(0, target);
+      shuffled.forEach(cb => {
+        cb.checked = true;
+        cb.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      setHint(`<i class="fas fa-magic"></i> ${tx(`Magic picked ${target} for you.`, `La magia eligió ${target} por ti.`)}`);
+    });
+
+    // ── Menu (the logo is its trigger) ──
+    const menuTrigger = document.getElementById('logoTrigger');
+    const menuList = document.getElementById('menuList');
+    function setMenu(open){
+      if (open){
+        menuList.removeAttribute('hidden');
+        menuTrigger.setAttribute('aria-expanded','true');
+      } else {
+        menuList.setAttribute('hidden','');
+        menuTrigger.setAttribute('aria-expanded','false');
+      }
+    }
+    menuTrigger.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      setMenu(menuList.hasAttribute('hidden'));
+    });
+    menuList.addEventListener('click', e => e.stopPropagation());
+    document.addEventListener('click', () => setMenu(false));
+
+    menuList.querySelectorAll('a[data-act]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const act = a.dataset.act;
+        if (act === 'reset'){
+          [...document.querySelectorAll('#treeForm input[type="checkbox"]')]
+            .forEach(cb => { if (cb.id !== 'cb-crumble') cb.checked = false; });
+          document.getElementById('nombre').value = '';
+          [...document.querySelectorAll('.x-ta')].forEach(ta => {
+            if (ta.id === 'ta-me') ta.value = tx('Me','Yo'); else ta.value = '';
+          });
+          const dd = document.getElementById('during-days'); if (dd) dd.value = '';
+          const rd = document.getElementById('rights-days'); if (rd) rd.value = '';
+          document.querySelectorAll('#treeForm details').forEach(d => {
+            d.open = (d === document.querySelector('#crumbleBlock > details'));
+          });
+          form.dispatchEvent(new Event('change'));
+          setHint('<i class="fas fa-rotate-left"></i> ' + tx('Form reset.','Formulario reiniciado.'));
+        } else if (act === 'expand'){
+          document.querySelectorAll('#treeForm details').forEach(d => d.open = true);
+        } else if (act === 'collapse'){
+          document.querySelectorAll('#treeForm details').forEach(d => {
+            if (!d.closest('#crumbleBlock') || d !== document.querySelector('#crumbleBlock > details')) {
+              d.open = false;
+            }
+          });
+        } else if (act === 'about'){
+          const intro = document.getElementById('introSection');
+          if (intro){
+            if (intro.hasAttribute('hidden')) intro.removeAttribute('hidden');
+            else intro.setAttribute('hidden','');
+          }
+        }
+        setMenu(false);
+      });
+    });
+
+    copyBtn.addEventListener('click', async e => {
+      e.stopPropagation(); fireRipple(copyBtn);
+      try {
+        await navigator.clipboard.writeText(summaryText());
+        const orig = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<i class="fas fa-check"></i><span>' + tx('Copied','Copiado') + '</span>';
+        setHint('<i class="fas fa-check-circle"></i> ' + tx('Copied to clipboard.','Copiado al portapapeles.'));
+        setTimeout(() => { copyBtn.innerHTML = orig; }, 1400);
+      } catch {
+        setHint('<i class="fas fa-info-circle"></i> ' + tx('Clipboard not available.','Portapapeles no disponible.'));
+      }
+    });
+  })();
+  </script>
+
+  <script>
+  // ===== Dark animated background: waves + rain (intensify on click) =====
+  (function(){
+    "use strict";
+    const canvas = document.getElementById('fxCanvas');
+    const ctx = canvas.getContext('2d');
+    let DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    let W = 0, H = 0;
+
+    function resize(){
+      DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      W = canvas.width  = Math.floor(window.innerWidth  * DPR);
+      H = canvas.height = Math.floor(window.innerHeight * DPR);
+      canvas.style.width  = window.innerWidth  + 'px';
+      canvas.style.height = window.innerHeight + 'px';
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Rain drops
+    const drops = [];
+    function makeDrop(seed = false){
+      drops.push({
+        x: Math.random() * W,
+        y: seed ? Math.random() * H : -20,
+        v: (3 + Math.random() * 7) * DPR,
+        l: (8 + Math.random() * 18) * DPR,
+        a: 0.20 + Math.random() * 0.45,
+      });
+    }
+    for (let i = 0; i < 140; i++) makeDrop(true);
+
+    // Waves — each has a primary undulation plus a slower secondary one
+    // that drifts inside the layer, so the three of them don't move in
+    // lockstep. `blur` is applied at draw time to soften the edges.
+    const waves = [
+      { y: 0.55, amp: 10, freq: 0.0085, phase: 0,   speed: 0.60, drift: 0.18, color: 'rgba(0,255,136,0.10)',  blur: 10 },
+      { y: 0.72, amp: 16, freq: 0.0060, phase: 1.2, speed: 0.42, drift: 0.11, color: 'rgba(0,180,200,0.085)', blur: 14 },
+      { y: 0.88, amp: 22, freq: 0.0040, phase: 2.4, speed: 0.30, drift: 0.07, color: 'rgba(80,180,255,0.075)',blur: 18 },
+    ];
+
+    // Click ripples (expanding circles where the user clicked)
+    const ripples = [];
+
+    let intensity = 1;
+    let t = 0;
+
+    function step(){
+      // dark background gradient
+      const grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0,   '#06070d');
+      grad.addColorStop(0.5, '#0a0d18');
+      grad.addColorStop(1,   '#02030a');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      // waves: soft, fuzzy edges via canvas blur filter. Each wave has a
+      // primary motion + a slower secondary undulation + a horizontal
+      // drift, so the three layers visibly desync from each other.
+      waves.forEach(w => {
+        ctx.save();
+        ctx.filter = `blur(${w.blur * DPR}px)`;
+        ctx.beginPath();
+        const yBase = H * w.y;
+        const amp = w.amp * DPR * intensity;
+        const xDrift = Math.sin(t * w.drift + w.phase * 0.5) * 60 * DPR;
+        for (let x = 0; x <= W; x += 4 * DPR){
+          const px = x + xDrift;
+          const y = yBase
+            + Math.sin(px * w.freq + t * w.speed + w.phase) * amp
+            + Math.sin(px * w.freq * 0.35 + t * w.speed * 0.55 + w.phase * 1.7) * amp * 0.55
+            + Math.cos(px * w.freq * 1.7  + t * w.speed * 0.22 + w.phase * 0.4) * amp * 0.30;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.lineTo(W, H);
+        ctx.lineTo(0, H);
+        ctx.closePath();
+        ctx.fillStyle = w.color;
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // rain
+      ctx.strokeStyle = 'rgba(190,210,255,0.55)';
+      ctx.lineWidth = 1 * DPR;
+      for (let i = 0; i < drops.length; i++){
+        const d = drops[i];
+        ctx.globalAlpha = d.a;
+        ctx.beginPath();
+        ctx.moveTo(d.x, d.y);
+        ctx.lineTo(d.x + 1, d.y + d.l);
+        ctx.stroke();
+        d.y += d.v * intensity;
+        if (d.y > H){
+          d.y = -20;
+          d.x = Math.random() * W;
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      // click ripples
+      for (let i = ripples.length - 1; i >= 0; i--){
+        const r = ripples[i];
+        r.r += 4 * DPR;
+        r.a *= 0.965;
+        ctx.beginPath();
+        ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(0,255,136,${r.a.toFixed(3)})`;
+        ctx.lineWidth = 2 * DPR;
+        ctx.stroke();
+        if (r.a < 0.02) ripples.splice(i, 1);
+      }
+
+      // decay intensity toward 1
+      intensity += (1 - intensity) * 0.035;
+      t += 0.016;
+      requestAnimationFrame(step);
+    }
+    step();
+
+    // Click bursts: boost intensity, spawn extra drops, add a ripple at the click point.
+    // `scale` >= 1 amplifies (used by the locked Crumble checkbox).
+    function burstAt(x, y, scale = 1){
+      intensity = Math.min(intensity + 1.4 * scale, 1 + 4 * scale);
+      const extra = Math.floor(40 * scale);
+      for (let i = 0; i < extra; i++) makeDrop(false);
+      ripples.push({ x: x * DPR, y: y * DPR, r: 6 * DPR, a: Math.min(0.6 + 0.15 * scale, 0.95) });
+    }
+    window.floveFX = { burst: burstAt };
+    // Capture phase: runs before any handler can stopPropagation, so even
+    // clicks on buttons that don't bubble still flip the "clicked-once"
+    // flag (Notifying becomes visible from the first click).
+    document.addEventListener('click', e => {
+      document.body.classList.add('clicked-once');
+      burstAt(e.clientX, e.clientY);
+    }, true);
+    // Also count form interactions (checkbox/radio) as clicks
+    document.addEventListener('change', e => {
+      if (e.target && (e.target.type === 'checkbox' || e.target.type === 'radio')){
+        const r = e.target.getBoundingClientRect();
+        burstAt(r.left + r.width / 2, r.top + r.height / 2);
+      }
+    });
+  })();
+  </script>
+
+  <script>
+  // ── translaty engine — language switch + persistence + <html lang> sync ──
+  (function(){
+    const LS = 'translaty-lang';
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+    const radios = () => Array.from(document.querySelectorAll('input[name="lang"]'));
+    const curLang = () => { const r = radios().find(x => x.checked); return r ? r.id.replace('lang-', '') : 'en'; };
+    function applyLang(){
+      const li = curLang();
+      document.documentElement.lang = li;
+      document.querySelectorAll('option[data-en]').forEach(o => { if (o.dataset[li] != null) o.textContent = o.dataset[li]; });
+      document.querySelectorAll('[data-ph-en]').forEach(el => { const v = el.dataset['ph' + cap(li)]; if (v != null) el.placeholder = v; });
+      document.querySelectorAll('[data-aria-en]').forEach(el => { const v = el.dataset['aria' + cap(li)]; if (v != null) el.setAttribute('aria-label', v); });
+      try { localStorage.setItem(LS, li); } catch (_) {}
+    }
+    function init(){
+      let saved = null; try { saved = localStorage.getItem(LS) || localStorage.getItem('translate2-lang'); } catch (_) {}
+      if (saved){ const r = document.getElementById('lang-' + saved); if (r) r.checked = true; }
+      radios().forEach(r => r.addEventListener('change', () => {
+        applyLang();
+        const d = document.querySelector('details.lang'); if (d) d.open = false;
+      }));
+      applyLang();
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  })();
+  </script>
+</body>
+</html>

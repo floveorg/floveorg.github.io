@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#6c5ce7">
+<meta name="flove:app" content="workflow">
+<meta name="flove:tier" content="normal">
+<meta name="flove:distro" content="development">
+<meta name="description" content="The flove publishing workflow — my folders → gitea → github → flove.org. Click a node to expand it in place; click an arrow to thicken it; click the left human to show the arrow to the other human. Public page: no private data shown.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='12' y1='0' x2='88' y2='0' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='%23ff3344'/><stop offset='.5' stop-color='%23ff8a3a'/><stop offset='1' stop-color='%23ffd633'/></linearGradient></defs><path d='M50 60 C 22 60, 12 38, 16 18 C 38 22, 54 38, 50 60 Z' fill='url(%23g)'/><path d='M50 60 C 78 60, 88 38, 84 18 C 62 22, 46 38, 50 60 Z' fill='url(%23g)'/><path d='M50 58 C 50 72, 50 84, 50 92' stroke='url(%23g)' stroke-width='5' stroke-linecap='round' fill='none'/></svg>">
+<title>workflow · flove</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  :root{
+    --bg:#0c0c14;--panel:#131320;--panel2:#1d1d2b;--line:#29293c;
+    --ink:#ffffff;--muted:#ffffff;--accent:#6c5ce7;--accent2:#8b7df0;
+    --bar-h:74px;--safe-b:env(safe-area-inset-bottom,0px);
+  }
+  body{
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    color:var(--ink);
+    background:radial-gradient(120% 120% at 50% 28%,#16142e 0%,var(--bg) 72%);
+    min-height:100svh;line-height:1.55;
+    padding:10px 16px calc(var(--bar-h) + var(--safe-b) + 18px);
+    overflow-x:hidden;
+  }
+  ::selection{background:rgba(108,92,231,.4)}
+
+  .stage{max-width:1040px;margin:0 auto}
+  .stage svg{display:block;width:100%;height:auto;filter:drop-shadow(0 24px 50px rgba(0,0,0,.45))}
+
+  /* node expand / shrink in place (geometry props need the head style, not the svg style) */
+  .node .node-rect{transition:height .3s cubic-bezier(.22,.61,.36,1)}
+  .node.open .node-rect{height:240px}
+  .node .extras{opacity:0;pointer-events:none;transition:opacity .2s ease .08s}
+  .node.open .extras{opacity:1;pointer-events:auto}
+
+  /* ── action bar ── */
+  .actions{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:4px;
+           padding:10px max(12px,calc((100vw - 1040px)/2 + 8px)) calc(10px + var(--safe-b));
+           background:rgba(12,12,20,.92);backdrop-filter:blur(10px);border-top:1px solid var(--line)}
+  .act{border:none;border-radius:14px;padding:15px 0;font-size:14px;font-weight:800;cursor:pointer;
+       font-family:inherit;transition:.15s;color:var(--ink);background:var(--panel2);border:1px solid var(--line)}
+  .act.copy{flex:1}
+  .act.save{flex:2;background:var(--accent);border-color:var(--accent);color:#fff}
+  .act.copy:hover{border-color:var(--accent2)}
+  .act.save:hover{background:#7c6cf0}
+  .act:active{transform:scale(.985)}
+
+  .toast{position:fixed;left:50%;bottom:calc(var(--bar-h) + 14px);transform:translateX(-50%) translateY(8px);
+         background:var(--panel2);border:1px solid var(--accent);color:var(--ink);
+         padding:10px 18px;border-radius:12px;font-size:13px;font-weight:600;z-index:60;
+         opacity:0;pointer-events:none;transition:.25s;box-shadow:0 12px 30px rgba(0,0,0,.4)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important;animation:none!important}
+  }
+</style>
+</head>
+<body>
+
+<main class="stage">
+  <svg id="diagram" viewBox="0 0 1000 560" xmlns="http://www.w3.org/2000/svg" role="img"
+       aria-label="flove publishing workflow: two human icons, skills label between the left human and the agents bar, then folders → gitea → github → flove.org. Click a node to expand it in place; click an arrow to thicken it; click the left human to show the arrow to the right human.">
+    <style>
+      text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;fill:#ffffff}
+      a{text-decoration:none;cursor:pointer}
+      .click{cursor:pointer;outline:none}
+      .click:focus-visible{outline:2px solid #8b7df0;outline-offset:2px}
+      .node-clickable:hover .node-rect{stroke:#8b7df0;stroke-width:2}
+      .arrow .arrow-line{transition:stroke-width .18s ease,stroke .18s ease}
+      .arrow .arrow-pill{transition:fill .18s ease,stroke .18s ease}
+      .arrow:hover .arrow-line{stroke:#8b7df0;stroke-width:8}
+      .arrow:hover .arrow-pill{stroke:#8b7df0;fill:#242438}
+      .arrow.thick .arrow-line{stroke:#8b7df0;stroke-width:12}
+      .arrow.thick .arrow-pill{stroke:#8b7df0;stroke-width:2;fill:#242438}
+    </style>
+    <defs>
+      <marker id="ah" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="13" markerHeight="13" orient="auto">
+        <path d="M1 1 L11 6 L1 11 Z" fill="#6c5ce7"/>
+      </marker>
+    </defs>
+
+    <!-- arrow human → human (shown when the left human is clicked) -->
+    <g id="humansArrow" display="none" aria-hidden="true">
+      <line x1="240" y1="55" x2="725" y2="55" stroke="#8b7df0" stroke-width="3" stroke-dasharray="7 6" marker-end="url(#ah)"/>
+    </g>
+
+    <!-- first human · above my folders (clickable → arrow to the other human) -->
+    <g id="human1" class="click" role="button" tabindex="0" aria-pressed="false" aria-label="Marc — the human. Click to show the arrow to the other human icon.">
+      <title>Marc — the human</title>
+      <rect x="60" y="40" width="170" height="30" rx="15" fill="#171726" stroke="#2b2b3e"/>
+      <text x="145" y="61" text-anchor="middle" font-size="20">🧑</text>
+    </g>
+
+    <!-- second human · above flove.org -->
+    <g id="human2">
+      <title>Marc — the human</title>
+      <rect x="735" y="40" width="170" height="30" rx="15" fill="#171726" stroke="#2b2b3e"/>
+      <text x="820" y="61" text-anchor="middle" font-size="20">🧑</text>
+    </g>
+
+    <!-- SKILLS · between the first human and the agents bar -->
+    <text x="145" y="79" text-anchor="middle" font-size="6.5" font-weight="800" letter-spacing="2" fill="#ffffff">SKILLS</text>
+
+    <!-- agents bar · below the human, wide from my folders to end of github -->
+    <g>
+      <title>Agents — skills &amp; automation working the pipeline</title>
+      <rect x="60" y="84" width="620" height="30" rx="15" fill="#171726" stroke="#2b2b3e"/>
+      <text x="370" y="104" text-anchor="middle" font-size="12" font-weight="700" letter-spacing="1">🤖 agents</text>
+    </g>
+
+    <!-- 1 · my folders (clickable → expands in place) -->
+    <g id="folders" class="click node-clickable node" role="button" tabindex="0" aria-expanded="false" aria-label="My folders — expand in place">
+      <rect class="node-rect" x="60" y="150" width="170" height="84" rx="14" fill="#171726" stroke="#2b2b3e"/>
+      <text x="145" y="180" text-anchor="middle" font-size="20">📁</text>
+      <text x="145" y="202" text-anchor="middle" font-size="12.5" font-weight="700" letter-spacing="1">MY FOLDERS</text>
+      <text x="145" y="218" text-anchor="middle" font-size="7" fill="#ffffff">click to expand</text>
+      <g class="extras">
+        <text x="70" y="252" font-size="9"><tspan font-family="system-ui">💭</tspan><tspan font-family="ui-monospace,monospace" font-size="8" font-weight="700"> theory/</tspan><tspan font-size="8"> · ideas</tspan></text>
+        <text x="70" y="277" font-size="9"><tspan font-family="system-ui">📄</tspan><tspan font-family="ui-monospace,monospace" font-size="8" font-weight="700"> docs/</tspan><tspan font-size="8"> · free</tspan></text>
+        <text x="70" y="302" font-size="9"><tspan font-family="system-ui">📂</tspan><tspan font-family="ui-monospace,monospace" font-size="8" font-weight="700"> development/</tspan><tspan font-size="8"> · nests</tspan></text>
+        <a href="../index.html" title="Open the standards book" aria-label="Open the standards book">
+          <text x="90" y="327" font-size="8.5"><tspan font-family="system-ui">📚</tspan><tspan font-family="ui-monospace,monospace" font-size="8" font-weight="700" fill="#ffffff"> standards/</tspan><tspan font-size="8"> ↗ §13 book</tspan></text>
+        </a>
+        <a href="../debates/plans/index.md" title="Open the debates — plans &amp; decisions" aria-label="Open the debates — plans and decisions">
+          <text x="90" y="352" font-size="8.5"><tspan font-family="system-ui">💬</tspan><tspan font-family="ui-monospace,monospace" font-size="8" font-weight="700" fill="#ffffff"> debates/</tspan><tspan font-size="8"> ↗ plans</tspan></text>
+        </a>
+        <text x="70" y="377" font-size="7.5" opacity=".75">click a child folder to open it</text>
+      </g>
+    </g>
+
+    <!-- arrow A · push -->
+    <g id="arrowA" class="arrow click" role="button" tabindex="0" aria-pressed="false" aria-label="push: commit and push to Gitea">
+      <rect class="ahit" x="230" y="170" width="55" height="46" fill="transparent"/>
+      <line class="arrow-line" x1="230" y1="192" x2="285" y2="192" stroke="#6c5ce7" stroke-width="6" marker-end="url(#ah)" pointer-events="none"/>
+      <rect class="arrow-pill" x="234.5" y="180" width="46" height="24" rx="12" fill="#1d1d2b" stroke="#6c5ce7" pointer-events="none"/>
+      <text x="257.5" y="197" text-anchor="middle" font-size="11" font-weight="700" pointer-events="none">push</text>
+      <text x="257.5" y="234" text-anchor="middle" font-size="6.5" pointer-events="none">commit &amp; push</text>
+    </g>
+
+    <!-- 2 · gitea -->
+    <g id="gitea" class="click node-clickable node" role="button" tabindex="0" aria-expanded="false" aria-label="Gitea — expand in place">
+      <rect class="node-rect" x="285" y="150" width="170" height="84" rx="14" fill="#171726" stroke="#2b2b3e"/>
+      <text x="370" y="180" text-anchor="middle" font-size="20">🏠</text>
+      <text x="370" y="202" text-anchor="middle" font-size="12.5" font-weight="700" letter-spacing="1">GITEA</text>
+      <text x="370" y="218" text-anchor="middle" font-size="7" font-family="ui-monospace,monospace">localhost:3000/marc</text>
+      <g class="extras">
+        <text x="295" y="252" font-size="9"><tspan font-family="system-ui">🏠</tspan><tspan font-family="ui-monospace,monospace" font-size="8" font-weight="700"> localhost:3000/marc</tspan></text>
+        <text x="295" y="277" font-size="8.5" opacity=".8">PRIVATE · LAN only</text>
+        <text x="295" y="302" font-size="8" opacity=".8">repos:</text>
+        <text x="295" y="327" font-size="8" font-family="ui-monospace,monospace">marc/flove (blog included) · marc/flove-skills</text>
+        <text x="295" y="352" font-size="8" font-family="ui-monospace,monospace"></text>
+        <text x="295" y="377" font-size="7.5" opacity=".75">git push origin main</text>
+      </g>
+    </g>
+
+    <!-- arrow B · mirror -->
+    <g id="arrowB" class="arrow click" role="button" tabindex="0" aria-pressed="false" aria-label="mirror: push to github">
+      <rect class="ahit" x="455" y="170" width="55" height="46" fill="transparent"/>
+      <line class="arrow-line" x1="455" y1="192" x2="510" y2="192" stroke="#6c5ce7" stroke-width="6" marker-end="url(#ah)" pointer-events="none"/>
+      <rect class="arrow-pill" x="459.5" y="180" width="46" height="24" rx="12" fill="#1d1d2b" stroke="#6c5ce7" pointer-events="none"/>
+      <text x="482.5" y="197" text-anchor="middle" font-size="11" font-weight="700" pointer-events="none">mirror</text>
+      <text x="482.5" y="234" text-anchor="middle" font-size="6.5" pointer-events="none">to github</text>
+    </g>
+
+    <!-- 3 · github -->
+    <g id="github" class="click node-clickable node" role="button" tabindex="0" aria-expanded="false" aria-label="GitHub — expand in place">
+      <rect class="node-rect" x="510" y="150" width="170" height="84" rx="14" fill="#171726" stroke="#2b2b3e"/>
+      <text x="595" y="180" text-anchor="middle" font-size="20">🐙</text>
+      <text x="595" y="202" text-anchor="middle" font-size="12.5" font-weight="700" letter-spacing="1">GITHUB</text>
+      <text x="595" y="218" text-anchor="middle" font-size="7" font-family="ui-monospace,monospace">github.com/floveorg</text>
+      <g class="extras">
+        <text x="520" y="252" font-size="9"><tspan font-family="system-ui">🐙</tspan><tspan font-family="ui-monospace,monospace" font-size="8" font-weight="700"> github.com/floveorg</tspan></text>
+        <text x="520" y="277" font-size="8.5" opacity=".8">PUBLIC</text>
+        <text x="520" y="302" font-size="8" opacity=".8">repos:</text>
+        <text x="520" y="327" font-size="8" font-family="ui-monospace,monospace">floveorg.github.io (blog incl.)</text>
+        <text x="520" y="352" font-size="8" font-family="ui-monospace,monospace">flove-skills</text>
+        <text x="520" y="377" font-size="7.5" opacity=".75">git push github main</text>
+      </g>
+    </g>
+
+    <!-- arrow C · pages -->
+    <g id="arrowC" class="arrow click" role="button" tabindex="0" aria-pressed="false" aria-label="pages: github pages publishes">
+      <rect class="ahit" x="680" y="170" width="55" height="46" fill="transparent"/>
+      <line class="arrow-line" x1="680" y1="192" x2="735" y2="192" stroke="#6c5ce7" stroke-width="6" marker-end="url(#ah)" pointer-events="none"/>
+      <rect class="arrow-pill" x="684.5" y="180" width="46" height="24" rx="12" fill="#1d1d2b" stroke="#6c5ce7" pointer-events="none"/>
+      <text x="707.5" y="197" text-anchor="middle" font-size="11" font-weight="700" pointer-events="none">pages</text>
+      <text x="707.5" y="234" text-anchor="middle" font-size="6.5" pointer-events="none">auto-publish</text>
+    </g>
+
+    <!-- 4 · flove.org (clickable → expands in place) -->
+    <g id="flove" class="click node-clickable node" role="button" tabindex="0" aria-expanded="false" aria-label="flove.org — expand in place">
+      <rect class="node-rect" x="735" y="150" width="170" height="84" rx="14" fill="#171726" stroke="#2b2b3e"/>
+      <text x="820" y="180" text-anchor="middle" font-size="20">🌐</text>
+      <text x="820" y="202" text-anchor="middle" font-size="12.5" font-weight="700" letter-spacing="1">FLOVE.ORG</text>
+      <text x="820" y="218" text-anchor="middle" font-size="7" font-family="ui-monospace,monospace">github pages · live</text>
+      <g class="extras">
+        <text x="745" y="252" font-size="8.5"><tspan font-weight="700">Solo v1</tspan> · local file only</text>
+        <text x="745" y="277" font-size="8.5"><tspan font-weight="700">Central v2</tspan> · libs + backend</text>
+        <text x="745" y="302" font-size="8.5"><tspan font-weight="700">Decentral v2</tspan> · p2p + ext</text>
+        <text x="745" y="327" font-size="8.5">HTTPS · ~1 min to go live</text>
+        <text x="745" y="352" font-size="8" font-family="ui-monospace,monospace">floveorg.github.io (blog included)</text>
+        <text x="745" y="377" font-size="8" font-family="ui-monospace,monospace">floveorg/skills</text>
+      </g>
+    </g>
+  </svg>
+</main>
+
+<nav class="actions">
+  <button class="act copy" id="copyBtn" type="button">⧉ &nbsp;Copy as text</button>
+  <button class="act save" id="saveBtn" type="button">⬇ &nbsp;Save diagram (SVG)</button>
+</nav>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+  var NODES = ['folders','gitea','github','flove'];
+
+  var toast = document.getElementById('toast');
+  var toastTimer = null;
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 2200);
+  }
+
+  /* click a node → expand it in place, growing the card (only one at a time) */
+  function closeAllDetails(){
+    NODES.forEach(function(k){
+      document.getElementById(k).classList.remove('open');
+      document.getElementById(k).setAttribute('aria-expanded','false');
+    });
+  }
+  function toggleDetail(k){
+    var el = document.getElementById(k);
+    var willOpen = !el.classList.contains('open');
+    closeAllDetails();
+    if(willOpen){ el.classList.add('open'); el.setAttribute('aria-expanded','true'); }
+  }
+  NODES.forEach(function(k){
+    var el = document.getElementById(k);
+    el.addEventListener('click', function(e){ e.preventDefault(); toggleDetail(k); });
+    el.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggleDetail(k); } });
+  });
+
+  /* click an arrow → thicken it (only one at a time) */
+  function resetArrows(){
+    document.querySelectorAll('.arrow').forEach(function(a){
+      a.classList.remove('thick');
+      a.setAttribute('aria-pressed','false');
+    });
+  }
+  function toggleArrow(a){
+    var was = a.classList.contains('thick');
+    resetArrows();
+    if(!was){ a.classList.add('thick'); a.setAttribute('aria-pressed','true'); }
+  }
+  document.querySelectorAll('.arrow').forEach(function(a){
+    a.addEventListener('click', function(e){ e.preventDefault(); toggleArrow(a); });
+    a.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggleArrow(a); } });
+  });
+
+  /* click the first human → arrow to the other human icon */
+  var humansArrow = document.getElementById('humansArrow');
+  var human1 = document.getElementById('human1');
+  function toggleHumansArrow(){
+    var show = humansArrow.getAttribute('display') === 'none';
+    humansArrow.setAttribute('display', show ? 'block' : 'none');
+    human1.setAttribute('aria-pressed', show ? 'true' : 'false');
+  }
+  human1.addEventListener('click', function(e){ e.preventDefault(); toggleHumansArrow(); });
+  human1.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggleHumansArrow(); } });
+
+  /* ── copy as text ── */
+  var TEXT =
+'🌱 FLOVE — PUBLISHING WORKFLOW\n' +
+'folders → gitea → github → flove.org\n' +
+'how this site gets from my desk to the web.\n' +
+'\n' +
+'HUMAN + SKILLS + AGENTS\n' +
+'  🧑 Marc — the human · icon above my folders and above flove.org\n' +
+'     (click the left one to draw the arrow to the right one)\n' +
+'  SKILLS — between the human and the agents bar\n' +
+'  🤖 agents — wide bar below the human, spanning my folders → github\n' +
+'\n' +
+'1 · MY FOLDERS   ~/Documents/flove\n' +
+'   💭 theory/        ideas\n' +
+'   📄 docs/          free · no nesting\n' +
+'   📂 development/   nests:\n' +
+'       📚 standards/  — the §13 book\n' +
+'       💬 debates/    — plans & decisions\n' +
+'\n' +
+'2 · GITEA   localhost:3000/marc — PRIVATE (LAN only)\n' +
+'   repos: marc/flove · marc/flove-skills\n' +
+'   sync:  git push origin main\n' +
+'\n' +
+'3 · GITHUB   github.com/floveorg — PUBLIC\n' +
+'   repos: floveorg.github.io (blog included) · flove-skills\n' +
+'   sync:  git push github main\n' +
+'   (site mirror via the updaty-web skill)\n' +
+'\n' +
+'4 · FLOVE.ORG   GitHub Pages — LIVE\n' +
+'   flove.org/      ← floveorg/floveorg.github.io\n' +
+'   flove.org/development/blog/  ← built in repo, via publish-web.sh\n' +
+'   Solo v1       — all code in the file, local friendly\n' +
+'   Central v2    — css-js libs, FastAPI + Railway + libsql\n' +
+'   Decentral v2  — browser extension and p2p client\n' +
+'\n' +
+'EXTRAS\n' +
+'   Android APK → updaty-apk → GitHub Releases (TWA wrapping flove.org)\n' +
+'   flove.zip  → upgrade → rebuilt from committed HEAD\n' +
+'   Blog posts → build-blog.sh publish → build in place, ships via updaty-web (drafts stay private)\n' +
+'\n' +
+'Click a node to expand it · click an arrow to thicken it.\n' +
+'No private data shown — tokens & passwords stay local.';
+
+  function fallbackCopy(txt, done){
+    var ta = document.createElement('textarea');
+    ta.value = txt; ta.setAttribute('readonly','');
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select(); ta.setSelectionRange(0, ta.value.length);
+    try{ document.execCommand('copy'); done(); }
+    catch(e){ showToast('Copy failed — select the text manually.'); }
+    document.body.removeChild(ta);
+  }
+  function copyWorkflow(){
+    function done(){ showToast('Workflow copied to clipboard'); }
+    if(navigator.clipboard && window.isSecureContext){
+      navigator.clipboard.writeText(TEXT).then(done, function(){ fallbackCopy(TEXT, done); });
+    } else { fallbackCopy(TEXT, done); }
+  }
+  document.getElementById('copyBtn').addEventListener('click', copyWorkflow);
+
+  /* ── save diagram as SVG (formal, always the base state) ── */
+  function saveDiagram(){
+    var wasOpen = {};
+    NODES.forEach(function(k){ wasOpen[k] = document.getElementById(k).classList.contains('open'); });
+    var wasThick = {};
+    document.querySelectorAll('.arrow').forEach(function(a){ wasThick[a.id] = a.classList.contains('thick'); });
+    var wasHumans = humansArrow.getAttribute('display') !== 'none';
+
+    closeAllDetails();
+    resetArrows();
+    humansArrow.setAttribute('display','none');
+
+    var svg = document.getElementById('diagram');
+    var clone = svg.cloneNode(true);
+    clone.removeAttribute('id');
+    clone.setAttribute('xmlns','http://www.w3.org/2000/svg');
+    clone.setAttribute('role', null);
+    var title = document.createElementNS('http://www.w3.org/2000/svg','title');
+    title.textContent = 'flove · publishing workflow — folders → gitea → github → flove.org';
+    clone.insertBefore(title, clone.firstChild);
+    var str = '<?xml version="1.0" encoding="UTF-8"?>\n' + new XMLSerializer().serializeToString(clone);
+    var blob = new Blob([str], {type:'image/svg+xml'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'flove-workflow-diagram.svg';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+
+    NODES.forEach(function(k){
+      if(wasOpen[k]){ document.getElementById(k).classList.add('open'); document.getElementById(k).setAttribute('aria-expanded','true'); }
+    });
+    document.querySelectorAll('.arrow').forEach(function(a){
+      if(wasThick[a.id]){ a.classList.add('thick'); a.setAttribute('aria-pressed','true'); }
+    });
+    if(wasHumans){ humansArrow.setAttribute('display','block'); human1.setAttribute('aria-pressed','true'); }
+    showToast('Diagram saved as flove-workflow-diagram.svg');
+  }
+  document.getElementById('saveBtn').addEventListener('click', saveDiagram);
+})();
+</script>
+</body>
+</html>
