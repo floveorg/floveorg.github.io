@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>flove · standards matrix</title>
+<style>
+  :root{
+    --bg:#faf8f5; --ink:#2a2622; --line:#e3ddd4; --accent:#7b6cf6; --accent3:#1f9e6b;
+    --num:#b6ab9c; --head:#f1ece4; --grp:#e7e0fb; --edit:#fffdf8;
+    --mother:#9a8cf0;
+    font-family: system-ui, "Inter", sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);padding:1.2rem;line-height:1.4}
+  h1{font-size:1.15rem;margin:0 0 .2rem}
+  h1.vtitle{font-size:1.6rem;margin:0 0 .2rem;cursor:pointer;display:block;text-align:center;letter-spacing:.5px;text-transform:capitalize}
+  h1.vtitle::after{content:" ▾";font-size:.9rem;color:var(--accent)}
+  h1.vtitle.open::after{content:" ▴"}
+  .about{background:var(--grp);border:1px solid var(--line);border-radius:12px;padding:.7rem 1rem;margin:.4rem 0 .6rem;font-size:.85rem}
+  .about p{margin:.25rem 0}
+  .legend{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;font-size:.78rem;color:#7d7468;margin:.1rem 0 .4rem}
+  .legend .lg{background:var(--grp);color:#5b4fae;border:1px solid var(--line);border-radius:999px;padding:.1rem .55rem}
+  .legend .lg b{color:var(--accent)}
+  .relnav{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:1.8rem;padding-top:1rem;border-top:1px solid var(--line)}
+  .relnav a{font-size:.8rem;padding:.4rem .7rem;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);text-decoration:none}
+  .relnav a:hover{background:var(--grp)}
+  h2{font-size:1rem;margin:1.3rem 0 .4rem}
+  p.sub{margin:.1rem 0 1rem;color:#7d7468;font-size:.85rem}
+  .toolbar{padding:.5rem 0;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+  .topbar{position:sticky;top:0;background:var(--bg);z-index:9;border-bottom:1px solid var(--line);margin-bottom:.6rem}
+  button{font:inherit;font-size:.82rem;padding:.5rem .8rem;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  select{font:inherit;font-size:.82rem;padding:.45rem .6rem;border:1px solid var(--line);border-radius:10px;background:#fff}
+  button:hover{filter:brightness(.97)}
+  .chips{display:flex;flex-wrap:wrap;gap:.4rem;padding:.5rem 0 .1rem}
+  .chip{font:inherit;font-size:.8rem;padding:.35rem .7rem;border:1px solid var(--line);border-radius:999px;background:#fff;cursor:pointer;color:var(--ink)}
+  .chip:hover{filter:brightness(.97)}
+  .chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .chip.all{background:var(--grp);color:#5b4fae;border-color:var(--grp);font-weight:600}
+  .chip.all.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .appsec{margin-top:1.2rem}
+  .appsec h2{font-size:.95rem;margin:0 0 .35rem}
+  .wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fff}
+  table{border-collapse:collapse;width:max-content;min-width:100%;font-size:.78rem}
+  th,td{border:1px solid var(--line);vertical-align:top;min-width:138px}
+  th{background:var(--head);padding:.45rem;text-align:left;font-size:.74rem}
+  thead th{position:sticky;top:0;z-index:2}
+  th.tier,td.tier{position:sticky;left:0;background:var(--head);min-width:118px;font-weight:600;z-index:2}
+  th.corner{left:0;z-index:6;background:var(--grp)}
+  th.gb, td.gb{ border-left:3px solid var(--mother); }
+  td .num{display:block;font-size:.6rem;color:var(--num);font-weight:600;padding:.25rem .4rem 0;user-select:none}
+  td .cell{padding:.15rem .4rem .3rem;min-height:1.5em;outline:none}
+  td .cell:focus{background:var(--edit);box-shadow:inset 0 0 0 2px var(--accent)}
+  td.empty .cell:empty::before{content:"—";color:#cfc6b8}
+  #appView{margin-top:1rem;border-top:2px dashed var(--line);padding-top:.6rem}
+  #appView .cell:focus{box-shadow:inset 0 0 0 2px var(--accent3)}
+  .lvl{display:inline-block;font-size:.66rem;background:var(--grp);color:#5b4fae;border-radius:6px;padding:.1rem .4rem;margin-left:.4rem}
+  .apvt{display:inline-flex;gap:.4rem;align-items:center;margin:0 0 .5rem}
+  .vtog{display:inline-flex;align-items:center;gap:.35rem;font-size:.8rem;font-weight:600;background:#fff;border:1px solid var(--line);border-radius:10px;padding:.42rem .7rem;cursor:pointer;user-select:none}
+  .vtog input{accent-color:var(--accent)}
+  tr.nav-row td.tier{background:#efe9fc;color:#4a3f8f}
+  tr.persist-row td{background:#f0f7ff}
+  tr.persist-row td.tier{background:#e4f0fc;color:#1f5d9e}
+  tr.wizrow td{background:#fdf9f2;border-top:1px dashed var(--line)}
+  tr.wizrow td.tier.wiz{white-space:nowrap;color:#7d5a3c;font-weight:600}
+  .wizname{font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;color:#a08c74;font-weight:600}
+  .cell-wiz{min-width:240px;color:#5a4630}
+  tr.navhead td{background:var(--grp);color:#5b4fae;font-weight:600}
+  .tchip{display:inline-flex;align-items:center;gap:.3rem;font-size:.7rem;border:1px solid var(--line);border-radius:999px;background:#fff;padding:.15rem .6rem;margin:0 .25rem .15rem 0;cursor:pointer;color:var(--ink);font-weight:600;user-select:none}
+  .tchip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .tchip input{display:none}
+  tr.navgroup td{background:#f4f0fb;color:#5b4fae;font-weight:600}
+  .navtag{display:inline-block;font-size:.64rem;background:var(--accent);color:#fff;border-radius:6px;padding:.08rem .45rem;text-transform:uppercase;letter-spacing:.04em}
+  .navadd{font-size:.68rem;padding:.18rem .5rem;margin-left:.5rem;border-radius:8px}
+  .ok{color:#2b8a3e;font-size:.8rem}
+  .full{width:100%}
+  #exportView{margin-top:1rem;border-top:2px dashed var(--line);padding-top:.6rem;display:flex;flex-direction:column;gap:.5rem}
+  .row33{display:flex;gap:.5rem}
+  .row33 button{flex:1}
+  #promptArea{width:100%;height:38vh;border:1px solid var(--line);border-radius:12px;padding:.8rem;font-family:ui-monospace,monospace;font-size:.78rem;resize:vertical;background:#fff;color:var(--ink);outline:none}
+</style>
+</head>
+<body>
+  <h1 class="vtitle" id="vtitle" onclick="toggleAbout()">vocaby</h1>
+  <div class="about" id="about" style="display:none">
+    <p>vocaby keeps every flove app's internal vocabulary in line with the words its screens actually show.</p>
+    <p>Each app is a grid of slots (fields) × labelers (the words used for each). Edit a cell and it feeds the prompt.</p>
+    <div class="relnav">
+      <a href="skills/vocaby/SKILL.md">This skill</a>
+      <a href="index.html">Standards index</a>
+      <a href="flove-tiers-7apps.html">Tiers</a>
+      <a href="frontend.html">Frontend patterns §13</a>
+      <a href="contract.md">Frontend contract</a>
+      <a href="adoption.md">Adoption checklist</a>
+    </div>
+  </div>
+  <div class="topbar">
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <section id="appView">
+    <div class="toolbar">
+      <button class="chip" onclick="toggleDeep()" id="deepToggle">✦ Deep labels</button>
+      <button class="chip" onclick="toggleSQL()" id="sqlToggle">▤ libsql fields</button>
+      <button onclick="addWizy()">+ Add wizy</button>
+      <button onclick="toggleES()" id="esToggle">+ Add Spanish</button>
+    </div>
+    <div class="appList" id="appList"></div>
+    <div id="deepView" style="display:none"><h2>Deep labels — all translatable fields &amp; internal vocabulary</h2><div id="deepList"></div></div>
+  </section>
+
+  <section id="exportView">
+    <h2>Get your prompt</h2>
+    <p class="sub">Mirrors the vocabulary table above. Press Update after editing so the prompt and exports carry the latest wording.</p>
+    <button class="primary full" onclick="updateExport()">⟳ Update export</button>
+    <div class="row33">
+      <button class="primary" onclick="copyForClaude()">📋 Copy</button>
+      <button onclick="downloadJSON()">{ } JSON</button>
+      <button onclick="downloadCSV()">⬇ CSV</button>
+    </div>
+    <span class="ok" id="ok"></span>
+    <textarea id="promptArea" readonly placeholder="Pick chips above, then press Update to see the prompt text here."></textarea>
+  </section>
+
+  <nav class="relnav">
+    <a href="index.html">Standards index</a>
+    <a href="flove-tiers-7apps.html">Tiers</a>
+    <a href="frontend.html">Frontend patterns §13</a>
+    <a href="contract.md">Frontend contract</a>
+    <a href="adoption.md">Adoption checklist</a>
+  </nav>
+
+<script>
+// ===== per-app data =========================================================
+const APPS = ["blogy","lovy","daty","socy","astry","hacky","nety","profily","realy",
+  "diesafe","pracsys","sensy","varyy","crafty","worthing","offer","wanty","freed","inventary","minioffer","rewardy","shareful",
+  "goddy","souls","willy","puzzy","fivy","keys","wisy","trusty","crumbly","evily","hoty","maty","myfamily","parenty"];
+const SLOTS = ["App title","Tagline","Entry label","About (body)"];
+const LABELERS = ["Default","Formal","Casual","Hotter","Lovely","Fatal","Lucky","Random"];
+// ===== wizards + upper-tier nav fields =====================================
+const WIZARDS = [["lovely","😍"],["joy","😂"],["wisdom","🔥"]];   // the three canonical wizards (blogy §13.7)
+const NAV_TIERS = ["basic","normal","advanced","super"];          // upper tiers above mini (the base table)
+const appTiers = {};   // app → tiers actually shipped; absent = all NAV_TIERS
+const navSlots = {};   // app → { tier: [extra slot names this tier provides] }
+const wizys = {};      // app → { slot: { wizard: text the wizard shows for that field when checked } }
+const sel = new Set();   // checked apps (multicheck); none by default
+const wz = {};               // app → wizys toggle (absent = off)
+const nv = {};               // app → navs toggle (absent = off)
+function wzOn(app){ return wz[app]===true; }
+function nvOn(app){ return nv[app]===true; }
+function shippedTiers(app){ const t=appTiers[app]; return t===undefined?NAV_TIERS:t; }
+function navSlotsOf(app,t){ return (navSlots[app]&&navSlots[app][t])||[]; }
+function rowList(app){
+  const rows=[];
+  SLOTS.concat(appSlots[app]||[]).forEach(s=>rows.push({s,tier:null}));
+  if(nvOn(app)){ const has=shippedTiers(app);
+    NAV_TIERS.forEach(t=>{ if(!has.includes(t))return; navSlotsOf(app,t).forEach(s=>rows.push({s,tier:t})); });
+  }
+  return rows;
+}
+const appSlots = {
+  daty:["Gender","Desired relationship","Relationship style","Children","About-me","Media","Profiles","Projects · current","Projects · desired","Projects · imaginary","Publish targets","Visibility","Menu"],
+  lovy:["Love languages","Circles","Filters","Media","Reward","Menu"],
+  socy:["Core categories","Standard form","New category form","Resume views","Menu"],
+  astry:["Birth anchor","Traditions","Focus","What else","Magic"],
+  hacky:["Dislikes","Likes","Bridge","Reveal","Actions","Menu"],
+  profily:["Sections","Wanty","Offers","Contact","Message wizards","Avatar tools"],
+  realy:["Realms","Realm subtitles","Real column","Fictional column","More","Phrase actions"],
+  diesafe:["Scenario","Environment","Companions","Heritage","Farewell Message","Post mortem actions scheduling","Other things to do","Formal information","Resume actions"],
+  pracsys:["Systems","Nervous subsystems","Immune subsystems","Stages","Stage nav","Subsystem toggles","Reason field","Verb field"],
+  sensy:["HELLO!","Let me adore your","with-by my","Other senses","Incentives","Annex","Disclaimer"],
+  varyy:["I am a","Questions","Question placeholders","Labelers (tone)","New question","More controls"],
+  crafty:["Project","Stage","Contribution type","Promisory contributions","Wanted profits","Payout","Review"],
+  worthing:["Meaningful","Powerful","Useful","Friendly","Moods","Views"],
+  offer:["Modes","Sectors","Zones","Worth it","More details","Time","Use type","People","Contribution","Disputes"],
+  wanty:["Like","Wish","Interest","Purpose","Project","Want","Display modes"],
+  freed:["Reasons","Thing","When","Farewell","Wishes","Beware"],
+  inventary:["Columns","Categories","Selected things","Have options","Want/Need options","Wish options","Item note","Worth it bars","Suggestion bots"],
+  minioffer:["Type","Description","Condition","Willingness","Preference"],
+  rewardy:["Providers","Roles","Rating axes","Comparison views","Sub-offers","Message modal"],
+  shareful:["Sections","Sectors","Tags","Worth bars","Because","For","Who","Zones","Time / Space","Preferences","Invitation"],
+  goddy:["Matrix axes","Cell levels","Save","Share","Insights"],
+  souls:["Stage 1 · You","Stage 2 · Species + sense","Senses","Species tree","Stage 3 · Biological system","Stage 4 · Matter","Stage 5 · Particle","Stage 5 · Immune subsystem","Privacy mode","Play with","Certify play"],
+  willy:["Wills (formal)","Commandments","Sins","Insights","Views"],
+  puzzy:["Categories","Rate apps","Relate apps","Redefine apps"],
+  fivy:["Decks","Senses","Flavors","Social","Elements","Fields (simplex)","View modes","Privacy mode","Play with","Certify play"],
+  keys:["Ways to start","Triads","Philosophy","Service","Journalism","Fivy decks","Extra decks","Privacy mode","Play with"],
+  wisy:["Mode","Prism","Tone","Teleology","Field","Time span","Explainers","Formalise","Steps"],
+  trusty:["Who","Scope","Additional Protection","Trustful signals","Declaration","Steps"],
+  crumbly:["Crumble","Boycot","Notifying","Only if","Review"],
+  evily:["Terms","Visibility","Compensation","I also allow to","Resume"],
+  hoty:["HELLO!","Adore","With my","Incentives","Annex","Resume"],
+  maty:["Who","Want","Others","Boundaries","Notes","Invitation"],
+  myfamily:["Attention","Contact","Influence","Feedback","Gifting","Sharing","Money","Your friend is…"],
+  parenty:["Parents","Environment","Education","Growth","Economy","Offer","Steps"]
+};
+const vocab = {
+ blogy:{
+  "App title":{Default:"blogy",Casual:"blogy",Hotter:"blogy, baby",Lovely:"dear blogy ♥",Fatal:"blogy (the end)",Lucky:"lucky blogy 🍀",Random:"blogy?!"},
+  "Tagline":{Default:"Compose and label your entries.",Casual:"jot stuff, tag it your way",Hotter:"say it like you mean it 🔥",Lovely:"write it with love ♥",Fatal:"everything ends — write it anyway",Lucky:"today feels lucky — write it 🍀",Random:"throw a thought, see what sticks 🎲"},
+  "Entry label":{Default:"Entry",Casual:"your thing",Hotter:"spill it",Lovely:"your heart",Fatal:"last words",Lucky:"your shot",Random:"whatever"},
+  
+  
+  
+  
+  "About (body)":{Default:"About blogy",Casual:"what's this?",Hotter:"wanna know? 🔥",Lovely:"our little story ♥",Fatal:"why bother",Lucky:"your lucky guide 🍀",Random:"??? about"}
+ },
+ daty:{
+  "App title":{Default:"Daty"},
+  "Tagline":{Default:"What is Daty?"},
+  "Entry label":{Default:"Name"},
+  
+  
+  "About (body)":{Default:"What is Daty?"},
+  "Gender":{Default:"Woman · Man"},
+  "Desired relationship":{Default:"🤝 Friendship · Open · Partner"},
+  "Relationship style":{Default:"Independent · Shared · Traditional"},
+  "Children":{Default:"👨‍👩‍👧 I have · No · Yes · Several"},
+  "About-me":{Default:"🧠 Inner · 📦 Resources · 🚀 Projects"},
+  "Media":{Default:"📸 Photos / videos"},
+  "Profiles":{Default:"🔗 Profiles"},
+  "Projects · current":{Default:"📌 Current projects"},
+  "Projects · desired":{Default:"✨ Desired projects"},
+  "Projects · imaginary":{Default:"🌌 Imaginary projects"},
+  "Publish targets":{Default:"Mastodon · Bluesky · X"},
+  "Visibility":{Default:"Public · Friends · Private"},
+  "Menu":{Default:"⟲ Reset all · 📦 Export JSON · 📥 Import JSON · ✦ Tips · ◐ About"}
+ },
+ lovy:{"App title":{Default:"lovy"},"Tagline":{Default:"Lovely actions to share affection. Pick a category, mark with ❤️ the actions you want, combine them and share."},"Entry label":{Default:"new action…"},"Love languages":{Default:"🗣️ Words · ⏳ Time · 🤲 Service · 🎁 Gifts · 🫂 Contact"},"Circles":{Default:"👥 Close · 🏘️ Community · 🌐 Everyone"},"Filters":{Default:"★ Merit · ⛁ Resources · € Money"},"Media":{Default:"🎤 Voice / audio · 📷 Photo · 🎬 Video"},"Reward":{Default:"Reward note… · ★ Merit · ⛁ Resources · € Money"},"Menu":{Default:"📋 My lists · 📊 Stats · 💡 Inspiration · 🛟 Support · ⚙️ Settings · 🎨 Original icons"}},
+ socy:{"App title":{Default:"Socy"},"Tagline":{Default:"A workshop for laying out the freedoms a society should defend and how they hold up under Economy, Legal, Media, Military, and Politics."},"Entry label":{Default:"Standard"},"Core categories":{Default:"💰 Economy · ⚖️ Legal · 🎙 Media · ⚔️ Military · 🏛 Politics"},"Standard form":{Default:"Standard · Main category · Add relation with · Add note"},"New category form":{Default:"Name · Parent · Add relation with · Add note"},"Resume views":{Default:"Square · List · Tree · Graph · Bars · Vertical · Axial · Spider"},"Menu":{Default:"🏠 flove home · 🌳 Tree map · 🕸 Advanced graph"}},
+ astry:{"App title":{Default:"Astry"},"Tagline":{Default:"A galactic bridge across traditions — Western, Mayan, Vedic, Chinese and Gipsy systems sit side by side, plural and traceable."},"Entry label":{Default:"Location — e.g., Kyoto, Japan"},"Birth anchor":{Default:"Date of birth · Time (optional) · Location · fetch coords"},"Traditions":{Default:"Western · Mayan · Vedic · Chinese · Gipsy"},"Focus":{Default:"Self-reflection · Planning & cadence · Relational insight"},"What else":{Default:"Show cross-bridges · Show lineage notes · Plain-language mode"},"Magic":{Default:"Insights · Matches · Do"}},
+ hacky:{"App title":{Default:"Hacky"},"Tagline":{Default:"Name what you dislike and what you like in the same breath. The hack lives where they meet."},"Entry label":{Default:"Who-What would you like to Hack?"},"Dislikes":{Default:"1 thing you DISLIKE · Another thing you DISLIKE · Last thing you DISLIKE"},"Likes":{Default:"1 thing you LIKE · Another thing you LIKE · Last thing you LIKE"},"Bridge":{Default:"because of too much"},"Reveal":{Default:"Do you want to know the Hack? · Yes"},"Actions":{Default:"Insights · Creative · Copy"},"Menu":{Default:"Reset form · About Hacky · All flove apps"}},
+ nety:{"App title":{Default:"Nety"},"Tagline":{Default:"coming soon"}},
+ profily:{"App title":{Default:"Profily"},"Tagline":{Default:"your living profile"},"Entry label":{Default:"Write a short note… selected offers and wants get added here automatically."},"Sections":{Default:"Home · Souls · Trusts · Contribs · Offers · Contact"},"Wanty":{Default:"Like · Wish · Interest · Purpose · Project · Want"},"Offers":{Default:"Lend · Teach · Share · Skill"},"Contact":{Default:"Email · I prefer · Find me at"},"Message wizards":{Default:"Lovely · Joy · Wisdom"},"Avatar tools":{Default:"Bio · Link · Tag · Offer · Mood · Pronoun"}},
+ realy:{"App title":{Default:"Realy"},"Tagline":{Default:"A two-column space to weave the Real and the Fictional across your life realms — work, love, friendship, body, dreams, and more."},"Entry label":{Default:"Add words to the realms…"},"Realms":{Default:"Event · Fact · Idea · Project"},"Realm subtitles":{Default:"Happened / could happen · Clear statement · Concept / principle · Organized effort"},"Real column":{Default:"Community garden opening… · Seeds sprout in 3–7 days… · Mutual aid as resilience… · Build a seed library…"},"Fictional column":{Default:"Moonlight festival on a floating island… · Moths deliver tiny letters at dawn… · Rivers remember names whispered to them… · Cartography of dreams in starlight ink…"},"More":{Default:"Whispers & notes · Context, transmissions… · Realm name…"},"Phrase actions":{Default:"✦ Insight · ⟳ Get creative · ⎘ Copy"}},
+ diesafe:{"App title":{Default:"DieSafe"},"Tagline":{Default:"Prepare a plan for your last moments of life and for what could happen after that, for having less worries about it overall."},"Entry label":{Default:"Death date title here"},"Scenario":{Default:"Death date title here · Favourite · Liked · Maybe · Not too bad"},"Environment":{Default:"Describe the PLACE here (describe many possible ones) · Logistics: Lights, sounds, decorations, ... · Procedure"},"Companions":{Default:"Who and Roles · Health care · More conditions"},"Heritage":{Default:"Donated things & Recipients · Additional information"},"Farewell Message":{Default:"Personal To myself · To my Close people · To the World · Add a more free message here..."},"Post mortem actions scheduling":{Default:"Dates, ranks, seasons... · Actions wished to happen · Conditions, triggers, thresholds, ... · Additional information"},"Other things to do":{Default:"Before... · During death... · After death"},"Formal information":{Default:"Disclaimers · Legal contact · Other Documents (optional note)"},"Resume actions":{Default:"🔮 Insights · ✨ Magic · 📋 Copy · 💾 Save · 📤 Share"}},
+ pracsys:{"App title":{Default:"pracsys"},"Tagline":{Default:"Lay the eleven biological systems onto the board, give each row a reason, then thread nervous and immune subsystems across the body."},"About (body)":{Default:"Practise the systems · The eleven biological systems from souls, laid out as a living body you arrange by hand."},"Systems":{Default:"Circulatory 🩸 · Digestive 🍃 · Endocrine 🧪 · Excretory 💧 · Immune 🛡 · Integumentary 🤝 · Muscular 💪 · Nervous 🧠 · Reproductive 🌱 · Respiratory 🌬️ · Skeletal 🦴"},"Nervous subsystems":{Default:"Central 🧠 · Peripheral 🕸 · Autonomic ⚡ · Enteric 🍃"},"Immune subsystems":{Default:"Adaptative 🫀 · Neuroimmune 🧠 · Innate 🛡 · Lymphatic 💧"},"Stages":{Default:"Place · Reasons · Verbs · Subsystems"},"Stage nav":{Default:"← Back · Reasons · Verbs · Next → · Check · Next stage →"},"Subsystem toggles":{Default:"🧠 SubNervous · 🛡 SubImmune"},"Reason field":{Default:"Add a reason"},"Verb field":{Default:"Add verb"}},
+ sensy:{"App title":{Default:"Sensy"},"Tagline":{Default:"Sensorility Requests Assistant: Polite, Playful & Formal"},"HELLO!":{Default:"I don't want us to mess up further than by you… · Add your custom introduction here..."},"Let me adore your":{Default:"Eyes · Breast · Naked breast · Add here other part(s)"},"with-by my":{Default:"Eyes · Hand"},"Other senses":{Default:"Smelling · Tasting · Hearing · Additional info, i.e. in soft, slow cadence, with due reverence..."},"Incentives":{Default:"I am also open to a previous · conversation · about whatever you want · find somewhere comfortable where to do it · anything else you may need · I also allow you to Crumble me if i fail"},"Annex":{Default:"Please · Would you? · Why not? · Add a charming postscript here"},"Disclaimer":{Default:"Requests and agreements are to be kept secret, unless otherwise authorised by both parts."}},
+ varyy:{"App title":{Default:"Varyy"},"Tagline":{Default:"Say it clearly, keep it classy"},"About (body)":{Default:"Choose your side, then share what bothers you, what attracts you, and what you'd love the other gender to grow into."},"I am a":{Default:"♀ Woman · ♂ Man"},"Questions":{Default:"What don't you like from the other gender? · What do you like from the other gender? · What would you like the other gender to develop more?"},"Question placeholders":{Default:"Be specific, be respectful… · Sure there are many things... · Growth in them you'd love to see…"},"Labelers (tone)":{Default:"◦ Neutral · ⬆ More formal · ⬇ More informal"},"New question":{Default:"Type your new question · 💾 Save"},"More controls":{Default:"Show more"}},
+ crafty:{"App title":{Default:"Crafty"},"Tagline":{Default:"crafted contribution"},"Entry label":{Default:"Product name"},"Project":{Default:"Product name · Target price (per unit) · Short description · EUR · USD · GBP · JPY · BRL · MXN"},"Stage":{Default:"Design · Sourcing · Manufacturing · Assembly · QA · Packaging · Logistics · Marketing · Sales · Support"},"Contribution type":{Default:"Labor (hours) · Materials · Equipment · Capital · IP / License · Other"},"Promisory contributions":{Default:"Contributor · Type · Quantity · Unit value · Notes"},"Wanted profits":{Default:"Wages · Maintenance · Development"},"Payout":{Default:"Contributor · Stage · Value · Share % · Payout"},"Review":{Default:"Contributors · Total value · Wages pool / unit · Sale price"}},
+ worthing:{"App title":{Default:"Worthing"},"Tagline":{Default:"a small tool to weigh anything across eight angles"},"Entry label":{Default:"Name a thing to worth"},"Meaningful":{Default:"Symbolical · Historical"},"Powerful":{Default:"Ideal · Potential"},"Useful":{Default:"Functional · Affordable"},"Friendly":{Default:"Respectful · (Re)generative"},"Moods":{Default:"🎩 formal · 👋 informal · 🔥 hotter · 🎭 dramatic · 🤓 nerdy · 😈 cheeky · 🧚 whimsy · 🐉 mythic · 🌈 queer · 🦄 magical · 🥶 cool"},"Views":{Default:"Bars · Vertical · Axial · Spider"}},
+ offer:{"App title":{Default:"Offer"},"Tagline":{Default:"gift, lend or exchange things with your neighborhood"},"Entry label":{Default:"Offer a thing here"},"Modes":{Default:"Gift · Lend · Exchange"},"Sectors":{Default:"Tools · Clothes · Games · Books · Food · Music · Services"},"Zones":{Default:"East · West · North · South"},"Worth it":{Default:"Symbolical · Historical · Ideal · Potential · Functional · Affordable · Respectful · (Re)generative"},"More details":{Default:"Essential · Useful · Purposeful · Endorsed by someone · Climatyful · Socialisty 49 · Socialisty 99 · Transportable · Used under all possible climates"},"Time":{Default:"Back on request · Back after use · Use where it is · Certain availability · Certain conditions over time"},"Use type":{Default:"Anything · Shared values · Tell intention first · Keeping care · Compensation"},"People":{Default:"All · Known · Certain amount · Certain people"},"Contribution":{Default:"No need · Volunteer · Fixed"},"Disputes":{Default:"Settling method · Settling group · Arbitrators · Relation to parts · Decision rule"}},
+ wanty:{"App title":{Default:"Wanty"},"Tagline":{Default:"a small tree of essences — pick a field, write or speak, and watch your legible phrase build itself in real time"},"Entry label":{Default:"I want"},"Like":{Default:"Favorite · Cheer · Affection · Joy"},"Wish":{Default:"Fancy · Hope · Longing · Dream · Fantasy"},"Interest":{Default:"Preference · Curiosity · Inspiration · Idea · Willing · Hobby · Habit"},"Purpose":{Default:"Calling · Aspiration · Vision · Vocation · Path · Mission · Destiny"},"Project":{Default:"Projection · Pledge · Plan · Legacy"},"Want":{Default:"Request · Demand · Need · Require"},"Display modes":{Default:"Size · Random · Cloud · Bubbles · List"}},
+ freed:{"App title":{Default:"Freed"},"Tagline":{Default:"For waiving property rights"},"Entry label":{Default:"I freed my"},"Reasons":{Default:"Because · For"},"Thing":{Default:"Where · When · regular · abundant · new · eco · local · used · vintage · handmade · rare · fragile · heavy · tiny"},"When":{Default:"just now · this week · this month · this season · this year · long ago · timeless"},"Farewell":{Default:"No ruled · Lawless · Has no ownership · Owned by no one · I'm no longer the owner · It's common, it's Ours · Globally owned, from everyone!"},"Wishes":{Default:"Past · Present · Future · Eternity · World · Universe · Nature · Humanity"},"Beware":{Default:"I will curse potential deceivers 🪄"}},
+ inventary:{"App title":{Default:"Inventary"},"Tagline":{Default:"Your things across HAVE · WISH · WANT · NEED"},"Entry label":{Default:"New thing here"},"Columns":{Default:"HAVE · WISH · WANT · NEED"},"Categories":{Default:"Health · Food · Home · Comms · Work · Education · Clothing · Outdoor · Travel · Services · Music · Hobbies · Events · Pets · Other"},"Selected things":{Default:"Haves · Wishes · Wants · Needs"},"Have options":{Default:"Shareable · Preference 1–5 · maybe · unlikely · Worth it"},"Want/Need options":{Default:"Much · very · Urgent"},"Wish options":{Default:"Much · very · Fully"},"Item note":{Default:"add additional info… · Save · voice note · attach file"},"Worth it bars":{Default:"Symbolical · Historical · Ideal · Potential · Functional · Affordable · Respectful · (Re)generative"},"Suggestion bots":{Default:"😍 lovely · 😂 joy · 🔥 wisdom"}},
+ minioffer:{"App title":{Default:"MiniOffer"},"Tagline":{Default:"KindSwap"},"Entry label":{Default:"Give it a cute, clear name"},"Type":{Default:"Gift · Lend · Exchange"},"Description":{Default:"Where: · Attach a photo or video · Record a voice note"},"Condition":{Default:"Poor · Fair · Good · High quality"},"Willingness":{Default:"Reluctant · Hesitant · Okay · Glad · Eager"},"Preference":{Default:"1 · 2 · 3 · 4 · 5"}},
+ rewardy:{"App title":{Default:"Rewardy"},"Tagline":{Default:"Compare offers and reach providers on flove"},"Providers":{Default:"🛠️ Bob · 🏠 Alice · 🔧 Charlie · 🌿 Dana · 📚 Erin · 🚲 Frank"},"Roles":{Default:"Labour help · Home sitting · Fix & errands · Garden care · Tutoring · Delivery runs"},"Rating axes":{Default:"SOULS · TRUST · DEAL"},"Comparison views":{Default:"▥ Bars · ◈ Spider · ▦ Axial · ▤ Per area"},"Sub-offers":{Default:"🧹 Limpieza · 🪚 Arreglos carpintería · 🚚 Pequeñas mudanzas · 🌿 Cuidado de plantas · 🐶 Paseo de perros"},"Message modal":{Default:"Message · Send message · Cancel"}},
+ shareful:{"App title":{Default:"Shareful"},"Tagline":{Default:"Lending Conditions · pick how, to whom, and under which preferences. A readable sentence builds itself."},"Entry label":{Default:"Offer a thing here"},"Sections":{Default:"Reasons · Who · Time / Space · Preferences · All"},"Sectors":{Default:"Tools · Clothes · Games · Books · Food · Music · Services"},"Tags":{Default:"Ecological · Crafted"},"Worth bars":{Default:"Symbolical · Historical · Ideal · Potential · Functional · Affordable · Respectful · (Re)generative"},"Because":{Default:"I have plenty · it's just sitting there · I trust you · someone helped me once · it's fair · it's safer"},"For":{Default:"giving better · connecting · improving · building community"},"Who":{Default:"Close · Near · All"},"Zones":{Default:"East · West · North · South"},"Time / Space":{Default:"Use it where it is · Back after use · Back on request"},"Preferences":{Default:"Past · Current · Future · Experience · Use · Offering · Similar · Different · Offers · Things · Relations"},"Invitation":{Default:"Invitation"}},
+ goddy:{"App title":{Default:"GODDY"},"Tagline":{Default:"God(dess) Matrix — Goddess, God and Us. Click each cell to map who sees who: a bipolar whole read through its unique part (1/2/1)."},"Matrix axes":{Default:"Goddess · God · Us"},"Cell levels":{Default:"see · see more · see fully · reset"},"Save":{Default:"JPG · HTML · Text · JSON"},"Share":{Default:"WhatsApp · Telegram · Mail"},"Insights":{Default:"Insights"}},
+ souls:{"App title":{Default:"Souls"},"Tagline":{Default:"An old projective game in five layers. An animal, a colour, a species you'd inhabit, a sense you'd feel through, and down further — into matter, particles and immune subsystems."},"Entry label":{Default:"Think of an animal."},"About (body)":{Default:"An old projective game in five layers — animal, colour, species, sense, then matter, particles and immune subsystems."},"Stage 1 · You":{Default:"Think of an animal · Three things about that animal · Now a colour · Three qualities of that colour"},"Stage 2 · Species + sense":{Default:"Pick the specie that my animal belongs to · Pick another specie · Three things from my creature · Pick one of the five senses"},"Senses":{Default:"👁 Sight · 👂 Hearing · 👃 Smell · 👅 Taste · ✋ Touch"},"Species tree":{Default:"Mammal · Bird · Reptile · Amphibian · Fish · Insect · Spider & kin · Sea creature · Tree · Flower · Fungus · Microbe"},"Stage 3 · Biological system":{Default:"🧠 Nervous · 🧪 Endocrine · 💪 Muscular · 🦴 Skeletal · 🌬️ Respiratory · 🩸 Circulatory · 💧 Excretory · 🍃 Digestive · 🤝 Integumentary · 🛡 Immune · 🌱 Reproductive"},"Stage 4 · Matter":{Default:"💎 Crystal · 🪨 Solid · 🧬 Macromolecule · ⚗️ Molecule · ⚛️ Atom"},"Stage 5 · Particle":{Default:"Quark · Electron · Neutrino · Photon · Gluon · W boson · Z boson · Higgs"},"Stage 5 · Immune subsystem":{Default:"🫀 Adaptative · 🧠 Neuroimmune · 🛡 Innate · 💧 Lymphatic"},"Privacy mode":{Default:"Private · Open"},"Play with":{Default:"Text · Audio · Video · Perform"},"Certify play":{Default:"Trusts · Mail · Telf · Id · Biometric"}},
+ willy:{"App title":{Default:"willy"},"Tagline":{Default:"Teleological Whys, Virtues, Sins and Commandments — drag the words onto the axis to map your stance."},"Entry label":{Default:"Drag each word onto the axis. Where a will or virtue sits is your stance."},"Wills (formal)":{Default:"FATAL · FINE · LUCKY · RANDOM · CHAOS · ORDER · GRACE · FATE"},"Commandments":{Default:"Love Now · Love Whole · Cheer ancestors · Glorify celebrations · No envy · No steal · No kill · Be pure · Be honest · Control lust · No naive · Be loyal"},"Sins":{Default:"Pride · Greed · Wrath · Envy · Lust · Gluttony · Sloth · Deceit · Stupidity · Treachery · Boring · Wishful"},"Insights":{Default:"💡 Who · 💡 What · 💡 Where · 💡 Why"},"Views":{Default:"Bars · Vertical · Axial · Spider"}},
+ puzzy:{"App title":{Default:"Puzzy"},"Tagline":{Default:"Rate, Relate, Redefine — a field of category nodes and app bubbles you cluster by tapping."},"Entry label":{Default:"Tap a category node to cluster its apps."},"Categories":{Default:"🎨 Rate · 🕸️ Relate · 📖 Redefine"},"Rate apps":{Default:"🌈 Raty · ☯️ Poly · 🔱 Triady · 🖐️ Fivy"},"Relate apps":{Default:"🕸️ Vizy2 · 🎲 Comby · 🌀 Confluenty"},"Redefine apps":{Default:"📝 Wisy · 👁️ Vizy · ⚙️ Sety · 🔑 Keys"}},
+ fivy:{"App title":{Default:"fivy"},"Tagline":{Default:"Order the five senses, then map their fields, simplexes and confluences."},"Entry label":{Default:"Five isn't too little nor too much"},"Decks":{Default:"Senses · Flavors · Social · Elements"},"Senses":{Default:"Taste · Smell · Hearing · Touch · Sight"},"Flavors":{Default:"Acid · Sour · Sweet · Umami · Salty"},"Social":{Default:"Economy · Judicial · Media · Military · Political"},"Elements":{Default:"Water · Air · Fire · Plasma · Earth"},"Fields (simplex)":{Default:"Metas · Sci · Bio · Lang · Psico · Social"},"View modes":{Default:"List · Cycle · Confluence"},"Privacy mode":{Default:"Private · Open"},"Play with":{Default:"Text · Audio · Video · Perform"},"Certify play":{Default:"Trusts · Mail · Telf · Id · Bio"}},
+ keys:{"App title":{Default:"keys"},"Tagline":{Default:"A simple game for ordering ideas — ten decks of three cards, flipped and ordered however you feel they should go."},"Entry label":{Default:"Choose a way to start"},"About (body)":{Default:"keys is a simple game for ordering ideas. Ten decks lie face down with 3 cards in each. Flip one and order its cards however you feel they should go."},"Ways to start":{Default:"Start from Step 0 · Skip to Step 1 · Adventure · Creative · Master"},"Triads":{Default:"Philosophy · Psicosocial · Service · Economy · Journalism"},"Philosophy":{Default:"Joy · Love · Wisdom"},"Service":{Default:"Gift · Lend · Exchange"},"Journalism":{Default:"Why · What · How"},"Fivy decks":{Default:"Senses · Flavors · Powers · Pathologies · Elements"},"Extra decks":{Default:"Time · Metaphysics · Space · Sectors"},"Privacy mode":{Default:"Private · Open"},"Play with":{Default:"Text · Audio · Video · Perform"}},
+ wisy:{"App title":{Default:"Wisy"},"Tagline":{Default:"Explain — name an idea, set its perspective, unfold the explainers, formalise the argument, then review and download a standalone form."},"Entry label":{Default:"Wise · Something here"},"Mode":{Default:"Define · Create form"},"Prism":{Default:"Subjective · Objective · Momentual · General"},"Tone":{Default:"Normal · Funny · Formal · Trivial"},"Teleology":{Default:"Experimental · Random · Fine · Fatal"},"Field":{Default:"Metaphysics · Science · Biology · Psychology · Sociology"},"Time span":{Default:"Past · Present · Future · Short · Mid · Long"},"Explainers":{Default:"PHRASE · RELATE TO · WHY · WHAT · HOW · What for · WHO · WHERE · WHEN"},"Formalise":{Default:"Axiom · Evidence · Kind · Sources · Prediction · Proposal · Challenge"},"Steps":{Default:"Essential · Perspective · Explainers · Formalise · Summary"}},
+ trusty:{"App title":{Default:"Trusty"},"Tagline":{Default:"Declare focused, partial trust — scoped, time-bound, and consent-based. A small, honest statement that both sides can hold."},"Entry label":{Default:"I trust · name…"},"Who":{Default:"Relationship · Context"},"Scope":{Default:"Time · Privacy · Money · Skills · Care · Comm · Safety · Other"},"Additional Protection":{Default:"Truster limitations · Trustee limitations · Additional grants given · Other conditions"},"Trustful signals":{Default:"Past good track record · References / witnesses"},"Declaration":{Default:"Insight · Creative · Copy · Save · Share · Publish"},"Steps":{Default:"who · scope · protection · declare"}},
+ crumbly:{"App title":{Default:"Crumbler"},"Tagline":{Default:"Set what you allow others to do, on what conditions, and how you want to be told if they overstep."},"Entry label":{Default:"I allow · Name here… · to"},"Crumble":{Default:"Criticize · Complaint · Blackmail · Press · Seize · Constrain · Denounce · Disfavor"},"Boycot":{Default:"Curse · Blame · Ignore · Insult · Flame · Taunt · Trash talk · Bluster · Defamate · Hit · Damage · Punish · Destroy · Sue · At police · At court"},"Notifying":{Default:"Public · To x person · To x trustee · Subscribers · Restorers · Warning"},"Only if":{Default:"Much · Failure · Offense · Harm · Previous · Disadvantages for the trustee · Other people involved"},"Review":{Default:"Insight · Magic · Copy · Save · Share · Publish"}},
+ evily:{"App title":{Default:"Evily"},"Tagline":{Default:"The dark twin of Crumbler — sign, in advance, what someone is allowed to do against you, on what scope, and what compensation may put it right."},"Entry label":{Default:"I allow · Name here… · to send me to HELL"},"Terms":{Default:"During (days) · Visibility · Expires in (days)"},"Visibility":{Default:"Private · Mediator · Comunitary · Public"},"Compensation":{Default:"Compensable · Fully with goods and services… · Warn me with N days in advance"},"I also allow to":{Default:"Know me more · Get more contact information · Use my grants · Use any of my things · + other · I want reciprocity"},"Resume":{Default:"Insight · Magic · Copy · Save · Share · Publish"}},
+ hoty:{"App title":{Default:"Hoty"},"Tagline":{Default:"Adore You: Sensorility Requests Assistant. Polite, playful and formal — compose a request you'd want someone to receive, then send it only if it still feels right."},"HELLO!":{Default:"I don't want us to mess up further than by you… · I hope this finds you in a kind moment · May I propose something gentle? · Pardon the directness — only ever with your consent"},"Adore":{Default:"Eyes · Breast · Naked breast · with · Reverence · Tenderness · Wonder · Gratitude"},"With my":{Default:"Eyes · Hand · Smelling · Tasting · Hearing"},"Incentives":{Default:"I am also open to a previous · conversation · about whatever you want · find somewhere comfortable where to do it · anything else you may need · I also allow you to Crumble me if i fail"},"Annex":{Default:"Please · Would you? · Why not?"},"Resume":{Default:"Insight · Creative · Copy · Save · Share · Publish"}},
+ maty:{"App title":{Default:"Maty"},"Tagline":{Default:"A soft scaffold for naming what you want, what you'd rather not, and the room between the two. Two parties, one shared paragraph."},"Who":{Default:"Offeror · Recipient"},"Want":{Default:"Mating: Known · Friends · Close · Couple · Other · Sexual interest: High · Medium · Low · Transparency: Open · Polite · Discreet"},"Others":{Default:"Closed · Mostly closed · Reviewable · Mostly open · Open · Openness: Maybe · Some · Forever open"},"Boundaries":{Default:"Strength: Strongly · Want · Recommend · Scope: for myself · for you · with others · Domain: Time · Space · Body · Words · Emotion · Proximity: close · known · others"},"Notes":{Default:"Anything else"},"Invitation":{Default:"Insight · Creative · Copy · Save · Share · Publish"}},
+ myfamily:{"App title":{Default:"MyFamily"},"Tagline":{Default:"A quiet space to reflect on the bonds in your life. Pick a friend, then mark what feels true across each row."},"Entry label":{Default:"Write a friend's name here."},"Attention":{Default:"Friendship & colaborativity · Regular cheers & help · Strong emotional companionship · Intimate friendship & complicity · Regular care & affection"},"Contact":{Default:"Attend me sometimes · Pass free time together · See or hear me · Call me anytime · Give me attention preference"},"Influence":{Default:"Reply & send me messages · Counsel me about anything · Tell me what purposes to have · Prescribe me attitudes · Limit me from doing things"},"Feedback":{Default:"Criticize me constructively · Show being upset with me · Show me disapproval · Comment on me negatively · Criticize me hard"},"Gifting":{Default:"Invite me sometimes · Give me some regular presents · Surprise me with regular gifts · Gift me much if I behave well · Gift me as much as possible"},"Sharing":{Default:"Share some things with me · Grant me something · Share much with me · Grant me much · Share all with me"},"Money":{Default:"Lend me money if urgent · Lend me money sometimes · Give me some if I need it · Give me sometimes, always lend · All money is shared with me"},"Your friend is…":{Default:"Cousin · Sibling · Grandparent · Parent · Couple"}},
+ parenty:{"App title":{Default:"Parenty"},"Tagline":{Default:"Co-care, communal parenting — compose your offer across parents, environment, education, growth and economy."},"Parents":{Default:"Closeness: Couple · Friend · Companion · Polite · Cold · Approach: Strict · Propositive · Normal · Open · Free · Emotion: Love · Cute · Care · Collabore · Help · Intensity: Very much · Much · Some · Little · None"},"Environment":{Default:"Convivence with: Adults · Close adults · More children · Siblings · Surroundings: Nature · Deep nature · Urban · Nomad · Schooling: Public · Private · Alternative"},"Education":{Default:"Mother(s) role · Father(s) role: Very implicated · Implicated · Companion · Passive · Challenging"},"Growth":{Default:"Gestation · Lactancy · Co-sleep · Infancy"},"Economy":{Default:"Living style: Simple · Average · Gentle · Rich · Grants needed: Material · Time · Money"},"Offer":{Default:"Insight · Creative · Copy · Save · Share · Publish"},"Steps":{Default:"Parents · Environment · Education · Growth · Economy · Others · Offer"}}
+};
+
+// ===== deep labels (translatable fields incl. internal vocab) =============
+// Populated by the /vocaby skill via `extract_vocab.py --deep-json`; each app's
+// entry lists every visible translatable string (en/es) and the i18n dictionary
+// keys, plus internal machine-name counts so the deep view shows "everything to
+// translate" without touching the curated slot grid.
+const DEEP = {
+ goddy:{"display":[{"kind":"display","en":"Profile","es":"Perfil","line":1210},{"kind":"display","en":"flove.org","es":"flove.org","line":1211},{"kind":"display","en":"Reset","es":"Reiniciar","line":1212},{"kind":"display","en":"We normally see the whole divided by its parts (1/n).","es":"Normalmente vemos el todo dividido entre sus partes (1/n).","line":1240},{"kind":"display","en":"This Goddy app rather shows you a bipolar whole (goddess and god) for a unique part (us) and invites you to tell what each part sees or not.","es":"Esta app Goddy más bien te muestra un todo bipolar (diosa y dios) para una parte única (nosotros) y te invita a decir qué ve o no ve cada parte.","line":1241},{"kind":"display","en":"Goddess","es":"Diosa","line":1250},{"kind":"display","en":"God","es":"Dios","line":1251},{"kind":"display","en":"Us","es":"Nosotros","line":1252},{"kind":"display","en":"Save","es":"Guardar","line":1369},{"kind":"display","en":"Share","es":"Compartir","line":1380},{"kind":"display","en":"To phone","es":"Al móvil","line":1382},{"kind":"display","en":"Mail","es":"Correo","line":1385},{"kind":"display","en":"Publish","es":"Publicar","line":1389},{"kind":"display","en":"More","es":"Más","line":1393},{"kind":"attr","attr":"data-aria-en","lang":"en","en":"Language","line":1215},{"kind":"attr","attr":"data-aria-es","lang":"es","es":"Idioma","line":1215},{"kind":"attr","attr":"data-aria-en","lang":"en","en":"Collapse","line":1243},{"kind":"attr","attr":"data-aria-es","lang":"es","es":"Cerrar","line":1243},{"kind":"attr","attr":"data-aria-en","lang":"en","en":"see","line":1260},{"kind":"attr","attr":"data-aria-es","lang":"es","es":"ver","line":1260},{"kind":"attr","attr":"data-aria-en","lang":"en","en":"see more","line":1261},{"kind":"attr","attr":"data-aria-es","lang":"es","es":"ver más","line":1261},{"kind":"attr","attr":"data-aria-en","lang":"en","en":"see fully","line":1262},{"kind":"attr","attr":"data-aria-es","lang":"es","es":"ver del todo","line":1262},{"kind":"attr","attr":"data-aria-en","lang":"en","en":"reset","line":1263},{"kind":"attr","attr":"data-aria-es","lang":"es","es":"reiniciar","line":1263},{"kind":"attr","attr":"data-aria-en","lang":"en","en":"About goddy","line":1355},{"kind":"attr","attr":"data-aria-es","lang":"es","es":"Acerca de goddy","line":1355},{"kind":"attr","attr":"aria-label","en":"Goddy menu","lang":"en","line":1209},{"kind":"attr","attr":"title","en":"Language","lang":"en","line":1215},{"kind":"attr","attr":"aria-label","en":"Language","lang":"en","line":1215},{"kind":"attr","attr":"aria-label","en":"Collapse","lang":"en","line":1243},{"kind":"attr","attr":"title","en":"Collapse","lang":"en","line":1243},{"kind":"attr","attr":"aria-label","en":"see","lang":"en","line":1260},{"kind":"attr","attr":"aria-label","en":"see more","lang":"en","line":1261},{"kind":"attr","attr":"aria-label","en":"see fully","lang":"en","line":1262},{"kind":"attr","attr":"aria-label","en":"reset","lang":"en","line":1263},{"kind":"attr","attr":"title","en":"About goddy","lang":"en","line":1355},{"kind":"attr","attr":"aria-label","en":"About goddy","lang":"en","line":1355},{"kind":"display","en":"Goddy","es":null,"line":1204},{"kind":"display","en":"Reset Reiniciar","es":null,"line":1212},{"kind":"display","en":"English","es":null,"line":1217},{"kind":"display","en":"Español","es":null,"line":1218},{"kind":"display","en":"Save Guardar","es":null,"line":1369},{"kind":"display","en":"MD","es":null,"line":1371},{"kind":"display","en":"JSON","es":null,"line":1372},{"kind":"display","en":"XML","es":null,"line":1373},{"kind":"display","en":"HTML","es":null,"line":1374},{"kind":"display","en":"JPG","es":null,"line":1375},{"kind":"display","en":"CSV","es":null,"line":1376},{"kind":"display","en":"Share Compartir","es":null,"line":1380},{"kind":"display","en":"To phone Al móvil","es":null,"line":1382},{"kind":"display","en":"WhatsApp","es":null,"line":1383},{"kind":"display","en":"Telegram","es":null,"line":1384},{"kind":"display","en":"Mail Correo","es":null,"line":1385},{"kind":"display","en":"Publish Publicar","es":null,"line":1389},{"kind":"display","en":"Appy","es":null,"line":1391},{"kind":"display","en":"Wizy","es":null,"line":1392},{"kind":"display","en":"More Más","es":null,"line":1393},{"kind":"display","en":"$ esc(m.app)","es":null,"line":1565}],"i18n":{},"data_blocks":[],"machine_count":200,"load_bearing":68},
+ keys:{"display":[{"kind":"display","en":"Reset","es":"Reiniciar","line":4081},{"kind":"display","en":"if you re-edited the form","es":"si has reeditado el formulario","line":4468},{"kind":"display","en":"More","es":"Más","line":4536},{"kind":"display","en":"Clear all and start new play","es":"Borra todo y empieza de nuevo","line":4646},{"kind":"attr","attr":"aria-label","en":"Open menu","lang":"en","line":4044},{"kind":"attr","attr":"aria-label","en":"Stage progress","lang":"en","line":4052},{"kind":"attr","attr":"aria-label","en":"Menu","lang":"en","line":4060},{"kind":"attr","attr":"placeholder","en":"search","lang":"en","line":4064},{"kind":"attr","attr":"aria-label","en":"Search","lang":"en","line":4064},{"kind":"attr","attr":"title","en":"Go","lang":"en","line":4066},{"kind":"attr","attr":"aria-label","en":"Go","lang":"en","line":4066},{"kind":"attr","attr":"aria-label","en":"Language","lang":"en","line":4093},{"kind":"attr","attr":"aria-label","en":"About keys","lang":"en","line":4142},{"kind":"attr","attr":"aria-label","en":"How to play","lang":"en","line":4152},{"kind":"attr","attr":"aria-label","en":"Previous","lang":"en","line":4157},{"kind":"attr","attr":"aria-label","en":"Next","lang":"en","line":4158},{"kind":"attr","attr":"aria-label","en":"Slides","lang":"en","line":4161},{"kind":"attr","attr":"aria-label","en":"Close","lang":"en","line":4182},{"kind":"attr","attr":"aria-label","en":"Add a language","lang":"en","line":4183},{"kind":"attr","attr":"aria-label","en":"Choose a way to start","lang":"en","line":4198},{"kind":"attr","attr":"aria-label","en":"See the Master mode","lang":"en","line":4215},{"kind":"attr","attr":"placeholder","en":"pass","lang":"en","line":4218},{"kind":"attr","attr":"aria-label","en":"Pass code","lang":"en","line":4218},{"kind":"attr","attr":"aria-label","en":"Card pool","lang":"en","line":4263},{"kind":"attr","attr":"aria-label","en":"Order the triads from most abstract to most concrete","lang":"en","line":4290},{"kind":"attr","attr":"title","en":"keys-summary","lang":"en","line":4415},{"kind":"attr","attr":"aria-label","en":"Out of date","lang":"en","line":4468},{"kind":"attr","attr":"aria-label","en":"Summary phrase","lang":"en","line":4476},{"kind":"attr","attr":"title","en":"Copy","lang":"en","line":4500},{"kind":"attr","attr":"title","en":"Save","lang":"en","line":4503},{"kind":"attr","attr":"title","en":"Close","lang":"en","line":4504},{"kind":"attr","attr":"title","en":"App","lang":"en","line":4514},{"kind":"attr","attr":"title","en":"Share","lang":"en","line":4521},{"kind":"attr","attr":"title","en":"Print","lang":"en","line":4524},{"kind":"attr","attr":"title","en":"Share with a mobile app","lang":"en","line":4525},{"kind":"attr","attr":"title","en":"Share menu","lang":"en","line":4526},{"kind":"attr","attr":"title","en":"Email","lang":"en","line":4527},{"kind":"attr","attr":"title","en":"Publish to your Appy profile","lang":"en","line":4534},{"kind":"attr","attr":"title","en":"Publish for your agent (Wizy)","lang":"en","line":4535},{"kind":"attr","attr":"title","en":"More networks (nety · 0asis) — coming","lang":"en","line":4536},{"kind":"attr","attr":"aria-label","en":"Nety publish schedule","lang":"en","line":4542},{"kind":"attr","attr":"aria-label","en":"Pick a date","lang":"en","line":4544},{"kind":"attr","attr":"title","en":"Pick a date","lang":"en","line":4544},{"kind":"attr","attr":"aria-label","en":"Pick day, month and year","lang":"en","line":4545},{"kind":"attr","attr":"aria-label","en":"Close calendar","lang":"en","line":4546},{"kind":"attr","attr":"aria-label","en":"Day","lang":"en","line":4547},{"kind":"attr","attr":"aria-label","en":"Month","lang":"en","line":4550},{"kind":"attr","attr":"aria-label","en":"Year","lang":"en","line":4555},{"kind":"attr","attr":"aria-label","en":"Hour","lang":"en","line":4560},{"kind":"attr","attr":"aria-label","en":"Minute","lang":"en","line":4564},{"kind":"attr","attr":"aria-label","en":"Audience","lang":"en","line":4567},{"kind":"attr","attr":"title","en":"All","lang":"en","line":4574},{"kind":"attr","attr":"title","en":"Publish","lang":"en","line":4576},{"kind":"attr","attr":"title","en":"Wizy","lang":"en","line":4583},{"kind":"attr","attr":"title","en":"Reddit","lang":"en","line":4584},{"kind":"attr","attr":"title","en":"Nety","lang":"en","line":4585},{"kind":"attr","attr":"title","en":"Mastodon","lang":"en","line":4588},{"kind":"attr","attr":"title","en":"Bluesky","lang":"en","line":4589},{"kind":"attr","attr":"title","en":"Threads","lang":"en","line":4590},{"kind":"attr","attr":"title","en":"X","lang":"en","line":4593},{"kind":"attr","attr":"title","en":"Tumblr","lang":"en","line":4594},{"kind":"attr","attr":"title","en":"Medium","lang":"en","line":4595},{"kind":"attr","attr":"title","en":"More platforms","lang":"en","line":4599},{"kind":"attr","attr":"aria-label","en":"Insight 1","lang":"en","line":4681},{"kind":"attr","attr":"aria-label","en":"Insight 2","lang":"en","line":4682},{"kind":"attr","attr":"aria-label","en":"Insight 3","lang":"en","line":4683},{"kind":"attr","attr":"aria-label","en":"Insight 4","lang":"en","line":4684},{"kind":"attr","attr":"aria-label","en":"show more apps","lang":"en","line":4716},{"kind":"attr","attr":"aria-label","en":"Show counters","lang":"en","line":4727},{"kind":"attr","attr":"title","en":"Total elapsed time","lang":"en","line":4731},{"kind":"attr","attr":"aria-label","en":"Show elapsed time","lang":"en","line":4733},{"kind":"attr","attr":"title","en":"Total clicks","lang":"en","line":4739},{"kind":"attr","attr":"title","en":"Keys finalized (one per Done)","lang":"en","line":4743},{"kind":"attr","attr":"title","en":"Whys saved (one star per saved reason)","lang":"en","line":4747},{"kind":"attr","attr":"title","en":"tap to expand","lang":"en","line":5383},{"kind":"attr","attr":"title","en":"tap to reopen","lang":"en","line":5445},{"kind":"attr","attr":"title","en":"tap to collapse","lang":"en","line":5457},{"kind":"attr","attr":"placeholder","en":"name this group","lang":"en","line":5546},{"kind":"attr","attr":"aria-label","en":"Group name","lang":"en","line":5546},{"kind":"attr","attr":"placeholder","en":"Write or dictate why you placed this key in this order…","lang":"en","line":5553},{"kind":"attr","attr":"aria-label","en":"Record voice","lang":"en","line":5556},{"kind":"attr","attr":"title","en":"Record voice","lang":"en","line":5556},{"kind":"attr","attr":"placeholder","en":"write or dictate something first","lang":"en","line":5620},{"kind":"attr","attr":"aria-label","en":"Move right","lang":"en","line":5660},{"kind":"attr","attr":"title","en":"one position →","lang":"en","line":5660},{"kind":"attr","attr":"aria-label","en":"Move left","lang":"en","line":5661},{"kind":"attr","attr":"title","en":"← one position","lang":"en","line":5661},{"kind":"attr","attr":"placeholder","en":"name it","lang":"en","line":5663},{"kind":"attr","attr":"aria-label","en":"Name this item","lang":"en","line":5663},{"kind":"attr","attr":"title","en":"voice dictation isn","lang":"en","line":6431},{"kind":"attr","attr":"aria-label","en":"left","lang":"en","line":7785},{"kind":"attr","attr":"title","en":"← one","lang":"en","line":7785},{"kind":"attr","attr":"aria-label","en":"right","lang":"en","line":7786},{"kind":"attr","attr":"title","en":"one →","lang":"en","line":7786},{"kind":"attr","attr":"aria-label","en":"Add another order in another perspective","lang":"en","line":8053},{"kind":"attr","attr":"title","en":"Add another order in another perspective","lang":"en","line":8053},{"kind":"attr","attr":"aria-label","en":"$ b.leftLabel to $ b.rightLabel","lang":"en","line":8113},{"kind":"attr","attr":"aria-label","en":"Axial view","lang":"en","line":9075},{"kind":"attr","attr":"title","en":"$ esc(g.title)","lang":"en","line":9147},{"kind":"attr","attr":"aria-label","en":"Move item down","lang":"en","line":9561},{"kind":"attr","attr":"title","en":"down","lang":"en","line":9561},{"kind":"attr","attr":"aria-label","en":"Move item up","lang":"en","line":9563},{"kind":"attr","attr":"title","en":"up","lang":"en","line":9563},{"kind":"attr","attr":"aria-label","en":"$ title","lang":"en","line":9575},{"kind":"attr","attr":"title","en":"click to rename","lang":"en","line":9842},{"kind":"attr","attr":"aria-label","en":"down","lang":"en","line":9953},{"kind":"attr","attr":"aria-label","en":"up","lang":"en","line":9955},{"kind":"attr","attr":"title","en":"$ escapeHTML(a.label)","lang":"en","line":10183},{"kind":"attr","attr":"aria-label","en":"Slide 1","lang":"en","line":10248},{"kind":"attr","attr":"aria-label","en":"Slide 2","lang":"en","line":10249},{"kind":"attr","attr":"aria-label","en":"Slide 3","lang":"en","line":10250},{"kind":"attr","attr":"title","en":"$ escapeHTML(tKey(","lang":"en","line":10412},{"kind":"attr","attr":"aria-label","en":"$ escapeHTML(tKey(","lang":"en","line":10412},{"kind":"attr","attr":"title","en":"$ escapeHTML(SR ? tKey(","lang":"en","line":10417},{"kind":"display","en":"Keys","es":null,"line":4042},{"kind":"display","en":"Go","es":null,"line":4066},{"kind":"display","en":"ⓘ About keys","es":null,"line":4072},{"kind":"display","en":"↺ Reset Reiniciar","es":null,"line":4080},{"kind":"display","en":"🇬🇧 English","es":null,"line":4097},{"kind":"display","en":"🇪🇸 Español","es":null,"line":4098},{"kind":"display","en":"＋ Add a language","es":null,"line":4099},{"kind":"display","en":"+ more","es":null,"line":4109},{"kind":"display","en":"About keys","es":null,"line":4133},{"kind":"display","en":"Close","es":null,"line":4147},{"kind":"display","en":"Start →","es":null,"line":4159},{"kind":"display","en":"See more","es":null,"line":4165},{"kind":"display","en":"ⓘ More info","es":null,"line":4167},{"kind":"display","en":"Add a language","es":null,"line":4185},{"kind":"display","en":"Français","es":null,"line":4188},{"kind":"display","en":"Deutsch","es":null,"line":4189},{"kind":"display","en":"Italiano","es":null,"line":4190},{"kind":"display","en":"Português","es":null,"line":4191},{"kind":"display","en":"العربية","es":null,"line":4192},{"kind":"display","en":"中文","es":null,"line":4193},{"kind":"display","en":"Choose Mode","es":null,"line":4199},{"kind":"display","en":"MASTER","es":null,"line":4202},{"kind":"display","en":"Go →","es":null,"line":4205},{"kind":"display","en":"Normal","es":null,"line":4210},{"kind":"display","en":"Go play →","es":null,"line":4229},{"kind":"display","en":"← Back","es":null,"line":4249},{"kind":"display","en":"Make the 5 groups of 3 you like best right now","es":null,"line":4262},{"kind":"display","en":"Next →","es":null,"line":4268},{"kind":"display","en":"Create the 5 easiest groups of 3","es":null,"line":4273},{"kind":"display","en":"Check","es":null,"line":4278},{"kind":"display","en":"Check order","es":null,"line":4298},{"kind":"display","en":"Continue →","es":null,"line":4299},{"kind":"display","en":"← Go back","es":null,"line":4317},{"kind":"display","en":"Analyze →","es":null,"line":4326},{"kind":"display","en":"More","es":null,"line":4327},{"kind":"display","en":"Save perspective →","es":null,"line":4365},{"kind":"display","en":"Edit selections","es":null,"line":4366},{"kind":"display","en":"Play more","es":null,"line":4374},{"kind":"display","en":"Cancel","es":null,"line":4391},{"kind":"display","en":"✦ Summary ▸","es":null,"line":4467},{"kind":"display","en":"Update","es":null,"line":4468},{"kind":"display","en":"Copy","es":null,"line":4500},{"kind":"display","en":"💾 Save","es":null,"line":4503},{"kind":"display","en":"MD","es":null,"line":4506},{"kind":"display","en":"HTML","es":null,"line":4507},{"kind":"display","en":"CSV","es":null,"line":4508},{"kind":"display","en":"XML","es":null,"line":4509},{"kind":"display","en":"JSON","es":null,"line":4510},{"kind":"display","en":"JPG","es":null,"line":4511},{"kind":"display","en":"App","es":null,"line":4514},{"kind":"display","en":"📤 Share","es":null,"line":4521},{"kind":"display","en":"🖨 Print","es":null,"line":4524},{"kind":"display","en":"📱 Mobile","es":null,"line":4525},{"kind":"display","en":"🌐 Apps","es":null,"line":4526},{"kind":"display","en":"✦ Appy","es":null,"line":4534},{"kind":"display","en":"✦ Wizy","es":null,"line":4535},{"kind":"display","en":"More Más","es":null,"line":4536},{"kind":"display","en":"10","es":null,"line":4548},{"kind":"display","en":"15","es":null,"line":4548},{"kind":"display","en":"20","es":null,"line":4548},{"kind":"display","en":"25","es":null,"line":4548},{"kind":"display","en":"30","es":null,"line":4548},{"kind":"display","en":"Jan","es":null,"line":4551},{"kind":"display","en":"Feb","es":null,"line":4551},{"kind":"display","en":"Mar","es":null,"line":4551},{"kind":"display","en":"Apr","es":null,"line":4551},{"kind":"display","en":"May","es":null,"line":4552},{"kind":"display","en":"Jun","es":null,"line":4552},{"kind":"display","en":"Jul","es":null,"line":4552},{"kind":"display","en":"Aug","es":null,"line":4552},{"kind":"display","en":"Sep","es":null,"line":4553},{"kind":"display","en":"Oct","es":null,"line":4553},{"kind":"display","en":"Nov","es":null,"line":4553},{"kind":"display","en":"Dec","es":null,"line":4553},{"kind":"display","en":"2026","es":null,"line":4556},{"kind":"display","en":"2027","es":null,"line":4556},{"kind":"display","en":"2028","es":null,"line":4556},{"kind":"display","en":"09","es":null,"line":4561},{"kind":"display","en":"12","es":null,"line":4561},{"kind":"display","en":"18","es":null,"line":4561},{"kind":"display","en":"21","es":null,"line":4561},{"kind":"display","en":"00","es":null,"line":4565},{"kind":"display","en":"45","es":null,"line":4565},{"kind":"display","en":"Groups","es":null,"line":4568},{"kind":"display","en":"Friends","es":null,"line":4569},{"kind":"display","en":"Followers","es":null,"line":4570},{"kind":"display","en":"Lists","es":null,"line":4571},{"kind":"display","en":"Links","es":null,"line":4572},{"kind":"display","en":"All","es":null,"line":4574},{"kind":"display","en":"📨 Publish","es":null,"line":4576},{"kind":"display","en":"Wizy","es":null,"line":4583},{"kind":"display","en":"Reddit","es":null,"line":4584},{"kind":"display","en":"Nety","es":null,"line":4585},{"kind":"display","en":"Mastodon","es":null,"line":4588},{"kind":"display","en":"Bluesky","es":null,"line":4589},{"kind":"display","en":"Threads","es":null,"line":4590},{"kind":"display","en":"Tumblr","es":null,"line":4594},{"kind":"display","en":"Medium","es":null,"line":4595},{"kind":"display","en":"🦉 Sage Wise and contemplative.","es":null,"line":4607},{"kind":"display","en":"⚡ Spark Quick-witted, energetic.","es":null,"line":4611},{"kind":"display","en":"🐦 Echo Mirrors what you say.","es":null,"line":4615},{"kind":"display","en":"🪸 Coral Warm and supportive.","es":null,"line":4619},{"kind":"display","en":"🌟 Nova Bright and visionary.","es":null,"line":4623},{"kind":"display","en":"🎵 Lyra Lyrical and rhythmic.","es":null,"line":4627},{"kind":"display","en":"Insight","es":null,"line":4674},{"kind":"display","en":"Insight · 1/4","es":null,"line":4675},{"kind":"display","en":"Insight · 2/4","es":null,"line":4676},{"kind":"display","en":"Insight · 3/4","es":null,"line":4677},{"kind":"display","en":"Insight · 4/4","es":null,"line":4678},{"kind":"display","en":"✨ Magic","es":null,"line":4689},{"kind":"display","en":"🎭 Magic","es":null,"line":4690},{"kind":"display","en":"🌀 Magic","es":null,"line":4691},{"kind":"display","en":"🪞 Magic","es":null,"line":4692},{"kind":"display","en":"🔮 Magic","es":null,"line":4693},{"kind":"display","en":"🎲 Magic","es":null,"line":4694},{"kind":"display","en":"⏱ 0:00","es":null,"line":4733},{"kind":"display","en":"Save why","es":null,"line":5563},{"kind":"display","en":"$ match ? tKey('why.edit') : tKey('why.label')","es":null,"line":5569},{"kind":"display","en":"Done","es":null,"line":5571},{"kind":"display","en":"Counters","es":null,"line":6129},{"kind":"display","en":"$ escapeHTML(tKey('common.more'))","es":null,"line":6150},{"kind":"display","en":"$ escapeHTML(tKey('btn.hints'))","es":null,"line":6256},{"kind":"display","en":"$ s.t","es":null,"line":6535},{"kind":"display","en":"$ a.h","es":null,"line":7035},{"kind":"display","en":"Add a perspective","es":null,"line":8050},{"kind":"display","en":"Insights","es":null,"line":8432},{"kind":"display","en":"Perspective","es":null,"line":8513},{"kind":"display","en":"New perspective","es":null,"line":8514},{"kind":"display","en":"Second play","es":null,"line":8515},{"kind":"display","en":"Keys you picked","es":null,"line":8516},{"kind":"display","en":"Mode","es":null,"line":8517},{"kind":"display","en":"Reset","es":null,"line":8801},{"kind":"display","en":"$ escapeHTML(a.label)","es":null,"line":10217},{"kind":"display","en":"Go Play →","es":null,"line":10245},{"kind":"display","en":"$ escapeHTML(tKey('comby.save'))","es":null,"line":10420},{"kind":"display","en":"$ escapeHTML(tKey('common.next'))","es":null,"line":10525}],"i18n":{"chooser.normal_desc":{"en":"Rank words","es":"Ordena palabras"},"summary.close_cal":{"en":"Close calendar","es":"Cerrar calendario"},"btn.hide":{"en":"Hide","es":"Ocultar"},"combos.hint":{"en":"My 3 favourite keywords are:","es":"Mis 3 palabras clave favoritas son:"},"btn.extras":{"en":"Extras","es":"Extras"},"group.triad":{"en":"Triad","es":"Tríada"},"brand.name":{"en":"Keys","es":"Claves"},"magic.1":{"en":"🎭 Magic","es":"🎭 Magia"},"lang.add_title":{"en":"Add a language","es":"Añadir un idioma"},"play.question":{"en":"What is more important for you now?","es":"¿Qué es más importante para ti ahora?"},"mode.free":{"en":"Free Mode","es":"Modo Libre"},"summary.pick_dmy":{"en":"Pick day, month and year","es":"Elige día, mes y año"},"summary.edit_selections":{"en":"Edit selections","es":"Editar selecciones"},"summary.minute":{"en":"Minute","es":"Minuto"},"counters.time_toggle":{"en":"Show elapsed time","es":"Mostrar tiempo transcurrido"},"lang.menu_en":{"en":"<span class=\\","es":"<span class=\\"},"common.go_back":{"en":"← Go back","es":"← Volver"},"wiz.sage_info":{"en":"Wise and contemplative.","es":"Sabio y contemplativo."},"common.done":{"en":"Done","es":"Hecho"},"prelude.pool_aria":{"en":"Card pool","es":"Conjunto de cartas"},"menu.lang_current":{"en":"English","es":"Español"},"summary.hour":{"en":"Hour","es":"Hora"},"cal.m9":{"en":"Sep","es":"Sep"},"chooser.play_master_first":{"en":"Play Master Mode first","es":"Juega primero el Modo Maestro"},"summary.aud_friends":{"en":"Friends","es":"Amigos"},"counters.stars":{"en":"Stars","es":"Estrellas"},"wiz.nova_info":{"en":"Bright and visionary.","es":"Brillante y visionario."},"menu.section_flove":{"en":"Flove","es":"Flove"},"summary.apps_title":{"en":"Share menu","es":"Menú de compartir"},"common.back":{"en":"← Back","es":"← Atrás"},"toast.pick_platform":{"en":"Pick a platform first","es":"Elige primero una plataforma"},"comby.save":{"en":"Save","es":"Guardar"},"lang.menu_es":{"en":"<span class=\\","es":"<span class=\\"},"stats.extra_triads":{"en":"Extra triads","es":"Tríadas extra"},"prelude.a_title":{"en":"Create the 5 easiest groups of 3","es":"Crea los 5 grupos de 3 más fáciles"},"chooser.go":{"en":"Go →","es":"Ir →"},"stats.additional_triads":{"en":"Additional triads","es":"Tríadas adicionales"},"counters.show":{"en":"Show counters","es":"Mostrar contadores"},"summary.copy":{"en":"Copy","es":"Copiar"},"cal.m7":{"en":"Jul","es":"Jul"},"summary.analyze":{"en":"Analyze →","es":"Analizar →"},"common.next":{"en":"Next →","es":"Siguiente →"},"menu.network":{"en":"<span class=\\","es":"<span class=\\"},"counters.selections":{"en":"Selections","es":"Selecciones"},"summary.save":{"en":"💾 Save","es":"💾 Guardar"},"cal.m6":{"en":"Jun","es":"Jun"},"summary.nety_intro":{"en":"Nety is a Friend2Friend Groupware. <a href=\\","es":"Nety es un Groupware de amigo a amigo. <a href=\\"},"wiz.spark_info":{"en":"Quick-witted, energetic.","es":"Ingenioso y enérgico."},"summary.apps":{"en":"🌐 Apps","es":"🌐 Apps"},"summary.default_phrase":{"en":"Your summary will show up here once you finish a play.","es":"Tu resumen aparecerá aquí cuando termines una partida."},"comby.swap":{"en":"Switch word order","es":"Cambiar el orden de las palabras"},"summary.play_more":{"en":"Play more","es":"Jugar más"},"chooser.pass_ph":{"en":"pass","es":"clave"},"prelude.axis_aria":{"en":"Order the triads from most abstract to most concrete","es":"Ordena las tríadas de lo más abstracto a lo más concreto"},"summary.aud_followers":{"en":"Followers","es":"Seguidores"},"cust.language":{"en":"Language","es":"Idioma"},"summary.aud_links":{"en":"Links","es":"Enlaces"},"summary.print":{"en":"🖨 Print","es":"🖨 Imprimir"},"wiz.coral_info":{"en":"Warm and supportive.","es":"Cálido y comprensivo."},"magic.0":{"en":"✨ Magic","es":"✨ Magia"},"magic.5":{"en":"🎲 Magic","es":"🎲 Magia"},"chooser.adv_tag":{"en":"More Adventure","es":"Más Aventura"},"summary.more_platforms":{"en":"More platforms","es":"Más plataformas"},"magic.2":{"en":"🌀 Magic","es":"🌀 Magia"},"progress.stage":{"en":"Stage progress","es":"Progreso de etapa"},"summary.pick_date":{"en":"Pick a date","es":"Elige una fecha"},"common.close":{"en":"Close","es":"Cerrar"},"common.go_arrow":{"en":"Go →","es":"Ir →"},"btn.genders":{"en":"Genders","es":"Géneros"},"insight.0":{"en":"Insight","es":"Idea"},"menu.go":{"en":"Go","es":"Ir"},"stats.create_triads":{"en":"Create triads","es":"Crear tríadas"},"wiz.echo_info":{"en":"Mirrors what you say.","es":"Refleja lo que dices."},"cal.m8":{"en":"Aug","es":"Ago"},"insight.3":{"en":"Insight · 3/4","es":"Idea · 3/4"},"summary.email":{"en":"📧 Email","es":"📧 Correo"},"prelude.abstract":{"en":"abstract","es":"abstracto"},"mode.creative":{"en":"Creative Mode","es":"Modo Creativo"},"item.name_ph":{"en":"name it","es":"nómbralo"},"related.title":{"en":"Related apps","es":"Apps relacionadas"},"chooser.free_desc":{"en":"Add all new words","es":"Añade todas las palabras nuevas"},"summary.mobile":{"en":"📱 Mobile","es":"📱 Móvil"},"related.gettriads":{"en":"Get real Triads","es":"Consigue Tríadas reales"},"prelude.continue":{"en":"Continue →","es":"Continuar →"},"common.cancel":{"en":"Cancel","es":"Cancelar"},"comby.def_for":{"en":"Definition for","es":"Definición de"},"summary.go_publish":{"en":"✈ Go","es":"✈ Ir"},"why.ph":{"en":"why","es":"por qué"},"prelude.correct":{"en":"Correct:","es":"Correctos:"},"spot.why_ph":{"en":"Write or dictate why you placed this key in this order…","es":"Escribe o dicta por qué colocaste esta clave en este orden…"},"prelude.concrete":{"en":"concrete","es":"concreto"},"chooser.adv_desc":{"en":"Add 1 new word","es":"Añade 1 palabra nueva"},"lang.add_sub":{"en":"Pick a language you","es":"Elige un idioma al que te gustaría ayudar a traer Claves."},"summary.download":{"en":"⬇ Download","es":"⬇ Descargar"},"about.p3":{"en":"The more you tell your real views, the more you could learn about them with our tools at the end.","es":"Cuanto más cuentes tu visión real, más podrás aprender sobre ella con nuestras herramientas al final."},"common.see_more":{"en":"See more","es":"Ver más"},"btn.perspectives":{"en":"Perspectives","es":"Perspectivas"},"cal.m2":{"en":"Feb","es":"Feb"},"cal.m5":{"en":"May","es":"May"},"summary.save_perspective":{"en":"Save perspective →","es":"Guardar perspectiva →"},"summary.toggle":{"en":"✦ Summary <span class=\\","es":"✦ Resumen <span class=\\"},"combos.fav_keys":{"en":"Favourite Keys","es":"Claves favoritas"},"stats.main_triads":{"en":"Main triads","es":"Tríadas principales"},"toast.published_to":{"en":"Published to","es":"Publicado en"},"btn.hints":{"en":"Hints","es":"Pistas"},"stats.total":{"en":"total","es":"total"},"summary.publish":{"en":"📨 Publish","es":"📨 Publicar"},"chooser.go_play":{"en":"Go play →","es":"A jugar →"},"chooser.master_desc":{"en":"Group words","es":"Agrupa palabras"},"counters.stars_title":{"en":"Whys saved (one star per saved reason)","es":"Porqués guardados (una estrella por cada razón guardada)"},"why.edit":{"en":"Why (edit)","es":"Por qué (editar)"},"comby.pick_first":{"en":"Pick your three favourite keys first to combine them.","es":"Elige primero tus tres claves favoritas para combinarlas."},"comby.record":{"en":"Record","es":"Grabar"},"common.off":{"en":"OFF","es":"OFF"},"magic.3":{"en":"🪞 Magic","es":"🪞 Magia"},"picks.empty":{"en":"Pick three favourite keys and this names what you reached for.","es":"Elige tres claves favoritas y esto nombrará lo que buscaste."},"cal.m3":{"en":"Mar","es":"Mar"},"summary.audience":{"en":"Audience","es":"Audiencia"},"common.more":{"en":"More","es":"Más"},"intro.more_info":{"en":"ⓘ More info","es":"ⓘ Más información"},"summary.app":{"en":"App","es":"App"},"summary.year":{"en":"Year","es":"Año"},"intro.next":{"en":"Next","es":"Siguiente"},"chooser.title":{"en":"Choose Mode","es":"Elige modo"},"summary.wiz_lead":{"en":"Wizy publishes to a chosen bot.","es":"Wizy publica en un bot elegido."},"common.on":{"en":"ON","es":"ON"},"comby.type_below":{"en":"Type below","es":"Escribe abajo"},"chooser.insight":{"en":"For the full experience, play Master → Free → Creative → Adventure → Normal.","es":"Para la experiencia completa, juega Maestro → Libre → Creativo → Aventura → Normal."},"chooser.cre_tag":{"en":"Very Creative","es":"Muy Creativo"},"about.p1":{"en":"keys is a simple game for ordering ideas. Five triads lie face down with 3 cards in each. Flip one and order its cards however you feel they should go, and (if you wish) record a short why behind that order.","es":"Claves es un juego sencillo para ordenar ideas. Cinco tríadas están boca abajo con 3 cartas cada una. Voltea uno y ordena sus cartas como sientas que deben ir y (si quieres) anota un breve porqué detrás de ese orden."},"counters.time_title":{"en":"Total elapsed time","es":"Tiempo total transcurrido"},"insight.1":{"en":"Insight · 1/4","es":"Idea · 1/4"},"cal.m12":{"en":"Dec","es":"Dic"},"stats.intro":{"en":"Intro","es":"Intro"},"chooser.designed":{"en":"We designed keys for you to enjoy it fully, so you have to be willing to take your time in the second and third stages of the Master mode (the one we recommend to do first, before playing it more normally).","es":"Diseñamos Claves para que las disfrutes plenamente, así que has de estar dispuesto a tomarte tu tiempo en la segunda y la tercera etapa del modo Maestro (el que recomendamos hacer primero, antes de jugarlo de forma más normal)."},"wiz.lyra_info":{"en":"Lyrical and rhythmic.","es":"Lírico y rítmico."},"chooser.recommend":{"en":"We recommend playing Master mode first.","es":"Te recomendamos jugar primero el modo Maestro."},"prelude.well_done":{"en":"Well done, you","es":"¡Bien hecho, lo lograste!"},"spot.name_group_ph":{"en":"name this group","es":"nombra este grupo"},"insight.4":{"en":"Insight · 4/4","es":"Idea · 4/4"},"summary.share":{"en":"📤 Share","es":"📤 Compartir"},"counters.clicks_title":{"en":"Total clicks","es":"Clics totales"},"intro.start":{"en":"Start →","es":"Empezar →"},"intro.prev":{"en":"Previous","es":"Anterior"},"group.free":{"en":"Free","es":"Libre"},"cal.m11":{"en":"Nov","es":"Nov"},"summary.mobile_title":{"en":"Share with a mobile app","es":"Compartir con una app móvil"},"menu.about":{"en":"<span class=\\","es":"<span class=\\"},"stats.additional_perspective":{"en":"Additional perspective","es":"Perspectiva adicional"},"related.more_apps":{"en":"show more apps","es":"mostrar más apps"},"insight.2":{"en":"Insight · 2/4","es":"Idea · 2/4"},"chooser.see_master":{"en":"See the Master mode","es":"Ver el modo Maestro"},"toast.copied_clip":{"en":"Copied to clipboard ✓","es":"Copiado al portapapeles ✓"},"chooser.pass_label":{"en":"Pass code","es":"Código de acceso"},"summary.month":{"en":"Month","es":"Mes"},"lang.add":{"en":"<span class=\\","es":"<span class=\\"},"chooser.cre_desc":{"en":"Add 2 new words","es":"Añade 2 palabras nuevas"},"toast.copied_anywhere":{"en":"Copied — paste it anywhere","es":"Copiado — pégalo donde quieras"},"btn.insights":{"en":"Insights","es":"Reflexiones"},"menu.profile":{"en":"<span class=\\","es":"<span class=\\"},"summary.aud_groups":{"en":"Groups","es":"Grupos"},"stats.master_mode":{"en":"Master mode","es":"Modo Maestro"},"prelude.check_order":{"en":"Check order","es":"Comprobar orden"},"counters.sel_title":{"en":"Keys finalized (one per Done)","es":"Claves finalizadas (una por cada Done)"},"about.title":{"en":"About keys","es":"Acerca de Claves"},"stats.analysis":{"en":"Analysis","es":"Análisis"},"magic.4":{"en":"🔮 Magic","es":"🔮 Magia"},"cal.m1":{"en":"Jan","es":"Ene"},"btn.favourites":{"en":"Favourites","es":"Favoritas"},"why.label":{"en":"Why","es":"Por qué"},"menu.search_label":{"en":"Search","es":"Buscar"},"mode.adventure":{"en":"Adventure Mode","es":"Modo Aventura"},"chooser.free_tag":{"en":"Super Free","es":"Súper Libre"},"chooser.aria":{"en":"Choose a way to start","es":"Elige una forma de empezar"},"prelude.check":{"en":"Check","es":"Comprobar"},"comby.swap_title":{"en":"Add / remove the reversed order","es":"Añadir / quitar el orden inverso"},"menu.open":{"en":"Open menu","es":"Abrir menú"},"related.more":{"en":"+ more","es":"+ más"},"cal.m10":{"en":"Oct","es":"Oct"},"menu.home":{"en":"<span class=\\","es":"<span class=\\"},"menu.search_ph":{"en":"search","es":"buscar"},"counters.time_msg":{"en":"Don","es":"No lo sientas como una prisa, es solo un dato útil :)"},"chooser.master_title":{"en":"MASTER","es":"MAESTRO"},"summary.all":{"en":"All","es":"Todos"},"toast.shared_to":{"en":"Shared to","es":"Compartido en"},"stats.free_triads":{"en":"Free triads","es":"Tríadas libres"},"cal.m4":{"en":"Apr","es":"Abr"},"summary.reddit_intro":{"en":"Reddit is a social platform of communities and discussions. <a href=\\","es":"Reddit es una plataforma social de comunidades y debates. <a href=\\"},"counters.time":{"en":"Time","es":"Tiempo"},"toast.saved":{"en":"Saved","es":"Guardado"},"summary.aud_lists":{"en":"Lists","es":"Listas"},"prelude.primer_title":{"en":"Make the 5 groups of 3 you like best right now","es":"Haz los 5 grupos de 3 que más te gusten ahora mismo"},"summary.day":{"en":"Day","es":"Día"},"counters.clicks":{"en":"Clicks","es":"Clics"},"chooser.normal_title":{"en":"Normal","es":"Normal"},"chooser.free_note":{"en":"Play these 3 free modes for more insights and points.","es":"Juega estos 3 modos libres para más ideas y puntos."},"summary.copy_hint":{"en":"Select the phrase above (triple-click selects the whole paragraph), then press Ctrl + C on Windows/Linux or ⌘ + C on Mac to copy it. (Clicking Copy also puts it on your clipboard.)","es":"Selecciona la frase de arriba (triple clic selecciona todo el párrafo), luego pulsa Ctrl + C en Windows/Linux o ⌘ + C en Mac para copiarla. (Pulsar Copiar también la pone en tu portapapeles.)"}},"data_blocks":[{"line":4759,"id":"t1","title":"Philosophy","items":["Joy","Love","Wisdom"],"title_en":"Philosophy","title_es":"Filosofía"},{"line":4761,"id":"t2","title":"Psicosocial","items":["Local","Personal","Social"],"title_en":"Psicosocial","title_es":"Psicosocial"},{"line":4763,"id":"t3","title":"Service","items":["Gift","Lend","Exchange"],"title_en":"Service","title_es":"Servicio"},{"line":4765,"id":"t4","title":"Economy","items":["Craft","Ecological","Offer"],"title_en":"Economy","title_es":"Economía"},{"line":4767,"id":"t5","title":"Journalism","items":["Why","What","How"],"title_en":"Journalism","title_es":"Periodismo"},{"line":9770,"id":"x1","title":"Time","items":["Future","Past","Present"],"title_en":null,"title_es":null},{"line":9771,"id":"x2","title":"Metaphysics","items":["Tao","Yang","Yin"],"title_en":null,"title_es":null},{"line":9772,"id":"x3","title":"Space","items":["Confluence","Macro","Micro"],"title_en":null,"title_es":null},{"line":9773,"id":"x4","title":"Sectors","items":["Mining","Manufacture","Service"],"title_en":null,"title_es":null},{"line":9778,"id":"x5","title":"new group","items":[],"title_en":null,"title_es":null}],"machine_count":984,"load_bearing":120},
+};
+
+// Spanish mirror — the /vocaby skill's `--deep-json` es values plus editable overrides.
+const es = {}; // app → slot → es text (alongside vocab[app][slot][labeler] Default)
+let esOn = false;
+let deepOn = false;
+let sqlOn = false;
+function toggleES(){ esOn=!esOn; render(); updateExport(); const b=document.getElementById("esToggle"); if(b)b.textContent=esOn?"✓ Spanish on":"+ Add Spanish"; }
+function toggleDeep(){ deepOn=!deepOn; render(); updateExport(); const b=document.getElementById("deepToggle"); if(b){ b.textContent=deepOn?"✦ Deep labels on":"✦ Deep labels"; b.classList.toggle("on",deepOn); } renderDeep(); }
+function toggleAbout(){ const v=document.getElementById("vtitle"), about=document.getElementById("about"); if(!v||!about)return; const open=about.style.display!=="none"; about.style.display=open?"none":"block"; v.classList.toggle("open",!open); }
+function toggleSQL(){ sqlOn=!sqlOn; renderDeep(); const b=document.getElementById("sqlToggle"); if(b){ b.textContent=sqlOn?"▤ libsql fields on":"▤ libsql fields"; b.classList.toggle("on",sqlOn); } }
+function deepEsFor(app,enText){
+  const d=DEEP[app]; if(!d||!enText)return "";
+  const want=(enText||"").trim();
+  const hit=(d.display||[]).find(x=>x.es && x.en && x.en.trim()===want);
+  if(hit) return hit.es;
+  for(const v of Object.values(d.i18n||{})){ if(v.en && v.en.trim()===want && v.es) return v.es; }
+  return "";
+}
+function esCell(app,s){
+  es[app]||(es[app]={});
+  const v=es[app][s];
+  if(v!=null) return v;
+  const def=(vocab[app]&&vocab[app][s]&&vocab[app][s].Default)||"";
+  return deepEsFor(app,def);
+}
+
+// ===== render ===============================================================
+function esc(s){return (s||"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m]));}
+function appSection(app){
+  vocab[app]||(vocab[app]={});
+  let rows=rowList(app);
+  if(sqlOn) rows=rows.filter(r=>slotPersist(app,r.s));
+  let n=1, html=`<div class='appsec'><h2>${esc(app)}</h2>`
+    +`<div class='legend'><span class='lg'><b>${rows.length}</b> slots</span>`
+    +`<span class='lg'><b>${LABELERS.length}</b> wizy</span>`
+    +(esOn?`<span class='lg'>+es</span>`:"")
+    +(sqlOn?`<span class='lg'>▤ ${rows.filter(r=>slotPersist(app,r.s)).length} persist</span>`:"")
+    +(nvOn(app)?`<span class='lg'>navs ${shippedTiers(app).length}</span>`:"")+`</div>`
+    +`<div class='apvt'>`
+    +`<label class='vtog'><input type='checkbox' ${wzOn(app)?"checked":""} onchange='toggleAppView("${esc(app)}","wizys",this.checked)'> Wizys</label>`
+    +`<label class='vtog'><input type='checkbox' ${nvOn(app)?"checked":""} onchange='toggleAppView("${esc(app)}","navs",this.checked)'> Navs</label>`
+    +`</div><div class='wrap'><table>`;
+  html+="<thead><tr><th class='corner tier'>slot \\ labeler</th>";
+  LABELERS.forEach(l=> html+=`<th class='${l==="Default"?"gb":""}'>${esc(l)}</th>`);
+  if(esOn) html+=`<th class='gb'>Spanish</th>`;
+  html+="</tr></thead><tbody>";
+  const persistRows=sqlOn;
+  if(nvOn(app)){
+    const has=shippedTiers(app);
+    html+=`<tr class='navhead'><td class='tier' colspan='${LABELERS.length+1+(esOn?1:0)}'>Tiers shipped: `;
+    NAV_TIERS.forEach(t=> html+=`<label class='tchip ${has.includes(t)?"on":""}'><input type='checkbox' data-app='${esc(app)}' data-tier='${t}' ${has.includes(t)?"checked":""} onchange='toggleTier(this)'>${esc(t)}</label>`);
+    html+=`</td></tr>`;
+  }
+  let curTier=null;
+  rows.forEach(r=>{
+    if(r.tier!==curTier){ curTier=r.tier;
+      if(r.tier) html+=`<tr class='navgroup'><td class='tier' colspan='${LABELERS.length+1+(esOn?1:0)}'>`
+        +`<span class='navtag'>${esc(r.tier)}</span> — extra fields `
+        +`<button class='navadd' onclick='addNavSlot("${esc(app)}","${esc(r.tier)}")'>+ add</button></td></tr>`;
+    }
+    const ps=persistRows?slotPersist(app,r.s):false;
+    const d=vocab[app][r.s]||(vocab[app][r.s]={});
+    html+=`<tr class='${r.tier?"nav-row":(ps?"persist-row":"slot-row")}'><td class='tier'>${esc(r.s)}${ps?` <span class='lvl'>▤</span>`:""}</td>`;
+    LABELERS.forEach(l=>{ const v=d[l]||"";
+      html+=`<td class='${v?"":"empty"}'><span class='num'>${app}.V${n}</span>`
+          +`<div class='cell' contenteditable data-app='${esc(app)}' data-slot='${esc(r.s)}' data-lab='${esc(l)}'>${esc(v)}</div></td>`; n++; });
+    if(esOn){ const v=esCell(app,r.s);
+      html+=`<td class='${v?"":"empty"}'><span class='num'>${app}.E${n}</span>`
+          +`<div class='cell' contenteditable data-app='${esc(app)}' data-slot='${esc(r.s)}' data-es='1'>${esc(v)}</div></td>`; n++; }
+    html+="</tr>";
+    if(wzOn(app)){
+      WIZARDS.forEach(([w,icon])=>{
+        const v=(wizys[app]&&wizys[app][r.s]&&wizys[app][r.s][w])||"";
+        html+=`<tr class='wizrow'><td class='tier wiz'>${icon} <span class='wizname'>${esc(w)}</span></td>`
+            +`<td colspan='${LABELERS.length+(esOn?1:0)}'><span class='num'>${app}.V${n}</span>`
+            +`<div class='cell cell-wiz' contenteditable data-app='${esc(app)}' data-slot='${esc(r.s)}' data-wiz='${w}'>${esc(v)}</div></td></tr>`;
+        n++;
+      });
+    }
+  });
+  return html+"</tbody></table></div></div>";
+}
+function render(){
+  const list=document.getElementById("appList");
+  list.innerHTML=[...sel].map(appSection).join("");
+  list.querySelectorAll(".cell").forEach(el=>el.addEventListener("input",e=>{
+    const a=e.target.dataset.app, s=e.target.dataset.slot; if(!a||!s)return;
+    if(e.target.dataset.wiz){
+      wizys[a]||(wizys[a]={}); wizys[a][s]||(wizys[a][s]={});
+      wizys[a][s][e.target.dataset.wiz]=e.target.innerText.trim();
+    }else if(e.target.dataset.es){
+      es[a]||(es[a]={}); es[a][s]=e.target.innerText.trim();
+      e.target.parentElement.classList.toggle("empty",!e.target.innerText.trim());
+    }else{
+      const vd=vocab[a]; if(!vd||!vd[s])return;
+      vd[s][e.target.dataset.lab]=e.target.innerText.trim();
+      e.target.parentElement.classList.toggle("empty",!e.target.innerText.trim());
+    }
+  }));
+  document.querySelectorAll("#chips .chip").forEach(c=>c.classList.toggle("on",c.dataset.app==="all"?sel.size===APPS.length:sel.has(c.dataset.app)));
+  renderDeep();
+}
+function toggleAppView(app,name,on){ if(name==="wizys")wz[app]=on; else nv[app]=on; render(); updateExport(); }
+function toggleTier(cb){
+  const app=cb.dataset.app, t=cb.dataset.tier, cur=(appTiers[app]||[]).slice();
+  if(cb.checked){ if(!cur.includes(t))cur.push(t); } else { const i=cur.indexOf(t); if(i>=0)cur.splice(i,1); }
+  appTiers[app]=cur;
+  render(); updateExport();
+}
+function buildChips(){
+  let html="<button class='chip all' data-app='all' onclick='toggleApp(\"all\")'>All</button>";
+  APPS.forEach(a=> html+=`<button class='chip' data-app='${esc(a)}' onclick='toggleApp("${esc(a)}")'>${esc(a)}</button>`);
+  document.getElementById("chips").innerHTML=html;
+}
+function toggleApp(a){
+  if(a==="all"){ sel.size===APPS.length ? sel.clear() : APPS.forEach(x=>sel.add(x)); }
+  else sel.has(a) ? sel.delete(a) : sel.add(a);
+  render(); updateExport();
+}
+function curApp(){ return sel.size===1?[...sel][0]:null; }
+
+// ===== adders ===============================================================
+function addWizy(){
+  const v=prompt("New wizard (icon + name, e.g. 🙂 mood)?",""); if(!v)return;
+  const m=v.trim().match(/^(\S+)\s+(.+)$/);
+  WIZARDS.push(m?[m[2],m[1]]:[v,"✦"]);
+  render(); updateExport();
+}
+function addNavSlot(app,t){
+  const v=prompt("New "+app+" "+t+" slot?",""); if(!v)return;
+  navSlots[app]||(navSlots[app]={}); navSlots[app][t]||(navSlots[app][t]=[]);
+  if(!navSlots[app][t].includes(v)) navSlots[app][t].push(v);
+  vocab[app]||(vocab[app]={}); vocab[app][v]||(vocab[app][v]={});
+  render(); updateExport();
+}
+
+// ===== Deep-labels renderer =================================================
+const deepEdits = {};   // app → fieldKey → {en,es} overrides typed in the deep view
+function deepVal(app,key,lang,fallback){ return (deepEdits[app]&&deepEdits[app][key]&&deepEdits[app][key][lang]!=null)?deepEdits[app][key][lang]:(fallback||""); }
+function deepKey(kind,attr,en){ return kind==="attr"?("attr:"+(attr||"")):("disp:"+(en||"")); }
+function deepPersist(app){
+  const d=DEEP[app]; if(!d)return 0;
+  let n=Object.keys(d.i18n||{}).length;
+  (d.display||[]).forEach(s=>{ if(s.kind==="attr" && /data-(aria|label|ph)|aria-label|placeholder|title/.test(s.attr||"")) n++; });
+  return n;
+}
+function persistSet(app){
+  const d=DEEP[app]; if(!d)return null;
+  const set=new Set();
+  Object.keys(d.i18n||{}).forEach(k=>set.add(k));
+  Object.values(d.i18n||{}).forEach(v=>{ if(v&&v.en)set.add(v.en.trim()); });
+  (d.display||[]).forEach(s=>{ if(s.kind==="attr" && s.en && /data-(aria|label|ph)|aria-label|placeholder|title/.test(s.attr||"")) set.add(s.en.trim()); });
+  return set;
+}
+function slotPersist(app,s){
+  const ps=persistSet(app); if(!ps)return false;
+  if(ps.has(s)) return true;
+  const def=(vocab[app]&&vocab[app][s]&&vocab[app][s].Default)||"";
+  const defT=def.trim();
+  if(ps.has(defT)) return true;
+  if(defT && defT.split("·").some(t=>ps.has(t.trim()))) return true;
+  return false;
+}
+function deepRows(app){
+  const d=DEEP[app];
+  if(!d) return `<div class='appsec'><h2>${esc(app)} <span class='lvl'>no deep extract yet — run /vocaby or extract_vocab.py --deep-json to populate</span></h2><p class='sub'>The curated slot grid above is the UI copy. Deep labels add the internal, translatable fields.</p></div>`;
+  const db=(d.data_blocks||d.data||[]);
+  let out=`<div class='appsec'><h2>${esc(app)} <span class='lvl'>deep · ${(d.display||[]).length} display strings · ${Object.keys(d.i18n||{}).length} i18n keys · ${d.machine_count||d.mc||0} machine terms (${d.load_bearing||d.lb||0} nav-risk)${sqlOn?` · <b>▤ libsql</b> ${deepPersist(d)} persist fields`:""}</span></h2>`;
+  const ik=Object.entries(d.i18n||{}).filter(([k])=>!sqlOn || true);
+  if(ik.length){
+    const mark=sqlOn?` <span class='lvl'>▤</span>`:"";
+    out+=`<div class='wrap'><table><thead><tr><th class='corner tier'>i18n key</th><th>English</th><th>Spanish</th></tr></thead><tbody>`;
+    ik.forEach(([k,v])=>{
+      const key="i18n:"+k;
+      const en=deepVal(app,key,"en",v&&v.en), es=deepVal(app,key,"es",v&&v.es);
+      out+=`<tr class='slot-row'><td class='tier'><code>${esc(k)}</code>${mark}</td>`
+        +`<td class='${en?"":"empty"}'><div class='cell' data-df='${esc(app)}|${esc(key)}|en' contenteditable>${esc(en)}</div></td>`
+        +`<td class='${es?"":"empty"}'><div class='cell' data-df='${esc(app)}|${esc(key)}|es' contenteditable>${esc(es)}</div></td></tr>`;
+    });
+    out+=`</tbody></table></div>`;
+  }
+  const disp=(d.display||[]).slice();
+  if(disp.length){
+    out+=`<div class='wrap'><table><thead><tr><th class='corner tier'>field</th><th>English</th><th>Spanish</th></tr></thead><tbody>`;
+    disp.forEach(s=>{
+      const persist=(s.kind==="attr" && /data-(aria|label|ph)|aria-label|placeholder|title/.test(s.attr||""));
+      if(sqlOn && !persist) return;
+      const key=deepKey(s.kind,s.attr,s.en);
+      const en=deepVal(app,key,"en",s.en), es=deepVal(app,key,"es",s.es);
+      const sign=persist?` <span class='lvl'>▤</span>`:"";
+      const label=(s.kind==="attr"?`<span class='wizname'>attr</span> ${esc(s.attr||"")}`:esc((s.en||"").slice(0,60)))+sign;
+      out+=`<tr class='slot-row'><td class='tier'>${label}</td>`
+        +`<td class='${en?"":"empty"}'><div class='cell' data-df='${esc(app)}|${esc(key)}|en' contenteditable>${esc(en)}</div></td>`
+        +`<td class='${es?"":"empty"}'><div class='cell' data-df='${esc(app)}|${esc(key)}|es' contenteditable>${esc(es)}</div></td></tr>`;
+    });
+    out+=`</tbody></table></div>`;
+  }
+  const deckOn=!sqlOn;   // decks only in unfiltered view
+  if(deckOn && db.length){
+    out+=`<div class='wrap'><table><thead><tr><th class='corner tier'>deck</th><th>Items</th></tr></thead><tbody>`;
+    db.forEach(b=>{
+      const title=b.title_en||b.title||"";
+      const es=b.title_es||b.es||"";
+      out+=`<tr class='slot-row'><td class='tier'>${esc(title)}${es?` <span class='lvl'>es · ${esc(es)}</span>`:""}</td>`
+        +`<td>${esc((b.items||[]).join(" · "))}</td></tr>`;
+    });
+    out+=`</tbody></table></div>`;
+  }
+  out+="</div>";
+  return out;
+}
+function renderDeep(){
+  const wrap=document.getElementById("deepView"), list=document.getElementById("deepList");
+  if(!deepOn){ if(wrap)wrap.style.display="none"; return; }
+  if(wrap)wrap.style.display="block";
+  list.innerHTML=[...sel].map(deepRows).join("")||"<p class='sub'>pick apps above.</p>";
+  list.querySelectorAll(".cell[data-df]").forEach(el=>el.addEventListener("input",e=>{
+    const t=e.target, parts=t.dataset.df.split("|"); if(parts.length!==3)return;
+    const app=parts[0], key=parts[1], lang=parts[2];
+    deepEdits[app]||(deepEdits[app]={}); deepEdits[app][key]||(deepEdits[app][key]={});
+    deepEdits[app][key][lang]=t.innerText.trim();
+    t.parentElement.classList.toggle("empty",!t.innerText.trim());
+  }));
+}
+function vocabLines(app){
+  vocab[app]||(vocab[app]={});
+  const rows=rowList(app);
+  let n=1,out=[];
+  rows.forEach(r=>{ const vd=vocab[app][r.s]; if(!vd)return;
+    LABELERS.forEach(l=>{ const v=vd[l]||""; if(v) out.push(`${app}.V${n}: [${r.s} · ${l}] ${v}`); n++; });
+    if(wzOn(app)) WIZARDS.forEach(([w])=>{ const v=(wizys[app]&&wizys[app][r.s]&&wizys[app][r.s][w])||""; if(v) out.push(`${app}.V${n}: [${r.s} · wizard-${w}] ${v}`); n++; });
+  });
+  return `# ${app} — vocabulary\n\n`+out.join("\n");
+}
+function allVocabLines(){ const out=[];
+  [...sel].forEach(a=>{ const t=vocabLines(a); if(t.split("\n").slice(2).some(Boolean)) out.push(t); });
+  return out.join("\n\n"); }
+function updateExport(){ const t=document.getElementById("promptArea");
+  const single=curApp();
+  t.value=single?vocabLines(single):allVocabLines(); flash("ok","✓ export updated"); }
+function flash(id,m){const e=document.getElementById(id);e.textContent=m;setTimeout(()=>e.textContent="",1800);}
+function copyForClaude(){const t=document.getElementById("promptArea").value.trim();
+  if(!t){flash("ok","press Update first");return;}
+  navigator.clipboard.writeText(t).then(()=>flash("ok","✓ copied — paste into chat"));}
+function appVocab(app){
+  vocab[app]||(vocab[app]={});
+  const rows=rowList(app), voc={};
+  rows.forEach(r=>{ const vd=vocab[app][r.s]; if(!vd)return; const o={};
+    LABELERS.forEach(l=>{ if(vd[l]) o[l]=vd[l]; });
+    if(wzOn(app)) WIZARDS.forEach(([w])=>{ const v=(wizys[app]&&wizys[app][r.s]&&wizys[app][r.s][w])||""; if(v) o["wizard-"+w]=v; });
+    if(Object.keys(o).length){
+      if(r.tier){ voc[r.tier]||(voc[r.tier]={}); voc[r.tier][r.s]=o; }
+      else voc[r.s]=o;
+    }
+  });
+  return voc;
+}
+function downloadJSON(){
+  const single=curApp();
+  const data=single
+    ? {app:single, vocabulary:appVocab(single)}
+    : {apps:Object.fromEntries([...sel].filter(a=>Object.keys(appVocab(a)).length).map(a=>[a,appVocab(a)]))};
+  const b=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=(single?single:(sel.size===APPS.length?"flove-vocab-all":"flove-vocab-multi"))+"-vocab.json";a.click();flash("ok","✓ JSON downloaded");}
+function downloadCSV(){
+  const single=curApp(), rows=single?[["tier","slot","labeler","value"]]:[["app","tier","slot","labeler","value"]];
+  (single?[single]:[...sel]).forEach(a=>{ rowList(a).forEach(r=>{
+    const vd=vocab[a][r.s]; if(!vd)return;
+    const tier=r.tier||"mini";
+    LABELERS.forEach(l=>{ const v=vd[l]; if(!v)return; if(single) rows.push([tier,r.s,l,v]); else rows.push([a,tier,r.s,l,v]); });
+    if(wzOn(a)) WIZARDS.forEach(([w])=>{ const v=(wizys[a]&&wizys[a][r.s]&&wizys[a][r.s][w])||""; if(!v)return;
+      if(single) rows.push([tier,r.s,w,v]); else rows.push([a,tier,r.s,w,v]); });
+  }); });
+  const csv=rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(",")).join("\n");
+  const b=new Blob([csv],{type:"text/csv"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=(single?single:(sel.size===APPS.length?"flove-vocab-all":"flove-vocab-multi"))+"-vocab.csv";a.click();flash("ok","✓ CSV downloaded");}
+
+buildChips(); render(); updateExport();
+</script>
+</body>
+</html>

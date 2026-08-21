@@ -1,0 +1,31 @@
+- [Overview (read-me-first)](/overview.md)
+- [Design contract (agents)](/AGENTS.md)
+- [Dev principles (Worthing yardstick)](/principles.md)
+- [Backend plan (deep spec)](/backend.md)
+- [Coordinate system](/coordinates.md)
+- [Puzzy engine](/puzzy.md)
+- [Oasis (0asis adaptation)](/debates/bridges/oasis.md)
+- [Worldview](/worldview.md)
+- [Vocabulary matrix · interactive tool](/flove-vocaby.html ':ignore')
+- [Standards tour (HTML)](/standards-tour.html ':ignore')
+
+- **standards**
+  - [Standards — readme](/README.md)
+  - [Design contract](/contract.md)
+  - [Frontend standards](/frontend/frontend.md)
+  - [Adoption](/adoption.md)
+  - [· Vocabulary](/frontend/vocabulary.md)
+  - [· Counters](/frontend/counters.md)
+  - [· Tiers](/frontend/tiers.md)
+  - [· Publish](/frontend/publish.md)
+  - [· Summary](/frontend/summary.md)
+  - [· Export](/frontend/export.md)
+
+- **debates**
+  - [Plans](/debates/plans/index.md)
+  - [Proposals](/debates/proposals.md)
+  - [Pendings](/debates/pendings.md)
+  - [Questy standards](/debates/standards.md)
+
+- **solo**
+  - [Solo status & distro](/solo/README.md)

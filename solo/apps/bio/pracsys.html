@@ -1,0 +1,3107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PracSys · FLOVE</title>
+<meta name="description" content="Lay the eleven biological systems onto the board, give each row a reason, then thread immune subsystems across the body.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><g fill='none' stroke='%234dd0e1' stroke-linecap='round' stroke-linejoin='round'><circle cx='32' cy='16' r='5.5' stroke-width='3.4'/><line x1='32' y1='22' x2='32' y2='42' stroke-width='3.4'/><line x1='32' y1='27' x2='17' y2='33' stroke-width='2.2'/><line x1='32' y1='27' x2='47' y2='33' stroke-width='2.2'/><line x1='32' y1='42' x2='23' y2='54' stroke-width='2.2'/><line x1='32' y1='42' x2='41' y2='54' stroke-width='2.2'/></g><circle cx='17' cy='33' r='3' fill='%234dd0e1'/><circle cx='47' cy='33' r='3' fill='%23ff8a65'/><circle cx='23' cy='54' r='3' fill='%23ff8a65'/><circle cx='41' cy='54' r='3' fill='%234dd0e1'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:          #0b0c10;
+    --panel:       #111319;
+    --ink:         #e6eef8;
+    --ink-dim:     #a9b4c3;
+    --accent:      #4dd0e1;
+    --accent-deep: #2ba5b5;
+    --accent-2:    #ff8a65;
+    --nerve:       #b388ff;   /* nervous subsystems (right) */
+    --immune:      #69f0ae;   /* immune subsystems (left)  */
+    --line:        rgba(255,255,255,.20);
+    --faint:       rgba(255,255,255,.12);
+    --chip:        #1a1f2b;
+    --chip-border: #2a3142;
+    --chip-placed: #0b1221;
+    --success:     #00c853;
+    --font-ui:     'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --radius:      14px;
+    --radius-sm:   10px;
+    --radius-pill: 999px;
+    --fast:        .15s cubic-bezier(.2,.8,.2,1);
+  }
+  *{ box-sizing:border-box }
+  html, body{ height:100%; }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:15px/1.45 var(--font-ui);
+  }
+
+  /* ── topbar (flove-bar) ─────────────────────────────────────── */
+  .flove-bar{
+    position:relative; z-index:32;
+    display:flex; align-items:center; gap:12px;
+    padding:10px 16px;
+    background:linear-gradient(180deg, rgba(255,255,255,.02), transparent);
+  }
+
+  /* ── Layers mark: lives inside the central placeholder while placing ─────
+     Twice the earlier size, animated (strata write in, gentle breathe), and it
+     fades out the moment a card is dropped into the centre spine. */
+  .slot.centre-spine .layers-mark{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    opacity:0; pointer-events:none; z-index:1;
+    transition:opacity .5s ease, transform .5s ease;
+  }
+  .slot.centre-spine .layers-mark svg{ width:min(88px, 92%); height:auto; overflow:visible; display:block; }
+  body.placing .slot.centre-spine:not(.filled) .layers-mark{ opacity:.9; }
+  @media (prefers-reduced-motion:no-preference){
+    .layers-mark svg{ animation:lm-breathe 3.8s ease-in-out infinite; transform-origin:center; }
+    .layers-mark .lm-strata line{ stroke-dasharray:30; animation:lm-draw 4.2s ease-in-out infinite; }
+    .layers-mark .lm-core{ animation:lm-core 3s ease-in-out infinite; }
+  }
+  @keyframes lm-breathe{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.06); } }
+  @keyframes lm-draw{ 0%{ stroke-dashoffset:30; } 55%,100%{ stroke-dashoffset:0; } }
+  @keyframes lm-core{ 0%,100%{ opacity:.7; } 50%{ opacity:1; } }
+
+  /* ── Entrance choreography ──────────────────────────────────────────────
+     Plays on every load (body.intro-play, set in the markup and re-armed on
+     Reset). All offsets are from load. Motion-safe only: reduced-motion shows
+     the assembled app immediately. Overlays (title, splash) are inert otherwise. */
+  .intro-splash{
+    position:fixed; top:0; bottom:0; left:0; width:44vw;
+    pointer-events:none; z-index:60; opacity:0; will-change:transform,opacity;
+    background:linear-gradient(90deg, transparent,
+      rgba(77,208,225,.10) 34%, rgba(255,138,101,.15) 54%,
+      rgba(105,240,174,.10) 72%, transparent);
+    filter:blur(2px); mix-blend-mode:screen;
+  }
+  @media (prefers-reduced-motion:no-preference){
+    /* site logo: in from the start — fades in (1s), swells to ×2 by 2s, lands at 3s */
+    body.intro-play .flove-bar .flove-mark{ animation:logo-land 3s ease-out              0s backwards; }
+    /* PracSys title fades in upwards as the logo lands (3s), over 3s */
+    body.intro-play .flove-app-name,
+    body.intro-play .brand-caret { animation:intro-name  3s ease-out                      3s backwards; }
+    body.intro-play .deck-col    { animation:intro-cards  5s cubic-bezier(.15,.8,.25,1)   7s backwards; }
+    body.intro-play .intro-splash{ animation:intro-splash 5s ease-in-out                 12s backwards; }
+    body.intro-play #boardGrid .slot{ animation:intro-borders 5s ease-out                15s backwards; }
+    body.intro-play #progress    { animation:intro-fade  1s ease                         25s backwards; }
+    /* centre logo: appears 3s in (fades in over 3s), enters ×5 and halves every 5s */
+    body.intro-play .centre-spine:not(.filled) .layers-mark{
+      animation:lm-appear 3s ease 3s backwards, lm-shrink 30s ease-in-out 3s backwards; }
+  }
+  @keyframes intro-fade{ from{ opacity:0; } to{ opacity:1; } }
+  @keyframes logo-land{
+    0%{ opacity:0; transform:scale(1); } 33%{ opacity:1; transform:scale(1.4); }
+    66%{ opacity:1; transform:scale(2); } 100%{ opacity:1; transform:scale(1); } }
+  @keyframes intro-name{ from{ opacity:0; transform:translateY(20px); }  to{ opacity:1; transform:none; } }
+  @keyframes lm-appear{ from{ opacity:0; } to{ opacity:.9; } }
+  @keyframes lm-shrink{
+    0%{ transform:scale(5); } 33%{ transform:scale(2.5); }
+    66%{ transform:scale(1.25); } 100%{ transform:scale(1); } }
+  @keyframes intro-cards { 0%{ opacity:0; transform:translateX(-72px); } 60%{ opacity:1; } 100%{ opacity:1; transform:none; } }
+  @keyframes intro-splash{
+    0%{ opacity:0; transform:translateX(-46vw); }
+    12%{ opacity:1; } 88%{ opacity:1; }
+    100%{ opacity:0; transform:translateX(106vw); } }
+  @keyframes intro-borders{
+    0%{ border-color:transparent; box-shadow:0 0 0 0 rgba(77,208,225,0); }
+    60%{ border-color:var(--accent); box-shadow:0 0 0 2px rgba(77,208,225,.4), 0 0 16px rgba(77,208,225,.34); }
+    100%{ border-color:var(--faint); box-shadow:0 0 0 0 rgba(77,208,225,0); } }
+  .flove-bar .flove-mark{ width:1.6em; height:1.6em; filter:drop-shadow(0 0 6px rgba(77,208,225,.35)); }
+  .flove-bar .flove-app-name{ font-family:var(--font-ui); font-weight:700; font-size:1.15rem; letter-spacing:.01em; }
+  /* PracSys wordmark: the two halves carry the mark's two hues */
+  .flove-app-name .wm-prac{ color:var(--accent); }
+  .flove-app-name .wm-sys { color:var(--accent-2); }
+  .flove-bar .flove-spacer{ flex:1 1 auto }
+  .flove-bar .flove-home,
+  .flove-bar .about-btn{
+    color:var(--ink-dim); text-decoration:none;
+    font-size:.85rem; font-weight:600;
+    padding:6px 12px; border-radius:var(--radius-pill);
+    border:1px solid var(--line); background:transparent; cursor:pointer;
+    font-family:inherit; transition:all var(--fast);
+  }
+  .flove-bar .flove-home:hover,
+  .flove-bar .about-btn:hover{ color:var(--accent); border-color:var(--accent) }
+  body:has(#about-toggle:checked) .flove-bar .about-btn{ color:#001018; background:var(--accent); border-color:var(--accent); }
+
+  .about-ctl{ position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+
+  /* ── brand-as-menu: the logo + title open the app menu on click ── */
+  .flove-brand{
+    display:inline-flex; align-items:center; gap:10px; cursor:pointer;
+    padding:2px 6px; margin:-2px -4px; border-radius:var(--radius-sm);
+    transition:background var(--fast);
+  }
+  .flove-brand:hover{ background:rgba(255,255,255,.05); }
+  .flove-brand:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .flove-brand .brand-caret{ font-size:.7rem; color:var(--ink-dim); transition:transform var(--fast), color var(--fast); }
+  body:has(#menu-toggle:checked) .flove-brand .brand-caret{ transform:rotate(180deg); color:var(--accent); }
+
+  /* below the flove-bar (z-index 32) so the menu inside the bar stays clickable,
+     yet above the page content so an outside click closes the menu */
+  .menu-backdrop{ position:fixed; inset:0; z-index:29; background:transparent; display:none; cursor:default; }
+  body:has(#menu-toggle:checked) .menu-backdrop{ display:block; }
+  .flove-menu{
+    position:absolute; top:calc(100% - 4px); left:12px; z-index:34;
+    display:flex; flex-direction:column; gap:4px; min-width:160px;
+    padding:8px; border-radius:var(--radius-sm);
+    background:var(--panel); border:1px solid var(--line);
+    box-shadow:0 12px 32px rgba(0,0,0,.45);
+    opacity:0; pointer-events:none; transform:translateY(-6px);
+    transition:opacity var(--fast), transform var(--fast);
+  }
+  body:has(#menu-toggle:checked) .flove-menu{ opacity:1; pointer-events:auto; transform:translateY(0); }
+  /* menu items read as a stacked list, not the old in-bar pills */
+  .flove-menu .about-btn,
+  .flove-menu .flove-home{
+    display:block; width:100%; text-align:left;
+    border:1px solid transparent; border-radius:var(--radius-sm); padding:8px 12px;
+  }
+  .flove-menu .about-btn:hover,
+  .flove-menu .flove-home:hover{ color:var(--accent); background:rgba(255,255,255,.05); border-color:transparent; }
+
+  /* ── progress bar (stages + steps of the game) ──────────────── */
+  .progress{ display:flex; align-items:center; gap:8px; margin-left:6px; }
+  .prog-sep{ color:var(--ink-dim); font-size:.8rem; opacity:.6; }
+  .prog-step{ display:flex; flex-direction:column; gap:3px; min-width:92px; }
+  .prog-step .lab{
+    display:flex; justify-content:space-between; gap:8px;
+    font:600 .6rem/1 var(--font-ui); letter-spacing:.07em; text-transform:uppercase; color:var(--ink-dim);
+  }
+  .prog-step .lab .ct{ color:var(--ink); font-weight:700; }
+  .prog-step .meter{ height:5px; border-radius:var(--radius-pill); background:rgba(255,255,255,.12); overflow:hidden; }
+  .prog-step .meter i{ display:block; height:100%; width:0; border-radius:var(--radius-pill); background:var(--accent); transition:width .25s cubic-bezier(.2,.8,.2,1); }
+  .prog-step.sub .meter i{ background:var(--nerve); }
+  .prog-step.done .meter i{ background:var(--success); }
+  .prog-step.done .lab,
+  .prog-step.done .lab .ct{ color:var(--success); }
+
+  /* ── About panel ─────────────────────────────────────────────── */
+  .about-backdrop{ position:fixed; inset:0; z-index:30; background:rgba(0,0,0,.35); display:none; cursor:default; }
+  body:has(#about-toggle:checked) .about-backdrop{ display:block }
+  .about-panel{
+    position:fixed; top:54px; left:50%;
+    transform:translateX(-50%) translateY(-8px);
+    width:min(640px, calc(100% - 24px));
+    max-height:calc(100vh - 80px); overflow:auto; z-index:31;
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:var(--radius); box-shadow:0 12px 32px rgba(0,0,0,.45);
+    padding:18px 22px; opacity:0; pointer-events:none;
+    transition:opacity var(--fast), transform var(--fast);
+  }
+  body:has(#about-toggle:checked) .about-panel{ opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0); }
+  .about-panel h1{ margin:0 0 .35rem; font-size:1.1rem; font-weight:700; color:var(--ink); letter-spacing:.01em; }
+  .about-panel .subtitle{ margin:0 0 .6rem; color:var(--ink-dim); font-size:.9rem; line-height:1.55; }
+  .about-panel ol{ margin:.4rem 0 0; padding-left:1.2rem; color:var(--ink-dim); font-size:.86rem; line-height:1.6; }
+  .about-panel ol b{ color:var(--ink); font-weight:600; }
+
+  /* ── layout: deck · board (subsystems now live inside the board) ── */
+  .layout{
+    position:relative;
+    display:grid;
+    grid-template-columns:200px 1fr;
+    gap:16px; align-items:stretch;
+    max-width:1280px; margin:0 auto; padding:18px 16px 60px;
+  }
+  .panel{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:12px; }
+
+  /* ── systems deck (left) ────────────────────────────────────── */
+  .deck-col{ grid-column:1; display:flex; flex-direction:column; justify-content:center; }
+  .deck-toggle{
+    display:flex; align-items:center; justify-content:center; gap:.45rem;
+    width:100%; padding:14px 12px; cursor:pointer;
+    background:linear-gradient(155deg, #15212b, #0e1620);
+    border:1px solid var(--accent-deep); border-radius:var(--radius);
+    color:var(--ink); font:700 .95rem/1.1 var(--font-ui); letter-spacing:.02em;
+    box-shadow:0 6px 18px rgba(0,0,0,.4);
+    transition:border-color var(--fast), transform var(--fast), filter var(--fast);
+  }
+  .deck-toggle:hover{ border-color:var(--accent); filter:brightness(1.08); transform:translateY(-1px); }
+  .deck-toggle:focus-visible{ outline:2px solid var(--accent); outline-offset:2px }
+  .deck-toggle .caret{ transition:transform var(--fast); color:var(--accent); }
+  body.deck-open .deck-toggle .caret{ transform:rotate(90deg); }
+  .deck-count{ font-size:.7rem; color:var(--ink-dim); font-weight:600; }
+
+  /* collapsed by default — the single Systems card is the only thing shown */
+  body.deck-open .deck-toggle{ display:none; }
+
+  /* re-collapse handle is hidden — the deck stays open once fanned */
+  .deck-caret{ display:none !important; }
+
+  /* the open fan: 5 up · 1 centre · 5 down — fills the column height of the others */
+  .deck{ display:none; }
+  body.deck-open .deck{ display:flex; flex-direction:column; gap:10px; flex:1 1 auto; min-height:0; }
+  .deck-up, .deck-mid, .deck-down{ display:contents; }
+  /* system cards grow to share the column height (so the fan fits the board) */
+  .deck .card{ flex:1 1 0; min-height:30px; padding-top:0; padding-bottom:0; }
+  /* the card that stays where the Systems card sat */
+  .deck .card.is-anchor{ border-color:var(--accent); box-shadow:0 0 0 1px var(--accent-deep) inset; }
+
+  /* a system card — used in the deck and inside slots */
+  .card{
+    display:flex; align-items:center; gap:.5rem;
+    padding:9px 12px; cursor:grab; user-select:none;
+    background:var(--chip); border:1px solid var(--chip-border);
+    border-radius:var(--radius-sm); color:var(--ink);
+    font:600 .85rem/1.15 var(--font-ui);
+    transition:transform .08s ease, border-color var(--fast), background var(--fast), box-shadow var(--fast);
+  }
+  .card .lbl{ white-space:nowrap; }
+  .card:hover{ border-color:var(--accent); }
+  .card:active{ transform:scale(.97); cursor:grabbing; }
+  .card.is-dragging{ opacity:.5; outline:2px dashed var(--accent); }
+  .card:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  /* ── board (center) ─────────────────────────────────────────── */
+  .board{ grid-column:2; display:flex; flex-direction:column; align-items:center; gap:10px; }
+  /* 5 horizontal rows × 3 columns: left slot · middle (reason, +centre slot) · right slot */
+  .board-grid{
+    display:grid;
+    grid-template-columns:96px minmax(220px,300px) 96px;
+    grid-template-rows:repeat(5, minmax(92px, auto));   /* explicit rows so the spine can span 1 / -1 */
+    justify-content:center; align-items:center;
+    column-gap:28px; row-gap:14px;
+  }
+  /* middle cell of each row: holds this pair's reason, floating over the centre spine */
+  .mid-cell{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:8px; width:100%; min-height:92px;
+    position:relative; z-index:2; pointer-events:none;   /* clicks fall through to the spine */
+  }
+  .mid-cell .reasons{ pointer-events:auto; }
+
+  /* the centre (6th) card is a distinct full-height spine down the middle, title vertical */
+  .slot.centre-spine{
+    width:84px; height:auto; min-height:100%; align-self:stretch; z-index:0;
+    justify-self:center;
+    /* no highlight while empty — reads like the other dashed placeholders */
+    background:transparent;
+  }
+  .slot.centre-spine.filled{
+    border-color:transparent; background:transparent; box-shadow:none;   /* borderless like the others */
+  }
+  .slot.centre-spine .card{ justify-content:center; }
+  .slot.centre-spine .card .lbl{
+    writing-mode:vertical-rl; text-orientation:mixed;
+    white-space:nowrap; letter-spacing:.12em; font-size:1rem; font-weight:700;
+  }
+
+  .slot{
+    position:relative;
+    width:96px; height:92px;             /* portrait — vertical placeholders */
+    display:flex; align-items:center; justify-content:center;
+    border:2px dashed var(--faint); border-radius:var(--radius-sm);
+    background:transparent;              /* no background in the square */
+    transition:border-color var(--fast), background var(--fast);
+  }
+  .slot::after{ content:none; }          /* no placeholder numbers */
+  .slot.filled{ border-color:transparent; background:transparent; }   /* placed systems read borderless */
+  .slot.over{ border-color:var(--accent); background:rgba(77,208,225,.10); }
+  .slot.sub-ok{ border-color:var(--accent); box-shadow:0 0 0 2px rgba(77,208,225,.25) inset; }
+  .slot.sub-no{ border-color:var(--accent-2); }
+  /* a reason smiley clicked → its pair of systems blows up ×3 (growing outward,
+     away from the middle) while that reason field is open */
+  .slot.pair-zoom{ z-index:14; }
+  .slot.pair-zoom .card{ transform:scale(3); transition:transform var(--fast); }
+  .slot.pair-zoom:not(.col-right) .card{ transform-origin:right center; }
+  .slot.pair-zoom.col-right .card{ transform-origin:left center; }
+  .slot .card{
+    width:100%; height:100%; cursor:pointer;
+    flex-direction:column; gap:.35rem; justify-content:center; text-align:center; padding:6px;
+    background:transparent; border-color:transparent;   /* cards read as transparent, text centred */
+  }
+  .slot .card:hover{ border-color:var(--accent); }
+  .slot .card .lbl{ white-space:normal; line-height:1.1; font-size:.8rem; }
+  /* the system icon rides on the deck chips, not on the placed cards */
+  .card-ico{ font-size:2rem; line-height:1; }     /* emoji ×2 (deck chips) */
+  .slot .card .card-ico{ display:none; }
+
+  /* system marks — inline SVG in the pracsys logo language (a/c/g/p → the
+     app's own accent · accent-2 · immune · nerve vars). Sized in em so they
+     track whatever font-size the host chip/square sets. */
+  .sys-ico{ width:1.05em; height:1.05em; display:inline-block; vertical-align:-.14em; overflow:visible; }
+  .sys-ico .ns{ fill:none; stroke-linecap:round; stroke-linejoin:round; stroke-width:3; }
+  .sys-ico .t{ stroke-width:1.7; }
+  .sys-ico .a{ stroke:var(--accent); }   .sys-ico .c{ stroke:var(--accent-2); }
+  .sys-ico .g{ stroke:var(--immune); }   .sys-ico .p{ stroke:var(--nerve); }
+  .sys-ico .fa{ fill:var(--accent); }    .sys-ico .fc{ fill:var(--accent-2); }
+  .sys-ico .fg{ fill:var(--immune); }    .sys-ico .fp{ fill:var(--nerve); }
+  .sys-ico .fs{ fill:color-mix(in srgb, var(--accent) 55%, #fff); }
+  /* subsystem mark rides on the fan card, left of the label */
+  .sub-ico{ display:inline-flex; flex:0 0 auto; }
+  .sub-card .sys-ico{ width:1.4em; height:1.4em; }
+
+
+  /* subsystem badges stacked on a slot */
+  .slot .subbadges{ position:absolute; top:-9px; left:50%; transform:translateX(-50%); display:flex; gap:4px; }
+  .subbadge{
+    font:700 .6rem/1 var(--font-ui); padding:3px 6px; border-radius:var(--radius-pill);
+    cursor:pointer; border:1px solid; white-space:nowrap;
+  }
+  .subbadge.immune{ background:rgba(105,240,174,.16); border-color:var(--immune); color:var(--immune); }
+
+  /* ── reasons in the middle column, aligned to a complete left+right pair ── */
+  .reasons{ display:none; flex-direction:column; gap:6px; align-items:center; width:100%; margin:0; }
+  .reasons.show{ display:flex; }
+  /* stage-4 reasons live in the middle column as plain chips + a "+" (no smiley) */
+  .reasons.reasons-mid{ gap:5px; }
+  .mid-reason{
+    display:inline-flex; align-items:center; gap:6px; max-width:100%;
+    padding:5px 10px; border-radius:var(--radius-pill); cursor:pointer;
+    background:#0f1622; border:1px solid var(--chip-border); border-left:3px solid var(--accent);
+    color:var(--ink); font:600 .78rem/1.25 var(--font-ui);
+  }
+  .mid-reason:hover{ border-color:var(--accent); }
+  .mid-reason .t{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px; }
+  .mid-reason .x{ border:0; background:transparent; color:var(--ink-dim); cursor:pointer; font-size:.8rem; line-height:1; padding:0; }
+  .mid-reason .x:hover{ color:var(--accent-2); }
+  .mid-reason-add{
+    width:28px; height:28px; border-radius:50%; display:grid; place-items:center;
+    border:1px dashed var(--accent-deep); background:#0f1320; color:var(--accent);
+    font:700 1.2rem/1 var(--font-ui); cursor:pointer;
+  }
+  .mid-reason-add:hover{ border-style:solid; border-color:var(--accent); }
+  /* the smiley toggle — the reason field stays collapsed behind it by default */
+  .reason-flag{
+    width:48px; height:48px; border-radius:50%; display:grid; place-items:center;
+    background:#0f1320; border:1px solid var(--line); cursor:pointer;
+    font:400 2.1rem/1 var(--font-ui); padding:0;                /* emoji ×2 */
+    transition:border-color var(--fast), transform var(--fast);
+  }
+  /* the centre flag is now a smiley like the others (same size) */
+  .reason-flag:hover{ border-color:var(--accent); transform:translateY(-1px); }
+  .reason-flag.has{ border-color:var(--success); }
+  .reason-flag:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  /* the reasons host floats above the zoomed pair so the smiley/composer stay usable */
+  .reasons.show{ position:relative; z-index:21; }
+  .reason-saved{
+    display:flex; align-items:center; gap:.5rem;
+    width:100%; padding:7px 10px;
+    background:#0f1622; border:1px solid var(--chip-border);
+    border-left:3px solid var(--accent); border-radius:var(--radius-sm);
+    color:var(--ink); font-size:.82rem;
+  }
+  .reason-saved .txt{ flex:1; }
+  .reason-saved .del{
+    border:0; background:transparent; color:var(--ink-dim); cursor:pointer;
+    font-size:1rem; line-height:1; padding:2px 4px; border-radius:6px;
+  }
+  .reason-saved .del:hover{ color:var(--accent-2); background:rgba(255,138,101,.12); }
+  .reason-composer{
+    display:flex; align-items:center; gap:6px;
+    width:100%;
+  }
+  .reason-composer input{
+    flex:1; min-width:0; text-align:center;
+    padding:8px 12px; border-radius:var(--radius-pill);
+    background:#0d1018; border:1px solid var(--line); color:var(--ink);
+    font:500 .85rem/1 var(--font-ui);
+  }
+  .reason-composer input::placeholder{ color:var(--ink-dim); }
+  .reason-composer input:focus{ outline:2px solid var(--accent); outline-offset:0; border-color:transparent; }
+  .icon-btn{
+    flex:0 0 auto; width:34px; height:34px; display:grid; place-items:center;
+    border:1px solid var(--line); background:#0f1320; color:var(--ink);
+    border-radius:50%; cursor:pointer; font-size:.95rem;
+    transition:border-color var(--fast), color var(--fast), filter var(--fast);
+  }
+  .icon-btn:hover{ border-color:var(--accent); color:var(--accent); }
+  .icon-btn:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .icon-btn.rec{ border-color:var(--accent-2); color:var(--accent-2); animation:pulse 1s infinite; }
+  @keyframes pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(255,138,101,.4) } 50%{ box-shadow:0 0 0 6px rgba(255,138,101,0) } }
+  .icon-btn.save{ border-color:var(--success); color:var(--success); }
+
+  /* ── parent highlight: Immune becomes clickable once all placed ── */
+  .slot.is-parent{ cursor:pointer; }
+  .slot.parent-immune{
+    border-color:var(--immune);
+    box-shadow:0 0 0 2px rgba(105,240,174,.45), 0 0 14px rgba(105,240,174,.35);
+    animation:glow-im 1.8s ease-in-out infinite;
+  }
+  @keyframes glow-im{ 0%,100%{ box-shadow:0 0 0 2px rgba(105,240,174,.45), 0 0 10px rgba(105,240,174,.3) } 50%{ box-shadow:0 0 0 2px rgba(105,240,174,.65), 0 0 18px rgba(105,240,174,.5) } }
+
+  /* once a parent is checked (its fan opened), drop the highlight entirely */
+  .slot.parent-open{ animation:none; filter:none; }
+  .slot.parent-immune.parent-open{ box-shadow:none; border-color:transparent; }
+
+  /* ── subsystem chips: the fan anchors to its PARENT slot, by the parent's
+        column — left column → fan right · right column → fan left · centre → fan above ── */
+  .sub-flow{ display:none; }      /* legacy bottom dock — now just parks closed lists */
+  .sub-col{ display:none; flex-direction:column; gap:6px; }
+  .sub-col.show{ display:flex; }
+  .sub-col .sub-card{ padding:5px 10px; font-size:.76rem; white-space:nowrap; }
+  .slot > .sub-col{ position:absolute; z-index:7; }
+  .slot > .sub-col.dir-right{ left:calc(100% + 10px); top:0;  align-items:flex-start; }
+  .slot > .sub-col.dir-left { right:calc(100% + 10px); top:0;  align-items:flex-end;   }
+  .slot > .sub-col.dir-above{ bottom:calc(100% + 10px); left:50%; transform:translateX(-50%); align-items:center; }
+
+  /* ── verb editor: the field opens where the + is (lower edge of the card) ── */
+  /* the + and saved verbs only appear in stage 3 (after the verbs Next) */
+  .verb-add{
+    display:none;
+    position:absolute; bottom:-15px; left:50%; transform:translateX(-50%); z-index:4;
+    width:30px; height:30px; padding:0; border-radius:50%; place-items:center;   /* 30% larger again */
+    border:1px solid var(--accent-deep); background:var(--panel); color:var(--accent);
+    font:700 1.4rem/1 var(--font-ui); cursor:pointer;
+  }
+  body.show-verbs .slot.filled .verb-add{ display:grid; }
+  body.show-verbs .slot.filled.verb-open .verb-add{ display:none; }
+  .verb-add:hover{ border-color:var(--accent); filter:brightness(1.1); }
+  .verb-edit{ display:none; position:absolute; bottom:4px; left:5px; right:5px; z-index:5; }
+  body.show-verbs .slot.verb-open .verb-edit{ display:block; }
+  .verb-edit input{
+    width:100%; text-align:center; padding:4px 6px; border-radius:6px;
+    background:#0d1018; border:1px solid var(--accent); color:var(--ink);
+    font:500 .68rem/1.1 var(--font-ui);
+  }
+  .verb-edit input:focus{ outline:none; }
+  .verb-save{
+    display:none; position:absolute; bottom:3px; left:calc(100% + 6px); z-index:6;
+    width:26px; height:26px; padding:0; border-radius:50%; place-items:center;
+    border:1px solid var(--success); background:var(--panel); color:var(--success);
+    font-size:.8rem; cursor:pointer;
+  }
+  body.show-verbs .slot.verb-open .verb-save{ display:grid; }
+  .verb-save:hover{ filter:brightness(1.15); }
+
+  /* saved verbs sit just ABOVE the + button (which straddles the card's lower edge),
+     borderless and 50% larger */
+  .verb-list{
+    display:none;
+    position:absolute; left:5px; right:5px; bottom:18px; z-index:6;
+    flex-wrap:wrap; gap:3px; justify-content:center; align-items:center;
+  }
+  body.show-verbs .slot .verb-list{ display:flex; }
+  /* once expanded, the one-verb summary hides — the full list takes over */
+  body.show-verbs .slot.verbs-expanded .verb-list{ display:none; }
+  .verb-chip{
+    font:600 .84rem/1.2 var(--font-ui); padding:0; border-radius:0;
+    background:transparent; border:0; color:var(--accent);
+    max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .verb-more{
+    font:700 .72rem/1 var(--font-ui); width:16px; height:16px; padding:0; border-radius:50%;
+    display:grid; place-items:center;
+    background:var(--accent); border:1px solid var(--accent); color:#001018; cursor:pointer;
+  }
+  .verb-collapse{
+    align-self:center; margin-bottom:2px; padding:2px 8px; border-radius:var(--radius-pill);
+    font:700 .58rem/1 var(--font-ui); letter-spacing:.04em;
+    background:transparent; border:1px solid var(--line); color:var(--ink-dim); cursor:pointer;
+  }
+  .verb-collapse:hover{ border-color:var(--accent); color:var(--accent); }
+  .verb-all{
+    display:none; position:absolute; top:calc(100% + 6px); left:50%; transform:translateX(-50%); z-index:8;
+    min-width:96px; max-width:160px; padding:6px; border-radius:var(--radius-sm);
+    background:var(--panel); border:1px solid var(--chip-border); box-shadow:0 8px 20px rgba(0,0,0,.45);
+    flex-direction:column; gap:4px;
+  }
+  body.show-verbs .slot.verbs-expanded .verb-all{ display:flex; }
+  .verb-all .verb-row{
+    display:flex; align-items:center; gap:6px; justify-content:space-between;
+    font:500 .68rem/1.2 var(--font-ui); color:var(--ink);
+  }
+  .verb-all .verb-row .del{ border:0; background:transparent; color:var(--ink-dim); cursor:pointer; font-size:.85rem; }
+  .verb-all .verb-row .del:hover{ color:var(--accent-2); }
+  /* verb / reason chips are click-to-edit; the expanded rows get an edit (✎) button */
+  .verb-chip{ cursor:pointer; }
+  .verb-all .verb-row .vedit{
+    border:0; background:transparent; color:var(--ink-dim); cursor:pointer; font-size:.8rem;
+  }
+  .verb-all .verb-row .vedit:hover{ color:var(--accent); }
+
+  /* right-column placed cards show the system icon on the card itself
+     (it overwrites the otherwise-hidden card icon) */
+  body.show-emojis .slot.col-right .card .card-ico{ display:block; font-size:2.4rem; }  /* emoji ×2 */
+  /* a second click on the centre emoji hides the right-column system icons */
+  body.hide-right-icons .slot.col-right .card .card-ico{ display:none !important; }
+  /* the verbs section never shows the right-column system icons */
+  body.show-verbs .slot.col-right .card .card-ico{ display:none !important; }
+
+  .sub-card{
+    display:flex; align-items:center; gap:.45rem;
+    padding:8px 11px; cursor:pointer; user-select:none;
+    border-radius:var(--radius-sm); border:1px solid;
+    font:600 .82rem/1.1 var(--font-ui);
+    transition:transform .08s ease, filter var(--fast), box-shadow var(--fast);
+  }
+  .sub-card:active{ transform:scale(.97); }
+  .sub-card.immune{ background:rgba(105,240,174,.09); border-color:var(--immune); color:#d6ffe9; }
+  .sub-card.is-armed{ box-shadow:0 0 0 2px currentColor; filter:brightness(1.15); }
+  .sub-card.is-placed{ opacity:.4; }
+  .sub-card.is-dragging{ opacity:.5; outline:2px dashed currentColor; }
+
+  /* ── connector lines overlay ────────────────────────────────── */
+  .links{ position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:5; }
+  .links line{ stroke-width:2; }
+  .links .lbl-bg{ fill:var(--bg); opacity:.85; }
+  .links text{ font:700 1.24rem/1 var(--font-ui); }   /* line titles ×2 */
+
+  /* floating composer when a connector line's title is clicked: reason above · verb below */
+  .link-panel{
+    position:fixed; z-index:40; display:none; flex-direction:column; gap:6px;
+    width:240px; transform:translate(-50%, -50%);
+    padding:10px; border-radius:var(--radius); background:var(--panel);
+    border:1px solid var(--line); box-shadow:0 12px 32px rgba(0,0,0,.5);
+  }
+  .link-panel.show{ display:flex; }
+  .link-panel .lp-label{ text-align:center; font:700 .8rem/1 var(--font-ui); }
+  .link-panel .lp-row{ display:flex; gap:6px; }
+  .link-panel input{
+    flex:1; min-width:0; padding:7px 10px; border-radius:var(--radius-pill);
+    background:#0d1018; border:1px solid var(--line); color:var(--ink); font:500 .82rem/1 var(--font-ui);
+  }
+  .link-panel input:focus{ outline:2px solid var(--accent); outline-offset:0; }
+  .link-panel .lp-saved{ display:flex; flex-wrap:wrap; gap:5px; justify-content:center; font-size:.74rem; color:var(--ink-dim); }
+  .link-panel .lp-saved:empty{ display:none; }
+  .lp-chip{
+    display:inline-flex; align-items:center; gap:3px;
+    padding:3px 4px 3px 9px; border-radius:var(--radius-pill);
+    background:#0d1018; border:1px solid var(--chip-border); color:var(--ink);
+    font:500 .74rem/1 var(--font-ui);
+  }
+  .lp-chip-del{
+    border:0; background:transparent; color:var(--ink-dim); cursor:pointer;
+    font-size:.78rem; line-height:1; padding:0 2px; border-radius:50%;
+  }
+  .lp-chip-del:hover{ color:var(--accent-2); }
+  .link-panel .lp-unthread{
+    align-self:center; margin-top:2px; border:0; background:transparent; color:var(--accent-2);
+    cursor:pointer; font:600 .72rem/1 var(--font-ui);
+  }
+
+  /* a copy of the centre emoji shown below its reason field (confluence view) */
+  .centre-echo{ display:grid; place-items:center; font-size:2.1rem; line-height:1; margin-top:2px; }
+
+  /* ── next-stage gate button ─────────────────────────────────── */
+  .next-btn{
+    display:none; margin-top:18px;
+    padding:14px 34px; cursor:pointer; border-radius:var(--radius-pill);
+    border:1px solid var(--accent); color:#001018;
+    background:linear-gradient(150deg, var(--accent), var(--accent-deep));
+    font:700 1rem/1 var(--font-ui); letter-spacing:.02em;
+    box-shadow:0 8px 22px rgba(77,208,225,.35);
+    animation:nextpulse 1.8s ease-in-out infinite;
+    transition:transform var(--fast), filter var(--fast);
+  }
+  .next-btn.show{ display:inline-block; }
+  .next-btn:hover{ transform:translateY(-1px); filter:brightness(1.06); }
+  /* Check / Polarities — shown once all subsystems are placed, in the nav row.
+     Colourless until active (pressed); only then does the violet fill in. */
+  .check-btn{ display:none; margin:0; animation:none;
+    padding:8px 16px; border-radius:var(--radius-pill);
+    border:1px solid var(--nerve); background:transparent; color:var(--nerve);
+    font:700 .82rem/1 var(--font-ui); cursor:pointer;
+    transition:background var(--fast), color var(--fast), box-shadow var(--fast); }
+  .check-btn.show{ display:inline-flex; align-items:center; }
+  .check-btn:hover{ filter:brightness(1.08); }
+  .check-btn[aria-pressed="true"]{ color:#0b0712;
+    background:linear-gradient(150deg, var(--nerve), #7d5fff);
+    box-shadow:0 0 0 2px var(--nerve), 0 8px 22px rgba(179,136,255,.45); }
+
+  /* ── Pair-stage logo marks: the Spine sits over the button by default; the
+        second click ("Remove Polarities") swaps in the Pair mark 20% bigger,
+        grows the button 20%, and blooms a glow behind — a rising exaggeration. */
+  .check-wrap{ display:none; }
+  .check-wrap.show{ display:inline-flex; flex-direction:column; align-items:center;
+    gap:10px; position:relative; }
+  .check-wrap .check-btn{ transition:transform var(--fast), background var(--fast),
+    color var(--fast), box-shadow var(--fast); }
+  /* the Pair icon IS the button; button + icon grow 50% each click, then the
+     cycle's last click resets to normal (Pair 1× → Polarities 1.5× → Remove 2.25×). */
+  .check-wrap .check-btn{ padding:9px; border-radius:50%; line-height:0;
+    transform-origin:center bottom; }
+  .check-mark{ display:block; width:26px; height:26px; overflow:visible; }
+  #board.checking:not(.show-polarities) .check-wrap .check-btn{ transform:scale(1.5); }
+  #board.show-polarities .check-wrap .check-btn{ transform:scale(2.25); }
+  #board.show-polarities .check-wrap::before{ content:""; position:absolute;
+    inset:-16px -26px; z-index:-1; border-radius:50%;
+    background:radial-gradient(closest-side, rgba(179,136,255,.30), transparent 72%);
+    animation:polGlow 2.6s ease-in-out infinite; }
+
+  /* shared mark palette — matches the pracsys logo study + favicon */
+  .pmk .p-str{ fill:none; stroke:var(--accent); stroke-linecap:round;
+    stroke-linejoin:round; stroke-width:3; }
+  .pmk .p-thin{ stroke-width:1.7; }
+  .pmk .p-cor{ stroke:var(--accent-2); }
+  .pmk .n-a{ fill:var(--accent); }
+  .pmk .n-c{ fill:var(--accent-2); }
+  .pmk .n-s{ fill:#bdeef5; }
+  .eleven-mark{ display:block; width:46px; height:46px; margin:0 auto 12px;
+    overflow:visible; transform-origin:50% 50%; }
+
+  @keyframes pair-beat { 0%,100%{ opacity:.4 } 50%{ opacity:1 } }
+  @keyframes ring-spin { to{ transform:rotate(360deg) } }
+  @keyframes polGlow   { 0%,100%{ opacity:.5; transform:scale(1) } 50%{ opacity:1; transform:scale(1.12) } }
+  @media (prefers-reduced-motion:no-preference){
+    .mk-pair .n-a{ animation:pair-beat 2.6s ease-in-out infinite; }
+    .mk-pair .n-c{ animation:pair-beat 2.6s ease-in-out infinite; animation-delay:1.3s; }
+    .mk-eleven{ animation:ring-spin 16s linear infinite; }
+  }
+
+  /* ── Check: confluence wave (lists-sizes) across the 5 rows + double-loop centre ── */
+  @keyframes confWave-mid  { 0%,100%{ transform:scale(1.5)  } 50%{ transform:scale(1) } }
+  @keyframes confWave-flank{ 0%,100%{ transform:scale(1.25) } 50%{ transform:scale(1) } }
+  @keyframes confWave-edge { 0%,100%{ transform:scale(1)    } 40%,60%{ transform:scale(1.5) } }
+  @keyframes dloop { 0%,100%{ transform:scale(1) } 25%{ transform:scale(.78) } 50%{ transform:scale(1.18) } 75%{ transform:scale(.88) } }
+  .checking .slot:not(.centre-spine){ transform-origin:center center; }
+  /* #boardGrid in the selector so these outrank the entrance rule
+     `body.intro-play #boardGrid .slot{ animation:intro-borders }` (line ~89),
+     which carries an ID and would otherwise permanently win the cascade and
+     freeze the wave (only the centre .card escaped, via its own dloop). */
+  .checking #boardGrid .slot:not(.centre-spine)[data-row="0"],
+  .checking #boardGrid .slot:not(.centre-spine)[data-row="4"]{ animation:confWave-edge 7s ease-in-out infinite; z-index:1; }
+  .checking #boardGrid .slot:not(.centre-spine)[data-row="1"],
+  .checking #boardGrid .slot:not(.centre-spine)[data-row="3"]{ animation:confWave-flank 7s ease-in-out infinite; z-index:2; }
+  .checking #boardGrid .slot:not(.centre-spine)[data-row="2"]{ animation:confWave-mid 7s ease-in-out infinite; z-index:3; }
+  .checking .slot.centre-spine .card{ transform-origin:center center; animation:dloop 3.2s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce){
+    .checking .slot, .checking .slot.centre-spine .card{ animation:none !important; }
+  }
+
+  /* ── Polarities: both groupings shown at once (centre excluded) ──
+     g1 (left vs right) = background tint progressing toward the centre boundary;
+     g2 (first 3 left + first 2 right vs the rest) = inset outline colour. */
+  .show-polarities .slot[data-g1="L"]{ background:linear-gradient(90deg, rgba(255,150,90,.30), rgba(255,150,90,.04)); border-color:transparent; }
+  .show-polarities .slot[data-g1="R"]{ background:linear-gradient(90deg, rgba(90,170,255,.04), rgba(90,170,255,.30)); border-color:transparent; }
+  .show-polarities .slot[data-g2="A"]{ box-shadow:inset 0 0 0 3px var(--immune); }
+  .show-polarities .slot[data-g2="B"]{ box-shadow:inset 0 0 0 3px var(--nerve); }
+  .show-polarities .slot.centre-spine{ background:transparent; box-shadow:none; }
+  @keyframes nextpulse{ 0%,100%{ box-shadow:0 8px 22px rgba(77,208,225,.3) } 50%{ box-shadow:0 8px 30px rgba(77,208,225,.55) } }
+
+  /* stage-4 toggle: show/hide the verb + icons across all cards */
+  .verb-toggle{
+    display:none; align-items:center; gap:.45rem; margin:16px auto 0;
+    padding:8px 16px; cursor:pointer; border-radius:var(--radius-pill);
+    border:1px solid var(--accent-deep); background:#0f1320; color:var(--accent);
+    font:700 .82rem/1 var(--font-ui);
+    transition:border-color var(--fast), filter var(--fast);
+  }
+  .verb-toggle.show{ display:inline-flex; }
+  .stage-nav .verb-toggle{ margin:0; }          /* sit inline in the nav row, after Back */
+  /* row of the SubImmune arrow-hide toggle, above the Back row */
+  .sub-toggle-row{ display:none; gap:12px; justify-content:center; margin-top:14px; }
+  .sub-toggle-row.show{ display:flex; }
+  .sub-toggle-row .verb-toggle{ display:inline-flex; margin:0; }
+  .verb-toggle[aria-pressed="true"]{ background:var(--accent); color:#001018; border-color:var(--accent); }
+  .verb-toggle:hover{ border-color:var(--accent); filter:brightness(1.08); }
+  .verb-toggle .tplus{
+    width:21px; height:21px; display:grid; place-items:center; border-radius:50%;
+    border:1px solid var(--accent-deep); font-size:1rem; line-height:1;
+  }
+
+  /* Back / Next nav for the middle stages */
+  .stage-nav{ display:none; gap:12px; justify-content:center; margin-top:16px; }
+  .stage-nav.show{ display:flex; }
+  .stage-btn{
+    padding:10px 22px; cursor:pointer; border-radius:var(--radius-pill);
+    font:700 .9rem/1 var(--font-ui); border:1px solid; background:transparent;
+    transition:transform var(--fast), filter var(--fast), background var(--fast);
+  }
+  .stage-btn:hover{ transform:translateY(-1px); }
+  .stage-btn.back{ border-color:var(--line); color:var(--ink-dim); }
+  .stage-btn.back:hover{ border-color:var(--ink); color:var(--ink); }
+  .stage-btn.next{ border-color:var(--accent); color:#001018; background:var(--accent); }
+  .stage-btn.next:hover{ filter:brightness(1.07); }
+  .stage-btn.next[hidden]{ display:none; }
+
+  /* ── toast ──────────────────────────────────────────────────── */
+  .toast{
+    position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(10px);
+    background:#0f1622; border:1px solid var(--line); color:var(--ink);
+    padding:10px 16px; border-radius:var(--radius-pill);
+    font:600 .82rem/1 var(--font-ui); z-index:50;
+    opacity:0; pointer-events:none; transition:opacity var(--fast), transform var(--fast);
+  }
+  .toast.is-on{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ── Back buttons for the first slide (Clear board) and the Check/Polarities
+        sub-view — both styled as quiet "← Back" pills like the stage-nav one ── */
+  .stage-clear{
+    display:none; margin-top:10px;
+    padding:8px 20px; cursor:pointer; border-radius:var(--radius-pill);
+    border:1px solid var(--line); background:transparent; color:var(--ink-dim);
+    font:700 .85rem/1 var(--font-ui);
+    transition:border-color var(--fast), color var(--fast);
+  }
+  .stage-clear.show{ display:inline-block; }
+  .stage-clear:hover{ border-color:var(--ink); color:var(--ink); }
+
+  /* ── Complete · summary section + action bar (souls-style §13.9 surface) ── */
+  .summary-section{
+    display:none; margin-top:22px; width:min(680px, 100%);
+    flex-direction:column; gap:16px; position:relative; overflow:hidden;
+    padding:26px 26px 22px; border:1px solid rgba(255,255,255,.14); border-radius:22px;
+    background:
+      radial-gradient(420px 200px at 12% -20%, rgba(77,208,225,.16), transparent),
+      radial-gradient(420px 200px at 110% 0%, rgba(179,136,255,.14), transparent),
+      radial-gradient(360px 220px at 50% 130%, rgba(105,240,174,.10), transparent),
+      linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015)), var(--panel);
+    box-shadow:0 26px 70px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
+    animation:rise .4s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .summary-section.show{ display:flex; }
+  /* a thin tri-colour seam along the top edge */
+  .summary-section::before{
+    content:''; position:absolute; inset:0 0 auto 0; height:3px;
+    background:linear-gradient(90deg, var(--accent), var(--nerve) 50%, var(--immune));
+    opacity:.85;
+  }
+  @keyframes rise{ from{ opacity:0; transform:translateY(10px) } to{ opacity:1; transform:none } }
+  .summary-head{ display:flex; flex-direction:column; align-items:center; gap:4px; text-align:center; }
+  .summary-glyph{ width:46px; height:46px; filter:drop-shadow(0 0 12px rgba(77,208,225,.4)); }
+  .summary-title{
+    margin:0; font:700 1.7rem/1.1 Georgia, 'Times New Roman', serif; letter-spacing:-.01em;
+    background:linear-gradient(120deg, var(--accent), var(--nerve) 50%, var(--immune));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .summary-sub{ margin:0; color:var(--ink-dim); font:400 .85rem/1.4 var(--font-ui); }
+
+  /* §13.9 title row: [Reset] — ✦ Summary — [Update] */
+  .summary-head .title-row{
+    display:flex; align-items:center; justify-content:center; gap:14px;
+    flex-wrap:wrap; width:100%;
+  }
+  .summary-head .title-row .summary-title{ order:1; }
+  .reset-wrap--title{ order:0; }
+  .update-wrap--title{ order:2; }
+  .reset-wrap--title, .update-wrap--title{
+    display:inline-flex; flex-direction:column; align-items:center; gap:2px;
+  }
+  .reset-hint, .update-hint{ font:400 .66rem/1.2 var(--font-ui); color:var(--ink-dim); }
+  /* Update relocated to the foot of the action bar; Reset gets its own row below */
+  .action-row--foot{ justify-content:center; gap:28px; margin-top:8px;
+    padding-top:12px; border-top:1px solid var(--line); }
+  .action-row--reset{ justify-content:center; margin-top:4px; }
+  .action-row--foot .reset-wrap, .action-row--foot .update-wrap,
+  .action-row--reset .reset-wrap{
+    display:inline-flex; flex-direction:column; align-items:center; gap:2px;
+  }
+  /* the re-derive / fresh-start buttons reuse the .sum-btn skin */
+  .update-btn, .reset-btn{ position:relative; }
+  /* "out of date" dot — hidden until an already-saved item is re-edited in-session */
+  .stale-dot{
+    display:inline-block; width:8px; height:8px; margin-left:3px; border-radius:50%;
+    background:var(--accent-2, #ff8a65); box-shadow:0 0 6px var(--accent-2, #ff8a65);
+    vertical-align:middle; animation:stalePulse 1.6s ease-in-out infinite;
+  }
+  .stale-dot[hidden]{ display:none; }
+  @keyframes stalePulse{ 0%,100%{ opacity:1 } 50%{ opacity:.35 } }
+
+  /* the styled, rendered resume — grouped cards with coloured chips */
+  .summary-render{ display:flex; flex-direction:column; gap:16px; }
+  .sum-group h3{
+    display:flex; align-items:center; gap:.45rem; margin:0 0 7px;
+    font:800 .66rem/1 var(--font-ui); letter-spacing:.2em; text-transform:uppercase; color:var(--g);
+  }
+  .sum-item{
+    display:flex; flex-wrap:wrap; align-items:center; gap:5px 10px;
+    padding:10px 14px; margin-bottom:7px; border-radius:13px;
+    background:linear-gradient(100deg, color-mix(in srgb, var(--g) 15%, transparent), transparent);
+    border-left:3px solid var(--g);
+  }
+  .sum-item:last-child{ margin-bottom:0; }
+  .sum-ttl{ font:700 .9rem/1.25 var(--font-ui); color:var(--ink); margin-right:auto; }
+  .sum-chips{ display:flex; flex-wrap:wrap; gap:5px; }
+  .sum-chip{
+    font:600 .72rem/1 var(--font-ui); padding:4px 10px; border-radius:var(--radius-pill);
+    background:color-mix(in srgb, var(--g) 16%, #0d1018); color:var(--ink);
+    border:1px solid color-mix(in srgb, var(--g) 38%, transparent);
+  }
+  .sum-empty{ text-align:center; color:var(--ink-dim); margin:4px 0; }
+
+  /* the systems laid out in their board square, with reasons/verbs/arrows below each */
+  .sum-board{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px 12px; align-items:start; }
+  .sum-gridcell{ min-width:0; }
+  .sum-cell{ display:flex; flex-direction:column; align-items:center; gap:2px; }
+  /* placed cards read borderless — no background, so the verbs sit right under them */
+  .sum-sq{
+    width:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+    padding:2px 0; border:0; background:none;
+  }
+  .sq-ico{ font-size:1.6rem; line-height:1; }
+  /* on-screen summary hides the system emoji — they return only in the HTML export */
+  #summaryRender .sq-ico{ display:none; }
+  .sq-lbl{ font:700 .8rem/1.05 var(--font-ui); color:var(--ink); text-align:center; }
+  .sum-sq.centre .sq-lbl{ color:var(--accent-2); }
+  .sum-meta{ display:flex; flex-direction:column; gap:3px; width:100%; align-items:center; text-align:center; }
+  .sm-line{ font:600 .66rem/1.3 var(--font-ui); max-width:100%; word-break:break-word; }
+  .sm-verb{ color:var(--nerve); }
+  .sm-arrow{ color:var(--immune); }
+  /* the pair's reason, centred in the middle column between its two systems */
+  .sum-mid{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; height:100%; }
+  .sum-midreason{ font:600 .72rem/1.35 var(--font-ui); color:var(--accent); text-align:center; max-width:100%; word-break:break-word; }
+  @media (max-width:560px){
+    .sum-board{ grid-template-columns:1fr 1fr; }
+    .sum-board .sum-gridcell{ grid-column:auto !important; grid-row:auto !important; }
+  }
+
+  .summary-text{
+    margin:0; max-height:340px; overflow:auto; white-space:pre-wrap; word-break:break-word;
+    padding:12px 14px; border-radius:var(--radius-sm);
+    background:#0d1018; border:1px solid var(--chip-border); border-left:3px solid var(--nerve);
+    color:#e9ddff; font:500 .85rem/1.55 var(--font-ui); font-style:italic;
+  }
+  .summary-text[hidden]{ display:none; }
+
+  /* insight panel — the cycling reads of the body */
+  .insight-panel{
+    margin:0; padding:12px 14px; border-radius:var(--radius-sm);
+    background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--accent-2);
+    color:var(--ink-dim); font:500 .85rem/1.6 var(--font-ui);
+    animation:rise .3s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .insight-panel[hidden]{ display:none; }
+  .insight-panel p{ margin:0 0 .5rem; } .insight-panel p:last-child{ margin:0; }
+  .insight-panel em{ color:var(--accent); font-style:normal; }
+  .insight-panel strong{ color:var(--ink); font-weight:700; }
+  .insight-panel h4{ margin:0 0 .4rem; font:700 .66rem/1 var(--font-ui); letter-spacing:.16em; text-transform:uppercase; color:var(--accent-2); }
+
+  /* action bar — two rows of pill buttons + open-one cycle rows */
+  .result-actions{ display:flex; flex-direction:column; gap:8px; }
+  .action-row{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .action-row--right{ justify-content:flex-end; }
+  .sum-btn{
+    appearance:none; cursor:pointer; display:inline-flex; align-items:center; gap:.4rem;
+    padding:8px 14px; border-radius:var(--radius-pill);
+    border:1px solid var(--line); background:#0f1320; color:var(--ink);
+    font:600 .82rem/1 var(--font-ui);
+    transition:border-color var(--fast), color var(--fast), background var(--fast), filter var(--fast);
+  }
+  .sum-btn:hover{ border-color:var(--accent); color:var(--accent); }
+  .sum-btn:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .sum-btn:active{ transform:scale(.98); }
+  .cycle-wrap{ display:inline-flex; flex-direction:column; align-items:flex-end; gap:6px; }
+  .cycle-row{ display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; }
+  .cycle-row[hidden]{ display:none; }
+  .cycle-row .sum-btn{ padding:6px 11px; font-size:.76rem; }
+  .cycle-trigger[aria-expanded="true"]{ background:rgba(77,208,225,.14); border-color:var(--accent); color:var(--accent); }
+  /* magic toggle swaps its label and tints rose-violet when on */
+  .magic-btn-summary .label-on{ display:none; }
+  .magic-btn-summary[aria-pressed="true"] .label-off{ display:none; }
+  .magic-btn-summary[aria-pressed="true"] .label-on{ display:inline; }
+  .magic-btn-summary[aria-pressed="true"]{ background:rgba(179,136,255,.14); border-color:var(--nerve); color:var(--nerve); }
+  .pub-platform{ display:flex; align-items:center; gap:.4rem; }
+  .pub-platform input[type="checkbox"]{ accent-color:var(--accent); }
+  .pub-add{ display:flex; gap:6px; margin-top:4px; }
+  .pub-add input{
+    flex:1; min-width:0; padding:6px 10px; border-radius:var(--radius-pill);
+    background:#0d1018; border:1px solid var(--line); color:var(--ink); font:500 .76rem/1 var(--font-ui);
+  }
+  .pub-add input:focus{ outline:2px solid var(--accent); outline-offset:0; }
+
+  /* ── Complete · related flove apps (keys-style panel + intro overlay) ── */
+  .related-btn{
+    display:none; margin-top:16px;
+    padding:10px 24px; cursor:pointer; border-radius:var(--radius-pill);
+    border:1px solid var(--accent); background:#0f1320; color:var(--accent);
+    font:700 .9rem/1 var(--font-ui); letter-spacing:.02em;
+    transition:border-color var(--fast), filter var(--fast), background var(--fast), color var(--fast);
+  }
+  .related-btn.show{ display:inline-flex; align-items:center; }
+  .related-btn:hover{ filter:brightness(1.08); border-color:var(--accent); }
+  .related-btn[aria-expanded="true"]{ background:var(--accent); color:#001018; border-color:var(--accent); }
+
+  .related-panel{
+    display:none; margin-top:14px; width:min(520px, 100%);
+    flex-direction:column; align-items:center; gap:10px;
+    padding:14px 16px; border:1px dashed var(--line); border-radius:var(--radius);
+    background:linear-gradient(180deg, rgba(77,208,225,.05), transparent);
+  }
+  .related-panel.show{ display:flex; }
+  .related-row{ display:grid; gap:10px; grid-template-columns:repeat(3,minmax(0,1fr)); width:100%; }
+  .related-row[hidden]{ display:none; }
+  .related-app{
+    appearance:none; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center;
+    padding:12px 8px; border-radius:var(--radius-sm);
+    background:var(--chip); border:1px solid var(--chip-border); color:var(--ink);
+    font:600 .85rem/1 var(--font-ui);
+    transition:transform var(--fast), border-color var(--fast), color var(--fast), box-shadow var(--fast);
+  }
+  .related-app:hover{ transform:translateY(-2px); border-color:var(--accent); color:var(--accent); box-shadow:0 8px 22px rgba(0,0,0,.35); }
+  .related-app.featured{ border-top:3px solid var(--accent); padding-top:14px; }
+  .related-app .ra-icon{ font-size:1.5rem; line-height:1; }
+  .related-row-more .related-app{ flex-direction:row; padding:9px 8px; font-size:.8rem; gap:.45rem; }
+  .related-row-more .related-app .ra-icon{ font-size:1.1rem; }
+  .related-plus{
+    appearance:none; cursor:pointer; width:36px; height:36px; border-radius:50%;
+    background:var(--chip); border:1px solid var(--chip-border); color:var(--ink);
+    font:700 1.2rem/1 var(--font-ui); display:grid; place-items:center; padding:0;
+    transition:transform var(--fast), border-color var(--fast), color var(--fast);
+  }
+  .related-plus:hover{ transform:translateY(-1px); border-color:var(--accent); color:var(--accent); }
+
+  .app-intro-backdrop{
+    position:fixed; inset:0; z-index:60;
+    background:rgba(6,8,14,.6); backdrop-filter:blur(6px);
+    display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .app-intro-backdrop[hidden]{ display:none; }
+  .app-intro-card{
+    width:100%; max-width:440px; padding:24px 22px 18px; border-radius:var(--radius);
+    background:linear-gradient(180deg, rgba(77,208,225,.07), rgba(255,255,255,.02)), var(--panel);
+    border:1px solid var(--line); box-shadow:0 22px 60px rgba(0,0,0,.5); text-align:center;
+  }
+  .ai-icon{ width:54px; height:54px; display:grid; place-items:center; margin:0 auto 10px; border-radius:50%; background:rgba(77,208,225,.12); color:var(--accent); font-size:1.8rem; }
+  .ai-icon:empty{ display:none; }
+  .ai-name{ margin:0 0 .4rem; font:700 1.2rem/1.15 var(--font-ui); color:var(--ink); }
+  .ai-phrase{ margin:0 0 1rem; color:var(--ink-dim); font-size:.92rem; line-height:1.5; }
+  .ai-actions{ display:flex; gap:.6rem; justify-content:center; flex-wrap:wrap; }
+  .ai-btn{ padding:9px 20px; cursor:pointer; border-radius:var(--radius-pill); font:700 .85rem/1 var(--font-ui); border:1px solid; transition:filter var(--fast), border-color var(--fast), color var(--fast); }
+  .ai-cancel{ background:transparent; border-color:var(--line); color:var(--ink-dim); }
+  .ai-cancel:hover{ border-color:var(--ink); color:var(--ink); }
+  .ai-go{ background:linear-gradient(150deg, var(--accent), var(--accent-deep)); border-color:var(--accent); color:#001018; }
+  .ai-go:hover{ filter:brightness(1.07); }
+
+  @media (max-width:980px){
+    .layout{ grid-template-columns:1fr; }
+    .deck-col{ grid-column:1; align-self:auto; }
+    .deck{ display:flex; flex-direction:row; flex-wrap:wrap; }
+    body:not(.deck-open) .deck{ display:none; }
+    .board{ grid-column:1; }
+    .board-grid{ grid-template-columns:80px minmax(150px,1fr) 80px; column-gap:12px; row-gap:12px; }
+    .prog-step{ min-width:64px; }
+    .links{ display:none; }
+  }
+  @media (max-width:620px){
+    .progress{ display:none; }
+  }
+
+  /* ── translaty — i18n span toggle (CSS-only): hide every non-active language ── */
+  .es{display:none}                                  /* default view = .en */
+  body:has(#lang-es:checked) .en{display:none}
+  body:has(#lang-es:checked) .es{display:inline}
+
+  /* ── translaty — worldball switcher (🌐 opens the language options) ── */
+  .lang{display:inline-block;position:relative;margin:0}
+  .lang>summary{list-style:none;cursor:pointer;width:34px;height:34px;
+    border:1px solid var(--line);border-radius:50%;background:transparent;color:var(--ink-dim);
+    display:inline-flex;align-items:center;justify-content:center;font-size:1.15rem;line-height:1;-webkit-user-select:none;user-select:none;
+    transition:border-color var(--fast), color var(--fast)}
+  .lang>summary::-webkit-details-marker{display:none}
+  .lang>summary:hover{border-color:var(--accent);color:var(--accent)}
+  .lang[open]>summary{border-color:var(--accent);color:var(--accent)}
+  .lang-opts{position:absolute;left:0;z-index:35;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px;box-shadow:0 12px 32px rgba(0,0,0,.45)}
+  .lang input{position:absolute;opacity:0;pointer-events:none}
+  .lang label{cursor:pointer;padding:0 12px;min-height:34px;display:inline-flex;align-items:center;
+    border:1px solid var(--line);border-radius:11px;white-space:nowrap;color:var(--ink-dim);font:600 .82rem/1 var(--font-ui)}
+  .lang input:checked + label{background:var(--accent);color:#001018;font-weight:700;border-color:var(--accent)}
+</style>
+</head>
+<body class="intro-play">
+
+<!-- entrance overlay: a light-sweep that crosses the page as the cards land -->
+<div class="intro-splash" aria-hidden="true"></div>
+
+<input type="checkbox" id="about-toggle" class="about-ctl">
+<input type="checkbox" id="menu-toggle" class="about-ctl">
+
+<!-- ─── topbar ─────────────────────────────────────────────────── -->
+<div class="flove-bar">
+  <!-- the logo + title open the app menu (About · flove) on click -->
+  <label class="flove-brand" for="menu-toggle" role="button" tabindex="0"
+         aria-haspopup="true" aria-controls="flove-menu" title="Menu" aria-label="Menu" data-aria-en="Menu" data-aria-es="Menú">
+    <svg class="flove-mark" aria-hidden="true" viewBox="0 0 64 64">
+      <g fill="none" stroke="#4dd0e1" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="32" cy="16" r="5.5" stroke-width="3"/>
+        <line x1="32" y1="22" x2="32" y2="42" stroke-width="3"/>
+        <line x1="32" y1="27" x2="17" y2="33" stroke-width="1.7"/>
+        <line x1="32" y1="27" x2="47" y2="33" stroke-width="1.7"/>
+        <line x1="32" y1="42" x2="23" y2="54" stroke-width="1.7"/>
+        <line x1="32" y1="42" x2="41" y2="54" stroke-width="1.7"/>
+      </g>
+      <circle cx="17" cy="33" r="2.7" fill="#4dd0e1"/>
+      <circle cx="47" cy="33" r="2.7" fill="#ff8a65"/>
+      <circle cx="23" cy="54" r="2.7" fill="#ff8a65"/>
+      <circle cx="41" cy="54" r="2.7" fill="#4dd0e1"/>
+    </svg>
+    <span class="flove-app-name"><span class="wm-prac">Prac</span><span class="wm-sys">Sys</span></span>
+    <span class="brand-caret" aria-hidden="true">▾</span>
+  </label>
+
+  <!-- the app menu: About + back-to-flove, reached by clicking the logo/title -->
+  <nav class="flove-menu" id="flove-menu" aria-label="App menu">
+    <label class="about-btn" for="about-toggle" role="button" tabindex="0" aria-controls="about-panel"><span class="en" lang="en">About</span><span class="es" lang="es">Acerca de</span></label>
+    <a class="flove-home" href="../appy/appy-basic.html" role="menuitem"><span class="en" lang="en">Profile</span><span class="es" lang="es">Perfil</span></a>
+    <a class="flove-home" href="index.html" aria-label="Back to flove launcher" data-aria-en="Back to flove launcher" data-aria-es="Volver al menú de flove">← flove</a>
+    <a class="flove-home" href="https://flove.org" target="_blank" rel="noopener" role="menuitem">flove.org</a>
+    <button class="about-btn" type="button" role="menuitem" data-flove-reset>↺ <span class="en" lang="en">Reset</span><span class="es" lang="es">Reiniciar</span></button>
+    <!-- translaty worldball — flips the whole page between English and Español -->
+    <details class="lang">
+      <summary class="worldball" title="Language" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐</summary>
+      <div class="lang-opts">
+        <input type="radio" name="lang" id="lang-en" checked><label for="lang-en">English</label>
+        <input type="radio" name="lang" id="lang-es"><label for="lang-es">Español</label>
+      </div>
+    </details>
+  </nav>
+
+  <div class="progress" id="progress" role="img" aria-label="Game progress"></div>
+  <span class="flove-spacer"></span>
+</div>
+
+<label class="menu-backdrop" for="menu-toggle" aria-label="Close menu"></label>
+
+<label class="about-backdrop" for="about-toggle" aria-label="Close About"></label>
+
+<aside id="about-panel" class="about-panel" role="dialog" aria-label="About PracSys" data-aria-en="About PracSys" data-aria-es="Acerca de PracSys">
+  <h1><span class="en" lang="en">Practise the systems</span><span class="es" lang="es">Practica los sistemas</span></h1>
+  <p class="subtitle"><span class="en" lang="en">Your subconscious mind is your more inner pairs of systems.<br><br>Draw, justify, verb them here. Enjoy.</span><span class="es" lang="es">Tu mente subconsciente son tus pares de sistemas más internos.<br><br>Dibuja, justifica, vérbalos aquí. Disfruta.</span></p>
+</aside>
+
+<main class="layout" id="layout">
+
+  <!-- left: systems deck (collapsed by default; fans 5·1·5 when opened) -->
+  <div class="deck-col">
+    <button type="button" class="deck-toggle" id="deckToggle" aria-expanded="false">
+      <span class="caret">▸</span>
+      <span><span class="en" lang="en">Systems</span><span class="es" lang="es">Sistemas</span></span>
+      <span class="deck-count" id="deckCount">11</span>
+    </button>
+    <button type="button" class="deck-caret" id="deckCaret" aria-label="Collapse systems" data-aria-en="Collapse systems" data-aria-es="Plegar sistemas">▴ <span class="en" lang="en">Systems</span><span class="es" lang="es">Sistemas</span></button>
+    <div class="deck" id="deck" role="list" aria-label="Biological systems" data-aria-en="Biological systems" data-aria-es="Sistemas biológicos">
+      <div class="deck-up"   id="deckUp"></div>
+      <div class="deck-mid"  id="deckMid"></div>
+      <div class="deck-down" id="deckDown"></div>
+    </div>
+  </div>
+
+  <!-- center: board — 5 rows, each: left slot · middle (reason + centre slot) · right slot -->
+  <section class="board" id="board">
+    <div class="board-grid" id="boardGrid"></div>
+
+    <!-- subsystem items fan downward from the two bottom corners; this grows the board -->
+    <div class="sub-flow" id="subFlow">
+      <div class="sub-col immune" id="immuneList"></div>
+    </div>
+
+    <!-- stage-1 → stage-2 gate (and stage-4 polarities): appear once all are placed -->
+    <span class="check-wrap" id="checkWrap">
+      <button type="button" class="next-btn check-btn" id="checkBtn" aria-pressed="false" aria-label="Pair" data-aria-en="Pair" data-aria-es="Emparejar">
+        <svg class="check-mark check-mark--pair pmk mk-pair" viewBox="0 0 64 64" aria-hidden="true">
+          <line class="p-str" x1="20" y1="32" x2="44" y2="32"/>
+          <circle class="n-a" cx="14" cy="32" r="6"/>
+          <circle class="n-c" cx="50" cy="32" r="6"/>
+          <path class="p-str p-thin" d="M25 27 l-5 5 5 5"/>
+          <path class="p-str p-thin p-cor" d="M39 27 l5 5 -5 5"/>
+          <circle class="n-s" cx="32" cy="32" r="2.6"/>
+        </svg>
+      </button>
+    </span>
+    <button type="button" class="next-btn" id="nextBtn"><span class="en" lang="en">Next stage&nbsp;→</span><span class="es" lang="es">Siguiente etapa&nbsp;→</span></button>
+    <!-- first-slide Back: clears the board so placing can start over -->
+    <button type="button" class="stage-clear" id="clearBtn"><span class="en" lang="en">←&nbsp;Back</span><span class="es" lang="es">←&nbsp;Atrás</span></button>
+
+    <!-- stage-4 (all subs placed): hide immune arrows · sits above Back -->
+    <div class="sub-toggle-row" id="subToggleRow">
+      <button type="button" class="verb-toggle" id="subImmuneBtn" aria-pressed="false" aria-label="Hide / show immune arrows" data-aria-en="Hide / show immune arrows" data-aria-es="Ocultar / mostrar flechas inmunitarias">
+        <span class="tplus">🛡</span><span><span class="en" lang="en">SubImmune</span><span class="es" lang="es">SubInmune</span></span>
+      </button>
+    </div>
+
+    <!-- Back · (stage-4) Reasons + Verbs toggles · Next — one row -->
+    <div class="stage-nav" id="stageNav">
+      <button type="button" class="stage-btn back" id="backBtn"><span class="en" lang="en">←&nbsp;Back</span><span class="es" lang="es">←&nbsp;Atrás</span></button>
+      <button type="button" class="verb-toggle" id="reasonToggle" aria-pressed="false" aria-label="Show / hide reasons + emojis" data-aria-en="Show / hide reasons + emojis" data-aria-es="Mostrar / ocultar razones + emojis">
+        <span class="tplus">🙂</span><span><span class="en" lang="en">Reasons</span><span class="es" lang="es">Razones</span></span>
+      </button>
+      <button type="button" class="verb-toggle" id="verbToggle" aria-pressed="false" aria-label="Show / hide verbs" data-aria-en="Show / hide verbs" data-aria-es="Mostrar / ocultar verbos">
+        <span class="tplus">🔗</span><span><span class="en" lang="en">Verbs</span><span class="es" lang="es">Verbos</span></span>
+      </button>
+      <button type="button" class="stage-btn next" id="nextBtn2" hidden><span class="en" lang="en">Next&nbsp;→</span><span class="es" lang="es">Siguiente&nbsp;→</span></button>
+    </div>
+
+    <!-- Complete stage: a keys-style "Related apps" panel of sibling flove apps -->
+    <button class="related-btn" id="relatedBtn" type="button" aria-expanded="false"><span class="en" lang="en">Related apps</span><span class="es" lang="es">Apps relacionadas</span></button>
+    <div class="related-panel" id="relatedPanel">
+      <div class="related-row related-row-featured" id="relatedFeatured"></div>
+      <button class="related-plus" id="relatedPlus" type="button" aria-label="Show more apps" data-aria-en="Show more apps" data-aria-es="Mostrar más apps" aria-expanded="false">+</button>
+      <div class="related-row related-row-more" id="relatedMore" hidden></div>
+    </div>
+
+    <!-- Summary · revealed by the subsystems-stage Next: the resume of every
+         selection + the magic / insight / copy + save / share / publish bar -->
+    <section class="summary-section" id="summarySection" aria-label="Your pracsys results" data-aria-en="Your pracsys results" data-aria-es="Tus resultados de pracsys">
+      <!-- the eleven-system constellation, slowly turning, above the Summary title -->
+      <svg class="eleven-mark pmk mk-eleven" viewBox="0 0 64 64" aria-hidden="true">
+        <circle class="p-str p-thin" cx="32" cy="32" r="20"/>
+        <circle class="n-c" cx="32" cy="32" r="3.2"/>
+        <circle class="n-c" cx="32" cy="12" r="3"/>
+        <circle class="n-a" cx="42.81" cy="15.17" r="2.6"/>
+        <circle class="n-a" cx="50.19" cy="23.69" r="2.6"/>
+        <circle class="n-a" cx="51.80" cy="34.85" r="2.6"/>
+        <circle class="n-a" cx="47.11" cy="45.10" r="2.6"/>
+        <circle class="n-a" cx="37.65" cy="51.19" r="2.6"/>
+        <circle class="n-a" cx="26.37" cy="51.19" r="2.6"/>
+        <circle class="n-a" cx="16.88" cy="45.09" r="2.6"/>
+        <circle class="n-a" cx="12.20" cy="34.85" r="2.6"/>
+        <circle class="n-a" cx="13.81" cy="23.69" r="2.6"/>
+        <circle class="n-a" cx="21.19" cy="15.17" r="2.6"/>
+      </svg>
+      <!-- §13.9 title row: [Reset] — ✦ Summary — [Update] -->
+      <header class="summary-head">
+        <div class="title-row title-row--solo">
+          <h2 class="summary-title">✦ <span class="en t-en" lang="en">Summary</span><span class="es t-es" lang="es">Resumen</span></h2>
+        </div>
+      </header>
+      <div class="summary-render" id="summaryRender"></div>
+      <pre class="summary-text" id="summaryText" hidden></pre>
+      <div class="insight-panel" id="insightPanel" hidden></div>
+
+      <div class="result-actions">
+        <div class="action-row">
+          <button class="sum-btn insight-btn" type="button" id="insightBtn" aria-expanded="false" aria-controls="insightPanel">💡 <span class="en" lang="en">Insight</span><span class="es" lang="es">Lectura</span></button>
+          <button class="sum-btn magic-btn-summary" type="button" id="magicBtn" aria-pressed="false" aria-label="Magic remix · Shift-click switches language" data-aria-en="Magic remix · Shift-click switches language" data-aria-es="Remezcla mágica · Mayús+clic cambia el idioma">
+            <span class="label-off">✨ <span class="en" lang="en">Magic</span><span class="es" lang="es">Magia</span></span>
+            <span class="label-on">✦ <span class="en" lang="en">Clear Magic</span><span class="es" lang="es">Quitar magia</span></span>
+          </button>
+          <button class="sum-btn copy-btn" type="button" id="copyBtn" data-action="copy" aria-label="Click: copy phrase · Shift-click: copy JSON" data-aria-en="Click: copy phrase · Shift-click: copy JSON" data-aria-es="Clic: copiar frase · Mayús+clic: copiar JSON">⎘ <span class="en" lang="en">Copy</span><span class="es" lang="es">Copiar</span></button>
+        </div>
+        <div class="action-row action-row--publish">
+          <button class="sum-btn" type="button" data-flove-publish="appy" title="Publish to your Appy profile">✦ Appy</button>
+          <button class="sum-btn" type="button" data-flove-publish="wizy" title="Publish for your agent (Wizy)">✦ Wizy</button>
+          <button class="sum-btn" type="button" data-flove-publish="more" title="More networks (nety · 0asis) — coming">…</button>
+          <span class="flove-appy-hint" data-flove-hint role="status" aria-live="polite"></span>
+        </div>
+        <div class="action-row action-row--right">
+          <span class="cycle-wrap" data-cycle="save">
+            <button class="sum-btn cycle-trigger" type="button" data-cycle-toggle="save" aria-expanded="false" aria-controls="saveRow">💾 <span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></button>
+            <span class="cycle-row" id="saveRow" hidden>
+              <button class="sum-btn" type="button" data-action="download" data-fmt="txt">TXT</button>
+              <button class="sum-btn" type="button" data-action="download" data-fmt="md">MD</button>
+              <button class="sum-btn" type="button" data-action="download" data-fmt="jpg">JPG</button>
+              <button class="sum-btn" type="button" data-action="download" data-fmt="html">HTML</button>
+              <button class="sum-btn" type="button" data-action="download" data-fmt="csv">CSV</button>
+              <button class="sum-btn" type="button" data-action="download" data-fmt="xml">XML</button>
+              <button class="sum-btn" type="button" data-action="download" data-fmt="json">JSON</button>
+            </span>
+          </span>
+          <span class="cycle-wrap" data-cycle="share">
+            <button class="sum-btn cycle-trigger" type="button" data-cycle-toggle="share" aria-expanded="false" aria-controls="shareRow">📤 <span class="en" lang="en">Share</span><span class="es" lang="es">Compartir</span></button>
+            <span class="cycle-row" id="shareRow" hidden>
+              <button class="sum-btn" type="button" data-action="share-mobile">📱 <span class="en" lang="en">Mobile</span><span class="es" lang="es">Móvil</span></button>
+              <button class="sum-btn" type="button" data-action="share">🌐 <span class="en" lang="en">Apps</span><span class="es" lang="es">Apps</span></button>
+              <button class="sum-btn" type="button" data-action="email">📧 <span class="en" lang="en">Email</span><span class="es" lang="es">Correo</span></button>
+              <button class="sum-btn" type="button" data-action="print">🖨 <span class="en" lang="en">Print</span><span class="es" lang="es">Imprimir</span></button>
+            </span>
+          </span>
+          <span class="cycle-wrap" data-cycle="publish">
+            <button class="sum-btn cycle-trigger" type="button" data-cycle-toggle="publish" aria-expanded="false" aria-controls="publishRow">⚡ <span class="en" lang="en">Publish</span><span class="es" lang="es">Publicar</span></button>
+            <span class="cycle-row" id="publishRow" hidden></span>
+          </span>
+        </div>
+        <!-- Update at the foot of the action bar; Reset stands alone below it as the destructive action -->
+        <div class="action-row action-row--foot">
+          <span class="update-wrap">
+            <button class="sum-btn btn ghost update-btn" type="button" data-flove-update><span class="en t-en" lang="en">Update</span><span class="es t-es" lang="es">Actualizar</span> <span class="stale-dot" role="img" hidden aria-label="Out of date" data-aria-en="Out of date" data-aria-es="Desactualizado"></span></button>
+            <small class="update-hint"><span class="en t-en" lang="en">if you re-edited the form</span><span class="es t-es" lang="es">si has reeditado el formulario</span></small>
+          </span>
+        </div>
+        <div class="action-row action-row--reset">
+          <span class="reset-wrap">
+            <button class="sum-btn btn ghost reset-btn" type="button" data-flove-reset>↺ <span class="en t-en" lang="en">Reset</span><span class="es t-es" lang="es">Reiniciar</span></button>
+            <small class="reset-hint"><span class="en t-en" lang="en">Clear all and start new play</span><span class="es t-es" lang="es">Borra todo y empieza de nuevo</span></small>
+          </span>
+        </div>
+      </div>
+    </section>
+  </section>
+</main>
+
+<!-- app-intro overlay: a short phrase before opening a related app -->
+<div class="app-intro-backdrop" id="appIntro" hidden>
+  <div class="app-intro-card" role="dialog" aria-modal="true" aria-labelledby="aiName">
+    <div class="ai-icon" id="aiIcon" aria-hidden="true"></div>
+    <p class="ai-name" id="aiName"></p>
+    <p class="ai-phrase" id="aiPhrase"></p>
+    <div class="ai-actions">
+      <button class="ai-btn ai-cancel" id="aiCancel" type="button"><span class="en" lang="en">Cancel</span><span class="es" lang="es">Cancelar</span></button>
+      <button class="ai-btn ai-go" id="aiGo" type="button"><span class="en" lang="en">Go&nbsp;→</span><span class="es" lang="es">Ir&nbsp;→</span></button>
+    </div>
+  </div>
+</div>
+
+<svg class="links" id="links" aria-hidden="true"></svg>
+<div class="link-panel" id="linkPanel"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  const $  = (s, r=document) => r.querySelector(s);
+  const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+  const STORAGE_KEY = 'flove.pracsys.v1';
+  let relocalizing = false;   // true while relocalize() re-renders, so save() skips the stale mark
+
+  // ── translaty engine — switches the page language and translates the bits CSS
+  //    can't (placeholders, aria-labels), remembers the choice, syncs <html lang>. ──
+  (function(){
+    const LS = 'translaty-lang';
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+    const radios = () => Array.from(document.querySelectorAll('input[name="lang"]'));
+    const curLang = () => { const r = radios().find(x => x.checked); return r ? r.id.replace('lang-', '') : 'en'; };
+    function applyLang(){
+      const li = curLang();
+      document.documentElement.lang = li;
+      document.querySelectorAll('option[data-en]').forEach(o => { if (o.dataset[li] != null) o.textContent = o.dataset[li]; });
+      document.querySelectorAll('[data-ph-en]').forEach(el => { const v = el.dataset['ph' + cap(li)]; if (v != null) el.placeholder = v; });
+      document.querySelectorAll('[data-aria-en]').forEach(el => { const v = el.dataset['aria' + cap(li)]; if (v != null) el.setAttribute('aria-label', v); });
+      try { localStorage.setItem(LS, li); } catch (_) {}
+    }
+    function init(){
+      let saved = null; try { saved = localStorage.getItem(LS) || localStorage.getItem('translate2-lang'); } catch (_) {}
+      if (saved){ const r = document.getElementById('lang-' + saved); if (r) r.checked = true; }
+      radios().forEach(r => r.addEventListener('change', () => {
+        applyLang();
+        const d = document.querySelector('details.lang'); if (d) d.open = false;
+        if (typeof relocalize === 'function') relocalize();   // re-render the JS-built UI
+      }));
+      applyLang();
+      // restore: if a non-default language was saved, re-render the JS-built UI too
+      if (saved && saved !== 'en' && typeof relocalize === 'function') relocalize();
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  })();
+
+  // ── runtime language helper for JS-generated strings (toasts, SVG/canvas text,
+  //    placeholders set in JS, exports). Reads the active worldball radio. ──
+  const LANG = () => { const r = document.querySelector('input[name="lang"]:checked'); return r ? r.id.replace('lang-', '') : 'en'; };
+  const T = (en, es) => (LANG() === 'es' ? es : en);
+  // re-render every dynamically-built surface when the language flips
+  function relocalize(){
+    relocalizing = true;   // a language flip re-renders but is NOT an edit → no stale dot
+    try{
+      if (typeof renderDeck === 'function') renderDeck();
+      if (typeof afterChange === 'function') afterChange();
+      if (typeof syncCheckLabel === 'function') syncCheckLabel();
+      if (typeof magicLang !== 'undefined' && (LANG() === 'es' || LANG() === 'en')) magicLang = LANG();
+      const ss = $('#summarySection');
+      if (ss && ss.classList.contains('show') && typeof renderSummary === 'function'){
+        renderSummary();
+        if (typeof renderInsight === 'function' && !$('#insightPanel').hidden) renderInsight();
+      }
+      const pr = $('#publishRow');
+      if (pr && !pr.hidden && typeof renderPublishRow === 'function') renderPublishRow();
+    }catch(_){}
+    finally{ relocalizing = false; }
+  }
+
+  // ── the eleven systems (from souls.html BIO_SYSTEMS), alphabetical ──
+  const SYSTEMS = [
+    { id:'circulatory',   label:'Circulatory',   es:'Circulatorio',  icon:'🩸' },
+    { id:'digestive',     label:'Digestive',     es:'Digestivo',     icon:'🍃' },
+    { id:'endocrine',     label:'Endocrine',     es:'Endocrino',     icon:'🧪' },
+    { id:'excretory',     label:'Excretory',     es:'Excretor',      icon:'💧' },
+    { id:'immune',        label:'Immune',        es:'Inmunitario',   icon:'🛡' },
+    { id:'integumentary', label:'Integumentary', es:'Tegumentario',  icon:'🤝' },
+    { id:'muscular',      label:'Muscular',      es:'Muscular',      icon:'💪' },
+    { id:'nervous',       label:'Nervous',       es:'Nervioso',      icon:'🧠' },
+    { id:'reproductive',  label:'Reproductive',  es:'Reproductor',   icon:'🌱' },
+    { id:'respiratory',   label:'Respiratory',   es:'Respiratorio',  icon:'🌬️' },
+    { id:'skeletal',      label:'Skeletal',      es:'Esquelético',   icon:'🦴' }
+  ];
+  const SYS = Object.fromEntries(SYSTEMS.map(s => [s.id, s]));
+
+  // ── system marks (SVG, in the pracsys logo language — see the icon set in
+  //    images/apps/logos/pracsys/pracsys-logos.html).
+  //    64×64 viewBox, .ns stroke (round) / .t thin · a=accent c=accent-2
+  //    g=immune p=nerve · f* = filled node. The emoji above stays as the
+  //    fallback + the raster (JPG/canvas) export glyph. ──
+  const SYS_SVG = {
+    circulatory:`<path class="ns a" d="M32 48 C14 34 20 18 32 27 C44 18 50 34 32 48 Z"/><polyline class="ns c t" points="17,33 26,33 29,26 33,40 36,33 47,33"/>`,
+    digestive:`<path class="ns a" d="M32 12 L32 22 C21 24 21 32 32 32 C43 32 43 40 32 40 C23 40 23 48 32 48 L32 53"/><circle class="fa" cx="32" cy="12" r="2.4"/><circle class="fs" cx="32" cy="53" r="2.4"/>`,
+    endocrine:`<path class="ns a" d="M32 31 C25 24 18 27 21 33 C24 39 30 36 32 31 C34 36 40 39 43 33 C46 27 39 24 32 31 Z"/><circle class="fs" cx="14" cy="23" r="2"/><circle class="fs" cx="50" cy="23" r="2"/><circle class="fs" cx="19" cy="45" r="1.9"/><circle class="fs" cx="45" cy="45" r="1.9"/>`,
+    excretory:`<path class="ns a" d="M32 12 C22 26 20 35 20 41 A12 12 0 0 0 44 41 C44 35 42 26 32 12 Z"/><path class="ns a t" d="M26 40 C26 34 38 34 38 40"/><circle class="fc" cx="32" cy="43" r="2.3"/>`,
+    immune:`<circle class="ns g" cx="32" cy="32" r="8"/><g class="ns g t"><path d="M32 24 V18 M32 18 l-3 -4 M32 18 l3 -4"/><path d="M40 32 H46 M46 32 l4 -3 M46 32 l4 3"/><path d="M32 40 V46 M32 46 l-3 4 M32 46 l3 4"/><path d="M24 32 H18 M18 32 l-4 -3 M18 32 l-4 3"/></g><circle class="fg" cx="32" cy="32" r="2.4"/>`,
+    integumentary:`<path class="ns a" d="M32 12 L46 18 V31 C46 41 39 47 32 52 C25 47 18 41 18 31 V18 Z"/><path class="ns a t" d="M23 27 q9 -4 18 0"/><path class="ns a t" d="M23 33 q9 -4 18 0"/><path class="ns a t" d="M25 39 q7 -3 14 0"/>`,
+    muscular:`<path class="ns a" d="M32 21 C25 27 25 37 32 43 C39 37 39 27 32 21 Z"/><line class="ns a" x1="32" y1="21" x2="32" y2="13"/><line class="ns a" x1="32" y1="43" x2="32" y2="51"/><line class="ns a t" x1="28" y1="29" x2="28" y2="35"/><line class="ns a t" x1="36" y1="29" x2="36" y2="35"/>`,
+    nervous:`<path class="ns p" d="M32 17 C28 14 22 15 21 20 C16 20 14 26 18 29 C14 32 16 39 22 40 C24 45 30 45 32 41 C34 45 40 45 42 40 C48 39 50 32 46 29 C50 26 48 20 43 20 C42 15 36 14 32 17 Z"/><line class="ns p t" x1="32" y1="18" x2="32" y2="42"/><path class="ns p t" d="M27 24 q4 3 -1 6"/><path class="ns p t" d="M37 24 q-4 3 1 6"/>`,
+    reproductive:`<circle class="ns a" cx="37" cy="32" r="9"/><circle class="fa" cx="37" cy="32" r="3"/><path class="ns a t" d="M11 32 q4 -4 8 0 t8 0"/><circle class="fc" cx="28" cy="32" r="2.4"/>`,
+    respiratory:`<line class="ns a" x1="32" y1="13" x2="32" y2="26"/><path class="ns a" d="M31 26 C22 26 18 35 21 45 C22 51 30 51 30 43 L30 29"/><path class="ns a" d="M33 26 C42 26 46 35 43 45 C42 51 34 51 34 43 L34 29"/><circle class="fa" cx="32" cy="13" r="2.4"/>`,
+    skeletal:`<line class="ns a" x1="25" y1="25" x2="39" y2="39"/><circle class="fa" cx="21" cy="21" r="3.4"/><circle class="fa" cx="25" cy="18" r="3.4"/><circle class="fa" cx="43" cy="43" r="3.4"/><circle class="fa" cx="39" cy="46" r="3.4"/>`
+  };
+  // Inline SVG mark for a system (falls back to its emoji if none defined).
+  const sysIco = sys => SYS_SVG[sys.id]
+    ? `<svg class="sys-ico" viewBox="0 0 64 64" aria-hidden="true">${SYS_SVG[sys.id]}</svg>`
+    : sys.icon;
+
+  // Rasterised marks for the canvas/JPG export. A data-URL <img> can't see the
+  // page stylesheet, so the a/c/g/p classes are resolved by an internal <style>
+  // with the palette baked in. Warmed at load so the export has them decoded.
+  const SYS_SVG_STYLE = `<style>.ns{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:3}.t{stroke-width:1.7}.a{stroke:#4dd0e1}.c{stroke:#ff8a65}.g{stroke:#69f0ae}.p{stroke:#b388ff}.fa{fill:#4dd0e1}.fc{fill:#ff8a65}.fg{fill:#69f0ae}.fp{fill:#b388ff}.fs{fill:#bfe9f2}</style>`;
+  const _sysImg = {};
+  function sysImg(id){
+    if (!SYS_SVG[id]) return null;
+    if (_sysImg[id]) return _sysImg[id];
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">${SYS_SVG_STYLE}${SYS_SVG[id]}</svg>`;
+    const img = new Image(); img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    _sysImg[id] = img; return img;
+  }
+  Object.keys(SYS_SVG).forEach(sysImg);   // warm the cache
+
+  // the active-language label for a system / subsystem definition
+  const defLabel = d => d ? T(d.label, d.es || d.label) : '';
+  // display word for a subsystem's kind (immune only)
+  const kindWord = () => T('immune', 'inmunitario');
+
+  // ── subsystems (immune = souls.html IMMUNE) ──
+  const IMMUNE_SUBS = [
+    { id:'adaptative',  label:'Adaptative',  es:'Adaptativo',  icon:'🫀' },
+    { id:'neuroimmune', label:'Neuroimmune', es:'Neuroinmune', icon:'🧠' },
+    { id:'innate',      label:'Innate',      es:'Innato',      icon:'🛡' },
+    { id:'lymphatic',   label:'Lymphatic',   es:'Linfático',   icon:'💧' }
+  ];
+  // a subsystem may not land on its own parent system
+  const HOME_OF = { immune:'immune' };
+  const TOTAL_SUBS = IMMUNE_SUBS.length;   // 4
+
+  // ── subsystem marks (SVG, chosen set — see the icon set in
+  //    images/apps/logos/pracsys/pracsys-logos.html). Immune green, nerve
+  //    purple on neuroimmune; motion is inline SMIL so it scales at any size.
+  //    The emoji above stays as the fallback. ──
+  const SUB_SVG = {
+    adaptative:`<path class="ns g" d="M32 47 V33 L23 23"/><path class="ns g" d="M32 33 L41 23"/><path class="ns g t" d="M19 19 l4 4 4 -4"><animateTransform attributeName="transform" type="translate" values="0 -1.6;0 1.4;0 -1.6" dur="2.4s" repeatCount="indefinite"/></path><path class="ns g t" d="M37 19 l4 4 4 -4"><animateTransform attributeName="transform" type="translate" values="0 1.4;0 -1.6;0 1.4" dur="2.4s" repeatCount="indefinite"/></path>`,
+    neuroimmune:`<circle class="ns p" cx="26" cy="32" r="8"/><circle class="ns g" cx="38" cy="32" r="8"/><circle class="fs" cx="32" cy="32" r="2.4"><animate attributeName="r" values="1.5;3.2;1.5" dur="1.7s" repeatCount="indefinite"/><animate attributeName="opacity" values=".5;1;.5" dur="1.7s" repeatCount="indefinite"/></circle>`,
+    innate:`<circle class="fg" cx="32" cy="32" r="3.4"/><circle class="ns g t" cx="32" cy="32" r="4"><animate attributeName="r" values="4;18" dur="2.2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".9;0" dur="2.2s" repeatCount="indefinite"/></circle><circle class="ns g t" cx="32" cy="32" r="4"><animate attributeName="r" values="4;18" dur="2.2s" begin="1.1s" repeatCount="indefinite"/><animate attributeName="opacity" values=".9;0" dur="2.2s" begin="1.1s" repeatCount="indefinite"/></circle>`,
+    lymphatic:`<circle class="ns g" cx="32" cy="32" r="8"><animate attributeName="r" values="8;9.4;8" dur="2.6s" repeatCount="indefinite"/></circle><line class="ns g t" x1="32" y1="24" x2="32" y2="13"/><line class="ns g t" x1="25" y1="38" x2="18" y2="47"/><line class="ns g t" x1="39" y1="38" x2="46" y2="47"/><circle class="fg" cx="32" cy="32" r="2.2"/>`
+  };
+  // Inline SVG mark for a subsystem (falls back to its emoji if none defined).
+  const subIco = sub => SUB_SVG[sub.id]
+    ? `<svg class="sys-ico" viewBox="0 0 64 64" aria-hidden="true">${SUB_SVG[sub.id]}</svg>`
+    : sub.icon;
+
+  // 11 slots: 5 in the left column (s0–s4), 1 centre (s5), 5 in the right column (s6–s10)
+  // A "row" is a horizontal pair: left s{r} + right s{6+r}, r = 0..4. s5 lives in row 2's centre.
+  const N_ROWS = 5;
+  const CENTRE_ROW = 2;
+  const SLOT_PH = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI'];
+  const leftSlotId  = r => 's' + r;          // s0..s4
+  const rightSlotId = r => 's' + (6 + r);    // s6..s10
+  const CENTRE_SLOT = 's5';
+
+  // reason keys: 0..4 = horizontal pairs, 'c' = the centre slot (s5) on its own
+  const REASON_KEYS = ['0','1','2','3','4','c'];
+  const freshReasons = () => ({ 0:[], 1:[], 2:[], 3:[], 4:[], c:[] });
+
+  // ── state ───────────────────────────────────────────────────
+  const state = {
+    placed:  {},                  // slotId -> systemId
+    reasons: freshReasons(),      // reason key -> array of saved strings
+    subs:    {},                  // subId  -> { kind, slotId }
+    verbs:   {},                  // slotId -> array of saved verbs
+    subReasons:{},                // subId -> [reasons]  (per threaded line)
+    subVerbs:{},                  // subId -> [verbs]    (per threaded line)
+    stage:   1,                   // 1 place · 2 reasons · 3 verbs · 4 subsystems
+    verbsShown:false,             // stage-4 toggle for the verbs
+    reasonsShown:false,           // stage-4 toggle for the reasons + emojis
+    centreFx:0,                   // centre-emoji confluence state: 0 off · 1 arrows · 2 +hide right icons
+    hideImmune:false,   // hide immune connector arrows
+    immuneOpen:false
+  };
+  // stage 2+ locks placements; helpers for the "Next" gates
+  const frozen = () => state.stage >= 2;
+  const hasAnyReason = () => REASON_KEYS.some(k => state.reasons[k] && state.reasons[k].length);
+  const hasAnyVerb   = () => Object.values(state.verbs).some(a => a && a.length);
+  const allSubsPlaced = () => Object.keys(state.subs).length === TOTAL_SUBS;
+  const hasAnySubReason = () => Object.values(state.subReasons).some(a => a && a.length);
+  const hasAnySubVerb   = () => Object.values(state.subVerbs).some(a => a && a.length);
+  let armedSub = null;            // currently click-armed subsystem id
+  const openReasons = new Set();  // which reason fields are expanded (ephemeral UI)
+
+  // ── the single "Next →" in the bottom nav advances the stage once it has content ──
+  function advance(){
+    if      (state.stage === 2 && hasAnyReason()){ goStage(3); toast(T('Add verbs with the + on each card','Añade verbos con el + de cada carta')); }
+    else if (state.stage === 3 && hasAnyVerb())  { goStage(4); toast(T('Click Immune to thread its subsystems','Haz clic en Inmunitario para enhebrar sus subsistemas')); }
+    else if (state.stage === 4 && Object.keys(state.subs).length){ showSummary(); }
+  }
+  // a reason smiley that is open blows up its pair of systems ×3
+  function markPairZoom(){
+    allSlots().forEach(s => s.classList.remove('pair-zoom'));
+    if (state.stage !== 2) return;
+    openReasons.forEach(key => {
+      if (key === 'c') return;                       // centroid keeps its confluence view
+      [leftSlotId(+key), rightSlotId(+key)].forEach(id => {
+        if (state.placed[id]){ const s = slotEl(id); if (s) s.classList.add('pair-zoom'); }
+      });
+    });
+  }
+
+  // ── build the deck (system cards) ───────────────────────────
+  function makeCard(sys){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'card draggable';
+    b.draggable = true;
+    b.dataset.sys = sys.id;
+    b.setAttribute('role', 'listitem');
+    // icon shows on the deck chips; hidden on placed cards (see CSS)
+    b.innerHTML = `<span class="card-ico">${sysIco(sys)}</span><span class="lbl"><span class="en" lang="en">${sys.label}</span><span class="es" lang="es">${sys.es || sys.label}</span></span>`;
+    return b;
+  }
+  function renderDeck(){
+    const up = $('#deckUp'), mid = $('#deckMid'), down = $('#deckDown');
+    up.innerHTML = mid.innerHTML = down.innerHTML = '';
+    const placedSet = new Set(Object.values(state.placed));
+    // alphabetical: 0–4 above · 5 (Integumentary) where the Systems card sits · 6–10 below
+    SYSTEMS.forEach((s, i) => {
+      if (placedSet.has(s.id)) return;
+      const card = makeCard(s);
+      if (i < 5){ up.appendChild(card); }
+      else if (i === 5){ card.classList.add('is-anchor'); mid.appendChild(card); }
+      else { down.appendChild(card); }
+    });
+    $('#deckCount').textContent = SYSTEMS.length - placedSet.size;
+  }
+
+  // ── build the board slots (5 rows × [left · middle · right]) ──
+  function makeSlot(id, row){
+    const slot = document.createElement('div');
+    slot.className = 'slot';
+    slot.dataset.slot = id;
+    slot.dataset.row  = row;
+    slot.dataset.ph   = SLOT_PH[+id.slice(1)];
+    const n = +id.slice(1);
+    if (id !== CENTRE_SLOT){                                     // centre is excluded from groupings
+      slot.dataset.g1 = n < 5 ? 'L' : 'R';                      // grouping 1: left vs right column
+      const rr = n < 5 ? n : n - 6;                             // row within its column
+      slot.dataset.g2 = (n < 5 ? rr < 3 : rr < 2) ? 'A' : 'B';  // grouping 2: first 3 left + first 2 right vs the rest
+    }
+    return slot;
+  }
+  function buildSlots(){
+    const grid = $('#boardGrid');
+    grid.innerHTML = '';
+    for (let r = 0; r < N_ROWS; r++){
+      // left slot (column 1)
+      const L = makeSlot(leftSlotId(r), r);
+      L.style.gridColumn = '1'; L.style.gridRow = (r + 1);
+      grid.appendChild(L);
+      // middle cell (column 2): this pair's reason — and the centre's own reason at the centre row
+      const mid = document.createElement('div');
+      mid.className = 'mid-cell';
+      mid.dataset.midrow = r;
+      mid.style.gridColumn = '2'; mid.style.gridRow = (r + 1);
+      if (r === CENTRE_ROW){
+        const cReasons = document.createElement('div');
+        cReasons.className = 'reasons';
+        cReasons.dataset.reasons = 'c';
+        mid.appendChild(cReasons);
+      }
+      const reasons = document.createElement('div');
+      reasons.className = 'reasons';
+      reasons.dataset.reasons = r;
+      mid.appendChild(reasons);
+      grid.appendChild(mid);
+      // right slot (column 3)
+      const R = makeSlot(rightSlotId(r), r);
+      R.style.gridColumn = '3'; R.style.gridRow = (r + 1);
+      grid.appendChild(R);
+    }
+    // the centre (6th) slot spans the full column height — appended last so it fills last
+    const centre = makeSlot(CENTRE_SLOT, CENTRE_ROW);
+    centre.classList.add('centre-spine');
+    centre.style.gridColumn = '2'; centre.style.gridRow = '1 / -1';
+    centre.insertAdjacentHTML('beforeend', LAYERS_MARK_HTML);   // animated layers mark, fades on fill
+    grid.appendChild(centre);
+  }
+
+  // the layers mark that lives in the empty centre spine while placing (stage 1)
+  const LAYERS_MARK_HTML = `<div class="layers-mark" aria-hidden="true"><svg viewBox="0 0 64 64">
+    <line class="lm-spine" x1="32" y1="12" x2="32" y2="52" fill="none" stroke="#4dd0e1" stroke-width="3" stroke-linecap="round"/>
+    <g class="lm-strata" fill="none" stroke="#4dd0e1" stroke-width="1.7" stroke-linecap="round">
+      <line x1="18" y1="15" x2="46" y2="15"/><line x1="18" y1="24" x2="46" y2="24"/>
+      <line x1="18" y1="33.5" x2="46" y2="33.5"/><line x1="18" y1="43" x2="46" y2="43"/>
+      <line x1="18" y1="52.5" x2="46" y2="52.5"/>
+    </g>
+    <circle class="lm-core" cx="32" cy="32" r="3.6" fill="#ff8a65"/>
+  </svg></div>`;
+  const slotEl  = id => $(`.slot[data-slot="${id}"]`);
+  const allSlots = () => $$('.slot');
+
+  // place a system card into a slot element
+  function fillSlot(slot, sysId){
+    const card = makeCard(SYS[sysId]);
+    card.classList.remove('draggable');
+    slot.appendChild(card);
+    slot.classList.add('filled');
+    // right-column placed cards (s6–s10): show the system icon on the card itself
+    const n = +slot.dataset.slot.slice(1);
+    slot.classList.toggle('col-right', n >= 6 && n <= 10);
+    buildVerbUI(slot);
+    ensureBadgeHost(slot);
+  }
+  // the pair/centroid reason key a given slot edits (left s0-4 & right s6-10 of a
+  // row share one key; the centre slot owns 'c')
+  function reasonKeyOfSlot(slotId){
+    if (slotId === CENTRE_SLOT) return 'c';
+    const n = +slotId.slice(1);
+    return String(n < 5 ? n : n - 6);
+  }
+  const trunc15 = s => (s.length > 15 ? s.slice(0, 15) + '…' : s);
+  // the "+ verb" editor that lives on every placed card
+  function buildVerbUI(slot){
+    const list = document.createElement('div');
+    list.className = 'verb-list';
+    slot.appendChild(list);
+    const all = document.createElement('div');
+    all.className = 'verb-all';
+    slot.appendChild(all);
+    const add = document.createElement('button');
+    add.type = 'button'; add.className = 'verb-add'; add.textContent = '+';
+    add.setAttribute('aria-label', T('Add a verb','Añadir un verbo'));
+    add.dataset.ariaEn = 'Add a verb'; add.dataset.ariaEs = 'Añadir un verbo';
+    slot.appendChild(add);
+    const edit = document.createElement('div');
+    edit.className = 'verb-edit';
+    edit.innerHTML = `<input type="text" placeholder="${T('Add verb','Añadir verbo')}" aria-label="${T('Add a verb','Añadir un verbo')}" data-ph-en="Add verb" data-ph-es="Añadir verbo" data-aria-en="Add a verb" data-aria-es="Añadir un verbo">`;
+    slot.appendChild(edit);
+    const sv = document.createElement('button');
+    sv.type = 'button'; sv.className = 'verb-save'; sv.textContent = '✓';
+    sv.setAttribute('aria-label', T('Save verb','Guardar verbo'));
+    sv.dataset.ariaEn = 'Save verb'; sv.dataset.ariaEs = 'Guardar verbo';
+    slot.appendChild(sv);
+    edit.querySelector('input').addEventListener('keydown', e => { if (e.key === 'Enter') saveVerb(slot); });
+    renderVerbChips(slot);
+  }
+  function renderVerbChips(slot){
+    const list = slot.querySelector('.verb-list');
+    const all  = slot.querySelector('.verb-all');
+    if (!list || !all) return;
+    const verbs = state.verbs[slot.dataset.slot] || [];
+    list.innerHTML = ''; all.innerHTML = '';
+    if (!verbs.length){ slot.classList.remove('verbs-expanded'); return; }
+
+    // collapsed view: just the first verb (sits directly above the + add button),
+    // with a "+" to its right that expands the full list when there's more than one
+    const chip = document.createElement('span');
+    chip.className = 'verb-chip'; chip.textContent = verbs[0]; chip.title = verbs[0];
+    list.appendChild(chip);
+    if (verbs.length > 1){
+      const more = document.createElement('button');
+      more.type = 'button'; more.className = 'verb-more';
+      more.textContent = '+';
+      more.setAttribute('aria-label', T('Show all verbs','Mostrar todos los verbos'));
+      more.dataset.ariaEn = 'Show all verbs'; more.dataset.ariaEs = 'Mostrar todos los verbos';
+      list.appendChild(more);
+    }
+
+    // expanded view: every verb of this system + a collapse control back to one
+    if (verbs.length > 1){
+      const col = document.createElement('button');
+      col.type = 'button'; col.className = 'verb-collapse';
+      col.innerHTML = `▴ <span class="en" lang="en">collapse</span><span class="es" lang="es">plegar</span>`;
+      all.appendChild(col);
+    }
+    verbs.forEach((v, i) => {
+      const row = document.createElement('div');
+      row.className = 'verb-row';
+      row.innerHTML = `<span class="vtxt"></span><button class="vedit" data-i="${i}" aria-label="${T('Edit','Editar')}" data-aria-en="Edit" data-aria-es="Editar">✎</button><button class="del" data-i="${i}" aria-label="${T('Remove verb','Quitar verbo')}" data-aria-en="Remove verb" data-aria-es="Quitar verbo">✕</button>`;
+      row.querySelector('.vtxt').textContent = v;
+      all.appendChild(row);
+    });
+  }
+  function saveVerb(slot){
+    const inp = slot.querySelector('.verb-edit input');
+    if (inp){
+      const v = inp.value.trim();
+      if (v){
+        const arr = (state.verbs[slot.dataset.slot] ||= []);
+        const idx = slot.dataset.vEdit;
+        if (idx != null && idx !== '') arr[+idx] = v; else arr.push(v);
+        renderVerbChips(slot); afterChange();   // reveal the Next gate + refresh progress
+      }
+      inp.value = '';
+    }
+    slot.classList.remove('verb-open');   // collapse whether or not a verb was added
+    delete slot.dataset.vEdit;
+  }
+
+  // ── on-card reason editor (stage-4 Reasons toggle) — mirrors the verb one ──
+  function ensureBadgeHost(slot){
+    if (!slot.querySelector('.subbadges')){
+      const bb = document.createElement('div');
+      bb.className = 'subbadges';
+      slot.appendChild(bb);
+    }
+  }
+
+  function firstEmptySlot(){
+    // the central placeholder is the FIRST to fill, then the rest in board order
+    const c = slotEl(CENTRE_SLOT);
+    if (c && !c.classList.contains('filled')) return c;
+    return allSlots().find(s => s.dataset.slot !== CENTRE_SLOT && !s.classList.contains('filled')) || null;
+  }
+  function slotOfSystem(sysId){
+    const id = Object.keys(state.placed).find(k => state.placed[k] === sysId);
+    return id ? slotEl(id) : null;
+  }
+
+  // ── place / unplace a system ────────────────────────────────
+  function placeSystem(sysId, slot){
+    if (!slot) return;
+    state.placed[slot.dataset.slot] = sysId;
+    fillSlot(slot, sysId);
+    renderDeck();
+    afterChange();
+  }
+  function unplaceSystem(slot){
+    const sid = slot.dataset.slot;
+    // removing a system clears any subsystems threaded onto it
+    Object.keys(state.subs).forEach(subId => {
+      if (state.subs[subId].slotId === sid) removeSub(subId, true);
+    });
+    delete state.placed[sid];
+    delete state.verbs[sid];
+    slot.classList.remove('filled', 'verb-open');
+    slot.innerHTML = '';
+    if (sid === CENTRE_SLOT) slot.insertAdjacentHTML('beforeend', LAYERS_MARK_HTML);  // restore the layers mark
+    renderDeck();
+    afterChange();
+  }
+
+  // ── reasons: a smiley toggle in the middle; the field stays collapsed by default ──
+  // pair r is "full" when its left + right are placed; the centre 'c' shows when s5 is placed.
+  function rowFull(row){
+    return !!state.placed[leftSlotId(row)] && !!state.placed[rightSlotId(row)];
+  }
+  function reasonVisible(key){
+    if (state.stage < 2) return false;          // reasons open only from stage 2
+    if (state.stage >= 4 && !state.reasonsShown) return false;   // stage 4: only when Reasons is toggled on
+    return key === 'c' ? !!state.placed[CENTRE_SLOT] : rowFull(+key);
+  }
+  function renderReasons(key){
+    const host = $(`.reasons[data-reasons="${key}"]`);
+    if (!host) return;
+    host.innerHTML = '';
+    if (!reasonVisible(key)){ host.classList.remove('show'); openReasons.delete(key); return; }
+    host.classList.add('show');
+
+    const list = state.reasons[key];
+
+    // the smiley toggle — always shown; happier once a reason is saved
+    const flag = document.createElement('button');
+    flag.type = 'button';
+    flag.className = 'reason-flag' + (list.length ? ' has' : '') + (key === 'c' ? ' centre-flag' : '');
+    flag.textContent = list.length ? '😊' : '🙂';   // centre is now a smiley like the others
+    flag.title = key === 'c' ? T('Reason for the centroid system','Razón del sistema centroide') : T('Reason for this pair','Razón de este par');
+    flag.setAttribute('aria-label', flag.title);
+    flag.addEventListener('click', () => {
+      if (key === 'c'){ centreClick(); return; }   // centre cycles the confluence view
+      if (openReasons.has(key)) openReasons.delete(key);
+      else { openReasons.clear(); openReasons.add(key); }   // one reason open at a time
+      afterChange();   // re-render + zoom the pair ×3 + draw the connecting line
+    });
+    host.appendChild(flag);
+
+    if (!openReasons.has(key)) return;   // collapsed → only the smiley shows
+
+    // saved reasons (deletable)
+    list.forEach((txt, i) => {
+      const line = document.createElement('div');
+      line.className = 'reason-saved';
+      line.innerHTML = `<span class="txt"></span><button class="del" title="${T('Delete reason','Borrar razón')}" aria-label="${T('Delete reason','Borrar razón')}">✕</button>`;
+      line.querySelector('.txt').textContent = txt;
+      line.querySelector('.del').addEventListener('click', () => {
+        list.splice(i, 1);
+        afterChange();   // refresh smiley/gates/progress
+      });
+      host.appendChild(line);
+    });
+
+    // active composer
+    const comp = document.createElement('div');
+    comp.className = 'reason-composer';
+    comp.innerHTML = `
+      <input type="text" placeholder="${key === 'c' ? T('Why this centroid?','¿Por qué este centroide?') : T('Why this pair?','¿Por qué este par?')}" aria-label="${T('Reason','Razón')}">
+      <button class="icon-btn mic"  title="${T('Dictate (speech-to-text)','Dictar (voz a texto)')}" aria-label="${T('Dictate','Dictar')}">🎤</button>
+      <button class="icon-btn save" title="${T('Save reason','Guardar razón')}" aria-label="${T('Save reason','Guardar razón')}">💾</button>`;
+    const input = comp.querySelector('input');
+    const saveReason = () => {
+      const v = input.value.trim();
+      if (!v){ toast(T('Write a reason first','Escribe primero una razón')); input.focus(); return; }
+      list.push(v);
+      openReasons.delete(key);   // collapse back to the smiley after saving
+      afterChange();             // reveal the Next gate + refresh progress
+    };
+    comp.querySelector('.save').addEventListener('click', saveReason);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') saveReason(); });
+    comp.querySelector('.mic').addEventListener('click', e => startDictation(e.currentTarget, input));
+    host.appendChild(comp);
+    // centre confluence: a copy of the emoji shows below the text field
+    if (key === 'c' && state.centreFx >= 1){
+      const echo = document.createElement('div');
+      echo.className = 'centre-echo';
+      echo.textContent = list.length ? '😊' : '🙂';
+      host.appendChild(echo);
+    }
+    input.focus();
+  }
+  function renderAllReasons(){ REASON_KEYS.forEach(renderReasons); }
+  // centre emoji cycles: 0 off → 1 (arrows from the row's L/R cards + echo) → 2 (also hide right-column icons) → 0
+  function centreClick(){
+    if (!state.placed[CENTRE_SLOT]) return;
+    state.centreFx = (state.centreFx + 1) % 3;
+    if (state.centreFx >= 1){ openReasons.clear(); openReasons.add('c'); }
+    else openReasons.delete('c');
+    document.body.classList.toggle('hide-right-icons', state.centreFx >= 2);
+    afterChange();   // re-renders reasons (echo) + drawLinks (arrows)
+  }
+
+  // ── speech-to-text (graceful fallback) ──────────────────────
+  let recog = null;
+  function startDictation(btn, input){
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR){ toast(T('Speech input not available in this browser','La entrada por voz no está disponible en este navegador')); return; }
+    if (recog){ recog.stop(); return; }
+    recog = new SR();
+    recog.lang = T('en-US','es-ES'); recog.interimResults = true;
+    btn.classList.add('rec');
+    let base = input.value ? input.value + ' ' : '';
+    recog.onresult = e => {
+      let t = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) t += e.results[i][0].transcript;
+      input.value = base + t;
+    };
+    const stop = () => { btn.classList.remove('rec'); recog = null; };
+    recog.onerror = stop; recog.onend = stop;
+    recog.start();
+  }
+
+  // ── subsystems ──────────────────────────────────────────────
+  function makeSubCard(sub, kind){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = `sub-card ${kind}`;
+    b.draggable = true;
+    b.dataset.sub = sub.id;
+    b.dataset.kind = kind;
+    b.innerHTML = `<span class="sub-ico">${subIco(sub)}</span><span class="lbl"><span class="en" lang="en">${sub.label}</span><span class="es" lang="es">${sub.es || sub.label}</span></span>`;
+    return b;
+  }
+  // which way the fan opens, from the parent slot's column
+  function subDir(slot){
+    const id = slot.dataset.slot;
+    if (id === CENTRE_SLOT) return 'above';                 // middle column → above
+    return (+id.slice(1) <= 4) ? 'right' : 'left';          // left col → right · right col → left
+  }
+  // the fan anchors to its parent slot and opens by that slot's column
+  function renderSubChips(kind){
+    const col  = $('#immuneList');
+    const open = state.immuneOpen;
+    const parent = slotOfSystem(HOME_OF[kind]);
+    if (parent) parent.classList.toggle('parent-open', !!open);
+    col.innerHTML = '';
+    col.classList.toggle('show', !!open);
+    col.classList.remove('dir-left','dir-right','dir-above');
+    if (open && parent){
+      col.classList.add('dir-' + subDir(parent));
+      parent.appendChild(col);                 // anchor the fan inside its parent slot
+      const defs = IMMUNE_SUBS;
+      defs.forEach(s => {
+        if (state.subs[s.id]) return;          // already threaded → hidden from the fan
+        const c = makeSubCard(s, kind);
+        if (armedSub === s.id) c.classList.add('is-armed');
+        col.appendChild(c);
+      });
+    } else {
+      $('#subFlow').appendChild(col);          // park it back when closed
+    }
+  }
+  const subDef = (kind, id) => IMMUNE_SUBS.find(s => s.id === id);
+
+  function canPlaceSub(kind, slot){
+    if (!slot || !slot.classList.contains('filled')) return false;
+    if (slot.dataset.slot === CENTRE_SLOT) return false;   // centre can't be a thread target
+    const sysId = state.placed[slot.dataset.slot];
+    return sysId !== HOME_OF[kind];               // not on its own parent system
+  }
+  function placeSub(subId, kind, slot){
+    if (!canPlaceSub(kind, slot)){
+      toast(T('Place it on a system other than Immune','Colócalo en un sistema que no sea el Inmunitario'));
+      return false;
+    }
+    state.subs[subId] = { kind, slotId: slot.dataset.slot };
+    armedSub = null;
+    afterChange();                     // badges + chips + links + gates
+    return true;
+  }
+  function removeSub(subId, silent){
+    const rec = state.subs[subId];
+    if (!rec) return;
+    delete state.subs[subId];
+    // discard the line's reasons/verbs too — an unthreaded subsystem starts fresh
+    // if re-threaded (also stops orphaned data persisting to localStorage)
+    delete state.subReasons[subId];
+    delete state.subVerbs[subId];
+    if (silent){ renderBadges(); renderSubChips(rec.kind); renderProgress(); return; }
+    afterChange();   // refresh chips/badges/links + the stage-4 gate + contextual Next
+  }
+  function renderBadges(){
+    // a threaded subsystem now shows only as its connector line (+ label) — no
+    // chip on the target system. Just clear any leftover badge hosts.
+    allSlots().forEach(slot => { const h = slot.querySelector('.subbadges'); if (h) h.innerHTML = ''; });
+  }
+
+  // ── connector lines (parent system card → threaded slot) ────
+  function anchorRect(el){ return el.getBoundingClientRect(); }
+  function drawLinks(){
+    const svg = $('#links');
+    const acc = getCSS('--accent');
+    svg.innerHTML = `<defs><marker id="cfl-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="${acc}"/></marker></defs>`;
+    // confluence: arrows from the centre row's left + right cards into the centre
+    if (state.centreFx >= 1 && state.placed[CENTRE_SLOT]){
+      const c = slotEl(CENTRE_SLOT);
+      if (c){
+        const cb = anchorRect(c), cx = cb.left + cb.width/2, cy = cb.top + cb.height/2;
+        [leftSlotId(CENTRE_ROW), rightSlotId(CENTRE_ROW)].forEach(id => {
+          const s = slotEl(id); if (!s || !state.placed[id]) return;
+          const r = anchorRect(s), sx = r.left + r.width/2, sy = r.top + r.height/2;
+          const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          ln.setAttribute('x1', sx); ln.setAttribute('y1', sy);
+          ln.setAttribute('x2', cx); ln.setAttribute('y2', cy);
+          ln.setAttribute('stroke', acc); ln.setAttribute('stroke-width', '2.5');
+          ln.setAttribute('marker-end', 'url(#cfl-arrow)');
+          svg.appendChild(ln);
+        });
+      }
+    }
+    // open reason (stage 2): a line across that pair of systems
+    if (state.stage === 2){
+      openReasons.forEach(key => {
+        if (key === 'c') return;
+        const li = leftSlotId(+key), ri = rightSlotId(+key);
+        if (!state.placed[li] || !state.placed[ri]) return;
+        const L = slotEl(li), R = slotEl(ri); if (!L || !R) return;
+        const a = anchorRect(L), b = anchorRect(R);
+        const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        ln.setAttribute('x1', a.left + a.width/2); ln.setAttribute('y1', a.top + a.height/2);
+        ln.setAttribute('x2', b.left + b.width/2); ln.setAttribute('y2', b.top + b.height/2);
+        ln.setAttribute('stroke', acc); ln.setAttribute('stroke-width', '3');
+        svg.appendChild(ln);
+      });
+    }
+    Object.entries(state.subs).forEach(([subId, rec]) => {
+      // SubImmune toggle hides the immune arrows
+      if (rec.kind === 'immune' && state.hideImmune) return;
+      const slot = slotEl(rec.slotId); if (!slot) return;
+      const parent = slotOfSystem(HOME_OF[rec.kind]); if (!parent) return;
+      const a = anchorRect(parent), b = anchorRect(slot);
+      // from the parent card's centre to the threaded slot's centre
+      const x1 = a.left + a.width/2;
+      const y1 = a.top  + a.height/2;
+      const x2 = b.left + b.width/2;
+      const y2 = b.top  + b.height/2;
+      const colour = getCSS('--immune');
+      const def = subDef(rec.kind, subId);
+
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+      line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+      line.setAttribute('stroke', colour);
+      line.setAttribute('stroke-dasharray', '5 4');
+      svg.appendChild(line);
+
+      // the subsystem NAME sits at the line's third-quarter point (near the target);
+      // its reason / verb live at the first-quarter point (near the parent)
+      const nx = x1 + (x2 - x1) * 0.75, ny = y1 + (y2 - y1) * 0.75;
+      const mx = x1 + (x2 - x1) * 0.25, my = y1 + (y2 - y1) * 0.25;
+      // helper: a clickable svg text that opens this link's reason/verb composer
+      const NS = 'http://www.w3.org/2000/svg';
+      const mkText = (x, y, content, size, fill) => {
+        const t = document.createElementNS(NS, 'text');
+        t.setAttribute('x', x); t.setAttribute('y', y);
+        t.setAttribute('text-anchor', 'middle'); t.setAttribute('dominant-baseline', 'middle');
+        t.setAttribute('fill', fill); t.setAttribute('stroke', getCSS('--bg'));
+        t.setAttribute('stroke-width', '3'); t.setAttribute('paint-order', 'stroke');
+        if (size) t.setAttribute('font-size', size);
+        t.textContent = content;
+        t.style.cursor = 'pointer'; t.style.pointerEvents = 'auto';
+        t.addEventListener('click', ev => openLinkPanel(subId, ev.clientX, ev.clientY));
+        return t;
+      };
+      // the name label rides at the third-quarter point
+      const txt = mkText(nx, ny, def ? defLabel(def) : subId, null, colour);
+      txt.setAttribute('aria-label', T('Reason / verb for ','Razón / verbo de ') + (def ? defLabel(def) : subId));
+      svg.appendChild(txt);
+      // reason (15-char preview) sits ABOVE the line at the first-quarter point · verb just below it
+      const subR = state.subReasons[subId] || [], subV = state.subVerbs[subId] || [];
+      if (subR.length){
+        const lbl = '🙂 ' + trunc15(subR[0]) + (subR.length > 1 ? ' +' + (subR.length - 1) : '');
+        svg.appendChild(mkText(mx, my - 14, lbl, '.5rem', colour));
+      }
+      if (subV.length){ svg.appendChild(mkText(mx, my + 14, subV.join(' · '), '.5rem', getCSS('--accent'))); }
+    });
+  }
+  function getCSS(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+  // clicking a connector line's title → reason composer above · verb composer below
+  function openLinkPanel(subId, x, y){
+    const rec = state.subs[subId]; if (!rec) return;
+    const def = subDef(rec.kind, subId);
+    state.subReasons[subId] ||= []; state.subVerbs[subId] ||= [];
+    const p = $('#linkPanel');
+    p.style.left = Math.min(Math.max(x, 130), window.innerWidth - 130) + 'px';
+    p.style.top  = Math.min(Math.max(y, 90),  window.innerHeight - 90) + 'px';
+    p.innerHTML = `
+      <div class="lp-row"><input class="lp-reason" type="text" placeholder="${T('Reason…','Razón…')}"><button class="icon-btn lp-rsave" title="${T('Save reason','Guardar razón')}">💾</button></div>
+      <div class="lp-saved lp-rsaved"></div>
+      <div class="lp-label">↳ ${def ? defLabel(def) : subId}</div>
+      <div class="lp-saved lp-vsaved"></div>
+      <div class="lp-row"><input class="lp-verb" type="text" placeholder="${T('Verb…','Verbo…')}"><button class="icon-btn lp-vsave" title="${T('Save verb','Guardar verbo')}">✓</button></div>
+      <button class="lp-unthread" type="button">✕ ${T('unthread','desenhebrar')}</button>`;
+    const rsaved = p.querySelector('.lp-rsaved'), vsaved = p.querySelector('.lp-vsaved');
+    // each saved reason / verb is a chip with a ✕ that deletes it
+    const renderSaved = (host, arr) => {
+      host.innerHTML = '';
+      arr.forEach((txt, i) => {
+        const chip = document.createElement('span');
+        chip.className = 'lp-chip';
+        chip.innerHTML = `<span class="lp-chip-txt"></span><button class="lp-chip-del" type="button" title="${T('Delete','Borrar')}" aria-label="${T('Delete','Borrar')}">✕</button>`;
+        chip.querySelector('.lp-chip-txt').textContent = txt;
+        chip.querySelector('.lp-chip-del').addEventListener('click', () => {
+          arr.splice(i, 1); paint(); save(); drawLinks();
+        });
+        host.appendChild(chip);
+      });
+    };
+    const paint = () => {
+      renderSaved(rsaved, state.subReasons[subId]);
+      renderSaved(vsaved, state.subVerbs[subId]);
+    };
+    paint();
+    const rin = p.querySelector('.lp-reason'), vin = p.querySelector('.lp-verb');
+    const saveR = () => { const v = rin.value.trim(); if (!v) return; state.subReasons[subId].push(v); rin.value = ''; paint(); save(); drawLinks(); };
+    const saveV = () => { const v = vin.value.trim(); if (!v) return; state.subVerbs[subId].push(v);   vin.value = ''; paint(); save(); drawLinks(); };
+    p.querySelector('.lp-rsave').addEventListener('click', saveR);
+    p.querySelector('.lp-vsave').addEventListener('click', saveV);
+    rin.addEventListener('keydown', e => { if (e.key === 'Enter') saveR(); });
+    vin.addEventListener('keydown', e => { if (e.key === 'Enter') saveV(); });
+    p.querySelector('.lp-unthread').addEventListener('click', () => { p.classList.remove('show'); removeSub(subId); });
+    p.classList.add('show');
+    rin.focus();
+  }
+
+  // ── flow: 1 place · 2 reasons · 3 verbs · 4 subsystems ──
+  function allPlaced(){ return Object.keys(state.placed).length === SYSTEMS.length; }
+  function afterChange(){
+    renderBadges();
+    renderAllReasons();
+    // per-stage reveals: verbs always in stage 3, but in stage 4 only when the
+    // toggle is on (collapsed by default)
+    const verbsVisible = state.stage === 3 || (state.stage >= 4 && state.verbsShown);
+    document.body.classList.toggle('show-verbs', verbsVisible);
+    // the Layers mark rides below the empty placeholders — only while placing
+    document.body.classList.toggle('placing', state.stage === 1);
+    // system icons appear from stage 3 (not the reasons stage); in stage 4 they
+    // collapse under the Reasons toggle — and once every subsystem is threaded,
+    // the Reasons view drops the right-column system symbols entirely.
+    const emojisVisible = state.stage === 3
+      || (state.stage >= 4 && state.reasonsShown && !allSubsPlaced());
+    document.body.classList.toggle('show-emojis', emojisVisible);
+    // parents glow only in stage 4
+    allSlots().forEach(s => s.classList.remove('is-parent','parent-immune','parent-open'));
+    if (state.stage >= 4){
+      const im = slotOfSystem('immune');  if (im) im.classList.add('is-parent','parent-immune');
+      renderSubChips('immune');   // re-anchor the open immune fan
+    } else {
+      closeDocks();   // before the subsystem stage → no subtabs
+    }
+    // stage-1 big button + its "← Back" (clear board): appear once all placed
+    $('#nextBtn').classList.toggle('show', state.stage === 1 && allPlaced());
+    $('#clearBtn').classList.toggle('show', state.stage === 1 && allPlaced());
+    // Check / Polarities: end of stage 1 (all cards placed) AND in stage 4 (all subs threaded)
+    const subsAllIn = allSubsPlaced();
+    const showCheck = (state.stage === 1 && allPlaced()) || (state.stage === 4 && subsAllIn);
+    $('#checkBtn').classList.toggle('show', showCheck);
+    $('#checkWrap').classList.toggle('show', showCheck);
+    if (!showCheck){
+      $('#board').classList.remove('checking','show-polarities');
+      $('#checkBtn').setAttribute('aria-pressed','false');
+    }
+    if (typeof syncCheckLabel === 'function') syncCheckLabel();
+    // Complete: reveal the "Related apps" button (mirrors the Complete progress step)
+    const complete = state.stage === 4 && subsAllIn;
+    // the summary surface is opened explicitly by the stage-4 Next; drop it when
+    // the player steps back out of the subsystems stage
+    if (state.stage !== 4){ const ss = $('#summarySection'); if (ss) ss.classList.remove('show'); }
+    $('#relatedBtn').classList.toggle('show', complete);
+    if (!complete){
+      $('#relatedPanel').classList.remove('show');
+      $('#relatedBtn').setAttribute('aria-expanded', 'false');
+    }
+    // SubImmune arrow-hide toggle — above Back, once all subs are placed
+    $('#subToggleRow').classList.toggle('show', state.stage === 4 && subsAllIn);
+    $('#subImmuneBtn').setAttribute('aria-pressed', state.hideImmune ? 'true' : 'false');
+    // stage nav (Back always from stage 2; Next appears once that stage's gate is met)
+    const nav = $('#stageNav');
+    nav.classList.toggle('show', state.stage >= 2);
+    const next2 = $('#nextBtn2');
+    if (state.stage === 2)      next2.hidden = !hasAnyReason();
+    else if (state.stage === 3) next2.hidden = !hasAnyVerb();
+    // stage 4: a final Next once at least one subsystem is related to a system
+    else if (state.stage === 4) next2.hidden = !Object.keys(state.subs).length;
+    else                        next2.hidden = true;
+    // stage-4 toggles: Reasons (reasons + emojis) then Verbs
+    const rt = $('#reasonToggle');
+    rt.classList.toggle('show', state.stage === 4);
+    rt.setAttribute('aria-pressed', state.reasonsShown ? 'true' : 'false');
+    const vt = $('#verbToggle');
+    vt.classList.toggle('show', state.stage === 4);
+    vt.setAttribute('aria-pressed', state.verbsShown ? 'true' : 'false');
+    // ── pair zoom (stage 2): a clicked smiley blows up its pair of systems ×3 ──
+    markPairZoom();
+    renderProgress();
+    drawLinks();
+    save();
+  }
+  function goStage(n){
+    state.stage = Math.max(1, Math.min(4, n));
+    if (state.stage === 4){ state.verbsShown = false; state.reasonsShown = false; }   // both collapsed by default in stage 4
+    // reset the centre confluence view + arrow-hide toggles when navigating stages
+    state.centreFx = 0; document.body.classList.remove('hide-right-icons');
+    state.hideImmune = false;
+    if (state.stage < 4) closeDocks();
+    afterChange();
+  }
+  function closeDocks(){
+    state.immuneOpen = false;
+    const il = $('#immuneList'), sf = $('#subFlow');
+    [il].forEach(c => {
+      if (!c) return;
+      c.innerHTML = '';
+      c.classList.remove('show','dir-left','dir-right','dir-above');
+      if (sf) sf.appendChild(c);                 // park back out of any parent slot
+    });
+    $$('.parent-open').forEach(el => el.classList.remove('parent-open'));
+    armedSub = null;
+  }
+  // click a glowing parent → fan / fold its subtab chips at the bottom corner
+  function toggleSubGroup(kind){
+    state.immuneOpen = !state.immuneOpen;
+    renderSubChips(kind);
+    armedSub = null;
+    save(); drawLinks();
+  }
+
+  // ── progress: Systems → Reasons → Verbs → Subsystems → Complete ──
+  function renderProgress(){
+    const host = $('#progress'); if (!host) return;
+    host.innerHTML = '';
+    const placedCount = Object.keys(state.placed).length;
+    const subCount    = Object.keys(state.subs).length;
+    const st = state.stage;
+
+    const reasonCount = REASON_KEYS.filter(k => state.reasons[k] && state.reasons[k].length).length;
+    const verbCount   = Object.values(state.verbs).filter(a => a && a.length).length;
+    const steps = [{ lab:T('Systems pairs','Pares de sistemas'), cur:placedCount, max:SYSTEMS.length, cls:'', noCt:true }];
+    if (st >= 2) steps.push({ lab:T('Reasons','Razones'), cur:reasonCount, max:REASON_KEYS.length, cls:'sub' });
+    if (st >= 3) steps.push({ lab:T('Verbs','Verbos'),   cur:verbCount,   max:SYSTEMS.length,     cls:'sub' });
+    if (st >= 4) steps.push({ lab:T('Subsystems','Subsistemas'), cur:subCount, max:TOTAL_SUBS, cls:'sub' });
+    if (st >= 4 && subCount === TOTAL_SUBS) steps.push({ lab:T('Complete','Completo'), cur:1, max:1, cls:'' });
+
+    steps.forEach((st, i) => {
+      if (i > 0){
+        const sep = document.createElement('span');
+        sep.className = 'prog-sep'; sep.textContent = '›';
+        host.appendChild(sep);
+      }
+      const done = st.cur >= st.max;
+      const el = document.createElement('div');
+      el.className = 'prog-step' + (st.cls ? ' ' + st.cls : '') + (done ? ' done' : '');
+      const pct = Math.round(st.cur / st.max * 100);
+      el.innerHTML = `<span class="lab">${st.lab}${st.noCt ? '' : ` <span class="ct">${st.cur}/${st.max}</span>`}</span>`
+                   + `<span class="meter"><i style="width:${pct}%"></i></span>`;
+      host.appendChild(el);
+    });
+  }
+
+  // ── persistence (F0 hard local persistence · backend_plan.md §10.3a/b) ──
+  const SCHEMA_VERSION = 1;   // bump if the saved shape changes (key already carries .v1)
+  function save(){
+    // mark the summary "out of date" when a player edits an already-persisted board
+    // in-session (state lives in JS objects, so this is wired to the save funnel, not
+    // a timer); the Update button clears it. Armed only after the first hydrate/render.
+    if (typeof markStale === 'function') markStale();
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        v:SCHEMA_VERSION,
+        placed:state.placed, reasons:state.reasons, subs:state.subs, verbs:state.verbs,
+        subReasons:state.subReasons, subVerbs:state.subVerbs,
+        stage:state.stage, verbsShown:state.verbsShown, reasonsShown:state.reasonsShown,
+        immuneOpen:state.immuneOpen
+      }));
+    }catch(e){
+      if (e && (e.name === 'QuotaExceededError' || e.code === 22 || e.code === 1014)){
+        toast(T('Storage full — export your board (Save ▸) to keep it safe',
+                'Almacenamiento lleno — exporta tu tablero (Guardar ▸) para no perderlo'));
+      }
+      // any other write error is swallowed: the in-memory board keeps working
+    }
+  }
+  // restore on load: rehydrate the saved board (placements, reasons, verbs,
+  // threaded subsystems, stage) so a reload / close / reopen continues where the
+  // player left off. The deck + all surfaces are then rebuilt from `state`.
+  function restore(){
+    let raw; try{ raw = localStorage.getItem(STORAGE_KEY); }catch(_){ return false; }
+    if (!raw) return false;
+    let o; try{ o = JSON.parse(raw); }catch(_){ return false; }
+    if (!o || typeof o !== 'object') return false;
+    // scalars / authored content — fall back to the fresh defaults when absent
+    if (o.placed     && typeof o.placed     === 'object') state.placed     = o.placed;
+    if (o.reasons    && typeof o.reasons    === 'object') state.reasons    = Object.assign(freshReasons(), o.reasons);
+    if (o.subs       && typeof o.subs       === 'object') state.subs       = o.subs;
+    if (o.verbs      && typeof o.verbs      === 'object') state.verbs      = o.verbs;
+    if (o.subReasons && typeof o.subReasons === 'object') state.subReasons = o.subReasons;
+    if (o.subVerbs   && typeof o.subVerbs   === 'object') state.subVerbs   = o.subVerbs;
+    if (typeof o.stage === 'number')   state.stage        = Math.max(1, Math.min(4, o.stage));
+    state.verbsShown   = !!o.verbsShown;
+    state.reasonsShown = !!o.reasonsShown;
+    state.immuneOpen   = !!o.immuneOpen;
+    // paint the placed systems into their slots (mirrors placeSystem, minus the
+    // per-card renderDeck/afterChange — those run once after the loop)
+    Object.keys(state.placed).forEach(slotId => {
+      const sysId = state.placed[slotId];
+      const slot  = slotEl(slotId);
+      if (slot && SYS[sysId] && !slot.classList.contains('filled')) fillSlot(slot, sysId);
+      else if (!slot || !SYS[sysId]) delete state.placed[slotId];   // drop stale ids
+    });
+    return true;
+  }
+
+  // ── drag & drop ─────────────────────────────────────────────
+  let dragSys = null, dragSub = null;
+  document.addEventListener('dragstart', e => {
+    const sysCard = e.target.closest('.card[data-sys]');
+    const subCard = e.target.closest('.sub-card');
+    if (sysCard && sysCard.closest('#deck')){
+      dragSys = sysCard.dataset.sys; sysCard.classList.add('is-dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', dragSys);
+    } else if (sysCard && sysCard.closest('.slot')){
+      if (frozen()){ e.preventDefault(); return; }   // placements locked
+      dragSys = sysCard.dataset.sys; dragSys = '@'+sysCard.closest('.slot').dataset.slot; // move-from-slot
+      sysCard.classList.add('is-dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', sysCard.dataset.sys);
+    } else if (subCard){
+      dragSub = { id:subCard.dataset.sub, kind:subCard.dataset.kind };
+      subCard.classList.add('is-dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', subCard.dataset.sub);
+    }
+  });
+  document.addEventListener('dragend', e => {
+    $$('.is-dragging').forEach(el => el.classList.remove('is-dragging'));
+    $$('.slot.over,.slot.sub-ok,.slot.sub-no').forEach(s => s.classList.remove('over','sub-ok','sub-no'));
+    dragSys = null; dragSub = null;
+  });
+  document.addEventListener('dragover', e => {
+    const slot = e.target.closest('.slot');
+    if (!slot) return;
+    if (dragSub){
+      e.preventDefault();
+      slot.classList.toggle('sub-ok', canPlaceSub(dragSub.kind, slot));
+      slot.classList.toggle('sub-no', !canPlaceSub(dragSub.kind, slot));
+    } else if (dragSys && !slot.classList.contains('filled')){
+      e.preventDefault(); slot.classList.add('over');
+    } else if (dragSys && String(dragSys).startsWith('@')){
+      e.preventDefault(); slot.classList.add('over');
+    }
+  });
+  document.addEventListener('dragleave', e => {
+    const slot = e.target.closest('.slot');
+    if (slot) slot.classList.remove('over','sub-ok','sub-no');
+  });
+  document.addEventListener('drop', e => {
+    const slot = e.target.closest('.slot');
+    if (!slot) return;
+    e.preventDefault();
+    slot.classList.remove('over','sub-ok','sub-no');
+    if (dragSub){
+      placeSub(dragSub.id, dragSub.kind, slot);
+    } else if (dragSys){
+      if (String(dragSys).startsWith('@')){
+        // moving a placed system to another slot
+        const fromId = String(dragSys).slice(1);
+        const sysId = state.placed[fromId];
+        if (slot.classList.contains('filled') && slot.dataset.slot !== fromId){ toast(T('That spot is taken','Ese hueco está ocupado')); return; }
+        unplaceSystem(slotEl(fromId));
+        placeSystem(sysId, slot);
+      } else if (!slot.classList.contains('filled')){
+        placeSystem(dragSys, slot);
+      }
+    }
+  });
+
+  // ── click-to-place (willy.html pattern) ─────────────────────
+  document.addEventListener('click', e => {
+    // ── verb editor (on the card) ──
+    const vAdd = e.target.closest('.verb-add');
+    if (vAdd){
+      const slot = vAdd.closest('.slot'); delete slot.dataset.vEdit;
+      const open = slot.classList.toggle('verb-open');
+      const inp = slot.querySelector('.verb-edit input'); if (inp){ inp.value = ''; if (open) inp.focus(); }
+      return;
+    }
+    const vSave = e.target.closest('.verb-save');
+    if (vSave){ saveVerb(vSave.closest('.slot')); return; }
+    const vMore = e.target.closest('.verb-more');
+    if (vMore){ vMore.closest('.slot').classList.add('verbs-expanded'); return; }
+    const vCol = e.target.closest('.verb-collapse');
+    if (vCol){ vCol.closest('.slot').classList.remove('verbs-expanded'); return; }
+    const vEdit = e.target.closest('.verb-all .vedit');
+    if (vEdit){
+      const slot = vEdit.closest('.slot'), i = +vEdit.dataset.i;
+      slot.dataset.vEdit = i; slot.classList.add('verb-open'); slot.classList.remove('verbs-expanded');
+      const inp = slot.querySelector('.verb-edit input'); if (inp){ inp.value = (state.verbs[slot.dataset.slot]||[])[i] || ''; inp.focus(); }
+      return;
+    }
+    const vChip = e.target.closest('.verb-chip');
+    if (vChip){
+      const slot = vChip.closest('.slot'); slot.dataset.vEdit = 0; slot.classList.add('verb-open');
+      const inp = slot.querySelector('.verb-edit input'); if (inp){ inp.value = (state.verbs[slot.dataset.slot]||[])[0] || ''; inp.focus(); }
+      return;
+    }
+    const vDel = e.target.closest('.verb-all .del');
+    if (vDel){
+      const slot = vDel.closest('.slot');
+      (state.verbs[slot.dataset.slot] || []).splice(+vDel.dataset.i, 1);
+      renderVerbChips(slot); afterChange();
+      return;
+    }
+    if (e.target.closest('.verb-edit') || e.target.closest('.verb-all')) return;
+
+    // arming / placing subsystems
+    const subCard = e.target.closest('.sub-card');
+    if (subCard){
+      const id = subCard.dataset.sub;
+      if (state.subs[id]){ removeSub(id); return; }       // already threaded → pull back
+      armedSub = (armedSub === id) ? null : id;
+      renderSubChips(subCard.dataset.kind);
+      toast(armedSub ? T('Now click a system to thread it','Ahora haz clic en un sistema para enhebrarlo') : '');
+      return;
+    }
+    // clicking a slot while a subsystem is armed → thread it there
+    const slot = e.target.closest('.slot');
+    if (slot && armedSub){
+      placeSub(armedSub, 'immune', slot);
+      return;
+    }
+    // system cards: deck → first empty slot; placed → unplace (or, once complete, a parent fans its subtabs)
+    const card = e.target.closest('.card[data-sys]');
+    if (!card || card.classList.contains('is-dragging')) return;
+    if (card.closest('#deck')){
+      const empty = firstEmptySlot();
+      if (!empty){ toast(T('Board is full — click a placed system to free it','El tablero está lleno: haz clic en un sistema colocado para liberarlo')); return; }
+      placeSystem(card.dataset.sys, empty);
+    } else if (card.closest('.slot')){
+      const cslot = card.closest('.slot');
+      if (frozen()){
+        // placements are locked; only the glowing parents stay interactive (stage 4)
+        if (cslot.classList.contains('is-parent')){
+          toggleSubGroup('immune');
+        }
+        return;
+      }
+      unplaceSystem(cslot);
+    }
+  });
+
+  // ── click anywhere else collapses open reason / verb fields ──
+  // capture phase so it runs before the smiley/verb listeners re-render their own nodes
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.reasons') && openReasons.size){
+      openReasons.clear(); afterChange();   // also drops the pair zoom + connecting line
+    }
+    $$('.slot.verb-open').forEach(s => { if (!s.contains(e.target)) s.classList.remove('verb-open'); });
+    $$('.slot.verbs-expanded').forEach(s => { if (!s.contains(e.target)) s.classList.remove('verbs-expanded'); });
+    // close the link composer when clicking outside it (and not on a line label)
+    const lp = $('#linkPanel');
+    if (lp && lp.classList.contains('show') && !lp.contains(e.target) && !(e.target.closest && e.target.closest('#links'))){
+      lp.classList.remove('show');
+    }
+  }, true);
+
+  // ── deck open / collapse ────────────────────────────────────
+  function setDeckOpen(open){
+    document.body.classList.toggle('deck-open', open);
+    $('#deckToggle').setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  $('#deckToggle').addEventListener('click', () => setDeckOpen(true));
+  $('#deckCaret').addEventListener('click',  () => setDeckOpen(false));
+
+  // ── brand menu: clicking About (or following ← flove) closes the dropdown ──
+  $('#flove-menu').addEventListener('click', (e) => { if (e.target.closest('.lang')) return; $('#menu-toggle').checked = false; });
+
+  // ── stage navigation ────────────────────────────────────────
+  // stage 1 → 2: lock placements, drop Clear board, open the reasons stage
+  $('#nextBtn').addEventListener('click', () => {
+    if (state.stage !== 1 || !allPlaced()) return;
+    goStage(2);
+    toast(T('Placements locked — write reasons in the middle','Colocaciones bloqueadas: escribe las razones en el centro'));
+  });
+  // Check → confluence; Polarities → groupings; a third click resets to the
+  // default (no animation, no groupings) so the button loops Check → Polarities
+  // → default → Check…
+  function syncCheckLabel(){
+    // the button shows only the Pair icon now — the state lives in its aria-label
+    const b = $('#board'), btn = $('#checkBtn'); if (!b || !btn) return;
+    btn.setAttribute('aria-label', b.classList.contains('show-polarities')
+        ? T('Remove Polarities','Quitar polaridades')
+        : b.classList.contains('checking')
+          ? T('Polarities','Polaridades')
+          : T('Pair','Emparejar'));
+  }
+  function resetCheck(){
+    const board = $('#board'), btn = $('#checkBtn');
+    board.classList.remove('checking','show-polarities');
+    btn.setAttribute('aria-pressed','false'); syncCheckLabel();
+  }
+  $('#checkBtn').addEventListener('click', () => {
+    const board = $('#board'), btn = $('#checkBtn');
+    if (!board.classList.contains('checking')){
+      board.classList.add('checking');
+      toast(T('Confluence — tap Polarities to reveal the groupings','Confluencia: pulsa Polaridades para revelar las agrupaciones'));
+    } else if (!board.classList.contains('show-polarities')){
+      board.classList.add('show-polarities');
+      btn.setAttribute('aria-pressed', 'true');
+    } else {
+      resetCheck();                         // loop back to the default state
+      toast(T('Reset — tap Pair to run it again','Reinicio: pulsa Emparejar para ejecutarlo otra vez'));
+      return;
+    }
+    syncCheckLabel();
+  });
+  // middle-stage Next: 2 → 3 (reveal + verbs) · 3 → 4 (reveal subsystems) · 4 → done
+  $('#nextBtn2').addEventListener('click', advance);
+  // SubImmune: hide the immune connector arrows
+  $('#subImmuneBtn').addEventListener('click', () => { state.hideImmune = !state.hideImmune; afterChange(); });
+  // Back one stage
+  $('#backBtn').addEventListener('click', () => goStage(state.stage - 1));
+  // stage-4: toggle the verb + icons across all cards
+  $('#verbToggle').addEventListener('click', () => {
+    state.verbsShown = !state.verbsShown;
+    afterChange();
+  });
+  $('#reasonToggle').addEventListener('click', () => {
+    state.reasonsShown = !state.reasonsShown;
+    afterChange();
+  });
+  // stage-1 "← Back": clear the board so placing can start over
+  $('#clearBtn').addEventListener('click', () => {
+    if (state.stage !== 1) return;
+    allSlots().forEach(s => { if (s.classList.contains('filled')) unplaceSystem(s); });
+    toast(T('Board cleared — place the systems again','Tablero vaciado: vuelve a colocar los sistemas'));
+  });
+
+  // ── Complete · related flove apps (keys-style panel + intro overlay) ──
+  const RELATED_FEATURED = [
+    { key:'souls', label:'Souls', href:'souls.html', icon:'🌱'  },
+    { key:'keys',  label:'Keys',  href:'keys-advanced.html',  icon:'🔑' },
+    { key:'sensy', label:'Sensy', href:'sensy.html', icon:'🫧' }
+  ];
+  const RELATED_MORE_APPS = [
+    { key:'fivy',     label:'Fivy',     href:'fivy.html',     icon:'✦'  },
+    { key:'worthing', label:'Worthing', href:'worthing.html', icon:'◍'  },
+    { key:'realy',    label:'Realy',    href:'realy.html',    icon:'◉'  },
+    { key:'crafty',   label:'Crafty',   href:'crafty.html',   icon:'✶'  },
+    { key:'hoty',     label:'Hoty',     href:'hoty.html',     icon:'🔥' },
+    { key:'willy',    label:'Willy',    href:'willy.html',    icon:'🎯' }
+  ];
+  const APP_INTROS = {
+    souls:    { en:'Souls names the eleven systems you just practised — meet them at their source.', es:'Souls nombra los once sistemas que acabas de practicar: encuéntralos en su origen.' },
+    keys:     { en:'Keys shapes what matters into triads you can carry.', es:'Keys da forma a lo que importa en tríadas que puedes llevar contigo.' },
+    sensy:    { en:'Sensy tunes into how each sense reads the moment.', es:'Sensy sintoniza cómo cada sentido lee el momento.' },
+    fivy:     { en:'Fivy opens your shapes into five-pointed stars.', es:'Fivy abre tus formas en estrellas de cinco puntas.' },
+    worthing: { en:'Worthing asks what is worth your time and your care.', es:'Worthing pregunta qué merece tu tiempo y tu cuidado.' },
+    realy:    { en:'Realy weighs how real each thing feels to you.', es:'Realy sopesa cuán real te resulta cada cosa.' },
+    crafty:   { en:'Crafty turns intuition into a craft you can grow.', es:'Crafty convierte la intuición en un oficio que puedes cultivar.' },
+    hoty:     { en:"Hoty plots what's hottest in your attention right now.", es:'Hoty traza qué es lo más candente en tu atención ahora mismo.' },
+    willy:    { en:'Willy aims your will at a single target.', es:'Willy apunta tu voluntad a un único objetivo.' },
+    default:  { en:"Open this one with the systems you've just laid out.", es:'Abre esta con los sistemas que acabas de disponer.' }
+  };
+  let relatedBuilt = false;
+  function buildRelatedApps(){
+    if (relatedBuilt) return; relatedBuilt = true;
+    const card = a =>
+      `<button class="related-app${a.featured ? ' featured' : ''}" type="button"`
+      + ` data-app-key="${a.key}" data-app-label="${a.label}" data-app-href="${a.href}">`
+      + `<span class="ra-icon">${a.icon || '🌱'}</span><span class="ra-label">${a.label}</span></button>`;
+    $('#relatedFeatured').innerHTML = RELATED_FEATURED.map(a => card({ ...a, featured:true })).join('');
+    $('#relatedMore').innerHTML     = RELATED_MORE_APPS.map(card).join('');
+  }
+  function showAppIntro(opts){
+    $('#aiIcon').textContent   = opts.icon  || '';
+    $('#aiName').textContent   = opts.label || '';
+    const intro = APP_INTROS[opts.key] || APP_INTROS.default;
+    $('#aiPhrase').textContent = T(intro.en, intro.es);
+    $('#aiGo').onclick = () => { $('#appIntro').hidden = true; if (opts.href) window.location.href = opts.href; };
+    $('#appIntro').hidden = false;
+  }
+  // Related apps toggle (shown at the Complete stage)
+  $('#relatedBtn').addEventListener('click', () => {
+    buildRelatedApps();
+    const open = !$('#relatedPanel').classList.contains('show');
+    $('#relatedPanel').classList.toggle('show', open);
+    $('#relatedBtn').setAttribute('aria-expanded', String(open));
+  });
+  // the "+" reveals the extra apps
+  $('#relatedPlus').addEventListener('click', () => {
+    const more = $('#relatedMore'), open = more.hidden;
+    more.hidden = !open;
+    $('#relatedPlus').setAttribute('aria-expanded', String(open));
+    $('#relatedPlus').textContent = open ? '−' : '+';
+  });
+  // any related-app card opens the intro overlay before navigating
+  $('#relatedPanel').addEventListener('click', e => {
+    const card = e.target.closest('.related-app'); if (!card) return;
+    showAppIntro({
+      key:   card.dataset.appKey,
+      label: card.dataset.appLabel,
+      href:  card.dataset.appHref,
+      icon:  card.querySelector('.ra-icon') ? card.querySelector('.ra-icon').textContent : ''
+    });
+  });
+  // app-intro cancel / backdrop / Esc
+  $('#aiCancel').addEventListener('click', () => { $('#appIntro').hidden = true; });
+  $('#appIntro').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.hidden = true; });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#appIntro').hidden) $('#appIntro').hidden = true; });
+
+  // ════════════════════════════════════════════════════════════
+  //  Summary surface · resume of selections + action bar
+  //  (souls-style §13.9: Magic · Insight · Copy / Save · Share · Publish)
+  // ════════════════════════════════════════════════════════════
+  const escHtml = s => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  const escXml  = s => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  const sysAt   = slotId => { const id = state.placed[slotId]; return id ? SYS[id] : null; };
+  // a flat lookup for every subsystem id → { label, kind }
+  const SUB_BY_ID = {};
+  IMMUNE_SUBS .forEach(s => SUB_BY_ID[s.id] = { ...s, kind:'immune' });
+
+  // ── the structured "resume" rows that every export reads ──
+  function summaryRows(){
+    const rows = [];
+    for (let r = 0; r < N_ROWS; r++){
+      const L = sysAt(leftSlotId(r)), R = sysAt(rightSlotId(r));
+      if (!L && !R) continue;
+      rows.push({ kind:'pair', title:`${L?defLabel(L):'—'} ↔ ${R?defLabel(R):'—'}`, items:(state.reasons[r]||[]).slice() });
+    }
+    const C = sysAt(CENTRE_SLOT);
+    if (C) rows.push({ kind:'centroid', title:defLabel(C), items:(state.reasons.c||[]).slice() });
+    Object.keys(state.placed).forEach(slotId => {
+      const vs = state.verbs[slotId]; if (!vs || !vs.length) return;
+      const s = sysAt(slotId); if (!s) return;
+      rows.push({ kind:'verbs', title:defLabel(s), items:vs.slice() });
+    });
+    Object.keys(state.subs).forEach(id => {
+      const rec = state.subs[id], sub = SUB_BY_ID[id]; if (!sub) return;
+      const tgt = sysAt(rec.slotId);
+      const items = (state.subReasons[id]||[]).concat((state.subVerbs[id]||[]).map(v => '→ ' + v));
+      rows.push({ kind:'subsystem', title:`${defLabel(sub)} (${kindWord(rec.kind)}) → ${tgt?defLabel(tgt):'—'}`, items });
+    });
+    return rows;
+  }
+  // ── cross-app data: verbs grouped by system id (for souls.html suggestions) ──
+  function extractCrossData(){
+    const cross = {};
+    Object.entries(state.placed).forEach(([slotId, sysId]) => {
+      const vs = state.verbs[slotId];
+      if (sysId && vs && vs.length) cross[sysId] = vs.slice();
+    });
+    Object.entries(state.subs).forEach(([id, rec]) => {
+      const sysId = rec.slotId ? state.placed[rec.slotId] : null;
+      const vs = state.subVerbs[id];
+      if (sysId && vs && vs.length) cross[sysId] = (cross[sysId] || []).concat(vs);
+    });
+    return cross;
+  }
+  // ── the flove element (JSON / Copy-as-JSON / Publish payload) ──
+  function buildElement(){
+    return {
+      app:'PracSys', type:'body', version:1, generatedAt:new Date().toISOString(),
+      placements: Object.fromEntries(Object.entries(state.placed).map(([k,v]) => [k, SYS[v].label])),
+      reasons: state.reasons,
+      verbs: state.verbs,
+      cross: { systems: extractCrossData() },
+      subs: Object.fromEntries(Object.entries(state.subs).map(([id,rec]) => [id, {
+        kind: rec.kind, target:(sysAt(rec.slotId)||{}).label || null,
+        reasons:(state.subReasons[id]||[]).slice(), verbs:(state.subVerbs[id]||[]).slice()
+      }])),
+      rows: summaryRows()
+    };
+  }
+  // §13.15 wizy — domain agent block, folded into the record on a Wizy publish
+  // so any agent (local MyWizy or external) can act on a PracSys body map.
+  window.floveAgentBlock = function buildAgentBlock(m) {
+    return {
+      prompt: 'You are handed a PracSys body map: the body read as systems — paired '
+        + 'systems, a centroid, verbs that move it, and subsystems. Read the placements, '
+        + 'reasons, verbs and subsystems, then help the user reflect on how they have '
+        + 'mapped their body — what pairs and what is left unattached — and offer one '
+        + 'gentle question about a system they might revisit.',
+      schema: {
+        app: 'app slug (PracSys)',
+        type: 'body',
+        placements: 'map of slot → system label',
+        reasons: 'why each placement',
+        verbs: 'verbs attached to systems',
+        subs: 'subsystems: { kind, target, reasons, verbs }',
+        rows: 'flat summary rows the app renders'
+      },
+      context: {
+        source: 'pracsys · FLOVE',
+        url: 'https://flove.org/apps/bio/pracsys.html',
+        axis: 'bio (body as systems)'
+      },
+      suggestions: [
+        'Point out which systems are paired and which stand alone.',
+        'Name the verbs the user gave and what they suggest about movement.',
+        'Offer one gentle question about a subsystem they might revisit.'
+      ]
+    };
+  };
+  window.floveSummary = () => buildElement();   // §13.15 — publish-to-Appy WRITER hook
+  // ── plain-text resume (Copy / TXT / MD / Share / Email / Print) ──
+  function summaryText(){
+    const rows = summaryRows();
+    const out = [T('🌱 pracsys body','🌱 cuerpo de pracsys'), ''];
+    const group = (label, kind, fmt) => {
+      const items = rows.filter(r => r.kind === kind); if (!items.length) return;
+      out.push(label); items.forEach(r => out.push('  · ' + fmt(r))); out.push('');
+    };
+    group(T('Systems pairs','Pares de sistemas'), 'pair',      r => r.title + (r.items.length ? ' — ' + r.items.join('; ') : ''));
+    group(T('Centroid','Centroide'),      'centroid',  r => r.title + (r.items.length ? ' — ' + r.items.join('; ') : ''));
+    group(T('Verbs','Verbos'),         'verbs',     r => r.title + ': ' + r.items.join(', '));
+    group(T('Subsystems','Subsistemas'),    'subsystem', r => r.title + (r.items.length ? ' — ' + r.items.join(' · ') : ''));
+    out.push(new Date().toISOString().slice(0,10));
+    return out.join('\n').trim();
+  }
+
+  // ── Magic · a flowing remix with random prepositions (es ⇄ en on Shift) ──
+  const PREPOSITIONS = {
+    en:['with','about','beneath','between','toward','from','during','according to','before','after','beside','near','across','around','concerning','inside'],
+    es:['con','sobre','bajo','entre','hacia','desde','durante','según','ante','tras','junto a','cerca de','frente a','gracias a','a través de','en torno a']
+  };
+  // arrows (↔ →) become linking verbs; the "·" list separators become joiners
+  const LINK_VERBS = {
+    en:['links','connects','pairs with','meets','joins','threads into','flows to','leads to'],
+    es:['enlaza con','conecta con','se empareja con','encuentra a','se une a','se enhebra en','fluye hacia','lleva a']
+  };
+  const JOINERS = {
+    en:['and','plus','also','while','then','with'],
+    es:['y','además','también','mientras','luego','con']
+  };
+  let magicOn = false;
+  let magicLang = (document.documentElement.lang || 'en').slice(0,2);
+  if (!PREPOSITIONS[magicLang]) magicLang = 'en';
+  function magicPhrase(){
+    const pool = PREPOSITIONS[magicLang].slice();
+    const drawPrep = () => { if (!pool.length) pool.push(...PREPOSITIONS[magicLang]); return pool.splice(Math.floor(Math.random()*pool.length), 1)[0]; };
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+    // no dots, no arrows: swap ↔/→ for a linking verb and glue rows with joiners
+    const deArrow = s => String(s).replace(/[↔→]/g, () => ' ' + pick(LINK_VERBS[magicLang]) + ' ').replace(/\s+/g, ' ').trim();
+    const parts = summaryRows().map(r => {
+      const title = deArrow(r.title);
+      const items = r.items.map(deArrow).filter(Boolean);
+      return items.length ? `${title} ${drawPrep()} ${items.join(', ')}` : title;
+    });
+    if (!parts.length) return magicLang === 'es' ? 'un cuerpo vacío.' : 'an empty body.';
+    return parts.join(' ' + pick(JOINERS[magicLang]) + ' ') + '.';
+  }
+  // what Copy / Share read: whatever the panel currently shows
+  function shownText(){ return magicOn ? magicPhrase() : summaryText(); }
+
+  // the four groups, with the colours that theme the rendered/exported/JPG views
+  const GROUP_META = [
+    { kind:'pair',      label:'Systems pairs', icon:'⇄',  cssVar:'--accent',   hex:'#4dd0e1' },
+    { kind:'centroid',  label:'Centroid',      icon:'🌱',  cssVar:'--accent-2', hex:'#ff8a65' },
+    { kind:'verbs',     label:'Verbs',         icon:'🔗', cssVar:'--nerve',    hex:'#b388ff' },
+    { kind:'subsystem', label:'Subsystems',    icon:'🛡', cssVar:'--immune',   hex:'#69f0ae' }
+  ];
+  // everything attached to one system: its pair/centroid reason, its verbs,
+  // and the subsystem arrows that land on it
+  function slotMeta(slotId){
+    return {
+      reasons: state.reasons[reasonKeyOfSlot(slotId)] || [],
+      verbs:   state.verbs[slotId] || [],
+      arrows:  Object.keys(state.subs).filter(id => state.subs[id].slotId === slotId).map(id => ({
+        sub: SUB_BY_ID[id],
+        extra: (state.subReasons[id]||[]).concat((state.subVerbs[id]||[]).map(v => '→ ' + v))
+      }))
+    };
+  }
+  // a system square with its verbs + arrows below (the reason lives in the middle)
+  function sumSquareHTML(slotId){
+    const sys = sysAt(slotId); if (!sys) return '';
+    const m = slotMeta(slotId);
+    let meta = '';
+    if (m.verbs.length) meta += `<div class="sm-line sm-verb">🔗 ${m.verbs.map(escHtml).join(' · ')}</div>`;
+    m.arrows.forEach(a => {
+      meta += `<div class="sm-line sm-arrow">↳ 🛡 ${escHtml(defLabel(a.sub))}`
+            + (a.extra.length ? ' · ' + escHtml(a.extra.join(' · ')) : '') + `</div>`;
+    });
+    return `<div class="sum-cell"><div class="sum-sq${slotId === CENTRE_SLOT ? ' centre' : ''}">`
+      + `<span class="sq-ico">${sysIco(sys)}</span><span class="sq-lbl">${escHtml(defLabel(sys))}</span></div>`
+      + `<div class="sum-meta">${meta}</div></div>`;
+  }
+  const gridCell = (inner, col, row) => inner ? `<div class="sum-gridcell" style="grid-column:${col};grid-row:${row}">${inner}</div>` : '';
+  const midReasonHTML = key => { const a = state.reasons[key] || []; return a.length ? `<div class="sum-midreason">${a.map(escHtml).join(' · ')}</div>` : ''; };
+  // the systems laid out in their board square — the pair's reason sits in the
+  // middle between them, the centroid square (+ its reason) at the centre
+  function summaryRenderHTML(){
+    if (!Object.keys(state.placed).length) return `<p class="sum-empty">${T('Nothing placed yet.','Aún no hay nada colocado.')}</p>`;
+    let html = `<div class="sum-board">`;
+    for (let r = 0; r < N_ROWS; r++){
+      html += gridCell(sumSquareHTML(leftSlotId(r)),  1, r + 1);
+      html += gridCell(sumSquareHTML(rightSlotId(r)), 3, r + 1);
+      let mid = midReasonHTML(String(r));
+      if (r === CENTRE_ROW) mid += sumSquareHTML(CENTRE_SLOT) + midReasonHTML('c');
+      html += gridCell(mid ? `<div class="sum-mid">${mid}</div>` : '', 2, r + 1);
+    }
+    return html + `</div>`;
+  }
+  function renderSummary(){
+    const render = $('#summaryRender'); if (render) render.innerHTML = summaryRenderHTML();
+    // the text pre shows only in Magic mode (the remix phrase); cards are the default view
+    const pre = $('#summaryText');
+    if (pre){ pre.hidden = !magicOn; if (magicOn) pre.textContent = magicPhrase(); }
+  }
+
+  // ── Insight · cycling reads of the body ──
+  function insightReads(){
+    const placed = Object.keys(state.placed).length;
+    const reasons = REASON_KEYS.filter(k => state.reasons[k] && state.reasons[k].length).length;
+    const verbs = Object.values(state.verbs).filter(a => a && a.length).length;
+    const subI = Object.values(state.subs).filter(s => s.kind === 'immune').length;
+    const pairs = summaryRows().filter(r => r.kind === 'pair').map(r => r.title);
+    const C = sysAt(CENTRE_SLOT);
+    const cLab = C ? defLabel(C) : '';
+    return [
+      [T('The read','La lectura'), magicOn
+        ? T(`<p>A body breathing as <em>${placed}</em> systems${C?`, gathered at the <em>${cLab.toLowerCase()}</em> centroid`:''} — threaded by <em>${subI}</em> immune currents.</p>`,
+            `<p>Un cuerpo que respira como <em>${placed}</em> sistemas${C?`, reunidos en el centroide <em>${cLab.toLowerCase()}</em>`:''} — enhebrado por <em>${subI}</em> corrientes inmunitarias.</p>`)
+        : T(`<p><strong>${placed}/11</strong> systems placed${C?`, centroid <em>${cLab}</em>`:''}. <strong>${subI}/${TOTAL_SUBS}</strong> subsystems threaded.</p>`,
+            `<p><strong>${placed}/11</strong> sistemas colocados${C?`, centroide <em>${cLab}</em>`:''}. <strong>${subI}/${TOTAL_SUBS}</strong> subsistemas enhebrados.</p>`)],
+      [T('By the numbers','En cifras'), T(`<p><strong>${placed}/11</strong> systems · <strong>${reasons}/6</strong> reasons · <strong>${verbs}/11</strong> verbs · <strong>${subI}/${TOTAL_SUBS}</strong> immune subsystems.</p>`,
+        `<p><strong>${placed}/11</strong> sistemas · <strong>${reasons}/6</strong> razones · <strong>${verbs}/11</strong> verbos · <strong>${subI}/${TOTAL_SUBS}</strong> subsistemas inmunitarios.</p>`)],
+      [T('The pairs','Los pares'), pairs.length ? `<p>${pairs.map(p => `<em>${escHtml(p)}</em>`).join(' · ')}</p>` : '<p>—</p>'],
+      [T('Polarities','Polaridades'), T(`<p>Left column vs right column; and the first three left + first two rows right against the rest — two groupings the <em>Polarities</em> view colours in.</p>`,
+        `<p>Columna izquierda frente a columna derecha; y las tres primeras de la izquierda + las dos primeras filas de la derecha frente al resto: dos agrupaciones que colorea la vista <em>Polaridades</em>.</p>`)]
+    ];
+  }
+  // insight cycle: 0 = hidden default · 1..5 = a read shown (label "Insight"
+  // then "More insights") · at step 5 the button offers "Clear insights", whose
+  // click (the 6th) wipes back to the default with nothing displayed.
+  let insightStep = 0;
+  function renderInsight(){
+    const panel = $('#insightPanel'); if (!panel) return;
+    const reads = insightReads();
+    const idx = insightStep < 1 ? 0 : (insightStep - 1) % reads.length;
+    const [label, html] = reads[idx];
+    panel.innerHTML = `<h4>${escHtml(label)}</h4>${html}`;
+    panel.hidden = false;
+  }
+  function setInsightLabel(){
+    const btn = $('#insightBtn'); if (!btn) return;
+    const en = insightStep === 0 ? 'Insight' : insightStep >= 5 ? 'Clear insights' : 'More insights';
+    const es = insightStep === 0 ? 'Lectura' : insightStep >= 5 ? 'Borrar lecturas' : 'Más lecturas';
+    btn.innerHTML = `${insightStep >= 5 ? '🧹' : '💡'} <span class="en" lang="en">${en}</span><span class="es" lang="es">${es}</span>`;
+  }
+
+  // reveal the whole surface (called by the stage-4 Next)
+  function showSummary(){
+    renderSummary();
+    const sec = $('#summarySection');
+    sec.classList.add('show');
+    sec.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    toast(T('Your pracsys body — copy, save, share or publish it','Tu cuerpo de pracsys: cópialo, guárdalo, compártelo o publícalo'));
+  }
+
+  // ── action bar: Magic / Insight / Copy ──
+  $('#magicBtn').addEventListener('click', e => {
+    if (e.shiftKey){ magicLang = magicLang === 'en' ? 'es' : 'en'; toast(T('Magic language · ','Idioma mágico · ') + magicLang.toUpperCase()); if (!magicOn){ renderSummary(); return; } }
+    else magicOn = !magicOn;
+    $('#magicBtn').setAttribute('aria-pressed', String(magicOn));
+    renderSummary();
+    if (!$('#insightPanel').hidden) renderInsight();   // keep the open read in step
+  });
+  $('#insightBtn').addEventListener('click', () => {
+    const btn = $('#insightBtn'), panel = $('#insightPanel');
+    if (insightStep >= 5){                 // the 6th click clears back to default
+      insightStep = 0; panel.hidden = true;
+      btn.setAttribute('aria-expanded', 'false');
+    } else {
+      insightStep++; renderInsight();
+      btn.setAttribute('aria-expanded', 'true');
+      panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }
+    setInsightLabel();
+  });
+
+  // open-one-close-others cycle rows (Save / Share / Publish)
+  const cycleRow = key => $('#' + key + 'Row');
+  $$('.cycle-trigger[data-cycle-toggle]').forEach(trig => {
+    trig.addEventListener('click', () => {
+      const row = cycleRow(trig.dataset.cycleToggle); if (!row) return;
+      const open = row.hidden;
+      $$('.cycle-trigger[data-cycle-toggle]').forEach(t => {
+        const r = cycleRow(t.dataset.cycleToggle);
+        if (r && t !== trig){ r.hidden = true; t.setAttribute('aria-expanded', 'false'); }
+      });
+      if (trig.dataset.cycleToggle === 'publish' && open) renderPublishRow();
+      row.hidden = !open;
+      trig.setAttribute('aria-expanded', String(open));
+    });
+  });
+
+  // ── Publish · multi-select platforms + Add platform (dry-run) ──
+  const PUBLISH_KEY = 'flove.publish.platforms';
+  const DEFAULT_PLATFORMS = [
+    { id:'nety',     name:'Nety',     kind:'webhook'   },
+    { id:'oasis',    name:'0asis',    kind:'webhook'   },
+    { id:'download', name:'Download', kind:'download'  }
+  ];
+  function loadPlatforms(){
+    let custom = [];
+    try{ custom = JSON.parse(localStorage.getItem(PUBLISH_KEY)) || []; }catch(_){}
+    return DEFAULT_PLATFORMS.concat(custom.filter(p => p && p.name));
+  }
+  function savePlatforms(custom){ try{ localStorage.setItem(PUBLISH_KEY, JSON.stringify(custom)); }catch(_){} }
+  function renderPublishRow(){
+    const row = $('#publishRow');
+    const list = loadPlatforms();
+    row.innerHTML =
+      list.map((p,i) => `<label class="pub-platform"><input type="checkbox" data-pub="${escHtml(p.id)}"${i===0?' checked':''}> ${escHtml(p.name)}</label>`).join('')
+      + `<span class="pub-add"><input type="text" id="pubAdd" placeholder="${T('Add platform name…','Nombre de la plataforma…')}" aria-label="${T('Add a platform','Añadir una plataforma')}"><button class="sum-btn" type="button" id="pubAddBtn">+ ${T('Add','Añadir')}</button></span>`
+      + `<button class="sum-btn" type="button" data-action="publish">↗ ${T('Publish','Publicar')}</button>`;
+  }
+  document.addEventListener('click', e => {
+    const addBtn = e.target.closest('#pubAddBtn'); if (!addBtn) return;
+    const inp = $('#pubAdd'), name = inp.value.trim(); if (!name) return;
+    let custom = []; try{ custom = JSON.parse(localStorage.getItem(PUBLISH_KEY)) || []; }catch(_){}
+    custom.push({ id:'p' + Date.now(), name, kind:'webhook' });
+    savePlatforms(custom); renderPublishRow(); toast(T('Platform added · ','Plataforma añadida · ') + name);
+  });
+
+  // ── the [data-action] surface: Copy / Save (download) / Share / Publish ──
+  const hexA = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`; };
+  function roundRect(ctx, x, y, w, h, r){
+    ctx.beginPath();
+    if (ctx.roundRect){ ctx.roundRect(x, y, w, h, r); return; }
+    ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+  }
+  // a lavish self-contained HTML document of the body (board only, no chrome)
+  function exportHtmlDoc(){
+    const board = summaryRenderHTML();   // same board markup as the in-page summary
+    return `<!doctype html><html lang="${LANG()}"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PracSys body · FLOVE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;justify-content:center;padding:52px 18px;
+  font-family:Inter,system-ui,-apple-system,sans-serif;color:#e8eef7;
+  background:
+    radial-gradient(1100px 560px at 8% -12%, rgba(77,208,225,.20), transparent),
+    radial-gradient(1000px 520px at 112% 8%, rgba(179,136,255,.18), transparent),
+    radial-gradient(900px 600px at 50% 122%, rgba(105,240,174,.14), transparent), #07080c;}
+.card{width:min(760px,100%);position:relative;overflow:hidden;
+  background:linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.02));
+  border:1px solid rgba(255,255,255,.13);border-radius:26px;padding:34px 34px;
+  box-shadow:0 34px 90px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.07);backdrop-filter:blur(8px)}
+.card::before{content:'';position:absolute;inset:0 0 auto 0;height:4px;
+  background:linear-gradient(90deg,#4dd0e1,#b388ff 50%,#69f0ae)}
+header{text-align:center;margin-bottom:26px}
+.glyph{width:58px;height:58px;filter:drop-shadow(0 0 18px rgba(77,208,225,.45))}
+h1{margin:.4rem 0 0;font-family:Fraunces,Georgia,serif;font-weight:700;font-size:2.3rem;letter-spacing:-.01em;
+  background:linear-gradient(120deg,#4dd0e1,#b388ff 50%,#69f0ae);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{margin:.5rem 0 0;color:#9fb0c4;font-size:.92rem}
+/* the board — systems in their square, reasons centred in the middle */
+.sum-board{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px 14px;align-items:start}
+.sum-gridcell{min-width:0}
+.sum-cell{display:flex;flex-direction:column;align-items:center;gap:3px}
+.sum-sq{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:2px 0;border:0;background:none}
+.sq-ico{font-size:1.8rem;line-height:1}
+.sq-lbl{font-weight:700;font-size:.88rem;text-align:center;color:#e8eef7}
+.sum-sq.centre .sq-lbl{color:#ff8a65}
+.sum-meta{display:flex;flex-direction:column;gap:3px;align-items:center;text-align:center}
+.sm-line{font-size:.72rem;font-weight:600;word-break:break-word}
+.sm-verb{color:#b388ff}
+.sm-arrow{color:#69f0ae}
+.sum-mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;height:100%}
+.sum-midreason{font-size:.82rem;font-weight:600;color:#4dd0e1;text-align:center;word-break:break-word}
+.sum-empty{text-align:center;color:#9fb0c4}
+footer{margin-top:28px;text-align:center;color:#7f8da0;font-size:.8rem}
+footer a{color:#4dd0e1;text-decoration:none}
+@media print{body{padding:0;background:#07080c}.card{box-shadow:none;border:0}}
+</style></head><body>
+<main class="card">
+  ${board}
+</main></body></html>`;
+  }
+  // localized export filename base (§13.12: en=summary · es=resumen)
+  const exportBase = () => 'pracsys-' + T('summary','resumen');
+  function downloadBlob(body, mime, ext){
+    const blob = new Blob([body], { type:mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = exportBase() + '.' + ext;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  function rowsCsv(){
+    const head = 'kind,title,items';
+    const q = s => '"' + String(s).replace(/"/g,'""') + '"';
+    return [head].concat(summaryRows().map(r => [r.kind, r.title, r.items.join(' | ')].map(q).join(','))).join('\n');
+  }
+  function rowsXml(){
+    return '<?xml version="1.0" encoding="UTF-8"?>\n<pracsys>\n'
+      + summaryRows().map(r => `  <row kind="${escXml(r.kind)}" title="${escXml(r.title)}">`
+          + r.items.map(it => `<item>${escXml(it)}</item>`).join('') + '</row>').join('\n')
+      + '\n</pracsys>';
+  }
+  // a canvas render of the body in its board square — matches the summary
+  async function summaryToJpg(){
+    // decode the rasterised system marks before drawing (data-URL SVG → bitmap)
+    await Promise.all(Object.keys(SYS_SVG).map(id => { const im = sysImg(id); return im && im.decode ? im.decode().catch(()=>{}) : Promise.resolve(); }));
+    const W = 900, S = 2, padX = 44, gap = 16;
+    const colW = (W - padX*2 - gap*2) / 3;
+    const sqW = Math.min(colW, 150), sqH = 46, lineH = 16;
+    const colX = [padX, padX + colW + gap, padX + 2*(colW + gap)];
+    const sqX = c => colX[c] + (colW - sqW)/2;
+    const mctx = document.createElement('canvas').getContext('2d');
+    const wrap = (text, maxW, font) => {
+      mctx.font = font; const words = String(text).split(' '); const lines = []; let cur = '';
+      words.forEach(w => { const t = cur ? cur+' '+w : w; if (mctx.measureText(t).width > maxW && cur){ lines.push(cur); cur = w; } else cur = t; });
+      if (cur) lines.push(cur); return lines;
+    };
+    const META_FONT = '600 12px Inter, system-ui, sans-serif';
+    const REASON_FONT = '600 13px Inter, system-ui, sans-serif';
+    const metaOf = slotId => {
+      const mt = slotMeta(slotId); const out = [];
+      if (mt.verbs.length) wrap('🔗 ' + mt.verbs.join(' · '), colW, META_FONT).forEach(t => out.push({ c:'#b388ff', t }));
+      mt.arrows.forEach(a => wrap('↳ 🛡 ' + defLabel(a.sub) + (a.extra.length?' · '+a.extra.join(' · '):''), colW, META_FONT).forEach(t => out.push({ c:'#69f0ae', t })));
+      return out;
+    };
+    const reasonLines = key => { const a = state.reasons[key]||[]; return a.length ? wrap(a.join(' · '), colW, REASON_FONT) : []; };
+
+    // row models + total height
+    const rows = [];
+    for (let r = 0; r < N_ROWS; r++){
+      const Lid = leftSlotId(r), Rid = rightSlotId(r), L = sysAt(Lid), R = sysAt(Rid);
+      const Lm = L ? metaOf(Lid) : [], Rm = R ? metaOf(Rid) : [], mid = reasonLines(String(r));
+      let centre = null;
+      if (r === CENTRE_ROW && sysAt(CENTRE_SLOT)) centre = { meta: metaOf(CENTRE_SLOT), reasons: reasonLines('c') };
+      const hL = L ? sqH + Lm.length*lineH : 0, hR = R ? sqH + Rm.length*lineH : 0;
+      let hM = mid.length*lineH;
+      if (centre) hM += 10 + sqH + centre.meta.length*lineH + centre.reasons.length*lineH;
+      rows.push({ Lid, Rid, L, R, Lm, Rm, mid, centre, rowH: Math.max(hL, hR, hM, 40) + 22 });
+    }
+    let H = 175; rows.forEach(rm => H += rm.rowH); H += 56;
+
+    const cv = document.createElement('canvas'); cv.width = W*S; cv.height = H*S;
+    const ctx = cv.getContext('2d'); ctx.scale(S, S); ctx.textBaseline = 'alphabetic';
+    // ground + glows + seam
+    const bg = ctx.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#0b0f18'); bg.addColorStop(1,'#070809'); ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+    [['#4dd0e1',130,-30,.20],['#b388ff',W-120,50,.18],['#69f0ae',W/2,H-30,.12]].forEach(([c,x,yy,a]) => {
+      const rg = ctx.createRadialGradient(x,yy,0,x,yy,320); rg.addColorStop(0,hexA(c,a)); rg.addColorStop(1,hexA(c,0)); ctx.fillStyle = rg; ctx.fillRect(0,0,W,H);
+    });
+    const seam = ctx.createLinearGradient(0,0,W,0); seam.addColorStop(0,'#4dd0e1'); seam.addColorStop(.5,'#b388ff'); seam.addColorStop(1,'#69f0ae'); ctx.fillStyle = seam; ctx.fillRect(0,0,W,4);
+    // header
+    let y = 54; const gx = W/2, rr = 22;
+    const gg = ctx.createLinearGradient(gx-rr,y-rr,gx+rr,y+rr); gg.addColorStop(0,'#4dd0e1'); gg.addColorStop(.5,'#b388ff'); gg.addColorStop(1,'#69f0ae');
+    ctx.strokeStyle = gg; ctx.lineWidth = 4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(gx,y,rr,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(gx,y-rr); ctx.lineTo(gx,y+rr); ctx.moveTo(gx-rr,y); ctx.lineTo(gx+rr,y); ctx.stroke();
+    ctx.beginPath(); ctx.arc(gx,y,4.5,0,Math.PI*2); ctx.fillStyle = gg; ctx.fill();
+    y += rr + 34; ctx.textAlign = 'center';
+    const tg = ctx.createLinearGradient(gx-180,0,gx+180,0); tg.addColorStop(0,'#4dd0e1'); tg.addColorStop(.5,'#b388ff'); tg.addColorStop(1,'#69f0ae');
+    ctx.fillStyle = tg; ctx.font = '700 38px Georgia, "Times New Roman", serif'; ctx.fillText(T('pracsys body','cuerpo de pracsys'), gx, y);
+    y += 24; ctx.fillStyle = '#9fb0c4'; ctx.font = '400 14px Inter, system-ui, sans-serif';
+    ctx.fillText(T('eleven systems, laid out as a living body · ','once sistemas, dispuestos como un cuerpo vivo · ') + new Date().toISOString().slice(0,10), gx, y);
+    y += 34;
+
+    const drawSquare = (slotId, x, yy, metaLines) => {
+      const sys = sysAt(slotId); if (!sys) return;
+      // borderless — just the icon + label, with verbs/arrows hugging right below
+      ctx.textAlign = 'center';
+      const _im = sysImg(sys.id);
+      if (_im && _im.complete && _im.naturalWidth){ ctx.drawImage(_im, x + sqW/2 - 13, yy - 3, 26, 26); }
+      else { ctx.font = '22px serif'; ctx.fillStyle = '#e8eef7'; ctx.fillText(sys.icon, x + sqW/2, yy + 22); }
+      ctx.font = '700 14px Inter, system-ui, sans-serif'; ctx.fillStyle = slotId === CENTRE_SLOT ? '#ff8a65' : '#e8eef7'; ctx.fillText(defLabel(sys), x + sqW/2, yy + 40);
+      let my = yy + sqH + 6;
+      metaLines.forEach(ln => { ctx.fillStyle = ln.c; ctx.font = META_FONT; ctx.fillText(ln.t, x + sqW/2, my); my += lineH; });
+    };
+    const drawReasons = (lines, cx, top) => { let my = top; ctx.textAlign = 'center'; ctx.font = REASON_FONT; ctx.fillStyle = '#4dd0e1'; lines.forEach(ln => { ctx.fillText(ln, cx, my + 12); my += lineH; }); return my; };
+
+    rows.forEach(rm => {
+      const top = y, midCx = colX[1] + colW/2;
+      if (rm.L) drawSquare(rm.Lid, sqX(0), top, rm.Lm);
+      if (rm.R) drawSquare(rm.Rid, sqX(2), top, rm.Rm);
+      if (rm.centre){
+        let my = drawReasons(rm.mid, midCx, top);
+        my += 10;
+        drawSquare(CENTRE_SLOT, sqX(1), my, rm.centre.meta);
+        drawReasons(rm.centre.reasons, midCx, my + sqH + 6 + rm.centre.meta.length*lineH);
+      } else {
+        drawReasons(rm.mid, midCx, top + Math.max(0, (rm.rowH - 22 - rm.mid.length*lineH)/2));
+      }
+      y += rm.rowH;
+    });
+
+    if (!Object.keys(state.placed).length){ ctx.textAlign = 'center'; ctx.fillStyle = '#9fb0c4'; ctx.font = '400 16px Inter, sans-serif'; ctx.fillText(T('An empty body.','Un cuerpo vacío.'), W/2, y + 10); }
+    ctx.textAlign = 'center'; ctx.fillStyle = '#7f8da0'; ctx.font = '400 13px Inter, system-ui, sans-serif';
+    ctx.fillText(T('made with flove · pracsys','hecho con flove · pracsys'), W/2, H - 24);
+    cv.toBlob(b => { const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href = url; a.download = exportBase() + '.jpg'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); }, 'image/jpeg', 0.95);
+  }
+  document.addEventListener('click', async e => {
+    const btn = e.target.closest('#summarySection [data-action]'); if (!btn) return;
+    const action = btn.dataset.action;
+    if (action === 'copy'){
+      const payload = e.shiftKey ? JSON.stringify(buildElement(), null, 2) : shownText();
+      try{ await navigator.clipboard.writeText(payload); toast(e.shiftKey ? T('🌱 JSON copied','🌱 JSON copiado') : T('🌱 phrase copied','🌱 frase copiada')); }
+      catch(_){ toast(T('Copy not available','Copiar no está disponible')); }
+    } else if (action === 'download'){
+      const fmt = (btn.dataset.fmt || 'txt').toLowerCase();
+      if (fmt === 'jpg'){ await summaryToJpg(); toast(T('Downloaded · ','Descargado · ') + 'JPG'); return; }
+      if (fmt === 'json'){ downloadBlob(JSON.stringify(buildElement(), null, 2), 'application/json;charset=utf-8', 'json'); }
+      else if (fmt === 'csv'){ downloadBlob(rowsCsv(), 'text/csv;charset=utf-8', 'csv'); }
+      else if (fmt === 'xml'){ downloadBlob(rowsXml(), 'application/xml;charset=utf-8', 'xml'); }
+      else if (fmt === 'html'){ downloadBlob(exportHtmlDoc(), 'text/html;charset=utf-8', 'html'); }
+      else if (fmt === 'md'){ downloadBlob('# ' + T('🌱 pracsys body','🌱 cuerpo de pracsys') + '\n\n```\n' + summaryText() + '\n```\n', 'text/markdown;charset=utf-8', 'md'); }
+      else { downloadBlob(summaryText(), 'text/plain;charset=utf-8', 'txt'); }
+      toast(T('Downloaded · ','Descargado · ') + fmt.toUpperCase());
+    } else if (action === 'share' || action === 'share-mobile'){
+      const text = shownText();
+      // file-share rung: share the standalone HTML document when the platform can
+      const file = (typeof File !== 'undefined') ? new File([exportHtmlDoc()], exportBase() + '.html', { type:'text/html' }) : null;
+      if (file && navigator.canShare && navigator.canShare({ files:[file] })){
+        try{ await navigator.share({ title:'flove · pracsys', text, files:[file] }); }catch(_){}
+      }
+      else if (navigator.share){ try{ await navigator.share({ title:'flove · pracsys', text }); }catch(_){} }
+      else if (action === 'share'){ try{ await navigator.clipboard.writeText(text); toast(T('Copied to clipboard','Copiado al portapapeles')); }catch(_){ toast(T('Share not available','Compartir no está disponible')); } }
+      else { toast(T('Mobile share unavailable on this device','Compartir en móvil no está disponible en este dispositivo')); }
+    } else if (action === 'email'){
+      location.href = 'mailto:?subject=' + encodeURIComponent(T('flove · pracsys body','flove · cuerpo de pracsys')) + '&body=' + encodeURIComponent(summaryText());
+    } else if (action === 'print'){
+      const w = window.open('', '_blank');
+      if (w){ w.document.write(`<!doctype html><meta charset="utf-8"><title>pracsys body</title><pre style="font:14px/1.5 ui-monospace,monospace">${escHtml(summaryText())}</pre>`); w.document.close(); w.focus(); setTimeout(() => w.print(), 200); }
+    } else if (action === 'publish'){
+      const chosen = $$('#publishRow input[data-pub]:checked').map(c => c.parentElement.textContent.trim());
+      toast(chosen.length ? T('Dry-run · would publish to ','Simulación · se publicaría en ') + chosen.join(', ') : T('Pick a platform to publish to','Elige una plataforma donde publicar'));
+    }
+  });
+
+  // ── toast ───────────────────────────────────────────────────
+  const toastEl = $('#toast');
+  function toast(msg, ms=1700){
+    if (!msg){ toastEl.classList.remove('is-on'); return; }
+    toastEl.textContent = msg; toastEl.classList.add('is-on');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => toastEl.classList.remove('is-on'), ms);
+  }
+
+  // ── redraw lines on layout shifts ───────────────────────────
+  let raf = null;
+  function scheduleDraw(){ if (raf) cancelAnimationFrame(raf); raf = requestAnimationFrame(drawLinks); }
+  window.addEventListener('resize', scheduleDraw);
+  window.addEventListener('scroll', scheduleDraw, { passive:true });
+
+  // ── F0 Update / Reset / persist (backend_plan §10.3a · §13.9) ───────────────
+  // stale-dot machinery: the dot un-hides when an already-persisted board is edited
+  // in-session and clears on Update. `staleArmed` stays false through boot/hydrate so
+  // the initial restore + first render don't trip it; the first real edit arms it.
+  let staleArmed = false;
+  function markStale(){ if (!staleArmed || relocalizing) return; $$('.stale-dot').forEach(d => { d.hidden = false; }); }
+  function hideStale(){ $$('.stale-dot').forEach(d => { d.hidden = true; }); }
+
+  // Update: re-run pracsys' existing hydrate/restore-from-storage + summary re-render,
+  // then drop every stale dot (re-derive · §10.3a).
+  function floveUpdate(){
+    restore();          // rehydrate placed slots / reasons / verbs / subs from STORAGE_KEY
+    renderDeck();
+    afterChange();      // re-derive every surface from `state`
+    if ($('#summarySection') && $('#summarySection').classList.contains('show')) renderSummary();
+    hideStale();
+  }
+
+  // re-arm the entrance choreography (used on Reset; a reload arms it via markup)
+  function playIntro(){
+    const b = document.body;
+    b.classList.remove('intro-play');
+    void b.offsetWidth;               // force reflow so the CSS animations restart
+    b.classList.add('intro-play');
+  }
+
+  // empty ONLY pracsys' own keys (prefix flove.pracsys) — never localStorage.clear(),
+  // so the language pref (translaty-lang) + other apps' data stay untouched. Shared by
+  // Reset and by a reload/F5 boot (both are a destructive fresh start · §5.3 / §10.3a).
+  function clearOwnKeys(){
+    try{
+      Object.keys(localStorage).forEach(k => { if (k.indexOf('flove.pracsys') === 0) localStorage.removeItem(k); });
+    }catch(_){}
+  }
+
+  // treat F5 / reload-logo as a fresh start (override persistence); close+reopen restores.
+  function navIsReload(){
+    try{
+      const nav = performance.getEntriesByType &&
+                  performance.getEntriesByType('navigation')[0];
+      if (nav && nav.type) return nav.type === 'reload';
+      if (performance.navigation) return performance.navigation.type === 1; // legacy
+    }catch(_){}
+    return false;
+  }
+
+  // Reset: destructive fresh start — clear ONLY this app's own keys, then reload. The
+  // reload boots empty (navIsReload → skip restore) and replays the intro from the
+  // markup, so the in-place rebuild is no longer needed (§5.3 / §10.3a).
+  function floveReset(){
+    if (!confirm(T('Clear the whole board and start a new play? This cannot be undone.',
+                   '¿Vaciar todo el tablero y empezar de nuevo? No se puede deshacer.'))) return;
+    clearOwnKeys();     // empty ONLY pracsys' own keys — never localStorage.clear()
+    location.reload();  // fresh boot: empty board + intro replays
+  }
+
+  // request durable storage on the first user interaction (guarded once)
+  let persistAsked = false;
+  function askPersist(){
+    if (persistAsked) return; persistAsked = true;
+    try{ if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+  }
+  ['pointerdown','keydown'].forEach(ev => document.addEventListener(ev, askPersist, { once:false, passive:true }));
+
+  // wire both Update spots + the Reset button (event-delegated for the JS-built surface)
+  document.addEventListener('click', e => {
+    if (e.target.closest('[data-flove-update]')){ floveUpdate(); }
+    else if (e.target.closest('[data-flove-reset]')){ floveReset(); }
+  });
+
+  // ── boot ────────────────────────────────────────────────────
+  // F0 hard local persistence: rebuild the empty board, then rehydrate any saved
+  // game from localStorage so a reload / close / reopen continues where it left off.
+  // (This app no longer wipes storage on boot — it HYDRATES; only Reset clears.)
+  buildSlots();
+  // reload / F5 / reset → start fresh: clear own keys + skip restore (intro replays from
+  // the markup). Close+reopen (any nav that isn't a reload) → hydrate saved board. (§5.3)
+  if (navIsReload()){
+    clearOwnKeys();
+  } else {
+    restore();        // fills placed slots from STORAGE_KEY (no-op on a clean start)
+  }
+  renderDeck();       // hides placed systems from the deck
+  // systems start already fanned open (5·1·5), not collapsed behind one card
+  setDeckOpen(true);
+  afterChange();      // re-renders reasons / verbs / subsystems / links / progress from `state`
+  staleArmed = true;  // arm the stale-dot now that the initial hydrate + render are done
+</script>
+<!-- §13.15 · Publish to Appy — the app→profile bridge (auto-wires [data-flove-publish]) -->
+<script src="../appy/flove-appy.js"></script>
+</body>
+</html>

@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Willy · FLOVE</title>
+<meta name="description" content="Teleological Whys — drag the four Wills onto the axis to map your stance.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><g fill='none' stroke='%234dd0e1' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><rect x='5' y='5' width='22' height='22' rx='2'/><line x1='5' y1='16' x2='27' y2='16'/><line x1='16' y1='5' x2='16' y2='27'/></g><circle cx='16' cy='16' r='2' fill='%234dd0e1'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:          #0b0c10;
+    --panel:       #111319;
+    --ink:         #e6eef8;
+    --ink-dim:     #a9b4c3;
+    --accent:      #4dd0e1;
+    --accent-deep: #2ba5b5;
+    --accent-2:    #ff8a65;
+    --line:        rgba(255,255,255,.20);
+    --faint:       rgba(255,255,255,.12);
+    --chip:        #1a1f2b;
+    --chip-border: #2a3142;
+    --chip-placed: #0b1221;
+    --success:     #00c853;
+    --font-ui:     'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --radius:      14px;
+    --radius-sm:   10px;
+    --radius-pill: 999px;
+    --fast:        .15s cubic-bezier(.2,.8,.2,1);
+  }
+  *{ box-sizing:border-box }
+  html, body{ height:100%; }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:15px/1.45 var(--font-ui);
+  }
+
+  /* ── topbar (flove-bar) ─────────────────────────────────────── */
+  .flove-bar{
+    position:relative; z-index:32;
+    display:flex; align-items:center; gap:12px;
+    padding:10px 16px;
+    background:linear-gradient(180deg, rgba(255,255,255,.02), transparent);
+    border-bottom:1px solid var(--line);
+  }
+  .flove-bar .flove-mark{
+    width:1.6em; height:1.6em;
+    filter:drop-shadow(0 0 6px rgba(77,208,225,.35));
+  }
+  .flove-bar .flove-app-name{
+    font-family:var(--font-ui); font-weight:700; font-size:1.15rem;
+    letter-spacing:.01em;
+  }
+  .flove-bar .flove-spacer{ flex:1 1 auto }
+  /* logo + title act together as a menu trigger */
+  .flove-bar .app-trigger{
+    display:flex; align-items:center; gap:10px;
+    background:transparent; border:0; cursor:pointer;
+    color:var(--ink); font-family:inherit; padding:3px 8px; border-radius:10px;
+    transition:background var(--fast);
+  }
+  .flove-bar .app-trigger:hover{ background:rgba(255,255,255,.05) }
+  .flove-bar .app-trigger:focus-visible{ outline:2px solid var(--accent); outline-offset:2px }
+  .app-caret{ color:var(--ink-dim); font-size:.7rem; transition:transform var(--fast) }
+  .app-trigger[aria-expanded="true"] .app-caret{ transform:rotate(180deg); color:var(--accent) }
+
+  /* dropdown menu under the logo (holds About + flove) */
+  .app-menu{
+    position:absolute; top:50px; left:14px; z-index:33;
+    min-width:160px; padding:6px;
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:var(--radius); box-shadow:0 12px 32px rgba(0,0,0,.45);
+    display:none; flex-direction:column; gap:2px;
+  }
+  .app-menu.open{ display:flex }
+  .app-menu-item{
+    display:block; text-align:left; width:100%;
+    padding:9px 12px; border-radius:var(--radius-sm);
+    background:transparent; border:0; cursor:pointer;
+    color:var(--ink); text-decoration:none;
+    font:600 .9rem/1 var(--font-ui);
+    transition:background var(--fast), color var(--fast);
+  }
+  .app-menu-item:hover{ background:rgba(77,208,225,.10); color:var(--accent) }
+  .app-menu-item:focus-visible{ outline:2px solid var(--accent); outline-offset:-2px }
+  /* language rows inside the menu (moved from the topbar worldball) */
+  .app-menu-lang{ display:flex; flex-direction:column; gap:2px }
+  .lang-item{ display:flex; align-items:center; gap:.4rem }
+  .app-menu input:checked + .lang-item{ background:rgba(77,208,225,.10); color:var(--accent) }
+
+  /* hidden state controls (focusable for keyboard users) */
+  .about-ctl,
+  .ctl{ position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+
+  /* ── About panel — toggled by #about-toggle, click-outside closes ─── */
+  .about-backdrop{
+    position:fixed; inset:0; z-index:30;
+    background:rgba(0,0,0,.35);
+    display:none; cursor:default;
+  }
+  body:has(#about-toggle:checked) .about-backdrop{ display:block }
+  .about-panel{
+    position:fixed; top:54px; left:50%;
+    transform:translateX(-50%) translateY(-8px);
+    width:min(640px, calc(100% - 24px));
+    max-height:calc(100vh - 80px); overflow:auto;
+    z-index:31;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:0 12px 32px rgba(0,0,0,.45);
+    padding:18px 22px;
+    opacity:0; pointer-events:none;
+    transition:opacity var(--fast), transform var(--fast);
+  }
+  body:has(#about-toggle:checked) .about-panel{
+    opacity:1; pointer-events:auto;
+    transform:translateX(-50%) translateY(0);
+  }
+  .about-panel h1{
+    margin:0 0 .35rem; font-size:1.1rem; font-weight:700;
+    color:var(--ink); letter-spacing:.01em;
+  }
+  .about-panel .subtitle{
+    margin:0; color:var(--ink-dim);
+    font-size:.9rem; line-height:1.55;
+  }
+
+  /* ── layout ─────────────────────────────────────────────────── */
+  .layout{
+    display:grid; grid-template-columns:320px 1fr; gap:10px;
+    max-width:1200px; margin:0 auto; padding:16px;
+  }
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius); padding:12px;
+  }
+  .col-title{
+    margin:8px 0 2px; font:700 .78rem/1 var(--font-ui);
+    letter-spacing:.14em; text-transform:uppercase; color:#5a9bff;  /* Wills blue */
+  }
+  .col-title:first-child{ margin-top:0 }
+  /* section header rows: title left, Informal toggle right */
+  .sec-head{ display:flex; align-items:center; gap:8px }
+  .sec-head .col-title{ margin:0; margin-right:auto }
+  .sec-head .actions{ margin-top:0; margin-left:auto }
+  /* ── willy single-panel layout: chips (left) + small cross axis (right) ── */
+  .willy-layout{ display:block; max-width:900px; margin:0 }   /* hug the left edge */
+  .wills-panel{ padding:0; background:transparent; border:0 }
+  /* stack: chips first, the cross-axis square below them, all flush left */
+  .wills-row{ display:flex; flex-direction:column; align-items:flex-start; gap:12px; margin-top:6px }
+  .wills-row .wills-left{ width:100%; display:flex; flex-direction:column; align-items:flex-start }
+  .wills-row .word-list{ align-content:flex-start; padding-left:0 }
+  .wills-row .wills-wrap{ width:min(360px,90%); max-width:360px; margin:0 }
+  /* Informal/Formal switch: sits under the chips, flush left */
+  .wills-set-actions{ justify-content:flex-start; margin-top:4px; padding-left:0 }
+  @media (max-width: 640px){
+    .wills-row .wills-wrap{ width:100%; max-width:min(360px,90%); margin:0 }
+  }
+
+  /* ── chip lists ─────────────────────────────────────────────── */
+  .word-list{ display:flex; flex-wrap:wrap; gap:8px; padding:8px }
+
+  .chip{
+    background:var(--chip);
+    border:1px solid var(--chip-border);
+    border-radius:var(--radius-pill);
+    padding:7px 12px;
+    color:var(--ink);
+    cursor:grab; user-select:none;
+    font:500 .85rem/1.2 var(--font-ui);
+    transition:transform .08s ease, border-color var(--fast), background var(--fast);
+  }
+  /* category colour: wills blue */
+  .chip.k-wills{ border-color:#5a9bff; color:#c2d8ff }
+  .chip:hover{ filter:brightness(1.12) }
+  .chip:active{ transform:scale(.96); cursor:grabbing }
+  .chip.is-dragging{ opacity:.55; outline:2px dashed currentColor }
+  .chip:focus-visible{ outline:2px solid var(--accent); outline-offset:2px }
+
+  /* ── action buttons ─────────────────────────────────────────── */
+  .actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:12px; flex-wrap:wrap }
+  .actions .btn{
+    padding:9px 14px;
+    border:1px solid var(--line);
+    background:#0f1320; color:var(--ink);
+    border-radius:var(--radius-sm); cursor:pointer;
+    font:600 .85rem/1 var(--font-ui);
+    transition:filter var(--fast), border-color var(--fast);
+  }
+  .actions .btn:hover{ filter:brightness(1.15); border-color:var(--accent) }
+  .actions .btn:focus-visible{ outline:2px solid var(--accent); outline-offset:2px }
+  .actions .btn.outline{ background:transparent }
+  .actions .btn.is-checked{
+    border-color:var(--accent); color:var(--accent);
+  }
+
+  /* ── summary actions (blogynormal pattern) — ghost pills ──── */
+  .action-row{
+    display:flex; flex-wrap:wrap; gap:.5rem;
+    margin-top:12px;
+  }
+  .btn.ghost{
+    display:inline-flex; align-items:center; gap:.3rem;
+    height:36px; padding:0 .8rem;
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--ink-dim);
+    border-radius:var(--radius-pill);
+    font:600 .8rem/1 var(--font-ui);
+    letter-spacing:.04em; cursor:pointer;
+    transition:border-color var(--fast), color var(--fast), background var(--fast), transform var(--fast);
+  }
+  .btn.ghost:hover{
+    border-color:var(--accent); color:var(--accent);
+    background:rgba(77,208,225,.06);
+    transform:translateY(-1px);
+  }
+  .btn.ghost:focus-visible{ outline:2px solid var(--accent); outline-offset:2px }
+  .btn.ghost[aria-pressed="true"]{
+    background:rgba(77,208,225,.14);
+    color:var(--accent); border-color:var(--accent);
+  }
+
+  /* ── axis square ────────────────────────────────────────────── */
+  .axis-wrap{
+    width:100%; max-width:calc(75% + 10px);   /* +10px bigger */
+    margin:0 auto 0 0;                          /* left-aligned → closer to the left column */
+  }
+  .axis-square{
+    position:relative; width:100%; aspect-ratio:1/1;
+    border-radius:var(--radius); overflow:hidden;
+    background:radial-gradient(120% 120% at 50% 0%, rgba(77,208,225,.08), transparent 60%);
+  }
+  .axis-svg{ position:absolute; inset:0; width:100%; height:100% }
+  /* wills square: continuous cross */
+  .lines-cross .ln{ stroke:var(--line);  stroke-width:1.2 }
+
+  /* ── dropzones ──────────────────────────────────────────────── */
+  .zones-layer{ position:absolute; inset:0 }
+  .zones-layer.hidden{ display:none }
+
+  .dropzone{
+    position:absolute;
+    display:flex; align-items:center; justify-content:center;
+    min-width:56px; min-height:32px;
+    padding:6px 8px;
+    border:1px dashed var(--line);
+    border-radius:var(--radius-sm);
+    transition:background var(--fast), border-color var(--fast);
+    pointer-events:auto;
+  }
+  .dropzone.empty{ background:rgba(255,255,255,.02) }
+  .dropzone.over{ border-color:var(--accent); background:rgba(77,208,225,.10) }
+  .dropzone .chip{
+    background:var(--chip-placed);
+    cursor:grab;   /* keep the chip's category border colour when placed */
+  }
+
+  /* placeholder borders: wills blue */
+  #willsAxis .dropzone{ border-color:rgba(90,155,255,.5) }
+  /* once a chip is placed, drop the dashed placeholder border */
+  .dropzone:has(.chip){ border-color:transparent }
+  #willsAxis .dropzone:has(.chip){ border-color:transparent }
+
+  /* zone positions (core/wills cross-arm zones) */
+  .mid-left { top:50%; left:6px;  transform:translateY(-50%); width:110px }
+  .mid-right{ top:50%; right:6px; transform:translateY(-50%); width:110px }
+
+  .edge       { width:110px }
+  .edge-top   { top:6px;    left:50%; transform:translateX(-50%) }
+  .edge-bottom{ bottom:6px; left:50%; transform:translateX(-50%) }
+
+  /* visually-hidden utility (a11y-only labels, no layout impact) */
+  .visually-hidden{
+    position:absolute !important; width:1px; height:1px;
+    padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0);
+    white-space:nowrap; border:0;
+  }
+  /* frozen-export tweaks (replaces inline styles in exportPlayHTML) */
+  .export-layout{ grid-template-columns:1fr }
+  .export-title{ grid-column:1/-1; text-align:center; margin:8px 0 0; font:700 1.3rem var(--font-ui); color:var(--ink) }
+  .export-axis-wide{ max-width:min(560px,92vw) }
+  .export-axis-narrow{ max-width:min(360px,80vw) }
+  .chip.is-frozen{ cursor:default }
+
+  /* ── toast (replaces alert()) ───────────────────────────────── */
+  .toast{
+    position:fixed; bottom:20px; left:50%;
+    transform:translateX(-50%) translateY(20px);
+    padding:10px 16px;
+    background:rgba(15,19,32,.96); color:var(--ink);
+    border:1px solid var(--accent);
+    border-radius:var(--radius-pill);
+    font:600 .85rem/1.2 var(--font-ui);
+    box-shadow:0 6px 18px rgba(0,0,0,.45);
+    opacity:0; pointer-events:none;
+    transition:opacity .25s, transform .25s;
+    z-index:50;
+  }
+  .toast.is-on{ opacity:1; transform:translateX(-50%) translateY(0) }
+
+  /* ── summary section (blogynormal-style) ───────────────────── */
+  .summary-section{
+    max-width:900px; margin:0; padding:0 16px 24px;   /* hug the left edge, match willy-layout */
+  }
+  .action-row.right{ justify-content:flex-end }
+
+  /* ── ✦ F0 §13.9 — Reset (left) · ✦ Summary · Update (right) title row ─ */
+  .summary-head{
+    display:flex; align-items:flex-start; justify-content:space-between;
+    gap:.6rem; margin:.2rem 0 .6rem; flex-wrap:wrap;
+  }
+  .summary-head .summary-title{
+    flex:1 1 auto; margin:0; text-align:center;
+    font:700 1.15rem/1.2 var(--font-ui); color:var(--ink);
+  }
+  .reset-wrap--title, .update-wrap--title{
+    display:flex; flex-direction:column; gap:.15rem; flex:0 0 auto;
+  }
+  .reset-wrap--title{ align-items:flex-start }
+  .update-wrap--title{ align-items:flex-end }
+  .reset-hint, .update-hint{
+    font-size:.68rem; line-height:1.1; color:var(--ink-dim); opacity:.7;
+    max-width:9rem;
+  }
+  .reset-hint{ text-align:left }
+  .update-hint{ text-align:right }
+  /* out-of-date dot: hidden by default, an ~8px accent dot when shown */
+  .stale-dot{
+    display:none; width:8px; height:8px; margin-left:.1rem; border-radius:50%;
+    background:var(--accent); vertical-align:middle;
+  }
+  .stale-dot:not([hidden]){ display:inline-block }
+  /* export controls disabled when the play is empty */
+  .btn.ghost:disabled{ opacity:.4; cursor:not-allowed; transform:none }
+  .btn.ghost:disabled:hover{ border-color:var(--line); color:var(--ink-dim); background:transparent }
+  /* Save/format row: collapsed by default, revealed by the save cycle radio */
+  .save-row{ display:none }
+  body:has(#cycle-save:checked) .save-wrap .cycle-step--open{ display:none }
+  body:has(#cycle-save:checked) .save-wrap .cycle-step--close{ display:inline-flex }
+  body:has(#cycle-save:checked) .save-wrap .save-row{ display:inline-flex; flex-wrap:wrap; gap:.4rem; margin-left:.4rem }
+  @media (max-width: 559px){
+    .summary-head .summary-title{ order:-1; flex-basis:100% }
+    .reset-hint, .update-hint{ max-width:none }
+  }
+
+  /* Cycle controls (Share / Publish): close children by default */
+  .cycle-wrap{
+    position:relative;
+    display:inline-flex; align-items:center;
+  }
+  .cycle-trigger{
+    display:inline-flex; align-items:center; gap:.4rem;
+    flex-wrap:wrap;
+  }
+  .cycle-trigger .cycle-step--close,
+  .cycle-row{ display:none }
+  body:has(#cycle-share:checked) .share-wrap .cycle-step--open,
+  body:has(#cycle-pub:checked)   .pub-wrap   .cycle-step--open{ display:none }
+  body:has(#cycle-share:checked) .share-wrap .cycle-step--close,
+  body:has(#cycle-pub:checked)   .pub-wrap   .cycle-step--close{ display:inline-flex }
+  body:has(#cycle-share:checked) .share-wrap .cycle-row,
+  body:has(#cycle-pub:checked)   .pub-wrap   .cycle-row{ display:inline-flex; flex-wrap:wrap; gap:.4rem; margin-left:.4rem }
+
+  /* Publish schedule controls */
+  .pub-cal,
+  .pub-hh, .pub-mm, .pub-target,
+  .pub-all-btn{
+    height:32px; padding:0 8px;
+    background:#0f1320; color:var(--ink);
+    border:1px solid var(--line); border-radius:var(--radius-sm);
+    font:600 .8rem/1 var(--font-ui);
+  }
+  .pub-cal{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:32px; cursor:pointer;
+  }
+  .pub-colon{ color:var(--ink-dim); padding:0 2px }
+  body:has(#pub-all:checked) .pub-all-btn{
+    background:rgba(77,208,225,.14); color:var(--accent); border-color:var(--accent);
+  }
+
+  /* ── responsive ─────────────────────────────────────────────── */
+  @media (max-width: 560px){
+    .edge, .mid-left, .mid-right{ min-width:44px }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{ animation-duration:.01ms !important; transition-duration:.01ms !important }
+  }
+
+  /* ── translaty — i18n span toggle (CSS-only) ───────────────── */
+  .es{display:none}                                  /* default view = .en */
+  body:has(#lang-es:checked) .en{display:none}
+  body:has(#lang-es:checked) .es{display:inline}
+
+  /* ── translaty — worldball switcher (🌐) ───────────────────── */
+  .lang{display:inline-block;position:relative;margin:.2rem 0 .6rem}
+  .lang>summary{list-style:none;cursor:pointer;width:40px;height:40px;border:1px solid #999;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;font-size:1.35rem;line-height:1;-webkit-user-select:none;user-select:none}
+  .lang>summary::-webkit-details-marker{display:none}
+  .lang[open]>summary{border-color:#333;background:#f2f2f2}
+  .lang-opts{position:absolute;right:0;z-index:40;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;
+    background:#fff;border:1px solid #999;border-radius:12px;padding:6px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+  .lang input{position:absolute;opacity:0;pointer-events:none}
+  .lang label{cursor:pointer;padding:0 12px;min-height:40px;display:inline-flex;align-items:center;border:1px solid #999;border-radius:11px;white-space:nowrap}
+  .lang input:checked + label{background:#333;color:#fff;font-weight:bold;border-color:#333}
+  /* willy is force-dark: theme the worldball to match the topbar */
+  .flove-bar .lang>summary{border-color:var(--chip-border);color:var(--ink)}
+  .flove-bar .lang[open]>summary{background:#2a2a2a;border-color:var(--accent)}
+  .flove-bar .lang-opts{background:var(--panel);border-color:var(--line);box-shadow:0 6px 18px rgba(0,0,0,.5)}
+  .flove-bar .lang label{border-color:var(--chip-border);color:var(--ink)}
+  .flove-bar .lang input:checked + label{background:var(--accent);color:#06262b;border-color:var(--accent)}
+</style>
+</head>
+<body>
+
+<!-- About panel state (checkbox set by the menu's About item / closed by backdrop) -->
+<input type="checkbox" id="about-toggle" class="about-ctl">
+
+<!-- ─── Save / Share / Publish cycle state ─── -->
+<input type="radio" name="cycle" id="cycle-none"  class="ctl" checked>
+<input type="radio" name="cycle" id="cycle-save"  class="ctl">
+<input type="radio" name="cycle" id="cycle-share" class="ctl">
+<input type="radio" name="cycle" id="cycle-pub"   class="ctl">
+<!-- Publish "all" flag -->
+<input type="checkbox" id="pub-all"       class="ctl">
+
+<!-- ─── topbar ─────────────────────────────────────────────────── -->
+<div class="flove-bar">
+  <button type="button" class="app-trigger" id="appTrigger" aria-haspopup="true" aria-expanded="false" aria-controls="appMenu" title="Menu">
+    <svg class="flove-mark" aria-hidden="true" viewBox="0 0 100 100">
+      <defs>
+        <linearGradient id="g-willy" x1="14" y1="14" x2="86" y2="86" gradientUnits="userSpaceOnUse">
+          <stop offset="0%"   stop-color="#4dd0e1"/>
+          <stop offset="55%"  stop-color="#2ba5b5"/>
+          <stop offset="100%" stop-color="#ff8a65"/>
+        </linearGradient>
+      </defs>
+      <g fill="none" stroke="url(#g-willy)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="14" y="14" width="72" height="72" rx="3"/>
+        <line x1="14" y1="50" x2="86" y2="50"/>
+        <line x1="50" y1="14" x2="50" y2="86"/>
+      </g>
+      <circle cx="50" cy="50" r="6" fill="url(#g-willy)"/>
+    </svg>
+    <span class="flove-app-name">willy</span>
+    <span class="app-caret" aria-hidden="true">▾</span>
+  </button>
+  <span class="flove-spacer"></span>
+</div>
+
+<!-- App menu (opens under the logo/title) — About + flove moved here from the topbar -->
+<nav class="app-menu" id="appMenu" aria-label="App menu" data-aria-en="App menu" data-aria-es="Menú de la app">
+  <button type="button" class="app-menu-item" id="menuAbout"><span class="en" lang="en">About</span><span class="es" lang="es">Acerca de</span></button>
+  <!-- language choice (moved here from the topbar worldball) -->
+  <div class="app-menu-lang" role="group" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">
+    <input type="radio" name="lang" id="lang-en" class="ctl" checked>
+    <label class="app-menu-item lang-item" for="lang-en">🌐 English</label>
+    <input type="radio" name="lang" id="lang-es" class="ctl">
+    <label class="app-menu-item lang-item" for="lang-es">🌐 Español</label>
+  </div>
+  <a class="app-menu-item" href="index.html" aria-label="Back to flove launcher" data-aria-en="Back to flove launcher" data-aria-es="Volver al lanzador de flove">← flove</a>
+</nav>
+
+<!-- Click-outside backdrop: clicking it unchecks #about-toggle and closes the panel -->
+<label class="about-backdrop" for="about-toggle" aria-label="Close About" data-aria-en="Close About" data-aria-es="Cerrar Acerca de"></label>
+
+<!-- About panel — opens below the topbar, anchored center -->
+<aside id="about-panel" class="about-panel" role="dialog" aria-label="About Willy" data-aria-en="About Willy" data-aria-es="Acerca de Willy">
+  <h1><span class="en" lang="en">Teleological Whys — the Wills</span><span class="es" lang="es">Porqués teleológicos — las Voluntades</span></h1>
+  <p class="subtitle"><span class="en" lang="en">Drag each Will onto the axis. Where a will sits is your stance.</span><span class="es" lang="es">Arrastra cada Voluntad sobre el eje. El lugar donde queda una voluntad es tu postura.</span></p>
+</aside>
+
+<main class="layout willy-layout">
+  <!-- chips, then the cross-axis square below them, then the Informal/Formal switch -->
+  <section class="panel wills-panel">
+    <div class="wills-row">
+      <!-- word-chips -->
+      <div class="word-list" id="wills-list"></div>
+
+      <!-- cross-axis square, below the chips -->
+      <div class="axis-wrap wills-wrap">
+        <div class="axis-square" id="willsAxis">
+          <svg viewBox="0 0 100 100" class="axis-svg" aria-hidden="true">
+            <g class="lines-cross">
+              <line class="ln" x1="1"  y1="50" x2="99" y2="50"/>
+              <line class="ln" x1="50" y1="1"  x2="50" y2="99"/>
+            </g>
+          </svg>
+          <!-- wills layers injected by JS -->
+        </div>
+      </div>
+
+      <!-- Informal/Formal switch, below the square -->
+      <div class="actions wills-set-actions">
+        <button type="button" id="willsSetToggle" class="btn" aria-pressed="false"><span class="en" lang="en">Informal</span><span class="es" lang="es">Informal</span></button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ─── Summary section (mirrors blogynormal step-panel.is-summary) ─── -->
+<section class="summary-section">
+  <!-- §13.12 — Save (6 formats) · Share-to-mobile · Publish -->
+  <div class="action-row right">
+
+    <span class="cycle-wrap save-wrap">
+      <span class="cycle-trigger">
+        <label class="btn ghost save-btn cycle-step cycle-step--open"  for="cycle-save" title="Save">💾 <span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></label>
+        <label class="btn ghost save-btn cycle-step cycle-step--close" for="cycle-none" title="Close">💾 <span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></label>
+        <span class="save-row" role="group" aria-label="Download formats" data-aria-en="Download formats" data-aria-es="Formatos de descarga">
+          <button type="button" class="btn ghost dl-btn" data-flove-save="md"   title="Markdown">MD</button>
+          <button type="button" class="btn ghost dl-btn" data-flove-save="json" title="JSON">JSON</button>
+          <button type="button" class="btn ghost dl-btn" data-flove-save="xml"  title="XML">XML</button>
+          <button type="button" class="btn ghost dl-btn" data-flove-save="html" title="HTML">HTML</button>
+          <button type="button" class="btn ghost dl-btn" data-flove-save="jpg"  title="JPG">JPG</button>
+          <button type="button" class="btn ghost dl-btn" data-flove-save="csv"  title="CSV">CSV</button>
+          <button type="button" class="btn ghost" id="saveDownloadBtn" title="Export this play as MyPlay.html">🖼 <span class="en" lang="en">Play</span><span class="es" lang="es">Jugada</span></button>
+        </span>
+      </span>
+    </span>
+
+    <span class="cycle-wrap share-wrap">
+      <span class="cycle-trigger">
+        <label class="btn ghost share-btn cycle-step cycle-step--open"  for="cycle-share" title="Share">📤 <span class="en" lang="en">Share</span><span class="es" lang="es">Compartir</span></label>
+        <label class="btn ghost share-btn cycle-step cycle-step--close" for="cycle-none"  title="Close">📤 <span class="en" lang="en">Share</span><span class="es" lang="es">Compartir</span></label>
+        <span class="cycle-row below">
+          <button type="button" class="btn ghost" id="sharePrintBtn"  title="Print">🖨 <span class="en" lang="en">Print</span><span class="es" lang="es">Imprimir</span></button>
+          <button type="button" class="btn ghost" id="shareMobileBtn" data-flove-share="mobile" title="Share (Web Share)">📱 <span class="en" lang="en">Mobile</span><span class="es" lang="es">Móvil</span></button>
+          <button type="button" class="btn ghost" id="shareAppsBtn"   title="Copy share link">🌐 <span class="en" lang="en">Link</span><span class="es" lang="es">Enlace</span></button>
+          <a class="btn ghost" id="shareEmailBtn" href="#" title="Email">📧 <span class="en" lang="en">Email</span><span class="es" lang="es">Correo</span></a>
+        </span>
+      </span>
+    </span>
+
+    <span class="cycle-wrap pub-wrap">
+      <span class="cycle-trigger">
+        <label class="btn ghost pub-btn cycle-step cycle-step--open"  for="cycle-pub"  title="Publish">🚀 <span class="en" lang="en">Publish</span><span class="es" lang="es">Publicar</span></label>
+        <label class="btn ghost pub-btn cycle-step cycle-step--close" for="cycle-none" title="Close">🚀 <span class="en" lang="en">Publish</span><span class="es" lang="es">Publicar</span></label>
+        <span class="cycle-row below" role="group" aria-label="Publish schedule" data-aria-en="Publish schedule" data-aria-es="Programar publicación">
+          <select class="pub-cal" id="pubDay" aria-label="Day" data-aria-en="Day" data-aria-es="Día"></select>
+          <select class="pub-cal" id="pubMonth" aria-label="Month" data-aria-en="Month" data-aria-es="Mes">
+            <option value="1" data-en="Jan" data-es="Ene">Jan</option><option value="2" data-en="Feb" data-es="Feb">Feb</option><option value="3" data-en="Mar" data-es="Mar">Mar</option><option value="4" data-en="Apr" data-es="Abr">Apr</option>
+            <option value="5" data-en="May" data-es="May">May</option><option value="6" data-en="Jun" data-es="Jun">Jun</option><option value="7" data-en="Jul" data-es="Jul">Jul</option><option value="8" data-en="Aug" data-es="Ago">Aug</option>
+            <option value="9" data-en="Sep" data-es="Sep">Sep</option><option value="10" data-en="Oct" data-es="Oct">Oct</option><option value="11" data-en="Nov" data-es="Nov">Nov</option><option value="12" data-en="Dec" data-es="Dic">Dec</option>
+          </select>
+          <select class="pub-cal" id="pubYear" aria-label="Year" data-aria-en="Year" data-aria-es="Año">
+            <option value="2024">2024</option><option value="2025">2025</option><option value="2026" selected>2026</option>
+            <option value="2027">2027</option><option value="2028">2028</option>
+          </select>
+          <select class="pub-hh" id="pubHH" aria-label="Hour" data-aria-en="Hour" data-aria-es="Hora"></select>
+          <span class="pub-colon" aria-hidden="true">:</span>
+          <select class="pub-mm" id="pubMM" aria-label="Minute" data-aria-en="Minute" data-aria-es="Minuto"></select>
+          <select class="pub-target" id="pubTarget" aria-label="Audience" data-aria-en="Audience" data-aria-es="Audiencia">
+            <option value="groups" selected data-en="Groups" data-es="Grupos">Groups</option>
+            <option value="friends" data-en="Friends" data-es="Amigos">Friends</option>
+            <option value="followers" data-en="Followers" data-es="Seguidores">Followers</option>
+            <option value="lists" data-en="Lists" data-es="Listas">Lists</option>
+            <option value="links" data-en="Links" data-es="Enlaces">Links</option>
+          </select>
+          <label class="btn ghost pub-all-btn" for="pub-all" title="All"><span class="en" lang="en">All</span><span class="es" lang="es">Todos</span></label>
+          <button type="button" class="btn ghost" id="pubCommitBtn" title="Publish now" data-aria-en="Publish now" data-aria-es="Publicar ahora" aria-label="Publish now">✓</button>
+        </span>
+      </span>
+    </span>
+  </div>
+
+  <!-- ✦ F0 §13.9 — Reset: destructive fresh-start, own row below the actions -->
+  <div class="action-row right">
+    <button type="button" class="btn ghost" id="resetBtn" title="Reset">↺ <span class="en" lang="en">Reset</span><span class="es" lang="es">Reiniciar</span></button>
+  </div>
+</section>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- ─── templates JS clones into per-set layers ───────────────── -->
+<template id="tpl-core-zones">
+  <div class="dropzone mid-left  zone-core" data-zone="left-middle"></div>
+  <div class="dropzone mid-right zone-core" data-zone="right-middle"></div>
+  <div class="dropzone edge edge-top    zone-core" data-zone="edge-top"></div>
+  <div class="dropzone edge edge-bottom zone-core" data-zone="edge-bottom"></div>
+</template>
+
+<script>
+(function(){
+  "use strict";
+
+  const $  = (s, r=document)=>r.querySelector(s);
+  const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
+
+  // ── word data ───────────────────────────────────────────────
+  // Wills: 4 chips each, dropped into the cross arms.
+  const WILLS = {
+    A: ['FATAL','FINE','LUCKY','RANDOM'],
+    B: ['CHAOS','ORDER','GRACE','FATE'],
+  };
+
+  // ── DOM refs ────────────────────────────────────────────────
+  const willsList       = $('#wills-list');
+  const willsSetToggle   = $('#willsSetToggle');
+  const willsAxis       = $('#willsAxis');
+  const tplCore         = $('#tpl-core-zones');
+  const toastEl         = $('#toast');
+
+  const STORAGE_KEY = 'flove.willy.v1';
+  const SCHEMA_VERSION = 1;
+  // ✦ F0 §10.3a — own store keys this file owns (Reset clears ONLY these;
+  // NEVER localStorage.clear() — other flove apps share this origin).
+  const OWN_KEYS = [STORAGE_KEY];
+
+  // ✦ §5.3/§10.3a — persistence survives a genuine CLOSE→REOPEN, but a RELOAD
+  // (F5 / reload logo) and Reset START FRESH: they clear this file's own keys
+  // and skip the restore, so the empty default board returns. Detect a reload
+  // via the Navigation Timing API (legacy fallback included).
+  function navIsReload(){
+    try{
+      const nav = performance.getEntriesByType &&
+                  performance.getEntriesByType('navigation')[0];
+      if (nav && nav.type) return nav.type === 'reload';
+      if (performance.navigation) return performance.navigation.type === 1; // legacy
+    } catch(_){}
+    return false;
+  }
+  // A reload overrides persistence: wipe own keys up-front (before _hadPriorSave
+  // seeds and before boot restore), so the restore is skipped and the state is
+  // as if never saved. NEVER localStorage.clear() — other flove apps share origin.
+  const _isReload = navIsReload();
+  if (_isReload){ try { OWN_KEYS.forEach(k => localStorage.removeItem(k)); } catch(_){} }
+
+  // request durable storage once, on first user interaction (best-effort)
+  let _persistAsked = false;
+  function requestPersist(){
+    if (_persistAsked) return; _persistAsked = true;
+    try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(_){}
+  }
+
+  let state = {
+    // default view = Formal (B); the "Informal" button below the chips reveals A
+    wills:  { active: 'B' },
+    layers: {
+      wills:  { A:null, B:null },
+    },
+    placements: {
+      // serialized snapshot of which chip is in which zone, per (kind,set)
+      // shape: { wills: {A:{zone:word,…}, B:{…}} }
+      wills:  { A:{}, B:{} },
+    },
+  };
+
+  // ── render chip lists ───────────────────────────────────────
+  function renderWillsList(){
+    willsList.innerHTML = '';
+    // Show ONLY the active set's chips (Informal=A or Formal=B) that are not yet
+    // on that set's axis — the two vocabularies never appear in the list at once.
+    const set = state.wills.active;
+    const placed = new Set(Object.values(state.placements.wills[set] || {}));
+    WILLS[set].forEach(w => {
+      if (placed.has(w)) return;
+      willsList.appendChild(makeChip(w));
+    });
+  }
+
+  // category of a word: wills (blue)
+  function wordKind(word){
+    if (WILLS.A.includes(word) || WILLS.B.includes(word)) return 'wills';
+    return '';
+  }
+
+  function makeChip(word){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip draggable k-' + wordKind(word);
+    b.draggable = true;
+    b.dataset.word = word;
+    b.textContent = word;
+    return b;
+  }
+
+  // ── per-set drop-zone layers on the axis ────────────────────
+  function createLayer(kind, set){
+    const wrap = document.createElement('div');
+    wrap.className = 'zones-layer';
+    wrap.dataset.kind = kind;
+    wrap.dataset.set  = set;
+    wrap.appendChild(document.importNode(tplCore.content, true));
+    $$('.dropzone', wrap).forEach(z => z.classList.add('empty'));
+    return wrap;
+  }
+
+  function ensureLayers(){
+    if (state.layers.wills.A) return;
+    ['A','B'].forEach(s => {
+      state.layers.wills[s]  = createLayer('wills',  s);
+      willsAxis.appendChild(state.layers.wills[s]);   // wills cross square
+    });
+  }
+
+  function updateLayerVisibility(){
+    // the square always shows its active set's layer; the other set stays hidden
+    Object.values(state.layers.wills)
+      .forEach(el => el && el.classList.add('hidden'));
+    state.layers.wills[state.wills.active].classList.remove('hidden');
+  }
+
+  // ── set-toggle buttons: A = Informal (default), B = Formal ──
+  function refreshSetButton(btn, set){
+    // The button names the OTHER set — the one a click reveals. With Formal (B)
+    // showing it reads "Informal"; with Informal (A) showing it reads "Formal".
+    const showingFormal = (set === 'B');
+    btn.innerHTML = showingFormal
+      ? '<span class="en" lang="en">Informal</span><span class="es" lang="es">Informal</span>'
+      : '<span class="en" lang="en">Formal</span><span class="es" lang="es">Formal</span>';
+    btn.setAttribute('aria-pressed', showingFormal ? 'false' : 'true');
+    btn.classList.toggle('is-checked', !showingFormal);
+  }
+
+  willsSetToggle.addEventListener('click', () => {
+    state.wills.active = state.wills.active === 'A' ? 'B' : 'A';
+    renderWillsList();
+    refreshSetButton(willsSetToggle, state.wills.active);
+    updateLayerVisibility();
+  });
+
+  // ── drag and drop ───────────────────────────────────────────
+  let dragged = null;
+
+  // Event delegation: chip drag handlers attached on the lists +
+  // each layer once via document-level listeners — robust across re-renders.
+  document.addEventListener('dragstart', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    dragged = chip;
+    chip.classList.add('is-dragging');
+    e.dataTransfer.setData('text/plain', chip.dataset.word || chip.textContent);
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  document.addEventListener('dragend', () => {
+    if (dragged) dragged.classList.remove('is-dragging');
+    dragged = null;
+  });
+
+  document.addEventListener('dragover', (e) => {
+    const zone = e.target.closest('.dropzone');
+    const list = e.target.closest('#wills-list');
+    if (zone || list){
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (zone) zone.classList.add('over');
+    }
+  });
+  document.addEventListener('dragleave', (e) => {
+    const zone = e.target.closest('.dropzone');
+    if (zone) zone.classList.remove('over');
+  });
+  document.addEventListener('drop', (e) => {
+    if (!dragged) return;
+    const zone = e.target.closest('.dropzone');
+    const list = e.target.closest('#wills-list');
+
+    if (zone){
+      e.preventDefault();
+      zone.classList.remove('over');
+      // displace any previous chip back to the word list
+      const prev = zone.querySelector('.chip');
+      if (prev) willsList.appendChild(prev);
+      zone.appendChild(dragged);
+      zone.classList.remove('empty');
+      afterEdit();
+    } else if (list){
+      e.preventDefault();
+      // route the chip back to the word list and re-render so it lands in
+      // canonical order — matches the click-to-unplace contract.
+      willsList.appendChild(dragged);
+      capturePlacements();
+      renderWillsList();
+      savePlacements();
+      markStale();
+      refreshExportControls();
+    }
+  });
+
+  // ── click-to-place / click-to-unplace ───────────────────────
+  // Click on a chip in a word list → drop it into the FIRST EMPTY zone
+  // of the active layer (DOM order from the template).
+  // Click on a chip already inside a zone → return it to its word list
+  // (re-render keeps the canonical list order).
+  document.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    // Ignore chip clicks bubbling from drag-end (no real click fires after
+    // a successful drag, but guard against edge cases).
+    if (chip.classList.contains('is-dragging')) return;
+
+    const inList = chip.closest('#wills-list');
+    const inZone = chip.closest('.dropzone');
+
+    if (inList){
+      // Place into the first empty zone of the active layer
+      const set   = state.wills.active;
+      const layer = state.layers.wills[set];
+      if (!layer) return;
+      const zones = $$('.dropzone', layer);
+      const emptyZone = zones.find(z => !z.querySelector('.chip'));
+      if (!emptyZone){
+        toast(t('No empty zones — drag to displace', 'No quedan zonas libres — arrastra para desplazar'));
+        return;
+      }
+      emptyZone.appendChild(chip);
+      emptyZone.classList.remove('empty');
+      afterEdit();
+    } else if (inZone){
+      // Unplace: detach chip, refresh state, THEN re-render the list so
+      // the canonical-order re-render sees the chip as no-longer-placed
+      // (capture must run BEFORE render or the chip vanishes — bug fix).
+      inZone.classList.add('empty');
+      chip.remove();
+      capturePlacements();
+      renderWillsList();
+      savePlacements();
+      markStale();
+      refreshExportControls();
+    }
+  });
+
+  // capture → persist → mark out-of-date → re-enable/disable exports.
+  // One funnel for every in-session edit (drag-drop + click-place).
+  function afterEdit(){
+    capturePlacements();
+    savePlacements();
+    markStale();
+    refreshExportControls();
+  }
+
+  // ── placements persistence (localStorage) ───────────────────
+  function capturePlacements(){
+    state.placements = { wills: {A:{}, B:{}} };
+    ['wills'].forEach(kind => {
+      ['A','B'].forEach(set => {
+        const layer = state.layers[kind][set];
+        if (!layer) return;
+        $$('.dropzone', layer).forEach(z => {
+          const chip = z.querySelector('.chip');
+          if (chip) state.placements[kind][set][z.dataset.zone] = chip.dataset.word;
+        });
+      });
+    });
+  }
+
+  let _quotaWarned = false;
+  function savePlacements(){
+    requestPersist();
+    try{
+      const snapshot = {
+        version: SCHEMA_VERSION,
+        wills:  { active: state.wills.active  },
+        placements: state.placements,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+    } catch(e){
+      // QuotaExceededError (or private-mode write block): warn once, point to export
+      const quota = e && (e.name === 'QuotaExceededError' || e.code === 22 || e.code === 1014);
+      if (quota && !_quotaWarned){
+        _quotaWarned = true;
+        try { toast(t('Storage full · use Save to export', 'Almacenamiento lleno · usa Guardar para exportar'), 2600); } catch(_){}
+      }
+    }
+  }
+
+  // ── ✦ F0 §10.3a · stale-dot (out-of-date) helpers ──
+  // Lit when an already-persisted play is re-edited in session; any
+  // [data-flove-update] click re-derives + hides them all.
+  function showStale(){ $$('.stale-dot').forEach(d => d.hidden = false); }
+  function hideStale(){ $$('.stale-dot').forEach(d => d.hidden = true); }
+  // Whether a persisted play existed BEFORE the current run of in-session edits.
+  // Seeded at boot and re-armed on Update; an edit that merely auto-saves must
+  // NOT itself flip this, or the very first placement of a fresh, never-saved
+  // play would wrongly light the out-of-date dot (it auto-saves, then markStale
+  // would re-read its own just-written key).
+  let _hadPriorSave = false;
+  try { _hadPriorSave = !!localStorage.getItem(STORAGE_KEY); } catch(_){}
+  function markStale(){ if (_hadPriorSave) showStale(); }
+
+  function loadPlacements(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const snap = JSON.parse(raw);
+      if (!snap || !snap.placements) return;
+
+      state.wills.active  = snap.wills?.active  || 'B';
+      state.placements    = Object.assign(state.placements, snap.placements);
+
+      // rebuild each layer's chips from the saved placement map
+      ['wills'].forEach(kind => {
+        ['A','B'].forEach(set => {
+          const layer = state.layers[kind][set];
+          if (!layer) return;
+          const map = state.placements[kind][set] || {};
+          Object.entries(map).forEach(([zoneId, word]) => {
+            const zone = layer.querySelector(`[data-zone="${zoneId}"]`);
+            if (!zone) return;
+            zone.appendChild(makeChip(word));
+            zone.classList.remove('empty');
+          });
+        });
+      });
+      // Re-sync from the actual DOM: any saved placement whose zone no longer
+      // exists (e.g. after a zone-layout change) is dropped, so its word falls
+      // back to the word list instead of vanishing.
+      capturePlacements();
+    } catch(_){ /* corrupt snapshot — ignore */ }
+  }
+
+  // ── footer actions ──────────────────────────────────────────
+  // pick a string by the active worldball language (set on <html lang>)
+  function t(en, es){ return (document.documentElement.lang === 'es') ? es : en; }
+  function toast(msg, ms=1600){
+    toastEl.textContent = msg;
+    toastEl.classList.add('is-on');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => toastEl.classList.remove('is-on'), ms);
+  }
+
+  // ── Share / Publish helpers ─────────────────────────────────
+
+  // Build a readable plain-text summary from current placements (used by
+  // Email/Print). Delegates to the single summary-model phrase — no 2nd copy.
+  function buildSummaryText(){
+    const m = summaryModel();
+    return isEmptyModel(m) ? '' : m.phrase;
+  }
+
+  // ════════════════════════════════════════════════════════════
+  //  §13.12 — EXPORT + SHARE surface (modelled on metas/souls.html)
+  // ════════════════════════════════════════════════════════════
+  // ONE shared escaper pair feeds BOTH the XML and the HTML exports, so
+  // hostile input (<script>, &, quotes…) comes out inert in every format.
+  const esc     = s => String(s == null ? '' : s).replace(/[&<>]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[c]));
+  const escAttr = s => esc(s).replace(/"/g, '&quot;');
+  // CSV cell · RFC-4180: wrap in quotes when it holds a comma/quote/newline,
+  // doubling any inner quote.
+  const csvCell = v => {
+    const s = String(v == null ? '' : v);
+    return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+
+  // friendly, language-aware labels for the saved zones
+  const WILLS_ZONE_LABEL = {
+    'left-middle':  () => t('left',  'izquierda'),
+    'right-middle': () => t('right', 'derecha'),
+    'edge-top':     () => t('top',    'arriba'),
+    'edge-bottom':  () => t('bottom', 'abajo'),
+  };
+  function zoneLabel(kind, zone){
+    return (WILLS_ZONE_LABEL[zone] ? WILLS_ZONE_LABEL[zone]() : zone);
+  }
+
+  // ── THE single summary-model — the one source feeding the live phrase
+  //    AND every export. No second copy. Only FILLED entries appear.
+  function summaryModel(){
+    capturePlacements();
+    const sections = [];
+    const picked = [];
+    ['wills'].forEach(kind => {
+      ['A','B'].forEach(set => {
+        const map = state.placements[kind][set] || {};
+        const entries = Object.entries(map);
+        if (!entries.length) return;
+        const kindLabel = t('Wills', 'Voluntades');
+        const setLabel  = (set === 'A') ? t('Informal', 'Informal') : t('Formal', 'Formal');
+        const items = entries.map(([zone, word]) => {
+          picked.push(word);
+          return { zone: zoneLabel(kind, zone), word };
+        });
+        sections.push({ label: kindLabel, title: setLabel, items });
+      });
+    });
+    return {
+      app: 'willy',
+      version: SCHEMA_VERSION,
+      phrase: buildPhrase(sections),
+      sections,
+      raters: [],     // willy maps positions, not 0..n ratings
+      picked,
+    };
+  }
+
+  function isEmptyModel(m){ return !m.sections.length; }
+
+  // one-line + per-section readable phrase (the live phrase + share text)
+  function buildPhrase(sections){
+    if (!sections.length) return t('No placements yet.', 'Aún no hay colocaciones.');
+    const head = t('✦ Willy — my map', '✦ Willy — mi mapa');
+    const blocks = sections.map(s => {
+      const body = s.items.map(it => `  · ${it.word} (${it.zone})`).join('\n');
+      return `${s.label} · ${s.title}\n${body}`;
+    });
+    return head + '\n\n' + blocks.join('\n\n');
+  }
+
+  // ── format builders (all driven by summaryModel) ──
+  function exportMd(m){
+    const lines = ['# ' + t('✦ Willy — my map', '✦ Willy — mi mapa'), '', m.phrase, ''];
+    m.sections.forEach(s => {
+      lines.push(`## ${s.label} · ${s.title}`, '');
+      lines.push('| ' + t('Zone', 'Zona') + ' | ' + t('Word', 'Palabra') + ' |', '| --- | --- |');
+      s.items.forEach(it => lines.push(`| ${it.zone} | ${it.word} |`));
+      lines.push('');
+    });
+    return lines.join('\n');
+  }
+  function exportJson(m){
+    return JSON.stringify(m, null, 2);
+  }
+  function exportXml(m){
+    const secs = m.sections.map(s => {
+      const items = s.items
+        .map(it => `    <item zone="${escAttr(it.zone)}">${esc(it.word)}</item>`)
+        .join('\n');
+      return `  <section label="${escAttr(s.label)}" set="${escAttr(s.title)}">\n${items}\n  </section>`;
+    }).join('\n');
+    return `<?xml version="1.0" encoding="UTF-8"?>\n<willy app="willy" version="${m.version}">\n`
+      + `  <phrase>${esc(m.phrase)}</phrase>\n${secs}\n</willy>`;
+  }
+  function exportCsv(m){
+    // headers stay English (§13.12); one row per placed element
+    const rows = ['section,set,zone,word'];
+    m.sections.forEach(s => {
+      s.items.forEach(it => {
+        rows.push([s.label, s.title, it.zone, it.word].map(csvCell).join(','));
+      });
+    });
+    return rows.join('\r\n');
+  }
+  function buildExportHtml(m){
+    const ACC = '#4dd0e1', ROSE = '#ff8a65';
+    const secHtml = m.sections.map(s => {
+      const items = s.items.map(it =>
+        `<li><span class="z">${esc(it.zone)}</span> ${esc(it.word)}</li>`).join('');
+      return `<div class="card"><div class="lbl">${esc(s.label)} · ${esc(s.title)}</div><ul>${items}</ul></div>`;
+    }).join('');
+    const phraseHtml = esc(m.phrase).replace(/\n/g, '<br>');
+    const css = `
+      *{box-sizing:border-box}
+      body{margin:0;min-height:100vh;padding:40px 18px;font-family:'Inter',system-ui,Segoe UI,sans-serif;
+        background:linear-gradient(180deg,#0b0c10,#111319);color:#e6eef8;display:flex;justify-content:center}
+      .frame{max-width:760px;width:100%;padding:13px;border-radius:26px;
+        background:linear-gradient(135deg,${ACC},${ROSE});box-shadow:0 24px 60px rgba(0,0,0,.5)}
+      .mat{background:#111319;border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:24px 22px}
+      h1{text-align:center;font-size:1.6rem;margin:0 0 .2rem;
+        background:linear-gradient(135deg,${ACC},${ROSE});-webkit-background-clip:text;background-clip:text;color:transparent}
+      .phrase{white-space:pre-wrap;color:rgba(230,238,248,.78);font-size:.86rem;line-height:1.5;
+        margin:0 0 1.2rem;padding:.8rem 1rem;background:rgba(255,255,255,.04);border-radius:12px}
+      .grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+      .card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+        border-left:4px solid ${ACC};border-radius:13px;padding:.8rem .95rem}
+      .lbl{font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:${ACC};margin-bottom:.35rem}
+      ul{list-style:none;padding:0;margin:0;font-size:.9rem}
+      li{padding:.08rem 0;color:rgba(230,238,248,.85);line-height:1.4}
+      .z{color:rgba(230,238,248,.45);font-size:.74rem}
+      @media(max-width:520px){.grid{grid-template-columns:1fr}}
+    `;
+    return `<!doctype html><html lang="en"><head><meta charset="utf-8">`
+      + `<meta name="viewport" content="width=device-width,initial-scale=1">`
+      + `<title>✦ ${esc(t('Willy — my map', 'Willy — mi mapa'))}</title><style>${css}</style></head>`
+      + `<body><div class="frame"><div class="mat">`
+      + `<h1>✦ ${esc(t('Willy — my map', 'Willy — mi mapa'))}</h1>`
+      + `<div class="phrase">${phraseHtml}</div>`
+      + `<div class="grid">${secHtml}</div>`
+      + `</div></div></body></html>`;
+  }
+  // JPG — visual-only canvas render (≥1080px wide), truncate long text with …
+  function downloadSummaryJpg(m){
+    const W = 1200, pad = 60, lineH = 30;
+    const trunc = (s, n) => { s = String(s); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
+    // pre-measure required height
+    let lines = 0;
+    m.sections.forEach(s => { lines += 1 + s.items.length + 1; });
+    const H = Math.max(700, pad * 2 + 90 + lines * lineH);
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    const grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, '#0b0c10'); grad.addColorStop(1, '#111319');
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#4dd0e1';
+    ctx.font = '700 40px Inter, system-ui, sans-serif';
+    ctx.fillText('✦ ' + t('Willy — my map', 'Willy — mi mapa'), pad, pad + 36);
+    let y = pad + 100;
+    m.sections.forEach(s => {
+      ctx.fillStyle = '#ff8a65';
+      ctx.font = '600 22px Inter, system-ui, sans-serif';
+      ctx.fillText(trunc(s.label + ' · ' + s.title, 60), pad, y); y += lineH + 4;
+      ctx.fillStyle = '#e6eef8';
+      ctx.font = '18px Inter, system-ui, sans-serif';
+      s.items.forEach(it => {
+        ctx.fillText('· ' + trunc(it.word + '  (' + it.zone + ')', 80), pad + 16, y);
+        y += lineH;
+      });
+      y += 12;
+    });
+    canvas.toBlob(blob => {
+      if (!blob){ toast(t('JPG export failed', 'Fallo al exportar JPG')); return; }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = exportFilename('jpg');
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }, 'image/jpeg', 0.92);
+  }
+
+  // filename: localize the word "summary"→"resumen"; ext kept literal
+  function exportFilename(ext){
+    return 'willy-' + t('summary', 'resumen') + '.' + ext;
+  }
+
+  // dispatcher for the six [data-flove-save] buttons
+  function runExport(fmt){
+    const m = summaryModel();
+    if (isEmptyModel(m)){ toast(t('Nothing to export yet', 'Nada que exportar aún')); return; }
+    if (fmt === 'jpg'){ downloadSummaryJpg(m); toast(t('Downloaded · JPG', 'Descargado · JPG')); return; }
+    let mime, body;
+    if (fmt === 'md')        { mime = 'text/markdown;charset=utf-8';  body = exportMd(m); }
+    else if (fmt === 'json') { mime = 'application/json;charset=utf-8'; body = exportJson(m); }
+    else if (fmt === 'xml')  { mime = 'application/xml;charset=utf-8';  body = exportXml(m); }
+    else if (fmt === 'html') { mime = 'text/html;charset=utf-8';        body = buildExportHtml(m); }
+    else if (fmt === 'csv')  { mime = 'text/csv;charset=utf-8';         body = exportCsv(m); }
+    else return;
+    downloadBlob(exportFilename(fmt), mime, body);
+    toast(t('Downloaded · ', 'Descargado · ') + fmt.toUpperCase());
+  }
+
+  // enable/disable the export+copy+share controls based on whether
+  // anything is placed (called on every edit + on boot)
+  function refreshExportControls(){
+    const empty = isEmptyModel(summaryModel());
+    $$('[data-flove-save], [data-flove-copy], [data-flove-share]').forEach(b => {
+      b.disabled = empty;
+    });
+  }
+
+  // ── Save: export the played axis as a frozen standalone HTML (MyPlay.html) ──
+  function downloadBlob(filename, mime, data){
+    const blob = new Blob([data], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  // Build a self-contained HTML of just the axis with the chips frozen in place:
+  // clone the axis, drop the hidden (inactive-set) layers, make every chip inert.
+  function exportPlayHTML(){
+    const styleEl   = document.querySelector('style');
+    const styleHTML = styleEl ? styleEl.outerHTML : '';
+    // freeze a square: keep only its active set's layer, make every chip inert
+    const freeze = (square) => {
+      const c = square.cloneNode(true);
+      c.querySelectorAll('.zones-layer').forEach(l => {
+        if (l.dataset.set === state[l.dataset.kind].active) l.classList.remove('hidden');
+        else l.remove();
+      });
+      c.querySelectorAll('.chip').forEach(ch => {
+        ch.setAttribute('draggable', 'false');
+        ch.classList.add('is-frozen');
+      });
+      return c.outerHTML;
+    };
+    return '<!DOCTYPE html>\n<html lang="en">\n<head>\n' +
+      '<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n' +
+      '<title>MyPlay</title>\n' + styleHTML + '\n</head>\n<body>\n' +
+      '<main class="layout export-layout">\n' +
+      '  <h1 class="export-title">MyPlay — Wills</h1>\n' +
+      '  <section class="panel">\n' +
+      '    <div class="axis-wrap export-axis-wide" style="margin:0 auto">' + freeze(willsAxis) + '</div>\n' +
+      '  </section>\n</main>\n</body>\n</html>';
+  }
+
+  $('#saveDownloadBtn').addEventListener('click', () => {
+    downloadBlob('MyPlay.html', 'text/html', exportPlayHTML());
+    toast(t('Exported MyPlay.html', 'Exportado MyPlay.html'));
+  });
+
+  // ── §13.12 — six download buttons (md·json·xml·html·jpg·csv) ──
+  $$('[data-flove-save]').forEach(b =>
+    b.addEventListener('click', () => runExport(b.dataset.floveSave)));
+
+  // ── §13.12 — Copy the phrase ──
+  $$('[data-flove-copy]').forEach(b => b.addEventListener('click', async () => {
+    const m = summaryModel();
+    if (isEmptyModel(m)){ toast(t('Nothing to copy yet', 'Nada que copiar aún')); return; }
+    try{ await navigator.clipboard.writeText(m.phrase); toast(t('Copied to clipboard', 'Copiado al portapapeles')); }
+    catch(_){ toast(t('Copy not available', 'Copiar no disponible')); }
+  }));
+
+  // ── §13.12 — Share to mobile · ladder:
+  //    navigator.share({files:[html]}) → text-only → clipboard + toast ──
+  $$('[data-flove-share="mobile"]').forEach(b => b.addEventListener('click', async () => {
+    const m = summaryModel();
+    if (isEmptyModel(m)){ toast(t('Nothing to share yet', 'Nada que compartir aún')); return; }
+    // Build a self-contained HTML of the results to hand to the native share
+    // sheet, so the receiving mobile app gets the rendered map as a file.
+    let htmlFile = null;
+    try{
+      htmlFile = new File([buildExportHtml(m)], exportFilename('html'), { type:'text/html' });
+    } catch(_){ htmlFile = null; }
+    // 1 · share the HTML file itself — NO text alongside it, because several
+    //     targets drop the attachment when `text` is also present, leaving only
+    //     the words. Files-only makes the HTML the whole payload.
+    if (htmlFile && navigator.canShare && navigator.canShare({ files:[htmlFile] })){
+      try{ await navigator.share({ title: t('Willy — my map', 'Willy — mi mapa'), files:[htmlFile] }); return; }
+      catch(e){ if (e && e.name === 'AbortError') return;  /* user cancelled */ }
+    }
+    // 2 · device can't share files → text-only share
+    if (navigator.share){
+      try{ await navigator.share({ title:'flove · willy', text:m.phrase }); return; }
+      catch(e){ if (e && e.name === 'AbortError') return; }
+    }
+    // 3 · no Web Share at all → clipboard + toast
+    try{ await navigator.clipboard.writeText(m.phrase); toast(t('Copied to clipboard', 'Copiado al portapapeles')); }
+    catch(_){ toast(t('Share not available', 'Compartir no disponible')); }
+  }));
+
+  // ── Share cycle ─────────────────────────────────────────────
+  $('#sharePrintBtn').addEventListener('click', () => { window.print(); });
+  $('#shareAppsBtn').addEventListener('click', async () => {
+    capturePlacements();
+    const payload = encodeURIComponent(JSON.stringify(state.placements));
+    const url = location.origin + location.pathname + '#willy=' + payload;
+    try{
+      await navigator.clipboard.writeText(url);
+      toast(t('Share link copied', 'Enlace para compartir copiado'));
+    } catch(_){
+      history.replaceState(null, '', '#willy=' + payload);
+      toast(t('Share link in address bar', 'Enlace para compartir en la barra de direcciones'));
+    }
+  });
+  const shareEmail = $('#shareEmailBtn');
+  shareEmail.addEventListener('click', (e) => {
+    const text = buildSummaryText() || t('No placements yet.', 'Aún no hay colocaciones.');
+    shareEmail.href = 'mailto:?subject=' + encodeURIComponent('flove · willy') +
+                      '&body='        + encodeURIComponent(text);
+  });
+
+  // ── Publish cycle ──────────────────────────────────────────
+  // populate day/hour/minute selects
+  (function fillPubSelects(){
+    const day = $('#pubDay');
+    for (let i=1; i<=31; i++){
+      const o = document.createElement('option');
+      o.value = i; o.textContent = i;
+      if (i === 15) o.selected = true;
+      day.appendChild(o);
+    }
+    const month = $('#pubMonth');
+    const now = new Date();
+    month.value = String(now.getMonth() + 1);
+    const hh = $('#pubHH');
+    for (let i=0; i<24; i++){
+      const o = document.createElement('option');
+      const v = String(i).padStart(2, '0');
+      o.value = v; o.textContent = v;
+      if (i === 12) o.selected = true;
+      hh.appendChild(o);
+    }
+    const mm = $('#pubMM');
+    [0,5,10,15,20,25,30,35,40,45,50,55].forEach(i => {
+      const o = document.createElement('option');
+      const v = String(i).padStart(2, '0');
+      o.value = v; o.textContent = v;
+      if (i === 0) o.selected = true;
+      mm.appendChild(o);
+    });
+  })();
+  $('#pubCommitBtn').addEventListener('click', () => {
+    const when  = `${$('#pubYear').value}-${$('#pubMonth').value.padStart(2,'0')}-${$('#pubDay').value.padStart(2,'0')} ${$('#pubHH').value}:${$('#pubMM').value}`;
+    const aud   = $('#pub-all').checked ? t('All', 'Todos') : $('#pubTarget').selectedOptions[0].textContent;
+    toast(t(`Scheduled ${when} → ${aud} (demo)`, `Programado ${when} → ${aud} (demo)`), 2400);
+  });
+
+  // ── ✦ F0 §13.9 — Reset: confirm-guarded fresh start ─────────
+  //    Clears this file's own content key (same one navIsReload wipes)
+  //    then reloads, so the empty default board returns.
+  const resetBtn = $('#resetBtn');
+  if (resetBtn) resetBtn.addEventListener('click', () => {
+    const ok = window.confirm(t(
+      'Reset Willy? This clears your saved data and starts fresh.',
+      '¿Reiniciar Willy? Esto borra tus datos guardados y empieza de nuevo.'));
+    if (!ok) return;
+    try{ localStorage.removeItem('flove.willy.v1'); } catch(_){}
+    location.reload();
+  });
+
+  // ── app menu (logo/title opens it; holds About + flove) ────
+  const appTrigger  = $('#appTrigger');
+  const appMenu     = $('#appMenu');
+  const aboutToggle = $('#about-toggle');
+  if (appTrigger && appMenu){
+    const closeMenu = () => { appMenu.classList.remove('open'); appTrigger.setAttribute('aria-expanded','false'); };
+    const openMenu  = () => { appMenu.classList.add('open');    appTrigger.setAttribute('aria-expanded','true'); };
+    appTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      appMenu.classList.contains('open') ? closeMenu() : openMenu();
+    });
+    document.addEventListener('click', (e) => {
+      if (appMenu.classList.contains('open') && !appMenu.contains(e.target) && !appTrigger.contains(e.target)) closeMenu();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+    const menuAbout = $('#menuAbout');
+    if (menuAbout) menuAbout.addEventListener('click', () => { if (aboutToggle) aboutToggle.checked = true; closeMenu(); });
+  }
+
+  // ── boot ────────────────────────────────────────────────────
+  ensureLayers();
+  if (!_isReload) loadPlacements();   // reopen restores · reload starts fresh (own keys already cleared above)
+  renderWillsList();
+  updateLayerVisibility();
+
+  // sync button label with the (possibly restored) active set
+  refreshSetButton(willsSetToggle,  state.wills.active);
+
+  // ✦ F0 — exports start enabled only if a prior play was restored;
+  // a fresh boot is never "out of date"
+  refreshExportControls();
+  hideStale();
+})();
+</script>
+
+<!-- translaty engine — language switch + persistence + <html lang> sync -->
+<script>
+(function(){
+  const LS = 'translaty-lang';
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const radios = () => Array.from(document.querySelectorAll('input[name="lang"]'));
+  const curLang = () => { const r = radios().find(x => x.checked); return r ? r.id.replace('lang-', '') : 'en'; };
+  function applyLang(){
+    const li = curLang();
+    document.documentElement.lang = li;
+    document.querySelectorAll('option[data-en]').forEach(o => { if (o.dataset[li] != null) o.textContent = o.dataset[li]; });
+    document.querySelectorAll('[data-ph-en]').forEach(el => { const v = el.dataset['ph' + cap(li)]; if (v != null) el.placeholder = v; });
+    document.querySelectorAll('[data-aria-en]').forEach(el => { const v = el.dataset['aria' + cap(li)]; if (v != null) el.setAttribute('aria-label', v); });
+    try { localStorage.setItem(LS, li); } catch (_) {}
+  }
+  function init(){
+    let saved = null; try { saved = localStorage.getItem(LS) || localStorage.getItem('translate2-lang'); } catch (_) {}
+    if (saved){ const r = document.getElementById('lang-' + saved); if (r) r.checked = true; }
+    radios().forEach(r => r.addEventListener('change', () => {
+      applyLang();
+      const d = document.querySelector('details.lang'); if (d) d.open = false;
+    }));
+    applyLang();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+</body>
+</html>

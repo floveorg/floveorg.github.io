@@ -1,0 +1,52 @@
+%%{ init: { 'theme': 'base', 'htmlLabels': false, 'flowchart': { 'htmlLabels': false }, 'themeVariables': { 'primaryColor': '#f5e9d7', 'primaryTextColor': '#2d2016', 'primaryBorderColor': '#a08b6f', 'lineColor': '#a08b6f', 'secondaryColor': '#e8dbd0', 'tertiaryColor': '#faf5ef', 'edgeLabelBackground': '#faf5ef', 'clusterBkg': '#f5e9d7', 'clusterBorder': '#a08b6f', 'fontFamily': 'Inter, system-ui, sans-serif', 'fontSize': '13px' } } }%%
+flowchart TD
+    A["<b>Clip aprobado</b><br/>Moderador toca ✅"]
+    B{"<b>ensureUsername</b><br/>¿Ya tiene username?"}
+    C["Usar username existente<br/><code>usernames.json</code>"]
+    D["Generar username nuevo<br/>del @username o first name"]
+    E{"¿La key ya está<br/><b>tomada</b>?"}
+    F["Sufijo determinista<br/><code>maria_2</code> · <code>maria_3</code>…"]
+    G["Almacenar en<br/><code>usernames.json</code>"]
+    H["<b>Publicar clip</b><br/><code>risa.json</code> + canal"]
+    I["<b>DM de confirmación</b><br/>🌐 maria.liberada.net"]
+    J["<b>Visitar</b><br/><code>maria.liberada.net</code>"]
+    K{"<b>Cloudflare Worker</b><br/>¿subdomain?"}
+    L["Lookup <code>usernames.json</code><br/>(caché 5 min)"]
+    M["302 → <code>liberada.net/usa/maria/</code>"]
+    N["<b>Perfil agregador</b><br/>fetch risa.json + ama.json"]
+    O["<b>Mostrar perfil</b><br/>Risas + Amas · badge 🐱 💗"]
+    P["<b>Crear alias</b><br/><code>POST /api/aliases</code><br/>token · flag private"]
+    Q["<code>aliases</code> (D1)<br/><code>INSERT OR IGNORE</code>"]
+    R["Alias público/privado<br/>apunta a tu key"]
+    S{"<b>/usuario renombrar</b><br/>¿Nombre tomado?"}
+    T["❌ «Ese nombre ya<br/>está tomado.»"]
+    U["Renombra subdominio<br/><code>usernames.json</code>"]
+
+    A --> B
+    B -->|"Sí"| C
+    B -->|"No (primera vez)"| D
+    C --> H
+    D --> E
+    E -->|"No"| G
+    E -->|"Sí"| F --> G
+    G --> H
+    H --> I
+    I -->|"🔗 link"| J
+    J --> K
+    K -->|"sí"| L --> M --> N --> O
+    K -->|"no"| J
+    O -->|"crear alias"| P --> Q --> R
+    O -->|"renombrar"| S
+    S -->|"Sí"| T
+    S -->|"No"| U
+
+    style A fill:#a8e6cf,stroke:#56b381,stroke-width:2px
+    style D fill:#ffd3b6,stroke:#e8a87c,stroke-width:2px
+    style E fill:#ffd3b6,stroke:#e8a87c,stroke-width:2px
+    style F fill:#ffe9b0,stroke:#b57100,stroke-width:2px
+    style I fill:#dcedc1,stroke:#a8d08d,stroke-width:2px
+    style K fill:#d4e5f7,stroke:#8bb8e8,stroke-width:2px
+    style P fill:#f3e5f5,stroke:#ba68c8,stroke-width:2px
+    style S fill:#ffd3b6,stroke:#e8a87c,stroke-width:2px
+    style T fill:#fca5a5,stroke:#ef4444,stroke-width:2px
+    style O fill:#f3e5f5,stroke:#ba68c8,stroke-width:2px

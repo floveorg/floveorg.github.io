@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<!--
+  questy-flove-dev — the dev page for questy's HTML form.
+  Part of the questy flove theory: guiding people through questions on flove.org.
+  Self-contained: no build, no network. Saves answers to the browser.
+  Survey selection applies live and is remembered (last state comes back on
+  reload). Colour bars, replies and pending stay staged and only apply when
+  you press Go (the Go button lights up +20% per staged filter, capped at
+  100%). Fully-answered packs sink into the archive group to lighten
+  navigation; the search box filters the loaded questions instantly.
+  Replies are kept on the question cards; a pick that differs from the loaded
+  default glows red and is marked as changed in the exports.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6c5ce7">
+<title>Questy dev · FLOVE</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff4d4d'/%3E%3Cstop offset='.2' stop-color='%23ff9a3a'/%3E%3Cstop offset='.4' stop-color='%23ffc41f'/%3E%3Cstop offset='.6' stop-color='%233fb950'/%3E%3Cstop offset='.8' stop-color='%233aa0ff'/%3E%3Cstop offset='1' stop-color='%23b06bff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points='60,8 102,30 102,74 60,96 18,74 18,30' fill='none' stroke='url(%23g)' stroke-width='10' stroke-linejoin='round'/%3E%3Ctext x='60' y='66' text-anchor='middle' font-family='Georgia,serif' font-size='42' font-weight='700' fill='url(%23g)'%3E%3F%3C/text%3E%3C/svg%3E">
+<script>
+/* early theme apply — read flove:theme before paint (light · dark only) */
+(function(){try{var t=JSON.parse(localStorage.getItem('flove:theme'))||'light';
+if(t==='dark')document.documentElement.setAttribute('data-theme','dark');else document.documentElement.removeAttribute('data-theme');}catch(e){}})();
+</script>
+<style>
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --bg:#f3f4fb; --ink:#16141f; --muted:#4a4e5a; --line:#e3e5f0;
+    --card:#ffffff; --panel:#edeef7; --accent:#6c5ce7; --accent-soft:#5347c4; --signal:#02855c;
+    --diff:#dd3b3b; --diff-bg:rgba(221,59,59,.12);
+    --glass:rgba(255,255,255,.82); --glass-border:rgba(108,92,231,.16);
+  }
+  [data-theme="dark"]{
+    --bg:#0b0b0f; --ink:#e9eaf2; --muted:#a3a7b4; --line:#1e2133;
+    --card:#11131a; --panel:#11131a; --accent:#8d89ff; --accent-soft:#c9c6ff; --signal:#00f7a7;
+    --diff:#ff786a; --diff-bg:rgba(255,112,94,.18);
+    --glass:rgba(17,19,26,.85); --glass-border:rgba(141,137,255,.18);
+  }
+  [data-theme="light"]{
+    --bg:#f3f4fb; --ink:#16141f; --muted:#4a4e5a; --line:#e3e5f0;
+    --card:#ffffff; --panel:#edeef7; --accent:#6c5ce7; --accent-soft:#5347c4; --signal:#02855c;
+    --diff:#dd3b3b; --diff-bg:rgba(221,59,59,.12);
+    --glass:rgba(255,255,255,.82); --glass-border:rgba(108,92,231,.16);
+  }
+  body{
+    font-family:ui-monospace,monospace; color:var(--ink); line-height:1.6;
+    background:var(--bg); min-height:100vh;
+    transition:background .25s, color .25s;
+  }
+
+  /* ---- topbar ---- */
+  .top{ position:sticky; top:0; z-index:50; display:flex; flex-wrap:wrap; align-items:center;
+    gap:.55rem .9rem; padding:.55rem .9rem; background:var(--glass); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line); }
+  button{ font-family:inherit; cursor:pointer; font-size:.72rem; padding:.4rem .7rem; border-radius:999px;
+    border:1px solid var(--line); background:transparent; color:var(--ink); transition:.16s; }
+  button:hover{ border-color:var(--accent); color:var(--accent-soft); }
+
+  .brand-wrap{ position:relative; display:flex; align-items:center; }
+  .brand{ display:flex; align-items:center; gap:.5rem; background:none; border:none; cursor:pointer;
+    user-select:none; padding:0; }
+  .brand:hover{ border:none; color:var(--ink); }
+  .brand svg{ display:block; }
+  .brand b{ font-family:Georgia,serif; font-size:.96rem; letter-spacing:.02em; }
+  .brand b em{ font-style:normal; color:var(--signal); }
+  .brand b .dev{ font-size:.5rem; letter-spacing:.18em; text-transform:uppercase; color:var(--muted);
+    border:none; background:none; margin-left:.28rem;
+    vertical-align:middle; }
+  .brand-wrap.open .brand{ color:var(--accent-soft); }
+
+  .brand-menu{ position:absolute; top:calc(100% + .45rem); left:0; min-width:200px; z-index:70;
+    background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:.4rem;
+    display:none; box-shadow:0 18px 40px -18px rgba(0,0,0,.8); }
+  .brand-wrap.open .brand-menu{ display:block; }
+  .brand-menu button, .brand-menu a{ display:block; width:100%; text-align:left; font-size:.72rem;
+    color:var(--ink); text-decoration:none; background:none; border:none; cursor:pointer;
+    padding:.45rem .7rem; border-radius:7px; }
+  .brand-menu button:hover, .brand-menu a:hover{ background:rgba(141,137,255,.12); color:var(--accent-soft); border:none; }
+
+  /* theme switcher — last item in the brand menu */
+  #themeToggle{ text-align:center; font-size:1rem; line-height:1; margin-top:.3rem; border-top:1px solid var(--line); padding-top:.5rem; }
+
+  /* Why chip — first link in the brand menu */
+  .brand-menu .why{ font-size:.66rem; letter-spacing:.08em; text-transform:uppercase; color:var(--accent-soft);
+    border:1px dashed var(--accent); background:rgba(141,137,255,.07); margin-bottom:.15rem;
+    text-align:left; }
+  .why:hover{ border-style:solid; }
+  .why.done{ opacity:.45; cursor:default; }
+  .why.done:hover{ border-color:var(--line); color:var(--muted); }
+
+  /* colour bars — full height of the topbar, Go right next to the blue */
+  .cbar-row{ display:flex; align-items:stretch; gap:.15rem; }
+  .colourbars{ display:flex; gap:.15rem; align-items:stretch; flex:1; }
+  .cbar{ width:52px; height:auto; border-radius:3px; padding:0; opacity:.3; cursor:pointer;
+    transition:.15s; border:1px solid transparent; }
+  .cbar:hover{ opacity:.7; border-color:transparent; }
+  .cbar.on{ opacity:1; box-shadow:0 0 12px -2px currentColor; }
+
+  .tray{ display:flex; align-items:center; gap:.4rem; margin-left:auto; flex-wrap:wrap; }
+  .nav-btn{ background:var(--panel); color:var(--accent-soft); font-size:.68rem; }
+  .ftab{ background:var(--panel); border:1px solid var(--line); border-radius:999px; padding:.32rem .75rem;
+    font-size:.66rem; color:var(--accent-soft); cursor:pointer; }
+  .ftab .cnt{ color:var(--signal); font-size:.6rem; }
+  .ftab.on{ border-color:var(--signal); color:var(--signal); background:rgba(0,247,167,.16);
+    box-shadow:0 0 18px -5px var(--signal); font-weight:700; }
+  .ftab.on.pend{ border-color:var(--diff); color:var(--diff); background:rgba(255,120,106,.16);
+    box-shadow:0 0 18px -5px var(--diff); }
+  .ftab.on .cnt{ color:inherit; }
+  .go{ --tone:0; border-color:#b06bff; color:#fff; font-weight:700;
+    background:rgba(176,107,255,calc(.18 + .82 * var(--tone))); border-color:rgba(176,107,255,calc(.4 + .6 * var(--tone)));
+    box-shadow:0 0 14px -6px rgba(176,107,255,.9); }
+  .go:active{ transform:scale(.96); }
+
+  /* search box — live filter, sits right before Go */
+  #searchBox{ font-family:inherit; font-size:.72rem; padding:.4rem .7rem; border-radius:999px;
+    border:1px solid var(--line); background:transparent; color:var(--ink); outline:none;
+    width:9.5rem; transition:border-color .16s; }
+  #searchBox::placeholder{ color:var(--muted); }
+  #searchBox:focus{ border-color:var(--accent); }
+
+  /* surveys dropdown — below the surveys button */
+  .pw{ position:relative; }
+  .projects{ display:none; position:absolute; top:calc(100% + .4rem); right:0; width:260px;
+    flex-direction:column; gap:.3rem; max-height:60vh; overflow-y:auto;
+    background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:.5rem;
+    box-shadow:0 18px 40px -18px rgba(0,0,0,.8); z-index:70; }
+  .projects.show{ display:flex; }
+  .projects .projects-label{ font-size:.55rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted);
+    padding:.1rem .2rem .2rem; }
+  .projects .proj-chip{ display:flex; align-items:center; gap:.5rem; font-size:.7rem; padding:.38rem .6rem;
+    border-radius:8px; border:1px solid var(--line); background:rgba(255,255,255,.015); color:var(--ink);
+    cursor:pointer; text-align:left; transition:.14s; }
+  .projects .proj-chip:hover{ border-color:var(--accent); color:var(--accent-soft); }
+  .projects .proj-chip .dot{ display:inline-block; width:7px; height:7px; border-radius:50%; flex:none; }
+  .projects .proj-chip .pn{ flex:1; }
+  .projects .proj-chip .st{ font-size:.55rem; color:var(--muted); }
+  .projects .proj-chip.on{ border-color:var(--signal); background:rgba(0,247,167,.09); color:var(--signal); }
+  .projects .proj-chip.on .st{ color:var(--signal); }
+  /* resolved packs — bottom of the dropdown, dimmed until re-opened */
+  .projects .projects-label.archive{ margin-top:.3rem; padding-top:.45rem;
+    border-top:1px dashed var(--line); color:var(--signal); }
+  .projects .proj-chip.archived{ opacity:.55; }
+  .projects .proj-chip.archived.on{ opacity:1; }
+
+  /* About panel — below the topbar, pushes content down */
+  .about{ display:none; position:relative; margin:.7rem .9rem 0; border:1px solid var(--line);
+    border-radius:12px; background:var(--panel); }
+  .about.show{ display:block; }
+  .about-inner{ padding:1rem 1.2rem 2.6rem; }
+  .about-inner h2{ font-family:Georgia,serif; font-size:.95rem; margin-bottom:.45rem; }
+  .about-inner p{ font-size:.74rem; color:var(--muted); margin:.35rem 0; }
+  .about-inner b{ color:var(--accent-soft); font-weight:600; }
+  .about-close{ position:absolute; left:50%; bottom:.45rem; transform:translateX(-50%);
+    width:1.7rem; height:1.7rem; border-radius:50%; border:1px solid var(--line); background:var(--card);
+    color:var(--muted); cursor:pointer; font-size:.7rem; line-height:1; padding:0; }
+  .about-close:hover{ color:var(--accent-soft); border-color:var(--accent); }
+
+  /* meta bar */
+  .bar{ display:flex; align-items:center; gap:.8rem; flex-wrap:wrap; padding:.55rem .9rem .35rem; }
+  .bar .grow{ flex:1; }
+  .toast{ position:fixed; left:50%; bottom:1rem; transform:translateX(-50%) translateY(140%);
+    background:var(--panel); border:1px solid var(--accent); color:var(--accent-soft);
+    padding:.5rem .8rem; border-radius:8px; font-size:.72rem; transition:transform .3s; z-index:90; }
+  .toast.show{ transform:translateX(-50%) translateY(0); }
+
+  /* question card + reply strip kept on the card */
+  .q{ background:var(--card); border:1px solid var(--line); border-radius:10px; padding:.8rem;
+    margin:0 .9rem .8rem; }
+  .q .qn{ font-size:.5rem; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); }
+  .q .qn .hat-dot{ display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:.35rem;
+    vertical-align:middle; box-shadow:0 0 8px -1px currentColor; }
+  .q .qn .warn{ color:#ff6b6b; }
+  .q h3{ font-size:.85rem; margin:.2rem 0 .5rem; }
+  .opts{ display:flex; flex-direction:column; gap:.3rem; }
+  .opt{ border:1px solid var(--line); background:rgba(255,255,255,.015); border-radius:8px; transition:.14s; }
+  .opt:hover{ border-color:var(--accent); }
+  .opt .row{ display:flex; align-items:center; gap:.5rem; padding:.4rem .6rem; cursor:pointer; font-size:.75rem; }
+  .opt .row input{ accent-color:var(--accent); }
+  .opt .row .lab{ flex:1; }
+  .opt .desc{ display:none; padding:0 .6rem .4rem 1.8rem; font-size:.65rem; color:var(--muted); }
+  .opt.open .desc{ display:block; }
+  .opt.chosen{ border-color:var(--accent); background:rgba(141,137,255,.12); }
+  .opt.diff{ border-color:rgba(255,120,106,.65); background:rgba(255,120,106,.16); }
+  .opt.def{ cursor:default; }
+  .opt.def .row{ cursor:default; opacity:1; }
+  .opt.def .row input{ accent-color:var(--accent); }
+
+  .q .note{ width:100%; margin-top:.5rem; padding:.4rem .6rem; font-size:.72rem; background:rgba(255,255,255,.02);
+    border:1px solid var(--line); border-radius:8px; color:var(--accent-soft); }
+  .q .note:focus{ outline:none; border-color:var(--accent); }
+
+  .empty{ text-align:center; padding:2.4rem 1rem; color:var(--muted); font-size:.75rem; }
+  .actions{ display:flex; gap:.5rem; margin:.9rem .9rem 1.5rem; flex-wrap:wrap; align-items:center;
+    justify-content:space-between; }
+  .pager{ display:flex; align-items:center; gap:.35rem; margin:0 auto; }
+  .pager button{ padding:.32rem .6rem; font-size:.68rem; }
+  .pager .allbtn{ color:var(--muted); border-color:var(--line); }
+  .pager .allbtn.on{ color:var(--signal); border-color:var(--signal); background:rgba(0,247,167,.12); font-weight:700; }
+  .pager .pageinfo{ font-size:.62rem; color:var(--muted); min-width:6.5rem; text-align:center; }
+  .act-right{ display:flex; gap:.5rem; flex-wrap:wrap; }
+  button.solid{ background:var(--accent); color:#fff; border-color:transparent; }
+  button.solid:hover{ background:#9a96ff; color:#fff; }
+  button.share{ border-color:#0088cc; color:#0088cc; }
+  button.share:hover{ background:rgba(0,136,204,.14); }
+
+  /* Why reason chips — flow down 10s, fade out 5s */
+  .why-stage{ position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:80; }
+  .why-pop{ position:absolute; top:.5rem; left:50%; font-size:.72rem; padding:.4rem .8rem; border-radius:12px;
+    border:1px solid var(--accent); background:var(--panel); color:var(--accent-soft);
+    text-align:center; max-width:min(19rem, 64vw); overflow:hidden;
+    transform:translate(calc(var(--off,0vw) - 50%),0);
+    box-shadow:0 12px 30px -14px rgba(0,0,0,.8); animation:whyfall 15s linear both; }
+  @keyframes whyfall{
+    0%{ transform:translate(calc(var(--off,0vw) - 50%),0) rotate(0deg); opacity:0; }
+    6%{ opacity:1; }
+    66%{ transform:translate(calc(var(--off,0vw) + var(--dx,0px) - 50%), 55vh) rotate(var(--rot,0deg)); opacity:1; }
+    100%{ transform:translate(calc(var(--off,0vw) + var(--dx,0px) - 50%), 70vh) rotate(var(--rot,0deg)); opacity:0; }
+  }
+  @media (prefers-reduced-motion: reduce){ .why-pop{ animation:none; transition:opacity .5s; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand-wrap" id="brandWrap">
+    <button type="button" class="brand" id="brandBtn" title="Questy FLOVE dev">
+      <svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true">
+        <defs><linearGradient id="qgrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#ff4d4d"/><stop offset=".2" stop-color="#ff9a3a"/>
+          <stop offset=".4" stop-color="#ffc41f"/><stop offset=".6" stop-color="#3fb950"/>
+          <stop offset=".8" stop-color="#2f6bff"/><stop offset="1" stop-color="#b06bff"/>
+        </linearGradient></defs>
+        <polygon points="60,8 102,30 102,74 60,96 18,74 18,30" fill="none" stroke="url(#qgrad)" stroke-width="10" stroke-linejoin="round"/>
+        <text x="60" y="66" text-anchor="middle" font-family="Georgia,serif" font-size="42" font-weight="700" fill="url(#qgrad)">?</text>
+      </svg>
+      <b>Questy <em>FLOVE</em> <span class="dev">dev</span></b>
+    </button>
+    <div class="brand-menu" id="brandMenu">
+      <button type="button" class="why" id="whyChip" data-act="why" title="why this page is cool">Why</button>
+      <button type="button" data-act="about">About</button>
+      <button type="button" data-act="import">Import survey</button>
+      <a href="index.html">Development</a>
+      <a href="https://lowai.org" target="_blank" rel="noopener">lowai.org</a>
+      <a href="https://flove.org" target="_blank" rel="noopener">About flove</a>
+      <button type="button" id="themeToggle" aria-label="Toggle theme">◐</button>
+    </div>
+  </div>
+
+  <div class="tray">
+    <div class="pw" id="pw">
+      <button type="button" class="nav-btn proj-btn" id="projBtn">surveys ▾</button>
+      <div class="projects" id="projectsStrip">
+        <span class="projects-label">surveys · multiselect</span>
+      </div>
+    </div>
+    <button type="button" class="ftab" id="replyTab" aria-pressed="false">decisions</button>
+    <button type="button" class="ftab pend" id="pendTab" aria-pressed="false">pending</button>
+  </div>
+
+  <div class="cbar-row">
+    <div class="colourbars" id="colourBars" title="filter questions by colour perspective"></div>
+    <input type="search" id="searchBox" placeholder="search…" aria-label="search questions">
+    <button type="button" class="go" id="goBtn">Go</button>
+  </div>
+</header>
+
+<section class="about" id="aboutPanel" aria-hidden="true" inert>
+  <div class="about-inner">
+    <h2>About this page</h2>
+    <p><b>Questy FLOVE dev</b> is the development home of questy's HTML form: a survey becomes a
+    clickable page, answers are saved in the browser, and the selection rides into the next prompt.</p>
+    <p>Surveys apply <b>live</b> — pick one and its questions appear immediately, and your last
+    state (surveys, search, staged filters, imported packs) comes back on reload. The colour bars
+    narrow by perspective, and replies / pending narrow by answering state; those three stay
+    <b>staged</b> until you press <b>Go</b>. The search box filters the loaded questions instantly.</p>
+    <p>Fully-answered packs sink into the <b>archive</b> group at the bottom of the surveys list —
+    pick one there to re-open it. Replies are <b>kept on the question cards</b>. A pick that differs
+    from the loaded default glows <b>red</b> and is marked as <b>changed</b> in the exports; a pick
+    that matches the loaded reply does nothing extra.</p>
+  </div>
+  <button type="button" class="about-close" id="aboutClose" aria-label="Close about">✕</button>
+</section>
+
+<div class="bar">
+  <button type="button" id="reimportBtn" style="display:none">Re-import answers</button>
+  <span class="grow"></span>
+</div>
+
+<div id="surveyContainer">
+  <div class="empty">No survey loaded — pick surveys</div>
+</div>
+
+<div id="form" style="display:none"></div>
+
+<div class="actions">
+  <div class="pager" id="pager">
+    <button type="button" id="prevBtn" aria-label="previous page">‹</button>
+    <span class="pageinfo" id="pageInfo">0–0 / 0</span>
+    <button type="button" id="nextBtn" aria-label="next page">›</button>
+    <button type="button" id="allBtn" class="allbtn" aria-pressed="false">all</button>
+  </div>
+  <div class="act-right">
+    <button type="button" id="save" class="solid">Save</button>
+    <button type="button" id="copyBtn">Copy</button>
+    <button type="button" id="mdBtn">MD</button>
+    <button type="button" id="shareBtn" class="share">Share</button>
+  </div>
+</div>
+
+<div class="why-stage" id="whyStage"></div>
+<div class="toast" id="toast"></div>
+
+<input type="file" id="fileInput" accept=".md" style="display:none">
+<input type="file" id="reimportInput" accept=".md,.json" style="display:none">
+
+<!-- external packs — built from the making-of sources by convert-packs.mjs;
+     optional: if missing, the page still works with its built-in mini surveys -->
+<script src="packs/browsy.js"></script>
+<script src="packs/nety-spec.js"></script>
+
+<script>
+const PROJECT_NAME = 'questy-flove-dev';
+const LS_KEY = 'questy-flove-dev-replies';
+const LS_STATE_KEY = 'questy-flove-dev-state';
+const LS_IMP_KEY = 'questy-flove-dev-imported';
+
+let store = {};
+try{ store = JSON.parse(localStorage.getItem(LS_KEY) || '{}'); }catch(e){ store = {}; }
+const saveStore = () => localStorage.setItem(LS_KEY, JSON.stringify(store));
+const txtKey = (name) => name + ':txt';
+
+/* staged filters — colour bars / replies / pending wait for Go; surveys + search apply live */
+const filter = { surveys:new Set(), colours:new Set(), replies:false, pending:false };
+let questions = [];       /* loaded pool (selected surveys + imports) */
+let visible = [];         /* after Go filtering */
+let importedItems = [];
+let impN = 0;
+let searchText = '';      /* live search — filters on top of whatever is applied */
+/* pagination — 20 per page, or everything when "all" is on */
+const PAGE = 20;
+let page = 0;
+let allMode = false;
+
+/* six thinking hats — the colour perspectives of the topbar filter */
+const HATS = [
+  { id:'facts',    name:'facts',    colour:'#f4f6fb' },
+  { id:'heart',    name:'heart',    colour:'#ff4d4d' },
+  { id:'risk',     name:'risk',     colour:'#8b93a7' },
+  { id:'optimism', name:'optimism', colour:'#ffc41f' },
+  { id:'creative', name:'creative', colour:'#3fb950' },
+  { id:'make',     name:'make',     colour:'#2f6bff' }
+];
+const hatColour = (id) => { const h = HATS.find(x => x.id === id); return h ? h.colour : ''; };
+
+/* flove companions — preloaded, already-answered questy surveys */
+const PROJECTS = [
+  { id: 'questy', name: 'Questy', dot: '#6c5ce7', a: [
+    { q: 'Does every Thinking Hat get asked in this round?', hat:'make', o: ['yes — per focused type', 'only the relevant ones', 'weight risk when hot'], a: 'yes — per focused type' },
+    { q: 'Are questions kept to single decisions?', hat:'risk', o: ['one decision', 'compound allowed'], a: 'one decision' },
+    { q: 'Who owns the pendings between rounds?', hat:'heart', o: ['the agent', 'the human', 'both'], a: 'both' }
+  ]},
+  { id: 'blogy', name: 'Blogy', dot: '#ff6a3a', a: [
+    { q: 'What makes a milestone worth writing?', hat:'optimism', o: ['a shipped capability', 'a pivoting decision', 'an honest failure'], a: 'a shipped capability' },
+    { q: 'How long does a draft stay a draft?', hat:'facts', o: ['drafts-first until OK', 'straight to publish'], a: 'drafts-first until OK' },
+    { q: 'Who writes the monthly update?', hat:'heart', o: ['the agent', 'the owner', 'together'], a: 'the agent' }
+  ]},
+  { id: 'narraty', name: 'Narraty', dot: '#f23f5a', a: [
+    { q: 'Which voice carries the narration?', hat:'creative', o: ['piper neural TTS', 'a recorded one'], a: 'piper neural TTS' },
+    { q: 'How does the intro separate from the body?', hat:'make', o: ['a music sting', 'silence', 'a beep'], a: 'a music sting' },
+    { q: 'How long is the context intro?', hat:'facts', o: ['about a minute', 'as long as needed'], a: 'about a minute' }
+  ]}
+];
+
+/* external packs register themselves on window.QUESTY_PACKS (packs/*.js);
+   merged under the built-in mini surveys so the dropdown shows everything. */
+const PACKS = [...PROJECTS, ...(window.QUESTY_PACKS || [])];
+
+/* pending-questions.md — the still-open asks about the asking engine, multi-select.
+   Checked options are the already-decided ones; unchecked are still pending. */
+const PENDING_Q = [
+  { q:'What still needs deciding about the asking engine itself?', o:['the hat mix','batch rhythm','weight symbols'], d:[] },
+  { q:'How should a question be phrased?', o:['one decision','one context hint','both'], d:['one decision'] },
+  { q:'When does a round feel done?', o:['all answered','all answered and flagged'], d:['all answered'] }
+];
+
+/* ---------- UI refs ---------- */
+const surveyContainer = document.getElementById('surveyContainer');
+const form = document.getElementById('form');
+const brandWrap = document.getElementById('brandWrap');
+const brandMenu = document.getElementById('brandMenu');
+const whyChip = document.getElementById('whyChip');
+const colourBars = document.getElementById('colourBars');
+const pw = document.getElementById('pw');
+const projBtn = document.getElementById('projBtn');
+const projectsStrip = document.getElementById('projectsStrip');
+const replyTab = document.getElementById('replyTab');
+const pendTab = document.getElementById('pendTab');
+const goBtn = document.getElementById('goBtn');
+const fileInput = document.getElementById('fileInput');
+const reimportBtn = document.getElementById('reimportBtn');
+const reimportInput = document.getElementById('reimportInput');
+const aboutPanel = document.getElementById('aboutPanel');
+const aboutClose = document.getElementById('aboutClose');
+const searchBox = document.getElementById('searchBox');
+
+/* ---------- answers ---------- */
+const answered = (q) => !!((q.id && store[q.id] && store[q.id].length) || (q.id && (store[txtKey(q.id)] || '').trim()) || (q.def && q.def.trim()));
+
+function buildQuestions(){
+  const list = [];
+  filter.surveys.forEach(pid => {
+    const p = PACKS.find(x => x.id === pid);
+    if (!p) return;
+    p.a.forEach((item, i) => {
+      const id = item.id || (pid + '-q' + (i + 1));
+      if (!list.find(q => q.id === id)) {
+        list.push({
+          id: id, pid: pid, colour: hatColour(item.hat), q: item.q, def: item.a,
+          pre: item.pre || (item.a ? [item.a] : []),
+          options: item.o.map(opt => ({ label: opt, desc: '' })),
+          multi: false, suggest: []
+        });
+      }
+    });
+  });
+  if (appliedPending) {
+    PENDING_Q.forEach((item, i) => {
+      const id = 'pend-' + (i + 1);
+      if (!list.find(q => q.id === id)) {
+        list.push({
+          id: id, pid: 'pending', colour: '', q: item.q, def: '', pre: item.d,
+          options: item.o.map(opt => ({ label: opt, desc: '' })),
+          multi: true, suggest: []
+        });
+      }
+    });
+  }
+  return list.concat(importedItems);
+}
+
+/* filters are staged — surveys, colour bars, replies, pending — and only applied
+   when Go is pressed. applied* snapshots remember the last Go. */
+let appliedColours = new Set();
+let appliedReplies = false;
+let appliedPending = false;
+function computeVisible(){
+  return questions.filter(q => {
+    if (appliedColours.size && !(q.colour && appliedColours.has(q.colour))) return false;
+    if (searchText) {
+      const hay = (q.q + ' ' + q.options.map(o => o.label).join(' ')).toLowerCase();
+      if (!hay.includes(searchText)) return false;
+    }
+    const ans = answered(q);
+    if (appliedReplies && !ans) return false;
+    return true;
+  });
+}
+function liveRender(){          /* imports render against the last applied filters */
+  questions = buildQuestions();
+  visible = computeVisible();
+  renderSurvey();
+}
+function applyFilters(){
+  appliedColours = new Set(filter.colours);
+  appliedReplies = filter.replies;
+  appliedPending = filter.pending;
+  questions = buildQuestions();
+  visible = computeVisible();
+  page = 0;
+  renderSurvey();
+}
+
+/* ---------- render ---------- */
+function pageSlice(){
+  if (allMode) return visible;
+  const pages = Math.ceil(visible.length / PAGE);
+  if (page > pages - 1) page = Math.max(0, pages - 1);
+  const start = page * PAGE;
+  return visible.slice(start, start + PAGE);
+}
+function renderSurvey(){
+  surveyContainer.innerHTML = '';
+  form.innerHTML = '';
+  form.style.display = visible.length ? 'block' : 'none';
+  if (!visible.length) {
+    surveyContainer.innerHTML = '<div class="empty">' +
+      (questions.length ? 'No questions match the current filters' : 'No survey loaded — pick surveys') +
+      '</div>';
+  }
+  const list = pageSlice();
+  let qIndex = page * PAGE;
+  list.forEach(item => {
+    qIndex++;
+    const name = item.id;
+    const saved = store[name] || [];
+    const card = document.createElement('div'); card.className = 'q';
+    card.innerHTML = `<div class="qn"><span class="hat-dot" style="background:${item.colour||'#5a5e72'};color:${item.colour||'#5a5e72'}"></span>Q${qIndex}${item.cat ? ' · ' + esc(item.cat) : ''}</div><h3>${esc(item.q)}</h3>`;
+    const opts = document.createElement('div'); opts.className = 'opts';
+    const defaults = item.pre || [];
+    const pinDefs = appliedReplies && defaults.length;
+    item.options.forEach(opt => {
+      const wrap = document.createElement('div'); wrap.className = 'opt';
+      const row = document.createElement('label'); row.className = 'row';
+      const inp = document.createElement('input');
+      const isDef = defaults.includes(opt.label);
+      inp.type = (item.multi || pinDefs) ? 'checkbox' : 'radio';
+      inp.name = name; inp.value = opt.label;
+      const picked = (pinDefs && isDef) || saved.includes(opt.label);
+      if (picked) { inp.checked = true; wrap.classList.add('chosen'); }
+      if (pinDefs && isDef) { inp.disabled = true; wrap.classList.add('def'); }
+      if (defaults.length && picked && !isDef) wrap.classList.add('diff');
+      inp.addEventListener('change', () => { persist(name); syncChosen(opts); markDiff(opts, defaults); });
+      const lab = document.createElement('span'); lab.className = 'lab'; lab.textContent = opt.label;
+      row.append(inp, lab);
+      wrap.appendChild(row);
+      opts.appendChild(wrap);
+    });
+    card.appendChild(opts);
+    const note = document.createElement('input');
+    note.type = 'text'; note.className = 'note'; note.placeholder = 'add a note…';
+    note.value = store[txtKey(name)] || '';
+    note.addEventListener('input', () => {
+      const v = note.value.trim();
+      if (v) store[txtKey(name)] = v; else delete store[txtKey(name)];
+      saveStore();
+    });
+    card.appendChild(note);
+    form.appendChild(card);
+  });
+  updatePager();
+}
+
+function updatePager(){
+  const info = document.getElementById('pageInfo');
+  const allBtn = document.getElementById('allBtn');
+  if (!visible.length) {
+    info.textContent = '0–0 / 0';
+    allBtn.setAttribute('aria-pressed', 'false');
+    allBtn.classList.remove('on');
+    return;
+  }
+  const start = page * PAGE + 1;
+  const end = allMode ? visible.length : Math.min(visible.length, (page + 1) * PAGE);
+  info.textContent = (allMode ? 'all' : start + '–' + end) + ' / ' + visible.length;
+  allBtn.setAttribute('aria-pressed', allMode ? 'true' : 'false');
+  allBtn.classList.toggle('on', allMode);
+}
+
+/* pagination controls */
+document.getElementById('prevBtn').addEventListener('click', () => {
+  if (page > 0) { page--; renderSurvey(); }
+});
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if ((page + 1) * PAGE < visible.length) { page++; renderSurvey(); }
+});
+document.getElementById('allBtn').addEventListener('click', () => {
+  allMode = !allMode; page = 0; renderSurvey();
+});
+
+/* any picked option that is not a preloaded default turns red */
+function markDiff(opts, defaults){
+  if (!defaults.length) return;
+  opts.querySelectorAll('.opt').forEach(o => {
+    const inp = o.querySelector('input');
+    const isDef = defaults.includes(inp.value);
+    o.classList.toggle('diff', inp.checked && !isDef);
+  });
+}
+
+function persist(name){
+  store[name] = [...form.querySelectorAll(`input[name="${name}"]:checked`)].filter(i => !i.disabled).map(i => i.value);
+  if (!store[name].length) delete store[name];
+  saveStore();
+  buildChips();   /* answering can move a pack into/out of the archive group */
+}
+function syncChosen(opts){
+  opts.querySelectorAll('.opt').forEach(o => o.classList.toggle('chosen', o.querySelector('input').checked));
+}
+
+/* ---------- surveys + colour bars (staged until Go) ---------- */
+function refreshSurveys(){
+  document.querySelectorAll('#projectsStrip .proj-chip').forEach(c => {
+    c.classList.toggle('on', filter.surveys.has(c.dataset.id));
+    c.querySelector('.st').textContent = filter.surveys.has(c.dataset.id) ? 'on' : 'off';
+  });
+}
+function refreshColours(){
+  document.querySelectorAll('.cbar').forEach(c => {
+    c.classList.toggle('on', filter.colours.has(c.dataset.col));
+  });
+}
+/* the Go button brightens +20% per staged filter, capped at 100% — surveys
+   and search apply live, so they don't count here */
+function refreshGo(){
+  const n = filter.colours.size + (filter.replies ? 1 : 0) + (filter.pending ? 1 : 0);
+  goBtn.style.setProperty('--tone', String(Math.min(n * .2, 1)));
+}
+
+/* remember the whole working state so the next visit starts where we left off */
+function persistState(){
+  try{
+    localStorage.setItem(LS_STATE_KEY, JSON.stringify({
+      surveys:[...filter.surveys], colours:[...filter.colours],
+      replies:filter.replies, pending:filter.pending, search:searchBox.value
+    }));
+    localStorage.setItem(LS_IMP_KEY, JSON.stringify(importedItems));
+  }catch(e){}
+}
+
+/* a pack is resolved when every one of its questions already has a reply —
+   resolved packs sink to the bottom of the dropdown under "· archive ·" */
+function packAnswered(p){
+  return p.a.length > 0 && p.a.every((item, i) => {
+    const id = item.id || (p.id + '-q' + (i + 1));
+    return (store[id] && store[id].length) || (store[txtKey(id)] || '').trim();
+  });
+}
+function buildChips(){
+  document.querySelectorAll('#projectsStrip .proj-chip, #projectsStrip .projects-label.archive')
+    .forEach(el => el.remove());
+  const resolved = PACKS.filter(packAnswered);
+  const active = PACKS.filter(p => !packAnswered(p));
+  active.concat(resolved).forEach(p => {
+    if (resolved.length && p === resolved[0]) {
+      const div = document.createElement('div');
+      div.className = 'projects-label archive';
+      div.textContent = '· archive · resolved';
+      projectsStrip.appendChild(div);
+    }
+    const chip = document.createElement('button');
+    chip.type = 'button'; chip.className = 'proj-chip' + (packAnswered(p) ? ' archived' : '');
+    chip.dataset.id = p.id; chip.title = p.src || p.id;
+    chip.innerHTML = '<span class="dot" style="background:' + p.dot + '"></span><span class="pn">' + esc(p.name) + '</span><span class="st">off</span>';
+    chip.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (filter.surveys.has(p.id)) { filter.surveys.delete(p.id); }
+      else { filter.surveys.add(p.id); }
+      refreshSurveys();
+      refreshGo();
+      persistState();
+      applyFilters();   /* surveys apply live — no Go needed */
+    });
+    projectsStrip.appendChild(chip);
+  });
+  refreshSurveys();
+}
+
+(function buildControls(){
+  HATS.forEach(h => {
+    const bar = document.createElement('button');
+    bar.type = 'button'; bar.className = 'cbar'; bar.dataset.col = h.colour;
+    bar.style.background = h.colour; bar.style.color = h.colour;
+    bar.title = h.name + ' hat';
+    bar.addEventListener('click', () => {
+      if (filter.colours.has(h.colour)) { filter.colours.delete(h.colour); }
+      else { filter.colours.add(h.colour); }
+      refreshColours();
+      refreshGo();
+      persistState();
+    });
+    colourBars.appendChild(bar);
+  });
+  buildChips();
+  refreshColours(); refreshGo();
+})();
+
+projBtn.addEventListener('click', (e) => { e.stopPropagation(); projectsStrip.classList.toggle('show'); });
+
+/* replies / pending — staged filters, highlighted when checked, applied on Go */
+function refreshTabs(){
+  replyTab.classList.toggle('on', filter.replies);
+  pendTab.classList.toggle('on', filter.pending);
+  replyTab.setAttribute('aria-pressed', filter.replies ? 'true' : 'false');
+  pendTab.setAttribute('aria-pressed', filter.pending ? 'true' : 'false');
+}
+replyTab.addEventListener('click', () => { filter.replies = !filter.replies; refreshTabs(); refreshGo(); persistState(); });
+pendTab.addEventListener('click', () => { filter.pending = !filter.pending; refreshTabs(); refreshGo(); persistState(); });
+goBtn.addEventListener('click', () => { applyFilters(); persistState(); });
+
+/* live search — filters on top of the applied filters, no Go needed */
+searchBox.addEventListener('input', () => {
+  searchText = searchBox.value.trim().toLowerCase();
+  page = 0;
+  visible = computeVisible();
+  renderSurvey();
+  persistState();
+});
+
+/* ---------- import ---------- */
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    parseQuestyMd(ev.target.result).forEach(item => {
+      impN++;
+      item.id = 'imp' + impN; item.def = ''; item.pre = [];
+      if (!item.colour) item.colour = '';
+      importedItems.push(item);
+    });
+    liveRender();
+    reimportBtn.style.display = 'inline-block';
+    persistState();
+    toast('imported ✓');
+  };
+  reader.readAsText(file);
+});
+
+reimportBtn.addEventListener('click', () => reimportInput.click());
+reimportInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      Object.assign(store, data);
+      saveStore();
+      liveRender();
+      toast('answers re-imported ✓');
+    } catch(err) { toast('invalid file format'); }
+  };
+  reader.readAsText(file);
+});
+
+function parseQuestyMd(md){
+  const lines = md.split('\n');
+  const questions = [];
+  let current = null;
+  for (const line of lines) {
+    const t = line.trim();
+    if (t.toLowerCase().startsWith('question:')) {
+      if (current) questions.push(current);
+      current = { q: t.slice(9).trim(), options: [], multi: false, suggest: [] };
+    } else if (current && t.toLowerCase().startsWith('option:')) {
+      const opt = t.slice(7).trim();
+      const m = opt.match(/^(.+?)\s*\((.+)\)$/);
+      current.options.push(m ? { label: m[1].trim(), desc: m[2].trim() } : { label: opt, desc: '' });
+    } else if (current && t.toLowerCase().startsWith('description:') && current.options.length) {
+      current.options[current.options.length - 1].desc = t.slice(12).trim();
+    } else if (current && t.toLowerCase().startsWith('multi:')) {
+      current.multi = t.slice(6).trim().toLowerCase() === 'true';
+    } else if (current && t.toLowerCase().startsWith('suggest:')) {
+      current.suggest = t.slice(8).trim().split(',').map(s => s.trim());
+    } else if (current && (t.toLowerCase().startsWith('colour:') || t.toLowerCase().startsWith('hat:'))) {
+      const c = t.slice(t.indexOf(':') + 1).trim().toLowerCase();
+      current.colour = hatColour(c) || c;
+    }
+  }
+  if (current) questions.push(current);
+  return questions;
+}
+
+/* ---------- brand menu / about ---------- */
+document.getElementById('brandBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  brandWrap.classList.toggle('open');
+});
+brandMenu.addEventListener('click', (e) => {
+  const act = e.target.closest('[data-act]');
+  if (act && act.dataset.act === 'about') { openAbout(); }
+  if (act && act.dataset.act === 'import') { fileInput.click(); }
+  brandWrap.classList.remove('open');
+});
+aboutClose.addEventListener('click', () => {
+  aboutPanel.classList.remove('show');
+  aboutPanel.setAttribute('aria-hidden', 'true');
+  aboutPanel.setAttribute('inert', '');
+});
+
+/* ---------- onboarding — loud first visit, ignorable after (§13.6) ---------- */
+const WELCOME_KEY = 'questy-flove-dev-welcomed';
+function openAbout(){
+  aboutPanel.classList.add('show');
+  aboutPanel.setAttribute('aria-hidden', 'false');
+  aboutPanel.removeAttribute('inert');
+}
+try {
+  if (!localStorage.getItem(WELCOME_KEY)) {
+    localStorage.setItem(WELCOME_KEY, '1');
+    openAbout();
+  }
+} catch(e) {}
+
+/* ---------- theme switcher (light · dark) ---------- */
+function applyTheme(t){
+  const root = document.documentElement;
+  if (t === 'dark') root.setAttribute('data-theme', 'dark'); else root.removeAttribute('data-theme');
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', t === 'dark' ? '#0b0b0f' : '#6c5ce7');
+}
+const themeToggle = document.getElementById('themeToggle');
+if (themeToggle) {
+  themeToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const cur = document.documentElement.dataset.theme || 'light';
+    const next = cur === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem('flove:theme', JSON.stringify(next)); } catch(err) {}
+    applyTheme(next);
+  });
+}
+applyTheme((function(){ try{ var t=JSON.parse(localStorage.getItem('flove:theme'))||'light'; return t==='dark'?'dark':'light'; }catch(e){ return 'light'; } })());
+
+document.addEventListener('click', () => {
+  projectsStrip.classList.remove('show');
+  brandWrap.classList.remove('open');
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    brandWrap.classList.remove('open');
+    projectsStrip.classList.remove('show');
+    aboutPanel.classList.remove('show');
+    aboutPanel.setAttribute('aria-hidden', 'true');
+    aboutPanel.setAttribute('inert', '');
+  }
+});
+
+/* ---------- why chip — two reasons per click, max 4 clicks (8 reasons) ---------- */
+const REASONS = [
+  'answers live in your browser — no server',
+  'pick a survey and it renders right away — no Go needed',
+  'colour bars slice questions by perspective',
+  'replies sit on the cards, kept fixed',
+  'a changed pick glows red and is marked in exports',
+  'search filters the loaded questions instantly',
+  'your last state comes back on reload',
+  'imported questy markdown becomes clickable questions'
+];
+let whyUsed = 0;
+const whyStage = document.getElementById('whyStage');
+whyChip.addEventListener('click', () => {
+  if (whyUsed >= 4) { toast('that\'s all the reasons ✓'); return; }
+  const first = whyUsed * 2;
+  spawnWhy(REASONS[first], -7, 0);
+  setTimeout(() => spawnWhy(REASONS[first + 1], 7, 1000), 1000);
+  whyUsed++;
+  if (whyUsed === 4) whyChip.classList.add('done');
+});
+function spawnWhy(text, off, delay){
+  const el = document.createElement('div');
+  el.className = 'why-pop';
+  el.textContent = text;
+  const dx = (Math.random() * 30 - 15).toFixed(0) + 'px';
+  const rot = (Math.random() * 12 - 6).toFixed(0) + 'deg';
+  el.style.setProperty('--off', off + 'vw');
+  el.style.top = (.4 + Math.random() * .8).toFixed(2) + 'rem';
+  if (delay) el.style.animationDelay = delay + 's';
+  el.style.setProperty('--dx', dx);
+  el.style.setProperty('--rot', rot);
+  whyStage.appendChild(el);
+  setTimeout(() => el.remove(), 15650 + (delay || 0) * 1000);
+}
+
+/* ---------- save / copy / md / share ---------- */
+document.getElementById('save').addEventListener('click', () => {
+  const unanswered = visible.filter(q => !answered(q)).length;
+  if (unanswered > 0 && !confirm(unanswered + ' question(s) unanswered. Save anyway?')) return;
+  replyTab.textContent = 'saved ✓';
+  setTimeout(() => { replyTab.textContent = 'decisions'; }, 1400);
+  toast('saved ✓');
+});
+
+document.getElementById('copyBtn').addEventListener('click', () => {
+  const text = buildMd();
+  navigator.clipboard.writeText(text).then(() => toast('copied ✓'));
+});
+
+document.getElementById('mdBtn').addEventListener('click', () => {
+  const text = buildMd();
+  const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = PROJECT_NAME + '-answers.md';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('downloaded ✓');
+});
+
+document.getElementById('shareBtn').addEventListener('click', () => {
+  const text = buildMd();
+  const url = 'https://t.me/share/url?url=' + encodeURIComponent(window.location.href) + '&text=' + encodeURIComponent(text);
+  window.open(url, '_blank');
+  toast('opening telegram...');
+});
+
+function buildMd(){
+  let md = '# ' + PROJECT_NAME + ' Answers\n\n';
+  questions.forEach((item, idx) => {
+    const picks = (item.id && store[item.id]) || [];
+    const t = (item.id && store[txtKey(item.id)]) || '';
+    const def = item.def || '';
+    const same = def && picks.join(', ') === def;
+    const changed = !!def && picks.length && !same;
+    md += '## Q' + (idx + 1) + ': ' + item.q + '\n\n';
+    md += '**Answer:** ' + (picks.length ? picks.join(', ') : '(unanswered)') + '\n\n';
+    if (def) md += '*Loaded:* ' + def + '\n\n';
+    if (changed) md += '*Changed:* yes (differs from loaded)\n\n';
+    if (t) md += '**Note:** ' + t + '\n\n';
+  });
+  return md;
+}
+
+function esc(s){ return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+let toastT;
+function toast(msg){
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+/* ---------- restore last state — surveys, search, staged filters, imports ---------- */
+(function restoreLastState(){
+  let st = null;
+  try{ st = JSON.parse(localStorage.getItem(LS_STATE_KEY) || 'null'); }catch(e){}
+  if (st) {
+    if (Array.isArray(st.surveys)) st.surveys.forEach(id => { if (PACKS.find(p => p.id === id)) filter.surveys.add(id); });
+    if (Array.isArray(st.colours)) st.colours.forEach(c => filter.colours.add(c));
+    filter.replies = !!st.replies;
+    filter.pending = !!st.pending;
+    if (typeof st.search === 'string') { searchBox.value = st.search; searchText = st.search.trim().toLowerCase(); }
+  }
+  try {
+    const imp = JSON.parse(localStorage.getItem(LS_IMP_KEY) || '[]');
+    if (Array.isArray(imp)) imp.forEach(it => {
+      importedItems.push(it);
+      impN = Math.max(impN, parseInt((String(it.id).match(/imp(\d+)/) || [])[1] || 0, 10));
+    });
+    if (importedItems.length) reimportBtn.style.display = 'inline-block';
+  } catch(e){}
+  refreshSurveys(); refreshColours(); refreshTabs(); refreshGo();
+  if (filter.surveys.size || importedItems.length) applyFilters();   /* show the last survey as default */
+})();
+</script>
+</body>
+</html>

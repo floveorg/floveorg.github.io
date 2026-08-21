@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="flove · development — standards, workflow and design docs">
+  <title>Flove dev wiki</title>
+  <link rel="stylesheet" href="vendor/vue.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='12' y1='0' x2='88' y2='0' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='%23ff3344'/><stop offset='.5' stop-color='%23ff8a3a'/><stop offset='1' stop-color='%23ffd633'/></linearGradient></defs><path d='M50 60 C 22 60 12 38 16 18 C 38 22 54 38 50 60 Z' fill='url(%23g)'/><path d='M50 60 C 78 60 88 38 84 18 C 62 22 46 38 50 60 Z' fill='url(%23g)'/><path d='M50 58 C 50 72 50 84 50 92' stroke='url(%23g)' stroke-width='6' stroke-linecap='round' fill='none'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* keys-basic palette · light (both themes are light) */
+    :root{
+      --bg:#f6efdc; --bg-deep:#efe5cd; --panel:#fbf7ec;
+      --ink:#0c0b18; --ink-2:#4b4468; --mut:#6f6596;
+      --line:#d9cba5; --line-soft:#e6dcc0;
+      --gold:#c39a45; --gold-hi:#eccf83; --gold-deep:#8a6a1c; --rose:#df8fa2;
+      --shadow:rgba(12,11,24,.12);
+      --theme-color:var(--gold-deep);
+      --serif:'Spectral','Iowan Old Style',Georgia,serif;
+      --deco:'Cinzel','Cormorant Garamond',Georgia,serif;
+    }
+    :root.dark{
+      /* both themes are light — same keys-basic light palette */
+      --bg:#f6efdc; --bg-deep:#efe5cd; --panel:#fbf7ec;
+      --ink:#0c0b18; --ink-2:#4b4468; --mut:#6f6596;
+      --line:#d9cba5; --line-soft:#e6dcc0;
+      --gold:#c39a45; --gold-hi:#eccf83; --gold-deep:#8a6a1c; --rose:#df8fa2;
+      --shadow:rgba(12,11,24,.12);
+      --theme-color:var(--gold-deep);
+    }
+    /* warm cream paper + soft gold/rose glows (keys-basic, light) */
+    body{
+      background:
+        radial-gradient(900px 520px at 50% -8%, rgba(195,154,69,.18), transparent 60%),
+        radial-gradient(700px 600px at 110% 110%, rgba(223,143,162,.10), transparent 55%),
+        var(--bg);
+      color:var(--ink);
+      font-family:var(--serif);
+    }
+    /* vue.css overrides → keys-basic */
+    .sidebar{ background:linear-gradient(180deg,var(--bg-deep),var(--bg)); color:var(--ink-2); }
+    .sidebar ul li a{ color:var(--ink-2); }
+    .sidebar ul li.active>a{ color:var(--gold-deep); border-right-color:var(--gold); font-weight:600; }
+    .sidebar-nav strong{ color:var(--gold-deep); }
+    .search input{ background:transparent; border-bottom-color:var(--line); color:var(--ink); }
+    .markdown-section h1,.markdown-section h2,.markdown-section h3,.markdown-section h4,.markdown-section strong{ color:var(--ink); font-family:var(--deco); font-weight:600; }
+    .markdown-section a{ color:var(--gold-deep); }
+    .markdown-section blockquote{ border-left-color:var(--gold); color:var(--ink-2); }
+    .markdown-section em{ color:var(--rose); }
+    .markdown-section code{ color:#a9552f; background:rgba(195,154,69,.14); }
+    .markdown-section pre,.markdown-section pre>code{ background:#f1e7cc; color:#4b4468; }
+    .markdown-section td,.markdown-section th{ border-color:var(--line); }
+    .markdown-section tr{border-top-color:var(--line);}
+    .markdown-section tr:nth-child(2n){ background:rgba(195,154,69,.07); }
+    /* Layout seams: scroll the docs inside the content column so nothing
+       overlaps the footer; separate sidebar | content and content | footer. */
+    .content{ overflow-y:auto; padding-top:40px; }
+    .markdown-section{ max-width:52rem; padding:32px 40px 56px; }
+    .sidebar{ border-right:1px solid var(--line); }
+    .app-name-link{ font-weight:700; display:flex; align-items:center; justify-content:center; }
+    .app-name-link img{ max-height:60px; width:auto; }
+    /* Latest dev-log posts — filled client-side from the Tech-category RSS feed. */
+    #dev-blog{ max-width:48rem; margin:3rem auto 4rem; padding:0 1.5rem; }
+    #dev-blog{ border-top:1px solid var(--line); padding-top:1.6rem; margin-top:0; }
+    #dev-blog[hidden]{ display:none; }
+    .dev-blog-head{ font-weight:700; font-size:1.1rem; color:var(--gold-deep); margin-bottom:.8rem; }
+    #dev-blog-list{ list-style:none; margin:0; padding:0; display:grid; gap:.6rem; }
+    .dev-blog-link{ display:flex; flex-direction:column; gap:4px; padding:.8rem 1rem; text-decoration:none;
+      color:inherit; border:1px solid rgba(195,154,69,.35); border-radius:12px; transition:border-color .15s, transform .15s; }
+    .dev-blog-link:hover{ border-color:var(--gold); transform:translateY(-1px); }
+    .dev-blog-top{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:.72rem; }
+    .dev-blog-cat{ font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:#fff;
+      background:linear-gradient(180deg,var(--gold-hi),var(--gold)); padding:2px 9px; border-radius:999px; }
+    .dev-blog-date{ margin-left:auto; opacity:.6; white-space:nowrap; }
+    .dev-blog-title{ font-weight:700; font-size:1rem; }
+    .dev-blog-desc{ opacity:.68; font-size:.9rem; line-height:1.45; }
+    /* ── Topbar: full-width strip, same height as the search bar. ── */
+    :root{ --topbar-h:48px; }
+    .topbar{
+      position:fixed; top:0; left:0; right:0; height:var(--topbar-h); z-index:50;
+      display:flex; align-items:center; gap:1.2rem; padding:0 1.3rem;
+      background:linear-gradient(180deg,var(--panel),var(--bg-deep));
+      border-bottom:1px solid var(--line);
+      font-family:var(--deco);
+    }
+    .topbar a{
+      color:var(--ink-2); text-decoration:none;
+      font-size:.82rem; font-weight:600; letter-spacing:.03em;
+      padding:.22rem .45rem; border-radius:7px; white-space:nowrap;
+      transition:color .15s, background .15s;
+    }
+    .topbar a:hover{ color:var(--gold-deep); background:rgba(195,154,69,.13); }
+    /* ── Sidebar collapse (big × on the right) / expand (big → on the left). ── */
+    .side-x, .side-arrow{
+      position:fixed; top:calc(50% + var(--topbar-h)/2); transform:translateY(-50%);
+      z-index:45; width:42px; height:42px; border:0; cursor:pointer;
+      font-family:var(--serif); line-height:1;
+      background:var(--panel); color:var(--gold-deep);
+      border:1px solid var(--line); border-radius:10px;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 4px 14px var(--shadow);
+    }
+    .side-x{ left:calc(300px - 52px); font-size:2.1rem; }
+    .side-arrow{ left:0; border-left:0; border-radius:0 12px 12px 0; font-size:1.9rem; display:none; }
+    body.close .side-x{ display:none; }
+    body.close .side-arrow{ display:flex; }
+    @media (min-width:769px){
+      .sidebar{ top:var(--topbar-h); }
+      .content{ top:var(--topbar-h); }
+    }
+    @media (max-width:768px){
+      .topbar{ position:static; }
+      .side-x, .side-arrow{ display:none !important; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="topbar" aria-label="flove">
+    <a href="https://flove.org/">Home</a>
+    <a href="https://flove.org/solo/apps/apps-intro.html">Apps</a>
+    <a href="https://flove.org/docs/">Docs</a>
+    <a href="https://flove.org/development/blog/">Blog</a>
+  </nav>
+  <button type="button" class="side-x" id="sideX" aria-label="Collapse sidebar" title="Collapse">×</button>
+  <button type="button" class="side-arrow" id="sideArrow" aria-label="Expand sidebar" title="Expand">→</button>
+  <div id="app">Loading the flove development docs…</div>
+  <script>
+    window.$docsify = {
+      name: 'Flove dev wiki',
+      logo: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='12' y1='0' x2='88' y2='0' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='%23ff3344'/><stop offset='.5' stop-color='%23ff8a3a'/><stop offset='1' stop-color='%23ffd633'/></linearGradient></defs><path d='M50 60 C 22 60 12 38 16 18 C 38 22 54 38 50 60 Z' fill='url(%23g)'/><path d='M50 60 C 78 60 88 38 84 18 C 62 22 46 38 50 60 Z' fill='url(%23g)'/><path d='M50 58 C 50 72 50 84 50 92' stroke='url(%23g)' stroke-width='6' stroke-linecap='round' fill='none'/></svg>",
+      homepage: 'overview.md',
+      loadSidebar: true,        // use _sidebar.md
+      relativePath: true,       // in-doc relative links resolve per page
+      subMaxLevel: 3,           // auto-build heading nav 2 levels deep
+      auto2top: true,
+      maxLevel: 4,
+      search: {
+        placeholder: 'Search the docs…',
+        noData: 'No matches.',
+        depth: 4
+      },
+      copyCode: {
+        buttonText: 'copy',
+        successText: 'copied'
+      }
+    };
+  </script>
+  <script src="vendor/docsify.min.js"></script>
+  <script src="vendor/search.min.js"></script>
+  <script src="vendor/docsify-copy-code.min.js"></script>
+  <script>
+  // Sidebar collapse / expand — the × on the sidebar's right edge collapses it
+  // (body.close slides it away, reusing docsify's own close state); the → at
+  // the left edge brings it back.
+  (function(){
+    var x = document.getElementById('sideX'), ar = document.getElementById('sideArrow');
+    if (!x || !ar) return;
+    x.addEventListener('click', function(){ document.body.classList.add('close'); });
+    ar.addEventListener('click', function(){ document.body.classList.remove('close'); });
+  })();
+  </script>
+
+  <footer id="dev-blog" hidden>
+    <div class="dev-blog-head">Latest from the dev log</div>
+    <ul id="dev-blog-list"></ul>
+  </footer>
+  <script>
+  // Dev-log feed — newest Tech-category posts from the blog RSS. Absolute
+  // URL so it works from localhost / the offline copy when online. Fails silent.
+  (function(){
+    var box=document.getElementById('dev-blog'), list=document.getElementById('dev-blog-list');
+    if(!box||!list) return;
+    var FEED='https://flove.org/development/blog/categories/tech/index.xml';
+    function stripHtml(s){ try{ return (new DOMParser().parseFromString(s||'','text/html').body.textContent||'').replace(/\s+/g,' ').trim(); }catch(_){ return ''; } }
+    function truncate(s,n){ return s.length>n ? s.slice(0,n).replace(/\s+\S*$/,'')+'…' : s; }
+    function fmtDate(s){ var d=new Date(s); if(isNaN(d.getTime())) return ''; try{ return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); }catch(_){ return ''; } }
+    fetch(FEED,{mode:'cors'}).then(function(r){ return r.ok?r.text():Promise.reject(); }).then(function(xml){
+      var doc=new DOMParser().parseFromString(xml,'application/xml');
+      if(doc.querySelector('parsererror')) return;
+      var items=Array.prototype.slice.call(doc.querySelectorAll('item')).filter(function(it){ var l=it.querySelector('link'); return l&&l.textContent.indexOf('/posts/')!==-1; }).slice(0,5);
+      if(!items.length) return;
+      var frag=document.createDocumentFragment();
+      items.forEach(function(it){
+        function txt(sel){ var el=it.querySelector(sel); return el?el.textContent:''; }
+        var li=document.createElement('li');
+        var a=document.createElement('a'); a.className='dev-blog-link'; a.href=txt('link');
+        var top=document.createElement('span'); top.className='dev-blog-top';
+        var cat=txt('category'); if(cat){ var c=document.createElement('span'); c.className='dev-blog-cat'; c.textContent=cat; top.appendChild(c); }
+        var date=fmtDate(txt('pubDate')); if(date){ var dt=document.createElement('span'); dt.className='dev-blog-date'; dt.textContent=date; top.appendChild(dt); }
+        a.appendChild(top);
+        var t=document.createElement('span'); t.className='dev-blog-title'; t.textContent=txt('title'); a.appendChild(t);
+        var desc=truncate(stripHtml(txt('description')),120); if(desc){ var ds=document.createElement('span'); ds.className='dev-blog-desc'; ds.textContent=desc; a.appendChild(ds); }
+        li.appendChild(a); frag.appendChild(li);
+      });
+      list.appendChild(frag); box.hidden=false;
+    }).catch(function(){});
+  })();
+  </script>
+</body>
+</html>

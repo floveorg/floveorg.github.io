@@ -1,0 +1,42 @@
+%%{ init: { 'htmlLabels': false, 'flowchart': { 'htmlLabels': false } } }%%
+flowchart LR
+    A["Persona"] -->|"START (1ª vez) · nota de voz/audio"| BOT
+    A -->|"① Telegram · ② Autor (palabra) · ③ Anónimo"| BOT
+    A -->|"tags · default «libre»"| BOT
+
+    subgraph GH["GitHub — floveorg/risa"]
+        BOT["@RisaLiberadaBot"] -->|"getUpdates cron 5–10 min"| ACT["Actions (ffmpeg)"]
+        ACT --> STATE["state/offset.txt<br/>state/queue.json"]
+        ACT --> BANCO["risa.json (prepend · newest-first)"]
+        ACT --> UNAMES["usernames.json<br/>(auto-claim 1ª pub)"]
+    end
+
+    ACT -->|"✅ Publicar"| MOD
+    MOD["🔒 Grupo moderadores"] -->|"✅ Publicar / 🗑 Borrar"| ACT
+    ACT -->|"sube mp3"| R2["Cloudflare R2<br/>bucket risa/b_*.mp3"]
+    R2 -->|"src = URL pública"| BANCO
+    ACT -->|"ensureUsername()"| UNAMES
+    BANCO -->|"post audio + 🌐 subdominio"| CH["📢 Canal @risaliberada"]
+    CH -->|"escuchar"| A
+    BANCO -->|"fetch risa.json"| WEB["Web risa.liberada.net<br/>6ª playlist · feed · chips · palabra<br/>threadOrder() replies indentadas"]
+    WEB -->|"escuchar · deep link / QR"| A
+
+    subgraph REPLY["Reply chain"]
+        A -->|"forward clip del canal"| BOT
+        BOT -->|"detecta forward<br/>pregunta respuesta"| A
+        A -->|"nota de voz (reply)"| BOT
+        BOT -->|"draft con parent<br/>notifica autor original"| ACT
+    end
+
+    subgraph SUB["Subdominio"]
+        A -->|"maria.liberada.net"| CF["☁️ Cloudflare Worker"]
+        CF -->|"fetch usernames.json<br/>cache 5 min"| UNAMES
+        CF -->|"302 → risa.liberada.net/#/u/&lt;key&gt;"| WEB
+    end
+
+    style MOD fill:#fef3c7,stroke:#f59e0b
+    style R2 fill:#e0e7ff,stroke:#6366f1
+    style BOT fill:#fee2e2,stroke:#ef4444
+    style CF fill:#dbeafe,stroke:#3b82f6
+    style REPLY fill:#f0f8ff,stroke:#6366f1
+    style SUB fill:#f5fff5,stroke:#22c55e

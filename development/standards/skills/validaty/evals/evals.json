@@ -1,0 +1,51 @@
+{
+  "skill_name": "validate",
+  "evals": [
+    {
+      "id": 0,
+      "name": "core-nav-preservation",
+      "prompt": "Revísame y arréglame todos los errores de accesibilidad y validación de astry.html, pero sin cargarte la navegación. Si algún arreglo puede tocar cómo funciona el menú, no lo apliques a ciegas: dime qué harías y por qué.",
+      "expected_output": "Safe errors auto-fixed; the 8 hidden-focusable findings surfaced as a survey (documented, headless) and, if applied, handled with inert rather than deleting aria-hidden; CSS-only navigation preserved; html-validate error count drops substantially.",
+      "files": ["inputs/astry.html"],
+      "assertions": [
+        "Navigation wiring preserved (for=, :has(, :checked, checkbox/radio counts not reduced)",
+        "hidden-focusable not 'fixed' by blindly deleting aria-hidden from interactive elements",
+        "Safe cosmetic fixes applied (DOCTYPE uppercase, no self-closing void elements)",
+        "html-validate error count lower than input's 39",
+        "Report documents nav-risk findings as a survey with recommendation (headless mode)",
+        "Original input file left unmodified"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "mobile-and-i18n-readiness",
+      "prompt": "¿willy.html está listo para móvil y para traducir? Arregla lo que sea seguro y dime qué falta.",
+      "expected_output": "Mobile checks run (the duplicate viewport meta flagged/deduped, tap targets, overflow); detects the app does NOT use translaty and suggests /translaty without fabricating a translation.",
+      "files": ["inputs/willy.html"],
+      "assertions": [
+        "Duplicate viewport meta addressed (one in output, or flagged in report)",
+        "Detects no translaty pattern and points to /translaty instead of inventing a translation",
+        "No fabricated translation (no new .es spans / data-*-es)",
+        "Report covers concrete mobile findings",
+        "Safe validity fixes applied; error count reduced"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "generic-non-flove-robustness",
+      "prompt": "Make this PawPal landing page accessible — it's a plain static HTML page, no framework. Fix the obvious a11y problems.",
+      "expected_output": "Works without flove assumptions: lang, img alt, icon-button name, input label, role on the bare div, viewport meta; contrast reported with ratios; crucially NO spurious navigation-risk survey since there is no CSS-only navigation.",
+      "files": ["inputs/petsit-landing.html"],
+      "assertions": [
+        "Output has <html lang>",
+        "Every <img> has alt",
+        "Icon-only button has an accessible name",
+        "Email input associated with a label",
+        "Bare div aria-label fixed with role or form/fieldset",
+        "Viewport meta added",
+        "Low-contrast text reported (with ratios), not silently restyled",
+        "Report states no nav-risk survey was warranted (no CSS-only nav)"
+      ]
+    }
+  ]
+}

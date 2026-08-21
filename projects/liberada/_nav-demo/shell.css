@@ -1,0 +1,203 @@
+/* ============================================================
+   flove nav shell — shared abstraction of risa/ama first-section
+   navigation, learned from freed.html (flove-bar · §13.5 menu ·
+   CSS-only :has() section stepper). Palette is per-app via --app-*.
+   ============================================================ */
+
+:root{
+  --app-accent:#e2560f; --app-accent-deep:#b5450a; --app-accent-soft:#fde8d9;
+  --paper:#fffaf5; --paper-card:#ffffff; --ink:#2a1810; --ink-soft:#5a3a28;
+  --muted:#8a7a68; --line:rgba(42,24,16,.10); --line-strong:rgba(42,24,16,.18);
+  --shadow:rgba(58,26,10,.12);
+  --radius:18px; --radius-sm:12px; --radius-pill:999px;
+  --fast:.15s cubic-bezier(.2,.8,.2,1);
+  --font-display:'Space Mono',ui-monospace,monospace;
+  --font-ui:'Figtree',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-ui); font-size:15px; line-height:1.55;
+  background:
+    radial-gradient(900px 600px at 90% -10%, var(--app-accent-soft) 0%, transparent 60%),
+    var(--paper);
+  color:var(--ink); min-height:100vh;
+}
+a{color:var(--app-accent-deep); text-decoration:none}
+a:hover{text-decoration:underline}
+.fn-wrap{max-width:1080px; margin:0 auto; padding:0 20px}
+
+/* i18n — CSS-only fallback (flove-i18n.js overrides via inline styles when loaded) */
+body:has(#lang-en:checked) .es{display:none}
+body:has(#lang-es:checked) .en{display:none}
+
+/* dark theme (optional, per-app can skip). :root so flove-settings.js
+   (which sets data-theme on <html>) also drives it. */
+:root[data-theme="dark"]{
+  --paper:#201511; --paper-card:#2a1d16; --ink:#f6e7cf; --ink-soft:#cfb8a2;
+  --muted:#9c8b78; --line:rgba(246,231,207,.12); --line-strong:rgba(246,231,207,.22);
+  --shadow:rgba(0,0,0,.45);
+}
+
+/* ============ TOPBAR (flove-bar) ============ */
+.flove-bar{
+  position:sticky; top:0; z-index:60;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 18px; gap:10px;
+  background:rgba(255,250,245,.85); backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border-bottom:1.5px solid var(--line);
+}
+.top-menu{position:relative; display:inline-block}
+.site-trigger{
+  display:inline-flex; align-items:center; gap:8px; padding:4px 10px;
+  border:none; background:none; cursor:pointer; font-family:var(--font-ui);
+  border-radius:12px; transition:background var(--fast);
+}
+.site-trigger:hover{background:var(--app-accent-soft)}
+.flove-mark{width:1.5em; height:1.5em; display:block; vertical-align:-.18em; overflow:visible}
+.flove-app-name{font-family:var(--font-display); font-weight:700; font-size:1rem; color:var(--ink)}
+.caret{font-size:.7rem; color:var(--muted)}
+
+.bar-utils{display:flex; align-items:center; gap:6px}
+.worldball{font-size:1.05rem; background:none; border:none; cursor:pointer; padding:4px 6px; border-radius:10px}
+.worldball:hover{background:var(--app-accent-soft)}
+.lang{position:relative}
+.lang-opts{
+  position:absolute; right:0; top:calc(100% + 6px); background:var(--paper-card);
+  border:1.5px solid var(--line); border-radius:var(--radius-sm); padding:8px; display:none;
+  box-shadow:0 8px 20px -6px var(--shadow); min-width:120px;
+}
+.lang:hover .lang-opts, .lang:focus-within .lang-opts{display:flex; flex-direction:column; gap:2px}
+.lang-opts label{font-size:.82rem; padding:5px 10px; border-radius:8px; cursor:pointer; color:var(--ink-soft)}
+.lang-opts label:hover{background:var(--app-accent-soft)}
+.lang-opts input{position:absolute; opacity:0; pointer-events:none}
+.lang-opts input:checked + label{background:var(--app-accent-soft); color:var(--app-accent-deep); font-weight:700}
+
+.theme-btn{font-size:1.02rem; background:none; border:none; cursor:pointer; padding:4px 6px; border-radius:10px; color:var(--ink-soft)}
+.theme-btn:hover{background:var(--app-accent-soft)}
+
+/* ============ MENU (App · Related Apps · Flove, §13.5) ============ */
+.menu-list{
+  position:absolute; left:0; top:calc(100% + 8px); width:260px;
+  list-style:none; background:var(--paper-card); border:1.5px solid var(--line);
+  border-radius:var(--radius); box-shadow:0 14px 30px -8px var(--shadow);
+  padding:8px; overflow:auto; max-height:min(70vh, 520px);
+}
+.menu-list[hidden]{display:none}
+.menu-list .menu-sec{
+  font-size:.62rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted);
+  padding:8px 10px 4px; font-family:var(--font-display);
+}
+.menu-list li{margin:0; list-style:none}
+.menu-list li a, .menu-list li .menu-act{
+  display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:10px;
+  color:var(--ink); font-size:.86rem; font-weight:600; cursor:pointer; width:100%;
+  background:none; border:none; text-align:left; font-family:var(--font-ui);
+}
+.menu-list li a:hover, .menu-list li .menu-act:hover{background:var(--app-accent-soft); text-decoration:none}
+.menu-list .menu-mark{width:22px; height:22px; flex-shrink:0; display:grid; place-items:center; font-size:.95rem}
+.menu-list .menu-mark svg{width:20px; height:20px}
+.menu-list .menu-related .menu-mark{font-size:1rem}
+
+/* ============ HERO ============ */
+.hero{text-align:center; padding:52px 20px 34px}
+.hero-logo{width:clamp(92px,20vw,150px); height:auto; margin:0 auto 10px; display:block}
+.hero h1{font-family:var(--font-display); font-weight:800; font-size:clamp(1.6rem,4.4vw,2.6rem); letter-spacing:-.01em}
+.hero .lead{max-width:52ch; margin:6px auto 24px; font-size:1.02rem; color:var(--ink-soft)}
+.hero-actions{display:flex; gap:10px; justify-content:center; flex-wrap:wrap}
+
+.fn-btn{
+  display:inline-flex; align-items:center; gap:6px; padding:9px 20px;
+  border:2px solid var(--app-accent); border-radius:var(--radius-pill);
+  background:var(--app-accent); color:#fff; font-family:var(--font-ui);
+  font-weight:700; font-size:.86rem; cursor:pointer; transition:all var(--fast);
+  text-decoration:none;
+}
+.fn-btn:hover{transform:translateY(-1px); box-shadow:0 5px 14px -4px var(--shadow); text-decoration:none}
+.fn-btn-ghost{background:transparent; color:var(--app-accent-deep); border-color:var(--app-accent)}
+.fn-btn-ghost:hover{background:var(--app-accent-soft)}
+.fn-btn-sm{padding:6px 14px; font-size:.78rem}
+
+/* ============ SECTION FORM (CSS-only stepper, freed design) ============ */
+#decl{max-width:1080px; margin:0 auto; padding:0 20px 20px}
+.secnav-radio{position:absolute; opacity:0; pointer-events:none; width:1px; height:1px}
+.fn-card{
+  display:none; background:var(--paper-card); border:1.5px solid var(--line);
+  border-radius:var(--radius); padding:26px; box-shadow:0 2px 12px -2px var(--shadow);
+  margin-bottom:18px;
+}
+.fn-card h2{font-family:var(--font-display); font-weight:700; font-size:1.15rem; margin-bottom:6px}
+.fn-card .fn-card-lead{color:var(--ink-soft); font-size:.9rem; max-width:62ch; margin-bottom:16px}
+
+/* per-section visibility + active styles are injected per app by shell.js */
+
+/* ============ SECTION BUTTONS (stepper) ============ */
+.section-buttons{
+  display:flex; justify-content:center; align-items:flex-start; gap:0; padding:6px 0 2px;
+}
+.section-btn{
+  display:flex; flex-direction:column; align-items:center; gap:6px; flex:0 1 120px;
+  padding:10px 8px; cursor:pointer; color:var(--muted); font-size:.78rem; font-weight:600;
+  text-align:center; transition:color var(--fast);
+  position:relative;
+}
+.section-btn::before{
+  content:""; position:absolute; top:21px; right:calc(50% + 20px); left:calc(-50% + 20px);
+  height:2px; background:var(--line-strong); z-index:0;
+}
+.section-btn:first-child::before{display:none}
+.section-btn .sb-icon{
+  width:42px; height:42px; border:2px solid var(--line-strong); border-radius:50%;
+  display:grid; place-items:center; background:var(--paper-card); transition:all var(--fast);
+  z-index:1; color:var(--muted);
+}
+.section-btn .sb-icon svg{width:22px; height:22px}
+.section-btn:hover{color:var(--app-accent-deep)}
+.section-btn:hover .sb-icon{border-color:var(--app-accent); color:var(--app-accent-deep)}
+
+/* active state injected per-section via :has() */
+
+/* ============ NEXT / BACK ============ */
+.section-nav{display:flex; justify-content:center; gap:10px; padding:6px 0 26px}
+.sec-move{
+  display:inline-flex; align-items:center; gap:8px; padding:8px 22px;
+  border:2px solid var(--app-accent); border-radius:var(--radius-pill);
+  background:transparent; color:var(--app-accent-deep); font-family:var(--font-ui);
+  font-weight:700; font-size:.84rem; cursor:pointer; transition:all var(--fast);
+}
+.sec-move:hover{background:var(--app-accent-soft)}
+.sec-move[disabled]{opacity:.35; cursor:default; pointer-events:none}
+
+/* ============ DEMO CONTENT HELPERS ============ */
+.demo-note{
+  font-family:var(--font-display); font-size:.68rem; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--muted); border:1.5px dashed var(--line-strong); border-radius:var(--radius-sm);
+  padding:8px 14px; display:inline-block; margin-bottom:18px;
+}
+.tracklist{list-style:none; margin-top:4px}
+.trackitem{
+  display:flex; align-items:center; gap:10px; padding:10px 8px;
+  border-bottom:1px solid var(--line); border-radius:8px;
+}
+.trackitem .tr-emoji{font-size:1.2rem}
+.trackitem .tr-body{flex:1; min-width:0}
+.trackitem .tr-title{font-weight:600; font-size:.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.trackitem .tr-meta{font-size:.72rem; color:var(--muted)}
+.tag-space{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+.tag-chip{display:inline-flex; align-items:center; gap:4px; padding:4px 12px;
+  border:1.5px solid var(--line-strong); border-radius:var(--radius-pill); font-size:.76rem;
+  font-weight:600; color:var(--ink-soft)}
+.share-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px}
+.share-card{display:flex; flex-direction:column; align-items:center; gap:8px; padding:18px 12px;
+  background:var(--paper-card); border:1.5px solid var(--line); border-radius:var(--radius);
+  text-align:center; font-size:.82rem; font-weight:600; color:var(--ink-soft)}
+.share-card .share-icon{font-size:1.7rem}
+.fake-input{padding:11px 14px; border:2px solid var(--line-strong); border-radius:var(--radius-sm);
+  font-family:var(--font-ui); font-size:.9rem; width:100%; margin-bottom:10px}
+
+@media(max-width:620px){
+  .section-buttons{overflow-x:auto; justify-content:flex-start}
+  .section-btn{flex:0 0 92px}
+  .flove-app-name{max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+}

@@ -1,0 +1,19 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#f5e9d7', 'primaryTextColor': '#2d2016', 'primaryBorderColor': '#a08b6f', 'lineColor': '#a08b6f', 'secondaryColor': '#e8dbd0', 'tertiaryColor': '#faf5ef', 'edgeLabelBackground': '#faf5ef', 'actorBkg': '#fff3d6', 'actorBorder': '#b57100', 'actorTextColor': '#2d2016', 'signalColor': '#b57100', 'sequenceNumberColor': '#b57100', 'fontFamily': 'Inter, system-ui, sans-serif', 'fontSize': '13px' } } }%%
+sequenceDiagram
+    autonumber
+    participant U as Usuario
+    participant SW as Service Worker (PWA)
+    participant W as Worker /api/*
+    participant A as authy
+    participant D1 as Cloudflare D1
+
+    U->>SW: "crea mi perfil" (formulario)
+    SW->>W: POST /api/subdomain<br/>(claim username + nonce)
+    W->>A: nonce · confirmación por DM
+    A->>U: 📩 confirma en el bot
+    U->>A: ✅ confirmado
+    A-->>W: clave de autor confirmada
+    W->>D1: INSERT perfil (username · key · aliases)
+    D1-->>W: ok
+    W-->>SW: 201 🌐 maria.liberada.net
+    SW-->>U: enlace a tu perfil agregador

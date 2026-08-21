@@ -1,0 +1,1762 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Puzzy — Advanced · FLOVE</title>
+  <link rel="icon" type="image/svg+xml" href="favicon-comby.svg">
+  <style data-flove-inlined="flove.css">
+/* inlined from apps/flove.css */
+/* ============================================================
+   🌱 flove.css · shared identity layer for all FLOVE demos
+   --------------------------------------------------------------
+   Design intent
+   - One cohesive frame around 13 very different apps.
+   - Each app keeps its own palette by overriding `--app-*` tokens
+     in its local `:root`. This file only paints the common skin.
+   - Two visual primitives identify the family everywhere:
+       1. The 🌱 sprout mark (brand)
+       2. The flove-bar at the very top (back to launcher + app name)
+   - A common motion vocabulary (gentle lift, soft fade, wiggle).
+   ============================================================ */
+
+:root {
+  /* The sprout — flove brand mark. Used as logo glyph everywhere. */
+  --flove-mark: "🌱";
+
+  /* Per-app overridable accent. Apps redeclare these. */
+  --app-accent:        #6ee7b7;
+  --app-accent-soft:   #a7f3d0;
+  --app-ink-on-accent: #042418;
+
+  /* Family geometry & motion (constant across apps) */
+  --flove-radius-sm: 12px;
+  --flove-radius:    20px;
+  --flove-radius-lg: 28px;
+  --flove-radius-pill: 999px;
+  --flove-ease:    cubic-bezier(.2,.8,.2,1);
+  --flove-fast:    .15s var(--flove-ease);
+  --flove-medium:  .25s var(--flove-ease);
+  --flove-slow:    .4s  var(--flove-ease);
+
+  /* Family typography. Apps may override font-family but should keep these scales. */
+  --flove-font-ui: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --flove-font-display: 'Georgia', 'Times New Roman', serif;
+}
+
+/* ============================================================
+   THE FLOVE BAR — a thin sticky strip at the very top of every
+   app. Holds the back-to-launcher link, the sprout brand,
+   and the app name. Lives ABOVE every app's own header.
+   ============================================================ */
+.flove-bar {
+  position: sticky;
+  top: 0;
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  font-family: var(--flove-font-ui);
+  font-size: 13px;
+  letter-spacing: .3px;
+  background: rgba(255,255,255,.55);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  color: #1a1a1a;
+}
+
+/* Auto dark variant when app body is dark */
+@media (prefers-color-scheme: dark) {
+  .flove-bar.flove-bar--auto {
+    background: rgba(10,12,18,.55);
+    border-bottom-color: rgba(255,255,255,.08);
+    color: #e9ecf3;
+  }
+}
+.flove-bar--dark {
+  background: rgba(10,12,18,.6);
+  border-bottom-color: rgba(255,255,255,.08);
+  color: #e9ecf3;
+}
+
+.flove-bar a.flove-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: inherit;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--flove-radius-pill);
+  transition: background var(--flove-fast), transform var(--flove-fast);
+}
+.flove-bar a.flove-home:hover {
+  background: var(--app-accent-soft);
+  color: var(--app-ink-on-accent);
+  transform: translateX(-2px);
+}
+.flove-bar .flove-mark {
+  font-size: 16px;
+  color: var(--app-accent);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--app-accent) 35%, transparent));
+}
+.flove-bar .flove-app-name {
+  font-weight: 500;
+  opacity: .85;
+}
+.flove-bar .flove-spacer { flex: 1; }
+.flove-bar .flove-tag {
+  font-size: 11px;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  opacity: .55;
+}
+
+/* ============================================================
+   SPROUT ANIMATION — used wherever a `.flove-sprout` lives
+   (launcher hero, footer badges, splash). Subtle slow rotation.
+   ============================================================ */
+.flove-sprout {
+  display: inline-block;
+  font-style: normal;
+  animation: flove-spin 12s linear infinite;
+  transform-origin: center;
+  color: var(--app-accent);
+}
+.flove-sprout.flove-sprout--still { animation: none; }
+@keyframes flove-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   FLOVE FOOTER BADGE — small "back to launcher" pill that any
+   app can drop in at the bottom of the page.
+   ============================================================ */
+.flove-footer-badge {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-family: var(--flove-font-ui);
+  font-size: 12px;
+  letter-spacing: .4px;
+  color: #1a1a1a;
+  text-decoration: none;
+  background: rgba(255,255,255,.7);
+  border: 1px solid rgba(0,0,0,.06);
+  border-radius: var(--flove-radius-pill);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 20px rgba(0,0,0,.08);
+  transition: transform var(--flove-fast), box-shadow var(--flove-fast);
+}
+.flove-footer-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0,0,0,.12);
+}
+.flove-footer-badge--dark {
+  background: rgba(20,24,32,.7);
+  color: #e9ecf3;
+  border-color: rgba(255,255,255,.08);
+}
+
+/* ============================================================
+   COMMON UTILITIES — kept tiny on purpose so that each app's
+   own bespoke styles still rule. These are opt-in classes.
+   ============================================================ */
+
+/* Soft glass card */
+.flove-card {
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+  border: 1px solid rgba(127,127,127,.18);
+  border-radius: var(--flove-radius-lg);
+  padding: 18px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.08);
+}
+
+/* Pill shape for tags / chips / nav items */
+.flove-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.22);
+  background: rgba(255,255,255,.04);
+  cursor: pointer;
+  transition: transform var(--flove-fast), background var(--flove-fast), border-color var(--flove-fast);
+}
+.flove-pill:hover { transform: translateY(-1px); border-color: var(--app-accent); }
+.flove-pill[aria-pressed="true"], .flove-pill.is-active {
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  border-color: var(--app-accent);
+}
+
+/* A primary action button — shared shape, app paints color */
+.flove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid var(--app-accent);
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  font-weight: 600;
+  font-family: var(--flove-font-ui);
+  cursor: pointer;
+  transition: transform var(--flove-fast), box-shadow var(--flove-fast), filter var(--flove-fast);
+}
+.flove-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px color-mix(in srgb, var(--app-accent) 40%, transparent); }
+.flove-btn:active { transform: translateY(0); filter: brightness(.95); }
+.flove-btn--ghost {
+  background: transparent;
+  color: inherit;
+  border-color: rgba(127,127,127,.3);
+}
+.flove-btn--ghost:hover { border-color: var(--app-accent); color: var(--app-accent); }
+
+/* Tiny floating toast feedback (optional, used by some apps) */
+.flove-toast {
+  position: fixed;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(20,22,30,.92);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: var(--flove-radius-pill);
+  font-size: 13px;
+  font-family: var(--flove-font-ui);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--flove-medium), transform var(--flove-medium);
+  z-index: 999;
+  box-shadow: 0 12px 30px rgba(0,0,0,.25);
+}
+.flove-toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Wiggle on tap, used by playful elements (launcher tiles, brand mark, …) */
+@keyframes flove-wiggle {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-3deg); }
+  40% { transform: rotate(3deg); }
+  60% { transform: rotate(-2deg); }
+  80% { transform: rotate(2deg); }
+}
+.flove-wiggle { animation: flove-wiggle .4s ease-out; }
+
+/* Soft float used in the launcher tiles and avatars */
+@keyframes flove-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Reduced motion: disable all flove animations */
+@media (prefers-reduced-motion: reduce) {
+  .flove-sprout, .flove-wiggle { animation: none !important; }
+  *, *::before, *::after { transition-duration: .01ms !important; }
+}
+
+/* Mobile: hide the bottom badge so it doesn't compete with app UI */
+@media (max-width: 480px) {
+  .flove-footer-badge { display: none; }
+  .flove-bar { font-size: 12px; padding: 6px 10px; }
+}
+
+/* ============================================================
+   FLOVE-IO ACTION BAR — emitted by flove-io.js (F0).
+   Sits inside a form, gives the user Copy / Save / Share / Publish
+   over the form's current FloveElement payload.
+   ============================================================ */
+.flove-action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  margin-top: 14px;
+  border-radius: var(--flove-radius);
+  background: rgba(127,127,127,.06);
+  border: 1px solid rgba(127,127,127,.18);
+  font-family: var(--flove-font-ui);
+}
+.flove-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid rgba(127,127,127,.3);
+  background: rgba(255,255,255,.04);
+  color: inherit;
+  font-family: inherit;
+  font-size: 13px;
+  border-radius: var(--flove-radius-pill);
+  cursor: pointer;
+  transition: transform var(--flove-fast),
+              border-color var(--flove-fast),
+              background var(--flove-fast);
+}
+.flove-action-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--app-accent);
+}
+.flove-action-btn:active { transform: translateY(0); }
+.flove-action-btn--primary {
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  border-color: var(--app-accent);
+  font-weight: 600;
+}
+.flove-action-btn--primary:hover { filter: brightness(1.05); }
+.flove-action-btn[hidden] { display: none; }
+
+/* Toast variant used by flove-io (slightly tighter, top of footer) */
+.flove-toast--io { bottom: 80px; }
+
+/* ============================================================
+   FLOVE SHELL — feature-driven UI rendered by flove-shell.js.
+   Per-textarea voice + add-another · phrase card · 6-button bar ·
+   insight result · publish modal · format popover.
+   ============================================================ */
+
+/* per-textarea / per-input controls ────────────────────────── */
+.flove-field-wrap {
+  position: relative;
+  display: block;
+}
+.flove-field-wrap > textarea,
+.flove-field-wrap > input {
+  width: 100%;
+  padding-right: 88px;     /* room for the two field buttons */
+}
+.flove-field-tools {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 4px;
+  z-index: 1;
+}
+.flove-field-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.25);
+  background: rgba(255,255,255,.7);
+  color: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--flove-fast), border-color var(--flove-fast),
+              background var(--flove-fast);
+  padding: 0;
+  line-height: 1;
+}
+.flove-field-btn:hover {
+  border-color: var(--app-accent);
+  transform: translateY(-1px);
+}
+.flove-field-btn--voice.is-recording {
+  background: #fb7185;
+  color: #fff;
+  border-color: #fb7185;
+  animation: flove-pulse 1.4s infinite;
+}
+@keyframes flove-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251,113,133,.45); }
+  50%      { box-shadow: 0 0 0 8px rgba(251,113,133,0); }
+}
+
+/* phrase card (phrase + 6-button bar + result panel) ────────── */
+.flove-phrase-card {
+  margin: 18px 0;
+  padding: 16px;
+  background: linear-gradient(180deg, var(--app-accent-soft) 0%,
+                                      color-mix(in srgb, var(--app-accent-soft) 30%, transparent) 100%);
+  border: 1px solid color-mix(in srgb, var(--app-accent) 35%, transparent);
+  border-radius: var(--flove-radius-lg);
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+  font-family: var(--flove-font-ui);
+}
+.flove-phrase {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  font-family: ui-monospace, 'JetBrains Mono', Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--app-ink-on-accent);
+  background: rgba(255,255,255,.6);
+  border-radius: var(--flove-radius);
+  word-break: break-word;
+  min-height: 1.55em;
+}
+.flove-phrase.is-magic {
+  background: linear-gradient(110deg, rgba(255,255,255,.55), rgba(255,255,255,.85));
+  font-style: italic;
+}
+
+/* six-button action bar (overrides the 4-button defaults) ──── */
+.flove-action-bar--six {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  padding: 6px;
+  background: rgba(255,255,255,.5);
+  border-radius: var(--flove-radius);
+  border: 1px solid rgba(127,127,127,.18);
+  margin-top: 0;
+}
+.flove-action-bar--six .flove-action-btn {
+  justify-content: center;
+  padding: 10px 6px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+@media (max-width: 540px) {
+  .flove-action-bar--six .flove-action-btn span:nth-child(2) { display: none; }
+}
+
+/* result panel (insight, publish progress) ─────────────────── */
+.flove-result {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,.7);
+  border: 1px solid rgba(127,127,127,.22);
+  border-radius: var(--flove-radius);
+}
+.flove-result[hidden] { display: none; }
+.flove-result__title {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-ink-on-accent);
+}
+.flove-result__lede {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(0,0,0,.6);
+}
+.flove-result__body {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+.flove-result__list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.flove-result__error {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 13px;
+}
+.flove-result__row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* modal (insight config, publish multi-select) ─────────────── */
+.flove-modal {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  font-family: var(--flove-font-ui);
+}
+.flove-modal__backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.flove-modal__panel {
+  position: relative;
+  width: min(540px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: #fff;
+  color: #1a1a1a;
+  border-radius: var(--flove-radius-lg);
+  padding: 22px;
+  box-shadow: 0 30px 60px rgba(0,0,0,.3);
+  display: grid;
+  gap: 12px;
+}
+.flove-modal__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.flove-modal__lede {
+  margin: 0;
+  color: #52606d;
+  font-size: .9rem;
+}
+.flove-modal label {
+  display: grid;
+  gap: 4px;
+  font-size: .85rem;
+  color: #52606d;
+}
+.flove-modal input,
+.flove-modal textarea,
+.flove-modal select {
+  padding: 10px 12px;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: var(--flove-radius);
+  font: inherit;
+  background: #fff;
+  color: #1a1a1a;
+}
+.flove-modal__row {
+  display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;
+  padding-top: 6px;
+  border-top: 1px solid rgba(0,0,0,.06);
+}
+
+/* publish multi-select list ────────────────────────────────── */
+.flove-publish-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.flove-publish-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: var(--flove-radius);
+  background: rgba(0,0,0,.02);
+}
+.flove-publish-row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-direction: row;
+  font-size: .92rem;
+}
+.flove-publish-kind {
+  font-size: .72rem;
+  letter-spacing: .3px;
+  color: #6b7280;
+  text-transform: uppercase;
+  background: rgba(0,0,0,.04);
+  border-radius: var(--flove-radius-pill);
+  padding: 2px 8px;
+}
+.flove-publish-add {
+  border: 1px dashed rgba(0,0,0,.15);
+  border-radius: var(--flove-radius);
+  padding: 10px 12px;
+}
+.flove-publish-add summary {
+  cursor: pointer;
+  font-size: .85rem;
+  color: #4b5563;
+}
+.flove-publish-add[open] summary { margin-bottom: 8px; }
+.flove-publish-add label { margin-bottom: 6px; }
+
+/* enhanced flove-bar — center categories + right menu ───────── */
+.flove-bar--enhanced .flove-mark,
+.flove-bar--enhanced .flove-sprout {
+  user-select: none;
+  transition: transform var(--flove-fast);
+}
+.flove-bar--enhanced .flove-mark:hover,
+.flove-bar--enhanced .flove-sprout:hover { transform: rotate(20deg) scale(1.08); }
+
+.flove-categories {
+  flex: 1 1 auto;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0 6px;
+  scroll-snap-type: x proximity;
+  justify-content: center;
+}
+.flove-categories::-webkit-scrollbar { display: none; }
+.flove-cat-chip {
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+  padding: 4px 12px;
+  font-size: 12px;
+  letter-spacing: .2px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.25);
+  background: rgba(255,255,255,.5);
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform var(--flove-fast),
+              background var(--flove-fast),
+              border-color var(--flove-fast);
+}
+.flove-cat-chip:hover { border-color: var(--app-accent); transform: translateY(-1px); }
+.flove-cat-chip.is-active {
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  border-color: var(--app-accent);
+}
+
+.flove-menu-btn {
+  width: 36px; height: 36px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.22);
+  background: rgba(255,255,255,.5);
+  color: inherit;
+  font-size: 18px;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--flove-fast), border-color var(--flove-fast);
+}
+.flove-menu-btn:hover { background: var(--app-accent-soft); border-color: var(--app-accent); }
+.flove-menu-btn[aria-expanded="true"] { background: var(--app-accent); color: var(--app-ink-on-accent); }
+
+.flove-menu {
+  width: min(280px, calc(100vw - 24px));
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: var(--flove-radius);
+  box-shadow: 0 18px 40px rgba(0,0,0,.18);
+  padding: 6px;
+  z-index: 200;
+  font-family: var(--flove-font-ui);
+}
+.flove-menu[hidden] { display: none; }
+.flove-menu__section {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.flove-menu__section:last-child { border-bottom: 0; }
+.flove-menu__title {
+  margin: 0 8px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: #6b7280;
+}
+.flove-menu__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 9px 10px;
+  font: inherit;
+  font-size: .9rem;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: var(--flove-radius);
+  cursor: pointer;
+  text-decoration: none;
+}
+.flove-menu__item:hover {
+  background: var(--app-accent-soft);
+  color: var(--app-ink-on-accent);
+}
+
+@media (max-width: 540px) {
+  .flove-categories { gap: 4px; padding: 0 2px; }
+  .flove-cat-chip { padding: 3px 10px; font-size: 11px; }
+}
+
+/* format popover ────────────────────────────────────────────── */
+.flove-popover {
+  z-index: 999;
+  width: 220px;
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: var(--flove-radius);
+  box-shadow: 0 14px 30px rgba(0,0,0,.18);
+  padding: 4px;
+  font-family: var(--flove-font-ui);
+}
+.flove-popover__item {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: var(--flove-radius);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.flove-popover__item:hover {
+  background: var(--app-accent-soft);
+  color: var(--app-ink-on-accent);
+}
+
+</style>
+  <style>
+    :root{
+      /* flove identity overrides — Puzzy: violet accent, teal flourish, on a deep canvas */
+      --app-accent:        #8d89ff;
+      --app-accent-soft:   #c9c6ff;
+      --app-ink-on-accent: #0b0b14;
+
+      /* Puzzy local palette (dark) */
+      --bg:#0b0b0f; --panel:#11131a; --ink:#e9eaf2; --muted:#a3a7b4;
+      --line:#1e2133; --field:#13162a; --accent2:#70f0d3;
+      --card-w:118px;   /* shared width for senses / emotion / system cards */
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--ink);
+      background:
+        radial-gradient(1000px 700px at 110% -10%, rgba(141,137,255,.16), transparent 60%),
+        radial-gradient(800px 600px at -10% 120%, rgba(112,240,211,.12), transparent 50%),
+        var(--bg);
+      font-family:var(--flove-font-ui); letter-spacing:.2px;
+    }
+
+    /* i18n — pure CSS (§13.2) */
+    .t-es{ display:none }
+    body:has(#ui-lang-es:checked) .t-en{ display:none }
+    body:has(#ui-lang-es:checked) .t-es{ display:inline }
+
+    /* language toggle inside the flove-bar */
+    .lang{ display:inline-flex; gap:2px; margin-left:auto }
+    .lang input{ position:absolute; opacity:0; pointer-events:none }
+    .lang label{
+      font-size:11px; font-weight:600; letter-spacing:.4px; padding:3px 9px;
+      border-radius:var(--flove-radius-pill); cursor:pointer; color:var(--muted);
+      border:1px solid transparent;
+    }
+    #ui-lang-en:checked ~ label[for=ui-lang-en],
+    #ui-lang-es:checked ~ label[for=ui-lang-es]{
+      color:var(--app-ink-on-accent); background:var(--app-accent); border-color:var(--app-accent);
+    }
+
+    /* shell */
+    .shell{ max-width:980px; margin:1.4rem auto 4rem; padding:0 1rem; display:grid; gap:1.2rem }
+
+    /* header */
+    .hdr{ display:flex; gap:.75rem; align-items:baseline; flex-wrap:wrap }
+    .hdr .tag{
+      padding:.2rem .6rem; border:1px solid var(--line); border-radius:var(--flove-radius-pill);
+      background:#0f1120; color:var(--accent2); font-weight:700; font-size:.8rem; letter-spacing:.4px;
+    }
+    .hdr h1{
+      font-size:1.6rem; margin:.25rem 0 0; letter-spacing:.5px;
+      background:linear-gradient(180deg,#fff,#cfc9ff);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+
+    /* cards */
+    .card{
+      border:1px solid var(--line); border-radius:var(--flove-radius);
+      padding:1rem 1.1rem;
+      background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+    }
+    .card h2{ margin:.1rem 0 .75rem; font-size:1.05rem; letter-spacing:.6px; color:var(--accent2) }
+    .card h3{ margin:.25rem 0 .5rem; font-size:.95rem; letter-spacing:.6px; color:var(--app-accent); font-weight:700 }
+    .line{ height:1px; background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent); margin:.25rem 0 .75rem }
+
+    /* input row */
+    .inputline{ display:grid; grid-template-columns:25% auto; gap:.3rem; align-items:center }
+    /* the + sits in continuation of the Add button */
+    .add-group{ display:inline-flex; align-items:center; gap:.2rem; justify-self:start }
+    .ghost{
+      border:1px dashed var(--line); border-radius:var(--flove-radius-sm);
+      padding:.7rem .85rem; background:var(--field);
+      display:flex; align-items:center; gap:.5rem;
+    }
+    .ghost input{
+      appearance:none; border:0; outline:0; background:transparent; color:var(--ink);
+      font:600 1.05rem/1.2 var(--flove-font-ui); flex:1; min-width:0;
+    }
+    /* plus icon beside the keyword field → reveals the senses list (3× size) */
+    .field-plus{
+      flex:none; width:4rem; height:4rem; border-radius:50%; padding:0;   /* ~30% smaller */
+      display:grid; place-items:center; cursor:pointer; line-height:1;
+      border:1px solid var(--line); background:#121733; color:var(--app-accent-soft);
+      font-size:2.5rem; font-weight:700;
+      transition:border-color var(--flove-fast), box-shadow var(--flove-fast);
+    }
+    .field-plus:hover{ border-color:var(--app-accent); box-shadow:0 0 10px rgba(141,137,255,.45) }
+
+    /* centered plus under the senses → reveals the list pickers */
+    .senses-add{ display:flex; justify-content:center; margin-top:.85rem }
+    .round-plus{
+      width:2.2rem; height:2.2rem; border-radius:50%;
+      display:grid; place-items:center; cursor:pointer; line-height:1;
+      border:1px solid var(--line); background:#121733; color:var(--app-accent-soft);
+      font-size:1.4rem; font-weight:700;
+      transition:transform .12s ease, border-color var(--flove-fast), box-shadow var(--flove-fast);
+    }
+    .round-plus:hover{ transform:translateY(-1px); border-color:var(--app-accent); box-shadow:0 0 12px rgba(141,137,255,.45) }
+    /* column layout so the Systems/Emotions buttons stay centred ABOVE the
+       rendered lists (a wide list was pulling them to the left otherwise) */
+    .list-choices{ display:flex; flex-direction:column; align-items:center; gap:.7rem; margin-top:.7rem }
+    .list-choices[hidden]{ display:none }
+
+    /* Systems / Emotions pickers */
+    .list-buttons{ display:flex; flex-wrap:wrap; justify-content:center; gap:.5rem }
+    .list-choice[aria-pressed="true"]{
+      background:linear-gradient(180deg,var(--accent2),var(--app-accent));
+      color:var(--app-ink-on-accent); border-color:var(--app-accent);
+    }
+    .lists-render{ margin-top:1rem; display:grid; gap:.8rem }
+    .lists-render:empty{ margin-top:0 }
+
+    /* generic list card — name above, selectable verb + cycling plus below */
+    .lcard{
+      display:grid; gap:.3rem; place-items:center; text-align:center;
+      border:1px solid var(--line); background:var(--field);
+      padding:.6rem .5rem; border-radius:var(--flove-radius-sm);
+      width:var(--card-w);     /* senses / emotions / systems share one width */
+    }
+    .lcard.center{ border-color:var(--app-accent); box-shadow:0 0 0 2px rgba(141,137,255,.25) }
+    .lc-title{
+      font-size:.72rem; letter-spacing:.4px; color:var(--muted); text-transform:uppercase;
+      padding:.05rem .3rem; border-radius:var(--flove-radius-sm); border:1px solid transparent;
+    }
+    .lc-emoji{ font-size:1.4rem; line-height:1; padding:0 .2rem; border-radius:var(--flove-radius-sm); border:1px solid transparent }
+    .lc-sel{ cursor:pointer; transition:border-color var(--flove-fast), box-shadow var(--flove-fast), color var(--flove-fast) }
+    .lc-sel:hover{ border-color:var(--app-accent); box-shadow:0 0 8px rgba(141,137,255,.4) }
+    .lc-sel.sel{ border-color:var(--accent2); color:var(--accent2) }
+    .lc-verb-row{ display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:.35rem; margin-top:.1rem }
+    .lc-verb{
+      border:1px solid var(--line); background:#121733; color:var(--app-accent-soft);
+      font-weight:700; font-size:.85rem; padding:.2rem .5rem; border-radius:var(--flove-radius-pill);
+      cursor:pointer; transition:border-color var(--flove-fast), box-shadow var(--flove-fast), color var(--flove-fast);
+    }
+    .lc-verb:hover{ border-color:var(--app-accent); box-shadow:0 0 8px rgba(141,137,255,.4) }
+    .lc-verb.sel{ border-color:var(--accent2); color:var(--accent2) }
+    .lc-cycle{
+      flex:none; width:1.5rem; height:1.5rem; border-radius:50%;
+      display:grid; place-items:center; cursor:pointer; line-height:1;
+      border:1px solid var(--line); background:#121733; color:var(--app-accent-soft);
+      font-size:1rem; font-weight:700;
+      transition:border-color var(--flove-fast), box-shadow var(--flove-fast);
+    }
+    .lc-cycle:hover{ border-color:var(--app-accent); box-shadow:0 0 8px rgba(141,137,255,.4) }
+
+    /* systems grid — cards 50% smaller than the emotion cards, no emoji */
+    .systems-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:.4rem }
+    .lcard-system{ padding:.3rem .25rem; gap:.12rem }
+    .lcard-system .lc-title{ font-size:.58rem; padding:.03rem .2rem }
+    /* systems: verb (−25% from 2×) + plus button 2× bigger;
+       emotion verb text bumped up to match the system verb size */
+    .lcard-system .lc-verb{ font-size:.9rem; padding:.16rem .48rem }
+    .lcard-system .lc-cycle{ width:2.3rem; height:2.3rem; font-size:1.6rem }
+    .lcard-emotion .lc-verb{ font-size:.9rem }
+
+    /* emotions framing the systems: top row, asides, bottom row */
+    .frame{ display:grid; gap:.7rem }
+    .frame-row{ display:flex; flex-wrap:wrap; gap:.5rem; justify-content:center }
+    .frame-mid{ display:flex; gap:.6rem; align-items:center; justify-content:center; flex-wrap:wrap }
+    .frame-aside{ display:grid; gap:.5rem; align-content:center }
+    .frame-systems{ flex:1 1 260px; min-width:240px }
+    .frame .lcard, .frame-row .lcard{ min-width:96px }
+    .emotion-grid{ display:flex; flex-wrap:wrap; justify-content:center; gap:.6rem }
+
+    /* buttons */
+    .btn{
+      display:inline-grid; place-items:center;
+      padding:.6rem .9rem; border-radius:var(--flove-radius-sm); border:1px solid var(--line);
+      background:#121733; color:var(--ink); font-weight:700; cursor:pointer;
+      transition:box-shadow var(--flove-fast), border-color var(--flove-fast); user-select:none;
+    }
+    .btn:hover{ border-color:var(--app-accent); box-shadow:0 0 12px rgba(141,137,255,.45) }
+    .btn.accent{
+      background:linear-gradient(180deg,var(--accent2),var(--app-accent));
+      color:var(--app-ink-on-accent); border-color:var(--app-accent);
+    }
+    /* "Add" → "Add more": compact, pill-shaped, more button-like (~50% smaller) */
+    .add-btn{
+      padding:.3rem .8rem; font-size:1.56rem; font-weight:800;
+      border-radius:var(--flove-radius-pill); justify-self:start;
+    }
+    .add-btn .ab-more{ display:none }
+    .add-btn.added .ab-first{ display:none }
+    .add-btn.added .ab-more{ display:inline }
+
+    /* chips for custom values */
+    .chips{ display:flex; flex-wrap:wrap; gap:.45rem; margin-top:.6rem }
+    .chip{
+      font-weight:600; font-size:.9rem; color:var(--app-accent-soft);
+      background:#121733; border:1px solid var(--line); border-radius:var(--flove-radius-pill);
+      padding:.35rem .65rem;
+    }
+    button.chip{ appearance:none; font-family:inherit }
+
+    /* senses */
+    .senses{ display:flex; flex-wrap:wrap; justify-content:center; gap:.6rem; margin-top:.5rem }
+    .senses[hidden]{ display:none }   /* let the Senses button actually collapse it */
+    .sense{
+      display:grid; gap:.35rem; place-items:center; border:1px solid var(--line);
+      background:var(--field); padding:.75rem; border-radius:var(--flove-radius-sm); text-align:center;
+      cursor:pointer; transition:border-color var(--flove-fast), box-shadow var(--flove-fast);
+      width:var(--card-w);     /* same width as the emotion / system cards */
+    }
+    .sense b{ font-size:1.05rem }
+    .sense input{ display:none }
+    .sense:has(input:checked){ border-color:var(--accent2); box-shadow:0 0 0 2px rgba(112,240,211,.45) }
+
+    /* combos */
+    .actions{ display:flex; gap:.6rem; align-items:center; justify-content:center; margin-top:.9rem; flex-wrap:wrap }
+    .toggle-all{ display:flex; align-items:center; gap:.45rem; font-weight:700; color:var(--ink) }
+    .toggle-all input{ width:1.05rem; height:1.05rem; accent-color:var(--app-accent) }
+    .toggle-all[hidden]{ display:none }
+
+    /* "See combos": button when collapsed, section-title look when open */
+    .see-combos{
+      appearance:none; cursor:pointer; user-select:none; font-family:inherit;
+      padding:.78rem 1.17rem; font-size:1.3rem;            /* ~30% bigger */
+      border-radius:var(--flove-radius-sm); border:1px solid var(--line);
+      background:#121733; color:var(--ink); font-weight:700;
+      transition:box-shadow var(--flove-fast), border-color var(--flove-fast), background var(--flove-fast), color var(--flove-fast);
+    }
+    .see-combos:hover{ border-color:var(--app-accent); box-shadow:0 0 12px rgba(141,137,255,.45) }
+    .see-combos .sc-open{ display:none }
+    .see-combos.is-open{
+      background:transparent; border-color:transparent; box-shadow:none;
+      padding:.1rem 0; font-size:1.05rem; letter-spacing:.6px; color:var(--accent2);
+    }
+    .see-combos.is-open .sc-collapsed{ display:none }
+    .see-combos.is-open .sc-open{ display:inline }
+
+    .combos{ margin-top:1rem }
+    .combos-list{ display:grid; grid-template-columns:repeat(2,minmax(260px,1fr)); gap:.45rem }
+    .combo{
+      display:flex; gap:.55rem; align-items:center; border:1px solid var(--line);
+      background:var(--field); padding:.5rem .7rem; border-radius:var(--flove-radius-sm);
+    }
+    .combo input{ width:1rem; height:1rem; accent-color:var(--app-accent) }
+    .combo-line{ display:flex; flex-wrap:wrap; gap:.35rem }
+    .token{
+      display:inline-block; padding:.15rem .45rem; border-radius:var(--flove-radius-sm);
+      background:#0f173a; border:1px solid var(--line); font-weight:700; font-style:normal;
+    }
+
+    /* wise it */
+    /* two rows of space above; no panel box — just the centred button + its subs */
+    .wise-panel{
+      margin-top:2.6rem; padding:0; text-align:center;
+      border:0; background:transparent;
+    }
+    /* the "Wise them" summary looks like a centred button */
+    .wise-panel > summary{
+      cursor:pointer; font-weight:800; list-style:none;
+      display:inline-block; padding:.4rem .9rem; margin:.2rem auto;
+      border:1px solid var(--line); border-radius:var(--flove-radius-pill);
+      background:#121733; color:var(--app-accent-soft);
+      transition:border-color var(--flove-fast), box-shadow var(--flove-fast);
+    }
+    .wise-panel > summary::-webkit-details-marker{ display:none }
+    .wise-panel > summary:hover{ border-color:var(--app-accent); box-shadow:0 0 12px rgba(141,137,255,.45) }
+    .wise-grid{ text-align:initial }
+    .wise-grid{ display:grid; grid-template-columns:repeat(5,minmax(120px,1fr)); gap:.5rem; margin-top:1.3rem }
+    .wise{
+      appearance:none; font-family:inherit; cursor:pointer; user-select:none;
+      border:1px solid var(--line); background:var(--field); color:var(--ink);
+      padding:.5rem .7rem; border-radius:var(--flove-radius-sm); font-weight:700; text-align:center;
+      transition:border-color var(--flove-fast), box-shadow var(--flove-fast), background var(--flove-fast), color var(--flove-fast);
+    }
+    .wise:hover{ border-color:var(--app-accent); box-shadow:0 0 8px rgba(141,137,255,.4) }
+    .wise[aria-pressed="true"]{
+      background:linear-gradient(180deg,var(--accent2),var(--app-accent));
+      color:var(--app-ink-on-accent); border-color:var(--app-accent);
+    }
+
+    /* footer actions (JS-driven) */
+    .footer-actions{ display:flex; gap:.6rem; flex-wrap:wrap }
+    /* the download-form row is centred, and its button is 50% bigger */
+    .footer-actions.center{ justify-content:center }
+    .mega-btn.download-form{ padding:1.05rem 1.65rem; font-size:1.25rem; border-color:var(--accent2) }
+    .mega-btn{
+      text-decoration:none; display:inline-flex; align-items:center; justify-content:center;
+      gap:.55rem; padding:.7rem 1.1rem; border-radius:var(--flove-radius-sm); border:1px solid var(--line);
+      font-weight:900; letter-spacing:.2px; cursor:pointer;
+      color:var(--ink); background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));
+      transition:transform .12s ease, border-color var(--flove-fast), box-shadow var(--flove-fast);
+    }
+    .mega-btn:hover{ transform:translateY(-1px); border-color:var(--app-accent); box-shadow:0 0 14px rgba(141,137,255,.4) }
+    .mega-btn.save{ border-color:var(--app-accent) }
+    .mega-btn.send{ border-color:var(--accent2) }
+    .mega-btn.publish{ border-color:var(--app-accent-soft) }
+
+    .action-note{ margin-top:.6rem; font-weight:700; color:var(--app-accent-soft); min-height:1.2em }
+    .action-note.ok{ color:var(--accent2) }
+    .action-note.warn{ color:#ffd27a }
+
+    /* save output editor */
+    .editor-list{ display:grid; gap:.9rem; margin-top:.6rem }
+    .editor-block{
+      border:1px solid var(--line); background:var(--field);
+      border-radius:var(--flove-radius-sm); padding:.8rem .9rem;
+    }
+    .editor-title{ margin:0 0 .55rem; display:flex; flex-wrap:wrap; gap:.35rem }
+    .tag-sm{ background:#0f173a; border:1px solid var(--line); border-radius:var(--flove-radius-sm); padding:.2rem .5rem }
+    .editor-row{ display:grid; gap:.4rem; margin:.4rem 0 }
+    .editor-row label{ font-weight:800; color:var(--app-accent-soft) }
+    .editor-input{
+      width:100%; padding:.6rem .7rem; border-radius:var(--flove-radius-sm);
+      border:1px solid var(--line); background:var(--field); color:var(--ink); font:inherit;
+    }
+    .editor-input:focus{
+      outline:none; border-color:var(--app-accent);
+      box-shadow:0 0 0 3px rgba(141,137,255,.18);
+    }
+
+    /* overlay */
+    .overlay{
+      position:fixed; inset:0; background:rgba(3,5,20,.66);
+      display:none; align-items:center; justify-content:center; padding:1rem; z-index:20;
+    }
+    .overlay.show{ display:flex }
+    .modal{
+      background:var(--panel); border:1px solid var(--line); border-radius:var(--flove-radius);
+      padding:1rem 1.2rem; max-width:460px; width:100%;
+      box-shadow:0 20px 60px rgba(0,0,0,.55);
+    }
+    .modal h3{ margin-top:0; color:var(--accent2) }
+    .modal .btn{ margin-top:.6rem }
+
+    /* responsive */
+    @media (max-width:960px){
+      .senses{ grid-template-columns:1fr 1fr }
+      .wise-grid{ grid-template-columns:1fr 1fr }
+      .combos-list{ grid-template-columns:1fr }
+      .inputline{ grid-template-columns:1fr; gap:.55rem }
+      .systems-grid{ grid-template-columns:repeat(3,1fr) }
+      .emotion-grid{ grid-template-columns:repeat(2,1fr) }
+      .frame-mid{ flex-direction:column }
+      .frame-aside{ grid-auto-flow:column; justify-content:center }
+    }
+  </style>
+</head>
+<body>
+  <!-- language radios (drive the pure-CSS i18n) -->
+  <nav class="flove-bar flove-bar--dark">
+    <svg class="flove-mark" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="#25c39e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;display:inline-block;vertical-align:middle;filter:drop-shadow(0 0 4px #25c39e)"><circle cx="12" cy="8.5" r="5"/><circle cx="8.8" cy="14" r="5"/><circle cx="15.2" cy="14" r="5"/></svg>
+    <span class="flove-app-name">Puzzy</span>
+    <span class="lang">
+      <input type="radio" name="ui-lang" id="ui-lang-en" checked>
+      <input type="radio" name="ui-lang" id="ui-lang-es">
+      <label for="ui-lang-en">EN</label>
+      <label for="ui-lang-es">ES</label>
+    </span>
+  </nav>
+
+  <div class="shell">
+
+    <!-- SEED INPUTS -->
+    <section class="card">
+      <div class="inputline">
+        <div class="ghost">
+          <input id="seedInput" placeholder="Keywords">
+        </div>
+        <div class="add-group">
+          <button id="addMoreBtn" class="btn add-btn" aria-label="Add custom value">
+            <span class="ab-first"><span class="t-en">Add</span><span class="t-es">Añadir</span></span>
+            <span class="ab-more"><span class="t-en">Add more</span><span class="t-es">Añadir más</span></span>
+          </button>
+          <button id="sensesPlus" class="field-plus" type="button" aria-label="Show senses list">+</button>
+        </div>
+      </div>
+      <div id="customTokens" class="chips" aria-live="polite"></div>
+    </section>
+
+    <!-- SENSES / EMOTIONS / SYSTEMS -->
+    <section class="card" id="sensesSection" hidden>
+      <div id="listChoices" class="list-choices">
+        <!-- three pickers in order; each expands its own cards in the space below -->
+        <div class="list-buttons">
+          <button id="btnSenses"   class="list-choice btn" type="button" aria-pressed="false"><span class="t-en">Senses</span><span class="t-es">Sentidos</span></button>
+          <button id="btnEmotions" class="list-choice btn" type="button" aria-pressed="false"><span class="t-en">Emotions</span><span class="t-es">Emociones</span></button>
+          <button id="btnSystems"  class="list-choice btn" type="button" aria-pressed="false"><span class="t-en">Systems</span><span class="t-es">Sistemas</span></button>
+        </div>
+        <input id="csvInput" type="file" accept=".csv,text/csv" hidden>
+        <div id="csvNote" class="action-note" aria-live="polite"></div>
+
+        <!-- Senses cards: collapsed by default, toggled by the Senses button -->
+        <div class="senses" id="sensesGrid" role="group" aria-label="Senses" hidden>
+          <label class="sense">
+            <b><span class="t-en">Hear</span><span class="t-es">Oír</span></b> 🔊
+            <input type="checkbox" value="Hear" class="sense-check">
+          </label>
+          <label class="sense">
+            <b><span class="t-en">Taste</span><span class="t-es">Gusto</span></b> 🍽️
+            <input type="checkbox" value="Taste" class="sense-check">
+          </label>
+          <label class="sense">
+            <b><span class="t-en">Smell</span><span class="t-es">Olfato</span></b> 🌿
+            <input type="checkbox" value="Smell" class="sense-check">
+          </label>
+          <label class="sense">
+            <b><span class="t-en">Touch</span><span class="t-es">Tacto</span></b> ✋
+            <input type="checkbox" value="Touch" class="sense-check">
+          </label>
+          <label class="sense">
+            <b><span class="t-en">View</span><span class="t-es">Vista</span></b> 👁️
+            <input type="checkbox" value="View" class="sense-check">
+          </label>
+        </div>
+
+        <!-- Emotions / Systems cards render here -->
+        <div id="listsRender" class="lists-render"></div>
+      </div>
+    </section>
+
+    <!-- COMBO GENERATOR -->
+    <section class="card">
+
+      <div class="actions">
+        <!-- "See combos": a button that, on click, expands the combos and turns
+             into the section title; clicking it again collapses back to a button -->
+        <button id="seeCombosBtn" class="see-combos" type="button" aria-expanded="false">
+          <span class="sc-collapsed"><span class="t-en">Choose Combos</span><span class="t-es">Elegir combos</span></span>
+          <span class="sc-open"><span class="t-en">All possible combinations</span><span class="t-es">Todas las combinaciones posibles</span></span>
+        </button>
+
+        <!-- Select all: only visible once combos are shown -->
+        <label class="toggle-all" id="selectAllWrap" hidden>
+          <input id="toggleAll" type="checkbox">
+          <span><span class="t-en">Select all</span><span class="t-es">Seleccionar todo</span></span>
+        </label>
+      </div>
+
+      <!-- Combinations (built when "See combos" is opened) -->
+      <div id="combosWrap" class="combos" hidden>
+        <div id="combosList" class="combos-list"></div>
+      </div>
+
+      <!-- WISE IT (below combos, collapsed by default) -->
+      <details id="wiseDetails" class="wise-panel">
+        <summary><span class="t-en">Wise them</span><span class="t-es">Hazlos sabios</span></summary>
+        <div class="wise-grid">
+          <button type="button" class="wise" data-value="Ethical"   aria-pressed="false"><span class="t-en">Evidence</span><span class="t-es">Evidencia</span></button>
+          <button type="button" class="wise" data-value="Pragmatic" aria-pressed="false"><span class="t-en">Axiom</span><span class="t-es">Axioma</span></button>
+          <button type="button" class="wise" data-value="Aesthetic" aria-pressed="false"><span class="t-en">Prediction</span><span class="t-es">Predicción</span></button>
+          <button type="button" class="wise" data-value="Social"    aria-pressed="false"><span class="t-en">Proposal</span><span class="t-es">Propuesta</span></button>
+          <button type="button" class="wise" data-value="Spiritual" aria-pressed="false"><span class="t-en">Challenge</span><span class="t-es">Reto</span></button>
+        </div>
+      </details>
+    </section>
+
+    <!-- ACTIONS (now JS-driven) -->
+    <section class="card">
+      <div class="footer-actions center" style="margin-bottom:.6rem">
+        <button id="downloadFormBtn" class="mega-btn download-form"><span class="t-en">Download my combos form</span><span class="t-es">Descargar mi formulario de combos</span></button>
+      </div>
+      <div class="footer-actions">
+        <button id="saveBtn" class="mega-btn save"><span class="t-en">Save</span><span class="t-es">Guardar</span></button>
+        <button id="shareBtn" class="mega-btn send"><span class="t-en">Share</span><span class="t-es">Compartir</span></button>
+        <button id="publishBtn" class="mega-btn publish"><span class="t-en">Publish</span><span class="t-es">Publicar</span></button>
+      </div>
+      <div id="actionNote" class="action-note" aria-live="polite"></div>
+    </section>
+
+    <!-- SAVE OUTPUT (generated editor) -->
+    <section id="editorWrap" class="card" hidden>
+      <h2><span class="t-en">Edit your selections</span><span class="t-es">Edita tus selecciones</span></h2>
+      <div id="editorList" class="editor-list"></div>
+    </section>
+
+    <!-- JS SUCCESS OVERLAY -->
+    <div id="overlay" class="overlay">
+      <div class="modal">
+        <h3 id="overlayTitle">Done</h3>
+        <p id="overlayMsg">Your data was processed.</p>
+        <button class="btn" id="overlayClose"><span class="t-en">Close</span><span class="t-es">Cerrar</span></button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== Basic elements =====
+    const seedInput = document.getElementById('seedInput');
+    const addMoreBtn = document.getElementById('addMoreBtn');
+    const customTokens = document.getElementById('customTokens');
+
+    const seeCombosBtn = document.getElementById('seeCombosBtn');
+    const selectAllWrap = document.getElementById('selectAllWrap');
+    const combosWrap = document.getElementById('combosWrap');
+    const combosList = document.getElementById('combosList');
+    const toggleAll = document.getElementById('toggleAll');
+
+    // reveal widgets
+    const sensesPlus = document.getElementById('sensesPlus');
+    const sensesSection = document.getElementById('sensesSection');
+
+    // further-list pickers (Systems / Emotions) + CSV upload
+    const btnSenses = document.getElementById('btnSenses');
+    const sensesGrid = document.getElementById('sensesGrid');
+    const btnSystems = document.getElementById('btnSystems');
+    const btnEmotions = document.getElementById('btnEmotions');
+    const csvInput = document.getElementById('csvInput');
+    const csvNote = document.getElementById('csvNote');
+    const listsRender = document.getElementById('listsRender');
+
+    const downloadFormBtn = document.getElementById('downloadFormBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    const publishBtn = document.getElementById('publishBtn');
+    const actionNote = document.getElementById('actionNote');
+
+    const editorWrap = document.getElementById('editorWrap');
+    const editorList = document.getElementById('editorList');
+
+    const overlay = document.getElementById('overlay');
+    const overlayClose = document.getElementById('overlayClose');
+    const overlayTitle = document.getElementById('overlayTitle');
+    const overlayMsg = document.getElementById('overlayMsg');
+
+    // ===== State =====
+    const customValues = []; // user-added tokens
+
+    function renderCustomTokens() {
+      customTokens.innerHTML = '';
+      customValues.forEach(v => {
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.textContent = v;
+        customTokens.appendChild(chip);
+      });
+    }
+
+    function addCustomToken(val) {
+      const clean = (val || '').trim();
+      if (!clean) return;
+      customValues.push(clean);
+      renderCustomTokens();
+      seedInput.value = '';
+    }
+
+    // toggle a token on/off (multiselect card parts) — returns true if now selected
+    function toggleToken(word) {
+      const clean = (word || '').trim();
+      if (!clean) return false;
+      const i = customValues.indexOf(clean);
+      if (i >= 0) { customValues.splice(i, 1); renderCustomTokens(); return false; }
+      customValues.push(clean);
+      renderCustomTokens();
+      return true;
+    }
+
+    function doAdd() {
+      addCustomToken(seedInput.value);
+      addMoreBtn.classList.add('added');   // "Add" → "Add more" after the first add
+    }
+    addMoreBtn.addEventListener('click', doAdd);
+    seedInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        doAdd();
+      }
+    });
+
+    // Plus in the keyword field → reveal the senses list below
+    sensesPlus.addEventListener('click', () => {
+      sensesSection.hidden = !sensesSection.hidden;
+    });
+
+    // Keep the inline field title (placeholder) in sync with the language toggle
+    const langEs = document.getElementById('ui-lang-es');
+    const langEn = document.getElementById('ui-lang-en');
+    function syncPlaceholder() {
+      seedInput.placeholder = langEs.checked ? 'Palabras clave' : 'Keywords';
+    }
+    langEs.addEventListener('change', syncPlaceholder);
+    langEn.addEventListener('change', syncPlaceholder);
+    syncPlaceholder();
+
+    // ===== Further lists: Systems (the 11 from souls.html) + Emotions =====
+    // Systems — name above, cycling verb below, NO emoji
+    const SYSTEMS = [
+      { name:'Nervous',       verbs:['Sensing','Firing','Signalling'] },
+      { name:'Endocrine',     verbs:['Signalling','Releasing','Regulating'] },
+      { name:'Muscular',      verbs:['Moving','Flexing','Contracting'] },
+      { name:'Skeletal',      verbs:['Holding','Supporting','Framing'] },
+      { name:'Respiratory',   verbs:['Breathing','Inhaling','Exhaling'] },
+      { name:'Circulatory',   verbs:['Pumping','Flowing','Circulating'] },
+      { name:'Excretory',     verbs:['Filtering','Cleansing','Draining'] },
+      { name:'Digestive',     verbs:['Digesting','Absorbing','Breaking'] },
+      { name:'Integumentary', verbs:['Touching','Covering','Shielding'] },
+      { name:'Immune',        verbs:['Defending','Guarding','Healing'] },
+      { name:'Reproductive',  verbs:['Reproducing','Creating','Renewing'] }
+    ];
+    // Emotions — selectable title + emoji, cycling verb (cards bigger than systems)
+    const EMOTIONS = [
+      { name:'Joy',          icon:'😊', verbs:['Smile','Laugh','Glow'] },
+      { name:'Trust',        icon:'🤝', verbs:['Accept','Lean','Bond'] },
+      { name:'Fear',         icon:'😨', verbs:['Flee','Freeze','Shrink'] },
+      { name:'Surprise',     icon:'😮', verbs:['Gasp','Jump','Pause'] },
+      { name:'flove',        icon:'🌱',  verbs:['Center','Hold','Bloom'], center:true },
+      { name:'Sadness',      icon:'😢', verbs:['Weep','Sigh','Withdraw'] },
+      { name:'Disgust',      icon:'🤢', verbs:['Reject','Turn','Recoil'] },
+      { name:'Anger',        icon:'😠', verbs:['Snap','Burn','Push'] },
+      { name:'Anticipation', icon:'🤔', verbs:['Expect','Watch','Wonder'] },
+      { name:'Love',         icon:'❤️', verbs:['Embrace','Cherish','Give'] },
+      { name:'Calm',         icon:'🌿', verbs:['Breathe','Rest','Settle'] }
+    ];
+
+    // Build one card. Emotions get a selectable title + emoji; both kinds get a
+    // multiselect verb (each verb in the 3-click loop can be toggled on/off).
+    function makeCard(item, kind) {
+      const card = document.createElement('div');
+      card.className = 'lcard lcard-' + kind + (item.center ? ' center' : '');
+      let vi = 0;
+      const selectedVerbs = new Set();
+      item.verbs.forEach(v => { if (customValues.includes(v)) selectedVerbs.add(v); });
+
+      const title = document.createElement('small');
+      title.className = 'lc-title';
+      title.textContent = item.name;
+      if (kind === 'emotion') {                       // emotion titles are selectable
+        title.classList.add('lc-sel');
+        if (customValues.includes(item.name)) title.classList.add('sel');
+        title.addEventListener('click', () => title.classList.toggle('sel', toggleToken(item.name)));
+      }
+      card.appendChild(title);
+
+      if (kind === 'emotion' && item.icon) {          // emoji selectable
+        const emoji = document.createElement('span');
+        emoji.className = 'lc-emoji lc-sel';
+        emoji.textContent = item.icon;
+        if (customValues.includes(item.icon)) emoji.classList.add('sel');
+        emoji.addEventListener('click', () => emoji.classList.toggle('sel', toggleToken(item.icon)));
+        card.appendChild(emoji);
+      }
+
+      const verbRow = document.createElement('div');
+      verbRow.className = 'lc-verb-row';
+      const verb = document.createElement('button');
+      verb.type = 'button';
+      verb.className = 'lc-verb';
+      verb.textContent = item.verbs[vi];
+      verb.title = 'Add to combinations';
+      if (selectedVerbs.has(verb.textContent)) verb.classList.add('sel');
+      verb.addEventListener('click', () => {          // the shown verb is the word added
+        const w = verb.textContent;
+        const now = toggleToken(w);
+        if (now) selectedVerbs.add(w); else selectedVerbs.delete(w);
+        verb.classList.toggle('sel', now);
+      });
+      const cycle = document.createElement('button');
+      cycle.type = 'button';
+      cycle.className = 'lc-cycle';
+      cycle.textContent = '+';
+      cycle.setAttribute('aria-label', 'Change verb');
+      cycle.addEventListener('click', () => {         // loop through the three verbs
+        vi = (vi + 1) % item.verbs.length;
+        verb.textContent = item.verbs[vi];
+        verb.classList.toggle('sel', selectedVerbs.has(verb.textContent));
+      });
+      verbRow.append(verb, cycle);
+      card.appendChild(verbRow);
+
+      return card;
+    }
+
+    // Systems always sit fixed in three rows: 5 · 1 · 5 (never repositioned).
+    function systemRows() {
+      return [SYSTEMS.slice(0,5), SYSTEMS.slice(5,6), SYSTEMS.slice(6,11)].map(group => {
+        const row = document.createElement('div');
+        row.className = 'frame-row';
+        group.forEach(s => row.appendChild(makeCard(s, 'system')));
+        return row;
+      });
+    }
+
+    // ===== render state =====
+    let systemsOn = false, emotionsOn = false;
+    let csvItems = [];
+
+    function renderLists() {
+      listsRender.innerHTML = '';
+
+      if (systemsOn) {
+        // systems are fixed in three rows; when emotions are on too they frame them:
+        //   5 above · [row1: 5] · [row2: 1 | 1 right] · [row3: 5] · 5 below
+        const frame = document.createElement('div');
+        frame.className = 'frame';
+        const [sRow1, sRow2, sRow3] = systemRows();
+
+        if (emotionsOn) {
+          const eTop = document.createElement('div'); eTop.className = 'frame-row';
+          EMOTIONS.slice(0, 5).forEach(e => eTop.appendChild(makeCard(e, 'emotion')));
+          frame.appendChild(eTop);
+        }
+
+        frame.appendChild(sRow1);
+
+        const mid = document.createElement('div'); mid.className = 'frame-mid';
+        if (emotionsOn) {                          // central-row emotion sits BEFORE the system
+          const eMid = document.createElement('div'); eMid.className = 'frame-aside';
+          EMOTIONS.slice(5, 6).forEach(e => eMid.appendChild(makeCard(e, 'emotion')));
+          mid.appendChild(eMid);
+        }
+        mid.appendChild(sRow2);
+        frame.appendChild(mid);
+
+        frame.appendChild(sRow3);
+
+        if (emotionsOn) {
+          const eBot = document.createElement('div'); eBot.className = 'frame-row';
+          EMOTIONS.slice(6, 11).forEach(e => eBot.appendChild(makeCard(e, 'emotion')));
+          frame.appendChild(eBot);
+        }
+
+        listsRender.appendChild(frame);
+      } else if (emotionsOn) {
+        const grid = document.createElement('div');
+        grid.className = 'emotion-grid';
+        EMOTIONS.forEach(e => grid.appendChild(makeCard(e, 'emotion')));
+        listsRender.appendChild(grid);
+      }
+
+      // uploaded .csv list (if any) — selectable chips that add to combinations
+      if (csvItems.length) {
+        const wrap = document.createElement('div');
+        wrap.className = 'chips';
+        csvItems.forEach(w => {
+          const chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = 'chip lc-sel';
+          chip.textContent = w;
+          if (customValues.includes(w)) chip.classList.add('sel');
+          chip.addEventListener('click', () => chip.classList.toggle('sel', toggleToken(w)));
+          wrap.appendChild(chip);
+        });
+        listsRender.appendChild(wrap);
+      }
+    }
+
+    // Senses: expand/collapse its cards in the space below
+    btnSenses.addEventListener('click', () => {
+      const open = sensesGrid.hidden;
+      sensesGrid.hidden = !open;
+      btnSenses.setAttribute('aria-pressed', String(open));
+    });
+    btnSystems.addEventListener('click', () => {
+      systemsOn = !systemsOn;
+      btnSystems.setAttribute('aria-pressed', String(systemsOn));
+      renderLists();
+    });
+    btnEmotions.addEventListener('click', () => {
+      emotionsOn = !emotionsOn;
+      btnEmotions.setAttribute('aria-pressed', String(emotionsOn));
+      renderLists();
+    });
+
+    // plus below the two buttons → invite a .csv list upload
+    function showCsvNote(msg, kind = 'info') {
+      csvNote.textContent = msg;
+      csvNote.className = `action-note ${kind}`;
+    }
+    csvInput.addEventListener('change', () => {
+      const file = csvInput.files && csvInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        csvItems = String(reader.result || '')
+          .split(/[\n,;]+/).map(s => s.trim()).filter(Boolean);
+        if (!csvItems.length) { showCsvNote('No values found in that file.', 'warn'); return; }
+        showCsvNote(`Loaded ${csvItems.length} value(s) from “${file.name}”. Tap any to add.`, 'ok');
+        renderLists();
+      };
+      reader.readAsText(file);
+      csvInput.value = '';
+    });
+
+    // ===== Collect & combine =====
+    function collectSelectedPool() {
+      const senses = Array.from(document.querySelectorAll('.sense-check:checked')).map(i => i.value);
+      return [...senses, ...customValues];
+    }
+
+    function combinations(items) {
+      const out = [];
+      const n = items.length;
+      for (let mask = 1; mask < (1 << n); mask++) {
+        const combo = [];
+        for (let i = 0; i < n; i++) if (mask & (1 << i)) combo.push(items[i]);
+        out.push(combo);
+      }
+      return out;
+    }
+
+    function renderComboRow(combo, idx) {
+      // No plus sign — render as inline tokens with spacing only
+      const id = `combo-${idx}`;
+      const row = document.createElement('label');
+      row.className = 'combo';
+      const tokens = combo.map(v => `<em class="token">${v}</em>`).join(' ');
+      row.innerHTML = `<input type="checkbox" id="${id}">
+                       <span class="combo-line">${tokens}</span>`;
+      return row;
+    }
+
+    function buildCombos() {
+      const pool = collectSelectedPool();
+      combosList.innerHTML = '';
+      if (pool.length === 0) { combosWrap.hidden = true; return false; }
+
+      const combos = combinations(pool);
+      const frag = document.createDocumentFragment();
+      combos
+        .sort((a,b)=> a.length-b.length || a.join().localeCompare(b.join()))
+        .forEach((combo, idx) => frag.appendChild(renderComboRow(combo, idx)));
+
+      combosList.appendChild(frag);
+      combosWrap.hidden = false;
+      toggleAll.checked = false; // keep unchecked by default
+      return true;
+    }
+
+    // "See combos": click to build & expand the combos (the button turns into the
+    // section title) and reveal "Select all"; click again to collapse back.
+    let combosOpen = false;
+    seeCombosBtn.addEventListener('click', () => {
+      if (!combosOpen) {
+        const built = buildCombos();
+        if (!built) return;                 // nothing to combine yet — stay collapsed
+        combosOpen = true;
+        seeCombosBtn.classList.add('is-open');
+        seeCombosBtn.setAttribute('aria-expanded', 'true');
+        selectAllWrap.hidden = false;
+      } else {
+        combosOpen = false;
+        seeCombosBtn.classList.remove('is-open');
+        seeCombosBtn.setAttribute('aria-expanded', 'false');
+        combosWrap.hidden = true;
+        selectAllWrap.hidden = true;
+        toggleAll.checked = false;
+      }
+    });
+
+    toggleAll.addEventListener('change', () => {
+      const boxes = combosList.querySelectorAll('input[type="checkbox"]');
+      boxes.forEach(b => b.checked = toggleAll.checked);
+    });
+
+    // ===== Wise it selections =====
+    // Wise pickers are now toggle buttons (aria-pressed)
+    document.querySelectorAll('.wise').forEach(b => {
+      b.addEventListener('click', () => {
+        b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+      });
+    });
+    function getWiseSelections() {
+      return Array.from(document.querySelectorAll('.wise[aria-pressed="true"]')).map(b => b.dataset.value);
+    }
+
+    // ===== Build data snapshot =====
+    function collectSelectedCombos() {
+      const rows = combosList.querySelectorAll('.combo');
+      const picks = [];
+      rows.forEach(row => {
+        const box = row.querySelector('input[type="checkbox"]');
+        if (box && box.checked) {
+          const tokens = Array.from(row.querySelectorAll('.token')).map(el => el.textContent.trim());
+          if (tokens.length) picks.push(tokens);
+        }
+      });
+      return picks;
+    }
+
+    function buildExportObject() {
+      return {
+        seeds: customValues.slice(),
+        senses: Array.from(document.querySelectorAll('.sense-check:checked')).map(i => i.value),
+        wise: getWiseSelections(),
+        combinations: collectSelectedCombos(),
+        timestamp: new Date().toISOString()
+      };
+    }
+
+    // ===== Save: create editor inputs per combination + wise fields =====
+    function renderEditor() {
+      const wise = getWiseSelections();
+      const combos = collectSelectedCombos();
+
+      editorList.innerHTML = '';
+      if (combos.length === 0) {
+        editorWrap.hidden = true;
+        showNote('Select at least one combination before saving.', 'warn');
+        return;
+      }
+
+      const frag = document.createDocumentFragment();
+      combos.forEach((combo, i) => {
+        const block = document.createElement('div');
+        block.className = 'editor-block';
+
+        const title = document.createElement('h3');
+        title.className = 'editor-title';
+        // No plus sign — show tokens spaced
+        title.innerHTML = combo.map(v => `<span class="tag-sm">${v}</span>`).join(' ');
+        block.appendChild(title);
+
+        // Main free text for the combination
+        const line = document.createElement('div');
+        line.className = 'editor-row';
+        line.innerHTML = `
+          <label>Note for this combination</label>
+          <input type="text" class="editor-input" placeholder="Write something…">
+        `;
+        block.appendChild(line);
+
+        // Wise fields (only those selected)
+        wise.forEach(w => {
+          const row = document.createElement('div');
+          row.className = 'editor-row';
+          const safe = w.toLowerCase().replace(/\W+/g,'-');
+          row.innerHTML = `
+            <label>${w}</label>
+            <input type="text" class="editor-input" placeholder="${w}…"
+              name="wise-${safe}-${i}">
+          `;
+          block.appendChild(row);
+        });
+
+        frag.appendChild(block);
+      });
+
+      editorList.appendChild(frag);
+      editorWrap.hidden = false;
+      editorWrap.scrollIntoView({behavior:'smooth', block:'start'});
+      showOverlay('Saved', 'Your fields were generated below, one set per selected combination.');
+    }
+
+    saveBtn.addEventListener('click', renderEditor);
+
+    // ===== Download my combos form (a fillable .html form of the selected combos) =====
+    function handleDownloadForm() {
+      const combos = collectSelectedCombos();
+      const wise = getWiseSelections();
+      if (combos.length === 0) { showNote('Select at least one combination first.', 'warn'); return; }
+      const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+      const blocks = combos.map((combo, i) => {
+        const tags = combo.map(v => `<span class="tag">${esc(v)}</span>`).join(' ');
+        const wiseFields = wise.map(w =>
+          `<label>${esc(w)}<input type="text" name="wise-${i}-${esc(w)}"></label>`).join('');
+        return `<fieldset><legend>${tags}</legend>` +
+          `<label>Note<textarea name="note-${i}" rows="3"></textarea></label>${wiseFields}</fieldset>`;
+      }).join('\n');
+      const html =
+        `<!doctype html><html lang="en"><head><meta charset="utf-8">` +
+        `<meta name="viewport" content="width=device-width,initial-scale=1"><title>My combos form</title>` +
+        `<style>body{font-family:system-ui,sans-serif;max-width:720px;margin:2rem auto;padding:0 1rem;color:#13131a}` +
+        `h1{font-size:1.4rem}fieldset{border:1px solid #ccc;border-radius:10px;margin:1rem 0;padding:.8rem 1rem}` +
+        `legend{font-weight:800}.tag{display:inline-block;background:#eef;border-radius:6px;padding:.1rem .45rem;font-weight:700;margin:.1rem}` +
+        `label{display:block;margin:.6rem 0;font-weight:600}input,textarea{width:100%;padding:.5rem;border:1px solid #ccc;border-radius:8px;font:inherit;margin-top:.2rem}` +
+        `</style></head><body><h1>My combos form</h1><form>${blocks}` +
+        `<p><button type="button" onclick="window.print()">Print / Save as PDF</button></p></form></body></html>`;
+      const blob = new Blob([html], { type:'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `flove-combos-form-${new Date().toISOString().replace(/[:.]/g,'-')}.html`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      showNote('Your combos form was downloaded.', 'ok');
+    }
+    downloadFormBtn.addEventListener('click', handleDownloadForm);
+
+    // ===== Share =====
+    async function handleShare() {
+      const data = buildExportObject();
+      const summary =
+        `FLOVE — Share\n\nSeeds: ${data.seeds.join(', ') || '—'}\n` +
+        `Senses: ${data.senses.join(', ') || '—'}\n` +
+        `Wise: ${data.wise.join(', ') || '—'}\n` +
+        `Combos: ${data.combinations.map(c=>c.join(' ')).join(' | ') || '—'}\n` +
+        `When: ${data.timestamp}`;
+
+      try {
+        if (navigator.share) {
+          await navigator.share({ title: 'FLOVE selections', text: summary });
+          showNote('Shared via system share sheet.', 'ok');
+        } else {
+          const mailto =
+            `mailto:?subject=${encodeURIComponent('FUZZY selections')}` +
+            `&body=${encodeURIComponent(summary)}`;
+          window.location.href = mailto;
+          showNote('Opening your email app to share…', 'ok');
+        }
+      } catch (e) {
+        showNote('Share canceled or failed.', 'warn');
+      }
+    }
+    shareBtn.addEventListener('click', handleShare);
+
+    // ===== Publish =====
+    async function handlePublish() {
+      const data = buildExportObject();
+      const json = JSON.stringify(data, null, 2);
+      // Download file
+      const blob = new Blob([json], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `flove-data-${new Date().toISOString().replace(/[:.]/g,'-')}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      // Copy to clipboard
+      try {
+        await navigator.clipboard.writeText(json);
+        showOverlay('Published', 'JSON downloaded and also copied to your clipboard.');
+      } catch {
+        showOverlay('Published', 'JSON downloaded. (Clipboard copy not permitted by browser.)');
+      }
+    }
+    publishBtn.addEventListener('click', handlePublish);
+
+    // ===== Helpers: notes & overlay =====
+    function showNote(msg, kind='info'){
+      actionNote.textContent = msg;
+      actionNote.className = `action-note ${kind}`;
+      setTimeout(() => {
+        actionNote.textContent = '';
+        actionNote.className = 'action-note';
+      }, 4000);
+    }
+
+    function showOverlay(title, msg){
+      overlayTitle.textContent = title;
+      overlayMsg.textContent = msg;
+      overlay.classList.add('show');
+    }
+    overlayClose.addEventListener('click', ()=> overlay.classList.remove('show'));
+    overlay.addEventListener('click', (e)=> {
+      if (e.target === overlay) overlay.classList.remove('show');
+    });
+  </script>
+</body>
+</html>

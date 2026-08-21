@@ -1,0 +1,26 @@
+%%{ init: { 'theme': 'base', 'htmlLabels': false, 'flowchart': { 'htmlLabels': false }, 'themeVariables': { 'primaryColor': '#fff3d6', 'primaryTextColor': '#2d2016', 'primaryBorderColor': '#b57100', 'lineColor': '#b57100', 'secondaryColor': '#f6efe2', 'tertiaryColor': '#faf5ef', 'edgeLabelBackground': '#faf5ef', 'clusterBkg': '#f5e9d7', 'clusterBorder': '#a08b6f', 'fontFamily': 'Inter, system-ui, sans-serif', 'fontSize': '13px' } } }%%
+flowchart LR
+    A["Persona"] -->|"nota de voz · reply · /perfil"| BOT["@RisaLiberadaBot"]
+    A -->|"escuchar · compartir · deep link #/c/&lt;id&gt;"| WEB["Web risa.liberada.net"]
+
+    subgraph V1["v1 — base · sin D1 (sigue corriendo)"]
+        BOT -->|"cron Actions 5–10 min"| R2["Cloudflare R2<br/>bucket b_/*.mp3"]
+        R2 -->|"URL pública"| RISA["risa.json<br/>feed canónico · newest-first"]
+        RISA -->|"post + 🌐 subdominio"| CH["📢 Canal @risaliberada"]
+        RISA -->|"fetch"| WEB
+    end
+
+    subgraph V2["v2 — addons D1 encima de v1 (ya en marcha)"]
+        WEB -->|"/api/follow · /api/like · /api/play"| W["☁️ Cloudflare Worker /api/*"]
+        W --> D1[("Cloudflare D1<br/>follows · reacciones · plays · avisos · cadenas")]
+        W -->|"respuestas → parent"| CHAIN["Hilos<br/>deep link #/c/&lt;id&gt;"]
+        W -->|"claim username · nonce"| AUTH["authy<br/>clave de autor"]
+        W -->|"🌐 &lt;user&gt;.liberada.net"| SUB["Subdominio<br/>perfil agregador"]
+    end
+
+    style V1 fill:#f3f4f6,stroke:#9ca3af
+    style V2 fill:#fdf6e3,stroke:#b57100
+    style D1 fill:#dbeafe,stroke:#3b82f6
+    style AUTH fill:#cffafe,stroke:#06b6d4
+    style SUB fill:#dcedc1,stroke:#a8d08d
+    style CHAIN fill:#f3e5f5,stroke:#ba68c8

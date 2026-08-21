@@ -1,0 +1,20 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#f5e9d7', 'primaryTextColor': '#2d2016', 'primaryBorderColor': '#a08b6f', 'lineColor': '#a08b6f', 'secondaryColor': '#e8dbd0', 'tertiaryColor': '#faf5ef', 'edgeLabelBackground': '#faf5ef', 'actorBkg': '#fff3d6', 'actorBorder': '#b57100', 'actorTextColor': '#2d2016', 'signalColor': '#b57100', 'sequenceNumberColor': '#b57100', 'fontFamily': 'Inter, system-ui, sans-serif', 'fontSize': '13px' } } }%%
+sequenceDiagram
+    autonumber
+    participant U as Usuario
+    participant SW as Service Worker (PWA)
+    participant W as Worker /api/*
+    participant D1 as Cloudflare D1
+
+    U->>SW: abre maria.liberada.net (primera visita)
+    SW->>W: GET /api/subdomain?user=maria
+    W->>D1: SELECT username · key · aliases
+    alt existe
+        D1-->>W: perfil + clave de autor
+        W-->>SW: 200 { perfil, clips }
+        SW-->>U: renderiza perfil agregador
+    else no existe
+        D1-->>W: 404 (perfil sin crear)
+        W-->>SW: 404 { disponible: true }
+        SW-->>U: "🌐 libre — crea tu perfil" (CTA)
+    end
