@@ -1,0 +1,1251 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Puzzy · FLOVE</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="../appy/flove.css">
+  <style data-flove-inlined="flove.css">
+/* inlined from apps/flove.css */
+/* ============================================================
+   🌱 flove.css · shared identity layer for all FLOVE demos
+   --------------------------------------------------------------
+   Design intent
+   - One cohesive frame around 13 very different apps.
+   - Each app keeps its own palette by overriding `--app-*` tokens
+     in its local `:root`. This file only paints the common skin.
+   - Two visual primitives identify the family everywhere:
+       1. The 🌱 sprout mark (brand)
+       2. The flove-bar at the very top (back to launcher + app name)
+   - A common motion vocabulary (gentle lift, soft fade, wiggle).
+   ============================================================ */
+
+:root {
+  /* The sprout — flove brand mark. Used as logo glyph everywhere. */
+  --flove-mark: "🌱";
+
+  /* Per-app overridable accent. Apps redeclare these. */
+  --app-accent:        #6ee7b7;
+  --app-accent-soft:   #a7f3d0;
+  --app-ink-on-accent: #042418;
+
+  /* Family geometry & motion (constant across apps) */
+  --flove-radius-sm: 12px;
+  --flove-radius:    20px;
+  --flove-radius-lg: 28px;
+  --flove-radius-pill: 999px;
+  --flove-ease:    cubic-bezier(.2,.8,.2,1);
+  --flove-fast:    .15s var(--flove-ease);
+  --flove-medium:  .25s var(--flove-ease);
+  --flove-slow:    .4s  var(--flove-ease);
+
+  /* Family typography. Apps may override font-family but should keep these scales. */
+  --flove-font-ui: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --flove-font-display: 'Georgia', 'Times New Roman', serif;
+}
+
+/* ============================================================
+   THE FLOVE BAR — a thin sticky strip at the very top of every
+   app. Holds the back-to-launcher link, the sprout brand,
+   and the app name. Lives ABOVE every app's own header.
+   ============================================================ */
+.flove-bar {
+  position: sticky;
+  top: 0;
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  font-family: var(--flove-font-ui);
+  font-size: 13px;
+  letter-spacing: .3px;
+  background: rgba(255,255,255,.55);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  color: #1a1a1a;
+}
+
+/* Auto dark variant when app body is dark */
+@media (prefers-color-scheme: dark) {
+  .flove-bar.flove-bar--auto {
+    background: rgba(10,12,18,.55);
+    border-bottom-color: rgba(255,255,255,.08);
+    color: #e9ecf3;
+  }
+}
+.flove-bar--dark {
+  background: rgba(10,12,18,.6);
+  border-bottom-color: rgba(255,255,255,.08);
+  color: #e9ecf3;
+}
+
+.flove-bar a.flove-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: inherit;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--flove-radius-pill);
+  transition: background var(--flove-fast), transform var(--flove-fast);
+}
+.flove-bar a.flove-home:hover {
+  background: var(--app-accent-soft);
+  color: var(--app-ink-on-accent);
+  transform: translateX(-2px);
+}
+.flove-bar .flove-mark {
+  font-size: 16px;
+  color: var(--app-accent);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--app-accent) 35%, transparent));
+}
+.flove-bar .flove-app-name {
+  font-weight: 500;
+  opacity: .85;
+}
+.flove-bar .flove-spacer { flex: 1; }
+.flove-bar .flove-tag {
+  font-size: 11px;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  opacity: .55;
+}
+
+/* ============================================================
+   SPROUT ANIMATION — used wherever a `.flove-sprout` lives
+   (launcher hero, footer badges, splash). Subtle slow rotation.
+   ============================================================ */
+.flove-sprout {
+  display: inline-block;
+  font-style: normal;
+  animation: flove-spin 12s linear infinite;
+  transform-origin: center;
+  color: var(--app-accent);
+}
+.flove-sprout.flove-sprout--still { animation: none; }
+@keyframes flove-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   FLOVE FOOTER BADGE — small "back to launcher" pill that any
+   app can drop in at the bottom of the page.
+   ============================================================ */
+.flove-footer-badge {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-family: var(--flove-font-ui);
+  font-size: 12px;
+  letter-spacing: .4px;
+  color: #1a1a1a;
+  text-decoration: none;
+  background: rgba(255,255,255,.7);
+  border: 1px solid rgba(0,0,0,.06);
+  border-radius: var(--flove-radius-pill);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 20px rgba(0,0,0,.08);
+  transition: transform var(--flove-fast), box-shadow var(--flove-fast);
+}
+.flove-footer-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0,0,0,.12);
+}
+.flove-footer-badge--dark {
+  background: rgba(20,24,32,.7);
+  color: #e9ecf3;
+  border-color: rgba(255,255,255,.08);
+}
+
+/* ============================================================
+   COMMON UTILITIES — kept tiny on purpose so that each app's
+   own bespoke styles still rule. These are opt-in classes.
+   ============================================================ */
+
+/* Soft glass card */
+.flove-card {
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+  border: 1px solid rgba(127,127,127,.18);
+  border-radius: var(--flove-radius-lg);
+  padding: 18px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.08);
+}
+
+/* Pill shape for tags / chips / nav items */
+.flove-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.22);
+  background: rgba(255,255,255,.04);
+  cursor: pointer;
+  transition: transform var(--flove-fast), background var(--flove-fast), border-color var(--flove-fast);
+}
+.flove-pill:hover { transform: translateY(-1px); border-color: var(--app-accent); }
+.flove-pill[aria-pressed="true"], .flove-pill.is-active {
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  border-color: var(--app-accent);
+}
+
+/* A primary action button — shared shape, app paints color */
+.flove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid var(--app-accent);
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  font-weight: 600;
+  font-family: var(--flove-font-ui);
+  cursor: pointer;
+  transition: transform var(--flove-fast), box-shadow var(--flove-fast), filter var(--flove-fast);
+}
+.flove-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px color-mix(in srgb, var(--app-accent) 40%, transparent); }
+.flove-btn:active { transform: translateY(0); filter: brightness(.95); }
+.flove-btn--ghost {
+  background: transparent;
+  color: inherit;
+  border-color: rgba(127,127,127,.3);
+}
+.flove-btn--ghost:hover { border-color: var(--app-accent); color: var(--app-accent); }
+
+/* Tiny floating toast feedback (optional, used by some apps) */
+.flove-toast {
+  position: fixed;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(20,22,30,.92);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: var(--flove-radius-pill);
+  font-size: 13px;
+  font-family: var(--flove-font-ui);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--flove-medium), transform var(--flove-medium);
+  z-index: 999;
+  box-shadow: 0 12px 30px rgba(0,0,0,.25);
+}
+.flove-toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Wiggle on tap, used by playful elements (launcher tiles, brand mark, …) */
+@keyframes flove-wiggle {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-3deg); }
+  40% { transform: rotate(3deg); }
+  60% { transform: rotate(-2deg); }
+  80% { transform: rotate(2deg); }
+}
+.flove-wiggle { animation: flove-wiggle .4s ease-out; }
+
+/* Soft float used in the launcher tiles and avatars */
+@keyframes flove-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Reduced motion: disable all flove animations */
+@media (prefers-reduced-motion: reduce) {
+  .flove-sprout, .flove-wiggle { animation: none !important; }
+  *, *::before, *::after { transition-duration: .01ms !important; }
+}
+
+/* Mobile: hide the bottom badge so it doesn't compete with app UI */
+@media (max-width: 480px) {
+  .flove-footer-badge { display: none; }
+  .flove-bar { font-size: 12px; padding: 6px 10px; }
+}
+
+/* ============================================================
+   FLOVE-IO ACTION BAR — emitted by flove-io.js (F0).
+   Sits inside a form, gives the user Copy / Save / Share / Publish
+   over the form's current FloveElement payload.
+   ============================================================ */
+.flove-action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  margin-top: 14px;
+  border-radius: var(--flove-radius);
+  background: rgba(127,127,127,.06);
+  border: 1px solid rgba(127,127,127,.18);
+  font-family: var(--flove-font-ui);
+}
+.flove-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid rgba(127,127,127,.3);
+  background: rgba(255,255,255,.04);
+  color: inherit;
+  font-family: inherit;
+  font-size: 13px;
+  border-radius: var(--flove-radius-pill);
+  cursor: pointer;
+  transition: transform var(--flove-fast),
+              border-color var(--flove-fast),
+              background var(--flove-fast);
+}
+.flove-action-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--app-accent);
+}
+.flove-action-btn:active { transform: translateY(0); }
+.flove-action-btn--primary {
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  border-color: var(--app-accent);
+  font-weight: 600;
+}
+.flove-action-btn--primary:hover { filter: brightness(1.05); }
+.flove-action-btn[hidden] { display: none; }
+
+/* Toast variant used by flove-io (slightly tighter, top of footer) */
+.flove-toast--io { bottom: 80px; }
+
+/* ============================================================
+   FLOVE SHELL — feature-driven UI rendered by flove-shell.js.
+   Per-textarea voice + add-another · phrase card · 6-button bar ·
+   insight result · publish modal · format popover.
+   ============================================================ */
+
+/* per-textarea / per-input controls ────────────────────────── */
+.flove-field-wrap {
+  position: relative;
+  display: block;
+}
+.flove-field-wrap > textarea,
+.flove-field-wrap > input {
+  width: 100%;
+  padding-right: 88px;     /* room for the two field buttons */
+}
+.flove-field-tools {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 4px;
+  z-index: 1;
+}
+.flove-field-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.25);
+  background: rgba(255,255,255,.7);
+  color: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--flove-fast), border-color var(--flove-fast),
+              background var(--flove-fast);
+  padding: 0;
+  line-height: 1;
+}
+.flove-field-btn:hover {
+  border-color: var(--app-accent);
+  transform: translateY(-1px);
+}
+.flove-field-btn--voice.is-recording {
+  background: #fb7185;
+  color: #fff;
+  border-color: #fb7185;
+  animation: flove-pulse 1.4s infinite;
+}
+@keyframes flove-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251,113,133,.45); }
+  50%      { box-shadow: 0 0 0 8px rgba(251,113,133,0); }
+}
+
+/* phrase card (phrase + 6-button bar + result panel) ────────── */
+.flove-phrase-card {
+  margin: 18px 0;
+  padding: 16px;
+  background: linear-gradient(180deg, var(--app-accent-soft) 0%,
+                                      color-mix(in srgb, var(--app-accent-soft) 30%, transparent) 100%);
+  border: 1px solid color-mix(in srgb, var(--app-accent) 35%, transparent);
+  border-radius: var(--flove-radius-lg);
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+  font-family: var(--flove-font-ui);
+}
+.flove-phrase {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  font-family: ui-monospace, 'JetBrains Mono', Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--app-ink-on-accent);
+  background: rgba(255,255,255,.6);
+  border-radius: var(--flove-radius);
+  word-break: break-word;
+  min-height: 1.55em;
+}
+.flove-phrase.is-magic {
+  background: linear-gradient(110deg, rgba(255,255,255,.55), rgba(255,255,255,.85));
+  font-style: italic;
+}
+
+/* six-button action bar (overrides the 4-button defaults) ──── */
+.flove-action-bar--six {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  padding: 6px;
+  background: rgba(255,255,255,.5);
+  border-radius: var(--flove-radius);
+  border: 1px solid rgba(127,127,127,.18);
+  margin-top: 0;
+}
+.flove-action-bar--six .flove-action-btn {
+  justify-content: center;
+  padding: 10px 6px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+@media (max-width: 540px) {
+  .flove-action-bar--six .flove-action-btn span:nth-child(2) { display: none; }
+}
+
+/* result panel (insight, publish progress) ─────────────────── */
+.flove-result {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,.7);
+  border: 1px solid rgba(127,127,127,.22);
+  border-radius: var(--flove-radius);
+}
+.flove-result[hidden] { display: none; }
+.flove-result__title {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-ink-on-accent);
+}
+.flove-result__lede {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(0,0,0,.6);
+}
+.flove-result__body {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+.flove-result__list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.flove-result__error {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 13px;
+}
+.flove-result__row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* modal (insight config, publish multi-select) ─────────────── */
+.flove-modal {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  font-family: var(--flove-font-ui);
+}
+.flove-modal__backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.flove-modal__panel {
+  position: relative;
+  width: min(540px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: #fff;
+  color: #1a1a1a;
+  border-radius: var(--flove-radius-lg);
+  padding: 22px;
+  box-shadow: 0 30px 60px rgba(0,0,0,.3);
+  display: grid;
+  gap: 12px;
+}
+.flove-modal__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.flove-modal__lede {
+  margin: 0;
+  color: #52606d;
+  font-size: .9rem;
+}
+.flove-modal label {
+  display: grid;
+  gap: 4px;
+  font-size: .85rem;
+  color: #52606d;
+}
+.flove-modal input,
+.flove-modal textarea,
+.flove-modal select {
+  padding: 10px 12px;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: var(--flove-radius);
+  font: inherit;
+  background: #fff;
+  color: #1a1a1a;
+}
+.flove-modal__row {
+  display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;
+  padding-top: 6px;
+  border-top: 1px solid rgba(0,0,0,.06);
+}
+
+/* publish multi-select list ────────────────────────────────── */
+.flove-publish-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.flove-publish-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: var(--flove-radius);
+  background: rgba(0,0,0,.02);
+}
+.flove-publish-row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-direction: row;
+  font-size: .92rem;
+}
+.flove-publish-kind {
+  font-size: .72rem;
+  letter-spacing: .3px;
+  color: #6b7280;
+  text-transform: uppercase;
+  background: rgba(0,0,0,.04);
+  border-radius: var(--flove-radius-pill);
+  padding: 2px 8px;
+}
+.flove-publish-add {
+  border: 1px dashed rgba(0,0,0,.15);
+  border-radius: var(--flove-radius);
+  padding: 10px 12px;
+}
+.flove-publish-add summary {
+  cursor: pointer;
+  font-size: .85rem;
+  color: #4b5563;
+}
+.flove-publish-add[open] summary { margin-bottom: 8px; }
+.flove-publish-add label { margin-bottom: 6px; }
+
+/* enhanced flove-bar — center categories + right menu ───────── */
+.flove-bar--enhanced .flove-mark,
+.flove-bar--enhanced .flove-sprout {
+  user-select: none;
+  transition: transform var(--flove-fast);
+}
+.flove-bar--enhanced .flove-mark:hover,
+.flove-bar--enhanced .flove-sprout:hover { transform: rotate(20deg) scale(1.08); }
+
+.flove-categories {
+  flex: 1 1 auto;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0 6px;
+  scroll-snap-type: x proximity;
+  justify-content: center;
+}
+.flove-categories::-webkit-scrollbar { display: none; }
+.flove-cat-chip {
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+  padding: 4px 12px;
+  font-size: 12px;
+  letter-spacing: .2px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.25);
+  background: rgba(255,255,255,.5);
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform var(--flove-fast),
+              background var(--flove-fast),
+              border-color var(--flove-fast);
+}
+.flove-cat-chip:hover { border-color: var(--app-accent); transform: translateY(-1px); }
+.flove-cat-chip.is-active {
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  border-color: var(--app-accent);
+}
+
+.flove-menu-btn {
+  width: 36px; height: 36px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.22);
+  background: rgba(255,255,255,.5);
+  color: inherit;
+  font-size: 18px;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--flove-fast), border-color var(--flove-fast);
+}
+.flove-menu-btn:hover { background: var(--app-accent-soft); border-color: var(--app-accent); }
+.flove-menu-btn[aria-expanded="true"] { background: var(--app-accent); color: var(--app-ink-on-accent); }
+
+.flove-menu {
+  width: min(280px, calc(100vw - 24px));
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: var(--flove-radius);
+  box-shadow: 0 18px 40px rgba(0,0,0,.18);
+  padding: 6px;
+  z-index: 200;
+  font-family: var(--flove-font-ui);
+}
+.flove-menu[hidden] { display: none; }
+.flove-menu__section {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.flove-menu__section:last-child { border-bottom: 0; }
+.flove-menu__title {
+  margin: 0 8px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: #6b7280;
+}
+.flove-menu__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 9px 10px;
+  font: inherit;
+  font-size: .9rem;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: var(--flove-radius);
+  cursor: pointer;
+  text-decoration: none;
+}
+.flove-menu__item:hover {
+  background: var(--app-accent-soft);
+  color: var(--app-ink-on-accent);
+}
+
+@media (max-width: 540px) {
+  .flove-categories { gap: 4px; padding: 0 2px; }
+  .flove-cat-chip { padding: 3px 10px; font-size: 11px; }
+}
+
+/* format popover ────────────────────────────────────────────── */
+.flove-popover {
+  z-index: 999;
+  width: 220px;
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: var(--flove-radius);
+  box-shadow: 0 14px 30px rgba(0,0,0,.18);
+  padding: 4px;
+  font-family: var(--flove-font-ui);
+}
+.flove-popover__item {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: var(--flove-radius);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.flove-popover__item:hover {
+  background: var(--app-accent-soft);
+  color: var(--app-ink-on-accent);
+}
+
+</style>
+  <style>
+    :root{
+      --app-accent:#8d89ff; --app-accent-soft:#c9c6ff; --app-ink-on-accent:#0b0b14;
+      --bg:#0a0a0f; --ink:#e9eaf2; --muted:#a3a7b4;
+      --line:#1e2133; --field:#13162a; --accent2:#70f0d3;
+      --grad:linear-gradient(135deg, var(--app-accent), var(--accent2));
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--ink);
+      background:
+        radial-gradient(1100px 760px at 110% -10%, rgba(141,137,255,.20), transparent 60%),
+        radial-gradient(900px 680px at -10% 120%, rgba(112,240,211,.13), transparent 50%),
+        var(--bg);
+      background-attachment:fixed; font-family:var(--flove-font-ui); letter-spacing:.2px;
+    }
+
+    /* i18n — pure CSS (§13.2) */
+    .t-es{ display:none }
+    body:has(#ui-lang-es:checked) .t-en{ display:none }
+    body:has(#ui-lang-es:checked) .t-es{ display:inline }
+    .lang{ display:inline-flex; gap:2px }
+    .lang input{ position:absolute; opacity:0; pointer-events:none }
+    .lang label{ font-size:11px; font-weight:600; letter-spacing:.4px; padding:3px 9px;
+      border-radius:var(--flove-radius-pill); cursor:pointer; color:var(--muted); border:1px solid transparent }
+    #ui-lang-en:checked ~ label[for=ui-lang-en],
+    #ui-lang-es:checked ~ label[for=ui-lang-es]{
+      color:var(--app-ink-on-accent); background:var(--app-accent); border-color:var(--app-accent) }
+
+    /* ───── topbar: brand (own logo · click-menu) + shuffle ───── */
+    .flove-bar{ position:relative; display:flex; align-items:center; gap:.7rem }
+    .ctl{ position:absolute; opacity:0; pointer-events:none }
+    .puz-brand{ display:inline-flex; align-items:center; gap:.5rem; cursor:pointer; user-select:none }
+    .puz-logo{ display:block; filter:drop-shadow(0 0 8px rgba(141,137,255,.5)); transition:transform var(--flove-fast) }
+    .puz-brand:hover .puz-logo{ transform:rotate(18deg) scale(1.05) }
+    .puz-brand .flove-app-name{ font-weight:800; letter-spacing:.5px }
+    .puz-overlay{ display:none; position:fixed; inset:0; z-index:40 }
+    body:has(#puz-menu:checked) .puz-overlay{ display:block }
+    .puz-menu{ position:absolute; top:calc(100% + 6px); left:.7rem; z-index:50; display:none;
+      flex-direction:column; gap:.1rem; min-width:200px; padding:.5rem;
+      border-radius:var(--flove-radius); background:#13162a; border:1px solid var(--line); box-shadow:0 16px 40px rgba(0,0,0,.5) }
+    body:has(#puz-menu:checked) .puz-menu{ display:flex }
+    .puz-menu a{ display:flex; align-items:center; gap:.55rem; padding:.5rem .7rem; border-radius:8px; color:var(--ink); text-decoration:none;
+      font-size:.9rem; font-weight:600; transition:background var(--flove-fast), color var(--flove-fast) }
+    .puz-menu a svg{ width:18px; height:18px; flex:0 0 auto }
+    .puz-menu a:hover{ background:rgba(141,137,255,.16); color:var(--accent2) }
+    .puz-sep{ height:1px; margin:.35rem .2rem; background:var(--line) }
+    .puz-mlabel{ font-size:.66rem; letter-spacing:.6px; text-transform:uppercase; color:var(--muted); padding:.25rem .7rem }
+    .puz-menu .lang{ padding:.1rem .5rem .3rem }
+    /* dice lives inside the compass bar; flashes the accent colour when rolled */
+    .mode-btn.is-flash{ background:var(--app-accent); color:var(--app-ink-on-accent); border-color:var(--app-accent) }
+    .dice-btn svg{ transition:transform .45s cubic-bezier(.2,.8,.2,1) }
+    .dice-btn.is-flash svg{ transform:rotate(180deg) }
+
+    /* ───── interactive field — category nodes + app bubbles ───── */
+    main{ max-width:1100px; margin:.6rem auto 2rem; padding:0 .8rem }
+    .hint{ text-align:center; color:var(--muted); font-size:.82rem; margin:.4rem 0 0 }
+    .field{ position:relative; height:min(78vh,760px); min-height:540px; margin-top:.4rem; overflow:hidden; touch-action:manipulation }
+
+    /* category NODES — big, prominent, distinct per category */
+    .node{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+      width:108px; height:108px; border-radius:50%; border:0; cursor:pointer; color:#0a0a0f;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.1rem; text-align:center;
+      box-shadow:0 12px 34px rgba(0,0,0,.45);
+      transition:left .75s cubic-bezier(.2,.85,.25,1), top .75s cubic-bezier(.2,.85,.25,1),
+        transform .35s var(--flove-ease,ease), box-shadow .35s, opacity .35s; z-index:6 }
+    .node .ni{ font-size:1.9rem; line-height:1 }
+    .node .ni svg{ width:34px; height:34px; display:block }
+    .node .nl{ font-size:.82rem; font-weight:800; letter-spacing:.5px }
+    .node[data-cat="rate"]    { background:radial-gradient(circle at 35% 28%, #d7d4ff, #8d89ff 78%) }
+    .node[data-cat="relate"]  { background:radial-gradient(circle at 35% 28%, #b6ffe9, #25c39e 78%) }
+    .node[data-cat="redefine"]{ background:radial-gradient(circle at 35% 28%, #ffe6ad, #f5a623 78%) }
+    .node:hover{ transform:translate(-50%,-50%) scale(1.07) }
+    .node.is-active{ transform:translate(-50%,-50%) scale(1.2);
+      box-shadow:0 0 0 4px rgba(255,255,255,.16), 0 16px 46px rgba(141,137,255,.5) }
+    .node.is-dim{ opacity:.42; transform:translate(-50%,-50%) scale(.84) }
+    .node::after{ content:""; position:absolute; inset:-5px; border-radius:50%;
+      border:2px solid rgba(255,255,255,.30); animation:pulse 3.2s ease-out infinite; pointer-events:none }
+    @keyframes pulse{ 0%{ transform:scale(.92); opacity:.55 } 100%{ transform:scale(1.5); opacity:0 } }
+
+    /* app BUBBLES — glassy pills with icons (wanty-style) */
+    .bub{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+      display:inline-flex; align-items:center; gap:.4rem; text-decoration:none; color:var(--ink);
+      font-weight:700; letter-spacing:.3px; cursor:pointer; padding:.45rem .9rem; border-radius:var(--flove-radius-pill);
+      background:radial-gradient(ellipse at 50% 26%, rgba(141,137,255,.30), rgba(112,240,211,.12) 72%, rgba(255,255,255,.04));
+      border:1px solid rgba(201,198,255,.42);
+      box-shadow:inset 0 1px 7px rgba(255,255,255,.22), 0 8px 20px rgba(0,0,0,.32);
+      transition:left .75s cubic-bezier(.2,.85,.25,1), top .75s cubic-bezier(.2,.85,.25,1),
+        opacity .4s, scale .4s, filter .3s; animation:floaty 5s ease-in-out infinite; z-index:3 }
+    .bub .bi{ display:inline-flex; align-items:center; line-height:0 }
+    .bub .bi svg{ width:24px; height:24px; display:block; filter:drop-shadow(0 0 4px rgba(0,0,0,.45)); transition:width .5s ease, height .5s ease }
+    .bub .bn{ font-size:.95rem; transition:font-size .5s ease }
+    .bub:hover{ filter:brightness(1.12); z-index:8 }
+    .bub.is-on{ scale:1.12; z-index:7;
+      box-shadow:inset 0 1px 9px rgba(255,255,255,.32), 0 10px 28px rgba(141,137,255,.5) }
+    .bub.is-dim{ opacity:.28; scale:.78; filter:grayscale(.45) }
+    @keyframes floaty{ 0%,100%{ translate:0 0 } 50%{ translate:0 -7px } }
+
+    @media (prefers-reduced-motion:reduce){
+      .bub{ animation:none } .node::after{ animation:none }
+      .node, .bub{ transition:opacity .3s, transform .3s }
+    }
+
+    /* ───── compass · display-mode toolbar (wanty standard) ───── */
+    .compass-wrap{ position:relative; display:inline-flex; align-items:center; gap:6px }
+    .compass-btn{ background:transparent; border:1.5px solid rgba(201,198,255,.4); color:var(--app-accent-soft);
+      width:40px; height:40px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center;
+      cursor:pointer; padding:0; transition:background var(--flove-fast), color var(--flove-fast), border-color var(--flove-fast) }
+    .compass-btn:hover{ background:rgba(141,137,255,.16); color:var(--accent2) }
+    .compass-btn[aria-expanded="true"]{ background:var(--app-accent); color:var(--app-ink-on-accent); border-color:var(--app-accent) }
+    .compass-btn svg{ transition:transform .3s ease }
+    .compass-btn[aria-expanded="true"] svg{ transform:rotate(45deg) }
+    .mode-buttons{ display:inline-flex; gap:6px; overflow:hidden; max-width:0; opacity:0; transform:translateX(-8px);
+      transition:max-width .35s ease, opacity .3s ease, transform .35s ease; pointer-events:none }
+    .mode-buttons.is-open{ max-width:300px; opacity:1; transform:translateX(0); pointer-events:auto }
+    .mode-sep{ flex:0 0 1px; width:1px; height:22px; align-self:center; background:var(--line); border-radius:1px }
+    .mode-btn{ background:var(--field); border:1.5px solid var(--line); color:var(--app-accent-soft);
+      width:36px; height:36px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center;
+      cursor:pointer; padding:0; transition:background .18s, color .18s, border-color .18s, box-shadow .18s }
+    .mode-btn:hover{ background:rgba(141,137,255,.16); color:var(--accent2) }
+    .mode-btn[aria-pressed="true"]{ background:var(--app-accent); color:var(--app-ink-on-accent); border-color:var(--app-accent) }
+    .mode-btn.mode-radio[aria-checked="true"]{ box-shadow:0 0 0 2px rgba(141,137,255,.30) }
+    .mode-btn svg{ width:18px; height:18px }
+    .mode-btn .bubbles-ico{ width:21px; height:21px }
+
+    /* ───── alternate display modes (toggled on .field) ───── */
+    .field.mode-bubbles .node{ display:none }
+    .field.mode-bubbles .bub{ animation:none; transition:transform .3s, opacity .4s, scale .4s, filter .3s }
+    .field.mode-list{ display:flex; flex-direction:column; align-items:stretch;
+      height:auto; min-height:0; overflow:visible; gap:.12rem; padding-bottom:1.4rem }
+    .field.mode-list .node{ position:static; transform:none; width:auto; height:auto;
+      flex-direction:row; gap:.55rem; justify-content:flex-start; align-self:flex-start;
+      border-radius:var(--flove-radius-pill); padding:.42rem 1rem; box-shadow:none; margin:.9rem 0 .25rem }
+    .field.mode-list .node::after{ display:none }
+    .field.mode-list .node:hover,
+    .field.mode-list .node.is-active,
+    .field.mode-list .node.is-dim{ transform:none; scale:1; opacity:1; box-shadow:none }
+    .field.mode-list .node .ni{ font-size:1.25rem }
+    .field.mode-list .node .ni svg{ width:22px; height:22px }
+    .field.mode-list .node .nl{ font-size:.92rem }
+    .field.mode-list .bub{ position:static; transform:none; animation:none; scale:1;
+      justify-content:flex-start; width:100%; max-width:540px;
+      background:transparent; border:0; box-shadow:none; padding:.4rem .7rem .4rem 1.6rem; border-radius:10px }
+    .field.mode-list .bub:hover{ background:rgba(141,137,255,.10); filter:none }
+    .field.mode-list .bub.is-on,
+    .field.mode-list .bub.is-dim{ opacity:1; scale:1; filter:none; box-shadow:none }
+
+    /* size grading — modifier check, layered on any layout */
+    .field.sized .bub .bn{ font-size:calc(.95rem * var(--bs,1)) }
+    .field.sized .bub .bi svg{ width:calc(24px * var(--bs,1)); height:calc(24px * var(--bs,1)) }
+
+    /* ───── tier stepper — progressive reveal (mini → super) ───── */
+    .tier-steps{ display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:5px;
+      margin:.2rem auto .1rem; padding:0 .6rem }
+    .tier-step{ background:var(--field); border:1.5px solid var(--line); color:var(--app-accent-soft);
+      font-size:.72rem; font-weight:700; letter-spacing:.5px; text-transform:lowercase;
+      padding:.34rem .8rem; border-radius:var(--flove-radius-pill); cursor:pointer;
+      transition:background .18s, color .18s, border-color .18s, box-shadow .18s }
+    .tier-step:hover{ background:rgba(141,137,255,.16); color:var(--accent2) }
+    .tier-step.is-included{ border-color:rgba(141,137,255,.55); color:var(--ink) }   /* below the selected — already unlocked */
+    .tier-step[aria-pressed="true"]{ background:var(--app-accent); color:var(--app-ink-on-accent);
+      border-color:var(--app-accent); box-shadow:0 0 0 2px rgba(141,137,255,.28) }
+    .tier-sep{ color:var(--muted); font-size:.7rem; opacity:.6; user-select:none }
+
+    /* locked apps — visible but greyed & inert, wins over any layout state */
+    .bub.tier-locked{ opacity:.30 !important; pointer-events:none; cursor:default;
+      scale:1 !important; filter:grayscale(.45);
+      box-shadow:inset 0 1px 7px rgba(255,255,255,.10), 0 4px 10px rgba(0,0,0,.22) !important }
+
+    footer{ max-width:1100px; margin:0 auto 3rem; padding:1rem 1.2rem 0; color:var(--muted);
+      font-size:.82rem; text-align:center; border-top:1px solid var(--line) }
+    footer a{ color:var(--accent2) }
+  </style>
+</head>
+<body>
+  <nav class="flove-bar flove-bar--dark">
+    <input type="checkbox" id="puz-menu" class="ctl">
+    <label class="puz-brand" for="puz-menu" title="Menu" aria-label="Open menu" tabindex="0">
+<svg class="puz-logo" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="#8d89ff" stroke="none"><circle cx="8.7" cy="14.2" r="4.8"/><circle cx="15.3" cy="14.2" r="4.8"/><circle cx="12" cy="9.4" r="4.8"/></svg>
+      <span class="flove-app-name">Puzzy</span>
+    </label>
+    <label for="puz-menu" class="puz-overlay" aria-hidden="true"></label>
+    <div class="puz-menu" role="menu">
+      <a href="../index.html" role="menuitem">← <span class="t-en">All apps</span><span class="t-es">Todas las apps</span></a>
+      <span class="puz-sep"></span>
+      <span class="puz-mlabel"><span class="t-en">Settings</span><span class="t-es">Ajustes</span></span>
+      <a href="dev/sety.html" role="menuitem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 4.5v2.2M12 17.3v2.2M5 8 6.9 9.1M17.1 14.9 19 16M5 16 6.9 14.9M17.1 9.1 19 8"/></svg>
+        <span class="t-en">Defaults &amp; scales</span><span class="t-es">Ajustes y escalas</span></a>
+      <a href="keys/keys-advanced.html" role="menuitem">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><g fill="currentColor" stroke="none"><g transform="rotate(0 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g><g transform="rotate(72 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g><g transform="rotate(288 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g><circle cx="50" cy="50" r="4.5"/></g></svg>
+        <span class="t-en">Keys &amp; shortcuts</span><span class="t-es">Claves y atajos</span></a>
+      <span class="puz-sep"></span>
+      <span class="puz-mlabel"><span class="t-en">Language</span><span class="t-es">Idioma</span></span>
+      <span class="lang">
+        <input type="radio" name="ui-lang" id="ui-lang-en" checked>
+        <input type="radio" name="ui-lang" id="ui-lang-es">
+        <label for="ui-lang-en">EN</label>
+        <label for="ui-lang-es">ES</label>
+      </span>
+      <button class="theme-toggle" aria-label="Toggle light/dark theme">◐</button>
+    </div>
+    <div class="compass-wrap">
+      <button type="button" class="compass-btn" id="compassBtn" aria-expanded="false" aria-controls="modeButtons" title="Display modes" aria-label="Display modes">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M12 5 L14.2 12 L12 19 L9.8 12 Z" fill="currentColor"/>
+          <circle cx="12" cy="12" r="1.6" fill="currentColor"/>
+        </svg>
+      </button>
+      <div class="mode-buttons" id="modeButtons" role="group" aria-label="Display modes">
+        <!-- modifier check: Size grading -->
+        <button type="button" class="mode-btn mode-check" data-mode="sized" aria-pressed="false" title="Size" aria-label="Size grading">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor">
+            <rect x="3" y="14" width="3" height="6"/><rect x="8" y="10" width="3" height="10"/>
+            <rect x="13" y="6" width="3" height="14"/><rect x="18" y="3" width="3" height="17"/>
+          </g></svg>
+        </button>
+        <!-- modifier action: Shuffle (the dice) -->
+        <button type="button" class="mode-btn dice-btn" id="shuffle" title="Shuffle" aria-label="Shuffle — reroll positions, sizes and order">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="4" y="4" width="16" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="1.7"/>
+            <circle cx="9" cy="9" r="1.5" fill="currentColor"/><circle cx="15" cy="9" r="1.5" fill="currentColor"/>
+            <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+            <circle cx="9" cy="15" r="1.5" fill="currentColor"/><circle cx="15" cy="15" r="1.5" fill="currentColor"/>
+          </svg>
+        </button>
+        <span class="mode-sep" aria-hidden="true"></span>
+        <!-- layout radios: Field / Bubbles / List -->
+        <button type="button" class="mode-btn mode-radio" data-mode="field" role="radio" aria-checked="true" aria-pressed="true" title="Field" aria-label="Field layout">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="12" cy="12" r="2.2" fill="currentColor"/>
+            <circle cx="20" cy="12" r="1.5" fill="currentColor"/>
+            <circle cx="6.5" cy="6.5" r="1.5" fill="currentColor"/>
+            <circle cx="8" cy="19" r="1.5" fill="currentColor"/>
+          </svg>
+        </button>
+        <button type="button" class="mode-btn mode-radio" data-mode="bubbles" role="radio" aria-checked="false" aria-pressed="false" title="Bubbles" aria-label="Bubbles layout">
+          <svg class="bubbles-ico" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="8.6" cy="14" r="5.4" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="16.6" cy="9.4" r="3.5" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="1.4"/>
+            <circle cx="17" cy="17.2" r="2.3" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="1.3"/>
+            <circle cx="6.3" cy="11.7" r="1.15" fill="currentColor"/>
+          </svg>
+        </button>
+        <button type="button" class="mode-btn mode-radio" data-mode="list" role="radio" aria-checked="false" aria-pressed="false" title="List" aria-label="List layout">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor">
+            <circle cx="5" cy="6" r="1.5"/><circle cx="5" cy="12" r="1.5"/><circle cx="5" cy="18" r="1.5"/>
+            <rect x="9" y="4.9" width="11" height="2.2" rx="1.1"/>
+            <rect x="9" y="10.9" width="11" height="2.2" rx="1.1"/>
+            <rect x="9" y="16.9" width="11" height="2.2" rx="1.1"/>
+          </g></svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="tier-steps" id="tierSteps" role="group" aria-label="Tier — reveals apps progressively (mini to super)">
+      <button type="button" class="tier-step" data-tier="mini"     aria-pressed="true">mini</button>
+      <span class="tier-sep" aria-hidden="true">·</span>
+      <button type="button" class="tier-step" data-tier="basic"    aria-pressed="false">basic</button>
+      <span class="tier-sep" aria-hidden="true">·</span>
+      <button type="button" class="tier-step" data-tier="normal"   aria-pressed="false">normal</button>
+      <span class="tier-sep" aria-hidden="true">·</span>
+      <button type="button" class="tier-step" data-tier="advanced" aria-pressed="false">advanced</button>
+      <span class="tier-sep" aria-hidden="true">·</span>
+      <button type="button" class="tier-step" data-tier="super"    aria-pressed="false">super</button>
+    </div>
+    <div class="field" id="field">
+      <!-- category nodes -->
+      <button type="button" class="node" data-cat="rate"><span class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 16a8 8 0 0 1 16 0"/><path d="M12 16l3.6-5"/><circle fill="currentColor" stroke="none" cx="12" cy="16" r="1.7"/></svg></span><span class="nl"><span class="t-en">Rate</span><span class="t-es">Puntúa</span></span></button>
+      <button type="button" class="node" data-cat="relate"><span class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12 5.5 6.5M12 12 18.5 7M12 12 12 19.5"/><circle fill="currentColor" stroke="none" cx="12" cy="12" r="2.2"/><circle fill="currentColor" stroke="none" cx="5.5" cy="6.5" r="1.5"/><circle fill="currentColor" stroke="none" cx="18.5" cy="7" r="1.5"/><circle fill="currentColor" stroke="none" cx="12" cy="19.5" r="1.5"/></svg></span><span class="nl"><span class="t-en">Relate</span><span class="t-es">Relaciona</span></span></button>
+      <button type="button" class="node" data-cat="redefine"><span class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18.6 8.2A7 7 0 1 0 19.8 13"/><path fill="currentColor" stroke="none" d="M18.6 8.2 14.7 8.9 16.7 12.4Z"/></svg></span><span class="nl"><span class="t-en">Redefine</span><span class="t-es">Redefine</span></span></button>
+      <!-- app bubbles (icon + name) -->
+      <a class="bub" data-tier="normal"   data-cat="rate"     href="raty.html"      title="Seven colour scales + the five senses as meta-rater; live phrase, axis, ranks."><span class="bi"><svg viewBox="0 0 32 32" aria-hidden="true"><g transform="translate(4 4)" fill="none" stroke="#8d89ff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17a8 8 0 0 1 16 0"/><path d="M7 17a5 5 0 0 1 10 0"/><path d="M9.5 17a2.5 2.5 0 0 1 5 0"/><circle fill="#8d89ff" stroke="none" cx="12" cy="17" r="1.4"/></g></svg></span><span class="bn">Raty</span></a>
+      <a class="bub" data-tier="mini"     data-cat="rate"     href="poly.html"      title="Bipolar pairs as mutual flow, with complementary hints."><span class="bi"><svg viewBox="0 0 32 32" aria-hidden="true"><g transform="translate(4 4)" fill="none" stroke="#8d89ff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 4a4 4 0 0 0 0 8 4 4 0 0 1 0 8"/><circle fill="#8d89ff" stroke="none" cx="12" cy="8" r="1.4"/><circle cx="12" cy="16" r="1.4"/></g></svg></span><span class="bn">Poly</span></a>
+      <a class="bub" data-tier="basic"    data-cat="rate"     href="fivy.html"      title="Order the five senses, then map their fields, simplexes and confluences."><span class="bi"><svg viewBox="0 0 32 32" aria-hidden="true"><g transform="translate(4 4)" fill="none" stroke="#8d89ff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 18.5V5M12 18.5 6.4 8M12 18.5 17.6 8M12 18.5 4.8 13M12 18.5 19.2 13"/><circle fill="#8d89ff" stroke="none" cx="12" cy="18.5" r="1.6"/></g></svg></span><span class="bn">Fivy</span></a>
+      <a class="bub" data-tier="advanced" data-cat="relate"   href="dev/vizy2.html"     title="The semantic mind-map: relations radiating from the core object."><span class="bi"><svg viewBox="0 0 32 32" aria-hidden="true"><g transform="translate(4 4)" fill="none" stroke="#25c39e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12 20 12M12 12 16 5M12 12 8 5M12 12 4 12M12 12 8 19M12 12 16 19"/><circle fill="#25c39e" stroke="none" cx="12" cy="12" r="2"/><circle cx="20" cy="12" r="1.2"/><circle cx="16" cy="5" r="1.2"/><circle cx="8" cy="5" r="1.2"/><circle cx="4" cy="12" r="1.2"/><circle cx="8" cy="19" r="1.2"/><circle cx="16" cy="19" r="1.2"/></g></svg></span><span class="bn">Vizy2</span></a>
+      <a class="bub" data-tier="mini"     data-cat="relate"   href="comby.html"     title="Fuzzy combinations from words and pools — full power-set, JSON export."><span class="bi"><svg viewBox="0 0 32 32" aria-hidden="true"><g transform="translate(4 4)" fill="none" stroke="#25c39e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="5"/><circle cx="8.8" cy="14" r="5"/><circle cx="15.2" cy="14" r="5"/></g></svg></span><span class="bn">Comby</span></a>
+      <a class="bub" data-tier="mini"     data-cat="relate"   href="confluenty.html" title="7-column board where lists meet at a centre."><span class="bi"><svg viewBox="0 0 32 32" aria-hidden="true"><g transform="translate(4 4)" fill="none" stroke="#25c39e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h7.2"/><path d="M7.6 8.4 11 12 7.6 15.6"/><path d="M21 12h-7.2"/><path d="M16.4 8.4 13 12 16.4 15.6"/><circle fill="#25c39e" stroke="none" cx="12" cy="12" r="1"/></g></svg></span><span class="bn">Confluenty</span></a>
+      <a class="bub" data-tier="basic"    data-cat="relate"   href="linky.html"     title="Chain a word to a related word, each with a 0–10 link strength; up to 10 links."><span class="bi"><svg viewBox="0 0 32 32" aria-hidden="true"><g transform="translate(4 4)" fill="none" stroke="#25c39e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="3.6"/><circle cx="17" cy="17" r="3.6"/><path d="M9.5 9.5 14.5 14.5"/></g></svg></span><span class="bn">Linky</span></a>
+      <a class="bub" data-tier="mini"     data-cat="redefine" href="wisy.html"      title="Progressive form by depth: prism, tone, focus, then formalise."><span class="bi"><svg viewBox="0 0 32 32" aria-hidden="true"><g transform="translate(4 4)" fill="none" stroke="#f5a623" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6 12 9.6 18 6"/><path d="M7.5 11 12 13.8 16.5 11"/><path d="M9 16 12 17.8 15 16"/><circle fill="#f5a623" stroke="none" cx="12" cy="20.6" r="1.3"/></g></svg></span><span class="bn">Wisy</span></a>
+      <a class="bub" data-tier="advanced" data-cat="redefine" href="dev/vizy.html"      title="Read the whole definition back as one woven phrase."><span class="bi"><svg viewBox="0 0 32 32" aria-hidden="true"><g transform="translate(4 4)" fill="none" stroke="#f5a623" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12s3.6-5.5 9-5.5 9 5.5 9 5.5-3.6 5.5-9 5.5-9-5.5-9-5.5z"/><circle cx="12" cy="12" r="2.4"/><circle fill="#f5a623" stroke="none" cx="12" cy="12" r="0.9"/></g></svg></span><span class="bn">Vizy</span></a>
+      <a class="bub" data-tier="advanced" data-cat="redefine" href="dev/sety.html"      title="Language, scales and defaults for the whole tool."><span class="bi"><svg viewBox="0 0 32 32" aria-hidden="true"><g transform="translate(4 4)" fill="none" stroke="#f5a623" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 4.5v2.2M12 17.3v2.2M5 8 6.9 9.1M17.1 14.9 19 16M5 16 6.9 14.9M17.1 9.1 19 8"/></g></svg></span><span class="bn">Sety</span></a>
+      <a class="bub" data-tier="advanced" data-cat="redefine" href="fuga/index.html"  title="Weave a definition like a fugue: a subject answered, inverted and crossed by counter-voices."><span class="bi"><svg viewBox="0 0 32 32" aria-hidden="true"><g transform="translate(4 4)" fill="none" stroke="#f5a623" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8" opacity="0.55"/><circle fill="#f5a623" stroke="none" cx="12" cy="4" r="2.2"/><circle fill="#f5a623" stroke="none" cx="12" cy="20" r="2.2"/><circle cx="12" cy="12" r="2.2"/></g></svg></span><span class="bn">Fugy</span></a>
+      <a class="bub" data-tier="basic"    data-cat="rate"     href="keys/keys-advanced.html"      title="The visual alphabet of flove — symbols, glyphs and shortcuts."><span class="bi"><svg viewBox="0 0 100 100" aria-hidden="true"><g fill="#c084fc" stroke="none"><g transform="rotate(0 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g><g transform="rotate(72 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g><g transform="rotate(288 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g><circle cx="50" cy="50" r="4.5"/></g></svg></span><span class="bn">Keys</span></a>
+    </div>
+  </main>
+
+  <!-- the bubble field is JS-driven (advanced tier) -->
+  <script>
+  (function(){
+    const field = document.getElementById('field');
+    if(!field) return;
+    const CATS  = ['rate','relate','redefine'];
+    const nodes = [...field.querySelectorAll('.node')];
+    const bubs  = [...field.querySelectorAll('.bub')];
+    // where each category node sits (fractions of the field)
+    const anchors = { rate:{x:.28,y:.30}, relate:{x:.50,y:.78}, redefine:{x:.72,y:.30} };
+    const SIZE_POOL = [1.5, 1.28, 1.12, 1.0, 0.9, 0.8];
+
+    const activeCats = new Set();                 // multiselect of the category balls
+    const display = { layout:'field', sized:false };
+    const scatter = new Map();
+    const vel = new Map();                        // per-bubble velocity, for the Bubbles drift
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let driftRAF = 0;
+
+    const rnd = (a,b)=> a + Math.random()*(b-a);
+    const clamp = (v,lo,hi)=> Math.max(lo, Math.min(hi, v));
+    function genScatter(){ bubs.forEach(b=> scatter.set(b, { x:rnd(.10,.90), y:rnd(.12,.86) })); }
+    function genSizes(){ bubs.forEach(b=> b.style.setProperty('--bs', SIZE_POOL[Math.floor(Math.random()*SIZE_POOL.length)])); }
+    function genListOrder(){                       // shuffle the order of apps within each category
+      CATS.forEach(cat=>{
+        const mem = bubs.filter(b=> b.dataset.cat === cat);
+        const order = mem.map((_,i)=> i);
+        for(let i=order.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [order[i],order[j]]=[order[j],order[i]]; }
+        mem.forEach((b,i)=> b.dataset.lrank = order[i]);
+      });
+    }
+    function place(el, fx, fy){
+      el.style.left = (clamp(fx,.04,.96)*field.clientWidth) + 'px';
+      el.style.top  = (clamp(fy,.05,.95)*field.clientHeight) + 'px';
+    }
+
+    function layout(){
+      const w = field.clientWidth, h = field.clientHeight, mode = display.layout;
+
+      // ── LIST · vertical flow grouped by category (CSS flex + order) ──
+      if(mode === 'list'){
+        nodes.forEach(n=>{
+          n.style.left=''; n.style.top=''; n.style.order = CATS.indexOf(n.dataset.cat)*100;
+          n.classList.remove('is-active','is-dim');
+        });
+        bubs.forEach(b=>{
+          b.style.left=''; b.style.top='';
+          b.style.order = CATS.indexOf(b.dataset.cat)*100 + 1 + Number(b.dataset.lrank||0);
+          b.classList.remove('is-on','is-dim');
+        });
+        return;
+      }
+
+      // ── BUBBLES · balls hidden, every app drifts free ──
+      if(mode === 'bubbles'){
+        bubs.forEach(b=>{ const p = scatter.get(b); b.style.order=''; place(b, p.x, p.y); b.classList.remove('is-on','is-dim'); });
+        return;
+      }
+
+      // ── FIELD · category balls + orbit-on-select (multiselect) ──
+      nodes.forEach(n=>{
+        const a = anchors[n.dataset.cat]; n.style.order=''; place(n, a.x, a.y);
+        n.classList.toggle('is-active', activeCats.has(n.dataset.cat));
+        n.classList.toggle('is-dim', activeCats.size>0 && !activeCats.has(n.dataset.cat));
+      });
+      bubs.forEach(b=> b.style.order='');
+      if(activeCats.size === 0){
+        bubs.forEach(b=>{ const p = scatter.get(b); place(b, p.x, p.y); b.classList.remove('is-on','is-dim'); });
+        return;
+      }
+      const park = [];
+      CATS.forEach(cat=>{
+        const mem = bubs.filter(b=> b.dataset.cat === cat);
+        if(activeCats.has(cat)){
+          const a = anchors[cat], R = Math.min(w,h) * 0.20;     // each active ball orbits its own apps
+          mem.forEach((b,i)=>{
+            const ang = (2*Math.PI*i/mem.length) - Math.PI/2;
+            place(b, a.x + (R*Math.cos(ang))/w, a.y + (R*Math.sin(ang))/h);
+            b.classList.toggle('is-on', !b.classList.contains('tier-locked')); b.classList.remove('is-dim');
+          });
+        } else {
+          mem.forEach(b=> park.push(b));                        // the rest park along the bottom, dim
+        }
+      });
+      park.forEach((b,i)=>{ place(b, (i+1)/(park.length+1), 0.965); b.classList.add('is-dim'); b.classList.remove('is-on'); });
+    }
+
+    // ── Bubbles mode · free random drift around the whole field ──
+    function seedVelocities(){ bubs.forEach(b=> vel.set(b, { vx:rnd(-1,1)*0.00065, vy:rnd(-1,1)*0.00065 })); }
+    function stopDrift(){ if(driftRAF){ cancelAnimationFrame(driftRAF); driftRAF = 0; } }
+    function startDrift(){
+      stopDrift();
+      if(reduceMotion) return;                    // reduced motion → bubbles rest where scattered
+      if(!vel.size) seedVelocities();
+      const tick = ()=>{
+        if(display.layout !== 'bubbles'){ driftRAF = 0; return; }
+        const w = field.clientWidth, h = field.clientHeight;
+        // 1 · integrate motion (half-speed)
+        bubs.forEach(b=>{
+          const p = scatter.get(b), v = vel.get(b);
+          v.vx += rnd(-1,1)*0.00010; v.vy += rnd(-1,1)*0.00010;   // gentle random steering
+          const sp = Math.hypot(v.vx, v.vy), max = 0.0012, min = 0.0004;
+          if(sp > max){ v.vx *= max/sp; v.vy *= max/sp; }
+          else if(sp > 0 && sp < min){ v.vx *= min/sp; v.vy *= min/sp; }
+          p.x += v.vx; p.y += v.vy;
+        });
+        // 2 · keep bubbles from invading each other (AABB, resolve least-penetration axis)
+        const pad = 5;
+        const dim = bubs.map(b=> ({ hw:b.offsetWidth/2 + pad, hh:b.offsetHeight/2 + pad }));
+        for(let i=0;i<bubs.length;i++){
+          for(let j=i+1;j<bubs.length;j++){
+            const pi = scatter.get(bubs[i]), pj = scatter.get(bubs[j]);
+            const cix = pi.x*w, ciy = pi.y*h, cjx = pj.x*w, cjy = pj.y*h;
+            const dx = cjx - cix, dy = cjy - ciy;
+            const ox = (dim[i].hw + dim[j].hw) - Math.abs(dx);
+            const oy = (dim[i].hh + dim[j].hh) - Math.abs(dy);
+            if(ox > 0 && oy > 0){
+              const vi = vel.get(bubs[i]), vj = vel.get(bubs[j]);
+              if(ox <= oy){
+                const s = (dx >= 0 ? 1 : -1);
+                pi.x = (cix - s*ox/2)/w; pj.x = (cjx + s*ox/2)/w;
+                vi.vx = -Math.abs(vi.vx)*s; vj.vx = Math.abs(vj.vx)*s;
+              } else {
+                const s = (dy >= 0 ? 1 : -1);
+                pi.y = (ciy - s*oy/2)/h; pj.y = (cjy + s*oy/2)/h;
+                vi.vy = -Math.abs(vi.vy)*s; vj.vy = Math.abs(vj.vy)*s;
+              }
+            }
+          }
+        }
+        // 3 · walls + paint
+        bubs.forEach(b=>{
+          const p = scatter.get(b), v = vel.get(b);
+          if(p.x < 0.05){ p.x = 0.05; v.vx =  Math.abs(v.vx); }
+          if(p.x > 0.95){ p.x = 0.95; v.vx = -Math.abs(v.vx); }
+          if(p.y < 0.06){ p.y = 0.06; v.vy =  Math.abs(v.vy); }
+          if(p.y > 0.94){ p.y = 0.94; v.vy = -Math.abs(v.vy); }
+          place(b, p.x, p.y);
+        });
+        driftRAF = requestAnimationFrame(tick);
+      };
+      driftRAF = requestAnimationFrame(tick);
+    }
+
+    // vary the idle float so the field feels alive
+    bubs.forEach((b,i)=>{ b.style.animationDuration = (4.4 + (i%5)*0.55) + 's';
+                          b.style.animationDelay = (-(i%7)*0.6) + 's'; });
+
+    // ── category balls · multiselect (field mode only) ──
+    nodes.forEach(n=> n.addEventListener('click', e=>{
+      e.stopPropagation();
+      if(display.layout !== 'field') return;
+      const c = n.dataset.cat;
+      activeCats.has(c) ? activeCats.delete(c) : activeCats.add(c);
+      layout();
+    }));
+    // click empty field → release every cluster
+    field.addEventListener('click', e=>{ if(e.target === field && display.layout==='field' && activeCats.size){ activeCats.clear(); layout(); } });
+    document.addEventListener('keydown', e=>{ if(e.key === 'Escape' && activeCats.size){ activeCats.clear(); layout(); } });
+
+    // ── compass · open / close the mode toolbar ──
+    const compassBtn = document.getElementById('compassBtn');
+    const modeBtnsEl = document.getElementById('modeButtons');
+    compassBtn?.addEventListener('click', e=>{
+      e.stopPropagation();
+      const open = compassBtn.getAttribute('aria-expanded') !== 'true';
+      compassBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      modeBtnsEl.classList.toggle('is-open', open);
+    });
+
+    // ── compass · display modes (Field/Bubbles/List radios + Size check) ──
+    const modeBtns = [...document.querySelectorAll('.mode-btn:not(.dice-btn)')];
+    function applyModeButtons(){
+      modeBtns.forEach(b=>{
+        const m = b.dataset.mode;
+        const on = (m === 'sized') ? display.sized : (display.layout === m);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        if(b.getAttribute('role') === 'radio') b.setAttribute('aria-checked', on ? 'true' : 'false');
+      });
+    }
+    function applyMode(){
+      field.classList.toggle('mode-field',   display.layout === 'field');
+      field.classList.toggle('mode-bubbles', display.layout === 'bubbles');
+      field.classList.toggle('mode-list',    display.layout === 'list');
+      field.classList.toggle('sized', display.sized);
+      if(display.layout === 'bubbles'){ layout(); startDrift(); }
+      else { stopDrift(); layout(); }
+    }
+    modeBtns.forEach(b=> b.addEventListener('click', e=>{
+      e.stopPropagation();
+      const m = b.dataset.mode;
+      if(m === 'field' || m === 'bubbles' || m === 'list') display.layout = m;
+      else if(m === 'sized') display.sized = !display.sized;
+      applyModeButtons(); applyMode();
+    }));
+
+    // ── dice · shuffle positions, sizes and list order ──
+    const shuffle = document.getElementById('shuffle');
+    shuffle?.addEventListener('click', ()=>{
+      genScatter(); genSizes(); genListOrder(); seedVelocities();
+      if(display.layout === 'field') activeCats.clear();
+      shuffle.classList.add('is-flash');
+      setTimeout(()=> shuffle.classList.remove('is-flash'), 450);
+      layout();
+    });
+
+    // ── tier stepper · progressive reveal (mini → super, cumulative) ──
+    const TIERS = ['mini','basic','normal','advanced','super'];
+    const tierSteps = [...document.querySelectorAll('.tier-step')];
+    let tierSel = 'mini';
+    function applyTier(){
+      const si = TIERS.indexOf(tierSel);
+      bubs.forEach(b=> b.classList.toggle('tier-locked', TIERS.indexOf(b.dataset.tier) > si));
+      tierSteps.forEach(s=>{
+        const ti = TIERS.indexOf(s.dataset.tier);
+        s.setAttribute('aria-pressed', ti === si ? 'true' : 'false');
+        s.classList.toggle('is-included', ti < si);
+      });
+    }
+    tierSteps.forEach(s=> s.addEventListener('click', e=>{
+      e.stopPropagation();
+      tierSel = s.dataset.tier;
+      applyTier();
+      layout();                                   // re-evaluate is-on for any orbiting cluster
+    }));
+
+    let raf = 0;
+    window.addEventListener('resize', ()=>{ cancelAnimationFrame(raf); raf = requestAnimationFrame(layout); });
+    // language switch can change node widths slightly → re-place
+    document.querySelectorAll('input[name="ui-lang"]').forEach(r=> r.addEventListener('change', ()=> requestAnimationFrame(layout)));
+
+    genScatter(); genSizes(); genListOrder();
+    applyModeButtons();
+    applyTier();
+    field.classList.add('mode-field');
+    requestAnimationFrame(layout);   // first paint with real field size
+  })();
+  </script>
+  <script src="../appy/flove-theme.js"></script>
+</body>
+</html>

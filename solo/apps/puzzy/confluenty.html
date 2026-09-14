@@ -1,0 +1,1315 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Puzzy — Confluences · FLOVE</title>
+  <link rel="icon" type="image/svg+xml" href="favicon-confluenty.svg">
+  <style data-flove-inlined="flove.css">
+/* inlined from apps/flove.css */
+/* ============================================================
+   🌱 flove.css · shared identity layer for all FLOVE demos
+   --------------------------------------------------------------
+   Design intent
+   - One cohesive frame around 13 very different apps.
+   - Each app keeps its own palette by overriding `--app-*` tokens
+     in its local `:root`. This file only paints the common skin.
+   - Two visual primitives identify the family everywhere:
+       1. The 🌱 sprout mark (brand)
+       2. The flove-bar at the very top (back to launcher + app name)
+   - A common motion vocabulary (gentle lift, soft fade, wiggle).
+   ============================================================ */
+
+:root {
+  /* The sprout — flove brand mark. Used as logo glyph everywhere. */
+  --flove-mark: "🌱";
+
+  /* Per-app overridable accent. Apps redeclare these. */
+  --app-accent:        #6ee7b7;
+  --app-accent-soft:   #a7f3d0;
+  --app-ink-on-accent: #042418;
+
+  /* Family geometry & motion (constant across apps) */
+  --flove-radius-sm: 12px;
+  --flove-radius:    20px;
+  --flove-radius-lg: 28px;
+  --flove-radius-pill: 999px;
+  --flove-ease:    cubic-bezier(.2,.8,.2,1);
+  --flove-fast:    .15s var(--flove-ease);
+  --flove-medium:  .25s var(--flove-ease);
+  --flove-slow:    .4s  var(--flove-ease);
+
+  /* Family typography. Apps may override font-family but should keep these scales. */
+  --flove-font-ui: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --flove-font-display: 'Georgia', 'Times New Roman', serif;
+}
+
+/* ============================================================
+   THE FLOVE BAR — a thin sticky strip at the very top of every
+   app. Holds the back-to-launcher link, the sprout brand,
+   and the app name. Lives ABOVE every app's own header.
+   ============================================================ */
+.flove-bar {
+  position: sticky;
+  top: 0;
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  font-family: var(--flove-font-ui);
+  font-size: 13px;
+  letter-spacing: .3px;
+  background: rgba(255,255,255,.55);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  color: #1a1a1a;
+}
+
+/* Auto dark variant when app body is dark */
+@media (prefers-color-scheme: dark) {
+  .flove-bar.flove-bar--auto {
+    background: rgba(10,12,18,.55);
+    border-bottom-color: rgba(255,255,255,.08);
+    color: #e9ecf3;
+  }
+}
+.flove-bar--dark {
+  background: rgba(10,12,18,.6);
+  border-bottom-color: rgba(255,255,255,.08);
+  color: #e9ecf3;
+}
+
+.flove-bar a.flove-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: inherit;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--flove-radius-pill);
+  transition: background var(--flove-fast), transform var(--flove-fast);
+}
+.flove-bar a.flove-home:hover {
+  background: var(--app-accent-soft);
+  color: var(--app-ink-on-accent);
+  transform: translateX(-2px);
+}
+.flove-bar .flove-mark {
+  font-size: 16px;
+  color: var(--app-accent);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--app-accent) 35%, transparent));
+}
+.flove-bar .flove-app-name {
+  font-weight: 500;
+  opacity: .85;
+}
+.flove-bar .flove-spacer { flex: 1; }
+.flove-bar .flove-tag {
+  font-size: 11px;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  opacity: .55;
+}
+
+/* ============================================================
+   SPROUT ANIMATION — used wherever a `.flove-sprout` lives
+   (launcher hero, footer badges, splash). Subtle slow rotation.
+   ============================================================ */
+.flove-sprout {
+  display: inline-block;
+  font-style: normal;
+  animation: flove-spin 12s linear infinite;
+  transform-origin: center;
+  color: var(--app-accent);
+}
+.flove-sprout.flove-sprout--still { animation: none; }
+@keyframes flove-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   FLOVE FOOTER BADGE — small "back to launcher" pill that any
+   app can drop in at the bottom of the page.
+   ============================================================ */
+.flove-footer-badge {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-family: var(--flove-font-ui);
+  font-size: 12px;
+  letter-spacing: .4px;
+  color: #1a1a1a;
+  text-decoration: none;
+  background: rgba(255,255,255,.7);
+  border: 1px solid rgba(0,0,0,.06);
+  border-radius: var(--flove-radius-pill);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 20px rgba(0,0,0,.08);
+  transition: transform var(--flove-fast), box-shadow var(--flove-fast);
+}
+.flove-footer-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0,0,0,.12);
+}
+.flove-footer-badge--dark {
+  background: rgba(20,24,32,.7);
+  color: #e9ecf3;
+  border-color: rgba(255,255,255,.08);
+}
+
+/* ============================================================
+   COMMON UTILITIES — kept tiny on purpose so that each app's
+   own bespoke styles still rule. These are opt-in classes.
+   ============================================================ */
+
+/* Soft glass card */
+.flove-card {
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+  border: 1px solid rgba(127,127,127,.18);
+  border-radius: var(--flove-radius-lg);
+  padding: 18px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.08);
+}
+
+/* Pill shape for tags / chips / nav items */
+.flove-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.22);
+  background: rgba(255,255,255,.04);
+  cursor: pointer;
+  transition: transform var(--flove-fast), background var(--flove-fast), border-color var(--flove-fast);
+}
+.flove-pill:hover { transform: translateY(-1px); border-color: var(--app-accent); }
+.flove-pill[aria-pressed="true"], .flove-pill.is-active {
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  border-color: var(--app-accent);
+}
+
+/* A primary action button — shared shape, app paints color */
+.flove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid var(--app-accent);
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  font-weight: 600;
+  font-family: var(--flove-font-ui);
+  cursor: pointer;
+  transition: transform var(--flove-fast), box-shadow var(--flove-fast), filter var(--flove-fast);
+}
+.flove-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px color-mix(in srgb, var(--app-accent) 40%, transparent); }
+.flove-btn:active { transform: translateY(0); filter: brightness(.95); }
+.flove-btn--ghost {
+  background: transparent;
+  color: inherit;
+  border-color: rgba(127,127,127,.3);
+}
+.flove-btn--ghost:hover { border-color: var(--app-accent); color: var(--app-accent); }
+
+/* Tiny floating toast feedback (optional, used by some apps) */
+.flove-toast {
+  position: fixed;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(20,22,30,.92);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: var(--flove-radius-pill);
+  font-size: 13px;
+  font-family: var(--flove-font-ui);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--flove-medium), transform var(--flove-medium);
+  z-index: 999;
+  box-shadow: 0 12px 30px rgba(0,0,0,.25);
+}
+.flove-toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Wiggle on tap, used by playful elements (launcher tiles, brand mark, …) */
+@keyframes flove-wiggle {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-3deg); }
+  40% { transform: rotate(3deg); }
+  60% { transform: rotate(-2deg); }
+  80% { transform: rotate(2deg); }
+}
+.flove-wiggle { animation: flove-wiggle .4s ease-out; }
+
+/* Soft float used in the launcher tiles and avatars */
+@keyframes flove-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Reduced motion: disable all flove animations */
+@media (prefers-reduced-motion: reduce) {
+  .flove-sprout, .flove-wiggle { animation: none !important; }
+  *, *::before, *::after { transition-duration: .01ms !important; }
+}
+
+/* Mobile: hide the bottom badge so it doesn't compete with app UI */
+@media (max-width: 480px) {
+  .flove-footer-badge { display: none; }
+  .flove-bar { font-size: 12px; padding: 6px 10px; }
+}
+
+/* ============================================================
+   FLOVE-IO ACTION BAR — emitted by flove-io.js (F0).
+   Sits inside a form, gives the user Copy / Save / Share / Publish
+   over the form's current FloveElement payload.
+   ============================================================ */
+.flove-action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  margin-top: 14px;
+  border-radius: var(--flove-radius);
+  background: rgba(127,127,127,.06);
+  border: 1px solid rgba(127,127,127,.18);
+  font-family: var(--flove-font-ui);
+}
+.flove-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid rgba(127,127,127,.3);
+  background: rgba(255,255,255,.04);
+  color: inherit;
+  font-family: inherit;
+  font-size: 13px;
+  border-radius: var(--flove-radius-pill);
+  cursor: pointer;
+  transition: transform var(--flove-fast),
+              border-color var(--flove-fast),
+              background var(--flove-fast);
+}
+.flove-action-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--app-accent);
+}
+.flove-action-btn:active { transform: translateY(0); }
+.flove-action-btn--primary {
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  border-color: var(--app-accent);
+  font-weight: 600;
+}
+.flove-action-btn--primary:hover { filter: brightness(1.05); }
+.flove-action-btn[hidden] { display: none; }
+
+/* Toast variant used by flove-io (slightly tighter, top of footer) */
+.flove-toast--io { bottom: 80px; }
+
+/* ============================================================
+   FLOVE SHELL — feature-driven UI rendered by flove-shell.js.
+   Per-textarea voice + add-another · phrase card · 6-button bar ·
+   insight result · publish modal · format popover.
+   ============================================================ */
+
+/* per-textarea / per-input controls ────────────────────────── */
+.flove-field-wrap {
+  position: relative;
+  display: block;
+}
+.flove-field-wrap > textarea,
+.flove-field-wrap > input {
+  width: 100%;
+  padding-right: 88px;     /* room for the two field buttons */
+}
+.flove-field-tools {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 4px;
+  z-index: 1;
+}
+.flove-field-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.25);
+  background: rgba(255,255,255,.7);
+  color: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--flove-fast), border-color var(--flove-fast),
+              background var(--flove-fast);
+  padding: 0;
+  line-height: 1;
+}
+.flove-field-btn:hover {
+  border-color: var(--app-accent);
+  transform: translateY(-1px);
+}
+.flove-field-btn--voice.is-recording {
+  background: #fb7185;
+  color: #fff;
+  border-color: #fb7185;
+  animation: flove-pulse 1.4s infinite;
+}
+@keyframes flove-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251,113,133,.45); }
+  50%      { box-shadow: 0 0 0 8px rgba(251,113,133,0); }
+}
+
+/* phrase card (phrase + 6-button bar + result panel) ────────── */
+.flove-phrase-card {
+  margin: 18px 0;
+  padding: 16px;
+  background: linear-gradient(180deg, var(--app-accent-soft) 0%,
+                                      color-mix(in srgb, var(--app-accent-soft) 30%, transparent) 100%);
+  border: 1px solid color-mix(in srgb, var(--app-accent) 35%, transparent);
+  border-radius: var(--flove-radius-lg);
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+  font-family: var(--flove-font-ui);
+}
+.flove-phrase {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  font-family: ui-monospace, 'JetBrains Mono', Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--app-ink-on-accent);
+  background: rgba(255,255,255,.6);
+  border-radius: var(--flove-radius);
+  word-break: break-word;
+  min-height: 1.55em;
+}
+.flove-phrase.is-magic {
+  background: linear-gradient(110deg, rgba(255,255,255,.55), rgba(255,255,255,.85));
+  font-style: italic;
+}
+
+/* six-button action bar (overrides the 4-button defaults) ──── */
+.flove-action-bar--six {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  padding: 6px;
+  background: rgba(255,255,255,.5);
+  border-radius: var(--flove-radius);
+  border: 1px solid rgba(127,127,127,.18);
+  margin-top: 0;
+}
+.flove-action-bar--six .flove-action-btn {
+  justify-content: center;
+  padding: 10px 6px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+@media (max-width: 540px) {
+  .flove-action-bar--six .flove-action-btn span:nth-child(2) { display: none; }
+}
+
+/* result panel (insight, publish progress) ─────────────────── */
+.flove-result {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,.7);
+  border: 1px solid rgba(127,127,127,.22);
+  border-radius: var(--flove-radius);
+}
+.flove-result[hidden] { display: none; }
+.flove-result__title {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-ink-on-accent);
+}
+.flove-result__lede {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(0,0,0,.6);
+}
+.flove-result__body {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+.flove-result__list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.flove-result__error {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 13px;
+}
+.flove-result__row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* modal (insight config, publish multi-select) ─────────────── */
+.flove-modal {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  font-family: var(--flove-font-ui);
+}
+.flove-modal__backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.flove-modal__panel {
+  position: relative;
+  width: min(540px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: #fff;
+  color: #1a1a1a;
+  border-radius: var(--flove-radius-lg);
+  padding: 22px;
+  box-shadow: 0 30px 60px rgba(0,0,0,.3);
+  display: grid;
+  gap: 12px;
+}
+.flove-modal__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.flove-modal__lede {
+  margin: 0;
+  color: #52606d;
+  font-size: .9rem;
+}
+.flove-modal label {
+  display: grid;
+  gap: 4px;
+  font-size: .85rem;
+  color: #52606d;
+}
+.flove-modal input,
+.flove-modal textarea,
+.flove-modal select {
+  padding: 10px 12px;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: var(--flove-radius);
+  font: inherit;
+  background: #fff;
+  color: #1a1a1a;
+}
+.flove-modal__row {
+  display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;
+  padding-top: 6px;
+  border-top: 1px solid rgba(0,0,0,.06);
+}
+
+/* publish multi-select list ────────────────────────────────── */
+.flove-publish-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.flove-publish-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: var(--flove-radius);
+  background: rgba(0,0,0,.02);
+}
+.flove-publish-row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-direction: row;
+  font-size: .92rem;
+}
+.flove-publish-kind {
+  font-size: .72rem;
+  letter-spacing: .3px;
+  color: #6b7280;
+  text-transform: uppercase;
+  background: rgba(0,0,0,.04);
+  border-radius: var(--flove-radius-pill);
+  padding: 2px 8px;
+}
+.flove-publish-add {
+  border: 1px dashed rgba(0,0,0,.15);
+  border-radius: var(--flove-radius);
+  padding: 10px 12px;
+}
+.flove-publish-add summary {
+  cursor: pointer;
+  font-size: .85rem;
+  color: #4b5563;
+}
+.flove-publish-add[open] summary { margin-bottom: 8px; }
+.flove-publish-add label { margin-bottom: 6px; }
+
+/* enhanced flove-bar — center categories + right menu ───────── */
+.flove-bar--enhanced .flove-mark,
+.flove-bar--enhanced .flove-sprout {
+  user-select: none;
+  transition: transform var(--flove-fast);
+}
+.flove-bar--enhanced .flove-mark:hover,
+.flove-bar--enhanced .flove-sprout:hover { transform: rotate(20deg) scale(1.08); }
+
+.flove-categories {
+  flex: 1 1 auto;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0 6px;
+  scroll-snap-type: x proximity;
+  justify-content: center;
+}
+.flove-categories::-webkit-scrollbar { display: none; }
+.flove-cat-chip {
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+  padding: 4px 12px;
+  font-size: 12px;
+  letter-spacing: .2px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.25);
+  background: rgba(255,255,255,.5);
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform var(--flove-fast),
+              background var(--flove-fast),
+              border-color var(--flove-fast);
+}
+.flove-cat-chip:hover { border-color: var(--app-accent); transform: translateY(-1px); }
+.flove-cat-chip.is-active {
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  border-color: var(--app-accent);
+}
+
+.flove-menu-btn {
+  width: 36px; height: 36px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.22);
+  background: rgba(255,255,255,.5);
+  color: inherit;
+  font-size: 18px;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--flove-fast), border-color var(--flove-fast);
+}
+.flove-menu-btn:hover { background: var(--app-accent-soft); border-color: var(--app-accent); }
+.flove-menu-btn[aria-expanded="true"] { background: var(--app-accent); color: var(--app-ink-on-accent); }
+
+.flove-menu {
+  width: min(280px, calc(100vw - 24px));
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: var(--flove-radius);
+  box-shadow: 0 18px 40px rgba(0,0,0,.18);
+  padding: 6px;
+  z-index: 200;
+  font-family: var(--flove-font-ui);
+}
+.flove-menu[hidden] { display: none; }
+.flove-menu__section {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.flove-menu__section:last-child { border-bottom: 0; }
+.flove-menu__title {
+  margin: 0 8px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: #6b7280;
+}
+.flove-menu__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 9px 10px;
+  font: inherit;
+  font-size: .9rem;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: var(--flove-radius);
+  cursor: pointer;
+  text-decoration: none;
+}
+.flove-menu__item:hover {
+  background: var(--app-accent-soft);
+  color: var(--app-ink-on-accent);
+}
+
+@media (max-width: 540px) {
+  .flove-categories { gap: 4px; padding: 0 2px; }
+  .flove-cat-chip { padding: 3px 10px; font-size: 11px; }
+}
+
+/* format popover ────────────────────────────────────────────── */
+.flove-popover {
+  z-index: 999;
+  width: 220px;
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: var(--flove-radius);
+  box-shadow: 0 14px 30px rgba(0,0,0,.18);
+  padding: 4px;
+  font-family: var(--flove-font-ui);
+}
+.flove-popover__item {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: var(--flove-radius);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.flove-popover__item:hover {
+  background: var(--app-accent-soft);
+  color: var(--app-ink-on-accent);
+}
+
+</style>
+  <style>
+    :root{
+      /* flove identity overrides — Puzzy: violet accent, teal flourish, on a deep canvas */
+      --app-accent:        #8d89ff;
+      --app-accent-soft:   #c9c6ff;
+      --app-ink-on-accent: #0b0b14;
+
+      /* Puzzy local palette (greyer, neutral canvas) */
+      --bg:#16171c; --panel:#1c1e25; --ink:#e9eaf2; --muted:#9a9eaa;
+      --line:#2c2f39; --field:#23252d; --accent2:#70f0d3;
+
+      /* Confluence by column — GREY at the edges, colour intensifying toward
+         the centre so column 4 reads as the vertical confluence focus.
+         (cols 1-2 / 6-7 grey · 3-5 coloured · 4 = teal confluence centre) */
+      --c1:#565a68; /* grey */
+      --c2:#6a6790; /* grey-violet */
+      --c3:#8d89ff; /* violet (app accent) */
+      --c4:#70f0d3; /* teal — confluence centre (accent2) */
+      --c5:#74d6e6; /* cyan */
+      --c6:#5f7796; /* grey-blue */
+      --c7:#565a68; /* grey (mirror of c1) */
+
+      /* Ink per button: light ink on the dark grey edges, dark ink on the
+         bright coloured centre columns. */
+      --g1:var(--ink); --g2:var(--ink);
+      --g3:var(--app-ink-on-accent); --g4:var(--app-ink-on-accent); --g5:var(--app-ink-on-accent);
+      --g6:var(--ink); --g7:var(--ink);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--ink);
+      background:
+        radial-gradient(900px 650px at 50% -10%, rgba(112,240,211,.10), transparent 55%),
+        radial-gradient(1000px 700px at 110% -10%, rgba(141,137,255,.06), transparent 60%),
+        radial-gradient(800px 600px at -10% 120%, rgba(112,240,211,.05), transparent 50%),
+        var(--bg);
+      font-family:var(--flove-font-ui); letter-spacing:.2px;
+    }
+
+    /* i18n — pure CSS (§13.2) */
+    .t-es{ display:none }
+    body:has(#ui-lang-es:checked) .t-en{ display:none }
+    body:has(#ui-lang-es:checked) .t-es{ display:inline }
+
+    /* language toggle inside the flove-bar */
+    .lang{ display:inline-flex; gap:2px; margin-left:auto }
+    .lang input{ position:absolute; opacity:0; pointer-events:none }
+    .lang label{
+      font-size:11px; font-weight:600; letter-spacing:.4px; padding:3px 9px;
+      border-radius:var(--flove-radius-pill); cursor:pointer; color:var(--muted);
+      border:1px solid transparent;
+    }
+    #ui-lang-en:checked ~ label[for=ui-lang-en],
+    #ui-lang-es:checked ~ label[for=ui-lang-es]{
+      color:var(--app-ink-on-accent); background:var(--app-accent); border-color:var(--app-accent);
+    }
+
+    /* header */
+    .top{ max-width:1100px; margin:1.4rem auto .4rem; padding:0 1rem }
+    .top h1{
+      margin:.2rem 0; font-size:1.9rem; letter-spacing:.5px;
+      background:linear-gradient(180deg,#fff,#cfc9ff);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    .lede{ color:var(--muted); margin:.2rem 0 0 }
+
+    /* how-to hint */
+    .hint{
+      max-width:1100px; margin:1rem auto 0; padding:.7rem .9rem;
+      color:var(--muted); font-size:.9rem;
+      border:1px dashed var(--line); border-radius:var(--flove-radius);
+      background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.02));
+    }
+
+    /* Board (lists stacked vertically) */
+    .wrap{ max-width:1100px; margin:.8rem auto 4rem; padding:0 1rem }
+    .board{ display:grid; gap:14px }
+
+    /* Each list = 7 equal columns */
+    .list{
+      margin:0; padding:10px; list-style:none;
+      border-radius:var(--flove-radius);
+      display:grid; grid-template-columns:repeat(7,1fr);
+      align-items:center; min-height:72px;
+      background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+      border:1px solid var(--line);
+    }
+
+    /* BIG, filled "buttons" */
+    .list > li{
+      justify-self:stretch; align-self:center; text-align:center;
+      padding:.85rem 1.1rem; font-weight:700; font-size:1.05rem;
+      border-radius:var(--flove-radius-sm); border:none;
+      background:var(--col, #888); color:var(--fg, var(--app-ink-on-accent));
+      box-shadow:
+        0 10px 22px rgba(0,0,0,.35),
+        inset 0 1px 0 rgba(255,255,255,.25);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+
+    /* ---------- COLOR BY COLUMN + ink for text ---------- */
+    /* len-1: [col4] */
+    .list.len-1 > li:nth-child(1){ grid-column:4/5; --col:var(--c4); --fg:var(--g4); }
+
+    /* len-2: [col1, col7] */
+    .list.len-2 > li:nth-child(1){ grid-column:1/2; --col:var(--c1); --fg:var(--g1); }
+    .list.len-2 > li:nth-child(2){ grid-column:7/8; --col:var(--c7); --fg:var(--g7); }
+
+    /* len-3: [col1, col4, col7] */
+    .list.len-3 > li:nth-child(1){ grid-column:1/2; --col:var(--c1); --fg:var(--g1); }
+    .list.len-3 > li:nth-child(2){ grid-column:4/5; --col:var(--c4); --fg:var(--g4); }
+    .list.len-3 > li:nth-child(3){ grid-column:7/8; --col:var(--c7); --fg:var(--g7); }
+
+    /* len-4: [col1, col3, col5, col7] */
+    .list.len-4 > li:nth-child(1){ grid-column:1/2; --col:var(--c1); --fg:var(--g1); }
+    .list.len-4 > li:nth-child(2){ grid-column:3/4; --col:var(--c3); --fg:var(--g3); }
+    .list.len-4 > li:nth-child(3){ grid-column:5/6; --col:var(--c5); --fg:var(--g5); }
+    .list.len-4 > li:nth-child(4){ grid-column:7/8; --col:var(--c7); --fg:var(--g7); }
+
+    /* len-5: [col1, col3, col4, col5, col7] */
+    .list.len-5 > li:nth-child(1){ grid-column:1/2; --col:var(--c1); --fg:var(--g1); }
+    .list.len-5 > li:nth-child(2){ grid-column:3/4; --col:var(--c3); --fg:var(--g3); }
+    .list.len-5 > li:nth-child(3){ grid-column:4/5; --col:var(--c4); --fg:var(--g4); }
+    .list.len-5 > li:nth-child(4){ grid-column:5/6; --col:var(--c5); --fg:var(--g5); }
+    .list.len-5 > li:nth-child(5){ grid-column:7/8; --col:var(--c7); --fg:var(--g7); }
+
+    /* len-6: [col1, col2, col3, col5, col6, col7] */
+    .list.len-6 > li:nth-child(1){ grid-column:1/2; --col:var(--c1); --fg:var(--g1); }
+    .list.len-6 > li:nth-child(2){ grid-column:2/3; --col:var(--c2); --fg:var(--g2); }
+    .list.len-6 > li:nth-child(3){ grid-column:3/4; --col:var(--c3); --fg:var(--g3); }
+    .list.len-6 > li:nth-child(4){ grid-column:5/6; --col:var(--c5); --fg:var(--g5); }
+    .list.len-6 > li:nth-child(5){ grid-column:6/7; --col:var(--c6); --fg:var(--g6); }
+    .list.len-6 > li:nth-child(6){ grid-column:7/8; --col:var(--c7); --fg:var(--g7); }
+
+    /* len-7: [col1..col7] */
+    .list.len-7 > li:nth-child(1){ grid-column:1/2; --col:var(--c1); --fg:var(--g1); }
+    .list.len-7 > li:nth-child(2){ grid-column:2/3; --col:var(--c2); --fg:var(--g2); }
+    .list.len-7 > li:nth-child(3){ grid-column:3/4; --col:var(--c3); --fg:var(--g3); }
+    .list.len-7 > li:nth-child(4){ grid-column:4/5; --col:var(--c4); --fg:var(--g4); }
+    .list.len-7 > li:nth-child(5){ grid-column:5/6; --col:var(--c5); --fg:var(--g5); }
+    .list.len-7 > li:nth-child(6){ grid-column:6/7; --col:var(--c6); --fg:var(--g6); }
+    .list.len-7 > li:nth-child(7){ grid-column:7/8; --col:var(--c7); --fg:var(--g7); }
+    /* len-7 only: the 6th's right border wins over the 7th's left edge — it
+       sits in front (z-index) and the 7th is pulled under it. */
+    .list.len-7 > li:nth-child(6){ position:relative; z-index:2; border-right:2px solid var(--line); }
+    .list.len-7 > li:nth-child(7){ border-left:0; margin-left:-2px; }
+
+    /* ---------- Confluence centre: push the column-4 buttons forward ----------
+       (odd lengths land an item on column 4; even lengths skip the centre) */
+    .list.len-1 > li:nth-child(1),
+    .list.len-3 > li:nth-child(2),
+    .list.len-5 > li:nth-child(3),
+    .list.len-7 > li:nth-child(4){
+      position:relative; z-index:2;
+      transform:scale(1.1);
+      font-size:1.2rem;
+      box-shadow:
+        0 0 0 2px var(--accent2),
+        0 0 22px rgba(112,240,211,.45),
+        0 16px 32px rgba(0,0,0,.5);
+      filter:saturate(1.15) brightness(1.06);
+    }
+
+    /* ---------- Animate: a confluence wave on the len-3 / len-5 / len-7 lists.
+       The peak travels from the centre OUT to the end items and back:
+         · centre (3) starts peaked, then slowly eases down to its rest size;
+         · 1 & 5 grow more quickly, up to the size 3 had at rest;
+         · 2 & 4  ease down accordingly, then back up;
+       then it reverses (centre rises, 1 & 5 fall back) and loops.
+       Rest/default ≈ [1, 1.25, 1.5, 1.25, 1]. Peak-out ≈ [1.5, 1, 1, 1, 1.5]. */
+    @keyframes confWave-mid  { 0%,100%{ transform:scale(1.5)  } 50%{ transform:scale(1) } }
+    @keyframes confWave-flank{ 0%,100%{ transform:scale(1.25) } 50%{ transform:scale(1) } }
+    @keyframes confWave-edge { 0%,100%{ transform:scale(1)    } 40%,60%{ transform:scale(1.5) } }
+    /* len-7 has two intermediate rings between centre and edges */
+    @keyframes confWave-r3   { 0%,100%{ transform:scale(1.3)  } 50%{ transform:scale(1.15) } } /* inner ring */
+    @keyframes confWave-r2   { 0%,100%{ transform:scale(1.15) } 50%{ transform:scale(1.3)  } } /* outer ring */
+    body.animating .list > li{ transform-origin:center center; position:relative; }
+
+    /* len-3: centre peaks, the two edges grow out (no middle ring) */
+    body.animating .list.len-3 > li:nth-child(1){ animation:confWave-edge 7s ease-in-out infinite; z-index:1 }
+    body.animating .list.len-3 > li:nth-child(2){ animation:confWave-mid  7s ease-in-out infinite; z-index:3 }
+    body.animating .list.len-3 > li:nth-child(3){ animation:confWave-edge 7s ease-in-out infinite; z-index:1 }
+
+    /* len-5: centre · flank ring · edges */
+    body.animating .list.len-5 > li:nth-child(1){ animation:confWave-edge  7s ease-in-out infinite; z-index:1 }
+    body.animating .list.len-5 > li:nth-child(2){ animation:confWave-flank 7s ease-in-out infinite; z-index:2 }
+    body.animating .list.len-5 > li:nth-child(3){ animation:confWave-mid   7s ease-in-out infinite; z-index:3 }
+    body.animating .list.len-5 > li:nth-child(4){ animation:confWave-flank 7s ease-in-out infinite; z-index:2 }
+    body.animating .list.len-5 > li:nth-child(5){ animation:confWave-edge  7s ease-in-out infinite; z-index:1 }
+
+    /* len-7: centre · inner ring (3,5) · outer ring (2,6) · edges (1,7) */
+    body.animating .list.len-7 > li:nth-child(1){ animation:confWave-edge 7s ease-in-out infinite; z-index:1 }
+    body.animating .list.len-7 > li:nth-child(2){ animation:confWave-r2   7s ease-in-out infinite; z-index:2 }
+    body.animating .list.len-7 > li:nth-child(3){ animation:confWave-r3   7s ease-in-out infinite; z-index:3 }
+    body.animating .list.len-7 > li:nth-child(4){ animation:confWave-mid  7s ease-in-out infinite; z-index:4 }
+    body.animating .list.len-7 > li:nth-child(5){ animation:confWave-r3   7s ease-in-out infinite; z-index:3 }
+    body.animating .list.len-7 > li:nth-child(6){ animation:confWave-r2   7s ease-in-out infinite; z-index:2 }
+    body.animating .list.len-7 > li:nth-child(7){ animation:confWave-edge 7s ease-in-out infinite; z-index:1 }
+
+    .anim-btn{
+      font:inherit; font-size:.85rem; font-weight:700; letter-spacing:.3px; padding:6px 16px;
+      border-radius:var(--flove-radius-pill,999px); border:1px solid var(--line);
+      background:var(--field); color:var(--muted); cursor:pointer;
+    }
+    .anim-btn:hover{ border-color:var(--accent2); color:var(--ink); }
+    .anim-btn[aria-pressed="true"]{ background:var(--accent2); border-color:var(--accent2); color:var(--app-ink-on-accent); }
+    .anim-btn:focus-visible{ outline:2px solid var(--app-accent-soft); outline-offset:2px; }
+
+    @media (prefers-reduced-motion: reduce){
+      body.animating .list > li{ animation:none !important; }
+    }
+
+    /* ---------- Controls (node bar · Top · Create) ---------- */
+    .controls{ max-width:1100px; margin:1.4rem auto .2rem; padding:0 1rem; display:flex; flex-direction:column; align-items:center; gap:16px; }
+    .controls-row{ display:flex; align-items:center; justify-content:center; gap:18px; flex-wrap:wrap; }
+
+    /* node bar — 3 / 5 / 7, each segment fully clickable, multi-checkable */
+    .nodebar{ position:relative; display:flex; align-items:center; flex:1 1 320px; max-width:440px; }
+    .nodebar::before{
+      content:""; position:absolute; left:9%; right:9%; top:24px; height:3px;
+      background:var(--line); border-radius:2px; z-index:0;
+    }
+    .node{ position:relative; z-index:1; flex:1; display:flex; flex-direction:column;
+      align-items:center; gap:8px; padding:6px 4px 4px; cursor:pointer; }
+    .node input{ position:absolute; opacity:0; pointer-events:none; }
+    .node-dot{
+      width:30px; height:30px; border-radius:50%;
+      border:2px solid var(--line); background:var(--field);
+      transition:background var(--flove-fast,.15s), border-color var(--flove-fast,.15s), box-shadow var(--flove-fast,.15s);
+    }
+    .node-num{ font-weight:700; font-size:.95rem; color:var(--muted); transition:color var(--flove-fast,.15s); }
+    .node input:checked ~ .node-dot{
+      background:var(--app-accent); border-color:var(--app-accent);
+      box-shadow:0 0 0 4px rgba(141,137,255,.22);
+    }
+    .node input:checked ~ .node-num{ color:var(--ink); }
+    .node:focus-within .node-dot{ outline:2px solid var(--app-accent-soft); outline-offset:2px; }
+
+    /* Top — smaller pill toggle (shows the favourites when on) */
+    .top-btn{
+      font-size:.85rem; font-weight:700; letter-spacing:.3px; padding:6px 16px;
+      border-radius:var(--flove-radius-pill,999px); border:1px solid var(--line);
+      background:var(--field); color:var(--muted); cursor:pointer; user-select:none;
+    }
+    body:has(#top-toggle:checked) .top-btn{
+      background:var(--app-accent); border-color:var(--app-accent); color:var(--app-ink-on-accent);
+    }
+    .top-btn:focus-visible{ outline:2px solid var(--app-accent-soft); outline-offset:2px; }
+
+    /* Create — primary */
+    .create-btn{
+      align-self:center; font:inherit; font-weight:700; font-size:1rem; padding:.7rem 1.5rem;
+      border-radius:var(--flove-radius-sm,12px); border:none;
+      background:var(--app-accent); color:var(--app-ink-on-accent); cursor:pointer;
+      box-shadow:0 8px 20px rgba(141,137,255,.3);
+    }
+    .create-btn:hover{ filter:brightness(1.06); }
+    .create-btn:focus-visible{ outline:2px solid var(--app-accent-soft); outline-offset:3px; }
+
+    /* Created rows always visible, above everything */
+    #rows{ display:grid; gap:14px; }
+    #rows:empty{ display:none; }
+    /* Favourites: hidden until "Top"; then only the rows whose item-count
+       matches a checked node (3 / 5 / 7) are shown. */
+    #favs{ display:none; }
+    body:has(#top-toggle:checked) #favs{ display:grid; gap:14px; }
+    body:has(#top-toggle:checked) #favs .list{ display:none; }
+    body:has(#top-toggle:checked):has(.node-cb[value="3"]:checked) #favs .list.len-3{ display:grid; }
+    body:has(#top-toggle:checked):has(.node-cb[value="5"]:checked) #favs .list.len-5{ display:grid; }
+    body:has(#top-toggle:checked):has(.node-cb[value="7"]:checked) #favs .list.len-7{ display:grid; }
+
+    /* Created row = list + side controls (up / down / duplicate) */
+    .crow{ display:flex; align-items:stretch; gap:8px; }
+    .crow .list{ flex:1; margin:0; }
+    .crow-side{ display:flex; flex-direction:column; justify-content:center; gap:5px; }
+    .crow-side button{
+      width:36px; height:26px; border-radius:8px; border:1px solid var(--line);
+      background:var(--field); color:var(--ink); cursor:pointer; line-height:1;
+      display:grid; place-items:center; font-size:.95rem;
+      transition:border-color var(--flove-fast,.15s), color var(--flove-fast,.15s);
+    }
+    .crow-side button:hover{ border-color:var(--app-accent); color:var(--app-accent); }
+    .crow-side .cr-dup{ font-weight:700; }
+
+    /* Editable placeholder cells */
+    .list > li.ph{ outline:none; min-width:0; }
+    .list > li.ph:empty::before{ content:attr(data-ph); opacity:.5; font-weight:600; }
+    .list > li.ph:focus{ box-shadow:0 0 0 3px var(--app-accent-soft), 0 10px 22px rgba(0,0,0,.35); }
+
+    /* ---------- Standard Summary (§13.12, no Views) ---------- */
+    .step-panel.is-summary{
+      max-width:1100px; margin:2.2rem auto 4rem; padding:1.4rem 1.3rem;
+      border:1px solid var(--line); border-radius:var(--flove-radius,20px);
+      background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+    }
+    /* Collapsible header — centred title that toggles the summary open. */
+    .summary-head{
+      cursor:pointer; list-style:none; user-select:none;
+      display:flex; align-items:center; justify-content:center; gap:.5rem;
+    }
+    .summary-head::-webkit-details-marker{ display:none; }
+    .summary-head::after{
+      content:"▾"; color:var(--muted); font-size:.8rem; transition:transform .2s ease;
+    }
+    details.step-panel.is-summary[open] .summary-head::after{ transform:rotate(180deg); }
+    .step-panel.is-summary h2{ margin:0; font-size:1.3rem; letter-spacing:.4px; text-align:center; }
+    details.step-panel.is-summary[open] h2{ margin-bottom:.7rem; }
+    .insight-panel{ color:var(--muted); margin-bottom:.9rem; font-size:.95rem; }
+    .clause{
+      display:block; padding:1rem; min-height:3rem; white-space:pre-wrap;
+      border-radius:var(--flove-radius-sm,12px); background:var(--field);
+      border:1px solid var(--line); color:var(--ink); line-height:1.6;
+    }
+    .clause:empty::before{ content:attr(data-empty-en); color:var(--muted); }
+    body:has(#ui-lang-es:checked) .clause:empty::before{ content:attr(data-empty-es); }
+    .action-grid{ margin-top:1rem; display:flex; flex-direction:column; gap:10px; }
+    .action-row{ display:flex; gap:10px; flex-wrap:wrap; }
+    .btn{
+      font:inherit; font-weight:700; padding:.6rem 1.3rem; cursor:pointer; text-decoration:none;
+      border-radius:var(--flove-radius-pill,999px); border:1px solid var(--line);
+      background:var(--field); color:var(--ink); display:inline-flex; align-items:center; gap:6px;
+      transition:border-color var(--flove-fast,.15s), color var(--flove-fast,.15s);
+    }
+    .btn:hover{ border-color:var(--app-accent); color:var(--app-accent); }
+    .btn:focus-visible{ outline:2px solid var(--app-accent-soft); outline-offset:2px; }
+    .copy-hint-panel{ color:var(--muted); font-size:.85rem; }
+    .copy-hint-panel[hidden]{ display:none; }
+
+    /* Responsive */
+    @media (max-width:900px){
+      .wrap{ padding:0 .9rem }
+      .list{ padding:8px; min-height:66px }
+      .list > li{ font-size:1rem; padding:.75rem 1rem }
+    }
+  </style>
+</head>
+<body>
+  <nav class="flove-bar flove-bar--dark">
+    <a class="flove-home" href="../../../index.html">← <span class="t-en">Apps</span><span class="t-es">Apps</span></a>
+    <svg class="flove-mark" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="#25c39e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;display:inline-block;vertical-align:middle;filter:drop-shadow(0 0 4px #25c39e)"><path d="M3 12h7.2"/><path d="M7.6 8.4 11 12 7.6 15.6"/><path d="M21 12h-7.2"/><path d="M16.4 8.4 13 12 16.4 15.6"/><circle fill="#25c39e" stroke="none" cx="12" cy="12" r="1"/></svg>
+    <span class="flove-app-name">Puzzy</span>
+    <span class="flove-tag">Confluences</span>
+    <span class="lang">
+      <input type="radio" name="ui-lang" id="ui-lang-en" checked>
+      <input type="radio" name="ui-lang" id="ui-lang-es">
+      <label for="ui-lang-en">EN</label>
+      <label for="ui-lang-es">ES</label>
+    </span>
+  </nav>
+
+  <div class="controls">
+    <div class="controls-row">
+      <div class="nodebar" role="group" aria-label="List sizes — pick any">
+        <label class="node"><input type="checkbox" class="node-cb" value="3"><span class="node-dot"></span><span class="node-num">3</span></label>
+        <label class="node"><input type="checkbox" class="node-cb" value="5"><span class="node-dot"></span><span class="node-num">5</span></label>
+        <label class="node"><input type="checkbox" class="node-cb" value="7"><span class="node-dot"></span><span class="node-num">7</span></label>
+      </div>
+      <input type="checkbox" id="top-toggle" hidden>
+      <label class="top-btn" for="top-toggle" tabindex="0"><span class="t-en">Top</span><span class="t-es">Top</span></label>
+      <button class="anim-btn" id="animBtn" type="button" aria-pressed="false"><span class="t-en">Animate</span><span class="t-es">Animar</span></button>
+    </div>
+    <button class="create-btn" id="createBtn" type="button"><span class="t-en">Create</span><span class="t-es">Crear</span></button>
+  </div>
+
+  <main class="wrap" data-flove-root data-flove-title="confluences">
+    <section class="board">
+
+      <!-- Created rows (newest on top) sit above everything. -->
+      <div class="rows" id="rows"></div>
+
+      <!-- Favourites — revealed by "Top" and filtered by the node sizes
+           (only rows whose item-count is checked show); never moved by the
+           row arrows. -->
+      <div class="favs" id="favs">
+
+      <!-- length = 1 (item centred on column 4; confluence centre) -->
+      <ul class="list len-1" aria-label="Example list with 1 item">
+        <li>Organism</li>
+      </ul>
+
+      <!-- length = 3 (cols 1,4,7; middle is the centre) -->
+      <ul class="list len-3" aria-label="Example list with 3 items">
+        <li>Inner</li>
+        <li>Middle</li>
+        <li>Outer</li>
+      </ul>
+
+      <ul class="list len-3" aria-label="Example list with 3 items">
+        <li>Past</li>
+        <li>Present</li>
+        <li>Future</li>
+      </ul>
+
+      <ul class="list len-3" aria-label="Example list with 3 items">
+        <li>Transform</li>
+        <li>Conjugate</li>
+        <li>Transduct</li>
+      </ul>
+
+      <!-- length = 5 (balanced around centre col 4) -->
+      <ul class="list len-5" aria-label="Example list with 5 items">
+        <li>Taste</li>
+        <li>Smell</li>
+        <li>Hear</li>
+        <li>Touch</li>
+        <li>View</li>
+      </ul>
+
+      <ul class="list len-5" aria-label="Example list with 5 items">
+        <li>Fire</li>
+        <li>Air</li>
+        <li>Plasma</li>
+        <li>Water</li>
+        <li>Earth</li>
+      </ul>
+
+      <ul class="list len-5" aria-label="Example list with 5 items">
+        <li>I</li>
+        <li>E</li>
+        <li>A</li>
+        <li>O</li>
+        <li>U</li>
+      </ul>
+
+      <ul class="list len-5" aria-label="Example list with 5 items">
+        <li>Sour</li>
+        <li>Bitter</li>
+        <li>Umami</li>
+        <li>Salty</li>
+        <li>Sweet</li>
+      </ul>
+
+      <ul class="list len-5" aria-label="Example list with 5 items">
+        <li>Political</li>
+        <li>Economical</li>
+        <li>Media</li>
+        <li>Legal</li>
+        <li>Military</li>
+      </ul>
+
+      <!-- length = 7 (fills all columns 1..7; exact spectrum across) -->
+      <ul class="list len-7" aria-label="Example list with 7 items">
+        <li>Adrenal</li>
+        <li>Gonads</li>
+        <li>Pancreas</li>
+        <li>Thymus</li>
+        <li>Thyroid</li>
+        <li>Pituitary</li>
+        <li>Hypothalamus</li>
+      </ul>
+
+      </div><!-- /#favs -->
+
+    </section>
+
+    <!-- Standard Summary (§13.12) — without the Views surface. Collapsed by
+         default; the centred title toggles it open. -->
+    <details class="step-panel is-summary" aria-label="Summary">
+      <summary class="summary-head">
+        <h2>✦ <span class="t-en">Summary</span><span class="t-es">Resumen</span></h2>
+      </summary>
+      <section class="insight-panel">
+        <span class="t-en">Your confluences, gathered into one phrase.</span>
+        <span class="t-es">Tus confluencias, reunidas en una frase.</span>
+      </section>
+      <output class="clause clause-default" data-flove-phrase spellcheck="false"
+              aria-label="Summary phrase"
+              data-empty-en="Pick sizes, press Create, and fill the cells — your phrase grows here."
+              data-empty-es="Elige tamaños, pulsa Crear y rellena las celdas — tu frase crece aquí."></output>
+      <div class="action-grid">
+        <div class="action-row">
+          <button class="btn ghost copy-btn" id="copyBtn" type="button" data-flove-copy="phrase">
+            <span class="t-en">Copy</span><span class="t-es">Copiar</span>
+          </button>
+        </div>
+        <div class="copy-hint-panel" id="copyHint" role="status" hidden></div>
+        <div class="download-row">
+          <a class="btn ghost dl-btn" id="dlBtn" href="#" download="confluences.txt" data-flove-save="bundle">
+            <span class="t-en">Download</span><span class="t-es">Descargar</span>
+          </a>
+        </div>
+      </div>
+    </details>
+  </main>
+
+  <script>
+  (function(){
+    const rows      = document.getElementById('rows');
+    const createBtn = document.getElementById('createBtn');
+    const clause    = document.querySelector('[data-flove-phrase]');
+    const copyBtn   = document.getElementById('copyBtn');
+    const copyHint  = document.getElementById('copyHint');
+    const dlBtn     = document.getElementById('dlBtn');
+    const animBtn   = document.getElementById('animBtn');
+    const PH = '…';
+
+    // Animate: toggle the fivys confluence morph on every len-5 list's items.
+    if (animBtn){
+      animBtn.addEventListener('click', function(){
+        const on = !document.body.classList.contains('animating');
+        document.body.classList.toggle('animating', on);
+        animBtn.setAttribute('aria-pressed', String(on));
+      });
+    }
+
+    // Build one editable row of N coloured placeholder cells + side controls.
+    function makeRow(n){
+      const crow = document.createElement('div');
+      crow.className = 'crow';
+      crow.dataset.len = n;
+      const ul = document.createElement('ul');
+      ul.className = 'list len-' + n;
+      ul.setAttribute('aria-label', 'New list with ' + n + ' items');
+      for (let i = 0; i < n; i++){
+        const li = document.createElement('li');
+        li.className = 'ph';
+        li.contentEditable = 'true';
+        li.dataset.ph = PH;
+        ul.appendChild(li);
+      }
+      const side = document.createElement('div');
+      side.className = 'crow-side';
+      side.innerHTML =
+          '<button class="cr-up"   type="button" title="Move up"    aria-label="Move up">↑</button>'
+        + '<button class="cr-down" type="button" title="Move down"  aria-label="Move down">↓</button>'
+        + '<button class="cr-dup"  type="button" title="Duplicate"  aria-label="Duplicate this row">＋</button>';
+      crow.appendChild(ul);
+      crow.appendChild(side);
+      return crow;
+    }
+
+    // Create: one new row per checked size (ascending), prepended above all
+    // rows (the favourites sit below, revealed/filtered by Top + the nodes).
+    createBtn.addEventListener('click', function(){
+      const nums = Array.from(document.querySelectorAll('.node-cb:checked'))
+        .map(cb => parseInt(cb.value, 10))
+        .sort((a, b) => a - b);
+      if (!nums.length) return;
+      const frag = document.createDocumentFragment();
+      nums.forEach(n => frag.appendChild(makeRow(n)));
+      rows.prepend(frag);
+      updateSummary();
+    });
+
+    // Row controls: ↑ / ↓ reorder within the created rows; ＋ duplicates the
+    // exact same row directly below it.
+    rows.addEventListener('click', function(e){
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      const crow = btn.closest('.crow');
+      if (!crow) return;
+      if (btn.classList.contains('cr-up')){
+        const prev = crow.previousElementSibling;
+        if (prev) rows.insertBefore(crow, prev);
+      } else if (btn.classList.contains('cr-down')){
+        const next = crow.nextElementSibling;
+        if (next) rows.insertBefore(next, crow);
+      } else if (btn.classList.contains('cr-dup')){
+        crow.after(crow.cloneNode(true));
+      }
+      updateSummary();
+    });
+
+    rows.addEventListener('input', updateSummary);
+
+    function rowText(crow){
+      return Array.from(crow.querySelectorAll('.list > li'))
+        .map(li => (li.textContent || '').trim() || PH).join(' · ');
+    }
+    function buildPhrase(){
+      return Array.from(rows.querySelectorAll('.crow'))
+        .map(c => '[ ' + rowText(c) + ' ]').join('\n');
+    }
+    function updateSummary(){ clause.textContent = buildPhrase(); }
+
+    copyBtn.addEventListener('click', function(){
+      const txt = clause.textContent || '';
+      if (navigator.clipboard) navigator.clipboard.writeText(txt).catch(function(){});
+      if (copyHint){
+        copyHint.hidden = false;
+        const es = document.body.matches(':has(#ui-lang-es:checked)');
+        copyHint.textContent = es ? 'Copiado al portapapeles.' : 'Copied to clipboard.';
+      }
+    });
+
+    // Download: rebuild the blob href from the live phrase right before the
+    // browser follows the link.
+    dlBtn.addEventListener('click', function(){
+      const blob = new Blob([clause.textContent || ''], { type: 'text/plain' });
+      dlBtn.href = URL.createObjectURL(blob);
+    });
+
+    updateSummary();
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>flove · why / intro</title>
+<!-- PWA: install flove as an app (manifest + icons) -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#ff8a3a">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="flove">
+<style>
+  :root{
+    --ink:#1a1820; --mut:#6a6478; --line:rgba(20,16,32,.10);
+    --paper:#fffdfb; --grad:linear-gradient(90deg,#ff3344,#ff8a3a,#ffd633);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    color:var(--ink); background:var(--paper);
+    display:grid; place-items:center; padding:24px;
+  }
+  /* Hidden until JS confirms there is no saved choice — avoids a flash before an
+     instant redirect when a language is already remembered. */
+  .gate{display:none; text-align:center; max-width:34rem; width:100%}
+  .gate.show{display:block; animation:rise .4s ease both}
+  @keyframes rise{from{opacity:0; transform:translateY(8px)}to{opacity:1; transform:none}}
+
+  .slides{position:relative; min-height:26rem}
+  .slide{
+    display:none; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center;
+  }
+  .slide.active{display:flex; animation:rise .35s ease both}
+  .slide .mark{width:64px;height:64px;margin:0 auto 6px;display:block}
+  .globe{font-size:1.6rem; line-height:1}
+  h1{font-size:1.5rem; margin:.4rem 0 .1rem; font-weight:650}
+  .sub{color:var(--mut); margin:0 0 1.6rem; font-size:.95rem}
+
+  .choices{display:grid; gap:.9rem; width:100%}
+  @media(min-width:26rem){ .choices{grid-template-columns:1fr 1fr} }
+
+  .pick{
+    appearance:none; cursor:pointer; font:inherit; color:var(--ink);
+    border:1px solid var(--line); border-radius:16px; background:#fff;
+    padding:1.1rem 1rem; display:grid; gap:.15rem; justify-items:center;
+    transition:border-color .15s, transform .12s, box-shadow .15s;
+  }
+  .pick:hover,.pick:focus-visible{
+    outline:none; transform:translateY(-2px);
+    border-color:transparent; box-shadow:0 0 0 2px #ff8a3a55, 0 8px 22px rgba(20,16,32,.10);
+  }
+  .flag{font-size:1.7rem; line-height:1}
+  .name{font-weight:600}
+  .name-sub{color:var(--mut); font-size:.85rem}
+
+  .card{background:#fff; border:1px solid var(--line); border-radius:16px; padding:1rem; width:100%}
+  .card p{margin:0; color:var(--mut); font-size:.95rem}
+  .card strong{color:var(--ink)}
+
+  .list{list-style:none; margin:0; padding:0; display:grid; gap:.7rem; width:100%; text-align:left}
+  .list li{
+    display:flex; gap:.75rem; align-items:flex-start; background:#fff;
+    border:1px solid var(--line); border-radius:14px; padding:.9rem 1rem;
+  }
+  .list .n{
+    flex:none; width:1.7rem; height:1.7rem; border-radius:50%;
+    background:var(--grad); color:#fff; font-weight:700; font-size:.9rem;
+    display:grid; place-items:center;
+  }
+  .list h4{margin:.05rem 0 .15rem; font-size:1rem}
+  .list p{margin:0; color:var(--mut); font-size:.9rem}
+
+  .note{background:rgba(255,214,51,.18); border:1px solid rgba(255,138,58,.35); border-radius:14px; padding:1rem 1.1rem; margin-top:1rem; font-size:.95rem}
+  .note strong{color:var(--ink)}
+
+  .dots{display:flex; gap:.45rem; justify-content:center; margin:1.2rem 0}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line);border:none;padding:0;cursor:pointer;transition:background .15s, transform .12s}
+  .dot.on{background:var(--grad); transform:scale(1.25)}
+  .dot:focus-visible{outline:none; box-shadow:0 0 0 2px #ff8a3a}
+
+  .nav{display:flex; gap:.6rem; justify-content:center; align-items:center}
+  .btn{
+    appearance:none; cursor:pointer; font:inherit; color:#fff; border:none;
+    border-radius:999px; background:var(--grad); background-size:160% 100%;
+    background-position:0 0; padding:.7rem 1.5rem; font-weight:600;
+    transition:background-position .25s, transform .12s, opacity .2s;
+  }
+  .btn:hover{background-position:100% 0; transform:translateY(-1px)}
+  .btn:focus-visible{outline:none; box-shadow:0 0 0 2px #ff8a3a55}
+  .btn.ghost{background:#fff; color:var(--ink); border:1px solid var(--line)}
+  .btn.big{font-size:1.02rem; padding:.85rem 2rem}
+  .btn.hide{opacity:0; pointer-events:none}
+
+  .foot{margin-top:1.1rem; color:var(--mut); font-size:.8rem}
+  .bar{height:4px;border-radius:4px;background:var(--grad);width:56px;margin:1.1rem auto 0}
+
+  /* poetic lines joined by a "..." breath between them */
+  .slide .p{margin:.15rem 0; max-width:27rem; font-size:1.02rem}
+  .slide .p.soft{color:var(--mut); font-size:.92rem}
+  .slide .tagline{margin-top:1.15rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; font-size:.78rem; color:var(--mut)}
+  .sprout{width:54px;height:54px;display:block;margin:.35rem auto 0}
+  .pick-hint{color:var(--mut); font-size:.82rem; margin:0 0 .9rem}
+
+  /* single-language tour: slide 0 (the language chooser) stays bilingual;
+     once a language is picked the rest of the slides read in just that one */
+  html[data-lang="en"] .slide:not([data-slide="0"]) .es{display:none}
+  html[data-lang="es"] .slide:not([data-slide="0"]) .en{display:none}
+
+  /* slide 3 — slow-typed heading (JS fills the text, language-aware) */
+  .slide .typed{ font-size:1.5rem; font-weight:650; margin:.4rem 0 .2rem; line-height:1.2;
+    display:inline-block; text-align:center; border-right:2px solid #ff8a3a;
+    animation:typedCaret .9s step-end infinite; }
+  @keyframes typedCaret{ 50%{ border-color:transparent } }
+
+  /* slide 4 — merged, iconic tiles (smaller text + bigger iconic buttons) */
+  .tiles{ display:grid; grid-template-columns:repeat(auto-fit,minmax(8.5rem,1fr));
+    gap:.75rem; width:100%; margin:1rem 0 1.4rem; text-align:left; }
+  @media(min-width:34rem){ .tiles{ grid-template-columns:repeat(4,1fr);} }
+  .tile{ background:#fff; border:1px solid var(--line); border-radius:16px;
+    padding:.8rem .85rem; display:flex; flex-direction:column; gap:.12rem;
+    transition:transform .16s ease, box-shadow .2s ease, border-color .2s ease; }
+  .tile:hover{ transform:translateY(-3px); box-shadow:0 10px 24px rgba(20,16,32,.10);
+    border-color:#ff8a3a66; }
+  .tile i{ font-style:normal; display:grid; place-items:center; width:2.3rem; height:2.3rem;
+    border-radius:12px; background:var(--grad); color:#fff; font-size:1.1rem; margin:0 0 .5rem; }
+  .tile b{ font-size:.95rem; font-weight:600; line-height:1.25 }
+  .tile small{ color:var(--mut); font-size:.78rem; line-height:1.3 }
+  .start-cta{ margin-top:.15rem }
+
+  .links{display:grid; gap:.6rem; width:100%; margin-top:.35rem}
+  .links a{text-decoration:none; color:#fff; background:var(--grad); background-size:160% 100%; background-position:0 0;
+    border-radius:999px; padding:.62rem 1.2rem; font-weight:600; font-size:.92rem; text-align:center;
+    transition:background-position .25s, transform .12s;}
+  .links a:hover{background-position:100% 0; transform:translateY(-1px)}
+  .links a.ghost{background:#fff; color:var(--ink); border:1px solid var(--line)}
+
+  .more{margin-top:1rem; width:100%; max-width:27rem}
+  .more.hidden{display:none}
+  .more-in{background:#fff; border:1px solid var(--line); border-radius:14px; padding:1rem 1.1rem; color:var(--mut); font-size:.9rem; text-align:left}
+  .more-in strong{color:var(--ink)}
+  .vid{display:grid; place-items:center; gap:.45rem; margin-top:.75rem; border:1.5px dashed var(--line);
+    border-radius:12px; padding:1.4rem 1.1rem; color:var(--mut); font-size:.85rem; text-align:center}
+.vid .vp{font-size:1.5rem}
+
+  /* phone modes — two cards side by side (stack on small screens) */
+  .phone-modes{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; width:100%;
+    max-width:36rem; margin:1.2rem auto 0; text-align:left; }
+  @media(max-width:30rem){ .phone-modes{ grid-template-columns:1fr } }
+  .phone-card{ background:#fff; border:1px solid var(--line); border-radius:18px;
+    padding:1rem 1.05rem; display:flex; flex-direction:column; gap:.4rem; }
+  .phone-card h3{ margin:0; font-size:.98rem; font-weight:650 }
+  .phone-card p{ margin:0; color:var(--mut); font-size:.82rem; line-height:1.45 }
+  .pc-qr{ display:flex; justify-content:center; margin:.15rem 0 .1rem; }
+  .pc-qr svg{ width:128px; height:128px; background:#fff; border-radius:10px; }
+  .pc-copy{ appearance:none; cursor:pointer; font:inherit; font-size:.78rem; font-weight:600;
+    color:var(--ink); background:#fff; border:1px solid var(--line); border-radius:999px;
+    padding:.4rem .9rem; align-self:center; transition:border-color .15s, transform .12s; }
+  .pc-copy:hover{ border-color:#ff8a3a; transform:translateY(-1px) }
+  .pc-copy.done{ border-color:#2aa86a; color:#1c8f4c }
+  .pc-urls{ display:grid; gap:.25rem; margin-top:.1rem; }
+  .pc-url{ font-family:ui-monospace, "SF Mono", monospace; font-size:.7rem; color:var(--mut);
+    word-break:break-all; line-height:1.3; }
+ </style>
+ <script src="apps/appy/appy-qr.js" defer></script>
+ </head>
+<body>
+  <main class="gate" id="gate">
+        <div class="slides" id="slides">
+
+      <!-- Slide 0 · Welcome + language -->
+      <section class="slide" data-slide="0">
+        <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
+          <defs>
+            <linearGradient id="launchMark" x1="12" y1="0" x2="88" y2="0" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#ff3344"/><stop offset=".5" stop-color="#ff8a3a"/><stop offset="1" stop-color="#ffd633"/>
+            </linearGradient>
+          </defs>
+          <path d="M50 60 C 22 60, 12 38, 16 18 C 38 22, 54 38, 50 60 Z" fill="url(#launchMark)"/>
+          <path d="M50 60 C 78 60, 88 38, 84 18 C 62 22, 46 38, 50 60 Z" fill="url(#launchMark)"/>
+          <path d="M50 58 C 50 72, 50 84, 50 92" stroke="url(#launchMark)" stroke-width="5" stroke-linecap="round" fill="none"/>
+        </svg>
+        <h1>Welcome to your local flove home</h1>
+        <p class="sub">Bienvenido a tu hogar flove local</p>
+        <p class="pick-hint">Select your language · Elige tu idioma</p>
+        <div class="choices">
+          <button class="pick" data-lang="en" type="button">
+            <span class="flag" aria-hidden="true">🇬🇧</span>
+            <span class="name">English</span>
+            <span class="name-sub">Continue in English</span>
+          </button>
+          <button class="pick" data-lang="es" type="button">
+            <span class="flag" aria-hidden="true">🇪🇸</span>
+            <span class="name">Español</span>
+            <span class="name-sub">Continuar en español</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Slide 1 · Mining yourself -->
+      <section class="slide" data-slide="1">
+        <div class="globe" aria-hidden="true">⛏️</div>
+        <h1 class="en">flove is for mining yourself</h1>
+        <p class="sub es">Es para minarte a ti mismo</p>
+        <p class="p soft"><span class="en">the more powerful and clean</span><span class="es">cuanto más poderoso y limpio</span></p>
+        <p class="p en">This localhost is an ideal place to play flove apps more free</p>
+        <p class="p soft es">Este localhost es ideal para jugar a las apps de flove con más libertad</p>
+        <svg class="sprout" viewBox="0 0 100 100" role="img" aria-label="Appy">
+          <defs>
+            <linearGradient id="launchAppy" x1="12" y1="0" x2="88" y2="0" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#ff3344"/><stop offset=".5" stop-color="#ff8a3a"/><stop offset="1" stop-color="#ffd633"/>
+            </linearGradient>
+          </defs>
+          <path d="M50 62 C 24 62 13 42 17 21 C 39 25 55 41 50 62 Z" fill="url(#launchAppy)"/>
+          <path d="M50 62 C 76 62 87 42 83 21 C 61 25 45 41 50 62 Z" fill="url(#launchAppy)"/>
+          <path d="M50 60 C 50 74 50 85 50 92" stroke="url(#launchAppy)" stroke-width="6" stroke-linecap="round" fill="none"/>
+        </svg>
+      </section>
+
+      <!-- Slide 3 · First times (merged with "You are in a screen"); title is typed slowly -->
+      <section class="slide" data-slide="2">
+        <div class="globe" aria-hidden="true">🕰️</div>
+        <h2 class="typed" data-en="First times are the best times." data-es="Las primeras veces son las mejores."></h2>
+        <p class="p soft"><span class="en">specially for what's really important</span><span class="es">especialmente para lo que es realmente importante</span></p>
+        <p class="p"><span class="en">The most important things happen offline, without screens.</span><span class="es">Lo más importante siempre ocurre sin conexión y sin pantallas.</span></p>
+        <p class="p soft"><span class="en">You are in a screen — but at least this one is offline:
+          with more intimacy, more ready for the good and important things.</span><span class="es">Estás en una pantalla, pero al menos esta es offline:
+          con más intimidad, y más listo para lo bueno y lo importante.</span></p>
+
+        <div class="phone-modes">
+          <div class="phone-card" id="pc-termux">
+            <h3><span class="en">📱 This phone · Termux</span><span class="es">📱 Este móvil · Termux</span></h3>
+            <p><span class="en">serve flove right on your phone and keep it in sync — fully offline, no Wi-Fi or network at all. In Termux run the command below or scan the QR.</span><span class="es">sirve flove en tu propio móvil y mantenlo en sincronía — totalmente sin conexión, sin Wi-Fi ni red. En Termux ejecuta el comando o escanea el QR.</span></p>
+            <div class="pc-qr"></div>
+            <button type="button" class="pc-copy"><span class="en">copy command</span><span class="es">copiar comando</span></button>
+          </div>
+          <div class="phone-card" id="pc-net">
+            <h3><span class="en">🌐 From your phone · over the network</span><span class="es">🌐 Desde tu móvil · por la red</span></h3>
+            <p><span class="en">open the same flove from your phone — over the same Wi-Fi, or via Tailscale from any network (HTTPS, so offline works there too).</span><span class="es">abre el mismo flove desde tu móvil — por el mismo Wi-Fi, o por Tailscale desde cualquier red (HTTPS, para que funcione sin conexión también).</span></p>
+            <div class="pc-qr"></div>
+            <div class="pc-urls"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 4 · What you can do + Double + invitation (merged, iconic) -->
+      <section class="slide" data-slide="3">
+        <div class="globe" aria-hidden="true">🪄</div>
+        <h1 class="en">Play freely, and grow your mine here</h1>
+        <p class="sub es">Juega libremente y haz crecer tu mina aquí</p>
+        <div class="tiles">
+          <span class="tile"><i aria-hidden="true">🗒️</i><b class="en">Your summaries</b><b class="es">Tus resúmenes</b><small class="en">see, save, share</small><small class="es">mira, guarda, comparte</small></span>
+          <span class="tile"><i aria-hidden="true">💾</i><b class="en">Save to profile</b><b class="es">Guarda en perfil</b><small class="en">export, analyze</small><small class="es">exporta, analiza</small></span>
+          <span class="tile"><i aria-hidden="true">🔓</i><b class="en">Extend profile</b><b class="es">Amplía tu perfil</b><small class="en">unlock more of you</small><small class="es">desbloquea más de ti</small></span>
+          <span class="tile"><i aria-hidden="true">🛡️</i><b class="en">Authenticate</b><b class="es">Autentícate</b><small class="en">secure your identity</small><small class="es">asegura tu identidad</small></span>
+        </div>
+        <button class="btn big start-cta" id="more" type="button"><span class="en">Start flove, I'm ready</span><span class="es">Entrar en flove, estoy listo</span></button>
+        <p class="tagline"><span class="en">Mind your mine</span><span class="es">Cuida tu mina</span></p>
+      </section>
+
+    </div>
+
+<div class="dots" id="dots" aria-hidden="true"></div>
+
+    <div class="nav">
+      <button class="btn ghost hide" id="prev" type="button"><span class="en">Back</span><span class="es">Atrás</span></button>
+      <button class="btn" id="next" type="button"><span class="en">Next</span><span class="es">Siguiente</span></button>
+      <button class="btn hide" id="enter" type="button"><span class="en">Start flove</span><span class="es">Comenzar</span></button>
+    </div>
+
+    <div class="bar" aria-hidden="true"></div>
+    <p class="foot"><span class="en">You can switch language anytime with 🌐</span><span class="es">Puedes cambiar de idioma cuando quieras con 🌐</span></p>
+  </main>
+
+<script>
+  (function(){
+    var KEY = 'flove:lang', KEY_OLD = 'translaty-lang';
+    // The flove sits next to this page in the localhost download (index.html), but
+    // one level up on the live site (solo/localhost-intro.html → /index.html).
+    // The APK opens /solo/start.html, so pick the home from the path — one landing
+    // for both.
+    var ENTRY = (location.pathname.indexOf('/solo') === -1) ? 'index.html' : '../index.html';
+
+    function go(lang){
+      location.replace(ENTRY + (lang ? '?lang=' + encodeURIComponent(lang) : ''));
+    }
+
+    var standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+                     || navigator.standalone === true;
+
+    var saved = null;
+    try { saved = localStorage.getItem(KEY) || localStorage.getItem(KEY_OLD) || localStorage.getItem('translate2-lang'); } catch (_) {}
+    // Always show the intro slides — this is the on-demand tour ("Why ?"), so it
+    // never auto-redirects to the home even when a language is already saved
+    // (the one-time start.html still handles that first-visit gate).
+    var gate = document.getElementById('gate');
+    var slidesEl = document.getElementById('slides');
+    var slides = Array.prototype.slice.call(slidesEl.querySelectorAll('.slide'));
+    var dotsEl = document.getElementById('dots');
+    var prevBtn = document.getElementById('prev');
+    var nextBtn = document.getElementById('next');
+    var enterBtn = document.getElementById('enter');
+    var chosenLang = saved === 'en' || saved === 'es' ? saved : null;
+    document.documentElement.dataset.lang = chosenLang || 'en';
+    var dots = [];
+
+    slides.forEach(function(s, i){
+      var d = document.createElement('button');
+      d.className = 'dot' + (i === 0 ? ' on' : '');
+      d.type = 'button'; d.setAttribute('aria-label', 'Slide ' + (i + 1));
+      d.addEventListener('click', function(){ show(i); });
+      dotsEl.appendChild(d); dots.push(d);
+    });
+
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function show(i){
+      slides.forEach(function(s, k){ s.classList.toggle('active', k === i); });
+      dots.forEach(function(d, k){ d.classList.toggle('on', k === i); });
+      prevBtn.classList.toggle('hide', i === 0);
+      nextBtn.classList.toggle('hide', i === slides.length - 1);
+      enterBtn.classList.toggle('hide', i !== slides.length - 1);
+      if (i === 2) typeLine();
+    }
+
+    // slide 3 — slowly type the chosen-language heading
+    function typeLine(){
+      var el = slides[2] ? slides[2].querySelector('.typed') : null;
+      if (!el) return;
+      var txt = el.getAttribute('data-' + (document.documentElement.dataset.lang || 'en')) || '';
+      if (reduce) { el.textContent = txt; return; }
+      el.textContent = '';
+      var n = 0;
+      (function step(){
+        n += 1;
+        if (n > txt.length){ el.textContent = txt; return; }
+        el.textContent = txt.slice(0, n);
+        requestAnimationFrame(step);
+      })();
+    }
+
+    nextBtn.addEventListener('click', function(){
+      var active = slides.findIndex(function(s){ return s.classList.contains('active'); });
+      show(Math.min(active + 1, slides.length - 1));
+    });
+    prevBtn.addEventListener('click', function(){
+      var active = slides.findIndex(function(s){ return s.classList.contains('active'); });
+      show(Math.max(active - 1, 0));
+    });
+    enterBtn.addEventListener('click', function(){ go(chosenLang); });
+
+    // Selecting a language saves it (no instant redirect) and reveals the intro slides.
+    gate.querySelectorAll('.pick').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        chosenLang = btn.getAttribute('data-lang');
+        document.documentElement.dataset.lang = chosenLang;
+        document.documentElement.lang = chosenLang;
+        try { localStorage.setItem(KEY, chosenLang); localStorage.setItem(KEY_OLD, chosenLang); } catch (_) {}
+        show(1);
+      });
+    });
+
+    gate.classList.add('show');
+    show(0);
+
+    // "I'm ready, I want more" — enter the actual flove home (index.html)
+    var moreBtn = document.getElementById('more');
+    if (moreBtn) moreBtn.addEventListener('click', function(){ go(chosenLang); });
+  })();
+</script>
+<script>
+  // Register the service worker so flove works fully offline once installed.
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js').catch(function(){});
+    });
+  }
+</script>
+<script>
+  // Phone modes on the "You are in a screen" slide: two cards — Termux (this phone)
+  // and over-the-network (Tailscale / same Wi-Fi) — each with a drawable QR.
+  (function(){
+    function q(id){ return document.getElementById(id); }
+    function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    var TERMUX_CMD = 'pkg install -y python; curl -Lso flove.zip https://flove.org/solo/flove-solo.zip; ' +
+                     'unzip -oq flove.zip; cd flove-solo; python3 -m http.server 8642';
+    function qr(text){ return window.drawQR ? drawQR(text, 128) : '<em>' + esc(text) + '</em>'; }
+
+    function init(){
+      var tux = document.getElementById('pc-termux');
+      var net = document.getElementById('pc-net');
+      if (!tux || !net) return;
+      if (window.drawQR){
+        tux.querySelector('.pc-qr').innerHTML = qr(TERMUX_CMD);
+        var copy = tux.querySelector('.pc-copy');
+        if (copy) copy.addEventListener('click', function(){
+          try { navigator.clipboard.writeText(TERMUX_CMD); } catch(e){}
+          copy.classList.add('done');
+          setTimeout(function(){ copy.classList.remove('done'); }, 1600);
+        });
+      }
+      fetch('devices.json')
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .catch(function(){ return null; })
+        .then(function(d){
+          var lan = (d && d.lan) || [], ts = (d && d.tailscale) || '';
+          var lo = (d && d.localhost) || location.origin;
+          var pick = ts || lan[0] || location.origin;
+          if (window.drawQR) net.querySelector('.pc-qr').innerHTML = qr(pick);
+          var urls = net.querySelector('.pc-urls'); urls.innerHTML = '';
+          [[ts, 'Tailscale'], [lan[0], 'same Wi-Fi'], [lo, 'this computer']].forEach(function(p){
+            if (!p[0]) return;
+            var row = document.createElement('div');
+            row.className = 'pc-url';
+            row.textContent = p[1] + ' · ' + p[0];
+            urls.appendChild(row);
+          });
+        });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KEYS · basic</title>
+<link rel="icon" type="image/svg+xml" href="../favicon-keys.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0c0b18; --ink-2:#15132a; --panel:#171532;
+    --line:#352f55; --line-soft:#26223f;
+    --gold:#c39a45; --gold-hi:#eccf83; --rose:#df8fa2;
+    --cream:#efe7d2; --muted:#988fb6;
+    --serif:'Spectral','Iowan Old Style',Georgia,serif;
+    --deco:'Cinzel','Cormorant Garamond',Georgia,serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:
+      radial-gradient(900px 520px at 50% -8%, rgba(195,154,69,.16), transparent 60%),
+      radial-gradient(700px 600px at 110% 110%, rgba(223,143,162,.10), transparent 55%),
+      var(--ink);
+    color:var(--cream);
+    font:400 16px/1.6 var(--serif);
+    min-height:100vh; -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  /* film grain + vignette */
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:50;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+    opacity:.05;mix-blend-mode:overlay;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:49;
+    box-shadow:inset 0 0 220px 40px rgba(0,0,0,.55);
+  }
+  .vh{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;margin:-1px;overflow:hidden}
+
+  /* bilingual engine */
+  body:not(:has(#lang-es:checked)) .es{display:none}
+  body:has(#lang-es:checked) .en{display:none}
+
+  /* ===== masthead ===== */
+  .masthead{position:relative;text-align:center;padding:38px 18px 14px;max-width:760px;margin:0 auto}
+  .crest{display:flex;align-items:center;justify-content:center;gap:18px}
+  .crest .rule{flex:1;max-width:140px;height:1px;background:
+      linear-gradient(90deg,transparent,var(--gold) 40%,var(--gold) 60%,transparent);position:relative}
+  .crest .rule::after{content:"";position:absolute;top:50%;left:50%;width:5px;height:5px;
+    transform:translate(-50%,-50%) rotate(45deg);background:var(--gold-hi)}
+  .logo{width:42px;height:42px;display:block;filter:drop-shadow(0 0 10px rgba(236,207,131,.45))}
+  .title{margin:.5rem 0 0;font:600 2.5rem/1 var(--deco);letter-spacing:.28em;text-indent:.28em;
+    color:transparent;background:linear-gradient(180deg,var(--gold-hi),var(--gold));-webkit-background-clip:text;background-clip:text}
+  .tier{display:block;margin-top:.5rem;font:500 .68rem/1 var(--deco);letter-spacing:.42em;text-indent:.42em;
+    text-transform:uppercase;color:var(--muted)}
+  .lang{position:absolute;top:22px;right:18px}
+
+  /* deco chip / toggle */
+  .chip{display:inline-flex;align-items:center;gap:.4rem;cursor:pointer;user-select:none;
+    border:1px solid var(--line);background:rgba(255,255,255,.02);color:var(--cream);
+    border-radius:2px;padding:.42rem .8rem;
+    font:500 .66rem/1 var(--deco);letter-spacing:.18em;text-transform:uppercase;
+    transition:border-color .2s,color .2s,background .2s,box-shadow .2s}
+  .chip:hover{border-color:var(--gold);color:var(--gold-hi)}
+  .chip[aria-pressed="true"]{border-color:var(--gold);color:var(--ink);
+    background:linear-gradient(180deg,var(--gold-hi),var(--gold));box-shadow:0 4px 16px rgba(195,154,69,.25)}
+
+  /* ===== layout ===== */
+  .wrap{max-width:680px;margin:0 auto;padding:6px 20px 64px}
+  .intro{text-align:center;font-style:italic;color:var(--muted);font-size:1.02rem;
+    max-width:46ch;margin:.4rem auto 1.6rem;line-height:1.7}
+  .toolbar{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;margin:0 0 2rem}
+
+  /* ===== group ===== */
+  .group{position:relative;margin:0 0 1.7rem;padding:1.4rem 1.4rem 1rem;
+    background:linear-gradient(180deg,var(--panel),var(--ink-2));
+    border:1px solid var(--line-soft);border-radius:3px}
+  .group[hidden]{display:none}
+  .group::before{content:"";position:absolute;left:14px;right:14px;top:8px;height:0;
+    border-top:1px solid var(--line);box-shadow:0 3px 0 -2px var(--line)}
+  .group-title{position:relative;text-align:center;margin:.2rem 0 1.1rem;
+    font:600 1.05rem/1 var(--deco);letter-spacing:.24em;text-indent:.24em;text-transform:uppercase;
+    color:var(--gold-hi)}
+  .group-title::before,.group-title::after{content:"❖";position:absolute;top:50%;transform:translateY(-50%);
+    color:var(--gold);font-size:.6rem;opacity:.7}
+  .group-title::before{left:.2rem}.group-title::after{right:.2rem}
+  .cards{display:flex;flex-direction:column}
+
+  /* ===== card (ruled row) ===== */
+  .card{display:flex;align-items:center;gap:1rem;padding:.7rem .2rem;
+    border-top:1px solid var(--line-soft);transition:order .35s ease,background .2s}
+  .card:first-child{border-top:0}
+  .card:hover{background:rgba(236,207,131,.03)}
+  .word{flex:1;min-width:0;display:flex;align-items:center;gap:.55rem;
+    font:400 1.18rem/1.25 var(--serif);color:var(--cream)}
+  .word input.cust{flex:1;min-width:0;background:transparent;border:0;border-bottom:1px solid var(--line);
+    color:var(--cream);font:italic 400 1.1rem/1.3 var(--serif);padding:.15rem 0}
+  .word input.cust::placeholder{color:var(--muted);opacity:.6}
+  .word input.cust:focus{outline:none;border-bottom-color:var(--gold)}
+  .gender-icon{font-size:1em;font-weight:700}
+  .gender-icon.female{color:var(--rose)}
+  .gender-icon.male{color:#86a6ff}
+
+  /* ===== rank medallions ===== */
+  .ranks{display:inline-flex;gap:.45rem;flex:none}
+  .ranks label{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;
+    border:1px solid var(--gold);color:var(--gold);cursor:pointer;
+    font:500 .92rem/1 var(--deco);background:rgba(195,154,69,.04);
+    transition:background .2s,color .2s,box-shadow .25s,transform .15s}
+  .ranks label:hover{color:var(--gold-hi);border-color:var(--gold-hi);transform:translateY(-1px)}
+  .ranks input:checked + label{
+    color:var(--ink);border-color:var(--gold-hi);
+    background:radial-gradient(circle at 36% 30%,var(--gold-hi),var(--gold));
+    box-shadow:0 0 0 3px rgba(195,154,69,.16),0 5px 14px rgba(0,0,0,.45)}
+
+  /* ===== recap (almanac index) ===== */
+  .recap{position:relative;margin-top:1rem;padding:1.6rem 1.5rem;border:1px solid var(--gold);
+    border-radius:3px;background:linear-gradient(180deg,rgba(195,154,69,.06),transparent)}
+  .recap[hidden]{display:none}
+  .recap::before,.recap::after{content:"";position:absolute;width:14px;height:14px;border:1px solid var(--gold);opacity:.8}
+  .recap::before{top:6px;left:6px;border-right:0;border-bottom:0}
+  .recap::after{bottom:6px;right:6px;border-left:0;border-top:0}
+  .recap h2{margin:0 0 1rem;text-align:center;font:600 .82rem/1 var(--deco);
+    letter-spacing:.34em;text-indent:.34em;text-transform:uppercase;color:var(--gold-hi)}
+  .recap ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:.55rem}
+  .recap li{display:flex;align-items:baseline;gap:.6rem;font-size:1.05rem;line-height:1.4}
+  .recap .gname{font:600 .64rem/1 var(--deco);letter-spacing:.2em;text-transform:uppercase;
+    color:var(--gold);min-width:6.5em;flex:none}
+  .recap li .muted{color:var(--muted)}
+  .recap .done{margin-top:1rem;text-align:center;font:500 .66rem/1 var(--deco);
+    letter-spacing:.24em;text-transform:uppercase;color:var(--rose)}
+
+  /* ===== motion: candle-lit staggered reveal ===== */
+  @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  .masthead{animation:rise .8s cubic-bezier(.2,.7,.2,1) both}
+  .intro{animation:rise .8s cubic-bezier(.2,.7,.2,1) .1s both}
+  .toolbar{animation:rise .8s cubic-bezier(.2,.7,.2,1) .2s both}
+  .group{animation:rise .75s cubic-bezier(.2,.7,.2,1) both}
+  #triads .group:nth-child(1){animation-delay:.3s}
+  #triads .group:nth-child(2){animation-delay:.42s}
+  #triads .group:nth-child(3){animation-delay:.54s}
+  #custom .group{animation-delay:.66s}
+  @media (prefers-reduced-motion:reduce){*{animation:none !important}}
+
+  @media (max-width:430px){
+    .title{font-size:2rem}
+    .card{flex-wrap:wrap;gap:.6rem}
+    .ranks{margin-left:auto}
+    .crest .rule{max-width:60px}
+  }
+</style>
+</head>
+<body>
+<input type="checkbox" id="lang-es" class="vh" aria-label="Switch language">
+
+<header class="masthead">
+  <label class="chip lang" for="lang-es" title="Language">🌐 <span class="en" lang="en">ES</span><span class="es" lang="es">EN</span></label>
+  <div class="crest">
+    <span class="rule"></span>
+    <svg class="logo" viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="g-keys" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#eccf83"/><stop offset=".55" stop-color="#c39a45"/><stop offset="1" stop-color="#df8fa2"/></linearGradient></defs><g fill="url(#g-keys)" stroke="none"><g transform="rotate(0 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g><g transform="rotate(72 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g><g transform="rotate(288 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g><circle cx="50" cy="50" r="4.5"/></g></svg>
+    <span class="rule"></span>
+  </div>
+  <h1 class="title">Keys</h1>
+  <span class="tier">basic</span>
+</header>
+
+<main class="wrap">
+  <p class="intro"><span class="en" lang="en">Three triads lie before you. Number each one — first, second, third — by what you reach for. Unveil the extra decks, their genders, and your own.</span><span class="es" lang="es">Tres tríadas ante ti. Numera cada una — primera, segunda, tercera — según lo que buscas. Revela los mazos extra, sus géneros y el tuyo.</span></p>
+
+  <div class="toolbar">
+    <button type="button" class="chip" id="t-extras"  aria-pressed="false"><span class="en" lang="en">Extra decks</span><span class="es" lang="es">Mazos extra</span></button>
+    <button type="button" class="chip" id="t-genders" aria-pressed="false"><span class="en" lang="en">Genders</span><span class="es" lang="es">Géneros</span></button>
+    <button type="button" class="chip" id="t-ordinals" aria-pressed="true"><span class="en" lang="en">Ordinals</span><span class="es" lang="es">Ordinales</span></button>
+  </div>
+
+  <div id="triads"></div>
+  <div id="extras" hidden></div>
+  <div id="custom"></div>
+
+  <section class="recap" id="recap" hidden>
+    <h2><span class="en" lang="en">Your keys</span><span class="es" lang="es">Tus claves</span></h2>
+    <ul id="recap-list"></ul>
+    <div class="done" id="recap-done"></div>
+  </section>
+</main>
+
+<script>
+(() => {
+  "use strict";
+  // ---- data (bilingual). gender marks live only on Metaphysics Yin/Yang. ----
+  const TRIADS = [
+    { en:'Philosophy', es:'Filosofía',  items:[['Joy','Alegría'],['Love','Amor'],['Wisdom','Sabiduría']] },
+    { en:'Psicosocial', es:'Psicosocial', items:[['Local','Local'],['Personal','Personal'],['Social','Social']] },
+    { en:'Service', es:'Servicio',       items:[['Gift','Regalo'],['Lend','Prestar'],['Exchange','Intercambio']] },
+  ];
+  const EXTRAS = [
+    { en:'Time', es:'Tiempo',           items:[['Future','Futuro'],['Past','Pasado'],['Present','Presente']] },
+    { en:'Metaphysics', es:'Metafísica', items:[['Tao','Tao'],['Yang','Yang'],['Yin','Yin']], gender:{ Yang:'male', Yin:'female' } },
+    { en:'Space', es:'Espacio',         items:[['Confluence','Confluencia'],['Macro','Macro'],['Micro','Micro']] },
+    { en:'Sectors', es:'Sectores',      items:[['Mining','Minería'],['Manufacture','Manufactura'],['Service','Servicio']] },
+  ];
+
+  const $ = (s, r=document) => r.querySelector(s);
+  const elc = (tag, cls) => { const n = document.createElement(tag); if (cls) n.className = cls; return n; };
+  const groups = [];   // every rendered group element, in document order
+
+  // Build one group element (gid unique). custom=true → editable word inputs.
+  function buildGroup(data, gid, custom){
+    const sec = elc('section', 'group');
+    sec.dataset.gid = gid;
+    const h = elc('h2', 'group-title');
+    if (custom){ h.innerHTML = `<span class="en" lang="en">Your group</span><span class="es" lang="es">Tu grupo</span>`; }
+    else { h.innerHTML = `<span class="en" lang="en">${data.en}</span><span class="es" lang="es">${data.es}</span>`; }
+    sec.appendChild(h);
+    const cards = elc('div', 'cards');
+    for (let ci = 0; ci < 3; ci++){
+      const card = elc('div', 'card');
+      const word = elc('span', 'word');
+      if (custom){
+        const inp = elc('input', 'cust'); inp.type = 'text'; inp.maxLength = 24;
+        inp.placeholder = '…'; inp.setAttribute('aria-label', 'your word');
+        inp.addEventListener('input', () => { card.dataset.en = card.dataset.es = inp.value; updateRecap(); });
+        word.appendChild(inp);
+      } else {
+        const [en, es] = data.items[ci];
+        card.dataset.en = en; card.dataset.es = es;
+        if (data.gender && data.gender[en]) card.dataset.gender = data.gender[en];
+        word.innerHTML = `<span class="en" lang="en">${en}</span><span class="es" lang="es">${es}</span>`;
+      }
+      card.appendChild(word);
+      const ranks = elc('span', 'ranks'); ranks.setAttribute('role', 'radiogroup'); ranks.setAttribute('aria-label', 'rank');
+      for (let r = 1; r <= 3; r++){
+        const name = gid + 'c' + ci, id = name + '-' + r;
+        const inp = elc('input'); inp.type = 'radio'; inp.name = name; inp.id = id; inp.className = 'vh'; inp.value = String(r);
+        const lab = elc('label'); lab.setAttribute('for', id); lab.textContent = String(r);
+        inp.addEventListener('change', () => onRank(sec, card, r));
+        ranks.append(inp, lab);
+      }
+      card.appendChild(ranks);
+      cards.appendChild(card);
+    }
+    sec.appendChild(cards);
+    groups.push(sec);
+    return sec;
+  }
+
+  // Rank a card within its group: enforce uniqueness (swap), then reorder + recap.
+  function onRank(sec, card, rank){
+    const prev = card.dataset.rank || '';
+    const siblings = Array.from(sec.querySelectorAll('.card'));
+    siblings.forEach(other => {
+      if (other !== card && other.dataset.rank === String(rank)){
+        // hand this card's previous rank to the displaced one (or clear it)
+        setRank(other, prev);
+      }
+    });
+    card.dataset.rank = String(rank);
+    applyOrder(sec);
+    updateRecap();
+  }
+  // Set a card's rank programmatically (''=clear), keeping its radios in sync.
+  function setRank(card, rank){
+    card.dataset.rank = rank ? String(rank) : '';
+    card.querySelectorAll('.ranks input').forEach(inp => { inp.checked = (rank && inp.value === String(rank)); });
+  }
+  // Reorder cards by rank when Ordinals is on; ranked first (1→3), then the rest.
+  function applyOrder(sec){
+    Array.from(sec.querySelectorAll('.card')).forEach((card, i) => {
+      const r = parseInt(card.dataset.rank, 10);
+      card.style.order = ordinalsOn ? (r ? r : 9) : i;
+    });
+  }
+
+  // ---- toggles ----
+  let ordinalsOn = true, extrasBuilt = false;
+  function setPressed(btn, on){ btn.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+
+  $('#t-extras').addEventListener('click', () => {
+    const box = $('#extras'), on = box.hidden;     // about to show?
+    if (on && !extrasBuilt){
+      EXTRAS.forEach((d, i) => box.appendChild(buildGroup(d, 'x' + i)));
+      extrasBuilt = true;
+      if (gendersOn) applyGenders();
+    }
+    box.hidden = !on;
+    setPressed($('#t-extras'), on);
+    updateRecap();
+  });
+
+  let gendersOn = false;
+  $('#t-genders').addEventListener('click', () => {
+    gendersOn = !gendersOn;
+    setPressed($('#t-genders'), gendersOn);
+    applyGenders();
+  });
+  function applyGenders(){
+    document.querySelectorAll('.gender-icon').forEach(n => n.remove());
+    if (!gendersOn) return;
+    document.querySelectorAll('.card[data-gender]').forEach(card => {
+      const kind = card.dataset.gender;
+      const ic = elc('span', 'gender-icon ' + kind);
+      ic.textContent = kind === 'female' ? '♀' : '♂';
+      card.querySelector('.word').prepend(ic);
+    });
+  }
+
+  $('#t-ordinals').addEventListener('click', () => {
+    ordinalsOn = !ordinalsOn;
+    setPressed($('#t-ordinals'), ordinalsOn);
+    groups.forEach(applyOrder);
+  });
+
+  // ---- live recap: each group's #1 pick ----
+  function updateRecap(){
+    const list = $('#recap-list'); list.innerHTML = '';
+    let ranked = 0;
+    groups.forEach(sec => {
+      if (sec.parentElement && sec.parentElement.hidden) return;   // skip hidden extras
+      const top = sec.querySelector('.card[data-rank="1"]');
+      const title = sec.querySelector('.group-title').innerHTML;
+      const li = elc('li');
+      if (top){
+        ranked++;
+        const en = top.dataset.en || '', es = top.dataset.es || '';
+        li.innerHTML = `<span class="gname">${title}</span> <span class="en" lang="en">${en || '—'}</span><span class="es" lang="es">${es || en || '—'}</span>`;
+      } else {
+        li.innerHTML = `<span class="gname">${title}</span> <span class="muted">—</span>`;
+      }
+      list.appendChild(li);
+    });
+    const total = list.children.length;
+    $('#recap-done').innerHTML = `<span class="en" lang="en">${ranked}/${total} ranked</span><span class="es" lang="es">${ranked}/${total} ordenadas</span>`;
+    $('#recap').hidden = total === 0;
+  }
+
+  // ---- init: triads always; one make-your-own group ----
+  const triadsBox = $('#triads');
+  TRIADS.forEach((d, i) => triadsBox.appendChild(buildGroup(d, 't' + i)));
+  $('#custom').appendChild(buildGroup(null, 'cu', true));
+  groups.forEach(applyOrder);
+  updateRecap();
+})();
+</script>
+</body>
+</html>

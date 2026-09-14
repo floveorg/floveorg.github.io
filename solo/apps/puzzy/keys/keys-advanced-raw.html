@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#333333">
+<title>KEYS · raw (all fields)</title>
+<link rel="icon" type="image/svg+xml" href="../favicon-keys.svg">
+<style>
+  /* ~no styling — native controls only; just bilingual + minimal readability */
+  body:not(:has(#lang-es:checked)) .es{display:none}
+  body:has(#lang-es:checked) .en{display:none}
+  html{overflow-x:hidden}
+  body{max-width:760px;margin:0 auto;padding:1rem 1.1rem 4rem;font-family:Georgia,serif;line-height:1.5;overflow-x:hidden;overflow-wrap:break-word}
+  h1{margin:.2rem 0}
+  h2{margin:1.6rem 0 .4rem;border-bottom:1px solid #999;padding-bottom:.2rem;font-size:1.7rem}
+  h3{margin:1rem 0 .3rem;font-size:1.1rem}
+  fieldset{margin:.5rem 0;border:1px solid #ccc}
+  legend{font-weight:bold}
+  label{display:inline-block;margin:.1rem .6rem .1rem 0}
+  .deck{margin:.4rem 0 .9rem;border:1px solid #ddd;padding:.4rem .6rem}
+  .row{margin:.15rem 0}
+  textarea{width:100%;min-height:2.4em}
+  .combo-row{margin:.2rem 0}
+  small{color:#666}
+  .tabs{margin:.6rem 0;display:flex;gap:.4rem;flex-wrap:wrap}
+  .tab{padding:.5rem 1rem;cursor:pointer;min-height:44px}
+  .tab[aria-pressed="true"]{font-weight:bold;text-decoration:underline}
+  /* mobile-superfriendly: 16px controls (no iOS zoom-on-focus), roomy taps */
+  select,input,textarea,button{font-size:16px;font-family:inherit}
+  select,input[type=text],input[type=email],input[type=tel]{min-height:40px;padding:.25rem .4rem;max-width:100%}
+  button,.tab{min-height:40px}
+  label{padding:.2rem .15rem}
+  .row{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem}
+  @media (max-width:560px){
+    body{padding:.8rem .7rem 3rem}
+    h1{font-size:1.4rem} h2{font-size:1.2rem}
+    .deck{padding:.5rem .6rem}
+    textarea{min-height:3em}
+  }
+  /* export status line (set by JS) — styled here so dark mode can reach it */
+  #exp-status{margin-left:.5rem;color:#666;font-size:.85rem}
+  /* dark mode — matches the color-scheme/theme-color we advertise */
+  @media (prefers-color-scheme:dark){
+    body{background:#1a1a1a;color:#e9e9e9}
+    h2{border-bottom-color:#555} .deck{border-color:#444} fieldset{border-color:#444}
+    small,#exp-status{color:#a8a8a8}
+    select,input,textarea,button{background:#2a2a2a;color:#e9e9e9;border-color:#555}
+  }
+</style>
+</head>
+<body>
+<!-- ===== Language — a native radio switch (raw: no worldball, no tier bar) ===== -->
+<fieldset>
+  <legend><span class="en" lang="en">Language</span><span class="es" lang="es">Idioma</span></legend>
+  <label><input type="radio" name="lang" id="lang-en" checked> English</label>
+  <label><input type="radio" name="lang" id="lang-es"> Español</label>
+</fieldset>
+
+<h1>Keys</h1>
+
+<!-- ===== Master mode: free grouping first, then the scored grouping+order ===== -->
+<h2><span class="en" lang="en">Master mode</span><span class="es" lang="es">Modo Maestro</span></h2>
+
+<h3><span class="en" lang="en">Free grouping</span><span class="es" lang="es">Agrupación libre</span></h3>
+<div class="row"><small><span class="en" lang="en">Make the five groups of three you like best right now — no right answer here.</span><span class="es" lang="es">Forma los cinco grupos de tres que más te gusten ahora — aquí no hay respuesta correcta.</span></small></div>
+<div id="free-groups"></div>
+
+<h3><span class="en" lang="en">Objective Grouping</span><span class="es" lang="es">Agrupación objetiva</span></h3>
+<div class="row"><small><span class="en" lang="en">Re-make the canonical triads and order them abstract → concrete.</span><span class="es" lang="es">Rehaz las tríadas canónicas y ordénalas de abstracto a concreto.</span></small></div>
+<div id="master-groups"></div>
+
+<!-- ===== Check + pass: correct groups/order (or "keys") unlocks the modes ===== -->
+<div class="row" id="check-row">
+  <button type="button" id="check-btn"><span class="en" lang="en">Check</span><span class="es" lang="es">Comprobar</span></button>
+  <label><span class="en" lang="en">Pass</span><span class="es" lang="es">Clave</span>: <input type="text" id="pass" name="pass" maxlength="8" autocomplete="off" spellcheck="false"></label>
+  <span id="check-result"></span>
+</div>
+
+<!-- ===== Locked content — everything below the pass field stays collapsed until
+     the pass is added or the objective grouping is correct (see tryUnlock) ===== -->
+<div id="locked" hidden>
+
+<!-- ===== Mode tabs — shown in inverse order (Free → Normal) ===== -->
+<div class="tabs" id="mode-tabs">
+  <button type="button" class="tab" data-mode="free" aria-pressed="false"><span class="en" lang="en">Free</span><span class="es" lang="es">Libre</span></button>
+  <button type="button" class="tab" data-mode="creative" aria-pressed="false"><span class="en" lang="en">Creative</span><span class="es" lang="es">Creativo</span></button>
+  <button type="button" class="tab" data-mode="adventure" aria-pressed="false"><span class="en" lang="en">Adventure</span><span class="es" lang="es">Aventura</span></button>
+  <button type="button" class="tab" data-mode="normal" aria-pressed="true"><span class="en" lang="en">Normal</span><span class="es" lang="es">Normal</span></button>
+</div>
+
+<!-- ===== Decks (rendered per the active tab) ===== -->
+<h2><span class="en" lang="en">Decks — order each + why</span><span class="es" lang="es">Mazos — ordena cada uno + por qué</span></h2>
+<div id="decks"></div>
+<div class="deck" id="custom-deck">
+  <h3><span class="en" lang="en">Your group</span><span class="es" lang="es">Tu grupo</span>:
+    <input type="text" name="custom-title" placeholder="…" data-aria-en="Your group · title" data-aria-es="Tu grupo · título"></h3>
+  <div id="custom-items"></div>
+  <div class="row"><span class="en" lang="en">Why</span><span class="es" lang="es">Por qué</span>: <textarea name="custom-why" data-aria-en="Why — your group" data-aria-es="Por qué — tu grupo"></textarea></div>
+</div>
+
+<!-- ===== New perspective: the main decks again, under the objective angle ===== -->
+<h2><span class="en" lang="en">New perspective · Objective &amp; General</span><span class="es" lang="es">Nueva perspectiva · Objetiva y General</span></h2>
+<div id="persp-decks"></div>
+<div class="row"><span class="en" lang="en">Note</span><span class="es" lang="es">Nota</span>: <textarea name="persp-note" data-aria-en="Note" data-aria-es="Nota"></textarea></div>
+
+<!-- ===== Favourites → combos ===== -->
+<h2><span class="en" lang="en">Favourites</span><span class="es" lang="es">Favoritas</span></h2>
+<div class="row"><small><span class="en" lang="en">Choose three items from the main decks; their combos appear below.</span><span class="es" lang="es">Elige tres ítems de los mazos principales; sus combinaciones aparecen abajo.</span></small></div>
+<div id="fav-items"></div>
+<h3><span class="en" lang="en">Combos</span><span class="es" lang="es">Combinaciones</span></h3>
+<div id="combos"><small><span class="en" lang="en">Pick three favourites above.</span><span class="es" lang="es">Elige tres favoritas arriba.</span></small></div>
+
+<!-- ===== Save — the collected field data straight to files (raw: no summary,
+     no share/publish; four data formats only) ===== -->
+<h2><span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></h2>
+<div class="row">
+  <label><input type="checkbox" name="fmt" value="md" checked> MD</label>
+  <label><input type="checkbox" name="fmt" value="csv"> CSV</label>
+  <label><input type="checkbox" name="fmt" value="json"> JSON</label>
+  <label><input type="checkbox" name="fmt" value="html"> HTML</label>
+  <button type="button" id="btn-download"><span class="en" lang="en">⬇ Download</span><span class="es" lang="es">⬇ Descargar</span></button>
+</div>
+
+</div><!-- /#locked -->
+
+<script>
+(() => {
+  "use strict";
+  const DECKS = [
+    { en:'Philosophy', es:'Filosofía',  items:[['Joy','Alegría'],['Love','Amor'],['Wisdom','Sabiduría']] },
+    { en:'Psicosocial', es:'Psicosocial', items:[['Local','Local'],['Personal','Personal'],['Social','Social']] },
+    { en:'Service', es:'Servicio',       items:[['Gift','Regalo'],['Lend','Prestar'],['Exchange','Intercambio']] },
+    { en:'Economy', es:'Economía',       items:[['Craft','Artesanía'],['Ecological','Ecológico'],['Offer','Oferta']] },
+    { en:'Journalism', es:'Periodismo',  items:[['Why','Por qué'],['What','Qué'],['How','Cómo']] },
+    { en:'Time', es:'Tiempo',            items:[['Future','Futuro'],['Past','Pasado'],['Present','Presente']], extra:true },
+    { en:'Metaphysics', es:'Metafísica', items:[['Tao','Tao'],['Yang','Yang'],['Yin','Yin']], extra:true },
+    { en:'Space', es:'Espacio',          items:[['Confluence','Confluencia'],['Macro','Macro'],['Micro','Micro']], extra:true },
+    { en:'Sectors', es:'Sectores',       items:[['Mining','Minería'],['Manufacture','Manufactura'],['Service','Servicio']], extra:true },
+  ];
+  const MAIN = DECKS.filter(d => !d.extra);   // the triads (favourites pick from these)
+  const $ = id => document.getElementById(id), $$ = s => document.querySelectorAll(s), q = s => document.querySelector(s);
+  const bx = (en, es) => `<span class="en" lang="en">${en}</span><span class="es" lang="es">${es}</span>`;
+  const ordOpts = n => { let o = '<option value="">–</option>'; for (let r = 1; r <= n; r++) o += `<option>${r}</option>`; return o; };
+  // i18n for things CSS can't toggle (<option> text, placeholders): re-text them
+  // from data-en/data-es (or data-ph-en/data-ph-es) on language change.
+  const curLang = () => $('lang-es').checked ? 'es' : 'en';
+  function applyLang(){
+    const li = curLang();
+    document.documentElement.lang = li;   // keep <html lang> in sync (valid + a11y)
+    $$('option[data-en]').forEach(o => { o.textContent = o.dataset[li]; });
+    $$('[data-ph-en]').forEach(el => { el.placeholder = (li === 'es' ? el.dataset.phEs : el.dataset.phEn); });
+    $$('[data-aria-en]').forEach(el => { el.setAttribute('aria-label', li === 'es' ? el.dataset.ariaEs : el.dataset.ariaEn); });
+  }
+  // one item row: an order select (1..n) + the word (preset, or a blank input)
+  const itemRow = (gid, ci, en, es, n, blank) => {
+    const word = blank
+      ? `<input type="text" name="${gid}-w${ci}" placeholder="…" size="14" data-aria-en="${en} (your word)" data-aria-es="${es} (tu palabra)">`
+      : bx(en, es);
+    return `<div class="row"><select name="${gid}-${ci}" data-aria-en="${en} · order" data-aria-es="${es} · orden">${ordOpts(n)}</select> ${word}</div>`;
+  };
+  const deckBlock = (gid, d, blankFn) => {
+    const n = d.items.length;
+    const rows = d.items.map((it, ci) => itemRow(gid, ci, it[0], it[1], n, blankFn ? blankFn(ci, n) : false)).join('');
+    return `<div class="deck"><h3>${bx(d.en, d.es)}</h3>${rows}`
+         + `<div class="row">${bx('Why', 'Por qué')}: <textarea name="${gid}-why" data-aria-en="Why — ${d.en}" data-aria-es="Por qué — ${d.es}"></textarea></div></div>`;
+  };
+
+  // ---- decks, displayed per the active mode tab ----
+  // normal: all preset · adventure: last 1 blank · creative: last 2 blank · free: all blank
+  const BLANKS = { normal:0, adventure:1, creative:2, free:99 };
+  function renderDecks(mode){
+    const k = BLANKS[mode] || 0;
+    const blankFn = (ci, n) => (mode === 'free') ? true : (ci >= n - k);
+    $('decks').innerHTML = DECKS.map((d, gi) => deckBlock('d' + gi, d, blankFn)).join('');
+  }
+  $$('#mode-tabs .tab').forEach(t => t.addEventListener('click', () => {
+    $$('#mode-tabs .tab').forEach(x => x.setAttribute('aria-pressed', 'false'));
+    t.setAttribute('aria-pressed', 'true');
+    renderDecks(t.dataset.mode);
+    applyLang();   // re-text option + aria labels on the freshly rendered controls
+    saveState();   // remember the chosen mode
+  }));
+  renderDecks('normal');
+
+  // custom group: 3 editable words, each with an order select
+  $('custom-items').innerHTML = [0, 1, 2].map(ci =>
+    `<div class="row"><select name="cu-${ci}" data-aria-en="your word ${ci+1} · order" data-aria-es="tu palabra ${ci+1} · orden">${ordOpts(3)}</select> `
+    + `<input type="text" name="cu-word-${ci}" placeholder="…" data-aria-en="your word ${ci+1}" data-aria-es="tu palabra ${ci+1}"></div>`).join('');
+
+  // free grouping + master mode: five groups of three, picked from the main pool.
+  // Same UI for both; the master one (mg) is what the Check validates, the free
+  // one (fg) is never checked.
+  const POOL = [];
+  MAIN.forEach(d => d.items.forEach(it => POOL.push(it)));
+  const wordOpts = '<option value="">–</option>' + POOL.map((it, i) => `<option value="${i}" data-en="${it[0]}" data-es="${it[1]}">${it[0]}</option>`).join('');
+  const groupHTML = (prefix, g) => {
+    const picks = [0,1,2].map(c => `<div class="row"><select name="${prefix}${g}-${c}" data-aria-en="Group ${g} · word ${c+1}" data-aria-es="Grupo ${g} · palabra ${c+1}">${wordOpts}</select></div>`).join('');
+    return `<div class="deck"><h3>${bx('Group', 'Grupo')} ${g}</h3>`
+      + `<div class="row"><label>${bx('Order (abstract→concrete)', 'Orden (abstracto→concreto)')}: `
+      + `<select name="${prefix}${g}-ord" data-aria-en="Group ${g} · order" data-aria-es="Grupo ${g} · orden">${ordOpts(5)}</select></label></div>`
+      + picks
+      + `<div class="row">${bx('Why', 'Por qué')}: <textarea name="${prefix}${g}-why" data-aria-en="Why — Group ${g}" data-aria-es="Por qué — Grupo ${g}"></textarea></div></div>`;
+  };
+  const renderGroups = (boxId, prefix) => { $(boxId).innerHTML = [1,2,3,4,5].map(g => groupHTML(prefix, g)).join(''); };
+  renderGroups('free-groups', 'fg');     // exploratory — never checked
+  renderGroups('master-groups', 'mg');   // validated by the Check button
+
+  // new perspective (Objective & General): the MAIN decks only, a why on each
+  $('persp-decks').innerHTML = MAIN.map((d, gi) => deckBlock('pd' + gi, d, null)).join('');
+
+  // favourites: pick three items from the MAIN decks → produce the combos
+  // (the three-words combo + the pairs), each with a ⇄ switch to its reverse
+  const favBox = $('fav-items'), combos = $('combos');
+  const flat = [];
+  MAIN.forEach(d => d.items.forEach(it => flat.push({ en: it[0], es: it[1] })));
+  favBox.innerHTML = flat.map((it, i) =>
+    `<label class="row"><input type="checkbox" class="fav" name="fav" value="${i}"> ${bx(it.en, it.es)}</label>`).join('');
+  const chosen = () => Array.from(favBox.querySelectorAll('.fav:checked'));
+  const defName = s => 'def-' + s.replace(/[^a-z0-9]+/gi, '_');   // stable name per combo (for persistence)
+  // the <b>combo</b> + its definition input — shared by the initial render and the ⇄ reveal
+  const comboInner = (en, es) => `<b>${bx(en, es)}</b> <input type="text" name="${defName(en)}" data-ph-en="definition" data-ph-es="definición" placeholder="definition" size="26" data-aria-en="definition — ${en}" data-aria-es="definición — ${es}">`;
+  const comboRow = (en, es, revEn, revEs) => {
+    const sw = revEn ? `<button type="button" class="swap" data-en="${revEn}" data-es="${revEs}" aria-label="reverse ${en}">⇄</button> ` : '';
+    return `<div class="combo-row">${sw}${comboInner(en, es)}</div>`;
+  };
+  function renderCombos(){
+    const it = chosen().map(c => flat[+c.value]);
+    if (it.length < 2){ combos.innerHTML = `<small>${bx('Pick three favourites above.', 'Elige tres favoritas arriba.')}</small>`; return; }
+    let html = '';
+    if (it.length === 3){   // the three-words combo first
+      const e = it.map(x => x.en), s = it.map(x => x.es);
+      html += comboRow(e.join(' '), s.join(' '), e.slice().reverse().join(' '), s.slice().reverse().join(' '));
+    }
+    for (let a = 0; a < it.length; a++)
+      for (let b = a + 1; b < it.length; b++)
+        html += comboRow(it[a].en + ' + ' + it[b].en, it[a].es + ' + ' + it[b].es,
+                         it[b].en + ' + ' + it[a].en, it[b].es + ' + ' + it[a].es);
+    combos.innerHTML = html;
+    applyLang();   // set the new definition placeholders to the active language
+  }
+  favBox.addEventListener('change', (e) => {
+    if (e.target.classList.contains('fav') && e.target.checked && chosen().length > 3) e.target.checked = false; // cap at 3
+    renderCombos();
+  });
+  combos.addEventListener('click', (e) => {   // ⇄ reveal the reversed combo below (once)
+    const b = e.target.closest('.swap'); if (!b) return;
+    const row = document.createElement('div'); row.className = 'combo-row';
+    row.innerHTML = comboInner(b.dataset.en, b.dataset.es);
+    b.closest('.combo-row').after(row);
+    b.disabled = true;
+    applyLang();
+  });
+
+  // ---- master check: correct grouping + ordering (or pass "keys") unlocks the modes ----
+  // POOL is the 15 main words in triad order, so word index i belongs to triad ⌊i/3⌋.
+  function masterValid(){
+    const seen = new Set();
+    for (let g = 1; g <= 5; g++){
+      const idxs = [0,1,2].map(c => q(`[name="mg${g}-${c}"]`).value);
+      if (idxs.some(v => v === '')) return false;
+      const nums = idxs.map(Number);
+      if (new Set(nums).size !== 3) return false;                       // a word repeated in the group
+      const triad = Math.floor(nums[0] / 3);
+      if (!nums.every(n => Math.floor(n / 3) === triad)) return false;   // words from different triads
+      if (seen.has(triad)) return false;                                // triad used twice
+      seen.add(triad);
+    }
+    if (seen.size !== 5) return false;
+    const ords = [1,2,3,4,5].map(g => q(`[name="mg${g}-ord"]`).value);
+    if (ords.some(v => v === '')) return false;
+    return new Set(ords).size === 5;                                    // a full 1..5 ordering
+  }
+  const passEl = $('pass'), resEl = $('check-result');
+  function tryUnlock(showMsg){
+    const ok = passEl.value.trim().toLowerCase() === 'keys' || masterValid();
+    if (ok) $('locked').hidden = false;
+    if (showMsg) resEl.innerHTML = ok
+      ? bx('✓ unlocked', '✓ desbloqueado')
+      : bx('✗ not yet — fix the groups &amp; order', '✗ aún no — corrige los grupos y el orden');
+  }
+  $('check-btn').addEventListener('click', () => tryUnlock(true));
+  passEl.addEventListener('input', () => { if (passEl.value.trim().toLowerCase() === 'keys') tryUnlock(true); });
+
+  // language radios re-text the <option>s and placeholders CSS can't toggle
+  $$('input[name="lang"]').forEach(r => r.addEventListener('change', applyLang));
+  applyLang();
+
+  // ---- persistence: keep the whole form across reloads (localStorage) ----
+  const LS_KEY = 'keys-advanced-raw-v1';
+  const keyOf = el => el.name + '::' + (el.id || el.value || '');   // unique per control
+  function saveState(){
+    const s = {};
+    $$('input[name], select[name], textarea[name]').forEach(el => {
+      if (el.type === 'checkbox' || el.type === 'radio') s[keyOf(el)] = el.checked;
+      else s[el.name] = el.value;
+    });
+    const mt = q('#mode-tabs .tab[aria-pressed="true"]');
+    if (mt) s['@mode'] = mt.dataset.mode;
+    if (!$('locked').hidden) s['@unlocked'] = true;
+    try { localStorage.setItem(LS_KEY, JSON.stringify(s)); } catch (_) {}
+  }
+  function applyState(s){
+    Object.keys(s).forEach(k => {
+      if (k[0] === '@') return;
+      const sep = k.indexOf('::');
+      if (sep >= 0){
+        const name = k.slice(0, sep), tag = k.slice(sep + 2);
+        $$(`[name="${CSS.escape(name)}"]`).forEach(el => { if ((el.id || el.value || '') === tag) el.checked = !!s[k]; });
+      } else {
+        const el = q(`[name="${CSS.escape(k)}"]`);
+        if (el) el.value = s[k];
+      }
+    });
+  }
+  (function restoreState(){
+    let s; try { s = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); } catch (_) {}
+    if (s){
+      if (s['@mode'] && s['@mode'] !== 'normal'){
+        const tab = [...$$('#mode-tabs .tab')].find(t => t.dataset.mode === s['@mode']);
+        if (tab){ $$('#mode-tabs .tab').forEach(x => x.setAttribute('aria-pressed', 'false')); tab.setAttribute('aria-pressed', 'true'); renderDecks(s['@mode']); }
+      }
+      applyState(s);
+      if (Object.keys(s).some(k => k.startsWith('fav::'))){ renderCombos(); applyState(s); }   // rebuild combos, then refill definitions
+      applyLang();        // re-text restored options / placeholders / aria-labels
+      tryUnlock(false);   // re-unlock if the restored pass / master groups are valid
+      if (s['@unlocked']) $('locked').hidden = false;
+    }
+    document.addEventListener('input', saveState);
+    document.addEventListener('change', saveState);
+  })();
+
+  // ============================================================
+  // EXPORT — gather the composed content and ship it correctly.
+  // The buttons serialise the live form (in the active language) into
+  // text formats; Download honours the Save format checkboxes.
+  // ============================================================
+
+  // visible text in the active language: drop the other-language spans, then read
+  // what's left (keeps trailing text like the "1" in "Group 1", unlike a single
+  // .en lookup which would miss it).
+  const vis = (el) => {
+    if (!el) return '';
+    const other = curLang() === 'en' ? 'es' : 'en';
+    const c = el.cloneNode(true);
+    c.querySelectorAll('.' + other).forEach(n => n.remove());
+    return c.textContent.trim().replace(/\s+/g, ' ');
+  };
+  // active-language string for export labels/toasts (the app is EN/ES bilingual)
+  const T = (en, es) => curLang() === 'es' ? es : en;
+  // <app>-summary.<ext>, "summary" localized to the active language (§13.12 F)
+  const fileBase = () => 'keys-' + T('summary', 'resumen');
+
+  // a preset/blank deck block: order-select + word, plus a Why textarea
+  // one item row: order select + a word (free-text input, else preset span)
+  function collectItemRow(row){
+    const sel = row.querySelector('select');
+    const inp = row.querySelector('input[type="text"]');
+    const span = row.querySelector(':scope > span.' + curLang());
+    const word = inp ? inp.value.trim() : (span ? span.textContent.trim() : '');
+    const order = sel ? sel.value : '';
+    return (word || order) ? { order, word } : null;
+  }
+  function collectDeck(deckEl){
+    const title = vis(deckEl.querySelector('h3'));
+    const items = []; let why = '';
+    deckEl.querySelectorAll(':scope > .row').forEach(row => {
+      const ta = row.querySelector('textarea'); if (ta){ why = ta.value.trim(); return; }
+      const it = collectItemRow(row); if (it) items.push(it);
+    });
+    return { title, items, why };
+  }
+  // a 5-of-3 group block: an -ord select + three word selects + a Why
+  function collectGroup(deckEl){
+    const title = vis(deckEl.querySelector('h3'));
+    const ordSel = deckEl.querySelector('select[name$="-ord"]');
+    const order = ordSel ? ordSel.value : '';
+    const words = [];
+    deckEl.querySelectorAll('select').forEach(sel => {
+      if (sel.name.endsWith('-ord') || sel.value === '') return;
+      const pair = POOL[+sel.value];            // value is the index into POOL ([en, es])
+      if (pair) words.push(curLang() === 'en' ? pair[0] : pair[1]);
+    });
+    const ta = deckEl.querySelector('textarea');
+    return { title, order, words, why: ta ? ta.value.trim() : '' };
+  }
+  function collectCustom(){
+    const wrap = $('custom-deck'); if (!wrap) return null;
+    const title = wrap.querySelector('input[name="custom-title"]')?.value || '';
+    const items = [];
+    wrap.querySelectorAll('#custom-items .row').forEach(row => {
+      const it = collectItemRow(row); if (it) items.push(it);
+    });
+    const ta = wrap.querySelector('textarea[name="custom-why"]');
+    return { title: title.trim() || T('Your group', 'Tu grupo'), items, why: ta ? ta.value.trim() : '' };
+  }
+  function collectFavourites(){
+    const out = [];
+    $$('#combos .combo-row').forEach(row => {
+      const b = row.querySelector('b'); const inp = row.querySelector('input[type="text"]');
+      const combo = b ? vis(b) : ''; if (combo) out.push({ combo, definition: inp ? inp.value.trim() : '' });
+    });
+    return out;
+  }
+  function collect(){
+    const nonEmptyDeck = d => d.why || d.items.some(i => i.word || i.order);
+    const nonEmptyGroup = g => g.why || g.words.length || g.order;
+    const modeBtn = q('#mode-tabs .tab[aria-pressed="true"]');
+    const custom = collectCustom();
+    return {
+      mode: modeBtn ? (modeBtn.dataset.mode || vis(modeBtn)) : 'normal',
+      free:   Array.from($$('#free-groups .deck')).map(collectGroup).filter(nonEmptyGroup),
+      master: Array.from($$('#master-groups .deck')).map(collectGroup).filter(nonEmptyGroup),
+      decks:  Array.from($$('#decks .deck')).map(collectDeck).filter(nonEmptyDeck),
+      custom: (custom && (custom.items.length || custom.why)) ? custom : null,
+      perspective: {
+        decks: Array.from($$('#persp-decks .deck')).map(collectDeck).filter(nonEmptyDeck),
+        note: (q('[name="persp-note"]')?.value || '').trim()
+      },
+      favourites: collectFavourites()
+    };
+  }
+
+  // ---- serialisers (one per format) ----
+  // The export model: every section normalised to one shape so all four formats
+  // iterate the same structure. A section is { key, title, entries[], note? };
+  // an entry is { title, order, items:[{order,word}], why }. Groups (free,
+  // master) fold their group-order into entry.order and their words into items;
+  // favourites fold combo->word and definition->why; decks/custom/perspective
+  // are already entries. Add or reorder a section here and every format follows.
+  function sections(d){
+    const grp  = g  => ({ title:g.title, order:g.order, items:g.words.map(w => ({ order:'', word:w })), why:g.why });
+    const deck = dk => ({ title:dk.title, order:'', items:dk.items, why:dk.why });
+    const fav  = f  => ({ title:'', order:'', items:[{ order:'', word:f.combo }], why:f.definition });
+    const out = [];
+    if (d.free.length)   out.push({ key:'free',   title:T('Free grouping','Agrupación libre'),         entries:d.free.map(grp) });
+    if (d.master.length) out.push({ key:'master', title:T('Objective grouping','Agrupación objetiva'), entries:d.master.map(grp) });
+    if (d.decks.length)  out.push({ key:'deck',   title:T('Decks','Mazos'),                            entries:d.decks.map(deck) });
+    if (d.custom)        out.push({ key:'custom', title:T('Your group','Tu grupo'),                    entries:[deck(d.custom)] });
+    if (d.perspective.decks.length || d.perspective.note)
+                         out.push({ key:'perspective', title:T('New perspective','Nueva perspectiva'), entries:d.perspective.decks.map(deck), note:d.perspective.note });
+    if (d.favourites.length) out.push({ key:'fav', title:T('Favourites','Favoritas'), entries:d.favourites.map(fav) });
+    return out;
+  }
+  function toText(d, md){
+    const H2 = md ? s => `## ${s}` : s => `\n${s}\n${'─'.repeat(s.length)}`;
+    const H3 = md ? s => `### ${s}` : s => `${s}:`;
+    const b = md ? '- ' : '  • ';
+    const kw = T('Keys', 'Claves'), modeL = T('Mode', 'Modo');
+    const L = [ md ? `# ${kw}` : kw.toUpperCase(), md ? `_${modeL}: ${d.mode}_` : `${modeL}: ${d.mode}`, '' ];
+    const item = it => `${b}${it.order ? it.order + '. ' : ''}${it.word || '—'}`;
+    sections(d).forEach(sec => {
+      L.push(H2(sec.title));
+      sec.entries.forEach(e => {
+        if (e.title) L.push(H3(`${e.title}${e.order ? ' (order ' + e.order + ')' : ''}`));
+        e.items.forEach(it => L.push(item(it)));
+        if (e.why) L.push(`${md ? '' : '  '}${T('Why', 'Por qué')}: ${e.why}`);
+        L.push('');
+      });
+      if (sec.note) L.push(`${md ? '' : '  '}${T('Note', 'Nota')}: ${sec.note}`, '');
+    });
+    return L.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
+  }
+  function toCSV(d){
+    const rows = [['field', 'value']];
+    const cell = v => (v == null || String(v).trim() === '' || v === '—') ? '---' : String(v);
+    const add = (k, v) => rows.push([k, cell(v)]);
+    add('mode', d.mode);
+    sections(d).forEach(sec => {
+      sec.entries.forEach((e, i) => {
+        const p = `${sec.key}${i+1}`;
+        add(`${p}_title`, e.title);
+        add(`${p}_order`, e.order);
+        e.items.forEach((it, j) => { add(`${p}_item${j+1}_order`, it.order); add(`${p}_item${j+1}_word`, it.word); });
+        add(`${p}_why`, e.why);
+      });
+      if ('note' in sec) add(`${sec.key}_note`, sec.note);
+    });
+    return rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+  }
+  // HTML escaper: < > & (this build ships md · csv · json · html — no xml/jpg)
+  const escHTML = s => String(s).replace(/[<>&]/g, c => ({ '<':'&lt;', '>':'&gt;', '&':'&amp;' }[c]));
+  function toHTML(d){
+    const esc = escHTML;
+    const itemsUL = items => '<ul>' + items.map(it => `<li>${it.order ? '<b>' + esc(it.order) + '.</b> ' : ''}${esc(it.word || '—')}</li>`).join('') + '</ul>';
+    const why = w => w ? `<p class="why">${esc(w)}</p>` : '';
+    const S = [];
+    sections(d).forEach(sec => {
+      S.push(`<h2>${esc(sec.title)}</h2>`);
+      sec.entries.forEach(e => S.push(
+        (e.title ? `<h3>${esc(e.title)}${e.order ? ` <small>(order ${esc(e.order)})</small>` : ''}</h3>` : '')
+        + itemsUL(e.items) + why(e.why)));
+      if (sec.note) S.push(why(T('Note', 'Nota') + ': ' + sec.note));
+    });
+    return `<!doctype html><html lang="${curLang()}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(T('keys — summary', 'claves — resumen'))}</title>`
+      + `<style>body{font-family:Georgia,serif;line-height:1.5;max-width:760px;margin:0 auto;padding:1.5rem;color:#222}`
+      + `h1{margin:.2rem 0}h2{border-bottom:1px solid #999;padding-bottom:.2rem;margin:1.4rem 0 .4rem}h3{margin:.9rem 0 .2rem}`
+      + `ul{margin:.2rem 0 .5rem 1.2rem}.why{color:#555;font-style:italic;margin:.2rem 0 .4rem}small{color:#666}</style></head>`
+      + `<body><h1>${esc(T('Keys', 'Claves'))}</h1><p><small>${esc(T('Mode', 'Modo'))}: ${esc(d.mode)}</small></p>${S.join('')}</body></html>`;
+  }
+  function serializeData(d, fmt){
+    if (fmt === 'json') return JSON.stringify(d, null, 2);
+    if (fmt === 'csv')  return toCSV(d);
+    if (fmt === 'html') return toHTML(d);
+    return toText(d, true);   // md
+  }
+
+  // ---- delivery: download the collected data in the four raw formats ----
+  const MIME = { md:'text/markdown', html:'text/html', csv:'text/csv', json:'application/json' };
+  function downloadFile(name, blob){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  const download = (name, mime, content) => downloadFile(name, new Blob([content], { type: mime + ';charset=utf-8' }));
+  let statusEl;
+  function flash(msg){
+    if (!statusEl){
+      statusEl = document.createElement('span'); statusEl.id = 'exp-status'; statusEl.setAttribute('aria-live', 'polite');
+      const dl = $('btn-download');
+      (dl && dl.parentNode ? dl.parentNode : document.body).appendChild(statusEl);
+    }
+    statusEl.textContent = msg; clearTimeout(statusEl._t); statusEl._t = setTimeout(() => { statusEl.textContent = ''; }, 4000);
+  }
+  const dlBtn = $('btn-download');
+  if (dlBtn) dlBtn.addEventListener('click', () => {
+    let fmts = Array.from($$('input[name="fmt"]:checked')).map(c => c.value).filter(f => MIME[f]);
+    if (!fmts.length) fmts = ['md'];
+    const d = collect();   // gather once; every format serialises the same snapshot
+    // stagger: browsers throttle several programmatic downloads fired at once
+    fmts.forEach((f, i) => setTimeout(() => download(`${fileBase()}.${f}`, MIME[f], serializeData(d, f)), i * 150));
+    flash(`${T('saved', 'guardado')} ${fmts.map(f => '.' + f).join(' ')} ✓`);
+  });
+})();
+</script>
+</body>
+</html>

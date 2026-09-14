@@ -1,0 +1,37 @@
+sequenceDiagram
+    participant A as Person
+    participant B as flovebot / LovyBot
+    participant C as Cron v1 · Webhook v2
+    participant M as 🔒 Mod. risa · lovy
+    participant R as Cloudflare R2 (risa · lovy · anonimo)
+    participant G as risa.json per app
+    participant U as central/users (author page)
+    participant AUTH as authy (levels L1–L5)
+    participant CH as 📢 Channel per app
+    participant W as Web + Mini App
+
+    A->>B: 1· /start → "pick app" menu 😹 risa · 💗 lovy
+    Note over A,B: 2· (1st time) START · licence notice
+    A->>B: 3· audio / video ≤ 1 min (lovy)
+    B-->>A: 4· Identity: ① Telegram ID ② Public name ③ Anonymous
+    A->>B: 5· chosen option (① · ①+② · ③)
+    B-->>A: 5b· Confirm: ID only or ID + Public name?
+    A->>B: 5c· confirmed
+    Note over B: ①+② → the ID is hidden (hash 🔒) and IS the author handle · only ① → direct ID · ③ → anonymous (anonimo/ folder)
+    B-->>A: 6· Tags (default "libre") · word = key (first-wins, suffixes)
+    A->>B: 7· confirmation
+    C->>B: 8· getUpdates / webhook (instant)
+    B->>G: queue.json per app
+    B->>M: clip + word + tags + ✅/🗑
+    M-->>B: 9· ✅ Publish
+    B->>R: ffmpeg → app bucket (anonimo/ if anonymous)
+    B->>G: prepend risa.json (app) + commit
+    B->>U: registers users/KEY/clips.json (author)
+    B->>CH: post to the app channel
+    B-->>M: edits "✅ Published"
+    W->>G: fetch risa.json (app)
+    W->>U: fetch users/KEY/ (author page)
+    Note over W,AUTH: 10· Claim (v2): the hash is the proof of authorship → "Claim it" → nonce → DM confirm → own profile on the web (your laughs + favourites)
+    Note over W: 11· Favourites: ❤️ public (on your page) · ⭐ private (only you, per authy level)
+    B-->>A: 12· Ext: /play · /radio · unified /search · /chain (lovy) · Mini App · inline
+    CH-->>A: 13· listen on the app channel

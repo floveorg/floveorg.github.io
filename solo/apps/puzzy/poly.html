@@ -1,0 +1,1622 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Puzzy — Polarities · FLOVE</title>
+  <link rel="icon" type="image/svg+xml" href="favicon-poly.svg">
+  <style data-flove-inlined="flove.css">
+/* inlined from apps/flove.css */
+/* ============================================================
+   🌱 flove.css · shared identity layer for all FLOVE demos
+   --------------------------------------------------------------
+   Design intent
+   - One cohesive frame around 13 very different apps.
+   - Each app keeps its own palette by overriding `--app-*` tokens
+     in its local `:root`. This file only paints the common skin.
+   - Two visual primitives identify the family everywhere:
+       1. The 🌱 sprout mark (brand)
+       2. The flove-bar at the very top (back to launcher + app name)
+   - A common motion vocabulary (gentle lift, soft fade, wiggle).
+   ============================================================ */
+
+:root {
+  /* The sprout — flove brand mark. Used as logo glyph everywhere. */
+  --flove-mark: "🌱";
+
+  /* Per-app overridable accent. Apps redeclare these. */
+  --app-accent:        #6ee7b7;
+  --app-accent-soft:   #a7f3d0;
+  --app-ink-on-accent: #042418;
+
+  /* Family geometry & motion (constant across apps) */
+  --flove-radius-sm: 12px;
+  --flove-radius:    20px;
+  --flove-radius-lg: 28px;
+  --flove-radius-pill: 999px;
+  --flove-ease:    cubic-bezier(.2,.8,.2,1);
+  --flove-fast:    .15s var(--flove-ease);
+  --flove-medium:  .25s var(--flove-ease);
+  --flove-slow:    .4s  var(--flove-ease);
+
+  /* Family typography. Apps may override font-family but should keep these scales. */
+  --flove-font-ui: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --flove-font-display: 'Georgia', 'Times New Roman', serif;
+}
+
+/* ============================================================
+   THE FLOVE BAR — a thin sticky strip at the very top of every
+   app. Holds the back-to-launcher link, the sprout brand,
+   and the app name. Lives ABOVE every app's own header.
+   ============================================================ */
+.flove-bar {
+  position: sticky;
+  top: 0;
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  font-family: var(--flove-font-ui);
+  font-size: 13px;
+  letter-spacing: .3px;
+  background: rgba(255,255,255,.55);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  color: #1a1a1a;
+}
+
+/* Auto dark variant when app body is dark */
+@media (prefers-color-scheme: dark) {
+  .flove-bar.flove-bar--auto {
+    background: rgba(10,12,18,.55);
+    border-bottom-color: rgba(255,255,255,.08);
+    color: #e9ecf3;
+  }
+}
+.flove-bar--dark {
+  background: rgba(10,12,18,.6);
+  border-bottom-color: rgba(255,255,255,.08);
+  color: #e9ecf3;
+}
+
+.flove-bar a.flove-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: inherit;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--flove-radius-pill);
+  transition: background var(--flove-fast), transform var(--flove-fast);
+}
+.flove-bar a.flove-home:hover {
+  background: var(--app-accent-soft);
+  color: var(--app-ink-on-accent);
+  transform: translateX(-2px);
+}
+.flove-bar .flove-mark {
+  font-size: 16px;
+  color: var(--app-accent);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--app-accent) 35%, transparent));
+}
+.flove-bar .flove-app-name {
+  font-weight: 500;
+  opacity: .85;
+}
+.flove-bar .flove-spacer { flex: 1; }
+.flove-bar .flove-tag {
+  font-size: 11px;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  opacity: .55;
+}
+
+/* ============================================================
+   SPROUT ANIMATION — used wherever a `.flove-sprout` lives
+   (launcher hero, footer badges, splash). Subtle slow rotation.
+   ============================================================ */
+.flove-sprout {
+  display: inline-block;
+  font-style: normal;
+  animation: flove-spin 12s linear infinite;
+  transform-origin: center;
+  color: var(--app-accent);
+}
+.flove-sprout.flove-sprout--still { animation: none; }
+@keyframes flove-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   FLOVE FOOTER BADGE — small "back to launcher" pill that any
+   app can drop in at the bottom of the page.
+   ============================================================ */
+.flove-footer-badge {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-family: var(--flove-font-ui);
+  font-size: 12px;
+  letter-spacing: .4px;
+  color: #1a1a1a;
+  text-decoration: none;
+  background: rgba(255,255,255,.7);
+  border: 1px solid rgba(0,0,0,.06);
+  border-radius: var(--flove-radius-pill);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 20px rgba(0,0,0,.08);
+  transition: transform var(--flove-fast), box-shadow var(--flove-fast);
+}
+.flove-footer-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0,0,0,.12);
+}
+.flove-footer-badge--dark {
+  background: rgba(20,24,32,.7);
+  color: #e9ecf3;
+  border-color: rgba(255,255,255,.08);
+}
+
+/* ============================================================
+   COMMON UTILITIES — kept tiny on purpose so that each app's
+   own bespoke styles still rule. These are opt-in classes.
+   ============================================================ */
+
+/* Soft glass card */
+.flove-card {
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+  border: 1px solid rgba(127,127,127,.18);
+  border-radius: var(--flove-radius-lg);
+  padding: 18px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.08);
+}
+
+/* Pill shape for tags / chips / nav items */
+.flove-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.22);
+  background: rgba(255,255,255,.04);
+  cursor: pointer;
+  transition: transform var(--flove-fast), background var(--flove-fast), border-color var(--flove-fast);
+}
+.flove-pill:hover { transform: translateY(-1px); border-color: var(--app-accent); }
+.flove-pill[aria-pressed="true"], .flove-pill.is-active {
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  border-color: var(--app-accent);
+}
+
+/* A primary action button — shared shape, app paints color */
+.flove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid var(--app-accent);
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  font-weight: 600;
+  font-family: var(--flove-font-ui);
+  cursor: pointer;
+  transition: transform var(--flove-fast), box-shadow var(--flove-fast), filter var(--flove-fast);
+}
+.flove-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px color-mix(in srgb, var(--app-accent) 40%, transparent); }
+.flove-btn:active { transform: translateY(0); filter: brightness(.95); }
+.flove-btn--ghost {
+  background: transparent;
+  color: inherit;
+  border-color: rgba(127,127,127,.3);
+}
+.flove-btn--ghost:hover { border-color: var(--app-accent); color: var(--app-accent); }
+
+/* Tiny floating toast feedback (optional, used by some apps) */
+.flove-toast {
+  position: fixed;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(20,22,30,.92);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: var(--flove-radius-pill);
+  font-size: 13px;
+  font-family: var(--flove-font-ui);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--flove-medium), transform var(--flove-medium);
+  z-index: 999;
+  box-shadow: 0 12px 30px rgba(0,0,0,.25);
+}
+.flove-toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Wiggle on tap, used by playful elements (launcher tiles, brand mark, …) */
+@keyframes flove-wiggle {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-3deg); }
+  40% { transform: rotate(3deg); }
+  60% { transform: rotate(-2deg); }
+  80% { transform: rotate(2deg); }
+}
+.flove-wiggle { animation: flove-wiggle .4s ease-out; }
+
+/* Soft float used in the launcher tiles and avatars */
+@keyframes flove-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Reduced motion: disable all flove animations */
+@media (prefers-reduced-motion: reduce) {
+  .flove-sprout, .flove-wiggle { animation: none !important; }
+  *, *::before, *::after { transition-duration: .01ms !important; }
+}
+
+/* Mobile: hide the bottom badge so it doesn't compete with app UI */
+@media (max-width: 480px) {
+  .flove-footer-badge { display: none; }
+  .flove-bar { font-size: 12px; padding: 6px 10px; }
+}
+
+/* ============================================================
+   FLOVE-IO ACTION BAR — emitted by flove-io.js (F0).
+   Sits inside a form, gives the user Copy / Save / Share / Publish
+   over the form's current FloveElement payload.
+   ============================================================ */
+.flove-action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  margin-top: 14px;
+  border-radius: var(--flove-radius);
+  background: rgba(127,127,127,.06);
+  border: 1px solid rgba(127,127,127,.18);
+  font-family: var(--flove-font-ui);
+}
+.flove-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid rgba(127,127,127,.3);
+  background: rgba(255,255,255,.04);
+  color: inherit;
+  font-family: inherit;
+  font-size: 13px;
+  border-radius: var(--flove-radius-pill);
+  cursor: pointer;
+  transition: transform var(--flove-fast),
+              border-color var(--flove-fast),
+              background var(--flove-fast);
+}
+.flove-action-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--app-accent);
+}
+.flove-action-btn:active { transform: translateY(0); }
+.flove-action-btn--primary {
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  border-color: var(--app-accent);
+  font-weight: 600;
+}
+.flove-action-btn--primary:hover { filter: brightness(1.05); }
+.flove-action-btn[hidden] { display: none; }
+
+/* Toast variant used by flove-io (slightly tighter, top of footer) */
+.flove-toast--io { bottom: 80px; }
+
+/* ============================================================
+   FLOVE SHELL — feature-driven UI rendered by flove-shell.js.
+   Per-textarea voice + add-another · phrase card · 6-button bar ·
+   insight result · publish modal · format popover.
+   ============================================================ */
+
+/* per-textarea / per-input controls ────────────────────────── */
+.flove-field-wrap {
+  position: relative;
+  display: block;
+}
+.flove-field-wrap > textarea,
+.flove-field-wrap > input {
+  width: 100%;
+  padding-right: 88px;     /* room for the two field buttons */
+}
+.flove-field-tools {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 4px;
+  z-index: 1;
+}
+.flove-field-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.25);
+  background: rgba(255,255,255,.7);
+  color: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--flove-fast), border-color var(--flove-fast),
+              background var(--flove-fast);
+  padding: 0;
+  line-height: 1;
+}
+.flove-field-btn:hover {
+  border-color: var(--app-accent);
+  transform: translateY(-1px);
+}
+.flove-field-btn--voice.is-recording {
+  background: #fb7185;
+  color: #fff;
+  border-color: #fb7185;
+  animation: flove-pulse 1.4s infinite;
+}
+@keyframes flove-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251,113,133,.45); }
+  50%      { box-shadow: 0 0 0 8px rgba(251,113,133,0); }
+}
+
+/* phrase card (phrase + 6-button bar + result panel) ────────── */
+.flove-phrase-card {
+  margin: 18px 0;
+  padding: 16px;
+  background: linear-gradient(180deg, var(--app-accent-soft) 0%,
+                                      color-mix(in srgb, var(--app-accent-soft) 30%, transparent) 100%);
+  border: 1px solid color-mix(in srgb, var(--app-accent) 35%, transparent);
+  border-radius: var(--flove-radius-lg);
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+  font-family: var(--flove-font-ui);
+}
+.flove-phrase {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  font-family: ui-monospace, 'JetBrains Mono', Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--app-ink-on-accent);
+  background: rgba(255,255,255,.6);
+  border-radius: var(--flove-radius);
+  word-break: break-word;
+  min-height: 1.55em;
+}
+.flove-phrase.is-magic {
+  background: linear-gradient(110deg, rgba(255,255,255,.55), rgba(255,255,255,.85));
+  font-style: italic;
+}
+
+/* six-button action bar (overrides the 4-button defaults) ──── */
+.flove-action-bar--six {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  padding: 6px;
+  background: rgba(255,255,255,.5);
+  border-radius: var(--flove-radius);
+  border: 1px solid rgba(127,127,127,.18);
+  margin-top: 0;
+}
+.flove-action-bar--six .flove-action-btn {
+  justify-content: center;
+  padding: 10px 6px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+@media (max-width: 540px) {
+  .flove-action-bar--six .flove-action-btn span:nth-child(2) { display: none; }
+}
+
+/* result panel (insight, publish progress) ─────────────────── */
+.flove-result {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,.7);
+  border: 1px solid rgba(127,127,127,.22);
+  border-radius: var(--flove-radius);
+}
+.flove-result[hidden] { display: none; }
+.flove-result__title {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-ink-on-accent);
+}
+.flove-result__lede {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(0,0,0,.6);
+}
+.flove-result__body {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+.flove-result__list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.flove-result__error {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 13px;
+}
+.flove-result__row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* modal (insight config, publish multi-select) ─────────────── */
+.flove-modal {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  font-family: var(--flove-font-ui);
+}
+.flove-modal__backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.flove-modal__panel {
+  position: relative;
+  width: min(540px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: #fff;
+  color: #1a1a1a;
+  border-radius: var(--flove-radius-lg);
+  padding: 22px;
+  box-shadow: 0 30px 60px rgba(0,0,0,.3);
+  display: grid;
+  gap: 12px;
+}
+.flove-modal__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.flove-modal__lede {
+  margin: 0;
+  color: #52606d;
+  font-size: .9rem;
+}
+.flove-modal label {
+  display: grid;
+  gap: 4px;
+  font-size: .85rem;
+  color: #52606d;
+}
+.flove-modal input,
+.flove-modal textarea,
+.flove-modal select {
+  padding: 10px 12px;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: var(--flove-radius);
+  font: inherit;
+  background: #fff;
+  color: #1a1a1a;
+}
+.flove-modal__row {
+  display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;
+  padding-top: 6px;
+  border-top: 1px solid rgba(0,0,0,.06);
+}
+
+/* publish multi-select list ────────────────────────────────── */
+.flove-publish-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.flove-publish-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: var(--flove-radius);
+  background: rgba(0,0,0,.02);
+}
+.flove-publish-row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-direction: row;
+  font-size: .92rem;
+}
+.flove-publish-kind {
+  font-size: .72rem;
+  letter-spacing: .3px;
+  color: #6b7280;
+  text-transform: uppercase;
+  background: rgba(0,0,0,.04);
+  border-radius: var(--flove-radius-pill);
+  padding: 2px 8px;
+}
+.flove-publish-add {
+  border: 1px dashed rgba(0,0,0,.15);
+  border-radius: var(--flove-radius);
+  padding: 10px 12px;
+}
+.flove-publish-add summary {
+  cursor: pointer;
+  font-size: .85rem;
+  color: #4b5563;
+}
+.flove-publish-add[open] summary { margin-bottom: 8px; }
+.flove-publish-add label { margin-bottom: 6px; }
+
+/* enhanced flove-bar — center categories + right menu ───────── */
+.flove-bar--enhanced .flove-mark,
+.flove-bar--enhanced .flove-sprout {
+  user-select: none;
+  transition: transform var(--flove-fast);
+}
+.flove-bar--enhanced .flove-mark:hover,
+.flove-bar--enhanced .flove-sprout:hover { transform: rotate(20deg) scale(1.08); }
+
+.flove-categories {
+  flex: 1 1 auto;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0 6px;
+  scroll-snap-type: x proximity;
+  justify-content: center;
+}
+.flove-categories::-webkit-scrollbar { display: none; }
+.flove-cat-chip {
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+  padding: 4px 12px;
+  font-size: 12px;
+  letter-spacing: .2px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.25);
+  background: rgba(255,255,255,.5);
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform var(--flove-fast),
+              background var(--flove-fast),
+              border-color var(--flove-fast);
+}
+.flove-cat-chip:hover { border-color: var(--app-accent); transform: translateY(-1px); }
+.flove-cat-chip.is-active {
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  border-color: var(--app-accent);
+}
+
+.flove-menu-btn {
+  width: 36px; height: 36px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.22);
+  background: rgba(255,255,255,.5);
+  color: inherit;
+  font-size: 18px;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--flove-fast), border-color var(--flove-fast);
+}
+.flove-menu-btn:hover { background: var(--app-accent-soft); border-color: var(--app-accent); }
+.flove-menu-btn[aria-expanded="true"] { background: var(--app-accent); color: var(--app-ink-on-accent); }
+
+.flove-menu {
+  width: min(280px, calc(100vw - 24px));
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: var(--flove-radius);
+  box-shadow: 0 18px 40px rgba(0,0,0,.18);
+  padding: 6px;
+  z-index: 200;
+  font-family: var(--flove-font-ui);
+}
+.flove-menu[hidden] { display: none; }
+.flove-menu__section {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.flove-menu__section:last-child { border-bottom: 0; }
+.flove-menu__title {
+  margin: 0 8px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: #6b7280;
+}
+.flove-menu__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 9px 10px;
+  font: inherit;
+  font-size: .9rem;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: var(--flove-radius);
+  cursor: pointer;
+  text-decoration: none;
+}
+.flove-menu__item:hover {
+  background: var(--app-accent-soft);
+  color: var(--app-ink-on-accent);
+}
+
+@media (max-width: 540px) {
+  .flove-categories { gap: 4px; padding: 0 2px; }
+  .flove-cat-chip { padding: 3px 10px; font-size: 11px; }
+}
+
+/* format popover ────────────────────────────────────────────── */
+.flove-popover {
+  z-index: 999;
+  width: 220px;
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: var(--flove-radius);
+  box-shadow: 0 14px 30px rgba(0,0,0,.18);
+  padding: 4px;
+  font-family: var(--flove-font-ui);
+}
+.flove-popover__item {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: var(--flove-radius);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.flove-popover__item:hover {
+  background: var(--app-accent-soft);
+  color: var(--app-ink-on-accent);
+}
+
+</style>
+  <style>
+    :root{
+      /* flove identity overrides — Puzzy: violet accent, teal flourish, on a deep canvas */
+      --app-accent:        #8d89ff;
+      --app-accent-soft:   #c9c6ff;
+      --app-ink-on-accent: #0b0b14;
+
+      /* Puzzy local palette (dark) */
+      --bg:#0b0b0f; --panel:#11131a; --ink:#e9eaf2; --muted:#a3a7b4;
+      --line:#1e2133; --field:#13162a; --accent2:#70f0d3;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--ink); min-height:100%;
+      background:
+        radial-gradient(1000px 700px at 110% -10%, rgba(141,137,255,.16), transparent 60%),
+        radial-gradient(800px 600px at -10% 120%, rgba(112,240,211,.12), transparent 50%),
+        var(--bg);
+      font-family:var(--flove-font-ui); letter-spacing:.2px;
+    }
+
+    /* i18n — pure CSS (§13.2) */
+    .t-es{ display:none }
+    body:has(#ui-lang-es:checked) .t-en{ display:none }
+    body:has(#ui-lang-es:checked) .t-es{ display:inline }
+
+    /* language toggle (lives inside the menu) */
+    .lang{ display:inline-flex; gap:4px }
+    .lang input{ position:absolute; opacity:0; pointer-events:none }
+    .lang label{
+      font-size:12px; font-weight:600; letter-spacing:.4px; padding:4px 12px;
+      border-radius:var(--flove-radius-pill); cursor:pointer; color:#52606d;
+      border:1px solid rgba(0,0,0,.12);
+    }
+    #ui-lang-en:checked ~ label[for=ui-lang-en],
+    #ui-lang-es:checked ~ label[for=ui-lang-es]{
+      color:var(--app-ink-on-accent); background:var(--app-accent); border-color:var(--app-accent);
+    }
+
+    /* shell */
+    .wrap{ max-width:880px; margin:0 auto; padding:1.4rem 1rem 4rem }
+
+    /* hero */
+    .top{ display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin:.2rem 0 1rem }
+    .top h1{
+      margin:0; font-size:1.7rem; letter-spacing:.5px;
+      background:linear-gradient(180deg,#fff,#cfc9ff);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    .ready{
+      display:inline-flex; align-items:center; gap:7px; font-size:.78rem; font-weight:600;
+      color:var(--accent2); background:#0f1120; border:1px solid var(--line);
+      border-radius:var(--flove-radius-pill); padding:.25rem .6rem;
+    }
+    .ready .dot{ width:8px; height:8px; border-radius:50%; background:var(--accent2); box-shadow:0 0 8px var(--accent2) }
+    .lede{ color:var(--muted); margin:0 0 1rem; font-size:.95rem }
+
+    /* THE AGENT — the productive surface, front and center */
+    .agent{
+      border:1px solid var(--line); border-radius:var(--flove-radius);
+      background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));
+      padding:1rem 1.1rem 1.1rem;
+    }
+    .agent textarea{
+      width:100%; min-height:130px; padding:.85rem .85rem; color:var(--ink);
+      background:var(--field); border:1px solid var(--line); border-radius:var(--flove-radius-sm);
+      outline:none; resize:vertical; caret-color:var(--app-accent); font:inherit; line-height:1.5;
+    }
+    .agent textarea:focus{ border-color:var(--app-accent); box-shadow:0 0 0 3px rgba(141,137,255,.18) }
+
+    /* main field tools — magic / mic / file at the top-right of the field */
+    .field-wrap{ position:relative }
+    .field-wrap textarea{ padding-top:2.6rem; padding-bottom:2.6rem }
+    .field-tools{ position:absolute; top:8px; right:8px; display:flex; gap:5px; z-index:2 }
+    .field-arms{ margin:.6rem 0 0 }
+    /* About moved here: a ? at the bottom-right of the field */
+    .field-help{
+      position:absolute; bottom:10px; right:10px; z-index:2;
+      width:26px; height:26px; border-radius:50%; cursor:pointer; padding:0;
+      display:grid; place-items:center; font-size:.9rem; font-weight:800;
+      border:1px solid var(--line); background:#13162a; color:var(--app-accent-soft);
+    }
+    .field-help:hover{ border-color:var(--app-accent); color:var(--accent2) }
+
+    .run{ margin-top:.8rem; display:flex; gap:10px; flex-wrap:wrap; align-items:center }
+    .btn{
+      border:1px solid var(--app-accent); color:var(--app-ink-on-accent);
+      background:linear-gradient(180deg,var(--app-accent-soft),var(--app-accent));
+      padding:.62rem 1.05rem; border-radius:var(--flove-radius-sm); font-weight:700;
+      letter-spacing:.2px; cursor:pointer; text-decoration:none; font-size:.95rem;
+    }
+    .btn.alt{ background:transparent; color:var(--ink); border-color:var(--line); font-weight:600 }
+    .btn.alt:hover{ border-color:var(--app-accent) }
+
+    .caps{ display:flex; flex-wrap:wrap; gap:8px; margin:.9rem 0 0 }
+    .cap{
+      display:inline-flex; align-items:center; gap:7px; font-size:.8rem; color:var(--muted);
+      background:#0f1120; border:1px solid var(--line); border-radius:var(--flove-radius-pill); padding:.32rem .7rem;
+    }
+    .cap b{ color:var(--ink); font-weight:600 }
+    .cap .k{ color:var(--accent2) }
+
+    /* big buttons — Tune & Go (≈30% bigger than .btn) */
+    .btn-xl{
+      display:inline-flex; align-items:center; justify-content:center; gap:10px; cursor:pointer;
+      font-size:1.2rem; font-weight:800; letter-spacing:.3px; padding:.82rem 1.55rem;
+      border-radius:var(--flove-radius-sm); border:1px solid var(--app-accent);
+      color:var(--app-ink-on-accent); text-align:center;
+      background:linear-gradient(180deg,var(--app-accent-soft),var(--app-accent));
+    }
+    .btn-xl .x{ font-weight:900 }
+
+    /* Declare bias — a CSS-only checkbox toggle (same :has() pattern as the
+       language switch); the panel opens in place inside the .agent card */
+    .tune-btn{ display:inline-flex; align-items:center; gap:8px; cursor:pointer; -webkit-user-select:none; user-select:none }
+    .tune-btn .x{ font-weight:900 }
+    #tune-toggle:checked ~ .tune-btn{ opacity:.85 }
+
+    /* revealed within the .agent card — a divider, not a separate card */
+    .tune-panel{
+      display:none;
+      margin-top:1.1rem; padding-top:1.1rem; text-align:left;
+      border-top:1px solid var(--line);
+    }
+    body:has(#tune-toggle:checked) .tune-panel{ display:block }
+
+    /* 1–5 rating bars — two columns + 40px void middle, 15px gutter left of col 1;
+       one row of vertical space between stacked raters */
+    .bars{ display:grid; gap:2rem 0; grid-template-columns:1fr 40px 1fr; padding-left:15px; align-items:start }
+    .bars > *{ grid-column:1 }
+    .bars > *:nth-child(2n){ grid-column:3 }
+    @media (max-width:720px){
+      .bars{ grid-template-columns:1fr }
+      .bars > *, .bars > *:nth-child(2n){ grid-column:auto }
+    }
+
+    /* each tuner is collapsible in place; only 2 open by default */
+    .tuner{ border-radius:var(--flove-radius-sm); padding:.4rem .55rem; border:1px solid transparent }
+    /* poles at the two ends of the row; the whole row toggles the bar */
+    .tuner-sum{
+      cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:10px;
+      color:var(--ink); font-weight:600; font-size:.92rem;
+    }
+    .tuner-sum .pole{ cursor:pointer; padding:2px 6px; border-radius:6px }
+    .tuner-sum .pole.r{ text-align:right }
+    .tuner-sum .pole:hover{ color:var(--app-accent-soft) }
+    .tuner-sum .pole.on{ color:var(--app-ink-on-accent); background:var(--app-accent) }
+    /* the bar shows only when open — and no repeated pole words above the track */
+    .tuner > .bar{ display:none; margin-top:.6rem }
+    .tuner.open > .bar{ display:block }
+    .tuner .bar .ends{ display:none }
+    /* slightly highlighted while it holds a selection — visible even collapsed */
+    .tuner:has(.node.on){ border-color:rgba(112,240,211,.35); background:rgba(112,240,211,.05) }
+
+    /* More raters */
+    .raters-zone{ text-align:center; margin-top:1.8rem }
+    .btn-md{
+      display:inline-flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;
+      font-size:1rem; font-weight:700; letter-spacing:.2px; padding:.6rem 1.1rem;
+      border-radius:var(--flove-radius-sm); border:1px solid var(--app-accent);
+      color:var(--ink); background:transparent;
+    }
+    .btn-md:hover{ background:rgba(141,137,255,.12) }
+    .raters{ margin-top:1.1rem; text-align:left }
+    .rater-btns{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:1.4rem }
+    .rater-btn{
+      display:inline-flex; align-items:center; gap:6px; cursor:pointer; font-size:.84rem;
+      padding:.36rem .7rem; border-radius:var(--flove-radius-pill);
+      border:1px solid var(--line); background:#13162a; color:var(--ink);
+    }
+    .rater-btn:hover{ border-color:var(--app-accent) }
+    .rater-btn.on{ border-color:var(--accent2); color:var(--accent2); box-shadow:0 0 8px rgba(112,240,211,.3) }
+    .rater-x{ color:var(--muted); font-weight:700; padding:0 2px; border-radius:50% }
+    .rater-x:hover{ color:#ff6b8b }
+
+    /* make-your-own bar (the first one shown) */
+    .creator{
+      border:1px dashed var(--app-accent); border-radius:var(--flove-radius);
+      background:#0f1120; padding:1rem 1.1rem; margin-bottom:1.6rem;
+    }
+    .creator-head{ color:var(--accent2); font-weight:600; font-size:.88rem; margin-bottom:.7rem }
+    .creator-inputs{ display:flex; gap:10px; margin-bottom:1.1rem; flex-wrap:wrap }
+    .creator-in{
+      flex:1; min-width:120px; background:var(--field); border:1px solid var(--line);
+      color:var(--ink); border-radius:var(--flove-radius-sm); padding:.5rem .65rem; font:inherit;
+    }
+    .creator-in:focus{ outline:none; border-color:var(--app-accent); box-shadow:0 0 0 3px rgba(141,137,255,.18) }
+    .rater-save{
+      margin-top:1rem; cursor:pointer; font-size:.85rem; font-weight:700; color:var(--app-ink-on-accent);
+      border:1px solid var(--app-accent); border-radius:var(--flove-radius-sm); padding:.45rem .9rem;
+      background:linear-gradient(180deg,var(--app-accent-soft),var(--app-accent));
+    }
+    /* pole titles sit ABOVE the track, each centered over its extreme node */
+    .ends{ position:relative; height:1.25em; margin-bottom:.4rem }
+    .end{
+      position:absolute; transform:translateX(-50%); font-size:.86rem;
+      color:var(--muted); white-space:nowrap;
+    }
+    .end.l{ left:4% } .end.r{ left:96% }
+    .bar:has(.node.on) .end{ color:var(--ink) }
+
+    .track{ position:relative; height:36px; cursor:pointer }
+    .track::before{
+      content:""; position:absolute; left:4%; right:4%; top:50%; height:3px;
+      transform:translateY(-50%); background:var(--line); border-radius:3px;
+    }
+    .fill{
+      position:absolute; top:50%; height:4px; transform:translateY(-50%); display:none;
+      background:linear-gradient(90deg,var(--app-accent),var(--accent2)); border-radius:4px;
+      box-shadow:0 0 10px rgba(112,240,211,.35);
+    }
+    .node{
+      position:absolute; top:50%; transform:translate(-50%,-50%);
+      width:17px; height:17px; border-radius:50%; padding:0; cursor:pointer; z-index:1;
+      border:2px solid var(--app-accent); background:var(--field);
+      transition:transform var(--flove-fast), box-shadow var(--flove-fast), opacity var(--flove-fast);
+    }
+    .node:hover{ border-color:var(--accent2); transform:translate(-50%,-50%) scale(1.15) }
+    .node.on{
+      background:linear-gradient(180deg,var(--app-accent-soft),var(--app-accent));
+      box-shadow:0 0 10px rgba(141,137,255,.6);
+    }
+    /* flove standard: once a rating exists on a bar, untouched nodes dim to 50% */
+    .bar:has(.node.on) .node:not(.on){ opacity:.5 }
+
+    /* LEFT column reddish instead of the purple-blue accent — odd children
+       sit in grid-column 1; rebind the accent vars + the one hardcoded glow */
+    .bars > *:nth-child(odd){
+      --app-accent:      #ff6b6b;
+      --app-accent-soft: #ffc2c2;
+    }
+    .bars > *:nth-child(odd) .node.on{ box-shadow:0 0 10px rgba(255,107,107,.6) }
+
+    /* GO + generated opposite fields */
+    .go-wrap{ text-align:center; margin-top:1.5rem }
+    /* generated opposite fields — two columns */
+    .opp-out{ display:none; margin-top:1.3rem }
+    .opp-out.show{ display:grid; gap:1rem 0; grid-template-columns:1fr 30px 1fr; align-items:start; padding-left:15px }
+    .opp-out.show > *{ grid-column:1 }
+    .opp-out.show > *:nth-child(2n){ grid-column:3 }
+    .opp-out.show > .opp-empty{ grid-column:1 / -1 }
+    @media (max-width:720px){
+      .opp-out.show{ grid-template-columns:1fr }
+      .opp-out.show > *, .opp-out.show > *:nth-child(2n){ grid-column:auto }
+    }
+    .opp{
+      border:1px solid var(--line); border-radius:var(--flove-radius-sm);
+      background:#0f1120; padding:.8rem .85rem;
+    }
+    /* top row: only the suggested opposite — shown as a mini bar — + tools */
+    .opp-top{ display:flex; align-items:flex-end; gap:8px; margin-bottom:.5rem }
+
+    /* mini bar — a compact, non-interactive read of where the opposite sits */
+    .mini{ flex:1; min-width:0 }
+    .mini-ends{ position:relative; height:1em; margin-bottom:1px }
+    .mini-ends .e{ position:absolute; transform:translateX(-50%); font-size:.72rem; color:var(--muted); white-space:nowrap }
+    .mini-ends .e.l{ left:8% } .mini-ends .e.r{ left:92% }
+    .mini-track{ position:relative; height:18px }
+    .mini-track::before{
+      content:""; position:absolute; left:8%; right:8%; top:50%; height:2px;
+      transform:translateY(-50%); background:var(--line); border-radius:2px;
+    }
+    .mini-fill{
+      position:absolute; top:50%; height:3px; transform:translateY(-50%); display:none;
+      background:linear-gradient(90deg,var(--app-accent),var(--accent2)); border-radius:3px;
+    }
+    .mini-node{
+      position:absolute; top:50%; transform:translate(-50%,-50%);
+      width:10px; height:10px; border-radius:50%; z-index:1;
+      border:2px solid var(--line); background:var(--field);
+    }
+    .mini-node.on{
+      border-color:var(--app-accent);
+      background:linear-gradient(180deg,var(--app-accent-soft),var(--app-accent));
+      box-shadow:0 0 7px rgba(141,137,255,.65);
+    }
+
+    .opp-tools{ display:inline-flex; gap:4px; flex-shrink:0 }
+    .tool{
+      width:30px; height:30px; display:grid; place-items:center; cursor:pointer; padding:0;
+      border:1px solid var(--line); border-radius:var(--flove-radius-sm);
+      background:#13162a; color:var(--app-accent-soft); font-size:.95rem; line-height:1;
+      transition:border-color var(--flove-fast), color var(--flove-fast), box-shadow var(--flove-fast);
+    }
+    .tool:hover{ border-color:var(--app-accent) }
+    .tool.on{ border-color:var(--accent2); color:var(--accent2); box-shadow:0 0 8px rgba(112,240,211,.3) }
+    .tool.mic.rec{ border-color:#ff6b8b; color:#ff6b8b; box-shadow:0 0 12px rgba(255,107,139,.55); animation:micpulse 1s infinite }
+    @keyframes micpulse{ 50%{ box-shadow:0 0 4px rgba(255,107,139,.35) } }
+
+    /* the rest of the texts — hidden until ⓘ info is clicked */
+    .opp-info{ display:none; margin:0 0 .55rem; padding:.55rem .65rem; border:1px dashed var(--line); border-radius:var(--flove-radius-sm); background:#0d0f1c }
+    .opp-info.show{ display:block }
+    .opp-pair{ color:var(--accent2); font-weight:700; font-size:.85rem; display:block }
+    .opp-chose{ color:var(--muted); font-size:.8rem; display:block; margin-top:2px }
+    .opp-hint{ color:var(--muted); font-size:.84rem; margin:.4rem 0 0; line-height:1.45 }
+
+    /* magic wizard arms — open from the ✨ button */
+    .opp-arms{ display:none; gap:6px; margin:0 0 .55rem; flex-wrap:wrap }
+    .opp-arms.show{ display:flex }
+    .arm{
+      display:inline-flex; align-items:center; gap:6px; cursor:pointer; font-size:.8rem;
+      padding:.3rem .6rem; border-radius:var(--flove-radius-pill);
+      border:1px solid var(--line); background:#13162a; color:var(--ink);
+    }
+    .arm:hover{ border-color:var(--app-accent) }
+    .arm .e{ font-size:1rem }
+
+    .opp textarea{
+      width:100%; min-height:72px; padding:.6rem .65rem; color:var(--ink);
+      background:var(--field); border:1px solid var(--line); border-radius:var(--flove-radius-sm);
+      outline:none; resize:vertical; caret-color:var(--app-accent); font:inherit; line-height:1.45;
+    }
+    .opp textarea:focus{ border-color:var(--app-accent); box-shadow:0 0 0 3px rgba(141,137,255,.18) }
+    .opp-empty{ text-align:center; color:var(--muted); padding:.4rem; grid-column:1/-1 }
+
+    /* About modal — dark panel holding the moved intro/info texts */
+    .flove-modal[hidden]{ display:none }
+    .about-panel{ background:var(--panel); color:var(--ink); border:1px solid var(--line); width:min(620px,100%) }
+    .about-panel .flove-modal__title{ color:var(--ink) }
+    .about-close{
+      position:absolute; top:10px; right:12px; background:transparent; border:0;
+      color:var(--muted); font-size:1.1rem; line-height:1; cursor:pointer;
+    }
+    .about-close:hover{ color:var(--ink) }
+    .about-lede{ color:var(--muted); margin:0 }
+    .about-panel .caps{ display:flex; flex-wrap:wrap; gap:8px; margin:0 }
+    .about-learn{ color:var(--muted); font-size:.9rem; line-height:1.55 }
+    .about-learn h3{ color:var(--ink); font-size:.92rem; margin:1rem 0 .3rem }
+    .about-learn h3:first-child{ margin-top:0 }
+    .about-learn ul{ margin:.3rem 0 .3rem 1.1rem; padding:0 }
+    .about-learn a, footer a{ color:var(--accent2) }
+    .about-learn .legend{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:.6rem }
+    .about-learn .legend .sw{ width:10px; height:10px; border-radius:3px; background:var(--app-accent) }
+    .about-learn .legend .sw.b{ background:var(--accent2) }
+    .about-learn .legend .sw.c{ background:var(--app-accent-soft) }
+    .pill{
+      padding:.28rem .55rem; border-radius:var(--flove-radius-pill); font-size:.78rem;
+      background:#0f1120; border:1px solid var(--line); color:var(--muted);
+    }
+    .mono{
+      font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background:#0f1120; padding:2px 6px; border-radius:6px; border:1px dashed var(--line);
+    }
+
+    footer{ margin-top:1.6rem; color:var(--muted); text-align:center; font-size:.88rem }
+  </style>
+</head>
+<body>
+  <!-- language radios (drive the pure-CSS i18n; EN default, no visible toggle) -->
+  <span class="lang-radios" hidden>
+    <input type="radio" name="ui-lang" id="ui-lang-en" checked>
+    <input type="radio" name="ui-lang" id="ui-lang-es">
+  </span>
+
+  <!-- About: holds all the intro/info texts; opened by the ? on the field -->
+  <div class="flove-modal about-modal" id="aboutModal" hidden>
+    <div class="flove-modal__backdrop" data-close></div>
+    <div class="flove-modal__panel about-panel">
+      <button class="about-close" data-close aria-label="Close">✕</button>
+      <h2 class="flove-modal__title"><span class="t-en">About Poly</span><span class="t-es">Acerca de Poly</span></h2>
+
+      <p class="about-lede">
+        <span class="t-en">Poly is a balancing tool for your writing. It surfaces the <em>complementary side</em> an argument tends to leave out, so your thinking stays fuller and more even-handed.</span>
+        <span class="t-es">Poly es una herramienta para equilibrar tu escritura. Saca a la luz el <em>lado complementario</em> que un argumento suele dejar fuera, para que tu razonamiento sea más completo y ecuánime.</span>
+      </p>
+
+      <div class="about-learn">
+        <h3><span class="t-en">What is polarity balancing?</span><span class="t-es">¿Qué es equilibrar polaridades?</span></h3>
+        <p>
+          <span class="t-en">Most ideas sit on a <b>spectrum between two poles</b> — formal/informal, abstract/concrete, inner/outer. Emphasising one end leaves its <i>complement</i> implicit. Poly makes that complement explicit, so your text reads as more robust, balanced and credible. The approach draws on systemic thinking and the dialectic of opposites articulated by <a href="https://en.wikipedia.org/wiki/Laozi" target="_blank" rel="noopener">Laozi</a>.</span>
+          <span class="t-es">La mayoría de las ideas se sitúan en un <b>espectro entre dos polos</b> — formal/informal, abstracto/concreto, interior/exterior. Enfatizar un extremo deja implícito su <i>complemento</i>. Poly hace explícito ese complemento, para que tu texto resulte más robusto, equilibrado y creíble. El enfoque se inspira en el pensamiento sistémico y en la dialéctica de los opuestos formulada por <a href="https://en.wikipedia.org/wiki/Laozi" target="_blank" rel="noopener">Laozi</a>.</span>
+        </p>
+
+        <h3><span class="t-en">Using Declare bias</span><span class="t-es">Usar Declarar sesgo</span></h3>
+        <div class="caps">
+          <span class="cap"><span class="k">⇄</span> <b><span class="t-en">Both sides</span><span class="t-es">Ambos lados</span></b></span>
+          <span class="cap"><span class="k">＋</span> <b><span class="t-en">Missing complement</span><span class="t-es">Complemento que falta</span></b></span>
+          <span class="cap"><span class="k">⤓</span> <b><span class="t-en">Summarize &amp; copy</span><span class="t-es">Resumir y copiar</span></b></span>
+          <span class="cap"><span class="k">EN·ES</span></span>
+        </div>
+        <ul>
+          <li><span class="t-en">Write or paste your text, then open <span class="mono">Declare bias</span> to characterise it across the polarity scales.</span><span class="t-es">Escribe o pega tu texto, luego abre <span class="mono">Declarar sesgo</span> para caracterizarlo en las escalas de polaridad.</span></li>
+          <li><span class="t-en">On each scale, <b>one click</b> sets a single point; <b>two clicks</b> mark a region between two points.</span><span class="t-es">En cada escala, <b>un clic</b> marca un punto; <b>dos clics</b> definen una región entre dos puntos.</span></li>
+          <li><span class="t-en">Press <span class="mono">Balance text</span> and Poly opens a field for the <i>opposite</i> of each rating, prompting you to address what you left out.</span><span class="t-es">Pulsa <span class="mono">Equilibrar texto</span> y Poly abre un campo para el <i>opuesto</i> de cada calificación, invitándote a abordar lo que dejaste fuera.</span></li>
+        </ul>
+
+        <h3><span class="t-en">How the opposite is chosen</span><span class="t-es">Cómo se elige el opuesto</span></h3>
+        <ul>
+          <li><span class="t-en">A point near a pole → the opposite point, and/or the remaining span.</span><span class="t-es">Un punto cerca de un polo → el punto opuesto, y/o el rango restante.</span></li>
+          <li><span class="t-en">The middle point → an extreme, or a partial lean — never the whole span.</span><span class="t-es">El punto central → un extremo, o una inclinación parcial — nunca todo el rango.</span></li>
+          <li><span class="t-en">A region → the remaining region, and/or the mirror point.</span><span class="t-es">Una región → la región restante, y/o el punto espejo.</span></li>
+        </ul>
+
+        <h3><span class="t-en">Legend</span><span class="t-es">Leyenda</span></h3>
+        <div class="legend">
+          <span class="sw"></span><span class="pill"><span class="t-en">Your rating</span><span class="t-es">Tu calificación</span></span>
+          <span class="sw b"></span><span class="pill"><span class="t-en">Selected region</span><span class="t-es">Región seleccionada</span></span>
+          <span class="sw c"></span><span class="pill"><span class="t-en">Opposite suggestion</span><span class="t-es">Sugerencia opuesta</span></span>
+        </div>
+
+        <p style="margin-top:1rem">
+          <a href="https://en.wikipedia.org/wiki/Polarity" target="_blank" rel="noopener"><span class="t-en">Read about polarity →</span><span class="t-es">Leer sobre polaridad →</span></a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- THE AGENT: prompt + actions, front and center -->
+    <section class="agent">
+      <div class="field-wrap">
+        <textarea id="text"></textarea>
+        <div class="field-tools">
+          <button type="button" class="tool magic" id="mainMagic" title="Magic">✨</button>
+          <button type="button" class="tool mic"   id="mainMic"   title="Record &amp; transcribe">🎤</button>
+          <button type="button" class="tool file"  id="mainFile"  title="Load a text file">📎</button>
+        </div>
+        <div class="opp-arms field-arms" id="mainArms"></div>
+        <button type="button" class="field-help" id="helpBtn" aria-label="About">?</button>
+      </div>
+      <div class="run">
+        <!-- "Declare bias" toggle: a CSS-only checkbox so the button stays fixed in the row -->
+        <input type="checkbox" id="tune-toggle" class="tune-toggle" hidden>
+        <label for="tune-toggle" class="btn tune-btn"><span class="x">◇</span> <span class="t-en">Declare bias</span><span class="t-es">Declarar sesgo</span></label>
+      </div>
+
+      <!-- Declare-bias panel: revealed in place, inside this card, when the toggle is on -->
+      <div class="tune-panel">
+            <!-- all 8 tuners in their original order; each open and selectable. -->
+            <div class="bars" id="bars"></div>
+
+            <!-- More raters: reveal 12 extra rating bars + a make-your-own bar -->
+            <div class="raters-zone">
+              <button type="button" class="btn-md" id="moreRaters">
+                <span class="t-en">＋ More raters</span><span class="t-es">＋ Más raters</span>
+              </button>
+              <div class="raters" id="raters" hidden>
+                <div class="rater-btns" id="raterBtns"></div>
+                <div class="creator-wrap" id="creatorWrap"></div>
+                <div class="bars extra-bars" id="extraBars"></div>
+              </div>
+            </div>
+
+            <div class="go-wrap">
+              <button type="button" class="btn-xl" id="go"><span class="t-en">Balance text</span><span class="t-es">Equilibrar texto</span> →</button>
+            </div>
+
+            <!-- generated opposite-content fields land here -->
+            <div class="opp-out" id="oppOut"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+  (function(){
+    /* The 8 polarities. Node 1 and 5 are the visible poles; nodes 2·3·4 are
+       named here (kept hidden on the bar) only so the opposite can be worded. */
+    const PAIRS = [
+      { en:['Similar','Akin','Mixed','Distinct','Different'],          es:['Similar','Afín','Mixto','Marcado','Distinto'] },
+      { en:['Abstract','Conceptual','Illustrated','Specific','Concrete'], es:['Abstracto','Conceptual','Ilustrado','Específico','Concreto'] },
+      { en:['Formal','Measured','Conversational','Casual','Informal'],  es:['Formal','Medido','Conversacional','Desenfadado','Informal'] },
+      { en:['Important','Significant','Secondary','Minor','Trivial'],   es:['Importante','Significativo','Secundario','Menor','Trivial'] },
+      { en:['Inner','Felt','Expressed','Visible','Outer'],             es:['Interior','Sentido','Expresado','Visible','Exterior'] },
+      { en:['Hard','Factual','Balanced','Nuanced','Soft'],             es:['Duro','Factual','Equilibrado','Matizado','Blando'] },
+      { en:['Past','Recent','Present','Emerging','Future'],            es:['Pasado','Reciente','Presente','Emergente','Futuro'] },
+      { en:['Feminine','Receptive','Integrated','Directive','Masculine'], es:['Femenino','Receptivo','Integrado','Directivo','Masculino'] },
+    ];
+
+    const state = PAIRS.map(()=>({a:null, b:null})); // a=first node, b=second (region) — 1..5
+    const pos = n => 4 + (n-1)*23;                    // node x-position % across the track (4%..96%)
+
+    const el = (t,c)=>{ const x=document.createElement(t); if(c) x.className=c; return x; };
+    /* bilingual fragment: an EN span and an ES span the page's CSS i18n shows/hides */
+    function bi(en,es){
+      const f=document.createDocumentFragment();
+      const e=el('span','t-en'); e.textContent=en;
+      const s=el('span','t-es'); s.textContent=es;
+      f.append(e,s); return f;
+    }
+    const region = (p,lo,hi,lang)=> lo===hi ? p[lang][lo-1] : p[lang][lo-1]+' → '+p[lang][hi-1];
+    const isES = ()=> document.getElementById('ui-lang-es').checked;
+
+    /* ---- bars: a reusable builder so base + extra + custom all share code ---- */
+    const barsEl     = document.getElementById('bars');
+    const extraBarsEl= document.getElementById('extraBars');
+    const raterBtnsEl= document.getElementById('raterBtns');
+    const barEls = [];
+
+    /* register a new pair so render()/opposite()/Go pick it up by index */
+    function registerBar(p){ const i = PAIRS.length; PAIRS.push(p); state.push({a:null,b:null}); return i; }
+
+    function buildBar(p,i){
+      const bar = el('div','bar');
+      const ends = el('div','ends');
+      const l = el('span','end l'); l.append(bi(p.en[0], p.es[0]));
+      const r = el('span','end r'); r.append(bi(p.en[4], p.es[4]));
+      ends.append(l, r);
+      const track = el('div','track');
+      const fill = el('div','fill'); track.appendChild(fill);
+      for(let n=1;n<=5;n++){
+        const node = el('button','node'); node.type='button';
+        node.style.left = pos(n)+'%'; node.dataset.n = n;
+        node.setAttribute('aria-label', p.en[n-1]);
+        track.appendChild(node);
+      }
+      /* the whole line is clickable — map the click x to the nearest node */
+      track.addEventListener('click', ev=>{
+        const rect = track.getBoundingClientRect();
+        const pct = (ev.clientX - rect.left) / rect.width * 100;
+        let n = Math.round((pct - 4) / 23) + 1;
+        pick(i, Math.max(1, Math.min(5, n)));
+      });
+      bar.append(ends, track);
+      bar._fill = fill; bar._ends = ends;
+      barEls[i] = bar;
+      return bar;
+    }
+
+    /* a collapsible tuner: the two poles sit at the row ends; the whole row
+       toggles the bar, and clicking a pole opens it AND checks that pole */
+    function buildTuner(p,i){
+      const wrap = el('div','tuner'); wrap.classList.add('open');   // all tuners open & selectable
+      const head = el('div','tuner-sum');
+      const lp = el('span','pole l'); lp.append(bi(p.en[0], p.es[0]));
+      const rp = el('span','pole r'); rp.append(bi(p.en[4], p.es[4]));
+      head.append(lp, rp);
+      const bar = buildBar(p,i);
+      bar._poleL = lp; bar._poleR = rp;
+      wrap.append(head, bar);
+      head.addEventListener('click', ()=> wrap.classList.toggle('open'));
+      lp.addEventListener('click', e=>{ e.stopPropagation(); wrap.classList.add('open'); pick(i,1); });
+      rp.addEventListener('click', e=>{ e.stopPropagation(); wrap.classList.add('open'); pick(i,5); });
+      return wrap;
+    }
+
+    /* all 8 tuners in their original order — each collapsible in place */
+    PAIRS.forEach((p,i)=> barsEl.appendChild(buildTuner(p,i)));
+
+    /* build a 5-step pair from two poles (generic hidden middles) */
+    function makePair(aEn,bEn,aEs,bEs){
+      return { en:[aEn,'toward '+aEn,'balanced','toward '+bEn,bEn],
+               es:[aEs,'hacia '+aEs,'equilibrado','hacia '+bEs,bEs] };
+    }
+
+    /* 12 extra rating bars, revealed by "More raters" */
+    const PRESETS = [
+      {en:['Open','Closed'],es:['Abierto','Cerrado']},      {en:['Simple','Complex'],es:['Simple','Complejo']},
+      {en:['Fast','Slow'],es:['Rápido','Lento']},           {en:['Local','Global'],es:['Local','Global']},
+      {en:['Risky','Safe'],es:['Arriesgado','Seguro']},     {en:['Old','New'],es:['Viejo','Nuevo']},
+      {en:['Private','Public'],es:['Privado','Público']},    {en:['Light','Heavy'],es:['Ligero','Pesado']},
+      {en:['Order','Chaos'],es:['Orden','Caos']},           {en:['Theory','Practice'],es:['Teoría','Práctica']},
+      {en:['Individual','Collective'],es:['Individual','Colectivo']}, {en:['Question','Answer'],es:['Pregunta','Respuesta']},
+    ];
+
+    /* a button shows/hides its bar below; deletable ones (saved) carry an × */
+    function toggleExtra(btn){
+      if(btn._idx != null){
+        state[btn._idx].removed = true;
+        if(barEls[btn._idx]) barEls[btn._idx].remove();
+        btn._idx = null; btn.classList.remove('on');
+      } else {
+        const i = registerBar(btn._pair);
+        extraBarsEl.appendChild(buildBar(btn._pair, i));
+        btn._idx = i; btn.classList.add('on');
+      }
+    }
+    function makeRaterBtn(label, pair, deletable){
+      const btn = el('button','rater-btn'); btn.type='button';
+      btn._pair = pair; btn._idx = null;
+      btn.append(bi(label.en, label.es));
+      if(deletable){ const x = el('span','rater-x'); x.textContent='×'; x.title='Delete'; btn.append(x); }
+      btn.addEventListener('click', e=>{
+        if(e.target.classList.contains('rater-x')){ deleteSaved(btn); return; }
+        toggleExtra(btn);
+      });
+      return btn;
+    }
+
+    /* saved custom bars persist in localStorage */
+    const LS_KEY = 'puzzy-polarities-custom';
+    function loadSaved(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)) || []; }catch(e){ return []; } }
+    function persistSaved(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(saved)); }catch(e){} }
+    let saved = loadSaved();
+    function addSavedBtn(rec){
+      const btn = makeRaterBtn({en:rec.a+'–'+rec.b, es:rec.a+'–'+rec.b}, makePair(rec.a,rec.b,rec.a,rec.b), true);
+      btn._rec = rec; raterBtnsEl.appendChild(btn);
+    }
+    function deleteSaved(btn){
+      if(btn._idx != null){ state[btn._idx].removed = true; if(barEls[btn._idx]) barEls[btn._idx].remove(); }
+      if(btn._rec){ saved = saved.filter(r=>r!==btn._rec); persistSaved(); }
+      btn.remove();
+    }
+
+    /* populate the panel: 12 presets, then any saved customs */
+    PRESETS.forEach(pr=> raterBtnsEl.appendChild(
+      makeRaterBtn({en:pr.en[0]+'–'+pr.en[1], es:pr.es[0]+'–'+pr.es[1]},
+                   makePair(pr.en[0],pr.en[1],pr.es[0],pr.es[1]), false)));
+    saved.forEach(addSavedBtn);
+
+    /* the first bar in the panel: make your own, then save it to the list */
+    function buildCreator(){
+      const i = registerBar(makePair('A','B','A','B'));
+      const wrap = el('div','creator');
+      const head = el('div','creator-head');
+      head.append(bi('New bar — name both poles, rate it, then save it',
+                     'Barra nueva — nombra ambos polos, califícala y guárdala'));
+      const row = el('div','creator-inputs');
+      const inA = el('input','creator-in'); inA.placeholder = isES() ? 'Polo A' : 'Pole A';
+      const inB = el('input','creator-in'); inB.placeholder = isES() ? 'Polo B' : 'Pole B';
+      row.append(inA, inB);
+      const bar = buildBar(PAIRS[i], i);
+      const endL = bar.querySelector('.end.l'), endR = bar.querySelector('.end.r');
+      const sync = ()=>{
+        const a = inA.value.trim() || 'A', b = inB.value.trim() || 'B';
+        PAIRS[i] = makePair(a,b,a,b);
+        endL.textContent = a; endR.textContent = b;
+      };
+      inA.addEventListener('input', sync); inB.addEventListener('input', sync);
+      const save = el('button','rater-save'); save.type='button';
+      save.append(bi('＋ Save to list', '＋ Guardar en la lista'));
+      save.addEventListener('click', ()=>{
+        const a = inA.value.trim(), b = inB.value.trim();
+        if(!a || !b) return;
+        const rec = {a,b}; saved.push(rec); persistSaved(); addSavedBtn(rec);
+        inA.value=''; inB.value=''; sync();
+      });
+      wrap.append(head, row, bar, save);
+      return wrap;
+    }
+    document.getElementById('creatorWrap').appendChild(buildCreator());
+
+    /* More raters: reveal the panel */
+    const ratersEl = document.getElementById('raters');
+    document.getElementById('moreRaters').addEventListener('click', ()=>{ ratersEl.hidden = !ratersEl.hidden; });
+
+    /* ---- selection state machine: 1 click = point, 2 clicks = region ---- */
+    function pick(i,n){
+      const s = state[i];
+      if(s.a===null){ s.a=n; }
+      else if(s.b===null){
+        if(n===s.a){ s.a=null; }                 // click same point again → clear
+        else { s.b=n; if(s.a>s.b){ const t=s.a; s.a=s.b; s.b=t; } } // → region
+      } else { s.a=n; s.b=null; }                // region exists → restart as a point
+      render(i);
+    }
+
+    function render(i){
+      const s = state[i];
+      const bar = barEls[i];
+      const nodes = bar.querySelectorAll('.node');
+      nodes.forEach(node=>{
+        const n = +node.dataset.n;
+        const on = s.a!==null && (s.b===null ? n===s.a : (n>=s.a && n<=s.b));
+        node.classList.toggle('on', on);
+      });
+      const fill = bar._fill;
+      if(s.a!==null && s.b!==null){
+        fill.style.display='block';
+        fill.style.left = pos(s.a)+'%';
+        fill.style.width = (pos(s.b)-pos(s.a))+'%';
+      } else {
+        fill.style.display='none';
+      }
+      /* reflect the checked pole on the header (left = node 1, right = node 5) */
+      if(bar._poleL){
+        const onAt = n => s.a!==null && (s.b===null ? s.a===n : (n>=s.a && n<=s.b));
+        bar._poleL.classList.toggle('on', onAt(1));
+        bar._poleR.classList.toggle('on', onAt(5));
+      }
+    }
+
+    /* a contiguous run of nodes → [lo,hi] fill, else null (separate dots) */
+    function contiguousFill(nodes){
+      if(nodes.length<2) return null;
+      const s=[...nodes].sort((x,y)=>x-y);
+      for(let k=1;k<s.length;k++){ if(s[k]!==s[k-1]+1) return null; }
+      return [s[0], s[s.length-1]];
+    }
+
+    /* ---- the opposite of a rating — also returns the node(s) it lights ---- */
+    function opposite(p,s){
+      let nodes, title, hint;
+      if(s.b===null){                              // single point
+        const n=s.a;
+        if(n===3){                                 // middle → an extreme, or a partial lean (not the whole span)
+          nodes=[1,5];
+          title={ en:p.en[0]+' — or — '+p.en[4], es:p.es[0]+' — o — '+p.es[4] };
+          hint={ en:'Commit to an extreme, or a partial lean (e.g. '+p.en[1]+' / '+p.en[3]+') — not the whole span.',
+                 es:'Decántate por un extremo, o una inclinación parcial (p. ej. '+p.es[1]+' / '+p.es[3]+') — no todo el rango.' };
+        } else {
+          const opp = 6-n;                         // mirror point
+          const lo = n<3 ? n+1 : 1, hi = n<3 ? 5 : n-1;  // the remaining span on the far side
+          nodes=[opp];
+          title={ en:p.en[opp-1], es:p.es[opp-1] };
+          hint={ en:'the opposite point — or cover the remaining span: '+region(p,lo,hi,'en')+'.',
+                 es:'el punto opuesto — o cubre el rango restante: '+region(p,lo,hi,'es')+'.' };
+        }
+      } else {                                     // region [a,b] → remaining region, and/or mirror point
+        const a=s.a, b=s.b, mirror=Math.round(6-(a+b)/2);
+        const segs=[]; if(a>1) segs.push([1,a-1]); if(b<5) segs.push([b+1,5]);
+        if(segs.length===0){                       // whole span → opposite is to commit to one point
+          nodes=[1,5];
+          title={ en:'A single pole: '+p.en[0]+' or '+p.en[4], es:'Un solo polo: '+p.es[0]+' o '+p.es[4] };
+          hint={ en:'You covered the whole span — the opposite move is to commit to one clear point.',
+                 es:'Cubriste todo el rango — el movimiento opuesto es decantarse por un punto claro.' };
+        } else {
+          nodes=[]; segs.forEach(g=>{ for(let k=g[0];k<=g[1];k++) nodes.push(k); });
+          title={ en:segs.map(g=>region(p,g[0],g[1],'en')).join('  &  '),
+                  es:segs.map(g=>region(p,g[0],g[1],'es')).join('  &  ') };
+          hint={ en:'the remaining region — mirror point ≈ '+p.en[mirror-1]+'.',
+                 es:'la región restante — punto espejo ≈ '+p.es[mirror-1]+'.' };
+        }
+      }
+      return { nodes, fill:contiguousFill(nodes), title, hint };
+    }
+
+    /* a compact, non-interactive bar showing where the suggested opposite sits */
+    const posMini = n => 8 + (n-1)*21;             // 8%..92% (room for the end labels)
+    function makeMini(p, res){
+      const wrap = el('div','mini');
+      const ends = el('div','mini-ends');
+      const l = el('span','e l'); l.append(bi(p.en[0], p.es[0]));
+      const r = el('span','e r'); r.append(bi(p.en[4], p.es[4]));
+      ends.append(l, r);
+      const track = el('div','mini-track');
+      const fill = el('div','mini-fill'); track.appendChild(fill);
+      for(let n=1;n<=5;n++){
+        const nd = el('span','mini-node'); nd.style.left = posMini(n)+'%';
+        if(res.nodes.includes(n)) nd.classList.add('on');
+        track.appendChild(nd);
+      }
+      if(res.fill){
+        fill.style.display='block';
+        fill.style.left = posMini(res.fill[0])+'%';
+        fill.style.width = (posMini(res.fill[1])-posMini(res.fill[0]))+'%';
+      }
+      wrap.append(ends, track);
+      return wrap;
+    }
+
+    /* ---- magic wizard, à la blogyadvanced: a per-field bot that pre-fills
+       the textarea with a stylistic variant, cycling phrasings on re-click ---- */
+    const BOTS = [
+      { key:'lovely', e:'😍', label:{en:'lovely', es:'cariñoso'} },
+      { key:'joy',    e:'😂', label:{en:'joy',    es:'alegre'} },
+      { key:'wisdom', e:'🔥', label:{en:'wisdom', es:'sabio'} },
+    ];
+    /* same phrasing library as blogyadvanced — 5 variants per bot, cycled */
+    const MAGIC = {
+      lovely:{
+        en:[ "Dear reader, with care and respect, I share the following for your consideration.",
+             "May these words land softly, and may they meet you where you are.",
+             "I hold what you say with both hands; nothing here will be rushed.",
+             "If a phrase feels heavy, set it down; we can return to it when you're ready.",
+             "Thank you for trusting this space with what matters to you." ],
+        es:[ "Querido lector, con cuidado y respeto, comparto lo siguiente para tu consideración.",
+             "Que estas palabras aterricen con suavidad, y que te encuentren donde estás.",
+             "Sostengo lo que dices con ambas manos; nada aquí se apresurará.",
+             "Si una frase pesa, déjala; podemos volver a ella cuando estés listo.",
+             "Gracias por confiar a este espacio lo que te importa." ]
+      },
+      joy:{
+        en:[ "Hey! What if we do it together and have a blast? 🎈",
+             "Imagine the room lighting up — that's where this is heading. Spark.",
+             "Bring snacks, bring friends, bring whatever makes you grin. 🥳",
+             "We'll figure out the small stuff while we dance the big stuff. 💃",
+             "Mark the calendar in colours — this one's going to be remembered. 🎉" ],
+        es:[ "¡Eh! ¿Y si lo hacemos juntos y la pasamos genial? 🎈",
+             "Imagina la sala encendiéndose — hacia ahí va esto. Chispa.",
+             "Trae snacks, trae amigos, trae lo que te haga sonreír. 🥳",
+             "Resolveremos lo pequeño mientras bailamos lo grande. 💃",
+             "Marca el calendario a colores — este se va a recordar. 🎉" ]
+      },
+      wisdom:{
+        en:[ "Where the air leans and the silence writes, there beats what has no name yet.",
+             "The river does not argue with the stone; it remembers the long way home.",
+             "Listen for the word the room is trying to say through you.",
+             "What is asked of you now is older than the asking — older, and quieter.",
+             "When you cannot see the path, sit. The path is also resting." ],
+        es:[ "Donde el aire se inclina y el silencio escribe, late lo que aún no tiene nombre.",
+             "El río no discute con la piedra; recuerda el largo camino a casa.",
+             "Escucha la palabra que la sala intenta decir a través de ti.",
+             "Lo que se te pide ahora es más antiguo que la pregunta — más antiguo, y más callado.",
+             "Cuando no veas el camino, siéntate. El camino también descansa." ]
+      }
+    };
+
+    /* shared field tools — reused by the main field and every opposite field */
+    function wireMagic(magicBtn, arms, ta){
+      const ms = { key:null, idx:0 };
+      BOTS.forEach(bot=>{
+        const arm = el('button','arm'); arm.type='button';
+        const em = el('span','e'); em.textContent = bot.e;
+        arm.append(em, bi(bot.label.en, bot.label.es));
+        arm.addEventListener('click', ()=>{
+          if(ms.key===bot.key){ ms.idx++; } else { ms.key=bot.key; ms.idx=0; }
+          const variants = MAGIC[bot.key][isES() ? 'es' : 'en'];
+          ta.value = variants[ms.idx % variants.length]; ta.focus();
+        });
+        arms.appendChild(arm);
+      });
+      magicBtn.addEventListener('click', ()=>{ const on = arms.classList.toggle('show'); magicBtn.classList.toggle('on', on); });
+    }
+    function wireMic(micBtn, ta){
+      let rec=null, recording=false, base='';
+      micBtn.addEventListener('click', ()=>{
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if(!SR){ micBtn.title = isES() ? 'Dictado no disponible en este navegador' : 'Speech recognition not supported here'; micBtn.disabled=true; return; }
+        if(recording){ rec && rec.stop(); return; }
+        rec = new SR(); rec.lang = isES() ? 'es-ES' : 'en-US'; rec.interimResults = true; rec.continuous = true;
+        base = ta.value ? ta.value.replace(/\s*$/,'') + ' ' : '';
+        rec.onresult = ev=>{ let txt=''; for(let k=ev.resultIndex;k<ev.results.length;k++){ txt += ev.results[k][0].transcript; } ta.value = base + txt; };
+        rec.onend   = ()=>{ recording=false; micBtn.classList.remove('rec'); };
+        rec.onerror = ()=>{ recording=false; micBtn.classList.remove('rec'); };
+        rec.start(); recording=true; micBtn.classList.add('rec');
+      });
+    }
+    function wireFile(fileBtn, ta){
+      const input = el('input'); input.type='file';
+      input.accept = '.txt,.md,.markdown,.csv,text/*'; input.style.display='none';
+      fileBtn.appendChild(input);
+      fileBtn.addEventListener('click', ()=> input.click());
+      input.addEventListener('click', e=> e.stopPropagation());
+      input.addEventListener('change', ()=>{
+        const f = input.files && input.files[0]; if(!f) return;
+        const reader = new FileReader();
+        reader.onload = ()=>{ const txt = String(reader.result||''); ta.value = ta.value ? ta.value.replace(/\s*$/,'') + '\n\n' + txt : txt; ta.focus(); };
+        reader.readAsText(f); input.value='';
+      });
+    }
+
+    /* the main field's own magic / mic / file tools */
+    (function(){
+      const ta = document.getElementById('text');
+      wireMagic(document.getElementById('mainMagic'), document.getElementById('mainArms'), ta);
+      wireMic(document.getElementById('mainMic'), ta);
+      wireFile(document.getElementById('mainFile'), ta);
+    })();
+
+    /* ---- Go: open a field per rating, titled with its opposite ---- */
+    const out = document.getElementById('oppOut');
+    document.getElementById('go').addEventListener('click', ()=>{
+      out.textContent='';
+      let any=false;
+      PAIRS.forEach((p,i)=>{
+        const s = state[i];
+        if(s.removed || s.a===null) return;
+        any=true;
+        const o = opposite(p,s);
+        const choseEn = s.b===null ? p.en[s.a-1] : region(p,s.a,s.b,'en');
+        const choseEs = s.b===null ? p.es[s.a-1] : region(p,s.a,s.b,'es');
+
+        const card = el('div','opp');
+
+        /* top row — only the suggested opposite, drawn on a mini bar, + tools */
+        const top   = el('div','opp-top');
+        const mini  = makeMini(p, o);
+        const tools = el('div','opp-tools');
+        const infoBtn  = el('button','tool info');  infoBtn.type='button';  infoBtn.textContent='ⓘ';  infoBtn.title='Info';
+        const micBtn   = el('button','tool mic');   micBtn.type='button';   micBtn.textContent='🎤';   micBtn.title='Record & transcribe';
+        const magicBtn = el('button','tool magic'); magicBtn.type='button'; magicBtn.textContent='✨'; magicBtn.title='Magic';
+        tools.append(infoBtn, micBtn, magicBtn);
+        top.append(mini, tools);
+
+        /* the rest of the texts — revealed by ⓘ */
+        const info  = el('div','opp-info');
+        const pair  = el('span','opp-pair');  pair.append(bi(p.en[0]+' ↔ '+p.en[4], p.es[0]+' ↔ '+p.es[4]));
+        const titleTxt = el('span','opp-chose'); titleTxt.append(bi('Add — '+o.title.en, 'Añade — '+o.title.es));
+        const chose = el('span','opp-chose'); chose.append(bi('You rated: '+choseEn, 'Calificaste: '+choseEs));
+        const hint  = el('p','opp-hint');     hint.append(bi(o.hint.en, o.hint.es));
+        info.append(pair, titleTxt, chose, hint);
+
+        /* magic arms + field */
+        const arms = el('div','opp-arms');
+        const ta   = el('textarea');
+        ta.placeholder = isES() ? 'Añade texto aquí' : 'Add text here';
+
+        card.append(top, info, arms, ta);
+        out.appendChild(card);
+
+        /* ── wiring (shared) ── */
+        infoBtn.addEventListener('click', ()=>{
+          const on = info.classList.toggle('show'); infoBtn.classList.toggle('on', on);
+        });
+        wireMagic(magicBtn, arms, ta);
+        wireMic(micBtn, ta);
+      });
+      if(!any){
+        const empty = el('p','opp-empty');
+        empty.append(bi('Pick at least one rating on the bars above.','Elige al menos una calificación en las barras de arriba.'));
+        out.appendChild(empty);
+      }
+      out.classList.add('show');
+    });
+
+    /* ---- About modal — opened by the ? on the text field ---- */
+    const aboutModal = document.getElementById('aboutModal');
+    document.getElementById('helpBtn').addEventListener('click', ()=>{ aboutModal.hidden=false; });
+    aboutModal.addEventListener('click', e=>{ if(e.target.hasAttribute('data-close')) aboutModal.hidden=true; });
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape') aboutModal.hidden=true; });
+  })();
+  </script>
+</body>
+</html>
