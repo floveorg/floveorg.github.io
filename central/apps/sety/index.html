@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#6c5ce7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="screen-orientation" content="portrait">
+<meta name="flove:distro" content="central">
+<meta name="flove:tier" content="normal">
+<meta name="flove:app" content="sety">
+<meta name="flove:profile-backup" content="users/marc">
+<meta name="description" content="sety — settings, auth, security, permissions on flove">
+<meta name="format-detection" content="telephone=no">
+<meta name="msapplication-tap-highlight" content="no">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='14' y1='14' x2='86' y2='86' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0%25' stop-color='%236c5ce7'/%3E%3Cstop offset='100%25' stop-color='%2302855c'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='40' fill='url(%23g)'/%3E%3Ctext x='50' y='62' text-anchor='middle' font-size='36' fill='white'%3E%E2%9A%99%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
+:root{
+  --bg:#f3f4fb; --ink:#16141f; --muted:#4a4e5a;
+  --line:#e3e5f0; --card:#ffffff; --panel:#edeef7;
+  --accent:#6c5ce7; --accent-soft:#5347c4; --signal:#02855c;
+  --warn:#b9820a; --danger:#dd3b3b;
+  --glow-a:rgba(108,92,231,.20); --glow-s:rgba(3,168,119,.16);
+  --glass:rgba(255,255,255,.82); --glass-border:rgba(108,92,231,.16);
+  --nav-h:56px; --safe-b:env(safe-area-inset-bottom,0px); --safe-t:env(safe-area-inset-top,0px);
+}
+html{ scroll-behavior:smooth; font-size:120%; overscroll-behavior:none; }
+body{
+  font-family:"Space Mono",ui-monospace,monospace; color:var(--ink);
+  background:var(--bg); min-height:100svh; min-height:100dvh;
+  -webkit-font-smoothing:antialiased; line-height:1.65; overflow-x:hidden;
+  font-size:16.8px; padding-bottom:calc(var(--nav-h) + var(--safe-b) + 16px);
+  -webkit-overflow-scrolling:touch;
+}
+.mesh-bg{ position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; opacity:0; animation:mesh-fade 2s ease .08s both; }
+.mesh-bg::before{ content:""; position:absolute; inset:0; background:radial-gradient(ellipse 1200px 750px at 108% -8%, rgba(0,247,167,.11) 0%, transparent 52%),radial-gradient(ellipse 950px 650px at -14% 8%, rgba(141,137,255,.16) 0%, transparent 50%),radial-gradient(ellipse 700px 500px at 55% 96%, rgba(141,137,255,.09) 0%, transparent 48%),var(--bg); animation:aurora-drift 28s ease-in-out infinite alternate; }
+.mesh-bg::after{ content:""; position:absolute; inset:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='0.032'/%3E%3C/svg%3E"); opacity:.35; mix-blend-mode:multiply; }
+@keyframes aurora-drift{ 0%{ background-position:0% 0%; opacity:1; } 50%{ opacity:.85; } 100%{ background-position:3% 2%; opacity:1; } }
+@keyframes mesh-fade{ from{ opacity:0; } to{ opacity:1; } }
+@keyframes reveal-up{ from{ opacity:0; transform:translateY(18px); } to{ opacity:1; transform:translateY(0); } }
+@keyframes reveal-fade{ from{ opacity:0; } to{ opacity:1; } }
+
+/* top bar */
+.top-bar{ position:sticky; top:0; z-index:200; background:rgba(255,255,255,.88); backdrop-filter:blur(20px) saturate(1.5); -webkit-backdrop-filter:blur(20px) saturate(1.5); border-bottom:1px solid rgba(141,137,255,.13); padding:.52rem clamp(1rem,4vw,2rem); display:flex; align-items:center; gap:.75rem; box-shadow:0 2px 24px -8px rgba(141,137,255,.12); animation:reveal-up .45s cubic-bezier(.22,1,.36,1) .15s both; }
+.top-bar::after{ content:""; position:absolute; bottom:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent 0%,rgba(141,137,255,.22) 25%,rgba(0,247,167,.15) 55%,rgba(141,137,255,.22) 80%,transparent 100%); }
+.top-bar-brand{ display:inline-flex; align-items:center; gap:.55rem; background:none; border:none; cursor:pointer; padding:.2rem .35rem; border-radius:10px; transition:background .18s; font-family:"Fredoka",sans-serif; color:var(--ink); text-decoration:none; }
+.top-bar-brand:hover{ background:rgba(141,137,255,.08); }
+.top-bar-brand:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
+.top-bar-brand .bee-mark-sm{ width:28px; height:28px; flex:none; }
+.top-bar-brand .brand-text{ font-size:1.05rem; font-weight:700; letter-spacing:-.01em; line-height:1; }
+.top-bar-title{ font-family:"Fredoka",sans-serif; font-weight:600; font-size:.85rem; color:var(--ink); margin-left:.4rem; }
+.top-bar-right{ margin-left:auto; display:flex; align-items:center; gap:.6rem; }
+.back-btn{ display:inline-flex; align-items:center; gap:.3rem; background:none; border:1px solid rgba(28,25,42,.1); border-radius:8px; padding:.35rem .7rem; font-family:"Space Mono",monospace; font-size:.55rem; color:var(--muted); cursor:pointer; transition:background .15s, border-color .15s; text-decoration:none; }
+.back-btn:hover{ background:rgba(141,137,255,.08); border-color:rgba(141,137,255,.3); color:var(--ink); }
+
+/* layout */
+.wrap{ position:relative; z-index:1; max-width:680px; margin:0 auto; padding:clamp(.5rem,1.5vw,1rem) clamp(1rem,4vw,2rem) 1rem; }
+
+/* section header */
+.sec{ font-size:.54rem; letter-spacing:.3em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:.7rem; margin:1.2rem 0 .65rem; font-family:"Space Mono",monospace; }
+.sec::before{ content:""; width:16px; height:1px; background:var(--accent); opacity:.5; flex:none; }
+.sec::after{ content:""; flex:1; height:1px; background:linear-gradient(90deg, rgba(30,33,51,1) 0%, transparent 100%); }
+
+/* cards */
+.card{ position:relative; z-index:1; background:var(--glass); backdrop-filter:blur(22px) saturate(1.4); -webkit-backdrop-filter:blur(22px) saturate(1.4); padding:1rem 1.2rem; border:1px solid var(--glass-border); border-radius:14px; transition:border-color .32s, box-shadow .32s; box-shadow:inset 0 1px 0 rgba(28,25,42,.05), 0 2px 16px -4px rgba(0,0,0,.3); }
+.card::before{ content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; background:linear-gradient(135deg, rgba(141,137,255,.03) 0%, transparent 60%); }
+.card:hover{ border-color:rgba(141,137,255,.3); }
+.card-label{ font-size:.48rem; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:.3rem; }
+.card-value{ font-size:.72rem; font-weight:700; color:var(--ink); }
+.card-row{ display:flex; justify-content:space-between; align-items:center; padding:.55rem 0; border-bottom:1px solid rgba(28,25,42,.05); }
+.card-row:last-child{ border-bottom:none; }
+.card-row-label{ font-size:.6rem; color:var(--ink); }
+.card-row-value{ font-size:.58rem; color:var(--muted); font-family:"Space Mono",monospace; }
+.card-row-value.live{ color:var(--signal); }
+.card-row-value.accent{ color:var(--accent); }
+
+/* buttons */
+.btn{ display:inline-flex; align-items:center; gap:.45rem; cursor:pointer; font-family:"Space Mono",monospace; font-size:.65rem; letter-spacing:.04em; padding:.6rem 1.2rem; min-height:48px; border-radius:12px; border:1px solid var(--accent); background:rgba(141,137,255,.1); color:var(--ink); transition:background .18s, border-color .18s, box-shadow .18s, transform .12s; -webkit-touch-callout:none; user-select:none; }
+.btn:active{ transform:scale(.97); background:rgba(141,137,255,.18); }
+.btn:hover{ background:rgba(141,137,255,.22); box-shadow:0 0 16px -4px var(--glow-a); transform:translateY(-1px); }
+.btn:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
+.btn.signal{ border-color:var(--signal); background:var(--signal); color:#06231a; font-weight:700; box-shadow:0 3px 12px -5px var(--glow-s); }
+.btn.signal:hover{ background:color-mix(in srgb, var(--signal) 86%, #fff); box-shadow:0 5px 18px -4px var(--glow-s); }
+.btn.ghost{ border-color:rgba(28,25,42,.1); background:rgba(28,25,42,.03); color:var(--muted); }
+.btn.ghost:hover{ border-color:rgba(141,137,255,.4); color:var(--ink); }
+.btn.danger{ border-color:var(--danger); background:rgba(221,59,59,.06); color:var(--danger); }
+.btn.danger:hover{ background:rgba(221,59,59,.12); }
+.btn-row{ display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.6rem; }
+
+/* fields */
+.field{ display:flex; flex-direction:column; gap:.25rem; margin-bottom:.6rem; }
+.field label{ font-size:.48rem; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-family:"Space Mono",monospace; }
+.field input, .field select{ font-family:"Space Mono",monospace; font-size:.68rem; line-height:1.5; color:var(--ink); background:rgba(255,255,255,.6); border:1px solid rgba(28,25,42,.1); border-radius:10px; padding:.6rem .8rem; outline:none; transition:border-color .18s, box-shadow .18s; }
+.field input:focus, .field select:focus{ border-color:rgba(141,137,255,.5); box-shadow:0 0 0 3px rgba(141,137,255,.1); }
+.field input::placeholder{ color:var(--muted); opacity:.5; }
+.field-hint{ font-size:.44rem; color:var(--muted); margin-top:.1rem; }
+
+/* toggle */
+.toggle-row{ display:flex; justify-content:space-between; align-items:center; padding:.6rem 0; border-bottom:1px solid rgba(28,25,42,.05); }
+.toggle-row:last-child{ border-bottom:none; }
+.toggle-info{ flex:1; }
+.toggle-label{ font-size:.62rem; color:var(--ink); font-weight:600; }
+.toggle-desc{ font-size:.44rem; color:var(--muted); margin-top:.1rem; }
+.toggle{ position:relative; width:40px; height:22px; flex:none; margin-left:.8rem; }
+.toggle input{ opacity:0; width:0; height:0; }
+.toggle-track{ position:absolute; inset:0; background:rgba(28,25,42,.12); border-radius:999px; cursor:pointer; transition:background .2s; }
+.toggle-track::after{ content:""; position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.2); transition:transform .2s; }
+.toggle input:checked + .toggle-track{ background:var(--accent); }
+.toggle input:checked + .toggle-track::after{ transform:translateX(18px); }
+
+/* permissions grid */
+.perm-grid{ display:flex; flex-direction:column; gap:.5rem; }
+.perm-card{ background:rgba(255,255,255,.5); border:1px solid rgba(28,25,42,.08); border-radius:10px; padding:.7rem .9rem; transition:border-color .2s; }
+.perm-card:hover{ border-color:rgba(141,137,255,.25); }
+.perm-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:.3rem; }
+.perm-name{ font-size:.68rem; font-weight:700; color:var(--ink); }
+.perm-badge{ font-size:.38rem; letter-spacing:.06em; text-transform:uppercase; padding:.12rem .35rem; border-radius:999px; border:1px solid transparent; font-family:"Space Mono",monospace; }
+.perm-badge.close{ color:var(--signal); border-color:rgba(0,247,167,.4); background:rgba(0,247,167,.08); }
+.perm-badge.friends{ color:var(--accent); border-color:rgba(141,137,255,.3); background:rgba(141,137,255,.08); }
+.perm-badge.public{ color:var(--muted); border-color:rgba(28,25,42,.12); background:rgba(28,25,42,.04); }
+.perm-badge.custom{ color:var(--warn); border-color:rgba(185,130,10,.3); background:rgba(185,130,10,.08); }
+.perm-desc{ font-size:.48rem; color:var(--muted); line-height:1.5; }
+.perm-members{ font-size:.44rem; color:var(--accent); margin-top:.25rem; }
+
+/* key display */
+.key-display{ background:rgba(28,25,42,.03); border:1px dashed rgba(28,25,42,.12); border-radius:10px; padding:.7rem .9rem; margin-top:.5rem; }
+.key-label{ font-size:.42rem; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:.25rem; }
+.key-value{ font-family:"Space Mono",monospace; font-size:.58rem; color:var(--ink); word-break:break-all; line-height:1.6; user-select:all; }
+.key-value .key-hide{ filter:blur(4px); transition:filter .2s; cursor:pointer; }
+.key-value .key-hide:hover{ filter:blur(0); }
+
+/* recovery */
+.recovery-grid{ display:grid; grid-template-columns:1fr 1fr; gap:.4rem; margin-top:.5rem; }
+.recovery-slot{ background:rgba(255,255,255,.5); border:1px solid rgba(28,25,42,.08); border-radius:8px; padding:.5rem .6rem; text-align:center; }
+.recovery-slot.filled{ border-color:rgba(0,247,167,.3); background:rgba(0,247,167,.04); }
+.recovery-slot.empty{ border-style:dashed; }
+.recovery-name{ font-size:.52rem; font-weight:600; color:var(--ink); }
+.recovery-status{ font-size:.4rem; color:var(--muted); margin-top:.1rem; }
+
+/* toast */
+.toast{ position:fixed; bottom:calc(var(--nav-h) + var(--safe-b) + 16px); left:50%; transform:translateX(-50%); background:var(--ink); color:#fff; font-family:"Space Mono",monospace; font-size:.55rem; padding:.6rem 1.2rem; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,.3); z-index:600; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; }
+.toast.show{ opacity:1; transform:translateX(-50%) translateY(-4px); }
+
+/* footer */
+.foot{ margin-top:1.4rem; padding-top:1rem; border-top:1px solid rgba(28,25,42,.05); display:flex; flex-wrap:wrap; gap:.5rem 1.4rem; align-items:center; font-size:.56rem; color:rgba(74,78,90,.55); }
+.foot .dot{ width:5px; height:5px; border-radius:50%; background:var(--signal); display:inline-block; box-shadow:0 0 8px 2px rgba(0,247,167,.55); }
+
+/* bottom nav */
+.bottom-nav{ position:fixed; bottom:0; left:0; right:0; z-index:500; height:calc(var(--nav-h) + var(--safe-b)); padding-bottom:var(--safe-b); background:rgba(255,255,255,.95); backdrop-filter:blur(24px) saturate(1.6); -webkit-backdrop-filter:blur(24px) saturate(1.6); border-top:1px solid rgba(141,137,255,.12); box-shadow:0 -2px 20px -6px rgba(141,137,255,.12); display:flex; align-items:center; justify-content:space-around; animation:reveal-fade .6s ease .9s both; }
+.nav-btn{ display:flex; flex-direction:column; align-items:center; gap:.2rem; background:none; border:none; cursor:pointer; padding:.6rem .8rem; min-width:52px; min-height:48px; border-radius:12px; transition:background .18s, color .18s; color:var(--muted); position:relative; -webkit-touch-callout:none; user-select:none; text-decoration:none; }
+.nav-btn:active{ background:rgba(108,92,231,.12); transform:scale(.96); }
+.nav-btn:hover{ background:rgba(141,137,255,.08); color:var(--ink); }
+.nav-btn:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+.nav-btn.active{ color:var(--accent); }
+.nav-btn.active .nav-icon{ filter:drop-shadow(0 0 6px rgba(108,92,231,.5)); }
+.nav-icon{ width:22px; height:22px; flex:none; }
+.nav-icon svg{ width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.nav-label{ font-family:"Space Mono",monospace; font-size:.42rem; letter-spacing:.08em; text-transform:uppercase; }
+
+@media (prefers-reduced-motion:reduce){ *,*::before,*::after{ animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+</style>
+</head>
+<body>
+
+<div class="mesh-bg"></div>
+
+<!-- TOP BAR -->
+<header class="top-bar">
+  <a class="top-bar-brand" href="../../../index.html">
+    <svg class="bee-mark-sm" viewBox="0 0 56 56" fill="none"><circle cx="28" cy="30" r="14" fill="url(#bee-gn)" opacity=".9"/><ellipse cx="20" cy="22" rx="10" ry="7" fill="rgba(141,137,255,.35)" transform="rotate(-20 20 22)"/><ellipse cx="36" cy="22" rx="10" ry="7" fill="rgba(141,137,255,.35)" transform="rotate(20 36 22)"/><circle cx="22" cy="29" r="2" fill="#fff" opacity=".8"/><circle cx="34" cy="29" r="2" fill="#fff" opacity=".8"/><line x1="24" y1="16" x2="22" y2="10" stroke="#6c5ce7" stroke-width="1.5" stroke-linecap="round"/><line x1="32" y1="16" x2="34" y2="10" stroke="#6c5ce7" stroke-width="1.5" stroke-linecap="round"/><circle cx="22" cy="9" r="1.5" fill="#6c5ce7"/><circle cx="34" cy="9" r="1.5" fill="#6c5ce7"/><defs><radialGradient id="bee-gn" cx="50%" cy="40%"><stop offset="0%" stop-color="#ffc41f"/><stop offset="100%" stop-color="#ff9a3a"/></radialGradient></defs></svg>
+    <span class="brand-text">flove</span>
+  </a>
+  <span class="top-bar-title">settings</span>
+  <span class="top-bar-right">
+    <a class="back-btn" href="../../../index.html">← back</a>
+  </span>
+</header>
+
+<main class="wrap">
+
+  <!-- ========== AUTH ========== -->
+  <div class="sec">auth</div>
+  <div class="card">
+    <div class="card-row">
+      <span class="card-row-label">identity</span>
+      <span class="card-row-value accent">@marc</span>
+    </div>
+    <div class="card-row">
+      <span class="card-row-label">profile path</span>
+      <span class="card-row-value live">users/marc</span>
+    </div>
+    <div class="card-row">
+      <span class="card-row-label">key created</span>
+      <span class="card-row-value">2026-07-25</span>
+    </div>
+    <div class="card-row">
+      <span class="card-row-label">key type</span>
+      <span class="card-row-value">ed25519</span>
+    </div>
+    <div class="btn-row">
+      <button class="btn signal" onclick="showToast('Key created locally')">create new key</button>
+      <button class="btn ghost" onclick="showToast('Import flow coming soon')">import key</button>
+    </div>
+  </div>
+
+  <!-- key display -->
+  <div class="key-display">
+    <div class="key-label">public key</div>
+    <div class="key-value" id="pubKey" onclick="this.querySelector('.key-hide').classList.toggle('key-hide')">
+      <span class="key-hide">a3f8c2e1...d7b4</span>
+    </div>
+  </div>
+
+  <!-- ========== SECURITY ========== -->
+  <div class="sec">security</div>
+  <div class="card">
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-label">recovery password</div>
+        <div class="toggle-desc">Protect key backup with a password</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" checked onchange="showToast(this.checked ? 'Recovery enabled' : 'Recovery disabled')">
+        <span class="toggle-track"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-label">biometric lock</div>
+        <div class="toggle-desc">Require fingerprint/face for sensitive actions</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" onchange="showToast(this.checked ? 'Biometric enabled' : 'Biometric disabled')">
+        <span class="toggle-track"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-label">auto-lock timeout</div>
+        <div class="toggle-desc">Lock app after inactivity</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" checked>
+        <span class="toggle-track"></span>
+      </label>
+    </div>
+    <div class="field" style="margin-top:.5rem">
+      <label>timeout duration</label>
+      <select onchange="showToast('Timeout: ' + this.value)">
+        <option value="5">5 minutes</option>
+        <option value="15" selected>15 minutes</option>
+        <option value="30">30 minutes</option>
+        <option value="60">1 hour</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- recovery trusts -->
+  <div class="sec">recovery trusts</div>
+  <div class="card">
+    <div style="font-size:.52rem;color:var(--muted);margin-bottom:.5rem">Trusted contacts who can help recover your identity</div>
+    <div class="recovery-grid">
+      <div class="recovery-slot filled">
+        <div class="recovery-name">@ana</div>
+        <div class="recovery-status" style="color:var(--signal)">signed ✓</div>
+      </div>
+      <div class="recovery-slot filled">
+        <div class="recovery-name">@luis</div>
+        <div class="recovery-status" style="color:var(--signal)">signed ✓</div>
+      </div>
+      <div class="recovery-slot filled">
+        <div class="recovery-name">@maria</div>
+        <div class="recovery-status">pending</div>
+      </div>
+      <div class="recovery-slot empty">
+        <div class="recovery-name" style="color:var(--muted)">+ add</div>
+        <div class="recovery-status">empty slot</div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="showToast('Invite sent')">invite recovery contact</button>
+    </div>
+  </div>
+
+  <!-- ========== PERMISSIONS ========== -->
+  <div class="sec">permissions</div>
+  <div style="font-size:.52rem;color:var(--muted);margin-bottom:.6rem">4 flat groups control what apps can access. No nesting.</div>
+  <div class="perm-grid">
+    <div class="perm-card">
+      <div class="perm-head">
+        <span class="perm-name">Close</span>
+        <span class="perm-badge close">friends</span>
+      </div>
+      <div class="perm-desc">Direct vouch relationships. Full context sharing, mutual trust required.</div>
+      <div class="perm-members">3 members · @ana @luis @maria</div>
+    </div>
+    <div class="perm-card">
+      <div class="perm-head">
+        <span class="perm-name">Public</span>
+        <span class="perm-badge public">public</span>
+      </div>
+      <div class="perm-desc">Visible to everyone. Basic profile info, published content only.</div>
+      <div class="perm-members">all flove users</div>
+    </div>
+    <div class="perm-card">
+      <div class="perm-head">
+        <span class="perm-name">Private</span>
+        <span class="perm-badge friends" style="color:var(--danger);border-color:rgba(221,59,59,.3);background:rgba(221,59,59,.08)">private</span>
+      </div>
+      <div class="perm-desc">Only you. No data shared with apps or other users.</div>
+      <div class="perm-members">just you</div>
+    </div>
+    <div class="perm-card">
+      <div class="perm-head">
+        <span class="perm-name">Custom</span>
+        <span class="perm-badge custom">slot 1</span>
+      </div>
+      <div class="perm-desc">Your custom group. Define members and rules per your needs.</div>
+      <div class="perm-members" style="color:var(--muted)">not configured · tap to set up</div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn" onclick="showToast('Permission editor coming soon')">manage permissions</button>
+  </div>
+
+  <!-- ========== TRUST CONTRACTS ========== -->
+  <div class="sec">trust contracts</div>
+  <div class="card">
+    <div style="font-size:.52rem;color:var(--muted);margin-bottom:.5rem">Standardized rules mapping actions to facet thresholds</div>
+    <div class="card-row">
+      <span class="card-row-label">maty · personal circle</span>
+      <span class="card-row-value live">active</span>
+    </div>
+    <div class="card-row">
+      <span class="card-row-label">myfamily · family circle</span>
+      <span class="card-row-value">demo</span>
+    </div>
+    <div class="card-row">
+      <span class="card-row-label">custom contracts</span>
+      <span class="card-row-value accent">0</span>
+    </div>
+    <div class="btn-row">
+      <button class="btn ghost" onclick="showToast('Contract template gallery coming soon')">browse templates</button>
+      <button class="btn ghost" onclick="showToast('Custom contract editor coming soon')">create contract</button>
+    </div>
+  </div>
+
+  <!-- ========== CONFIGURATIONS ========== -->
+  <div class="sec">configurations</div>
+  <div class="card">
+    <div class="card-row">
+      <span class="card-row-label">distro</span>
+      <span class="card-row-value accent">central</span>
+    </div>
+    <div class="card-row">
+      <span class="card-row-label">tier</span>
+      <span class="card-row-value accent">normal</span>
+    </div>
+    <div class="card-row">
+      <span class="card-row-label">storage</span>
+      <span class="card-row-value">extension</span>
+    </div>
+    <div class="card-row">
+      <span class="card-row-label">sync status</span>
+      <span class="card-row-value live" id="syncVal">checking...</span>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:.5rem">
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-label">dark mode</div>
+        <div class="toggle-desc">Follow system or override</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" onchange="showToast(this.checked ? 'Dark mode on' : 'Dark mode off')">
+        <span class="toggle-track"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-label">notifications</div>
+        <div class="toggle-desc">Push alerts for trust events</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" checked>
+        <span class="toggle-track"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-label">wizy suggestions</div>
+        <div class="toggle-desc">Show contextual suggestions</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" checked>
+        <span class="toggle-track"></span>
+      </label>
+    </div>
+    <div class="field" style="margin-top:.5rem">
+      <label>language</label>
+      <select>
+        <option value="en" selected>English</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- ========== DANGER ZONE ========== -->
+  <div class="sec" style="color:var(--danger)">danger zone</div>
+  <div class="card" style="border-color:rgba(221,59,59,.2)">
+    <div class="card-row">
+      <span class="card-row-label">export all data</span>
+      <button class="btn ghost" style="min-height:36px;padding:.4rem .8rem;font-size:.55rem" onclick="showToast('Export started')">export</button>
+    </div>
+    <div class="card-row">
+      <span class="card-row-label">delete account</span>
+      <button class="btn danger" style="min-height:36px;padding:.4rem .8rem;font-size:.55rem" onclick="showToast('Account deletion requires confirmation')">delete</button>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <span><span class="dot"></span> Central</span>
+    <span>sety · users/marc</span>
+    <span>flove.org</span>
+  </footer>
+</main>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav" aria-label="Main navigation">
+  <a class="nav-btn" href="../index.html" aria-label="Love">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+    <span class="nav-label">love</span>
+  </a>
+  <a class="nav-btn" href="../appy/index.html" aria-label="Appy">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+    <span class="nav-label">appy</span>
+  </a>
+  <a class="nav-btn" href="../index.html#favs" aria-label="Favs">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
+    <span class="nav-label">favs</span>
+  </a>
+  <a class="nav-btn active" href="#" aria-label="Settings">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+    <span class="nav-label">sety</span>
+  </a>
+</nav>
+
+<script>
+/* toast */
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+
+/* central sync */
+(function(){
+  var el = document.getElementById('syncVal');
+  fetch('/api/ping', { method:'GET' })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.ok){
+        el.textContent = 'connected';
+        el.className = 'card-row-value live';
+      }
+    })
+    .catch(function(){
+      el.textContent = 'offline';
+      el.className = 'card-row-value';
+    });
+})();
+
+/* flove namespace */
+window.flove = window.flove || {
+  distro:'central', tier:'normal', app:'sety', profile:'users/marc', version:'1.0.0',
+  emit:function(e,d){ window.dispatchEvent(new CustomEvent('flove:'+e,{detail:d})); },
+  on:function(e,fn){ window.addEventListener('flove:'+e,function(ev){ fn(ev.detail); }); }
+};
+
+/* haptic */
+document.querySelectorAll('.nav-btn,.btn').forEach(function(el){
+  el.addEventListener('touchstart',function(){
+    if(window.Android && window.Android.vibrate) window.Android.vibrate(10);
+  },{passive:true});
+});
+
+/* back button */
+window.addEventListener('popstate',function(){});
+history.pushState(null,'',location.href);
+</script>
+</body>
+</html>

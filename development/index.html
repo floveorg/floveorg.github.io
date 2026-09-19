@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Marc (marcflove)">
+<meta name="copyright" content="© 2026 Marc · CC BY-SA 4.0">
+<link rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='12' y1='0' x2='88' y2='0' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='%2322d3ee'/><stop offset='.5' stop-color='%23a78bfa'/><stop offset='1' stop-color='%23f472b6'/></linearGradient></defs><path d='M50 60 C 22 60, 12 38, 16 18 C 38 22, 54 38, 50 60 Z' fill='url(%23g)'/><path d='M50 60 C 78 60, 88 38, 84 18 C 62 22, 46 38, 50 60 Z' fill='url(%23g)'/><path d='M50 58 C 50 72, 50 84, 50 92' stroke='url(%23g)' stroke-width='5' stroke-linecap='round' fill='none'/></svg>">
+<title>FLOVE · development</title>
+<meta name="description" content="Development index: localhost solo distro, the Telegram2Web circuit, profiles and everything else.">
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05070d;
+  --bg-2:#090e18;
+  --panel:#0b1220;
+  --panel-2:#0d1626;
+  --line:#15233d;
+  --ink:#dcebf7;
+  --dim:#8ba2bc;
+  --cyan:#22d3ee;
+  --violet:#a78bfa;
+  --magenta:#f472b6;
+  --mint:#34d399;
+  --amber:#fbbf24;
+  --red:#fb7185;
+  --r:16px;
+  --maxw:1120px;
+  --disp:'Chakra Petch',system-ui,sans-serif;
+  --body:'Figtree',system-ui,sans-serif;
+  --mono:'Space Mono',ui-monospace,monospace;
+  --sv-pane:#0d1520;
+  --sv-line:#22d3ee;
+  --sv-dim:#8aa7bd;
+  --sv-ink:#c7e4ff;
+  --sv-mono:#8df3e1;
+  --sv-amber:#fbbf24;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:84px}
+body{
+  margin:0; font-family:var(--body); line-height:1.55; overflow-x:hidden;
+  color:var(--ink); background:var(--bg); padding-top:72px;
+}
+h1,h2,h3{font-family:var(--disp); line-height:1.05; margin:0; letter-spacing:.01em; font-weight:700}
+a{color:inherit}
+img{max-width:100%; display:block}
+.wrap{max-width:var(--maxw); margin:0 auto; padding:0 22px}
+:focus-visible{outline:2px solid var(--cyan); outline-offset:3px; border-radius:8px; box-shadow:0 0 0 4px rgba(34,211,238,.18)}
+code{font-family:var(--mono); font-size:.85em; color:var(--cyan);
+  background:rgba(34,211,238,.07); border:1px solid rgba(34,211,238,.2);
+  border-radius:6px; padding:1px 6px}
+::selection{background:rgba(34,211,238,.28); color:#fff}
+::-webkit-scrollbar{width:10px; height:10px}
+::-webkit-scrollbar-track{background:#070c14}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--cyan),var(--magenta)); border-radius:8px; border:2px solid #070c14}
+
+/* ======= ambient background FX (grid · scanline · orbs) ======= */
+.bgfx{position:fixed; inset:0; z-index:-1; overflow:hidden; pointer-events:none}
+.bgfx .grid{position:absolute; left:-80%; right:-80%; top:-60%; bottom:-60%; opacity:.5;
+  background-image:
+    linear-gradient(rgba(34,211,238,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34,211,238,.045) 1px, transparent 1px);
+  background-size:46px 46px;
+  transform:perspective(620px) rotateX(62deg) translateY(6%);
+  animation:gridMove 26s linear infinite}
+@keyframes gridMove{from{transform:perspective(620px) rotateX(62deg) translateY(6%)}to{transform:perspective(620px) rotateX(62deg) translateY(-80%)}}
+.bgfx .scan{position:absolute; inset:0; opacity:.5;
+  background:linear-gradient(180deg, transparent 0 78%, rgba(34,211,238,.05) 79%, transparent 79%);
+  background-size:100% 9px; animation:scan 9s linear infinite}
+@keyframes scan{from{transform:translateY(-9px)}to{transform:translateY(100vh)}}
+.bgfx .orb{position:absolute; border-radius:50%; filter:blur(80px); opacity:.42; animation:orb 20s ease-in-out infinite alternate}
+.bgfx .o1{width:460px; height:460px; top:-140px; right:-90px; background:radial-gradient(circle, rgba(34,211,238,.75), transparent 65%)}
+.bgfx .o2{width:400px; height:400px; bottom:-160px; left:-110px; background:radial-gradient(circle, rgba(232,121,249,.55), transparent 65%); animation-delay:-6s}
+.bgfx .o3{width:340px; height:340px; top:32%; left:46%; background:radial-gradient(circle, rgba(167,139,250,.4), transparent 65%); animation-delay:-12s}
+@keyframes orb{from{transform:translate(0,0) scale(1)}to{transform:translate(70px,46px) scale(1.18)}}
+
+/* ======= scroll progress + cursor glow ======= */
+#progress{position:fixed; top:0; left:0; height:3px; width:0; z-index:70;
+  background:linear-gradient(90deg,var(--cyan),var(--violet),var(--magenta),var(--amber));
+  background-size:300% 100%; animation:progFlow 6s linear infinite;
+  box-shadow:0 0 14px rgba(34,211,238,.8)}
+@keyframes progFlow{to{background-position:300% 0}}
+#glow{position:fixed; inset:0; z-index:59; pointer-events:none; opacity:0; transition:opacity .35s;
+  background:radial-gradient(620px 420px at var(--mx,50%) var(--my,50%), rgba(34,211,238,.07), transparent 62%)}
+
+/* ======= icon system ======= */
+.ic{width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; flex:0 0 auto}
+
+/* ======= top header + main tab bar ======= */
+.topbar{position:fixed; top:3px; left:0; right:0; z-index:60; backdrop-filter:blur(14px);
+  background:rgba(6,10,18,.78); border-bottom:1px solid var(--line);
+  box-shadow:0 8px 30px rgba(0,0,0,.45)}
+.topbar .wrap{display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:10px; padding-top:11px; padding-bottom:11px}
+.brand{font-family:var(--disp); font-weight:700; font-size:1.15rem; display:flex; align-items:center; gap:.55em;
+  text-decoration:none; white-space:nowrap; letter-spacing:.12em; border:0; background:none; cursor:pointer;
+  padding:0; color:var(--ink); text-align:left}
+.brand:hover{color:var(--cyan)}
+.brand.is-active{color:var(--cyan); text-shadow:0 0 12px rgba(34,211,238,.55)}
+.brand.is-active small{color:var(--violet)}
+.brand-logo{width:42px; height:42px; flex:0 0 auto; filter:drop-shadow(0 0 9px rgba(34,211,238,.75)); animation:brandHue 14s linear infinite}
+@keyframes brandHue{to{filter:drop-shadow(0 0 9px rgba(34,211,238,.75)) hue-rotate(360deg)}}
+.brand-logo path{animation:brandPulse 3.6s ease-in-out infinite}
+@keyframes brandPulse{0%,100%{opacity:1}50%{opacity:.75}}
+.brand small{font-family:var(--mono); font-size:.58rem; letter-spacing:.26em; text-transform:uppercase; color:var(--cyan); display:block; font-weight:700; text-shadow:0 0 10px rgba(34,211,238,.6)}
+.main-tabs{display:flex; gap:8px; flex-wrap:wrap}
+.main-tabs .tab-btn{font-family:var(--disp); font-weight:600; font-size:.92rem; letter-spacing:.05em; color:var(--dim);
+  background:transparent; border:1px solid var(--line); border-radius:999px; padding:8px 18px;
+  cursor:pointer; transition:color .15s, border-color .15s, box-shadow .25s, transform .12s; position:relative}
+.main-tabs .tab-btn:hover{color:var(--ink); border-color:var(--cyan); transform:translateY(-2px); box-shadow:0 0 16px rgba(34,211,238,.35)}
+.main-tabs .tab-btn[aria-pressed="true"]{color:#04121a; background:linear-gradient(92deg,var(--cyan),var(--violet));
+  border-color:transparent; box-shadow:0 0 22px rgba(34,211,238,.5), inset 0 0 0 1px rgba(255,255,255,.15); transform:none}
+@media(max-width:720px){.topbar .wrap{flex-direction:column}.brand-logo{width:34px;height:34px}.main-tabs .tab-btn{font-size:.82rem; padding:7px 13px}}
+.tab-panel[hidden]{display:none}
+.diag2-hero[hidden]{display:none}
+.footer{border-top:1px solid var(--line); background:linear-gradient(180deg,transparent,rgba(6,10,18,.7)); padding:26px 0 44px; margin-top:10px}
+.footer .wrap{display:flex; align-items:center; justify-content:center}
+
+/* ======= shared section heads ======= */
+main{padding:28px 0 80px}
+.section-head{max-width:74ch; margin-bottom:26px}
+.section-head h2{font-size:clamp(1.65rem,4.4vw,2.5rem); margin:10px 0 12px; text-shadow:0 0 26px rgba(34,211,238,.4)}
+.section-head h2::after{content:""; display:block; height:3px; margin-top:12px; width:140px; border-radius:3px;
+  background:linear-gradient(90deg,var(--cyan),var(--magenta),var(--amber));
+  background-size:220% 100%; animation:shine 3.4s linear infinite;
+  box-shadow:0 0 16px rgba(34,211,238,.65)}
+@keyframes shine{to{background-position:220% 0}}
+.section-head p.lede{color:var(--dim); font-size:1.06rem; margin:0}
+.eyebrow{font-family:var(--mono); font-size:.7rem; letter-spacing:.3em; text-transform:uppercase; color:var(--cyan); font-weight:700; display:flex; align-items:center; gap:9px}
+.eyebrow::before{content:""; width:26px; height:2px; background:var(--magenta); box-shadow:0 0 9px var(--magenta)}
+.eyebrow::after{content:""; width:6px; height:6px; background:var(--mint); transform:rotate(45deg); box-shadow:0 0 8px var(--mint)}
+.head-spaced{margin-top:38px}
+h3.sec{display:flex; align-items:center; gap:10px; font-size:1.18rem; margin:30px 0 14px; color:var(--ink)}
+h3.sec .ic{color:var(--cyan); filter:drop-shadow(0 0 7px rgba(34,211,238,.7))}
+
+/* ======= terminal window ======= */
+.term{margin:6px 0 22px; border:1px solid var(--line); border-radius:14px; overflow:hidden;
+  background:linear-gradient(180deg,#070d18,#0a1220); box-shadow:0 18px 50px rgba(0,0,0,.5), 0 0 30px rgba(34,211,238,.07)}
+.term-bar{display:flex; align-items:center; gap:7px; padding:10px 14px; border-bottom:1px solid var(--line); background:rgba(255,255,255,.025)}
+.term-bar .dot{width:11px; height:11px; border-radius:50%; flex:0 0 auto}
+.term-bar .dot.r{background:#ff5f57; box-shadow:0 0 8px rgba(255,95,87,.7)}
+.term-bar .dot.y{background:#febc2e; box-shadow:0 0 8px rgba(254,188,46,.7)}
+.term-bar .dot.g{background:#28c840; box-shadow:0 0 8px rgba(40,200,64,.7)}
+.term-title{margin:0 0 0 8px; font-size:.68rem; color:var(--dim); background:none; border:none; letter-spacing:.06em}
+.term-body{padding:14px 16px; font-family:var(--mono); font-size:.8rem; line-height:1.75}
+.term-body .prompt{color:var(--mint); font-weight:700; text-shadow:0 0 8px rgba(52,211,153,.7); margin-right:6px}
+.term-body .out{color:var(--dim); margin:2px 0 0 0}
+.term-body .ok{color:var(--mint); margin-right:8px}
+.term-body .k{color:var(--cyan)}
+.term-cursor{display:inline-block; width:8px; height:14px; background:var(--cyan); vertical-align:-2px; margin-left:4px;
+  box-shadow:0 0 10px var(--cyan); animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ======= cards (generic) ======= */
+.glassy{position:relative; background:linear-gradient(180deg,var(--panel-2),var(--panel));
+  border:1px solid var(--line); border-radius:var(--r); overflow:hidden;
+  box-shadow:0 14px 36px rgba(0,0,0,.45)}
+.glassy::before{content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:linear-gradient(120deg, rgba(34,211,238,.07), transparent 38%, transparent 68%, rgba(232,121,249,.06))}
+.glassy::after{content:""; position:absolute; top:0; left:-120%; width:60%; height:100%;
+  background:linear-gradient(100deg, transparent, rgba(255,255,255,.06), transparent);
+  transform:skewX(-18deg); transition:left .6s ease}
+.glassy:hover::after{left:140%}
+.glassy:hover{border-color:rgba(34,211,238,.55);
+  box-shadow:0 0 0 1px rgba(34,211,238,.2), 0 0 30px rgba(34,211,238,.16), 0 18px 42px rgba(0,0,0,.55);
+  transform:translateY(-4px)}
+.glassy, .glassy>*{transition:transform .18s ease}
+
+/* ======= distro cards & option grid ======= */
+.distro-cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; margin:24px 0}
+.distro-card{padding:20px 22px}
+.distro-card h4{margin:0 0 8px; font-family:var(--disp); font-size:1.12rem; display:flex; align-items:center; gap:10px}
+.distro-card h4 .ic{color:var(--cyan)}
+.distro-card p{margin:0; color:var(--dim); font-size:.94rem; line-height:1.5}
+.distro-card code{font-size:.82em}
+.opt-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; margin:18px 0}
+.opt-card{padding:18px; border-radius:var(--r)}
+.opt-card .o-ic{display:inline-flex; width:40px; height:40px; align-items:center; justify-content:center;
+  border-radius:12px; border:1px solid rgba(34,211,238,.35); background:rgba(34,211,238,.08);
+  color:var(--cyan); margin-bottom:12px; box-shadow:0 0 16px rgba(34,211,238,.25)}
+.opt-card .o-ic .ic{width:20px; height:20px}
+.opt-card h4{margin:0 0 6px; font-family:var(--disp); font-size:1.04rem; font-weight:600}
+.opt-card p{margin:0; color:var(--dim); font-size:.9rem; line-height:1.5}
+.opt-card code{font-size:.76rem; word-break:break-all}
+.opt-card summary{list-style:none; display:flex; align-items:center; gap:15px; cursor:pointer; padding:2px; user-select:none}
+.opt-card summary::-webkit-details-marker{display:none}
+.opt-card summary .o-ic{margin-bottom:0}
+.opt-card .o-head{display:flex; flex-direction:column; justify-content:center; flex:1; min-width:0; gap:3px}
+.opt-card .o-head h4{margin:0}
+.opt-card .o-title{margin:0}
+.opt-card .o-brief{font-family:var(--mono); font-size:.74rem; color:var(--dim); letter-spacing:.02em; line-height:1.35}
+.opt-card .o-caret{color:var(--cyan); transition:transform .28s; flex:0 0 auto; filter:drop-shadow(0 0 5px rgba(34,211,238,.4))}
+.opt-card[open] .o-caret{transform:rotate(180deg)}
+.opt-card .o-full{margin:14px 0 0; padding-top:12px; border-top:1px dashed var(--line)}
+
+/* ======= pipeline stepper ======= */
+.stepper{list-style:none; margin:6px 0 18px; padding:0; display:grid; gap:0}
+.stepper li{position:relative; display:grid; grid-template-columns:44px 1fr; gap:14px; padding:0 2px 28px 0}
+.stepper li:last-child{padding-bottom:2px}
+.stepper li .step-dot{position:relative; z-index:1; width:44px; height:44px; border-radius:13px;
+  display:grid; place-items:center; background:linear-gradient(135deg,var(--cyan),var(--violet)); color:#04121a;
+  box-shadow:0 0 20px rgba(34,211,238,.55)}
+.stepper li .step-dot .ic{width:20px; height:20px}
+.stepper li:not(:last-child)::before{content:""; position:absolute; left:21px; top:50px; bottom:0; width:2px;
+  background:linear-gradient(180deg,var(--cyan),rgba(34,211,238,.05)); box-shadow:0 0 8px rgba(34,211,238,.35)}
+.stepper li:not(:last-child)::after{content:""; position:absolute; z-index:2; left:12px; bottom:6px; width:0; height:0;
+  border-left:10px solid transparent; border-right:10px solid transparent; border-top:9px solid var(--cyan);
+  filter:drop-shadow(0 0 5px rgba(34,211,238,.8))}
+.stepper .step-body{background:linear-gradient(180deg,var(--panel-2),var(--panel)); border:1px solid var(--line);
+  border-radius:14px; padding:14px 16px; box-shadow:0 10px 26px rgba(0,0,0,.35);
+  transition:border-color .25s, box-shadow .25s}
+.stepper li:hover .step-body{border-color:rgba(34,211,238,.5); box-shadow:0 0 22px rgba(34,211,238,.14)}
+.stepper .step-tag{display:flex; align-items:center; font-family:var(--disp); font-weight:600; font-size:.8rem;
+  letter-spacing:.04em; text-transform:uppercase; color:var(--ink)}
+.stepper .step-tag .step-num{font-family:var(--mono); font-size:.62rem; font-weight:700; color:var(--cyan);
+  border:1px solid rgba(34,211,238,.45); border-radius:999px; padding:1px 7px; margin-right:8px}
+.stepper .step-body p{margin:7px 0 0; color:var(--dim); line-height:1.55}
+.stepper b{font-family:var(--disp); font-weight:600; color:var(--ink)}
+
+/* ======= chips & buttons ======= */
+.chip{position:relative; border:1px solid var(--line); border-radius:999px; background:var(--panel);
+  color:var(--ink); font-family:var(--body); font-weight:600; font-size:.85rem; padding:6px 14px;
+  cursor:pointer; transition:transform .12s, border-color .2s, box-shadow .25s}
+.chip:hover{transform:translateY(-1px); border-color:var(--cyan); box-shadow:0 0 14px rgba(34,211,238,.4)}
+.copy-chip[aria-pressed="true"]{background:linear-gradient(92deg,var(--cyan),var(--violet)); color:#04121a; border-color:transparent}
+.setup-row{margin:12px 0 2px}
+.setup-chip{font-size:.86rem}
+
+/* modal configuración del prompt del agente */
+.modal-back{position:fixed; inset:0; z-index:60; background:rgba(3,7,16,.72); backdrop-filter:blur(4px);
+  display:grid; place-items:center; padding:22px; animation:fade .2s ease}
+.modal-back[hidden]{display:none}
+.modal{position:relative; width:100%; max-width:440px; background:var(--panel-2); color:var(--ink);
+  border:1px solid var(--line); border-radius:22px; padding:30px clamp(20px,4vw,32px);
+  box-shadow:14px 14px 0 rgba(34,211,238,.10), 0 24px 60px rgba(0,0,0,.6); animation:pop-modal .28s cubic-bezier(.2,1.4,.4,1)}
+.modal h2{font-size:1.4rem; margin-bottom:6px}
+.modal .modal-sub{color:var(--dim); font-size:.92rem; margin:0 0 20px; line-height:1.5}
+.modal-x{position:absolute; top:14px; right:14px; width:38px; height:38px; border-radius:50%;
+  border:1px solid var(--line); background:var(--panel); color:var(--ink); font-size:1.3rem; line-height:1;
+  cursor:pointer; display:grid; place-items:center; transition:transform .12s, border-color .12s}
+.modal-x:hover{transform:rotate(90deg); border-color:var(--cyan); color:var(--cyan)}
+@keyframes fade{from{opacity:0}}
+@keyframes pop-modal{from{opacity:0; transform:translateY(20px) scale(.94)}}
+.setup-modal{max-width:480px; max-height:min(680px,92vh); overflow-y:auto; overscroll-behavior:contain}
+.setup-modal::-webkit-scrollbar{width:8px}
+.setup-form{display:grid; gap:14px}
+.setup-group{display:grid; gap:6px; border:1px dashed var(--line); border-radius:14px; padding:12px; margin:0; min-width:0}
+.setup-group.setup-radio{border:none; padding:0; gap:6px}
+.setup-group legend{font-family:var(--disp); font-weight:700; font-size:.86rem; color:var(--cyan); padding:0 6px}
+.setup-group label{font-size:.9rem; color:var(--dim)}
+.setup-group input[type="text"]{
+  border:1px solid var(--line); border-radius:10px; background:var(--bg); color:var(--ink);
+  padding:9px 12px; font:inherit; width:100%; box-sizing:border-box; transition:border-color .12s, box-shadow .12s}
+.setup-group input[type="text"]:focus{outline:none; border-color:var(--cyan); box-shadow:0 0 0 3px rgba(34,211,238,.18)}
+.setup-group input[type="text"]::placeholder{color:var(--dim); opacity:.7}
+.setup-ck{display:flex; align-items:center; gap:8px; cursor:pointer}
+.setup-ck input{width:17px; height:17px; accent-color:var(--cyan)}
+.setup-actions{display:flex; gap:10px; justify-content:flex-end; align-items:center; flex-wrap:wrap; margin-top:2px}
+.setup-actions button{font-family:var(--disp); font-weight:700; font-size:.88rem; border-radius:999px;
+  border:1px solid var(--line); background:var(--panel); color:var(--ink); cursor:pointer;
+  padding:9px 18px; transition:transform .12s, border-color .12s, box-shadow .12s}
+.setup-actions button:hover{transform:translateY(-1px); border-color:var(--cyan); box-shadow:0 0 14px rgba(34,211,238,.3)}
+.setup-actions .btn-primary{background:linear-gradient(92deg,var(--cyan),var(--violet)); color:#04121a; border-color:transparent}
+.setup-actions .btn-primary:hover{box-shadow:0 0 18px rgba(34,211,238,.5)}
+.see-btn{border:1px solid var(--line); background:transparent; color:var(--cyan); font:inherit; font-size:.74rem; font-weight:700;
+  border-radius:999px; padding:2px 11px; margin-left:8px; cursor:pointer; vertical-align:middle}
+.see-btn:hover{transform:translateY(-1px); border-color:var(--cyan)}
+.see-box{font-size:.84rem; line-height:1.55; color:var(--dim)}
+.see-box ul{margin:4px 0 0; padding-left:18px; display:grid; gap:5px}
+.see-box b{color:var(--ink)}
+.see-box code{font-size:.82em}
+
+.standards-row{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; margin-top:18px}
+.std-card{display:block; padding:16px 18px; text-decoration:none; color:var(--ink)}
+.std-card h4{font-size:1rem; margin-bottom:5px; font-family:var(--disp); font-weight:600}
+.std-card p{font-size:.84rem; color:var(--dim); margin:0; line-height:1.45}
+
+/* ======= table ======= */
+.table{width:100%; border-collapse:collapse; margin-top:18px; font-size:.92rem}
+.table th,.table td{text-align:left; border:1px solid var(--line); padding:10px 12px; vertical-align:top}
+.table th{background:linear-gradient(92deg, var(--cyan), var(--violet)); color:#04121a; font-family:var(--disp); letter-spacing:.04em}
+.table td{background:var(--panel)}
+.table code{font-size:.8rem}
+
+/* ======= app tree · subsubs structure ======= */
+.apptree{position:relative; padding:20px 22px 22px; margin-top:6px}
+.apptree::after{content:"░ ░ ░"; position:absolute; right:16px; bottom:8px; font-family:var(--mono); font-size:.6rem; color:rgba(34,211,238,.25); letter-spacing:.4em}
+.tree-head{display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 12px 14px;
+  border-bottom:1px dashed var(--line); margin-bottom:6px}
+.tree-head .t-root-ic{display:inline-flex; color:var(--amber); filter:drop-shadow(0 0 8px rgba(251,191,36,.6))}
+.tree-head .ic{width:22px; height:22px}
+.t-root{font-family:var(--mono); font-size:.95rem; font-weight:700; color:var(--ink); background:none; border:none}
+.badge{font-family:var(--mono); font-size:.64rem; font-weight:700; letter-spacing:.06em;
+  color:var(--mint); border:1px solid rgba(52,211,153,.4); border-radius:999px; padding:2px 9px;
+  background:rgba(52,211,153,.07)}
+.badge.sub{color:var(--violet); border-color:rgba(167,139,250,.4); background:rgba(167,139,250,.08)}
+.tree,.subtree{list-style:none; margin:0; padding:0}
+.tree>li{position:relative; padding-left:24px}
+.subtree{margin-left:14px; padding-left:20px; border-left:1px dashed rgba(34,211,238,.22)}
+.tree li{position:relative}
+.tree li::before{content:""; position:absolute; left:0; top:50%; width:12px; border-top:1px dashed rgba(34,211,238,.25)}
+.tree li:last-child::after{content:""; position:absolute; left:0; top:50%; width:0; height:50%; border-left:1px dashed rgba(34,211,238,.25)}
+.tnode{display:flex; align-items:center; gap:9px; padding:7px 10px; border-radius:10px;
+  margin:2px 0; transition:background .18s, transform .18s; position:relative; z-index:1}
+.tnode:hover{background:rgba(34,211,238,.06); transform:translateX(3px)}
+.tnode .ic{width:17px; height:17px}
+.tnode .caret{width:12px; height:12px; color:var(--dim); margin-left:2px}
+.tnode .tpath{font-family:var(--mono); color:var(--dim); font-style:normal}
+.tnode .tcount{margin-left:auto; font-family:var(--mono); font-size:.62rem; color:var(--dim);
+  border:1px solid var(--line); border-radius:999px; padding:1px 8px; background:rgba(0,0,0,.25)}
+.tname{font-family:var(--mono); font-size:.9rem; font-weight:700; color:#d6ecff; background:none; border:none; letter-spacing:.02em}
+.appic{color:var(--cyan); filter:drop-shadow(0 0 4px rgba(34,211,238,.45))}
+li.app-appy .appic{color:var(--cyan)}
+li.app-bio .appic{color:var(--magenta)}
+li.app-blogy .appic{color:var(--amber)}
+li.app-economy .appic{color:var(--mint)}
+li.app-metas .appic{color:var(--violet)}
+li.app-psicosocial .appic{color:var(--red)}
+li.app-puzzy .appic{color:#5eead4}
+li.app-trusty .appic{color:#93c5fd}
+.subtree .appic{color:var(--violet); filter:drop-shadow(0 0 4px rgba(167,139,250,.4))}
+.subtree.sun .appic{color:#7c93ad; filter:none}
+.tnode.file .appic{color:#5b7f99; filter:none}
+.tnode.file .tname{font-weight:400; color:#9ab3cd}
+.subtree.sun .tnode{padding:4px 10px}
+.subtree.sun .tname{font-size:.78rem; color:var(--dim); font-weight:400}
+a.tnode{color:inherit; text-decoration:none}
+li.cat-inside>.tnode>.appic{color:#ff9b5e; filter:drop-shadow(0 0 4px rgba(255,155,94,.45))}
+li.cat-mating>.tnode>.appic{color:#ffd84d; filter:drop-shadow(0 0 4px rgba(255,216,77,.45))}
+li.cat-ling>.tnode>.appic{color:#6ed089; filter:drop-shadow(0 0 4px rgba(110,208,137,.45))}
+li.cat-social>.tnode>.appic{color:#5ea4e6; filter:drop-shadow(0 0 4px rgba(94,164,230,.45))}
+li.cat-economy>.tnode>.appic{color:#6b6bd9; filter:drop-shadow(0 0 4px rgba(107,107,217,.45))}
+
+
+/* ======= LocalHost hero diagram (darkable) ======= */
+.diag2-hero{max-width:820px; margin:20px auto 8px; padding:0 22px}
+.diag2-hero .frame{border:1px solid var(--line); border-radius:14px; overflow:hidden; background:#070d18;
+  box-shadow:0 16px 44px rgba(0,0,0,.5), 0 0 26px rgba(34,211,238,.08)}
+.diag2-hero img.darkable,.diag2-hero svg{width:100%; height:auto; display:block;
+  filter:invert(.9) hue-rotate(180deg) saturate(1.15); background:transparent}
+.diag2-hero figcaption{font-family:var(--mono); font-size:.7rem; color:var(--dim); text-align:center; padding:9px 10px; border-top:1px solid var(--line)}
+#map-view[hidden]{display:none}
+.degrees{max-width:820px; margin:22px auto 30px; padding:0 22px; display:grid; gap:18px}
+.degrees .deg-head{font-family:var(--disp); font-weight:700; font-size:1.06rem; letter-spacing:.05em; color:var(--ink); margin:4px 0 8px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap}
+
+.degrees .deg-bars{display:grid; gap:7px}
+.degrees .deg-bar{display:grid; grid-template-columns:repeat(5,1fr); gap:6px}
+.degrees .deg-seg{position:relative; padding:8px 9px; background:transparent; overflow:hidden}
+.degrees .deg-seg.on{background:linear-gradient(180deg,var(--panel-2),var(--panel))}
+.degrees .deg-seg.on .deg-kw{color:var(--ink)}
+.degrees .deg-seg.todo{opacity:.5}
+.degrees .deg-seg.todo .deg-kw{font-style:italic}
+.degrees .deg-bar{position:relative}
+.degrees .deg-prog{height:8px; border-radius:4px; background:var(--line); overflow:hidden; margin-top:7px}
+.degrees .deg-prog i{display:block; height:100%; background:linear-gradient(90deg,var(--cyan),var(--violet))}
+.degrees-title{font-family:var(--disp); font-weight:800; font-size:1.15rem; letter-spacing:.16em; text-transform:uppercase; color:var(--ink); margin:8px 0 2px; display:flex; align-items:center; gap:14px}
+.degrees-title::before,.degrees-title::after{content:""; height:2px; flex:1; background:linear-gradient(90deg,transparent,var(--cyan))}
+.degrees-title::after{background:linear-gradient(90deg,var(--cyan),transparent)}
+.degrees-gap{height:66px}
+.degrees .deg-seg.todo .deg-kw{font-style:italic}
+@media(max-width:620px){.degrees .deg-bar{grid-template-columns:1fr}}
+.home-more{max-width:820px; margin:0 auto; padding:0 22px; display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap; text-align:center}
+.more-label{font-family:var(--disp); font-weight:700; font-size:1.02rem; letter-spacing:.04em; color:var(--dim)}
+.more-links{display:flex; gap:8px; flex-wrap:wrap}
+.more-links a{font-family:var(--mono); font-size:.8rem; font-weight:700; text-decoration:none; color:var(--violet);
+  border:1px solid var(--line); border-radius:999px; padding:7px 15px; background:var(--panel);
+  transition:color .15s, border-color .2s, box-shadow .25s, transform .15s}
+.more-links a:hover{color:var(--ink); border-color:var(--cyan); box-shadow:0 0 16px rgba(34,211,238,.4); transform:translateY(-2px)}
+img.darkable{filter:invert(.92) hue-rotate(180deg) saturate(1.1) contrast(1.02)}
+.rtab-panel figure img[src*="risaliberada-v1-thread"]{width:100%; margin-left:auto; margin-right:auto}
+
+/* ================================================================
+   TELEGRAM2WEB · restyled dark
+   ================================================================ */
+.rtab-bar{display:flex; gap:8px; margin:22px 0 18px; flex-wrap:wrap}
+.rtab-btn{flex:1; min-width:130px; font-family:var(--disp); font-weight:600; font-size:.92rem; color:var(--dim);
+  background:transparent; border:1px solid var(--line); border-radius:999px; padding:10px 8px; cursor:pointer;
+  transition:color .15s, border-color .2s, box-shadow .25s}
+.rtab-btn:hover{color:var(--ink); border-color:var(--cyan); box-shadow:0 0 14px rgba(34,211,238,.35)}
+.rtab-btn[aria-pressed="true"]{color:#04121a; background:linear-gradient(92deg,var(--cyan),var(--violet)); border-color:transparent; box-shadow:0 0 20px rgba(34,211,238,.45)}
+.rtab-panel[hidden]{display:none}
+.rtab-panel h4{margin:20px 0 8px; font-family:var(--disp); font-size:1.12rem; color:var(--ink)}
+#profile h4{margin:2em 0}
+#profile figure:not(.circuit-fig){margin-top:12px}
+.rtab-panel p{color:var(--dim); line-height:1.6; max-width:72ch}
+.rtab-panel ol, .rtab-panel ul{padding-left:22px; color:var(--dim); line-height:1.62}
+.rtab-panel figure{margin:54px 0 10px}
+.rtab-panel figure img{width:100%; height:auto; border:1px solid var(--line); border-radius:14px; display:block; background:#0c1422}
+.rtab-panel figure img:not(.darkable){background:#f5f7fb}
+.rtab-panel figcaption{font-family:var(--mono); font-size:.72rem; color:var(--dim); margin-top:10px; text-align:center}
+.diag-title{font-family:var(--disp); font-weight:700; font-size:1.06rem; letter-spacing:.03em;
+  color:var(--ink); margin:0 0 12px; text-align:center}
+.diag-title::before{content:"▰"; color:var(--cyan); font-size:.7em; vertical-align:2px; margin-right:8px; text-shadow:0 0 8px rgba(34,211,238,.7)}
+.rtab-panel pre{background:#060b13; color:#9be8d8; font-family:var(--mono); font-size:.8rem; line-height:1.6;
+  border:1px solid var(--line); border-left:3px solid var(--mint); padding:16px 18px; border-radius:14px;
+  overflow-x:auto; white-space:pre-wrap; word-break:break-word; max-width:76ch; box-shadow:inset 0 0 30px rgba(34,211,238,.04)}
+.rtab-panel .step{border-left:4px solid var(--amber); padding:2px 0 2px 16px; margin:14px 0; color:var(--dim)}
+.rtab-panel a{color:var(--violet); font-weight:700; text-decoration:none; border-bottom:1px solid rgba(167,139,250,.4)}
+.rtab-panel a:hover{color:var(--cyan); border-bottom-color:var(--cyan)}
+.rtab-panel details.collapsed{margin:18px 0; border:1px solid var(--line); border-radius:14px; background:linear-gradient(180deg,var(--panel-2),var(--panel)); overflow:hidden}
+.rtab-panel details.collapsed summary{cursor:pointer; font-family:var(--disp); font-weight:600; font-size:.95rem; color:var(--ink); padding:13px 16px; list-style:none; display:flex; align-items:center; gap:10px; transition:background .15s}
+.rtab-panel details.collapsed summary:hover{background:rgba(34,211,238,.05)}
+.rtab-panel details.collapsed summary::-webkit-details-marker{display:none}
+.rtab-panel details.collapsed summary::before{content:"+"; color:var(--cyan); font-weight:700; font-size:1.05rem; text-shadow:0 0 8px rgba(34,211,238,.7)}
+.rtab-panel details.collapsed[open] summary::before{content:"–"}
+.rtab-panel details.collapsed .collapsed-body{padding:0 16px 14px}
+.rtab-panel details.collapsed .collapsed-body li{margin-bottom:4px}
+/* centred chip headings for collapsed sections */
+.rtab-panel details.collapsed summary.sc-chip{justify-content:center; padding:16px 14px; position:relative; margin:22px 0}
+.rtab-panel details.collapsed summary.sc-chip::before{position:absolute; left:16px}
+.sc-chip .chip{display:inline-flex; align-items:center; text-align:center}
+/* copy button inside collapsed body */
+.co-copy{margin:4px 0 6px; display:flex; justify-content:center}
+.co-copy .copy-chip{background:linear-gradient(92deg,var(--cyan),var(--violet)); color:#04121a; border-color:transparent}
+.co-copy .copy-chip:hover{box-shadow:0 0 14px rgba(34,211,238,.5)}
+.rtab-intro{font-size:1.02rem; color:var(--ink); max-width:72ch}
+.feat-area{margin:18px 0 4px; font-family:var(--mono); font-size:.76rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--cyan); text-shadow:0 0 10px rgba(34,211,238,.35)}
+.scope{border-radius:999px; padding:2px 10px; font-family:var(--mono); font-size:.7rem; letter-spacing:.06em; vertical-align:middle}
+.scope.v1{background:linear-gradient(92deg,var(--amber),#ff9d5c); color:#201500}
+.scope.v2{background:linear-gradient(92deg,var(--violet),var(--magenta)); color:#14091f}
+.rtab-more{color:var(--dim); line-height:1.6; max-width:72ch; margin-top:26px; padding-top:16px; border-top:1px dashed var(--line)}
+.circuit-fig{max-width:760px; margin:56px auto 0}
+.circuit-fig svg{width:100%; height:auto; display:block; background:#0a121d; border:1px solid var(--line); border-radius:14px}
+.subdiag{max-width:50%; margin-left:auto; margin-right:auto}
+@media(max-width:720px){.subdiag{max-width:100%}}
+.png-link{font-family:var(--mono); font-size:.66rem; font-weight:700; text-decoration:none;
+  color:var(--mint); border:1px solid rgba(52,211,153,.4); border-radius:999px; padding:2px 9px;
+  background:rgba(52,211,153,.07); vertical-align:2px; margin-left:8px}
+.png-link:hover{color:#04121a; border-color:var(--mint); background:var(--mint)}
+.v1-top{display:grid; grid-template-columns:1fr minmax(220px,340px); gap:20px; align-items:end}
+@media(max-width:720px){.v1-top{grid-template-columns:1fr}}
+
+/* ======= slider ======= */
+.slider{position:relative; border-radius:16px; overflow:hidden; border:1px solid var(--line); margin-top:18px;
+  box-shadow:0 18px 44px rgba(0,0,0,.5), 0 0 24px rgba(34,211,238,.1); background:#0a121d}
+.slider .slides{display:flex; transition:transform .5s cubic-bezier(.4,0,.2,1); will-change:transform}
+.slider .slide{min-width:100%; position:relative; margin:0}
+.slider .slide img{width:100%; height:auto; object-fit:cover; display:block}
+.slider figcaption{position:absolute; left:0; right:0; bottom:0; padding:18px 14px 12px; color:#eaffe9;
+  font-family:var(--mono); font-size:.7rem; letter-spacing:.04em;
+  background:linear-gradient(transparent, rgba(3,8,14,.9)); text-align:left}
+.slider .s-btn{position:absolute; top:50%; transform:translateY(-50%); z-index:3; width:44px; height:44px;
+  border-radius:50%; border:none; background:rgba(8,13,22,.85); color:var(--cyan);
+  font-family:var(--disp); font-size:1.5rem; line-height:1; cursor:pointer; display:grid; place-items:center;
+  box-shadow:0 0 16px rgba(34,211,238,.35), inset 0 0 0 1px rgba(34,211,238,.4); transition:transform .12s, background .15s}
+.slider .s-btn:hover{transform:translateY(-50%) scale(1.12); background:rgba(34,211,238,.2)}
+.slider .s-prev{left:12px} .slider .s-next{right:12px}
+.slider .s-dots{position:absolute; left:0; right:0; bottom:10px; z-index:3; display:flex; gap:7px; justify-content:center}
+.slider .s-dots button{width:8px; height:8px; padding:0; border-radius:50%; border:none; cursor:pointer;
+  background:rgba(255,255,255,.4); transition:transform .15s, background .15s}
+.slider .s-dots button[aria-current="true"]{background:var(--cyan); transform:scale(1.45); box-shadow:0 0 8px var(--cyan)}
+.slider .slide-count{position:absolute; top:12px; right:14px; z-index:3; font-family:var(--mono); font-size:.66rem;
+  background:rgba(3,8,14,.72); color:var(--cyan); padding:3px 10px; border-radius:999px; border:1px solid rgba(34,211,238,.3)}
+@media(max-width:560px){.slider .slide figcaption{font-size:.62rem}.slider .s-btn{width:38px;height:38px;font-size:1.2rem}}
+/* packing wrap for the making-of slider */
+.making-of{margin-top:34px}
+.making-of-title{text-align:center; font-family:var(--disp); font-weight:700; font-size:1.06rem;
+  letter-spacing:.03em; color:var(--ink); margin:12px 0 14px}
+.making-of-title::before{content:"▰"; color:var(--mint); font-size:.7em; vertical-align:2px; margin-right:8px;
+  text-shadow:0 0 8px rgba(52,211,153,.7)}
+.slider.small{max-width:520px; margin:14px auto 0; box-shadow:0 14px 32px rgba(0,0,0,.5), 0 0 18px rgba(34,211,238,.08)}
+.slider.small .slide img{max-height:300px}
+.making-of .slider{width:100%}
+
+/* lightbox para ver las fotos del slider */
+.viewer-back{position:fixed; inset:0; z-index:80; background:rgba(3,7,16,.88); backdrop-filter:blur(6px);
+  display:grid; place-items:center; padding:24px; animation:fade .18s ease; cursor:zoom-out}
+.viewer-back[hidden]{display:none}
+.viewer-back img{max-width:min(1100px,94vw); max-height:86vh; border-radius:14px; border:1px solid var(--line);
+  box-shadow:0 24px 70px rgba(0,0,0,.7); cursor:default; animation:pop-modal .25s cubic-bezier(.2,1.4,.4,1)}
+.viewer-x{position:fixed; top:18px; right:18px; z-index:81; width:44px; height:44px; border-radius:50%;
+  border:1px solid var(--line); background:var(--panel); color:var(--ink); font-size:1.4rem; line-height:1;
+  cursor:pointer; display:grid; place-items:center; transition:transform .12s, border-color .12s}
+.viewer-x:hover{transform:rotate(90deg); border-color:var(--cyan); color:var(--cyan)}
+.viewer-cap{position:fixed; left:0; right:0; bottom:18px; z-index:81; text-align:center; color:var(--dim);
+  font-size:.88rem; pointer-events:none}
+@media(max-width:560px){.viewer-back img{max-width:94vw}}
+
+/* ======= placeholder ======= */
+.placeholder{position:relative; background:linear-gradient(180deg,var(--panel-2),var(--panel)); border:1px dashed var(--line); border-radius:18px; padding:52px 30px; text-align:center; overflow:hidden}
+.placeholder::before{content:""; position:absolute; inset:-1px; border-radius:inherit; pointer-events:none; box-shadow:inset 0 0 60px rgba(34,211,238,.05)}
+.placeholder .big{font-size:2.2rem; line-height:1; margin-bottom:12px; filter:drop-shadow(0 0 12px rgba(34,211,238,.5))}
+.placeholder h3{font-size:1.4rem; margin-bottom:6px; color:var(--ink)}
+.placeholder p{color:var(--dim); max-width:52ch; margin:0 auto; font-size:1rem}
+
+/* ======= scroll reveal ======= */
+.reveal{opacity:0; transform:translateY(24px); transition:opacity .6s ease, transform .6s cubic-bezier(.2,.7,.3,1); transition-delay:var(--d,0s)}
+.reveal.in{opacity:1; transform:none}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation:none !important; transition:none !important; scroll-behavior:auto !important}
+  .reveal{opacity:1; transform:none}
+  .glassy::after,.glassy::before{display:none}
+}
+
+/* ======= map view · the home picture (titled "Backend Plan") ======= */
+.diag2-hero .frame .diag-title{margin:0; padding:11px 16px; border-bottom:1px solid var(--line);
+  background:linear-gradient(90deg, rgba(34,211,238,.10), rgba(244,114,182,.06)); letter-spacing:.08em;
+  font-size:1.08rem; color:var(--ink)}
+.diag2-hero .frame .diag-title::before{color:var(--mint); box-shadow:0 0 10px var(--mint)}
+
+/* ======= brand menu (logo + title click) ======= */
+.brand-wrap{position:relative}
+.brand-caret{width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2.6; stroke-linecap:round;
+  stroke-linejoin:round; margin-left:.15em; opacity:.75; transition:transform .18s}
+.brand-wrap[aria-expanded="true"] .brand-caret{transform:rotate(180deg)}
+.brand-menu{position:absolute; top:calc(100% + 12px); left:0; min-width:280px; z-index:70;
+  background:var(--panel-2); border:1px solid var(--line); border-radius:18px; padding:10px;
+  box-shadow:0 18px 50px rgba(0,0,0,.6), 14px 14px 0 rgba(34,211,238,.08); animation:pop-modal .22s cubic-bezier(.2,1.4,.4,1)}
+.brand-menu[hidden]{display:none}
+.bmenu-head{display:flex; align-items:center; gap:8px; padding:4px 8px 11px; border-bottom:1px solid var(--line);
+  font-family:var(--mono); font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:var(--dim)}
+.bmenu-head .ic{width:15px; height:15px; color:var(--cyan)}
+.bmenu-item,.bmenu-link{display:flex; align-items:center; gap:10px; width:100%; text-align:left; box-sizing:border-box;
+  border:0; background:none; color:var(--ink); font:inherit; font-size:.92rem; font-weight:600;
+  padding:9px 11px; border-radius:11px; cursor:pointer; text-decoration:none}
+.bmenu-item .ic,.bmenu-link .ic{width:17px; height:17px; color:var(--violet)}
+.bmenu-item:hover,.bmenu-link:hover{background:rgba(34,211,238,.10); color:var(--cyan)}
+.bmenu-item:hover .ic,.bmenu-link:hover .ic{color:var(--cyan)}
+.bmenu-sep{height:1px; background:var(--line); margin:8px 4px}
+.bmenu-setters{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:2px 6px 4px}
+.bmenu-set{display:flex; align-items:center; gap:9px; min-width:0}
+.bmenu-set-label{font-family:var(--mono); font-size:.64rem; letter-spacing:.12em; text-transform:uppercase; color:var(--dim)}
+.theme-toggle{display:inline-flex; align-items:center; gap:6px; border:1px solid var(--line);
+  background:var(--panel); color:var(--ink); border-radius:999px; padding:7px 13px; cursor:pointer;
+  font:inherit; font-weight:700; font-size:.8rem; transition:border-color .12s, box-shadow .12s}
+.theme-toggle:hover{border-color:var(--cyan); box-shadow:0 0 14px rgba(34,211,238,.35)}
+.bmenu-setters .lang{margin:0}
+.bmenu-setters .lang>summary{width:38px; height:38px; font-size:1.2rem}
+@media(max-width:720px){.brand-menu{left:50%; transform:translateX(-50%); width:min(320px,calc(100vw - 24px))}}
+
+/* ======= theme standard: dark (default) · light optional, persists ======= */
+:root.light{
+  --bg:#eef4fb; --bg-2:#e6eef8; --panel:#ffffff; --panel-2:#f3f8ff; --line:#c3d4e6;
+  --ink:#0b1524; --dim:#4f6180; --cyan:#0891b2; --violet:#7c5ce0; --magenta:#c94f8b;
+  --mint:#0e9f6e; --amber:#b9830d; --red:#e85d75}
+:root.light .topbar{background:rgba(250,253,255,.88); box-shadow:0 8px 30px rgba(20,45,80,.12)}
+:root.light .modal-back{background:rgba(228,237,248,.72)}
+:root.light .footer{background:linear-gradient(180deg,transparent,rgba(228,237,248,.9))}
+:root.light .main-tabs .tab-btn[aria-pressed="true"],:root.light .table th{color:#fff}
+:root.light .brand-menu{box-shadow:0 18px 50px rgba(20,50,90,.25), 14px 14px 0 rgba(34,211,238,.14)}
+
+/* ======= translaty — en/es page toggler (base of this page = es) ======= */
+.en{display:none}
+body:has(#lang-en:checked) .es{display:none}
+body:has(#lang-en:checked) .en{display:inline}
+.lang{display:inline-block;position:relative;margin:.2rem 0 .6rem}
+.lang>summary{list-style:none;cursor:pointer;width:40px;height:40px;border:1px solid #777;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;font-size:1.3rem;line-height:1;-webkit-user-select:none;user-select:none}
+.lang>summary::-webkit-details-marker{display:none}
+.lang[open]>summary{border-color:#333;background:#f2f2f2}
+.lang-opts{position:absolute;right:0;z-index:80;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;
+  background:#fff;border:1px solid #999;border-radius:12px;padding:6px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+.lang input{position:absolute;opacity:0;pointer-events:none}
+.lang label{cursor:pointer;padding:0 12px;min-height:40px;display:inline-flex;align-items:center;border:1px solid #999;border-radius:11px;white-space:nowrap}
+.lang input:checked + label{background:#333;color:#fff;font-weight:bold;border-color:#333}
+:root.light .lang-opts{background:#fff;border-color:#b9c8da;box-shadow:0 6px 18px rgba(30,50,80,.15)}
+:root.light .lang label{border-color:#b9c8da}
+:root.light .lang input:checked + label{background:#0b1524;color:#fff;border-color:#0b1524}
+/* utilities — no-inline-style */
+.u-sprites{position:absolute}
+.fill-1{width:20%}
+.fill-3{width:60%}
+.mt-8{margin-top:8px}
+.mt-10{margin-top:10px}
+.mb-12{margin-bottom:12px}
+</style>
+</head>
+<body>
+<svg class="u-sprites" width="0" height="0" aria-hidden="true">
+  <defs>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3.5 7.5A2.5 2.5 0 0 1 6 5h3.2l2 2H18A2.5 2.5 0 0 1 20.5 9.5v6A2.5 2.5 0 0 1 18 18H6a2.5 2.5 0 0 1-2.5-2.5z"/></symbol>
+    <symbol id="i-folder-open" viewBox="0 0 24 24"><path d="M3.5 7.5A2.5 2.5 0 0 1 6 5h3.2l2 2H18A2.5 2.5 0 0 1 20.5 9.5V10H5.8l-1.9 6.6a2 2 0 0 1-.4-1.1z"/><path d="M5 17h13a2 2 0 0 0 2-2v-5"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 2.8h7.5L18.5 8V21H6z"/><path d="M13.5 2.8V8h5"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="10" y="10" width="4" height="4"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></symbol>
+    <symbol id="i-zip" viewBox="0 0 24 24"><path d="M21 8v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8"/><rect x="2" y="3" width="20" height="6" rx="1.2"/><path d="M12 13v6M9.5 15l5 3"/></symbol>
+    <symbol id="i-term" viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m6.5 9.5 3.5 3-3.5 3"/><path d="M12 16h5"/></symbol>
+    <symbol id="i-desk" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="12" rx="1.5"/><path d="M9 20h6M12 16v4"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z"/></symbol>
+    <symbol id="i-robot" viewBox="0 0 24 24"><rect x="4.5" y="8" width="15" height="10.5" rx="2.5"/><path d="M12 8V4.5M8.5 4.5h7M12 4.5a1.4 1.4 0 1 0 0 .1z"/><circle cx="9.3" cy="13.2" r="1.1"/><circle cx="14.7" cy="13.2" r="1.1"/><path d="M8 18.5v2.5M16 18.5v2.5"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 2 9 5-9 5-9-5 9-5z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/></symbol>
+    <symbol id="i-flash" viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></symbol>
+    <symbol id="i-sw" viewBox="0 0 24 24"><path d="m12 2 2.4 7 7 2.4-7 2.4L12 21l-2.4-7.2-7-2.4 7-2.4z"/><path d="M19 3v3M20.5 4.5h-3"/></symbol>
+  </defs>
+</svg>
+
+<div id="progress" aria-hidden="true"></div>
+<div id="glow" aria-hidden="true"></div>
+<div class="bgfx" aria-hidden="true">
+  <div class="grid"></div>
+  <div class="scan"></div>
+  <div class="orb o1"></div>
+  <div class="orb o2"></div>
+  <div class="orb o3"></div>
+</div>
+
+<div id="map-view">
+<figure class="diag2-hero" id="diag2">
+  <div class="frame">
+    <div class="diag-title">Backend Plan</div>
+    <img class="darkable" src="backend-plan.svg" alt="Diagrama de arquitectura del plan del backend (excalidraw)" loading="lazy">
+  </div>
+</figure>
+
+<div class="degrees" role="group" aria-label="Development degrees of the four areas" data-aria-en="Development degrees of the four areas" data-aria-es="Grados de desarrollo de las cuatro áreas">
+  <div class="degree">
+    <div class="deg-head"><span><span class="es" lang="es">LocalHost</span><span class="en" lang="en">LocalHost</span></span></div>
+    <div class="deg-bars">
+      <div class="deg-bar">
+        <div class="deg-seg on"><span class="deg-kw"><span class="es" lang="es">App1.json</span><span class="en" lang="en">App1.json</span></span></div>
+        <div class="deg-seg on"><span class="deg-kw"><span class="es" lang="es">Apps.zip · localhost:8642 · TWA &amp; Termux</span><span class="en" lang="en">Apps.zip · localhost:8642 · TWA &amp; Termux</span></span></div>
+        <div class="deg-seg on"><span class="deg-kw"><span class="es" lang="es">Profile.json</span><span class="en" lang="en">Profile.json</span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es">Net · Tailscale</span><span class="en" lang="en">Net · Tailscale</span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es">Complexity tier</span><span class="en" lang="en">Complexity tier</span></span></div>
+      </div>
+      <div class="deg-prog"><i class="fill-3"></i></div>
+    </div>
+  </div>
+
+  <div class="degree">
+    <div class="deg-head"><span>Telegram2Web</span></div>
+    <div class="deg-bars">
+      <div class="deg-bar">
+        <div class="deg-seg on"><span class="deg-kw"><span class="es" lang="es">Bot · notas de voz · moderación · R2 MP3 · web</span><span class="en" lang="en">Bot · voice notes · moderation · R2 MP3 · web</span></span></div>
+        <div class="deg-seg on"><span class="deg-kw"><span class="es" lang="es">Profile URL &amp; Feed &amp; LocalFavs</span><span class="en" lang="en">Profile URL &amp; Feed &amp; LocalFavs</span></span></div>
+        <div class="deg-seg on"><span class="deg-kw"><span class="es" lang="es">Thread (&amp; over)</span><span class="en" lang="en">Thread (&amp; over)</span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es">Entangled apps</span><span class="en" lang="en">Entangled apps</span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es">Flove Botnet</span><span class="en" lang="en">Flove Botnet</span></span></div>
+      </div>
+      <div class="deg-prog"><i class="fill-3"></i></div>
+    </div>
+  </div>
+
+  <div class="degree">
+    <div class="deg-head"><span>Profile</span></div>
+    <div class="deg-bars">
+      <div class="deg-bar">
+        <div class="deg-seg on"><span class="deg-kw"><span class="es" lang="es">Shared code plan</span><span class="en" lang="en">Shared code plan</span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es">Id recovery &amp; apps feeds</span><span class="en" lang="en">Id recovery &amp; apps feeds</span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es">Favs &amp; mates feeds</span><span class="en" lang="en">Favs &amp; mates feeds</span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es">Authy</span><span class="en" lang="en">Authy</span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es">Sety</span><span class="en" lang="en">Sety</span></span></div>
+      </div>
+      <div class="deg-prog"><i class="fill-1"></i></div>
+    </div>
+  </div>
+
+  <div class="degree">
+    <div class="deg-head"><span>Else</span></div>
+    <div class="deg-bars">
+      <div class="deg-bar">
+        <div class="deg-seg on"><span class="deg-kw"><span class="es" lang="es">Plan</span><span class="en" lang="en">Plan</span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es"><a href="../../central/apps/wizy/index.html">Wizy</a> basic</span><span class="en" lang="en"><a href="../../central/apps/wizy/index.html">Wizy</a> basic</span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es"><a href="../../decentral/browsy/index.html">Browsy</a> &amp; <a href="../../solo/apps/appy/nety.html">Nety</a> basic</span><span class="en" lang="en"><a href="../../decentral/browsy/index.html">Browsy</a> &amp; <a href="../../solo/apps/appy/nety.html">Nety</a> basic</span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es"><a href="../../solo/apps/puzzy/wisy.html">Wisy</a>-<a href="../../decentral/browsy/index.html">Browsy</a></span><span class="en" lang="en"><a href="../../solo/apps/puzzy/wisy.html">Wisy</a>-<a href="../../decentral/browsy/index.html">Browsy</a></span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es"><a href="../../solo/apps/appy/nety.html">Nety</a></span><span class="en" lang="en"><a href="../../solo/apps/appy/nety.html">Nety</a></span></span></div>
+      </div>
+      <div class="deg-prog"><i class="fill-1"></i></div>
+    </div>
+  </div>
+
+  <div class="degrees-gap"></div>
+  <h3 class="degrees-title">DESIGN</h3>
+
+  <div class="degree">
+    <div class="deg-head"><span>Apps</span></div>
+    <div class="deg-bars">
+      <div class="deg-bar">
+        <div class="deg-seg on"><span class="deg-kw"><span class="es" lang="es">Basic</span><span class="en" lang="en">Basic</span></span></div>
+        <div class="deg-seg on"><span class="deg-kw"><span class="es" lang="es">Normal</span><span class="en" lang="en">Normal</span></span></div>
+        <div class="deg-seg on"><span class="deg-kw"><span class="es" lang="es">Cool</span><span class="en" lang="en">Cool</span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es">Advanced</span><span class="en" lang="en">Advanced</span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es">Super</span><span class="en" lang="en">Super</span></span></div>
+      </div>
+      <div class="deg-prog"><i class="fill-3"></i></div>
+    </div>
+  </div>
+
+  <div class="degree">
+    <div class="deg-head"><span>Frontend</span></div>
+    <div class="deg-bars">
+      <div class="deg-bar">
+        <div class="deg-seg on"><span class="deg-kw"><span class="es" lang="es">Basic</span><span class="en" lang="en">Basic</span></span></div>
+        <div class="deg-seg on"><span class="deg-kw"><span class="es" lang="es">Normal</span><span class="en" lang="en">Normal</span></span></div>
+        <div class="deg-seg on"><span class="deg-kw"><span class="es" lang="es">Cool</span><span class="en" lang="en">Cool</span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es">Advanced</span><span class="en" lang="en">Advanced</span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es">Super</span><span class="en" lang="en">Super</span></span></div>
+      </div>
+      <div class="deg-prog"><i class="fill-3"></i></div>
+    </div>
+  </div>
+
+  <div class="degree">
+    <div class="deg-head"><span>Docs</span></div>
+    <div class="deg-bars">
+      <div class="deg-bar">
+        <div class="deg-seg on"><span class="deg-kw"><span class="es" lang="es">Basic</span><span class="en" lang="en">Basic</span></span></div>
+        <div class="deg-seg on"><span class="deg-kw"><span class="es" lang="es">Normal</span><span class="en" lang="en">Normal</span></span></div>
+        <div class="deg-seg on"><span class="deg-kw"><span class="es" lang="es">Cool</span><span class="en" lang="en">Cool</span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es">Advanced</span><span class="en" lang="en">Advanced</span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es">Super</span><span class="en" lang="en">Super</span></span></div>
+      </div>
+      <div class="deg-prog"><i class="fill-3"></i></div>
+    </div>
+  </div>
+
+  <div class="degree">
+    <div class="deg-head"><span>Tech docs</span></div>
+    <div class="deg-bars">
+      <div class="deg-bar">
+        <div class="deg-seg on"><span class="deg-kw"><span class="es" lang="es">Basic</span><span class="en" lang="en">Basic</span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es">Normal</span><span class="en" lang="en">Normal</span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es">Cool</span><span class="en" lang="en">Cool</span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es">Advanced</span><span class="en" lang="en">Advanced</span></span></div>
+        <div class="deg-seg todo"><span class="deg-kw"><span class="es" lang="es">Super</span><span class="en" lang="en">Super</span></span></div>
+      </div>
+      <div class="deg-prog"><i class="fill-1"></i></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand-wrap" id="brand-wrap" aria-expanded="false">
+      <button type="button" class="brand" id="brand-map" aria-haspopup="true" aria-expanded="false" aria-controls="brand-menu" aria-label="FLOVE development · menú" data-aria-en="FLOVE development · menu" data-aria-es="FLOVE development · menú">
+        <svg class="brand-logo" viewBox="0 0 100 100" aria-hidden="true">
+          <defs>
+            <linearGradient id="devMark" x1="12" y1="0" x2="88" y2="0" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#22d3ee"/><stop offset=".5" stop-color="#a78bfa"/><stop offset="1" stop-color="#f472b6"/>
+            </linearGradient>
+          </defs>
+          <path d="M50 60 C 22 60, 12 38, 16 18 C 38 22, 54 38, 50 60 Z" fill="url(#devMark)"/>
+          <path d="M50 60 C 78 60, 88 38, 84 18 C 62 22, 46 38, 50 60 Z" fill="url(#devMark)"/>
+          <path d="M50 58 C 50 72, 50 84, 50 92" stroke="url(#devMark)" stroke-width="5" stroke-linecap="round" fill="none"/>
+        </svg>
+        <span>FLOVE<small>development</small></span>
+        <svg class="brand-caret" aria-hidden="true"><use href="#i-down"/></svg>
+      </button>
+      <div class="brand-menu" id="brand-menu" role="menu" aria-label="FLOVE development" hidden>
+        <div class="bmenu-head"><svg class="ic"><use href="#i-cpu"/></svg>flove · development</div>
+        <button type="button" class="bmenu-item" id="bmenu-about"><svg class="ic"><use href="#i-globe"/></svg><span class="es" lang="es">Sobre esta página</span><span class="en" lang="en">About this page</span></button>
+        <div class="bmenu-sep"></div>
+        <a class="bmenu-link" href="https://flove.org/docs/"><svg class="ic"><use href="#i-file"/></svg>Docs</a>
+        <a class="bmenu-link" href="https://flove.org/development/standards/"><svg class="ic"><use href="#i-layers"/></svg>Standards</a>
+        <a class="bmenu-link" href="https://flove.org/development/standards/skills/questy-flove/index.html"><svg class="ic"><use href="#i-robot"/></svg>Questy</a>
+        <a class="bmenu-link" href="https://flove.org/development/blog/"><svg class="ic"><use href="#i-term"/></svg>Devlog</a>
+        <a class="bmenu-link" href="https://flove.org/solo/apps/index.html"><svg class="ic"><use href="#i-desk"/></svg>Apps</a>
+        <div class="bmenu-sep"></div>
+        <div class="bmenu-setters">
+          <div class="bmenu-set">
+            <span class="bmenu-set-label"><span class="es" lang="es">Tema</span><span class="en" lang="en">Theme</span></span>
+            <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false"><span class="es" lang="es">Claro</span><span class="en" lang="en">Light</span></button>
+          </div>
+          <div class="bmenu-set">
+            <span class="bmenu-set-label"><span class="es" lang="es">Idioma</span><span class="en" lang="en">Language</span></span>
+            <details class="lang">
+              <summary class="worldball" title="Language" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐</summary>
+              <div class="lang-opts">
+                <input type="radio" name="lang" id="lang-en"><label for="lang-en">English</label>
+                <input type="radio" name="lang" id="lang-es" checked><label for="lang-es">Español</label>
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+    </div>
+    <nav class="main-tabs" aria-label="Áreas de desarrollo" data-aria-en="Development areas" data-aria-es="Áreas de desarrollo">
+      <button type="button" class="tab-btn" data-tab="map" aria-pressed="true">Map</button>
+      <button type="button" class="tab-btn" data-tab="localhost" aria-pressed="false">LocalHost</button>
+      <button type="button" class="tab-btn" data-tab="telegram2web" aria-pressed="false">Telegram2Web</button>
+      <button type="button" class="tab-btn" data-tab="profile" aria-pressed="false">Profile</button>
+      <button type="button" class="tab-btn" data-tab="else" aria-pressed="false">Else</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- ============ LOCALHOST · Solo distro ============ -->
+  <section class="tab-panel" id="localhost" aria-label="LocalHost · Solo distro" hidden>
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="eyebrow">LocalHost · Solo distro</p>
+        <h2><span class="es" lang="es">A rich playstore in your device.</span><span class="en" lang="en">A rich playstore in your device.</span></h2>
+        <p class="lede"><span class="es" lang="es">Flove apps do a high quality mining of yourself, so better do that privately and later share whatever you want, anytime you feel like. … In another side of things, pure AI code can be very creative but it's not reliable when you need connecting and scaling many pieces within it. So we suggest you playing very designed apps that are fully self-contained in one file each within a LocalHost and export results in JSON for later further sharing those if wanted.</span><span class="en" lang="en">Flove apps do a high quality mining of yourself, so better do that privately and later share whatever you want, anytime you feel like. … In another side of things, pure AI code can be very creative but it's not reliable when you need connecting and scaling many pieces within it. So we suggest you playing very designed apps that are fully self-contained in one file each within a LocalHost and export results in JSON for later further sharing those if wanted.</span></p>
+      </div>
+
+      <div class="term reveal" style="--d:.04s">
+        <div class="term-bar">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <code class="term-title">kdeneon@flove: ~/solo — local-first distro</code>
+        </div>
+        <div class="term-body">
+          <p><span class="prompt">❯</span> ./flove --local-first --offline<span class="term-cursor"></span></p>
+          <p class="out"><span class="ok">✓</span> <span class="es" lang="es">distro local-first · sin backend · file:// · service worker precargado</span><span class="en" lang="en">local-first distro · no backend · file:// · preloaded service worker</span></p>
+          <p class="out"><span class="ok">✓</span> <span class="k">8 apps</span> · <span class="k">4 subcarpetas</span> · flove-solo.zip + APK TWA</p>
+        </div>
+      </div>
+
+      <h3 class="sec reveal"><svg class="ic"><use href="#i-layers"/></svg> <span class="es" lang="es">Cuatro formas de ejecutar flove</span><span class="en" lang="en">Four ways to run flove</span></h3>
+      <div class="opt-grid">
+        <details class="opt-card glassy reveal" style="--d:.02s">
+          <summary>
+            <span class="o-ic"><svg class="ic"><use href="#i-desk"/></svg></span>
+            <h4 class="o-title"><span class="es" lang="es">Escritorio · <code>.zip</code></span><span class="en" lang="en">Desktop · <code>.zip</code></span></h4><span class="o-head"><span class="o-brief"><span class="es" lang="es">Descarga y ejecuta START-FLOVE en local.</span><span class="en" lang="en">Download and run START-FLOVE locally.</span></span></span>
+            <svg class="ic o-caret"><use href="#i-down"/></svg>
+          </summary>
+          <p class="o-full"><span class="es" lang="es">Descarga <code>flove-solo.zip</code>, descomprime y ejecuta <code>START-FLOVE-&lt;os&gt;</code> (sirve <code>flove-solo/</code> en <code>localhost:8642</code>).</span><span class="en" lang="en">Download <code>flove-solo.zip</code>, unzip it and run <code>START-FLOVE-&lt;os&gt;</code> (it serves <code>flove-solo/</code> on <code>localhost:8642</code>).</span></p>
+        </details>
+        <details class="opt-card glassy reveal" style="--d:.06s">
+          <summary>
+            <span class="o-ic"><svg class="ic"><use href="#i-phone"/></svg></span>
+            <h4 class="o-title">Android · Termux</h4><span class="o-head"><span class="o-brief"><span class="es" lang="es">Directo en el móvil — offline, sin red.</span><span class="en" lang="en">Straight on the phone — offline, no network.</span></span></span>
+            <svg class="ic o-caret"><use href="#i-down"/></svg>
+          </summary>
+          <p class="o-full"><span class="es" lang="es">Ejecútalo directo en el móvil en Termux (offline, sin red) con el comando de instalación-y-servido de la home.</span><span class="en" lang="en">Run it straight on your phone in Termux (offline, no network) with the install-and-serve command from the home page.</span></p>
+        </details>
+        <details class="opt-card glassy reveal" style="--d:.10s">
+          <summary>
+            <span class="o-ic"><svg class="ic"><use href="#i-globe"/></svg></span>
+            <h4 class="o-title"><span class="es" lang="es">Por la red (Red)</span><span class="en" lang="en">Over the network</span></h4><span class="o-head"><span class="o-brief"><span class="es" lang="es">Alcanza la instancia desde otro dispositivo.</span><span class="en" lang="en">Reach the instance from another device.</span></span></span>
+            <svg class="ic o-caret"><use href="#i-down"/></svg>
+          </summary>
+          <p class="o-full"><span class="es" lang="es">Alcanza la instancia en marcha desde otro dispositivo — mismo Wi-Fi, o por Tailscale desde cualquier red vía HTTPS.</span><span class="en" lang="en">Reach the running instance from another device — same Wi-Fi, or over Tailscale from any network via HTTPS.</span></p>
+        </details>
+        <details class="opt-card glassy reveal" style="--d:.14s">
+          <summary>
+            <span class="o-ic"><svg class="ic"><use href="#i-robot"/></svg></span>
+            <h4 class="o-title"><span class="es" lang="es">App Android <code>.aab</code></span><span class="en" lang="en">Android app <code>.aab</code></span></h4><span class="o-head"><span class="o-brief"><span class="es" lang="es">El TWA listo, publicado en GitHub Releases.</span><span class="en" lang="en">The ready-made TWA, published on GitHub Releases.</span></span></span>
+            <svg class="ic o-caret"><use href="#i-down"/></svg>
+          </summary>
+          <p class="o-full"><span class="es" lang="es">La app Android lista (sin Termux): el TWA en <code>solo/flove-apk/</code>, publicado en GitHub Releases como <code>flove.aab</code>.</span><span class="en" lang="en">The ready Android app (no Termux): the TWA in <code>solo/flove-apk/</code>, published on GitHub Releases as <code>flove.aab</code>.</span></p>
+        </details>
+      </div>
+
+      <h3 class="sec reveal"><svg class="ic"><use href="#i-cpu"/></svg> <span class="es" lang="es">La canalización de la distro (pipeline)</span><span class="en" lang="en">How the distro is built (pipeline)</span></h3>
+      <ul class="stepper">
+        <li class="reveal" style="--d:.02s">
+          <span class="step-dot"><svg class="ic"><use href="#i-zip"/></svg></span>
+          <div class="step-body">
+            <span class="step-tag"><span class="step-num">01</span> <span class="es" lang="es">Build</span><span class="en" lang="en">Build</span></span>
+            <p><span class="es" lang="es"><code>solo/build-flove-zip.sh</code> empaqueta las apps de <code>solo/</code> en <code>flove-solo.zip</code>.</span><span class="en" lang="en"><code>solo/build-flove-zip.sh</code> packages the <code>solo/</code> apps into <code>flove-solo.zip</code>.</span></p>
+          </div>
+        </li>
+        <li class="reveal" style="--d:.06s">
+          <span class="step-dot"><svg class="ic"><use href="#i-sw"/></svg></span>
+          <div class="step-body">
+            <span class="step-tag"><span class="step-num">02</span> <span class="es" lang="es">Service worker</span><span class="en" lang="en">Service worker</span></span>
+            <p><span class="es" lang="es"><code>solo/sw.js</code> se <b>genera</b> con <code>node solo/build-sw.mjs</code> (nunca a mano); precachea la lista de apps publicadas para funcionar offline.</span><span class="en" lang="en"><code>solo/sw.js</code> is <b>generated</b> with <code>node solo/build-sw.mjs</code> (never by hand); it precaches the published app list so everything works offline.</span></p>
+          </div>
+        </li>
+        <li class="reveal" style="--d:.10s">
+          <span class="step-dot"><svg class="ic"><use href="#i-flash"/></svg></span>
+          <div class="step-body">
+            <span class="step-tag"><span class="step-num">03</span> <span class="es" lang="es">Descarga</span><span class="en" lang="en">Download</span></span>
+            <p><span class="es" lang="es">El zip viaja desde flove.org como <code>flove.zip</code>, también adjunto a GitHub Releases.</span><span class="en" lang="en">The zip travels from flove.org as <code>flove.zip</code>, also attached to GitHub Releases.</span></p>
+          </div>
+        </li>
+        <li class="reveal" style="--d:.14s">
+          <span class="step-dot"><svg class="ic"><use href="#i-robot"/></svg></span>
+          <div class="step-body">
+            <span class="step-tag"><span class="step-num">04</span> <span class="es" lang="es">Android TWA</span><span class="en" lang="en">Android TWA</span></span>
+            <p><span class="es" lang="es"><code>solo/flove-apk/</code> construye el APK/AAB que envuelve flove.org como Trusted Web Activity (se reconstruye solo cuando cambia el manifest; el contenido se actualiza solo).</span><span class="en" lang="en"><code>solo/flove-apk/</code> builds the APK/AAB that wraps flove.org as a Trusted Web Activity (it is rebuilt only when the manifest changes; content updates on its own).</span></p>
+          </div>
+        </li>
+        <li class="reveal" style="--d:.18s">
+          <span class="step-dot"><svg class="ic"><use href="#i-term"/></svg></span>
+          <div class="step-body">
+            <span class="step-tag"><span class="step-num">05</span> routing.json</span>
+            <p><span class="es" lang="es">Escaneo de meta-tags de <code>apps/*/[name].html</code> (id, nombre, url, tier, descripción, tags) → <code>routing.json</code> en la raíz del zip.</span><span class="en" lang="en">Scans the meta-tags of <code>apps/*/[name].html</code> (id, name, url, tier, description, tags) → <code>routing.json</code> at the zip root.</span></p>
+          </div>
+        </li>
+      </ul>
+
+      <div class="section-head head-spaced">
+        <p class="eyebrow"><span class="es" lang="es">Apps de la distro</span><span class="en" lang="en">Distro apps</span></p>
+        <h3 class="sec mt-10"><span class="es" lang="es">Catálogo de apps · agrupado por categorías</span><span class="en" lang="en">App catalog · grouped by category</span></h3>
+        <p class="lede"><span class="es" lang="es">El índice completo de apps por colores de flove: cada app bajo su <b>categoría principal</b> (Inside · Mating · Linguistics · Social · Economy). Los enlaces abren cada app en localhost.</span><span class="en" lang="en">flove's full app index by colour: each app under its <b>main category</b> (Inside · Mating · Linguistics · Social · Economy). The links open each app in localhost.</span></p>
+      </div>
+
+      <div class="apptree glassy reveal">
+        <div class="tree-head">
+          <span class="t-root-ic"><svg class="ic"><use href="#i-folder-open"/></svg></span>
+          <code class="t-root">apps/</code>
+          <span class="badge">36 apps</span>
+          <span class="badge sub"><span class="es" lang="es">5 categorías</span><span class="en" lang="en">5 categories</span></span>
+          <span class="badge"><span class="es" lang="es">todas las apps</span><span class="en" lang="en">all the apps</span></span>
+        </div>
+        <ul class="tree">
+
+          <li class="reveal cat-inside" style="--d:.02s">
+            <span class="tnode"><svg class="ic appic"><use href="#i-folder"/></svg><code class="tname">Inside</code><em class="tpath">· orange</em><span class="tcount">12 apps</span><svg class="ic caret"><use href="#i-down"/></svg></span>
+            <ul class="subtree sun">
+              <li><a class="tnode file" href="../../solo/apps/metas/goddy.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Goddy</code><em class="tpath">metas/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/psicosocial/astry.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Astry</code><em class="tpath">psicosocial/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/psicosocial/hacky.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Hacky</code><em class="tpath">psicosocial/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/bio/diesafe.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">DieSafe</code><em class="tpath">bio/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/metas/souls.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Souls</code><em class="tpath">metas/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/appy/profily.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Profily</code><em class="tpath">appy/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/bio/sensy.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Sensy</code><em class="tpath">bio/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/bio/pracsys.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Pracsys</code><em class="tpath">bio/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/metas/moraly.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Cathy</code><em class="tpath">metas/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/metas/willy.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Willy</code><em class="tpath">metas/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/bio/fity.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Fity</code><em class="tpath">bio/</em></a></li>
+              <li><a class="tnode file" href="../standards/skills/questy/index.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Questy</code><em class="tpath">skills/</em></a></li>
+            </ul>
+          </li>
+
+          <li class="reveal cat-mating" style="--d:.04s">
+            <span class="tnode"><svg class="ic appic"><use href="#i-folder"/></svg><code class="tname">Mating</code><em class="tpath">· yellow</em><span class="tcount">9 apps</span><svg class="ic caret"><use href="#i-down"/></svg></span>
+            <ul class="subtree sun">
+              <li><a class="tnode file" href="../../solo/apps/trusty/daty.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Daty</code><em class="tpath">trusty/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/trusty/myfamily.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">MyFamily</code><em class="tpath">trusty/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/trusty/maty.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Maty</code><em class="tpath">trusty/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/bio/varyy.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Varyy</code><em class="tpath">bio/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/trusty/evily.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Evily</code><em class="tpath">trusty/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/trusty/trusty.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Trusty</code><em class="tpath">trusty/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/trusty/crumbly.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Crumbly</code><em class="tpath">trusty/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/trusty/parenty.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Parenty</code><em class="tpath">trusty/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/psicosocial/lovy.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Lovy</code><em class="tpath">psicosocial/</em></a></li>
+            </ul>
+          </li>
+
+          <li class="reveal cat-ling" style="--d:.06s">
+            <span class="tnode"><svg class="ic appic"><use href="#i-folder"/></svg><code class="tname">Linguistics</code><em class="tpath">· green</em><span class="tcount">5 apps</span><svg class="ic caret"><use href="#i-down"/></svg></span>
+            <ul class="subtree sun">
+              <li><a class="tnode file" href="../../solo/apps/puzzy/keys/keys-basic.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Keys</code><em class="tpath">puzzy/keys/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/puzzy/fivy.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Fivy</code><em class="tpath">puzzy/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/puzzy/index.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Puzzy</code><em class="tpath">puzzy/</em></a></li>
+              <li><a class="tnode file" href="../../central/apps/loly/index.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Loly</code><em class="tpath">central/apps/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/puzzy/wisy.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Wisy</code><em class="tpath">puzzy/</em></a></li>
+            </ul>
+          </li>
+
+          <li class="reveal cat-social" style="--d:.08s">
+            <span class="tnode"><svg class="ic appic"><use href="#i-folder"/></svg><code class="tname">Social</code><em class="tpath">· blue</em><span class="tcount">6 apps</span><svg class="ic caret"><use href="#i-down"/></svg></span>
+            <ul class="subtree sun">
+              <li><a class="tnode file" href="../../solo/apps/psicosocial/realy.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Realy</code><em class="tpath">psicosocial/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/appy/nety.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Nety</code><em class="tpath">appy/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/psicosocial/socy.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Socy</code><em class="tpath">psicosocial/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/blogy/index.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Blogy</code><em class="tpath">blogy/</em></a></li>
+              <li><a class="tnode file" href="../../decentral/browsy/index.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Browsy</code><em class="tpath">decentral/</em></a></li>
+              <li><a class="tnode file" href="../../central/apps/wizy/index.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Wizy</code><em class="tpath">central/apps/</em></a></li>
+            </ul>
+          </li>
+
+          <li class="reveal cat-economy" style="--d:.10s">
+            <span class="tnode"><svg class="ic appic"><use href="#i-folder"/></svg><code class="tname">Economy</code><em class="tpath">· indigo</em><span class="tcount">4 apps</span><svg class="ic caret"><use href="#i-down"/></svg></span>
+            <ul class="subtree sun">
+              <li><a class="tnode file" href="../../solo/apps/economy/crafty.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Crafty</code><em class="tpath">economy/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/economy/worthing.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Worthing</code><em class="tpath">economy/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/economy/lowy.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Lowy</code><em class="tpath">economy/</em></a></li>
+              <li><a class="tnode file" href="../../solo/apps/economy/dealy/dealy.html"><svg class="ic appic"><use href="#i-file"/></svg><code class="tname">Dealy</code><em class="tpath">economy/dealy/</em></a></li>
+            </ul>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TELEGRAM2WEB · moved from risa ============ -->
+  <section class="tab-panel" id="telegram2web" aria-label="Telegram2Web" hidden>
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="eyebrow">Version 1</p>
+        <h2><span class="es" lang="es">De nota de voz a perfil web</span><span class="en" lang="en">From voice note to web profile</span></h2>
+        <p class="lede"><span class="es" lang="es">Un bot de Telegram recoge notas de voz, un grupo humano modera, y todo lo aprobado acaba como MP3 en Cloudflare R2 con su entrada en risa.json; la web lee el feed, lo anida y enriquece su entorno para reproducirlo en diversas listas (tags y perfil) y poder contestar a el, con un clip nuevo o solapado al citado.</span><span class="en" lang="en">A Telegram bot collects voice notes, a human group moderates, and everything approved ends up as an MP3 on Cloudflare R2 with its entry in risa.json; the web reads the feed, nests it and enriches its surroundings to play it in several lists (tags and profile) and to reply to it — with a new clip or one overlapped on the quoted one.</span></p>
+      </div>
+
+      <div class="replica" id="replica">
+                        <figure>
+                          <h4 class="diag-title"><span class="es" lang="es">Flujo v1 · hilo</span><span class="en" lang="en">Flow v1 · thread</span> <a class="png-link" href="../central/shared/media/images/development/risaliberada-v1-thread.png" download><span class="es" lang="es">descargar PNG ↗</span><span class="en" lang="en">download PNG ↗</span></a></h4>
+                          <img class="darkable" src="../central/shared/media/images/development/risaliberada-v1-thread.svg" alt="Sequence diagram of the released-laugh (liberada v1) flow risa: from voice note to channel and web" loading="lazy">
+                        </figure>
+                        <figure>
+                          <h4 class="diag-title"><span class="es" lang="es">Flujo v1 · panorama</span><span class="en" lang="en">Flow v1 · overview</span> <a class="png-link" href="../central/shared/media/images/development/risaliberada-v1-flow.png" download><span class="es" lang="es">descargar PNG ↗</span><span class="en" lang="en">download PNG ↗</span></a></h4>
+                          <img class="darkable" src="../central/shared/media/images/development/risaliberada-v1-flow.svg" alt="Flow of the released-laugh (liberada v1) flow risa in one view: person → bot → moderators → R2 → risa.json → channel and web, plus the subdomain" loading="lazy">
+                        </figure>
+                        <figure class="subdiag">
+                          <h4 class="diag-title"><span class="es" lang="es">Subdominio · keys ya cogidas y aliases</span><span class="en" lang="en">Subdomain · taken keys and aliases</span> <a class="png-link" href="../central/shared/media/images/development/risaliberada-v1-subdomain.png" download><span class="es" lang="es">descargar PNG ↗</span><span class="en" lang="en">download PNG ↗</span></a></h4>
+                          <img class="darkable" src="../central/shared/media/images/development/risaliberada-v1-subdomain.svg" alt="Subdomain flow: ensureUsername resolves an already-taken key with a deterministic suffix (_2, _3…) and the rename errors if the name is taken; aliases are created from the profile (POST /api/aliases)" loading="lazy">
+                        </figure>
+                        <h4><span class="es" lang="es">Las piezas</span><span class="en" lang="en">The pieces</span></h4>
+                        <ol>
+                          <li><span class="es" lang="es"><b>Repositorio público</b> — código, feed <code>risa.json</code> y la web, todo en un solo repo.</span><span class="en" lang="en"><b>Public repository</b> — code, the <code>risa.json</code> feed and the web, all in a single repo.</span></li>
+                          <li><span class="es" lang="es"><b>Bot de Telegram</b> — @BotFather te da el token y crea el bot.</span><span class="en" lang="en"><b>Telegram bot</b> — @BotFather gives you the token and creates the bot.</span></li>
+                          <li><span class="es" lang="es"><b>Canal + grupo de moderación</b> — el canal publica; un grupo privado aprueba o rechaza.</span><span class="en" lang="en"><b>Channel + moderation group</b> — the channel publishes; a private group approves or rejects.</span></li>
+                          <li><span class="es" lang="es"><b>Cloudflare R2</b> — almacenamiento gratuito (10 GB) para los audios, con URL pública.</span><span class="en" lang="en"><b>Cloudflare R2</b> — free storage (10 GB) for the audios, with a public URL.</span></li>
+                          <li><span class="es" lang="es"><b>GitHub Actions</b> — un cron llama al bot cada 5–10 minutos para vaciar la cola.</span><span class="en" lang="en"><b>GitHub Actions</b> — a cron calls the bot every 5–10 minutes to drain the queue.</span></li>
+                        </ol>
+                        <figure class="circuit-fig piezas-fig">
+                          <h4 class="diag-title"><span class="es" lang="es">Las dos ideas clave</span><span class="en" lang="en">The two key ideas</span></h4>
+                          <svg viewBox="0 0 760 248" role="img" aria-label="Las dos ideas clave del circuito: un tag se enriquece de Telegram a la web (chips, búsqueda, favoritos locales y el feed del perfil) y el id de Telegram se oscurece tras un hash salado y un nombre público" data-aria-en="The circuit's two key ideas: a tag is enriched from Telegram to the web (chips, search, local favourites and the profile feed), and the Telegram id is obscured behind a salted hash and a public name" data-aria-es="Las dos ideas clave del circuito: un tag se enriquece de Telegram a la web (chips, búsqueda, favoritos locales y el feed del perfil) y el id de Telegram se oscurece tras un hash salado y un nombre público">
+                            <defs>
+                              <marker id="parrow" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+                                <path d="M0 0 L8 3.5 L0 7 Z" fill="var(--sv-line)"/>
+                              </marker>
+                            </defs>
+                            <style>
+                              .pmono{font-family:'Space Mono',ui-monospace,monospace; font-weight:700; font-size:16px; fill:var(--sv-mono)}
+                              .pbody{font-family:'Figtree',system-ui,sans-serif; font-size:12px; fill:var(--sv-ink)}
+                              .psmall{font-family:'Figtree',system-ui,sans-serif; font-size:11px; fill:var(--sv-dim)}
+                              .pline{stroke:var(--sv-line); stroke-width:2; fill:none; marker-end:url(#parrow)}
+                              .pbox{fill:var(--sv-pane); stroke:var(--sv-line); stroke-width:2; rx:16; ry:16}
+                              .pboxhi{fill:var(--sv-amber); stroke:#7a3a00; stroke-width:2; rx:16; ry:16}
+                              .pboxhi text{fill:#3a1a00}
+                            </style>
+                            <text x="20" y="22" class="pbody" font-weight="700">1 · Un tag se enriquece, de Telegram a la web</text>
+                            <rect class="pbox" x="20" y="34" width="150" height="58"/>
+                            <text x="95" y="58" text-anchor="middle" class="pmono" fill="#ff8a5c">Telegram</text>
+                            <text x="95" y="78" text-anchor="middle" class="psmall">subida + moderación ✅</text>
+                            <path class="pline" d="M 170 63 L 218 63"/>
+                            <rect class="pbox" x="222" y="34" width="150" height="58"/>
+                            <text x="297" y="58" text-anchor="middle" class="pmono">risa.json</text>
+                            <text x="297" y="78" text-anchor="middle" class="psmall">tags · key · hash</text>
+                            <path class="pline" d="M 372 63 L 420 63"/>
+                            <rect class="pbox" x="424" y="34" width="160" height="58"/>
+                            <text x="504" y="58" text-anchor="middle" class="pmono">La web</text>
+                            <text x="504" y="78" text-anchor="middle" class="psmall">chips · búsqueda · favoritos</text>
+                            <path class="pline" d="M 584 63 L 632 63"/>
+                            <rect class="pboxhi" x="636" y="34" width="104" height="58"/>
+                            <text x="688" y="58" text-anchor="middle" class="pmono" fill="#3a1a00">Perfil</text>
+                            <text x="688" y="78" text-anchor="middle" class="psmall" fill="#3a1a00">#/u/&lt;key&gt;</text>
+                            <text x="20" y="112" class="psmall">Los favoritos ❤️/⭐ son un filtro local (tu navegador) sobre el mismo feed; el perfil es solo otra vista de la misma web.</text>
+                            <text x="20" y="152" class="pbody" font-weight="700">2 · El id de Telegram nunca sale en claro</text>
+                            <rect class="pbox" x="20" y="164" width="170" height="58"/>
+                            <text x="105" y="188" text-anchor="middle" class="pmono">id de Telegram</text>
+                            <text x="105" y="208" text-anchor="middle" class="psmall">123456789 — no se guarda</text>
+                            <path class="pline" d="M 190 193 L 238 193"/>
+                            <rect class="pbox" x="242" y="164" width="210" height="58"/>
+                            <text x="347" y="188" text-anchor="middle" class="pmono">hash salado + nombre</text>
+                            <text x="347" y="208" text-anchor="middle" class="psmall">handle estable · palabra + hash</text>
+                            <path class="pline" d="M 452 193 L 500 193"/>
+                            <rect class="pboxhi" x="504" y="164" width="236" height="58"/>
+                            <text x="622" y="188" text-anchor="middle" class="pmono" fill="#3a1a00">Página #/u/&lt;key&gt;</text>
+                            <text x="622" y="208" text-anchor="middle" class="psmall" fill="#3a1a00">el público solo ve tu nombre público</text>
+                          </svg>
+                          <figcaption><span class="es" lang="es">Las dos ideas clave de las piezas: el tag viaja enriquecido hasta la web (favoritos = filtro local) y el id de Telegram se oscurece tras un nombre público.</span><span class="en" lang="en">The two key ideas of the pieces: the tag travels enriched right to the web (favourites = local filter), and the Telegram id is obscured behind a public name.</span></figcaption>
+                        </figure>
+                        <details class="collapsed">
+                          <summary class="sc-chip"><span class="chip"><span class="es" lang="es">Que ya funciona - Resumen de características</span><span class="en" lang="en">Already working — feature summary</span></span></summary>
+                          <div class="collapsed-body">
+                            <p><span class="es" lang="es">La v1 ya trae esto funcionando, feature a feature, y cada pieza está escrita para una sola cosa: sin build, sin servidor y sin coste. Lo que queda se vive en la pestaña <b>Desarrollo</b> (v2).</span><span class="en" lang="en">The v1 already ships this working, feature by feature, and each piece is written for a single purpose: no build, no server, no cost. What remains lives in the <b>Develop</b> tab (v2).</span></p>
+                            <h5 class="feat-area"><span class="es" lang="es">Web — el escaparate</span><span class="en" lang="en">Web — the shop window</span></h5>
+                            <ul>
+                              <li><span class="es" lang="es">App de archivo único: HTML + CSS + JS, sin build y sin dependencias</span><span class="en" lang="en">Single-file app: HTML + CSS + JS, no build and no dependencies</span></li>
+                              <li><span class="es" lang="es">Servida desde GitHub Pages: estático, HTTPS, coste cero</span><span class="en" lang="en">Served from GitHub Pages: static, HTTPS, zero cost</span></li>
+                              <li><span class="es" lang="es">Un solo feed (<code>risa.json</code>) como fuente de verdad de la web</span><span class="en" lang="en">A single feed (<code>risa.json</code>) as the web's source of truth</span></li>
+                              <li><span class="es" lang="es">Dos playlists (risas del mundo + risas de la gente) con un reproductor factory compartido</span><span class="en" lang="en">Two playlists (world risas + people risas) with a shared factory player</span></li>
+                              <li><span class="es" lang="es">Reproductor inline: play/pausa, anterior/siguiente y lista de pistas</span><span class="en" lang="en">Inline player: play/pause, previous/next and track list</span></li>
+                              <li><span class="es" lang="es">El feed puede incluir vídeo (mp4/webm) de otros bots sin tocar la web</span><span class="en" lang="en">The feed can include video (mp4/webm) from other bots without touching the web</span></li>
+                              <li><span class="es" lang="es">«Últimas risas»: feed de las últimas n piezas (por defecto 6)</span><span class="en" lang="en">"Latest risas": feed of the last n pieces (6 by default)</span></li>
+                              <li><span class="es" lang="es">Chips de etiquetas filtrables</span><span class="en" lang="en">Filterable tag chips</span></li>
+                              <li><span class="es" lang="es">Nube de tags flotante con colisiones evitadas (<code>floatChips</code>)</span><span class="en" lang="en">Floating tag cloud with collisions avoided (<code>floatChips</code>)</span></li>
+                              <li><span class="es" lang="es">Búsqueda por tag · título · nombre</span><span class="en" lang="en">Search by tag · title · name</span></li>
+                              <li><span class="es" lang="es">Favoritos ❤️/⭐ compartidos por las dos playlists</span><span class="en" lang="en">Favourites ❤️/⭐ shared across both playlists</span></li>
+                              <li><span class="es" lang="es">Paginador del feed</span><span class="en" lang="en">Feed paginator</span></li>
+                              <li><span class="es" lang="es">Página de autor <code>#/u/&lt;key&gt;</code> con su propio feed</span><span class="en" lang="en">Author page <code>#/u/&lt;key&gt;</code> with its own feed</span></li>
+                              <li><span class="es" lang="es">Hilos: cadenas de respuesta infinitas (<code>parent</code>) con conectores visuales y etiqueta del autor respondido</span><span class="en" lang="en">Threads: infinite reply chains (<code>parent</code>) with visual connectors and replied-author label</span></li>
+                              <li><span class="es" lang="es">Subdominio de autor opt-in: <code>username.liberada.net</code> solo con «Sí, quiero» tras publicar (nunca automático)</span><span class="en" lang="en">Opt-in author subdomain: <code>username.liberada.net</code> only with "Yes, I want it" after publishing (never automatic)</span></li>
+                              <li><span class="es" lang="es">Perfil agregador genérico: <code>liberada.net/usa/&lt;username&gt;/</code> unifica risas + amas</span><span class="en" lang="en">Generic aggregator profile: <code>liberada.net/usa/&lt;username&gt;/</code> unifies risas + amas</span></li>
+                              <li><span class="es" lang="es">Compartir por WhatsApp, Telegram, e-mail y copiar</span><span class="en" lang="en">Share via WhatsApp, Telegram, e-mail and copy</span></li>
+                              <li><span class="es" lang="es">QR del deep link <code>t.me/RisaLiberadaBot</code> para escanear</span><span class="en" lang="en">QR of the <code>t.me/RisaLiberadaBot</code> deep link to scan</span></li>
+                              <li><span class="es" lang="es">Imágenes y audio servidos desde R2 con URL pública (no desde GitHub)</span><span class="en" lang="en">Images and audio served from R2 with a public URL (not from GitHub)</span></li>
+                              <li><span class="es" lang="es">Procedencia y licencia de cada pieza, enlazada a su ficha en Commons</span><span class="en" lang="en">Provenance and licence of each piece, linked to its Commons sheet</span></li>
+                              <li><span class="es" lang="es">Carrusel de beneficios de la risa (20 datos) que conecta con la sección ciencia</span><span class="en" lang="en">Carousel of laughter benefits (20 facts) linking to the science section</span></li>
+                            </ul>
+                            <h5 class="feat-area"><span class="es" lang="es">Bot — el circuito serverless</span><span class="en" lang="en">Bot — the serverless circuit</span></h5>
+                            <ul>
+                              <li><span class="es" lang="es">Ingesta por Telegram: audios y vídeos de hasta 1 min</span><span class="en" lang="en">Telegram ingestion: audios and videos up to 1 min</span></li>
+                              <li><span class="es" lang="es">Límites duros: 10 MB por pieza, 5 en cola y 5 al día por remitente</span><span class="en" lang="en">Hard limits: 10 MB per piece, 5 queued and 5 per day per sender</span></li>
+                              <li><span class="es" lang="es">Validación de tipo, extensión, tamaño y duración antes de subir</span><span class="en" lang="en">Type, extension, size and duration validation before uploading</span></li>
+                              <li><span class="es" lang="es">Offset persistido e idempotencia en <code>getUpdates</code> (ni pérdidas ni duplicados)</span><span class="en" lang="en">Persisted offset and idempotency in <code>getUpdates</code> (no losses, no duplicates)</span></li>
+                              <li><span class="es" lang="es">Long polling de 25 s: sin endpoint público y sin webhook</span><span class="en" lang="en">25 s long polling: no public endpoint and no webhook</span></li>
+                              <li><span class="es" lang="es">Cron de GitHub Actions como motor (cada 5–10 minutos)</span><span class="en" lang="en">GitHub Actions cron as engine (every 5–10 minutes)</span></li>
+                              <li><span class="es" lang="es">Identidad al subir: nombre público, id de Telegram o anónima</span><span class="en" lang="en">Identity on upload: public name, Telegram id or anonymous</span></li>
+                              <li><span class="es" lang="es">Handle estable por palabra + hash salado (nunca <code>@username</code>)</span><span class="en" lang="en">Stable handle from word + salted hash (never <code>@username</code>)</span></li>
+                              <li><span class="es" lang="es">Formulario guiado con botones inline: descripción, etiquetas y visibilidad</span><span class="en" lang="en">Guided form with inline buttons: description, tags and visibility</span></li>
+                              <li><span class="es" lang="es">Reenviar clip del canal → cadena: detecta forward, propone respuesta, publica con <code>parent</code></span><span class="en" lang="en">Forward from the channel → chain: detects the forward, proposes a reply, publishes with <code>parent</code></span></li>
+                              <li><span class="es" lang="es">Ciclo detectado: <code>hasAncestor()</code> impide A→B→…→A</span><span class="en" lang="en">Cycle detected: <code>hasAncestor()</code> prevents A→B→…→A</span></li>
+                              <li><span class="es" lang="es">Normalización a MP3 con <code>ffmpeg</code></span><span class="en" lang="en">Normalisation to MP3 with <code>ffmpeg</code></span></li>
+                              <li><span class="es" lang="es">Subida a Cloudflare R2 con firma SigV4 propia (cero dependencias)</span><span class="en" lang="en">Upload to Cloudflare R2 with its own SigV4 signature (zero dependencies)</span></li>
+                              <li><span class="es" lang="es">La pieza aprobada antepone a <code>risa.json</code> (git como base de datos)</span><span class="en" lang="en">The approved piece prepends to <code>risa.json</code> (git as database)</span></li>
+                              <li><span class="es" lang="es">Commit + push automáticos del feed</span><span class="en" lang="en">Automatic commit + push of the feed</span></li>
+                              <li><span class="es" lang="es">Publicación en el canal público @risaliberada</span><span class="en" lang="en">Publishing to the public channel @risaliberada</span></li>
+                              <li><span class="es" lang="es">Moderación humana en grupo privado: ✅ publicar, 🗑 borrar, ✏️ proponer detalles</span><span class="en" lang="en">Human moderation in a private group: ✅ publish, 🗑 delete, ✏️ propose details</span></li>
+                              <li><span class="es" lang="es">Edición con visto bueno del autor: nadie publica contra su voluntad</span><span class="en" lang="en">Editing with the author's approval: nobody publishes against their will</span></li>
+                              <li><span class="es" lang="es">Confirmaciones y avisos en español (subida, aprobación, rechazo, publicación)</span><span class="en" lang="en">Confirmations and notices in Spanish (upload, approval, rejection, publication)</span></li>
+                              <li><span class="es" lang="es">Reconocimiento de decisiones por palabra («ok», «sí», «no», «borrar»…)</span><span class="en" lang="en">Word-based decision recognition ("ok", "yes", "no", "delete"…)</span></li>
+                              <li><span class="es" lang="es">Mensajes malformados nunca tumban el bucle: <code>parseUpdates</code> es una función pura</span><span class="en" lang="en">Malformed messages never crash the loop: <code>parseUpdates</code> is a pure function</span></li>
+                              <li><span class="es" lang="es">Bienvenida con las reglas claras (1 min, 10 MB, 5 al día)</span><span class="en" lang="en">Welcome with the clear rules (1 min, 10 MB, 5 per day)</span></li>
+                              <li><span class="es" lang="es">Cliente de Telegram con timeout y manejo de errores de red</span><span class="en" lang="en">Telegram client with timeout and network error handling</span></li>
+                              <li><span class="es" lang="es">Scripts de mantenimiento: <code>migrate-r2.mjs</code> y <code>sync-media.mjs</code></span><span class="en" lang="en">Maintenance scripts: <code>migrate-r2.mjs</code> and <code>sync-media.mjs</code></span></li>
+                            </ul>
+                            <h5 class="feat-area"><span class="es" lang="es">E · Comandos del bot — mínimos, de solo lectura y reproducción</span><span class="en" lang="en">E · Bot commands — minimal, read &amp; play only</span> <span class="scope v1">v1</span></h5>
+                            <ul>
+                              <li><span class="es" lang="es">Base: <code>/me</code> · <code>/stats</code> · <code>/profile</code> · <code>/status</code> · <code>/queue</code></span><span class="en" lang="en">Base: <code>/me</code> · <code>/stats</code> · <code>/profile</code> · <code>/status</code> · <code>/queue</code></span></li>
+                              <li><span class="es" lang="es">Exploración: <code>/latest</code> · <code>/random</code> · <code>/now</code> · <code>/since</code> · <code>/today</code> · <code>/trending</code></span><span class="en" lang="en">Explore: <code>/latest</code> · <code>/random</code> · <code>/now</code> · <code>/since</code> · <code>/today</code> · <code>/trending</code></span></li>
+                              <li><span class="es" lang="es">Reproducción: <code>/play</code> (recorre el feed, el mismo que la web)</span><span class="en" lang="en">Playback: <code>/play</code> (walks the feed, the same one as the web)</span></li>
+                              <li><span class="es" lang="es">Perfil: <code>/entrar</code> (miniapp) · <code>/mejorar</code> (novedades) · <code>/name</code> (nombre público) · <code>/usuario</code> (subdominio) · <code>/pub</code> (mostrar @)</span><span class="en" lang="en">Profile: <code>/entrar</code> (miniapp) · <code>/mejorar</code> (what's new) · <code>/name</code> (public name) · <code>/usuario</code> (subdomain) · <code>/pub</code> (show @)</span></li>
+                              <li><span class="es" lang="es">Todo es de solo lectura y reproducción: nada escribe; los comandos de perfil mutan solo en DM</span><span class="en" lang="en">Everything is read &amp; play only: nothing writes; profile commands mutate only in DM</span></li>
+                            </ul>
+                            <h5 class="feat-area"><span class="es" lang="es">Moderación y confianza</span><span class="en" lang="en">Moderation &amp; trust</span></h5>
+                            <ul>
+                              <li><span class="es" lang="es">Solo los moderadores del grupo pueden aprobar o rechazar</span><span class="en" lang="en">Only the group's moderators can approve or reject</span></li>
+                              <li><span class="es" lang="es">Nada se publica sin revisión humana (un par de ojos antes del canal)</span><span class="en" lang="en">Nothing is published without human review (a pair of eyes before the channel)</span></li>
+                              <li><span class="es" lang="es">Gate de aceptación: la edición propuesta se publica solo si el autor acepta</span><span class="en" lang="en">Acceptance gate: the proposed edit is published only if the author accepts</span></li>
+                              <li><span class="es" lang="es">Certificación «autenticado en Telegram» en la página de autor (un moderador aceptó tu post)</span><span class="en" lang="en">"Authenticated on Telegram" certification on the author page (a moderator accepted your post)</span></li>
+                              <li><span class="es" lang="es">Enlace a t.me solo con opt-in explícito (nunca automático)</span><span class="en" lang="en">t.me link only with explicit opt-in (never automatic)</span></li>
+                              <li><span class="es" lang="es">Cuota y cola por remitente como anti-abuso</span><span class="en" lang="en">Per-sender quota and queue as anti-abuse</span></li>
+                              <li><span class="es" lang="es">Licencia CC BY-SA 4.0 declarada en cada pieza publicada</span><span class="en" lang="en">CC BY-SA 4.0 licence declared on every published piece</span></li>
+                            </ul>
+                            <h5 class="feat-area"><span class="es" lang="es">Página de autor — tag-url</span><span class="en" lang="en">Author page — tag-url</span></h5>
+                            <ul>
+                              <li><span class="es" lang="es">Cada publicación genera su tag-url <code>#/u/&lt;key&gt;</code> automáticamente</span><span class="en" lang="en">Every publication generates its <code>#/u/&lt;key&gt;</code> tag-url automatically</span></li>
+                              <li><span class="es" lang="es">El bot envía la URL de tu página en el aviso de publicación — funciona aunque solo añadas nombre público</span><span class="en" lang="en">The bot sends your page URL in the publication notice — it works even with just a public name</span></li>
+                              <li><span class="es" lang="es">Feed propio con todas tus risas</span><span class="en" lang="en">Your own feed with all your risas</span></li>
+                              <li><span class="es" lang="es">El reproductor de la página reutiliza el reproductor global</span><span class="en" lang="en">The page's player reuses the global player</span></li>
+                              <li><span class="es" lang="es">Enlace a t.me solo si hay opt-in</span><span class="en" lang="en">t.me link only with opt-in</span></li>
+                              <li><span class="es" lang="es">Avatar con inicial y fecha relativa (<code>timeAgo</code>)</span><span class="en" lang="en">Avatar with initial and relative date (<code>timeAgo</code>)</span></li>
+                            </ul>
+                            <h5 class="feat-area"><span class="es" lang="es">Privacidad y datos</span><span class="en" lang="en">Privacy &amp; data</span></h5>
+                            <ul>
+                              <li><span class="es" lang="es">Nunca se guardan ids de Telegram en claro en el repo</span><span class="en" lang="en">Telegram ids are never stored in clear in the repo</span></li>
+                              <li><span class="es" lang="es">Origen oscurecido: el handle público es un hash salado de la identidad</span><span class="en" lang="en">Obscured origin: the public handle is a salted hash of the identity</span></li>
+                              <li><span class="es" lang="es">Anónimo es una opción real al subir (y la más común)</span><span class="en" lang="en">Anonymous is a real option on upload (and the most common)</span></li>
+                              <li><span class="es" lang="es">Esquema <code>risa.json</code> versionado: <code>id</code>, <code>t</code>, <code>name</code>, <code>tags</code>, <code>src</code>, <code>when</code>, <code>tg</code>, <code>key</code></span><span class="en" lang="en">Versioned <code>risa.json</code> schema: <code>id</code>, <code>t</code>, <code>name</code>, <code>tags</code>, <code>src</code>, <code>when</code>, <code>tg</code>, <code>key</code></span></li>
+                              <li><span class="es" lang="es">Retrocompatible: el feed puede ser array (v1) u objeto <code>{flag, clips}</code></span><span class="en" lang="en">Backwards compatible: the feed can be an array (v1) or an object <code>{flag, clips}</code></span></li>
+                              <li><span class="es" lang="es">Addons por flag: se activan desde la interfaz sin romper lo publicado</span><span class="en" lang="en">Add-ons via flag: enabled from the UI without breaking what's published</span></li>
+                              <li><span class="es" lang="es">Feed agregable: puede sumar risas de otros bots (vídeo incluido)</span><span class="en" lang="en">Aggregable feed: it can add risas from other bots (video included)</span></li>
+                              <li><span class="es" lang="es">Guardarraíles del contrato: las claves desconocidas de <code>flove.json</code> se ignoran</span><span class="en" lang="en">Contract guardrails: unknown <code>flove.json</code> keys are ignored</span></li>
+                            </ul>
+                            <h5 class="feat-area"><span class="es" lang="es">Integración con flove</span><span class="en" lang="en">Integration with flove</span></h5>
+                            <ul>
+                              <li><span class="es" lang="es"><code>flove.json</code> enriquece sin interrumpir: timeout de 4 s y fail-silent</span><span class="en" lang="en"><code>flove.json</code> enhances without interrupting: 4 s timeout and fail-silent</span></li>
+                              <li><span class="es" lang="es">Regla de oro: <code>risa.json</code> es la verdad; <code>flove.json</code> solo añade, nunca al revés</span><span class="en" lang="en">Golden rule: <code>risa.json</code> is the truth; <code>flove.json</code> only adds, never the other way round</span></li>
+                              <li><span class="es" lang="es">Al claim (v2), el enlace lleva al perfil único de flove donde ves tus risas y activas Lovy ya autenticado</span><span class="en" lang="en">On claim (v2), the link leads to flove's single profile where you see your risas and enable Lovy already authenticated</span></li>
+                            </ul>
+                            <h5 class="feat-area"><span class="es" lang="es">Infraestructura y hosting</span><span class="en" lang="en">Infrastructure &amp; hosting</span></h5>
+                            <ul>
+                              <li><span class="es" lang="es">Coste cero: R2 (10 GB gratis) + Pages + Actions</span><span class="en" lang="en">Zero cost: R2 (free 10 GB) + Pages + Actions</span></li>
+                              <li><span class="es" lang="es">Sin servidor propio y sin base de datos: git + archivos</span><span class="en" lang="en">No own server and no database: git + files</span></li>
+                              <li><span class="es" lang="es">Secretos de GitHub Actions (BOT_TOKEN, CHANNEL_ID, MOD_GROUP_ID, R2_*)</span><span class="en" lang="en">GitHub Actions secrets (BOT_TOKEN, CHANNEL_ID, MOD_GROUP_ID, R2_*)</span></li>
+                              <li><span class="es" lang="es">Uploader R2 propio (SigV4) que sustituyó a Cloudinary por falta de permiso</span><span class="en" lang="en">Own R2 uploader (SigV4) that replaced Cloudinary for lack of permission</span></li>
+                              <li><span class="es" lang="es">Migración de prefijos y reescritura de URLs lista en <code>migrate-r2.mjs</code></span><span class="en" lang="en">Prefix migration and URL rewriting ready in <code>migrate-r2.mjs</code></span></li>
+                              <li><span class="es" lang="es">Medios sincronizados a R2 con <code>sync-media.mjs</code> (idempotente)</span><span class="en" lang="en">Media synced to R2 with <code>sync-media.mjs</code> (idempotent)</span></li>
+                              <li><span class="es" lang="es">Replicable en una tarde: clona, lee el estándar, lanza tu bot, tu bucket y tu canal</span><span class="en" lang="en">Replicable in an afternoon: clone, read the standard, launch your bot, your bucket and your channel</span></li>
+                              <li><span class="es" lang="es">El sitio se sirve dentro de flove.org, que además precachea offline (service worker)</span><span class="en" lang="en">The site is served inside flove.org, which also precaches offline (service worker)</span></li>
+                            </ul>
+                            <h5 class="feat-area"><span class="es" lang="es">Calidad y documentación</span><span class="en" lang="en">Quality &amp; documentation</span></h5>
+                            <ul>
+                              <li><span class="es" lang="es">Suite de tests <code>node --test</code>: 91 verdes sobre la lógica del bot y de la web</span><span class="en" lang="en"><code>node --test</code> test suite: 91 green on the bot and web logic</span></li>
+                              <li><span class="es" lang="es">Ayudantes puros compartidos: <code>risa.js</code> corre igual en la web y en Node</span><span class="en" lang="en">Shared pure helpers: <code>risa.js</code> runs the same in the web and in Node</span></li>
+                              <li><span class="es" lang="es">Verificación con jsdom sin navegador (harness repetible)</span><span class="en" lang="en">Browser-less jsdom verification (repeatable harness)</span></li>
+                              <li><span class="es" lang="es">Chequeo de sintaxis <code>node --check</code> en todos los archivos</span><span class="en" lang="en"><code>node --check</code> syntax check on every file</span></li>
+                              <li><span class="es" lang="es">Estándar RisaLiberada v1 documentado: flujos, datos, identidad, hosting y licencia</span><span class="en" lang="en">Documented RisaLiberada v1 standard: flows, data, identity, hosting and licence</span></li>
+                              <li><span class="es" lang="es">Diagramas mermaid (thread + flow) versionados junto al estándar</span><span class="en" lang="en">Versioned mermaid diagrams (thread + flow) alongside the standard</span></li>
+                              <li><span class="es" lang="es">Plan de v2 centralizado en <code>plan-v2.md</code> del estándar</span><span class="en" lang="en">v2 plan centralised in the standard's <code>plan-v2.md</code></span></li>
+                              <li><span class="es" lang="es">Vocabulario consistente: los nombres del código coinciden con el texto de la interfaz</span><span class="en" lang="en">Consistent vocabulary: code names match the interface text</span></li>
+                            </ul>
+                            <h5 class="feat-area"><span class="es" lang="es">Accesibilidad y experiencia</span><span class="en" lang="en">Accessibility &amp; experience</span></h5>
+                            <ul>
+                              <li><span class="es" lang="es"><code>prefers-reduced-motion</code> respetado (animaciones off)</span><span class="en" lang="en"><code>prefers-reduced-motion</code> respected (animations off)</span></li>
+                              <li><span class="es" lang="es">Teclado: flechas en carruseles, foco visible en chips y botones</span><span class="en" lang="en">Keyboard: arrows in carousels, visible focus on chips and buttons</span></li>
+                              <li><span class="es" lang="es"><code>aria-label</code> y roles en los controles importantes</span><span class="en" lang="en"><code>aria-label</code> and roles on the important controls</span></li>
+                              <li><span class="es" lang="es">Contraste alto sobre crema/ink</span><span class="en" lang="en">High contrast on cream/ink</span></li>
+                              <li><span class="es" lang="es"><code>alt</code> descriptivo en todas las imágenes</span><span class="en" lang="en">Descriptive <code>alt</code> on all images</span></li>
+                              <li><span class="es" lang="es">Carga perezosa (<code>loading="lazy"</code>) de imágenes</span><span class="en" lang="en">Lazy loading (<code>loading="lazy"</code>) of images</span></li>
+                              <li><span class="es" lang="es">Audio con <code>preload="none"</code> (no descarga hasta reproducir)</span><span class="en" lang="en">Audio with <code>preload="none"</code> (no download until playback)</span></li>
+                              <li><span class="es" lang="es">Micro-interacciones solo con CSS, sin JavaScript de más</span><span class="en" lang="en">CSS-only micro-interactions, no extra JavaScript</span></li>
+                              <li><span class="es" lang="es">El botón de la risa reproduce un clip al toque (detalle audiovisual)</span><span class="en" lang="en">The risa button plays a clip on tap (audio-visual detail)</span></li>
+                              <li><span class="es" lang="es">QR + deep link pensados para compartir desde el móvil</span><span class="en" lang="en">QR + deep link made for sharing from mobile</span></li>
+                            </ul>
+                          </div>
+                        </details>
+
+                        <div class="section-head">
+                          <h2><span class="es" lang="es">Descarga y monta la tuya</span><span class="en" lang="en">Download it and make your own</span></h2>
+                          <p class="lede"><span class="es" lang="es">Código abierto, sin servidor, sin coste. Clona el repo, lanza tu bot y empieza a publicar risas en una tarde.</span><span class="en" lang="en">Open source, no server, no cost. Clone the repo, launch your bot and start publishing risas in an afternoon.</span></p>
+                        </div>
+
+                        <details class="collapsed">
+                          <summary class="sc-chip"><span class="chip"><span class="es" lang="es">Agentes — un prompt para montar el sistema</span><span class="en" lang="en">Agents — one prompt to build the system</span></span></summary>
+                          <div class="collapsed-body">
+                            <div class="co-copy">
+                              <button class="chip copy-chip" id="copy-prompt" type="button" aria-label="Copiar el prompt al portapapeles" data-aria-en="Copy the prompt to the clipboard" data-aria-es="Copiar el prompt al portapapeles"><span class="es" lang="es">Copiar</span><span class="en" lang="en">Copy</span></button>
+                            </div>
+                            <p><span class="es" lang="es">La versión <b>mini</b>: un único prompt que convierte a un agente (IA) en el encargado de montar todo el sistema en tu proyecto. Cópialo, pégaselo y supervisa el resultado.</span><span class="en" lang="en">The <b>mini</b> version: a single prompt that turns an AI agent into the one in charge of building the whole system in your project. Copy it, paste it to the agent and supervise the result.</span></p>
+                            <div class="setup-row">
+                              <button class="chip setup-chip" id="setup-v1" type="button">📦 <span class="es" lang="es">Configura el prompt</span><span class="en" lang="en">Configure the prompt</span></button>
+                            </div>
+                            <pre id="agente-prompt">Rol: asiste a montar el proyecto «mi proyecto», inspirándote en el proyecto libre github.com/floveorg/risa.
+
+Objetivo: sistema completo — subida de audio · vídeo por Telegram → moderación → publicación en canal + feed web. Sin servidor propio.
+
+Datos:
+- Bot: @TuBot — cron Actions 5–10 min
+- Contenido: audio · vídeo
+- Feed: risa.json · newest-first
+- Campos por pieza: título · etiquetas · autor.
+
+Requisitos (release completa): piezas ≤ 1 min · ≤ 10 MB · máx. 5 en cola y 5 al día · CC BY-SA 4.0 («Enviar = consentir», tag «libre») · página de autor #/u/&lt;key&gt; con feed propio · comandos de solo lectura /me · /stats · /profile · /status · /queue · /latest · /now · /today · /since · /random · /trending · /play · etiquetas → chips · búsqueda · favoritos (filtro local) · entrada por deep link + QR · repo dedicado con Pages · feed risa.json newest-first.
+
+Pasos:
+1. Clona el repo de referencia; estudia bot/, index.html, risa.json y .github/workflows.
+2. Pide y valida los secretos (BOT_TOKEN, CHANNEL_ID, MOD_GROUP_ID, credenciales R2) antes de usarlos.
+3. Configura GitHub Actions como cron que llame a getUpdates cada 5–10 minutos.
+4. Monta el feed risa.json y la web en GitHub Pages.
+5. Verifica de punta a punta con una prueba real de audio · vídeo.
+
+Permisos: leer/escribir el repo del proyecto, instalar dependencias de Node, desplegar Pages y Actions. Nada fuera del repo; confirma antes de crear credenciales.
+
+Restricciones: sin servidor ni base de datos propios; piezas gratuitas (R2, Pages, Actions); respeta la privacidad (nunca guardar ids de Telegram en claro). Responde en español.</pre>
+                          </div>
+                        </details>
+                        <div class="making-of">
+                          <h4 class="making-of-title"><span class="es" lang="es">Making of…</span><span class="en" lang="en">Making of…</span></h4>
+                          <div class="slider small" role="region" data-autoplay="5000" aria-roledescription="carrusel" aria-label="Tiers de perfil: básico, básico completo y completo" data-aria-en="Profile tiers: basic, full-basic and full" data-aria-es="Tiers de perfil: básico, básico completo y completo">
+                            <div class="slides">
+                              <figure class="slide"><img src="media/basic.jpg" alt="Perfil básico" loading="lazy"><figcaption>Basic</figcaption></figure>
+                              <figure class="slide"><img src="media/full-basic.jpg" alt="Perfil básico completo" loading="lazy"><figcaption>Basic · Full</figcaption></figure>
+                              <figure class="slide"><img src="media/full.jpg" alt="Perfil completo" loading="lazy"><figcaption>Full</figcaption></figure>
+                            </div>
+                          </div>
+                        </div>
+
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROFILE ============ -->
+  <section class="tab-panel" id="profile" aria-label="Profile" hidden>
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="eyebrow">Profile</p>
+        <h2><span class="es" lang="es">Profile to manage Social data.</span><span class="en" lang="en">Profile to manage Social data.</span></h2>
+        <p class="lede"><span class="es" lang="es">Gestiona tu identidad pública: nombre, @ y subdominio bajo tu clave. Agrega todo lo que publicas y compartes — risas, playlists y favoritos — en un solo perfil. Solo lectura por defecto: tus datos siguen privados hasta que decidas compartirlos.</span><span class="en" lang="en">Manage your public identity: public name, handle and subdomain under your key. Aggregate everything you publish and share — risas, playlists and favourites — in one profile. Default read &amp; play only: your data stays private until you decide to share it.</span></p>
+      </div>
+
+      <div id="FloveV2" class="mt-8">
+        <div class="eyebrow mb-12"><span class="es" lang="es">Flove V2 · perfiles</span><span class="en" lang="en">Flove V2 · profiles</span></div>
+
+            <p class="rtab-intro"><span class="es" lang="es">El desarrollo continua con estas mejoras:</span><span class="en" lang="en">Development continues with these improvements:</span></p>
+            <h4><span class="es" lang="es">Mejoras que propone v2</span><span class="en" lang="en">What v2 proposes</span></h4>
+            <ul>
+              <li><span class="es" lang="es"><b>Perfiles más sólidos y extendidos.</b> SQL via Service Workers de Cloudflare: datos locales rápidos, sin servidor propio, con sync offline.</span><span class="en" lang="en"><b>Stronger, extended profiles.</b> SQL via Cloudflare Service Workers: fast local data, no own server, with offline sync.</span></li>
+              <li><span class="es" lang="es"><b>Autenticación y protección de cuenta.</b> Recoveries: mail, OAuth, browsy, nety… la identidad se respalda y recupera.</span><span class="en" lang="en"><b>Authentication and account protection.</b> Recoveries: mail, OAuth, browsy, nety… the identity is backed up and recoverable.</span></li>
+              <li><span class="es" lang="es"><b>Integración con otras apps-bots.</b> Liberada, Ama… la risa conecta estrictamente con el resto del circuito.</span><span class="en" lang="en"><b>Integration with other bot-apps.</b> Liberada, Ama… risa connects strictly to the rest of the circuit.</span></li>
+              <li><span class="es" lang="es"><b>Playlists de favoritos.</b> Con URL propia: comparte tu selección con un enlace.</span><span class="en" lang="en"><b>Favourites playlists.</b> With their own URL: share your selection with a link.</span></li>
+              <li><span class="es" lang="es"><b>Cadenas enriquecidas.</b> Risas encadenadas con contexto: respuestas, hilos, historias.</span><span class="en" lang="en"><b>Rich chains.</b> Risas chained with context: replies, threads, stories.</span></li>
+              <li><span class="es" lang="es"><b>Comandos avanzados.</b> Más control desde el bot: gestionar, buscar, filtrar, ordenar.</span><span class="en" lang="en"><b>Advanced commands.</b> More control from the bot: manage, search, filter, sort.</span></li>
+            </ul>
+            <figure>
+              <h4 class="diag-title"><span class="es" lang="es">Flujo v2</span><span class="en" lang="en">Flow v2</span> <a class="png-link" href="../central/shared/media/images/development/liberada-v2-flow.png" download><span class="es" lang="es">descargar PNG ↗</span><span class="en" lang="en">download PNG ↗</span></a></h4>
+              <img class="darkable" src="../central/shared/media/images/development/liberada-v2-flow.svg" alt="Flow v2: D1 layer on top of liberada v1 — Worker /api/*, Cloudflare D1 (follows, reactions, plays, alerts, chains), threads, authy and subdomains" loading="lazy">
+            </figure>
+            <figure>
+              <h4 class="diag-title"><span class="es" lang="es">Service Worker · pedir el perfil de subdominio</span><span class="en" lang="en">Service Worker · request the subdomain profile</span> <a class="png-link" href="../central/shared/media/images/development/risa-v2-subdomain-request.png" download><span class="es" lang="es">descargar PNG ↗</span><span class="en" lang="en">download PNG ↗</span></a></h4>
+              <img class="darkable" src="../central/shared/media/images/development/risa-v2-subdomain-request.svg" alt="Service Worker thread when requesting a subdomain profile: the SW queries /api/subdomain to the Worker, which asks D1 if the profile exists" loading="lazy">
+            </figure>
+            <figure>
+              <h4 class="diag-title"><span class="es" lang="es">Service Worker · crear el perfil de subdominio</span><span class="en" lang="en">Service Worker · create the subdomain profile</span> <a class="png-link" href="../central/shared/media/images/development/risa-v2-subdomain-create.png" download><span class="es" lang="es">descargar PNG ↗</span><span class="en" lang="en">download PNG ↗</span></a></h4>
+              <img class="darkable" src="../central/shared/media/images/development/risa-v2-subdomain-create.svg" alt="Service Worker thread when creating a subdomain profile: claim + nonce via authy, DM confirmation and registration in D1" loading="lazy">
+            </figure>
+            <figure class="circuit-fig">
+              <h4 class="diag-title">flove.json · risa.json · lovy.json</h4>
+              <svg viewBox="0 0 760 430" role="img" aria-label="Circuito entre los tres json: flove.json, el pariente, facilita y enriquece a risa.json y lovy.json, sus hermanas; Lovy agrega risas como subcampo de uno de sus cinco campos" data-aria-en="Circuit between the three json files: flove.json, the relative, eases and enriches risa.json and lovy.json, its sisters; Lovy adds risas as a subfield of one of its five fields" data-aria-es="Circuito entre los tres json: flove.json, el pariente, facilita y enriquece a risa.json y lovy.json, sus hermanas; Lovy agrega risas como subcampo de uno de sus cinco campos">
+                <defs>
+                  <marker id="jarrow" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+                    <path d="M0 0 L8 3.5 L0 7 Z" fill="var(--sv-line)"/>
+                  </marker>
+                </defs>
+                <style>
+                  .jmono{font-family:'Space Mono',ui-monospace,monospace; font-weight:700; font-size:17px; fill:var(--sv-mono)}
+                  .jbody{font-family:'Figtree',system-ui,sans-serif; font-size:12px; fill:var(--sv-ink)}
+                  .jsmall{font-family:'Figtree',system-ui,sans-serif; font-size:11px; fill:var(--sv-dim)}
+                  .jline{stroke:var(--sv-line); stroke-width:2; fill:none; marker-end:url(#jarrow)}
+                  .jlbl{font-family:'Figtree',system-ui,sans-serif; font-size:11px; font-weight:600; fill:#aac7e0}
+                  .jchip{fill:#0d1520; stroke:var(--sv-line); stroke-width:1.2; rx:9; ry:9}
+                  .jbox{fill:#0d1520; stroke:var(--sv-line); stroke-width:2.5; rx:20; ry:20}
+                  .jboxhi{fill:var(--sv-amber); stroke:#7a3a00; stroke-width:2.5; rx:20; ry:20}
+                  .jboxhi text{fill:#3a1a00}
+                  .jlovy{fill:#16122b; stroke:#a78bfa; stroke-width:2.5; rx:20; ry:20}
+                </style>
+                <rect class="jboxhi" x="280" y="22" width="200" height="86"/>
+                <text x="380" y="58" text-anchor="middle" class="jmono" fill="#3a1a00">flove.json</text>
+                <text x="380" y="82" text-anchor="middle" class="jsmall" fill="#45260a">el pariente · facilita y enriquece</text>
+                <path class="jline" d="M 330 110 L 150 242"/>
+                <path class="jline" d="M 430 110 L 610 242"/>
+                <rect class="jchip" x="90" y="118" width="150" height="20"/>
+                <text x="165" y="132" text-anchor="middle" class="jlbl">facilita y enriquece</text>
+                <rect class="jchip" x="610" y="118" width="150" height="20"/>
+                <text x="685" y="132" text-anchor="middle" class="jlbl">facilita y enriquece</text>
+                <rect class="jbox" x="40" y="242" width="225" height="148"/>
+                <text x="152" y="278" text-anchor="middle" class="jmono" fill="#ff8a5c">risa.json</text>
+                <text x="152" y="302" text-anchor="middle" class="jbody">subida → moderación → MP3 (R2)</text>
+                <text x="152" y="324" text-anchor="middle" class="jbody">→ risa.json → la web</text>
+                <text x="152" y="352" text-anchor="middle" class="jsmall">el feed de risa liberada</text>
+                <rect class="jlovy" x="495" y="242" width="225" height="148"/>
+                <text x="607" y="278" text-anchor="middle" class="jmono" fill="#c4b5fd">lovy.json</text>
+                <text x="607" y="302" text-anchor="middle" class="jbody">5 campos · uno acoge a su hermana:</text>
+                <rect x="546" y="314" width="122" height="36" rx="18" fill="#7c3aed" stroke="none"/>
+                <text x="607" y="338" text-anchor="middle" class="jmono" fill="#fff" font-size="14">«risas»</text>
+                <text x="607" y="370" text-anchor="middle" class="jsmall">subcampo de uno de sus 5 campos</text>
+                <path class="jline" d="M 265 315 L 495 315"/>
+                <rect class="jchip" x="282" y="286" width="196" height="22"/>
+                <text x="380" y="301" text-anchor="middle" class="jlbl">«risas» = subcampo dentro de lovy</text>
+              </svg>
+              <figcaption><span class="es" lang="es">flove.json (el pariente) facilita y enriquece a risa.json y lovy.json — sus hermanas; Lovy agrega «risas» como subcampo de uno de sus 5 campos.</span><span class="en" lang="en">flove.json (the relative) eases and enriches risa.json and lovy.json — its sisters; Lovy adds "risas" as a subfield of one of its five fields.</span></figcaption>
+            </figure>
+            <h4>flove.json · <span class="es" lang="es">cómo enriquece sin interrumpir</span><span class="en" lang="en">how it enriches without interrupting</span></h4>
+            <p><span class="es" lang="es">Risa es autosuficiente: la web carga siempre su propio <code>risa.json</code>. Después, y solo después, hace una llamada <b>opcional</b> a <code>flove.json</code> que enriquece cuando responde y calla cuando no:</span><span class="en" lang="en">Risa is self-sufficient: the web always loads its own <code>risa.json</code>. After — and only after — it makes an <b>optional</b> call to <code>flove.json</code> that enriches when it answers and stays quiet when it doesn't:</span></p>
+            <ul>
+              <li><span class="es" lang="es"><b>Enriquecimiento progresivo, fail-silent.</b> Si <code>flove.json</code> falla (404, timeout, CORS), la web queda exactamente igual: sin enlaces, sin esperas, sin bloquear el feed.</span><span class="en" lang="en"><b>Progressive, fail-silent enrichment.</b> If <code>flove.json</code> fails (404, timeout, CORS), the web stays exactly as is: no links, no waits, no blocking the feed.</span></li>
+              <li><span class="es" lang="es"><b>Regla de oro.</b> <code>risa.json</code> es la verdad del feed; <code>flove.json</code> solo añade. Nunca al revés.</span><span class="en" lang="en"><b>Golden rule.</b> <code>risa.json</code> is the feed's truth; <code>flove.json</code> only adds. Never the other way round.</span></li>
+              <li><span class="es" lang="es"><b>Al claim (authy).</b> Tu palabra reclamada se vuelve un enlace al <b>perfil único de flove</b> (<code>flove.org/users/&lt;key&gt;/</code>): ahí ves tus risas y al lado puedes <b>activar Lovy ya autenticado</b> — mismo authy, sin volver a loguearte.</span><span class="en" lang="en"><b>On claim (authy).</b> Your claimed word becomes a link to flove's <b>single profile</b> (<code>flove.org/users/&lt;key&gt;/</code>): there you see your risas and, next to it, you can <b>enable Lovy already authenticated</b> — same authy, no need to log in again.</span></li>
+              <li><span class="es" lang="es"><b>Guarda-rrallas.</b> Timeout de 4&nbsp;s, se dispara tras renderizar el feed, lee solo claves conocidas (lo nuevo se ignora) y el contrato vive versionado en git: si se rompe, se pierde enriquecimiento, nunca risa.</span><span class="en" lang="en"><b>Guardrails.</b> 4&nbsp;s timeout, fired after the feed renders, reads only known keys (anything new is ignored), and the contract lives versioned in git: if it breaks, you lose enrichment, never risa.</span></li>
+            </ul>
+            <h4 class="diag-title">Shared CSS and JS</h4>
+            <p><span class="es" lang="es">El feed <code>risa.json</code> es la capa de <b>datos</b> compartida; la siguiente capa es de <b>código</b>: el reproductor factory de las dos playlists y la nube de tags son los candidatos naturales — hoy viven repetidos en la web, mañana serían un <code>&lt;script data-flove-js src="flove.js"&gt;</code> y un <code>&lt;link data-flove-css href="flove.css"&gt;</code> que las apps del circuito comparten sin duplicar.</span><span class="en" lang="en">The <code>risa.json</code> feed is the shared <b>data</b> layer; the next layer is <b>code</b>: the two playlists' factory player and the tag cloud are the natural candidates — today they live duplicated across the web, tomorrow they would be a <code>&lt;script data-flove-js src="flove.js"&gt;</code> and a <code>&lt;link data-flove-css href="flove.css"&gt;</code> that the circuit's apps share without duplicating.</span></p>
+            <ul>
+              <li><span class="es" lang="es"><b>Mismo esqueleto, misma voz.</b> Playlists y <code>floatChips</code> se escriben una vez (en <code>flove.css</code>/<code>flove.js</code> del área compartida) y cada app los declara con marcadores <code>data-flove-css</code>/<code>data-flove-js</code> apuntando a <code>flove.org/appy/</code>.</span><span class="en" lang="en"><b>Same skeleton, same voice.</b> Playlists and <code>floatChips</code> are written once (in the shared area's <code>flove.css</code>/<code>flove.js</code>) and each app declares them with <code>data-flove-css</code>/<code>data-flove-js</code> markers pointing to <code>flove.org/appy/</code>.</span></li>
+              <li><span class="es" lang="es"><b>Enriquecimiento aditivo, nunca requisito.</b> Igual que <code>flove.json</code>: si la librería no llega (file://, red, fallo), la app se queda con su copia local y nadie lo nota. Combinado con <code>floatChips</code>, las chips que ya flotan en esta web flotarían igual en todas.</span><span class="en" lang="en"><b>Additive enrichment, never a requirement.</b> Like <code>flove.json</code>: if the library doesn't arrive (file://, network, failure), the app keeps its local copy and nobody notices. Combined with <code>floatChips</code>, the chips that already float on this web would float the same on all of them.</span></li>
+            </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ELSE ============ -->
+  <section class="tab-panel" id="else" aria-label="Else" hidden>
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="eyebrow">Else</p>
+        <h2>V3 Navegador &amp; V4 P2P</h2>
+      </div>
+      <p class="lede"><span class="es" lang="es"><a href="../../decentral/browsy/index.html"><b>Browsy v3</b></a>, la extensión que da identidad y confianza, y <a href="../../solo/apps/appy/nety.html"><b>Nety v4</b></a>, Red P2P y computación distribuida.</span><span class="en" lang="en"><a href="../../decentral/browsy/index.html"><b>Browsy v3</b></a>, the extension that gives identity and trust, and <a href="../../solo/apps/appy/nety.html"><b>Nety v4</b></a>, a P2P network and distributed computing.</span></p>
+      <figure class="circuit-fig piezas-fig">
+        <h4 class="diag-title"><span class="es" lang="es"><a href="../../decentral/browsy/index.html">Browsy v3</a> · la extensión</span><span class="en" lang="en"><a href="../../decentral/browsy/index.html">Browsy v3</a> · the extension</span></h4>
+        <svg viewBox="0 0 760 396" role="img" aria-label="Flujo de Browsy v3: la página pide confianza a content.js, que la responde desde background.js con las claves locales, y central muestra todo sobre el trust graph" data-aria-en="Browsy v3 flow: the page asks content.js for trust, which answers from background.js with the local keys, and central shows everything over the trust graph" data-aria-es="Flujo de Browsy v3: la página pide confianza a content.js, que la responde desde background.js con las claves locales, y central muestra todo sobre el trust graph">
+          <defs>
+            <marker id="barrow" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+              <path d="M0 0 L8 3.5 L0 7 Z" fill="var(--sv-line)"/>
+            </marker>
+          </defs>
+          <style>
+            .pmono{font-family:'Space Mono',ui-monospace,monospace; font-weight:700; font-size:16px; fill:var(--sv-mono)}
+            .pbody{font-family:'Figtree',system-ui,sans-serif; font-size:12px; fill:var(--sv-ink)}
+            .psmall{font-family:'Figtree',system-ui,sans-serif; font-size:11px; fill:var(--sv-dim)}
+            .pline{stroke:var(--sv-line); stroke-width:2; fill:none; marker-end:url(#barrow)}
+            .pbox{fill:var(--sv-pane); stroke:var(--sv-line); stroke-width:2; rx:16; ry:16}
+            .pboxhi{fill:var(--sv-amber); stroke:#7a3a00; stroke-width:2; rx:16; ry:16}
+            .pboxhi text{fill:#3a1a00}
+          </style>
+          <rect class="pbox" x="250" y="16" width="260" height="52"/>
+          <text x="380" y="40" text-anchor="middle" class="pmono" fill="#8df3e1">Página flove.org</text>
+          <text x="380" y="58" text-anchor="middle" class="psmall">la app pide confianza a la extensión</text>
+          <path class="pline" d="M 380 68 L 380 94"/>
+          <rect class="pbox" x="250" y="98" width="260" height="52"/>
+          <text x="380" y="122" text-anchor="middle" class="pmono">content.js · puente</text>
+          <text x="380" y="140" text-anchor="middle" class="psmall">expone identidad + trust solo en flove.org</text>
+          <path class="pline" d="M 380 150 L 380 176"/>
+          <rect class="pbox" x="220" y="180" width="320" height="54"/>
+          <text x="380" y="204" text-anchor="middle" class="pmono">background.js · service worker</text>
+          <text x="380" y="224" text-anchor="middle" class="psmall">ed25519 (Web Crypto) · menús · badge · mirror</text>
+          <path class="pline" d="M 300 234 L 230 260"/>
+          <path class="pline" d="M 460 234 L 530 260"/>
+          <rect class="pbox" x="120" y="264" width="220" height="44"/>
+          <text x="230" y="291" text-anchor="middle" class="pbody">chrome.storage.local · núcleo</text>
+          <rect class="pbox" x="420" y="264" width="220" height="44"/>
+          <text x="530" y="291" text-anchor="middle" class="pbody">chrome.storage.sync · ajustes</text>
+          <path class="pline" d="M 230 308 L 300 334"/>
+          <path class="pline" d="M 530 308 L 460 334"/>
+          <rect class="pboxhi" x="130" y="338" width="500" height="48"/>
+          <text x="380" y="360" text-anchor="middle" class="pmono" fill="#3a1a00">central (flove.org)</text>
+          <text x="380" y="378" text-anchor="middle" class="psmall" fill="#3a1a00">trust graph · F2F QR · permisos · grupos · cifrado · rotación</text>
+        </svg>
+        <figcaption><span class="es" lang="es">Flujo de Browsy v3: <b>on-demand</b> — el usuario hace clic, background calcula con las claves locales, central solo muestra. Sin auto-sync y sin cálculo en background (MV3).</span><span class="en" lang="en">Browsy v3 flow: <b>on-demand</b> — the user clicks, background computes with the local keys, central only displays. No auto-sync and no background computation (MV3).</span></figcaption>
+      </figure>
+      <h4 class="rtab-else"><span class="es" lang="es"><a href="../../decentral/browsy/index.html">Browsy v3</a> · características técnicas</span><span class="en" lang="en"><a href="../../decentral/browsy/index.html">Browsy v3</a> · technical features</span></h4>
+      <ul>
+        <li><span class="es" lang="es"><b>MV3 con polyfill V2 para Firefox</b> — service worker en background y content scripts como puente; el frontend vive en central, Browsy es solo el cerebro de confianza.</span><span class="en" lang="en"><b>MV3 with a V2 polyfill for Firefox</b> — background service worker and content scripts as the bridge; the frontend lives in central, Browsy is only the trust brain.</span></li>
+        <li><span class="es" lang="es"><b>content.js = bridge API</b> — expone identidad + confianza a la página solo cuando el dominio es flove.org; el puente responde en &lt;100&nbsp;ms.</span><span class="en" lang="en"><b>content.js = bridge API</b> — exposes identity + trust to the page only when the domain is flove.org; the bridge answers in &lt;100&nbsp;ms.</span></li>
+        <li><span class="es" lang="es"><b>background.js</b> — genera claves ed25519 (Web Crypto, <code>tweetnacl</code> como fallback), menús de contexto, badge y mirror de ajustes.</span><span class="en" lang="en"><b>background.js</b> — generates ed25519 keys (Web Crypto, <code>tweetnacl</code> as a fallback), context menus, badge and settings mirror.</span></li>
+        <li><span class="es" lang="es"><b>Storage</b> — <code>chrome.storage.local</code> para el núcleo y <code>chrome.storage.sync</code> para ajustes; sync unidireccional Browsy&nbsp;→&nbsp;central.</span><span class="en" lang="en"><b>Storage</b> — <code>chrome.storage.local</code> for the core and <code>chrome.storage.sync</code> for settings; one-way sync Browsy&nbsp;→&nbsp;central.</span></li>
+        <li><span class="es" lang="es"><b>F2F</b> — verificación QR + challenge; cadenas de confianza de ~100 avales en &lt;2&nbsp;s.</span><span class="en" lang="en"><b>F2F</b> — QR verification + challenge; trust chains of ~100 avals in &lt;2&nbsp;s.</span></li>
+        <li><span class="es" lang="es"><b>Enchufable</b> — <code>lib/crypto.js</code> y <code>lib/store.js</code> son los puntos que nety reutilizará.</span><span class="en" lang="en"><b>Plug-in ready</b> — <code>lib/crypto.js</code> and <code>lib/store.js</code> are the points nety will reuse.</span></li>
+      </ul>
+      <figure class="circuit-fig piezas-fig">
+        <h4 class="diag-title"><span class="es" lang="es"><a href="../../solo/apps/appy/nety.html">Nety v4</a> · la red</span><span class="en" lang="en"><a href="../../solo/apps/appy/nety.html">Nety v4</a> · the network</span></h4>
+        <svg viewBox="0 0 760 414" role="img" aria-label="Flujo de Nety v4: la app entra por GraphQL al gateway, que habla con la red libp2p y reparte roles y ejecución entre nodos" data-aria-en="Nety v4 flow: the app enters through GraphQL to the gateway, which talks to the libp2p network and hands out roles and execution between nodes" data-aria-es="Flujo de Nety v4: la app entra por GraphQL al gateway, que habla con la red libp2p y reparte roles y ejecución entre nodos">
+          <defs>
+            <marker id="narrow" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+              <path d="M0 0 L8 3.5 L0 7 Z" fill="var(--sv-line)"/>
+            </marker>
+          </defs>
+          <style>
+            .pmono{font-family:'Space Mono',ui-monospace,monospace; font-weight:700; font-size:16px; fill:var(--sv-mono)}
+            .pbody{font-family:'Figtree',system-ui,sans-serif; font-size:12px; fill:var(--sv-ink)}
+            .psmall{font-family:'Figtree',system-ui,sans-serif; font-size:11px; fill:var(--sv-dim)}
+            .pline{stroke:var(--sv-line); stroke-width:2; fill:none; marker-end:url(#narrow)}
+            .pbox{fill:var(--sv-pane); stroke:var(--sv-line); stroke-width:2; rx:16; ry:16}
+            .pboxhi{fill:var(--sv-amber); stroke:#7a3a00; stroke-width:2; rx:16; ry:16}
+            .pboxhi text{fill:#3a1a00}
+          </style>
+          <rect class="pbox" x="250" y="16" width="260" height="52"/>
+          <text x="380" y="40" text-anchor="middle" class="pmono" fill="#8df3e1">App · Web / Móvil / CLI</text>
+          <text x="380" y="58" text-anchor="middle" class="psmall">consulta por GraphQL</text>
+          <path class="pline" d="M 380 68 L 380 94"/>
+          <rect class="pbox" x="230" y="98" width="300" height="52"/>
+          <text x="380" y="122" text-anchor="middle" class="pmono">GraphQL · async-graphql</text>
+          <text x="380" y="140" text-anchor="middle" class="psmall">HTTP + playground · WS objetivo en :8080</text>
+          <path class="pline" d="M 380 150 L 380 176"/>
+          <rect class="pbox" x="210" y="180" width="340" height="58"/>
+          <text x="380" y="204" text-anchor="middle" class="pmono">Gateway · axum (:8080)</text>
+          <text x="380" y="224" text-anchor="middle" class="psmall">identity + storage + social_protocol</text>
+          <path class="pline" d="M 380 238 L 380 264"/>
+          <rect class="pbox" x="150" y="268" width="460" height="58"/>
+          <text x="380" y="292" text-anchor="middle" class="pmono">Red P2P · libp2p 0.54</text>
+          <text x="380" y="312" text-anchor="middle" class="psmall">tcp · noise · yamux · kademlia · gossipsub</text>
+          <path class="pline" d="M 280 326 L 220 354"/>
+          <path class="pline" d="M 480 326 L 540 354"/>
+          <rect class="pbox" x="120" y="358" width="200" height="48"/>
+          <text x="220" y="380" text-anchor="middle" class="pbody">roles · compute/storage</text>
+          <text x="220" y="396" text-anchor="middle" class="psmall">validation/ai (VRAM ≥ 2 GiB)</text>
+          <rect class="pbox" x="440" y="358" width="200" height="48"/>
+          <text x="540" y="380" text-anchor="middle" class="pbody">runner Wasmtime 24 · WASI</text>
+          <text x="540" y="396" text-anchor="middle" class="psmall">storage Local→IPFS→S3→Hybrid</text>
+        </svg>
+        <figcaption><span class="es" lang="es">Flujo de Nety v4: el gateway media entre la app y la red libp2p; los nodos anuncian roles, el <code>scheduler</code> hace matching + placement y la reputación CRDT + WoT de 2º orden decide la confianza.</span><span class="en" lang="en">Nety v4 flow: the gateway mediates between the app and the libp2p network; nodes announce roles, the <code>scheduler</code> does matching + placement and the CRDT + 2nd-order WoT reputation decides trust.</span></figcaption>
+      </figure>
+      <h4 class="rtab-else"><span class="es" lang="es"><a href="../../solo/apps/appy/nety.html">Nety v4</a> · características técnicas</span><span class="en" lang="en"><a href="../../solo/apps/appy/nety.html">Nety v4</a> · technical features</span></h4>
+      <ul>
+        <li><span class="es" lang="es"><b>Rust (edition 2021)</b> — workspace de 16 crates de red + 2 de test; daemon libp2p y CLI por separado.</span><span class="en" lang="en"><b>Rust (edition 2021)</b> — workspace of 16 network crates + 2 test ones; libp2p daemon and CLI separately.</span></li>
+        <li><span class="es" lang="es"><b>libp2p 0.54</b> — TCP + Noise + Yamux, DHT Kademlia, Gossipsub, Identify y Ping.</span><span class="en" lang="en"><b>libp2p 0.54</b> — TCP + Noise + Yamux, Kademlia DHT, Gossipsub, Identify and Ping.</span></li>
+        <li><span class="es" lang="es"><b>Runner</b> — Wasmtime 24 (WASI preview 1) para imágenes WASM en slots de 1 vCPU / 1&nbsp;GiB RAM / 8&nbsp;GiB disco.</span><span class="en" lang="en"><b>Runner</b> — Wasmtime 24 (WASI preview 1) for WASM images in slots of 1 vCPU / 1&nbsp;GiB RAM / 8&nbsp;GiB disk.</span></li>
+        <li><span class="es" lang="es"><b>Storage en cascada</b> — LocalBackend → IPFS (Kubo) → S3 (MinIO) → HybridBackend.</span><span class="en" lang="en"><b>Cascading storage</b> — LocalBackend → IPFS (Kubo) → S3 (MinIO) → HybridBackend.</span></li>
+        <li><span class="es" lang="es"><b>Crypto</b> — ed25519 + ChaCha20-Poly1305 + argon2id; identidad con keystore cifrado.</span><span class="en" lang="en"><b>Crypto</b> — ed25519 + ChaCha20-Poly1305 + argon2id; identity with an encrypted keystore.</span></li>
+        <li><span class="es" lang="es"><b>Reputación</b> — CRDT eventualmente consistente y Web of Trust de 2º orden.</span><span class="en" lang="en"><b>Reputation</b> — eventually-consistent CRDT and 2nd-order Web of Trust.</span></li>
+        <li><span class="es" lang="es"><b>Estado actual</b> — daemon y gateway aún no se comunican (sin bootstrap/mDNS); el gateway usa <code>InMemoryStore</code> y <code>SocialStore</code> está creado pero sin enlazar.</span><span class="en" lang="en"><b>Current state</b> — daemon and gateway do not talk yet (no bootstrap/mDNS); the gateway uses <code>InMemoryStore</code> and <code>SocialStore</code> exists but is not wired.</span></li>
+      </ul>
+      <figure class="circuit-fig piezas-fig">
+        <h4 class="diag-title"><span class="es" lang="es">El puente · <a href="../../decentral/browsy/index.html">Browsy v3</a> ⊕ <a href="../../solo/apps/appy/nety.html">Nety v4</a></span><span class="en" lang="en">The bridge · <a href="../../decentral/browsy/index.html">Browsy v3</a> ⊕ <a href="../../solo/apps/appy/nety.html">Nety v4</a></span></h4>
+        <svg viewBox="0 0 760 262" role="img" aria-label="Puente entre Browsy v3 y Nety v4: identidad, trust, storage, crypto y ajustes pasan de local (extensión) a P2P (red)" data-aria-en="Bridge between Browsy v3 and Nety v4: identity, trust, storage, crypto and settings move from local (extension) to P2P (network)" data-aria-es="Puente entre Browsy v3 y Nety v4: identidad, trust, storage, crypto y ajustes pasan de local (extensión) a P2P (red)">
+          <defs>
+            <marker id="earrow" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+              <path d="M0 0 L8 3.5 L0 7 Z" fill="var(--sv-line)"/>
+            </marker>
+          </defs>
+          <style>
+            .pmono{font-family:'Space Mono',ui-monospace,monospace; font-weight:700; font-size:16px; fill:var(--sv-mono)}
+            .pbody{font-family:'Figtree',system-ui,sans-serif; font-size:12px; fill:var(--sv-ink)}
+            .psmall{font-family:'Figtree',system-ui,sans-serif; font-size:11px; fill:var(--sv-dim)}
+            .pline{stroke:var(--sv-line); stroke-width:2; fill:none; marker-end:url(#earrow)}
+            .pbox{fill:var(--sv-pane); stroke:var(--sv-line); stroke-width:2; rx:16; ry:16}
+            .pboxhi{fill:var(--sv-amber); stroke:#7a3a00; stroke-width:2; rx:16; ry:16}
+            .pboxhi text{fill:#3a1a00}
+          </style>
+          <text x="130" y="24" text-anchor="middle" class="pmono">browsy v3 · extensión</text>
+          <text x="630" y="24" text-anchor="middle" class="pmono" fill="var(--sv-amber)">nety v4 · red P2P</text>
+          <rect class="pbox" x="20" y="40" width="220" height="200"/>
+          <text x="130" y="76" text-anchor="middle" class="pbody">identidad · ed25519</text>
+          <text x="130" y="112" text-anchor="middle" class="pbody">trust local</text>
+          <text x="130" y="148" text-anchor="middle" class="pbody">storage chrome</text>
+          <text x="130" y="184" text-anchor="middle" class="pbody">crypto WebCrypto</text>
+          <text x="130" y="220" text-anchor="middle" class="pbody">ajustes locales</text>
+          <rect class="pbox" x="520" y="40" width="220" height="200"/>
+          <text x="630" y="76" text-anchor="middle" class="pbody">identidad P2P</text>
+          <text x="630" y="112" text-anchor="middle" class="pbody">trust de red · WoT</text>
+          <text x="630" y="148" text-anchor="middle" class="pbody">storage P2P</text>
+          <text x="630" y="184" text-anchor="middle" class="pbody">crypto E2E · ChaCha</text>
+          <text x="630" y="220" text-anchor="middle" class="pbody">ajustes sync</text>
+          <path class="pline" d="M 240 74 L 512 74"/>
+          <path class="pline" d="M 240 110 L 512 110"/>
+          <path class="pline" d="M 240 146 L 512 146"/>
+          <path class="pline" d="M 240 182 L 512 182"/>
+          <path class="pline" d="M 240 218 L 512 218"/>
+          <text x="376" y="66" text-anchor="middle" class="psmall">claves → PeerId</text>
+          <text x="376" y="102" text-anchor="middle" class="psmall">local → red</text>
+          <text x="376" y="138" text-anchor="middle" class="psmall">chrome → P2P</text>
+          <text x="376" y="174" text-anchor="middle" class="psmall">local → E2E</text>
+          <text x="376" y="210" text-anchor="middle" class="psmall">local → sync</text>
+        </svg>
+        <figcaption><span class="es" lang="es">El puente (port-nety): todo lo que Browsy guarda y firma hoy en local pasa a la red en Nety — el mismo ADN, enchufable en <code>lib/crypto.js</code> y <code>lib/store.js</code>.</span><span class="en" lang="en">The bridge (port-nety): everything Browsy stores and signs locally today moves to the network in Nety — the same DNA, plug-in ready via <code>lib/crypto.js</code> and <code>lib/store.js</code>.</span></figcaption>
+      </figure>
+    </div>
+  </section>
+</main>
+
+<div class="modal-back" id="setup-modal" hidden>
+  <div class="modal setup-modal" role="dialog" aria-modal="true" aria-labelledby="sm-title">
+    <button class="modal-x" type="button" id="sm-close" aria-label="Cerrar" data-aria-en="Close" data-aria-es="Cerrar">×</button>
+    <h2 id="sm-title">📦 <span class="es" lang="es">Configura el prompt</span><span class="en" lang="en">Configure the prompt</span></h2>
+    <p class="modal-sub"><span class="es" lang="es">Tus datos se insertan solos en el prompt de «Agentes», en la introducción. Cambia lo que quieras y pulsa «Generar prompt».</span><span class="en" lang="en">Your data is inserted on its own into the "Agents" prompt, in the introduction. Change whatever you want and press "Generate prompt".</span></p>
+    <form id="setup-form" class="setup-form">
+      <div class="setup-group">
+        <label for="sf-proj"><span class="es" lang="es">Nombre del proyecto</span><span class="en" lang="en">Project name</span></label>
+        <input id="sf-proj" type="text" autocomplete="off" placeholder="p. ej. Risas del Huerto — sustituye a «risa» en el prompt (feed risa.json → tu-proyecto.json…)" data-ph-en="e.g. Risas del Huerto — replaces «risa» in the prompt (feed risa.json → your-project.json…)" data-ph-es="p. ej. Risas del Huerto — sustituye a «risa» en el prompt (feed risa.json → tu-proyecto.json…)">
+      </div>
+      <div class="setup-group">
+        <label for="sf-bot"><span class="es" lang="es">Nombre del bot</span><span class="en" lang="en">Bot name</span></label>
+        <input id="sf-bot" type="text" autocomplete="off" placeholder="p. ej. @TuBot — cron de Actions cada 5–10 min" data-ph-en="e.g. @YourBot — Actions cron every 5–10 min" data-ph-es="p. ej. @TuBot — cron de Actions cada 5–10 min">
+      </div>
+      <div class="setup-group">
+        <label for="sf-group"><span class="es" lang="es">Grupo de moderadores</span><span class="en" lang="en">Moderators group</span></label>
+        <input id="sf-group" type="text" autocomplete="off">
+      </div>
+      <div class="setup-group">
+        <label for="sf-channel"><span class="es" lang="es">Canal público</span><span class="en" lang="en">Public channel</span></label>
+        <input id="sf-channel" type="text" autocomplete="off">
+      </div>
+      <div class="setup-group">
+        <label for="sf-web">Folder-Repo-Url</label>
+        <input id="sf-web" type="text" autocomplete="off" placeholder="miweb.com · github.com/usuario/repo · carpeta local" data-ph-en="myweb.com · github.com/user/repo · local folder" data-ph-es="miweb.com · github.com/usuario/repo · carpeta local">
+      </div>
+      <div class="setup-group">
+        <label for="sf-media"><span class="es" lang="es">URL de los medios</span><span class="en" lang="en">Media URL</span></label>
+        <input id="sf-media" type="text" autocomplete="off" placeholder="p. ej. r2.dev/… — bucket público (R2) · MP3 con ffmpeg" data-ph-en="e.g. r2.dev/… — public bucket (R2) · MP3 with ffmpeg" data-ph-es="p. ej. r2.dev/… — bucket público (R2) · MP3 con ffmpeg">
+      </div>
+      <fieldset class="setup-group">
+        <legend><span class="es" lang="es">Campos para describir una pieza</span><span class="en" lang="en">Fields to describe a piece</span></legend>
+        <label class="setup-ck"><input type="checkbox" id="sf-hide-title"><span><span class="es" lang="es">Ocultar <b>título</b></span><span class="en" lang="en">Hide <b>title</b></span></span></label>
+        <label class="setup-ck"><input type="checkbox" id="sf-hide-tags"><span><span class="es" lang="es">Ocultar <b>etiquetas</b></span><span class="en" lang="en">Hide <b>tags</b></span></span></label>
+        <label class="setup-ck"><input type="checkbox" id="sf-hide-name"><span><span class="es" lang="es">Ocultar <b>autor</b></span><span class="en" lang="en">Hide <b>author</b></span></span></label>
+      </fieldset>
+      <fieldset class="setup-group">
+        <legend><span class="es" lang="es">Tipos de contenido permitidos</span><span class="en" lang="en">Allowed content types</span></legend>
+        <label class="setup-ck"><input type="checkbox" id="sf-t-text"><span><span class="es" lang="es">Texto</span><span class="en" lang="en">Text</span></span></label>
+        <label class="setup-ck"><input type="checkbox" id="sf-t-audio" checked><span><span class="es" lang="es">Audio</span><span class="en" lang="en">Audio</span></span></label>
+        <label class="setup-ck"><input type="checkbox" id="sf-t-video" checked><span><span class="es" lang="es">Vídeo</span><span class="en" lang="en">Video</span></span></label>
+      </fieldset>
+      <fieldset class="setup-group">
+        <legend><span class="es" lang="es">Otros requisitos</span><span class="en" lang="en">Other requirements</span> <button type="button" class="see-btn" id="sm-see" aria-expanded="false" aria-controls="sm-see-box"><span class="es" lang="es">Ver</span><span class="en" lang="en">See</span></button></legend>
+        <div class="see-box" id="sm-see-box" hidden>
+          <p><span class="es" lang="es">Detalles que diferencian una <b>release completa</b> de un circuito pelado (subir · moderar · publicar):</span><span class="en" lang="en">Details that set a <b>full release</b> apart from a bare circuit (upload · moderate · publish):</span></p>
+          <ul>
+            <li><span class="es" lang="es">Audios o vídeos de máx. <b>1 min</b> y <b>10 MB</b></span><span class="en" lang="en">Audio or video of max <b>1 min</b> and <b>10 MB</b></span></li>
+            <li><span class="es" lang="es">Máx. <b>5 en cola</b> y <b>5 al día</b> por remitente</span><span class="en" lang="en">Max <b>5 in queue</b> and <b>5 a day</b> per sender</span></li>
+            <li><span class="es" lang="es">Licencia <b>CC BY-SA 4.0</b> en cada pieza, con aviso «Enviar = consentir» y tag por defecto <b>«libre»</b></span><span class="en" lang="en"><b>CC BY-SA 4.0</b> licence on every piece, with a "Sending = consenting" notice and the default tag <b>"libre"</b></span></li>
+            <li><span class="es" lang="es"><b>Página de autor automática</b> por persona: <code>#/u/&lt;key&gt;</code> con su propio feed, y el bot regala el enlace en el aviso de publicación (funciona con solo nombre público)</span><span class="en" lang="en"><b>Automatic author page</b> per person: <code>#/u/&lt;key&gt;</code> with its own feed, and the bot shares the link in the publication notice (it works with just a public name)</span></li>
+            <li><span class="es" lang="es"><b>Comandos de consulta</b> en el bot, todos de solo lectura y reproducción: <code>/me</code> · <code>/stats</code> · <code>/profile</code> · <code>/status</code> · <code>/queue</code> · <code>/latest</code> · <code>/now</code> · <code>/today</code> · <code>/since</code> · <code>/random</code> · <code>/trending</code> · <code>/play</code></span><span class="en" lang="en"><b>Query commands</b> in the bot, all read &amp; play only: <code>/me</code> · <code>/stats</code> · <code>/profile</code> · <code>/status</code> · <code>/queue</code> · <code>/latest</code> · <code>/now</code> · <code>/today</code> · <code>/since</code> · <code>/random</code> · <code>/trending</code> · <code>/play</code></span></li>
+            <li><span class="es" lang="es"><b>Etiquetas enriquecidas hasta la web</b>: chips filtrables, búsqueda y favoritos ❤️/⭐ como filtro local del mismo feed</span><span class="en" lang="en"><b>Tags enriched up to the web</b>: filterable chips, search and ❤️/⭐ favourites as a local filter of the same feed</span></li>
+            <li><span class="es" lang="es"><b>Entrada por deep link y QR</b> desde la web</span><span class="en" lang="en"><b>Deep-link and QR entry</b> from the web</span></li>
+            <li><span class="es" lang="es"><b>Repo dedicado</b> con su propio GitHub Pages, con feed <b>newest-first</b></span><span class="en" lang="en"><b>Dedicated repo</b> with its own GitHub Pages, feed <b>newest-first</b></span></li>
+          </ul>
+        </div>
+      </fieldset>
+      <div class="setup-group setup-radio">
+        <label class="setup-ck"><input type="radio" name="sf-req" id="sf-req-here" value="here" checked><span><span class="es" lang="es">Como aquí — usar los límites de risa liberada</span><span class="en" lang="en">As here — use risa liberada's limits</span></span></label>
+        <label class="setup-ck"><input type="radio" name="sf-req" id="sf-req-ask" value="ask"><span><span class="es" lang="es">Pregúntame — que el agente me pregunte antes de fijarlos</span><span class="en" lang="en">Ask me — have the agent ask me before fixing them</span></span></label>
+      </div>
+      <div class="setup-actions">
+        <button type="button" class="btn-ghost" id="sm-reset"><span class="es" lang="es">Restaurar prompt original</span><span class="en" lang="en">Restore the original prompt</span></button>
+        <button type="submit" class="btn-primary"><span class="es" lang="es">Generar prompt</span><span class="en" lang="en">Generate prompt</span></button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-back" id="about-modal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="ab-title">
+    <button class="modal-x" type="button" id="ab-close" aria-label="Cerrar" data-aria-en="Close" data-aria-es="Cerrar">×</button>
+    <h2 id="ab-title"><span class="es" lang="es">Sobre esta página</span><span class="en" lang="en">About this page</span></h2>
+    <p class="modal-sub"><span class="es" lang="es">Conoce los estándares y planes del backend de FLOVE en esta página. Complementa tu visión con otras páginas de FLOVE relacionadas.</span><span class="en" lang="en">Know FLOVE backend standards and plans in this page. Complement your view with other related FLOVE pages.</span></p>
+  </div>
+</div>
+
+<div class="viewer-back" id="viewer" hidden>
+  <button class="viewer-x" type="button" id="viewer-close" aria-label="Cerrar">×</button>
+  <img src="media/basic.jpg" alt="" id="viewer-img">
+  <p class="viewer-cap" id="viewer-cap"></p>
+</div>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="home-more">
+      <span class="more-label"><span class="es" lang="es">Más:</span><span class="en" lang="en">More:</span></span>
+      <div class="more-links">
+        <a href="https://flove.org/docs/">Docs</a>
+        <a href="https://flove.org/development/standards/">Standards</a>
+        <a href="https://flove.org/development/standards/skills/questy-flove/index.html">Questy</a>
+        <a href="https://flove.org/development/blog/">Devlog</a>
+        <a href="https://flove.org/solo/apps/index.html">Apps</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    var tabBtns = Array.prototype.slice.call(document.querySelectorAll('.main-tabs .tab-btn'));
+    var mapView = document.getElementById('map-view');
+    function showTab(name){
+      tabBtns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.tab === name)); });
+      if (mapView) mapView.hidden = name !== 'map';
+      Array.prototype.slice.call(document.querySelectorAll('.tab-panel')).forEach(function(p){ p.hidden = p.id !== name; });
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+    tabBtns.forEach(function(b){ b.addEventListener('click', function(){ showTab(b.dataset.tab); }); });
+    function tabFromHash(){
+      var h = (location.hash || '').replace('#', '');
+      return tabBtns.some(function(b){ return b.dataset.tab === h; }) ? h : null;
+    }
+    showTab(tabFromHash() || 'map');
+    window.addEventListener('hashchange', function(){ var h = tabFromHash(); if (h) showTab(h); });
+
+    /* scroll progress */
+    var prog = document.getElementById('progress');
+    function onScroll(){
+      var h = document.documentElement;
+      var max = h.scrollHeight - h.clientHeight;
+      prog.style.width = (max > 0 ? (h.scrollTop / max * 100) : 0) + '%';
+    }
+    window.addEventListener('scroll', onScroll, {passive:true});
+    onScroll();
+
+    /* cursor glow (fine pointers only) */
+    if (window.matchMedia('(hover:hover) and (pointer:fine)').matches) {
+      var glow = document.getElementById('glow');
+      window.addEventListener('mousemove', function(e){
+        glow.style.setProperty('--mx', e.clientX + 'px');
+        glow.style.setProperty('--my', e.clientY + 'px');
+        glow.style.opacity = '1';
+      });
+    }
+
+    /* scroll reveal */
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if (en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, {threshold:.1, rootMargin:'0px 0px -6% 0px'});
+    Array.prototype.slice.call(document.querySelectorAll('.reveal')).forEach(function(el){ io.observe(el); });
+
+    window.addEventListener('load', function () {
+      /* copy-prompt: copy the agente prompt into the clipboard */
+      var copyBtn = document.getElementById('copy-prompt');
+      if (copyBtn) copyBtn.addEventListener('click', function () {
+        var src = document.getElementById('agente-prompt');
+        var text = src ? src.textContent : '';
+        var esBtn = copyBtn.querySelector('.es');
+        var enBtn = copyBtn.querySelector('.en');
+        var setCopy = function (es, en) {
+          if (esBtn) esBtn.textContent = es;
+          if (enBtn) enBtn.textContent = en;
+        };
+        var done = function () {
+          copyBtn.setAttribute('aria-pressed', 'true');
+          setCopy('Copiado ✓', 'Copied ✓');
+          setTimeout(function () {
+            copyBtn.setAttribute('aria-pressed', 'false');
+            setCopy('Copiar', 'Copy');
+          }, 1500);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done).catch(function () {});
+        }
+      });
+
+      /* setup-prompt modal: open, close, see, reset, generate */
+      var setupChip = document.getElementById('setup-v1');
+      var setupModal = document.getElementById('setup-modal');
+      var setupClose = document.getElementById('sm-close');
+      var setupForm = document.getElementById('setup-form');
+      var setupReset = document.getElementById('sm-reset');
+      var setupSee = document.getElementById('sm-see');
+      var preEl = document.getElementById('agente-prompt');
+      var basePrompt = preEl ? preEl.textContent : '';
+      function openSetup() {
+        if (setupModal) setupModal.hidden = false;
+        if (setupModal) {
+          var f = setupModal.querySelector('input[type="text"]');
+          if (f) f.focus();
+        }
+      }
+      function closeSetup() {
+        if (setupModal) setupModal.hidden = true;
+        if (setupChip) setupChip.focus();
+      }
+      if (setupChip) setupChip.addEventListener('click', openSetup);
+      if (setupClose) setupClose.addEventListener('click', closeSetup);
+      if (setupModal) setupModal.addEventListener('click', function (e) { if (e.target === setupModal) closeSetup(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSetup(); });
+      if (setupSee) setupSee.addEventListener('click', function () {
+        var box = document.getElementById('sm-see-box');
+        var open = box.hidden;
+        box.hidden = !open;
+        setupSee.setAttribute('aria-expanded', String(open));
+      });
+      if (setupReset) setupReset.addEventListener('click', function () {
+        if (setupForm) setupForm.reset();
+        if (preEl) preEl.textContent = basePrompt;
+      });
+      function buildPrompt() {
+        function val(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
+        function chk(id) { var el = document.getElementById(id); return !!(el && el.checked); }
+        var proj = val('sf-proj') || 'mi proyecto';
+        var bot = val('sf-bot') || '@TuBot';
+        var group = val('sf-group'), channel = val('sf-channel'), web = val('sf-web'), media = val('sf-media');
+        var slug = proj.toLowerCase().replace(/[^a-z0-9áéíóúñü]+/g, '-').replace(/^-+|-+$/g, '');
+        var feed = slug ? slug + '.json' : 'risa.json';
+        var tipos = [];
+        if (chk('sf-t-text')) tipos.push('texto');
+        if (chk('sf-t-audio')) tipos.push('audio');
+        if (chk('sf-t-video')) tipos.push('vídeo');
+        var tiposStr = tipos.length ? tipos.join(' · ') : '…';
+        var campos = [];
+        if (!chk('sf-hide-title')) campos.push('título');
+        if (!chk('sf-hide-tags')) campos.push('etiquetas');
+        if (!chk('sf-hide-name')) campos.push('autor');
+        var camposStr = campos.length ? campos.join(' · ') : '(ninguno)';
+        var datos = '- Bot: ' + bot + ' — cron Actions 5–10 min\n- Contenido: ' + tiposStr;
+        if (group) datos += '\n- Grupo de moderación: ' + group;
+        if (channel) datos += '\n- Canal público: ' + channel;
+        if (web) datos += '\n- Web / repo / carpeta: ' + web;
+        if (media) datos += '\n- URL de los medios: ' + media;
+        datos += '\n- Feed: ' + feed + ' · newest-first\n- Campos por pieza: ' + camposStr + '.';
+        var req;
+        if (chk('sf-req-ask')) {
+          req = 'Requisitos: pregúntame los límites (duración, tamaño, cola y cuota diaria) antes de fijarlos.';
+        } else {
+          req = 'Requisitos (release completa): piezas ≤ 1 min · ≤ 10 MB · máx. 5 en cola y 5 al día · CC BY-SA 4.0 («Enviar = consentir», tag «libre») · página de autor #/u/<key> con feed propio · comandos de solo lectura /me · /stats · /profile · /status · /queue · /latest · /now · /today · /since · /random · /trending · /play · etiquetas → chips · búsqueda · favoritos (filtro local) · entrada por deep link + QR · repo dedicado con Pages · feed ' + feed + ' newest-first.';
+        }
+        return 'Rol: asiste a montar el proyecto «' + proj + '», inspirándote en el proyecto libre github.com/floveorg/risa.\n\n' +
+          'Objetivo: sistema completo — subida de ' + tiposStr + ' por Telegram → moderación → publicación en canal + feed web. Sin servidor propio.\n\n' +
+          'Datos:\n' + datos + '\n\n' +
+          req + '\n\n' +
+          'Pasos:\n1. Clona el repo de referencia; estudia bot/, index.html, ' + feed + ' y .github/workflows.\n' +
+          '2. Pide y valida los secretos (BOT_TOKEN, CHANNEL_ID, MOD_GROUP_ID, credenciales R2) antes de usarlos.\n' +
+          '3. Configura GitHub Actions como cron que llame a getUpdates cada 5–10 minutos.\n' +
+          '4. Monta el feed ' + feed + ' y la web en GitHub Pages.\n' +
+          '5. Verifica de punta a punta con una prueba real de ' + tiposStr + '.\n\n' +
+          'Permisos: leer/escribir el repo del proyecto, instalar dependencias de Node, desplegar Pages y Actions. Nada fuera del repo; confirma antes de crear credenciales.\n\n' +
+          'Restricciones: sin servidor ni base de datos propios; piezas gratuitas (R2, Pages, Actions); respeta la privacidad (nunca guardar ids de Telegram en claro). Responde en español.';
+      }
+      if (setupForm) setupForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (preEl) preEl.textContent = buildPrompt();
+        closeSetup();
+      });
+
+      /* lightbox: slider photos open bigger on click */
+      var viewer = document.getElementById('viewer');
+      var viewerImg = document.getElementById('viewer-img');
+      var viewerCap = document.getElementById('viewer-cap');
+      var viewerClose = document.getElementById('viewer-close');
+      function openViewer(src, cap) {
+        if (!viewer || !viewerImg) return;
+        viewerImg.src = src;
+        if (viewerCap) viewerCap.textContent = cap || '';
+        viewer.hidden = false;
+      }
+      function closeViewer() {
+        if (viewer) viewer.hidden = true;
+        if (viewerImg) viewerImg.src = '';
+      }
+      Array.prototype.slice.call(document.querySelectorAll('.slider .slide img')).forEach(function (im) {
+        im.style.cursor = 'zoom-in';
+        im.addEventListener('click', function () {
+          var cap = '';
+          var f = im.closest('figure');
+          if (f && f.querySelector('figcaption')) cap = f.querySelector('figcaption').textContent;
+          openViewer(im.currentSrc || im.src, cap);
+        });
+      });
+      if (viewerClose) viewerClose.addEventListener('click', closeViewer);
+      if (viewer) viewer.addEventListener('click', function (e) { if (e.target === viewer) closeViewer(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeViewer(); });
+
+      document.querySelectorAll('.slider[data-autoplay]').forEach(function (slider) {
+        var slides = slider.querySelector('.slides');
+        if (!slides) return;
+        var arr = Array.prototype.slice.call(slides.children);
+        if (arr.length < 2) return;
+        var idx = 0, timer = null, dots = [];
+        var p = document.createElement('button'); p.type = 'button'; p.className = 's-btn s-prev'; p.setAttribute('aria-label', 'Anterior'); p.textContent = '‹';
+        var n = document.createElement('button'); n.type = 'button'; n.className = 's-btn s-next'; n.setAttribute('aria-label', 'Siguiente'); n.textContent = '›';
+        p.addEventListener('click', function () { goTo(idx - 1); });
+        n.addEventListener('click', function () { goTo(idx + 1); });
+        slider.appendChild(p); slider.appendChild(n);
+        var wrap = document.createElement('div'); wrap.className = 's-dots';
+        arr.forEach(function (_s, k) {
+          var d = document.createElement('button'); d.type = 'button'; d.setAttribute('aria-label', 'Diapositiva ' + (k + 1));
+          d.addEventListener('click', function () { goTo(k); }); wrap.appendChild(d); dots.push(d);
+        });
+        slider.appendChild(wrap);
+        var sc = document.createElement('span'); sc.className = 'slide-count'; slider.appendChild(sc);
+        function show() {
+          slides.style.transform = 'translateX(-' + (idx * 100) + '%)';
+          dots.forEach(function (d, k) { d.setAttribute('aria-current', String(k === idx)); });
+          sc.textContent = (idx + 1) + ' / ' + arr.length;
+        }
+        function goTo(k) { idx = (k + arr.length) % arr.length; show(); }
+        var autoplay = parseInt(slider.getAttribute('data-autoplay'), 10) || 0;
+        function stop() { if (timer) { clearInterval(timer); timer = null; } }
+        function start() { stop(); if (autoplay) timer = setInterval(function () { goTo(idx + 1); }, autoplay); }
+        slider.addEventListener('mouseenter', stop);
+        slider.addEventListener('mouseleave', start);
+        function visible() { var r = slider.getBoundingClientRect(); return r.top < window.innerHeight && r.bottom > 0; }
+        show();
+        if (visible()) start();
+        window.addEventListener('scroll', function () { if (visible() && !timer) start(); });
+      });
+    });
+
+  })();
+</script>
+
+<script>
+  (function(){
+    /* brand menu — click logo+title toggles it */
+    var brand = document.getElementById('brand-map');
+    var wrap = document.getElementById('brand-wrap');
+    var menu = document.getElementById('brand-menu');
+    var aboutModal = document.getElementById('about-modal');
+    var aboutClose = document.getElementById('ab-close');
+    var aboutBtn = document.getElementById('bmenu-about');
+    function setOpen(open){
+      if (wrap) wrap.setAttribute('aria-expanded', String(open));
+      if (brand) brand.setAttribute('aria-expanded', String(open));
+      if (menu) menu.hidden = !open;
+    }
+    if (brand && menu){
+      brand.addEventListener('click', function(e){ e.stopPropagation(); setOpen(menu.hidden); });
+      document.addEventListener('click', function(e){
+        if (!menu.hidden && !brand.contains(e.target) && !menu.contains(e.target)) setOpen(false);
+      });
+    }
+    if (aboutBtn) aboutBtn.addEventListener('click', function(){ setOpen(false); if (aboutModal) aboutModal.hidden = false; });
+    if (aboutClose) aboutClose.addEventListener('click', function(){ if (aboutModal) aboutModal.hidden = true; });
+    if (aboutModal) aboutModal.addEventListener('click', function(e){ if (e.target === aboutModal) aboutModal.hidden = true; });
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape'){ setOpen(false); if (aboutModal && !aboutModal.hidden) aboutModal.hidden = true; } });
+
+    /* theme standard — dark by default, light optional, persists */
+    var themeToggle = document.getElementById('theme-toggle');
+    var metaCS = document.querySelector('meta[name="color-scheme"]');
+    function applyTheme(light){
+      document.documentElement.classList.toggle('light', !!light);
+      try { localStorage.setItem('flove:theme', light ? 'light' : 'dark'); } catch(_){}
+      if (metaCS) metaCS.setAttribute('content', light ? 'dark light' : 'dark');
+      if (themeToggle){
+        themeToggle.setAttribute('aria-pressed', String(!!light));
+        var es = themeToggle.querySelector('.es'), en = themeToggle.querySelector('.en');
+        if (es) es.textContent = light ? 'Oscuro' : 'Claro';
+        if (en) en.textContent = light ? 'Dark' : 'Light';
+      }
+    }
+    var storedTheme = (function(){ try { return localStorage.getItem('flove:theme'); } catch(_){ return null; } })();
+    applyTheme(storedTheme === 'light');
+    if (themeToggle) themeToggle.addEventListener('click', function(){ applyTheme(!document.documentElement.classList.contains('light')); });
+  })();
+</script>
+
+<script>
+  /* translaty engine — en/es toggler (base of this page = es), ?lang= handoff,
+     shared flove:lang key, syncs <html lang> and aria/placeholder/options. */
+  (function(){
+    const LS = 'flove:lang', LS_OLD = 'translaty-lang';
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+    const radios = () => Array.from(document.querySelectorAll('input[name="lang"]'));
+    const curLang = () => { const r = radios().find(x => x.checked); return r ? r.id.replace('lang-', '') : 'es'; };
+    const stored = () => { try { return localStorage.getItem(LS) || localStorage.getItem(LS_OLD); } catch (_) { return null; } };
+    const urlLang = () => { try { return new URLSearchParams(location.search).get('lang'); } catch (_) { return null; } };
+    function applyLang(){
+      const li = curLang();
+      document.documentElement.lang = li;
+      document.querySelectorAll('option[data-en]').forEach(o => { if (o.dataset[li] != null) o.textContent = o.dataset[li]; });
+      document.querySelectorAll('[data-ph-en]').forEach(el => { const v = el.dataset['ph' + cap(li)]; if (v != null) el.placeholder = v; });
+      document.querySelectorAll('[data-aria-en]').forEach(el => { const v = el.dataset['aria' + cap(li)]; if (v != null) el.setAttribute('aria-label', v); });
+      try { localStorage.setItem(LS, li); } catch (_) {}
+    }
+    function init(){
+      const want = urlLang() || stored();
+      if (want){ const r = document.getElementById('lang-' + want); if (r) r.checked = true; }
+      radios().forEach(r => r.addEventListener('change', () => {
+        applyLang();
+        const d = document.querySelector('details.lang'); if (d) d.open = false;
+      }));
+      applyLang();
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  })();
+</script>
+</body>
+</html>

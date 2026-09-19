@@ -1,0 +1,3475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1, viewport-fit=cover">
+<title>Shary · Lending Conditions · FLOVE</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='1' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%238b5cf6'/%3E%3Cstop offset='.55' stop-color='%23a855f7'/%3E%3Cstop offset='1' stop-color='%23ec4899'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg stroke='url(%23g)' stroke-width='8' fill='none' stroke-linecap='round'%3E%3Ccircle cx='50' cy='50' r='27'/%3E%3Ccircle cx='77' cy='50' r='6'/%3E%3C/g%3E%3Ccircle cx='50' cy='50' r='8' fill='url(%23g)'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23fbfaff'/%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='1' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%238b5cf6'/%3E%3Cstop offset='.55' stop-color='%23a855f7'/%3E%3Cstop offset='1' stop-color='%23ec4899'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg stroke='url(%23g)' stroke-width='8' fill='none' stroke-linecap='round'%3E%3Ccircle cx='50' cy='50' r='27'/%3E%3Ccircle cx='77' cy='50' r='6'/%3E%3C/g%3E%3Ccircle cx='50' cy='50' r='8' fill='url(%23g)'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#8b5cf6">
+<meta name="description" content="Shary — set the conditions under which you lend a thing: to whom, for what, where, when and your preferences. A readable sentence builds itself.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --app-accent:        #8b5cf6;
+    --app-accent-soft:   #ede9fe;
+    --app-ink-on-accent: #2e1065;
+
+    --paper:       #fbfaff;
+    --paper-warm:  #f5f0ff;
+    --ink:         #1a1232;
+    --ink-soft:    #423066;
+    --muted:       #8a7eb0;
+    --line:        rgba(80,50,170,.08);
+    --line-strong: rgba(80,50,170,.16);
+
+    --accent:      #8b5cf6;
+    --accent-deep: #6d28d9;
+    --accent-soft: #ede9fe;
+    --accent-glow: rgba(139,92,246,.22);
+    --pink:        #ec4899;
+    --cyan:        #06b6d4;
+
+    /* tokens used by the ported blogynormal action-grid (Invitation) */
+    --accent-rgb:   139,92,246;
+    --fill-soft:    var(--accent-soft);
+    --fill-mid:     #ddd6fe;
+    --fill-pressed: linear-gradient(180deg, var(--accent), var(--accent-deep));
+    --grad-active:  linear-gradient(180deg, var(--accent), var(--accent-deep));
+    --ink-mute:     var(--muted);
+    --btn-trans:    all var(--fast);
+
+    --radius-sm: 12px;
+    --radius:    18px;
+    --radius-lg: 24px;
+    --radius-pill: 999px;
+    --shadow-xs: 0 1px 2px rgba(80,50,170,.05);
+    --shadow-sm: 0 4px 12px -4px rgba(80,50,170,.10);
+    --fast: .15s cubic-bezier(.2,.8,.2,1);
+    --font-ui: 'Inter', system-ui, sans-serif;
+    --font-display: 'Fraunces', Georgia, serif;
+  }
+  *{ box-sizing:border-box }
+  body{
+    margin:0; font:15px/1.5 var(--font-ui); color:var(--ink);
+    background:
+      radial-gradient(900px 600px at 90% -10%, var(--accent-soft) 0%, transparent 60%),
+      radial-gradient(700px 500px at -10% 110%, var(--paper-warm) 0%, transparent 55%),
+      var(--paper);
+    min-height:100vh; padding-bottom: 40px;
+  }
+  .flove-bar{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; gap:8px;
+    padding:3px 14px; margin:0;
+    background:transparent;
+    border-bottom:0;
+  }
+  .flove-bar .flove-spacer{ flex:1 }
+  .flove-bar .flove-mark{ font-size:30px; color:var(--accent); filter:drop-shadow(0 0 6px var(--accent-glow)); vertical-align:-.18em; overflow:visible }
+  .logo-wrap{ position:relative; z-index:0; display:inline-flex; align-items:center }
+  .flove-bar .flove-app-name{ font-family:var(--font-display); font-weight:600; font-size:17px }
+  .flove-bar .flove-tag{ color:var(--muted) }
+  .flove-bar .flove-sprout{ animation-play-state:paused }
+  body:hover .flove-bar .flove-sprout, body:focus-within .flove-bar .flove-sprout{ animation-play-state:running }
+
+  .container{ max-width:980px; margin:0 auto; padding: 6px 18px 0 }
+
+  /* === Brand (logo + title) opens the topbar menu ============== */
+  .info-toggle{ position:absolute; opacity:0; pointer-events:none; width:1px; height:1px }
+  .brand{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:2px 6px; margin:0;
+    border:0; border-radius:var(--radius-pill);
+    background:transparent; color:inherit; cursor:pointer;
+    font:inherit; -webkit-tap-highlight-color:transparent;
+    transition:background var(--fast);
+  }
+  .brand:hover, .brand[aria-expanded="true"]{ background:var(--accent-soft) }
+  .brand:focus-visible{ outline:2px solid var(--accent); outline-offset:2px }
+
+  /* Dropdown popover — logo/title toggle it, deselectable (click-again /
+     click-outside closes). Ports the §13.5 topbar menu from rewardy. */
+  .topmenu{ position:relative; display:inline-flex }
+  .menu-pop{
+    position:absolute; top:calc(100% + 8px); left:0; z-index:70;
+    min-width:200px; padding:6px;
+    display:flex; flex-direction:column; gap:2px;
+    background:#fff; border:1px solid var(--line-strong);
+    border-radius:var(--radius); box-shadow:0 12px 30px -8px rgba(80,50,170,.25);
+  }
+  .menu-pop[hidden]{ display:none }
+  .menu-item{
+    display:flex; align-items:center; gap:9px;
+    padding:9px 12px; border-radius:var(--radius-sm);
+    border:0; background:transparent; width:100%; text-align:left;
+    font:600 .88rem/1.2 var(--font-ui); color:var(--ink); text-decoration:none;
+    cursor:pointer; transition:all var(--fast);
+  }
+  .menu-item:hover{ background:var(--accent-soft); color:var(--accent-deep) }
+  /* live state tick for the About toggle item */
+  body:has(.info-toggle:checked) .menu-item[for="info-toggle"]{
+    background:var(--accent-soft); color:var(--accent-deep);
+  }
+  body:has(.info-toggle:checked) .menu-item[for="info-toggle"]::after{
+    content:"✓"; margin-left:auto; font-weight:800; color:var(--accent);
+  }
+
+  .app-info{
+    display: none;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, var(--paper-warm), transparent);
+  }
+  body:has(.info-toggle:checked) .app-info{ display: block }
+  .app-info .container{ padding: 22px 18px }
+  .app-info h1{
+    font-family: var(--font-display); font-weight: 600;
+    font-size: clamp(1.7rem, 3vw, 2.3rem);
+    margin: 0; letter-spacing:-.01em;
+  }
+  .app-info h1 em{
+    font-style: italic;
+    background: linear-gradient(90deg, var(--accent), var(--pink));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .app-info p{ margin: 6px 0 0; color: var(--muted); font-size: .95rem }
+
+  .btn{
+    display:inline-flex; align-items:center; gap: 6px;
+    padding: 10px 16px; border-radius: var(--radius-pill);
+    border: 1px solid var(--line-strong); background: #fff; color: var(--ink);
+    font: 600 .85rem/1 var(--font-ui); cursor: pointer;
+    transition: all var(--fast); text-decoration: none; box-shadow: var(--shadow-xs);
+  }
+  .btn:hover{ border-color: var(--accent); color: var(--accent-deep); transform: translateY(-1px) }
+  .btn.primary{
+    background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+    color: #fff; border-color: transparent;
+    box-shadow: 0 8px 18px -6px var(--accent-glow);
+  }
+  .btn.primary:hover{ color:#fff; filter:brightness(1.06) }
+  .btn.small{ padding: 8px 12px; font-size: .82rem }
+
+  /* ===== Section navigation — compact stepper: small icon nodes linked by
+     a rail, labels beneath, the active step highlighted (moved to bottom). ===== */
+  .secnav-radio{ position:absolute; opacity:0; pointer-events:none; width:1px; height:1px }
+  .section-buttons{
+    display:flex; align-items:flex-start;
+    gap:0; margin: 6px 0 8px; padding: 0 6px;
+  }
+  .section-btn{
+    position:relative;
+    flex:1 1 0; min-width:0;
+    display:flex; flex-direction:column; align-items:center; gap:11px;
+    padding: 0; background:none; border:0; box-shadow:none;
+    cursor:pointer; user-select:none;
+    font: 600 1.4rem/1.15 var(--font-ui); color: var(--muted);
+    transition: color var(--fast);
+  }
+  /* connecting rail — drawn behind the node, joining it to the previous step */
+  .section-btn::before{
+    content:""; position:absolute; z-index:0;
+    top:32px; left:-50%; width:100%; height:3px;
+    background: var(--line-strong);
+  }
+  .section-btn:first-child::before{ display:none }
+  .section-btn .sb-icon{
+    order:-1;                 /* node on top, label beneath — rail hits its centre */
+    position:relative; z-index:1;
+    width:64px; height:64px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:#fff; border:3px solid var(--line-strong);
+    color: var(--muted);
+    box-shadow: var(--shadow-xs);
+    transition: all var(--fast);
+  }
+  .section-btn .sb-icon svg{ width:34px; height:34px; display:block }
+  .section-btn:hover{ color: var(--accent-deep) }
+  .section-btn:hover .sb-icon{ border-color: var(--accent); color: var(--accent-deep) }
+  /* the active step is filled */
+  .lend-wrap:has(#sec-for:checked) .section-btn[data-sec="for"],
+  .lend-wrap:has(#sec-1:checked) .section-btn[data-sec="1"],
+  .lend-wrap:has(#sec-3:checked) .section-btn[data-sec="3"],
+  .lend-wrap:has(#sec-4:checked) .section-btn[data-sec="4"]{
+    color: var(--accent-deep);
+  }
+  .lend-wrap:has(#sec-for:checked) .section-btn[data-sec="for"] .sb-icon,
+  .lend-wrap:has(#sec-1:checked) .section-btn[data-sec="1"] .sb-icon,
+  .lend-wrap:has(#sec-3:checked) .section-btn[data-sec="3"] .sb-icon,
+  .lend-wrap:has(#sec-4:checked) .section-btn[data-sec="4"] .sb-icon{
+    border-color: transparent; color:#fff;
+    background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+    box-shadow: 0 6px 14px -6px var(--accent-glow);
+  }
+
+  /* only the active section's card is shown — one focused panel at a time */
+  #lend > .card{ display:none }
+  .lend-wrap:has(#sec-for:checked) #lend > .card[data-sec="for"],
+  .lend-wrap:has(#sec-1:checked) #lend > .card[data-sec="1"],
+  .lend-wrap:has(#sec-3:checked) #lend > .card[data-sec="3"],
+  .lend-wrap:has(#sec-4:checked) #lend > .card[data-sec="4"]{ display:block }
+  /* the section content sits directly on the page — no card chrome, so the
+     nav follows immediately with no empty white space */
+  #lend > .card{
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+    min-height: 0;
+    margin: 0;
+  }
+
+  /* ===== Next / Back — centred sequential navigation right below the section ===== */
+  .section-nav{
+    display:flex; justify-content:center; align-items:center; gap:12px;
+    margin: 12px 0 4px;
+  }
+  .sec-move{
+    display:inline-flex; align-items:center; gap:7px;
+    padding: 11px 24px; border-radius: var(--radius-pill);
+    border: 1px solid var(--line-strong); background: #fff; color: var(--ink);
+    font: 700 .9rem/1 var(--font-ui); cursor: pointer;
+    box-shadow: var(--shadow-xs); transition: all var(--fast);
+  }
+  .sec-move:hover{ border-color: var(--accent); color: var(--accent-deep); transform: translateY(-1px) }
+  .sec-next{
+    background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+    color:#fff; border-color: transparent;
+    box-shadow: 0 8px 18px -6px var(--accent-glow);
+  }
+  .sec-next:hover{ color:#fff; filter: brightness(1.06) }
+  /* Back only from the 2nd section on; Next hidden on the last section */
+  .sec-back{ display:none }
+  .lend-wrap:has(#sec-1:checked) .sec-back,
+  .lend-wrap:has(#sec-3:checked) .sec-back,
+  .lend-wrap:has(#sec-4:checked) .sec-back{ display:inline-flex }
+  .lend-wrap:has(#sec-4:checked) .sec-next{ display:none }
+
+  /* "For" reason chips — shown in the "For" category section */
+  .for-reasons{ position:relative; width:100%; height:320px; transition: height .35s ease }
+  .for-col[data-expand="0"] .for-reasons{ height:200px }
+  .for-col[data-expand="1"] .for-reasons{ height:750px }    /* first click */
+  .for-col[data-expand="2"] .for-reasons{ height:1500px }   /* second click */
+  .for-reasons > .reason-chip{
+    position:absolute;
+    white-space:nowrap;
+    /* Movement is driven by a JS physics loop — no CSS transition on
+       left/top, no chip-float keyframe animation. Only colour/border
+       state transitions remain. */
+    transition: background var(--fast), border-color var(--fast), color var(--fast);
+  }
+
+  /* parent / sub chips — parents are 2× the size of subs (2× overall) */
+  .reason-chip.parent-chip{
+    font: 600 1.12rem/1.15 var(--font-ui);
+    padding: 9px 14px;
+  }
+  .reason-chip.child-chip{
+    font: 500 .56rem/1.2 var(--font-ui);
+    padding: 4px 7px;
+  }
+  /* sub-chips — show selection by fill only, never highlight the border */
+  .reason-chip.child-chip:hover,
+  .reason-chip.child-chip:has(:checked){ border-color: var(--line-strong) }
+
+  /* cloud tabs start hidden — JS reveals them per expand step */
+  .reasons-cloud > .reason-chip{ display:none }
+
+  /* "+" reveal — floats at the top-centre edge of each reasons column */
+  .for-col-head{ display:flex; align-items:center; justify-content:center; gap:8px; margin:0 }
+  .expand-plus{
+    position:absolute; top:0; left:50%; transform:translate(-50%,-50%); z-index:4;
+    width:34px; height:34px; flex-shrink:0;
+    display:inline-flex; align-items:center; justify-content:center;
+    border-radius:50%;
+    background:#fff; border:1px solid var(--line-strong);
+    color:var(--accent); cursor:pointer;
+    font:700 1.43rem/1 var(--font-ui);
+    box-shadow:var(--shadow-xs);
+    transition: background var(--fast), border-color var(--fast), color var(--fast);
+  }
+  .expand-plus:hover{ border-color:var(--accent); background:var(--accent-soft) }
+  .for-col[data-expand="1"] .expand-plus{ background:var(--accent-soft); border-color:var(--accent) }
+  .for-col[data-expand="2"] .expand-plus{
+    background:linear-gradient(180deg, var(--accent), var(--accent-deep));
+    color:#fff; border-color:transparent;
+  }
+
+  /* docked reasons — a clicked tab drops into a 2-column grid below the cloud */
+  .for-docked{
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:6px; align-content:start; margin-top:14px;
+  }
+  .for-docked:empty{ margin:0 }
+  .for-docked .reason-chip{ white-space:normal }
+
+  /* "Close" sub-reasons — revealed in the Who section */
+  .close-subchips{ display:none; flex-wrap:wrap; gap:6px; margin-top:12px }
+  .scope-grid fieldset:has(#for-close:checked) .close-subchips{ display:flex }
+  /* hidden checkbox — selection shown via chip styling */
+  .reason-chip input[type=checkbox]{
+    position:absolute; opacity:0; pointer-events:none; width:1px; height:1px;
+  }
+  /* "+" add-reason button — floats in the cloud with the chips */
+  .card[data-sec="for"]{ position:relative }
+  .for-reasons .add-reason{
+    position:absolute; z-index:3;
+    width:47px; height:47px;
+    font-size:1.56rem;
+    /* Position is driven by the same JS physics loop as the chips. */
+  }
+  /* new-reason input — sits right after the column title, in flow */
+  .new-reason-input{
+    display:none;
+    width:200px; max-width:45%;
+    padding:9px 12px;
+    border:1px solid var(--accent);
+    border-radius:var(--radius-sm);
+    background:#fff; color:var(--ink);
+    font:500 .85rem/1.2 var(--font-ui);
+    box-shadow:0 4px 14px -4px var(--accent-glow);
+  }
+  .new-reason-input.is-open{ display:inline-block }
+  .new-reason-input:focus{ outline:none; box-shadow:0 0 0 3px var(--accent-glow) }
+  .reason-chip{
+    display:inline-flex; align-items:center; gap:7px;
+    padding: 6px 10px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-pill);
+    background:#fff; color: var(--ink);
+    font: 500 .68rem/1.2 var(--font-ui);
+    cursor:pointer;
+    transition: all var(--fast);
+  }
+  .reason-chip:hover{ border-color: var(--accent) }
+  .reason-chip:has(:checked){
+    background: var(--accent-soft); border-color: var(--accent); color: var(--accent-deep);
+  }
+
+  /* === Because / For — two-column reasons split ================ */
+  .for-grid{
+    display:grid; gap:14px;
+    grid-template-columns:1fr 1fr; align-items:start;
+    margin-top:22px;   /* room for the "+" that straddles each column's top edge */
+  }
+  @media (max-width:640px){ .for-grid{ grid-template-columns:1fr } }
+  .for-col{ position:relative }
+  .for-col-title{
+    text-align:left; margin:0 0 10px;
+    font-family:var(--font-display); font-weight:600;
+    font-size:2.1rem; color:var(--accent-deep);
+  }
+
+  .card{
+    background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg);
+    padding:22px; margin: 0 0 18px; box-shadow: var(--shadow-sm);
+  }
+  .card.section{ padding: 18px 20px }
+  .card h2{
+    font-family:var(--font-display); font-weight:600;
+    font-size:1.05rem; margin:0 0 4px;
+    color: var(--accent-deep);
+    display:flex; align-items:center; gap:8px;
+  }
+  .card .step-num{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:26px; height:26px; border-radius:50%;
+    background: var(--accent-soft); color: var(--accent-deep);
+    font: 700 .82rem/1 var(--font-ui);
+  }
+  p.helper{ color: var(--muted); margin: 4px 0 14px; font-size: .9rem }
+
+  .grid{ display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) }
+  fieldset{
+    border:0; border-radius:0;
+    padding: 4px 0;
+    background: transparent;
+    min-width: 0;
+  }
+  legend{
+    padding: 0; font: 700 11px/1 var(--font-ui); letter-spacing:.06em;
+    color: var(--ink-soft); text-transform: uppercase;
+    background:transparent; border: 0;
+  }
+  .vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  .choices, .stack{ display: grid; gap: 6px; margin-top: 8px }
+  .inline.choices{ display: flex; flex-wrap: wrap; gap: 8px }
+  .inline.choices label{ flex: 1 1 auto }
+  /* hidden inputs — selection shown via the option styling */
+  .choices input, .stack input{
+    position:absolute; opacity:0; pointer-events:none; width:1px; height:1px;
+  }
+
+  .choices label, .stack label{
+    display:flex; align-items:center; justify-content:center;
+    text-align:center; gap: 10px;
+    padding: 9px 14px;
+    background:#fff;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    cursor:pointer;
+    font: 500 .9rem/1.3 var(--font-ui);
+    transition: all var(--fast);
+    position: relative;
+  }
+  .choices label:hover, .stack label:hover{ border-color: var(--accent) }
+  input[type=radio], input[type=checkbox]{
+    appearance:none;
+    width: 18px; height: 18px;
+    border-radius: 50%; border: 2px solid var(--line-strong); background: #fff;
+    flex-shrink: 0;
+    transition: all var(--fast); cursor:pointer; position: relative;
+  }
+  input[type=checkbox]{ border-radius: 4px }
+  input[type=radio]:checked, input[type=checkbox]:checked{
+    border-color: var(--accent); background: var(--accent);
+    box-shadow: inset 0 0 0 3px #fff;
+  }
+  input[type=checkbox]:checked{ box-shadow: none }
+  input[type=checkbox]:checked::after{
+    content:"✓"; position:absolute; inset:0; display:grid; place-items:center; color:#fff; font:700 11px/1 var(--font-ui);
+  }
+  .choices label:has(:checked), .stack label:has(:checked){
+    background: var(--accent-soft);
+    border-color: var(--accent); color: var(--accent-deep);
+  }
+
+  .inline{ display:flex; flex-wrap: wrap; gap: 10px }
+  .inline label{ flex: 1 1 240px }
+  .inline input[type=text]{
+    width:100%; padding: 11px 13px;
+    background:transparent; border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    font: 14px/1.4 var(--font-ui); color: inherit;
+    transition: all var(--fast);
+  }
+  .inline input[type=text]:focus{
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  /* === Scope & Context: two-column layout ====================== */
+  .scope-grid{
+    display: grid;
+    gap: 14px;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+  @media (max-width: 640px){ .scope-grid{ grid-template-columns: 1fr } }
+  .scope-right{ display: grid; gap: 14px }
+  /* Who section — Close / Near / All: center the button label text */
+  .scope-grid .choices.inline label{ justify-content: center; text-align: center }
+
+  .ppl-label{
+    display: block;
+    font: 700 11px/1 var(--font-ui); letter-spacing: .06em;
+    color: var(--ink-soft); text-transform: uppercase;
+    margin: 14px 0 6px;
+  }
+  .ppl-input{
+    width: 100%; margin-top: 1.6rem; padding: 11px 13px;
+    background: transparent; border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    font: 14px/1.4 var(--font-ui); color: inherit;
+    transition: all var(--fast);
+  }
+  .ppl-input:focus{
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  /* === Textarea field with magic / mic / file buttons ========== */
+  .ta-field{
+    position: relative;
+    margin-bottom: 24px;
+  }
+  .ta-field .ta-magic-state{
+    position: absolute; opacity: 0; pointer-events: none;
+    width: 1px; height: 1px;
+  }
+  .ta-field textarea{
+    width: 100%;
+    padding: 12px 14px;
+    background: transparent;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    font: 14px/1.5 var(--font-ui); color: inherit;
+    resize: vertical;
+    min-height: 5em;
+    transition: all var(--fast);
+  }
+  .ta-field textarea:focus{
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  .ta-field .ta-magic{
+    position: absolute;
+    right: -10px; top: -12px;
+    width: 32px; height: 32px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: #fff; color: var(--accent);
+    border: 1px solid var(--line-strong);
+    cursor: pointer;
+    font: 1rem/1 var(--font-ui);
+    box-shadow: var(--shadow-xs);
+    transition: all var(--fast);
+    z-index: 3;
+  }
+  .ta-field .ta-magic:hover{
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    box-shadow: 0 6px 16px var(--accent-glow);
+    transform: translateY(-1px);
+  }
+  .ta-field:has(.ta-magic-state:checked) textarea{
+    border-color: var(--accent);
+    background: linear-gradient(180deg, #fff, var(--accent-soft));
+  }
+  .ta-field:has(.ta-magic-state:checked) .ta-magic{
+    background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+    color: #fff; border-color: var(--accent-deep);
+  }
+  .ta-field .ta-bottom-tools{
+    position: absolute;
+    left: 50%; bottom: -16px;
+    transform: translateX(-50%);
+    display: inline-flex; gap: 6px;
+    z-index: 3;
+  }
+  /* pref-note field — mic sits on the centre of the left border */
+  .ta-field.pref-ta .ta-bottom-tools{
+    left: -16px; bottom: auto; top: 50%;
+    transform: translateY(-50%);
+  }
+  .ta-field .ta-tool{
+    position: relative;
+    width: 32px; height: 32px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid var(--line-strong);
+    color: var(--ink-soft);
+    cursor: pointer;
+    font: 1rem/1 var(--font-ui);
+    box-shadow: var(--shadow-xs);
+    transition: all var(--fast);
+  }
+  .ta-field .ta-tool:hover{
+    border-color: var(--accent);
+    color: var(--accent-deep);
+    background: var(--accent-soft);
+    transform: translateY(-1px);
+  }
+  .ta-field .ta-tool input[type=file]{
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    opacity: 0; cursor: pointer;
+  }
+  .ta-field .ta-tool.has-file{
+    border-color: var(--accent);
+    color: var(--accent-deep);
+    background: var(--accent-soft);
+  }
+
+  /* tree levels — 2 columns: first 2 blocks left, next 3 right */
+  .tree{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px }
+  .tree-col{ display: grid; gap: 10px; align-content: start }
+  @media (max-width: 640px){ .tree{ grid-template-columns: 1fr } }
+  /* All preference groups are freely available (no chained locks). The
+     "+" toggle reveals the two secondary dimensions — Past/Current/Future
+     (lvl-2) and Similar/Different (lvl-4) — plus the notes field. The
+     always-on groups are Less/More (lvl-1), Experience/Use/Offering (lvl-3)
+     and Offers/Things/Relations (lvl-5). */
+  .lvl-1, .lvl-2, .lvl-3, .lvl-4, .lvl-5{ transition: opacity var(--fast) }
+  .section[data-sec="4"] .lvl-2,
+  .section[data-sec="4"] .lvl-4{ display: none }
+  .section[data-sec="4"]:has(#tree-more-toggle:checked) .lvl-2,
+  .section[data-sec="4"]:has(#tree-more-toggle:checked) .lvl-4{ display: block }
+  /* Note textarea — revealed by the same "+" toggle */
+  .section[data-sec="4"] .pref-note-field{ display: none }
+  .section[data-sec="4"]:has(#tree-more-toggle:checked) .pref-note-field{ display: block }
+  .tree-more-wrap{ display: flex; justify-content: center; margin-top: 12px; position: relative }
+  .tree-more-wrap > input[type="checkbox"]{ position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px }
+
+  /* === Split button — one pill divided into deselectable segments ==== */
+  .split-btn{
+    display:inline-flex; width:100%;
+    border:1px solid var(--line-strong); border-radius:var(--radius-pill);
+    background:#fff; box-shadow:var(--shadow-xs); overflow:hidden;
+  }
+  .split-btn > label{
+    flex:1 1 0; min-width:0;
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    padding:11px 12px; text-align:center;
+    font:600 .9rem/1.15 var(--font-ui); color:var(--ink);
+    cursor:pointer; user-select:none; position:relative;
+    transition:all var(--fast);
+  }
+  .split-btn > label + label{ border-left:1px solid var(--line-strong) }
+  .split-btn > label:hover{ background:var(--accent-soft); color:var(--accent-deep) }
+  .split-btn input{ position:absolute; opacity:0; pointer-events:none; width:1px; height:1px }
+  .split-btn > label:has(:checked){
+    background:linear-gradient(180deg, var(--accent), var(--accent-deep));
+    color:#fff; border-color:transparent;
+  }
+  /* selected fills, the rest dim to 50% (flove selection rule) */
+  .split-btn:has(:checked) > label:not(:has(:checked)){ opacity:.5 }
+  .tree fieldset:has(.split-btn){ padding-top:10px }
+  /* modern line-icons on the Offers / Things / Relations options */
+  .stack .opt-ico{
+    width:18px; height:18px; flex-shrink:0; color:var(--accent);
+    transition:color var(--fast);
+  }
+  .stack .opt-ico svg{ width:100%; height:100%; display:block }
+  .stack label:has(:checked) .opt-ico{ color:var(--accent-deep) }
+
+  /* "+ Additional info" toggle below sections */
+  .extra-info-wrap{ display: flex; flex-direction: column; align-items: center; margin-top: 14px }
+  .extra-info-toggle{ position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px }
+  .extra-plus{
+    width: 36px; height: 36px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px dashed var(--line-strong);
+    color: var(--accent);
+    font: 700 1.2rem/1 var(--font-ui);
+    cursor: pointer;
+    box-shadow: var(--shadow-xs);
+    transition: all var(--fast);
+  }
+  .extra-plus:hover{
+    border-style: solid; border-color: var(--accent);
+    background: var(--accent-soft); color: var(--accent-deep);
+    transform: translateY(-1px);
+  }
+  .extra-info-wrap:has(.extra-info-toggle:checked) .extra-plus{
+    background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+    color: #fff; border-color: var(--accent-deep);
+    transform: rotate(45deg);
+  }
+  .extra-info{
+    display: none;
+    width: 100%; margin-top: 18px;
+    position: relative;
+  }
+  .extra-info-wrap:has(.extra-info-toggle:checked) .extra-info{ display: block }
+  .extra-info textarea{
+    width: 100%;
+    padding: 12px 14px;
+    background: transparent;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    font: 14px/1.5 var(--font-ui); color: inherit;
+    resize: vertical;
+    min-height: 5em;
+    transition: all var(--fast);
+  }
+  .extra-info textarea:focus{
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  .extra-info .ta-bottom-tools{
+    position: absolute;
+    left: 50%; bottom: -16px;
+    transform: translateX(-50%);
+    display: inline-flex; gap: 6px;
+    z-index: 3;
+  }
+
+  /* === Invitation — centered toggle button + collapsible card == */
+  .invite-block{ text-align:center; margin: 4px 0 18px }
+  .invite-toggle{ position:absolute; opacity:0; pointer-events:none; width:1px; height:1px }
+  .invite-btn{
+    display:inline-flex; align-items:center; gap:8px;
+    cursor:pointer; user-select:none;
+    padding: 13px 32px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--line-strong);
+    background:#fff; color: var(--ink-soft);
+    font: 700 .98rem/1 var(--font-display);
+    box-shadow: var(--shadow-sm);
+    transition: background .45s ease, color .45s ease, border-color .45s ease,
+                box-shadow .45s ease, transform var(--fast);
+  }
+  .invite-btn:hover{ transform: translateY(-2px) }
+
+  /* Once opened, the toggle reads as the section's title — not a button:
+     no pill, no flamy fill, no lift, no caret — just a clear heading
+     sitting above the invitation card. */
+  .invite-block:has(.invite-toggle:checked) .invite-btn{
+    padding: 4px 0 2px;
+    border-color: transparent;
+    background: none;
+    box-shadow: none;
+    color: var(--accent-deep);
+    font: 600 1.7rem/1.2 var(--font-display);
+    letter-spacing: -.01em;
+    cursor: default;
+    animation: none;
+  }
+  .invite-block:has(.invite-toggle:checked) .invite-btn:hover{ transform: none }
+
+  /* flamy-blue progression — one stage every 3 selections / texts */
+  .invite-btn[data-progress="1"]{ background:#eef4ff; color:#1e3a8a; border-color:#dbe6ff }
+  .invite-btn[data-progress="2"]{ background:#d4e4ff; color:#1e3a8a; border-color:transparent }
+  .invite-btn[data-progress="3"]{ background:linear-gradient(0deg,#3b82f6,#93c5fd); color:#fff; border-color:transparent }
+  .invite-btn[data-progress="4"]{
+    background:linear-gradient(0deg,#1d4ed8,#60a5fa);
+    color:#fff; border-color:transparent;
+    box-shadow:0 8px 24px -6px rgba(37,99,235,.55);
+  }
+  .invite-btn[data-progress="5"]{
+    background:linear-gradient(0deg,#1e3a8a,#3b82f6 60%,#7dd3fc);
+    color:#fff; border-color:transparent;
+    box-shadow:0 10px 30px -6px rgba(56,189,248,.6);
+  }
+  .invite-btn[data-progress="6"]{
+    background:linear-gradient(0deg,#1e3a8a,#2563eb 45%,#22d3ee 80%,#cffafe);
+    color:#fff; border-color:transparent;
+    animation: flame-flicker 1.7s ease-in-out infinite;
+  }
+  @keyframes flame-flicker{
+    0%,100%{ box-shadow:0 0 22px -2px rgba(56,189,248,.7), 0 10px 32px -6px rgba(37,99,235,.55) }
+    50%{ box-shadow:0 0 36px 3px rgba(56,189,248,.95), 0 12px 40px -4px rgba(37,99,235,.75) }
+  }
+
+  .invite-card{
+    display:none;
+    text-align:left;
+    margin-top:14px;
+    background: linear-gradient(135deg, var(--paper-warm), #fff);
+    border: 1px dashed var(--accent);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  .invite-block:has(.invite-toggle:checked) .invite-card{ display:block }
+
+  .sentence{
+    margin: 8px 0 0;
+    font: 500 1.05rem/1.65 var(--font-display);
+    color: var(--ink);
+  }
+  .sentence strong{
+    color: var(--accent-deep); font-weight: 700;
+    background: var(--accent-soft); padding: 1px 6px; border-radius: 6px;
+  }
+  .sentence .seg{ display:none }
+  .sentence .sentence-gap{ display:block; height:.8em }
+  .lend-conditions:has(#for-close:checked) .seg.for-close,
+  .lend-conditions:has(#for-near:checked)  .seg.for-near,
+  .lend-conditions:has(#for-all:checked)   .seg.for-all,
+  .lend-conditions:has(#ts-where:checked)   .seg.ts-where,
+  .lend-conditions:has(#ts-backafter:checked) .seg.ts-backafter,
+  .lend-conditions:has(#ts-onrequest:checked) .seg.ts-onrequest,
+  .lend-conditions:has(#t-more:checked)  .seg.t-more,
+  .lend-conditions:has(#t-less:checked)  .seg.t-less,
+  .lend-conditions:has(#t-past:checked)    .seg.t-past,
+  .lend-conditions:has(#t-current:checked) .seg.t-current,
+  .lend-conditions:has(#t-future:checked)  .seg.t-future,
+  .lend-conditions:has(#t-experience:checked) .seg.t-experience,
+  .lend-conditions:has(#t-use:checked)        .seg.t-use,
+  .lend-conditions:has(#t-offering:checked)   .seg.t-offering,
+  .lend-conditions:has(#t-similar:checked)  .seg.t-similar,
+  .lend-conditions:has(#t-different:checked) .seg.t-different,
+  .lend-conditions:has(#t-offers:checked)   .seg.t-offers,
+  .lend-conditions:has(#t-things:checked)   .seg.t-things,
+  .lend-conditions:has(#t-relations:checked) .seg.t-relations{ display: inline }
+
+  .submit{
+    display:flex; justify-content:flex-end; gap: 8px; flex-wrap: wrap; margin-top: 10px;
+  }
+
+  .toast{
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(12px);
+    background: var(--ink); color: #fff;
+    padding: 10px 18px; border-radius: var(--radius-pill);
+    font: 600 13px/1 var(--font-ui);
+    opacity: 0; pointer-events: none; transition: all .25s; z-index: 100;
+  }
+  .toast.is-visible{ opacity: 1; transform: translateX(-50%) translateY(0) }
+
+  @media print{
+    .flove-bar, .submit, .section-buttons, .invite-btn{ display:none !important }
+    .app-info{ display:block !important }
+    #lend > .card{ display:block !important }
+    .invite-card{ box-shadow:none; display:block !important }
+    body{ background:#fff }
+    .card{ box-shadow:none; border:1px solid #ccc }
+  }
+  /* ===== Entrance animation — staged fade-in on load; restarts every reload.
+     Scoped under body.intro-anim, which JS drops once the intro is done so
+     later chip reveals appear instantly instead of re-animating. ===== */
+  @keyframes share-in    { from{ opacity:0 } to{ opacity:1 } }
+  @keyframes share-in-up { from{ opacity:0; transform:translateY(26px) } to{ opacity:1; transform:translateY(0) } }
+  /* logo + wordmark grow in, overshooting to 3x during 2s, then settling */
+  @keyframes share-logo-grow{
+    0%   { opacity:0; transform:scale(.2) }
+    12%  { opacity:1 }
+    83%  { transform:scale(2) }     /* ~2s in: peak = the "landing" */
+    100% { transform:scale(1) }     /* settle back to its normal size */
+  }
+  /* soft, progressive multicolour splash — dissipates broadly downward/outward
+     from behind the mark the moment it lands (shary violets/pinks) */
+  @keyframes share-splash{
+    0%   { opacity:0; transform:translateX(-50%) translateY(-6px) scale(.4) }
+    22%  { opacity:.5 }
+    100% { opacity:0; transform:translateX(-50%) translateY(64px) scaleX(1.75) scaleY(1.55) }
+  }
+  /* bubbles (floating reason chips) — start at once, fading in over 6s */
+  body.intro-anim .reason-chip{ animation: share-in 6s ease 0s backwards }
+  /* logo + "Shary" wordmark — in 5s ahead of the rest (6s), growing to 3x */
+  body.intro-anim .flove-mark,
+  body.intro-anim .flove-app-name{ transform-origin:center; animation: share-logo-grow 2.4s cubic-bezier(.2,.8,.2,1) 6s backwards }
+  body.intro-anim .logo-wrap::after{
+    content:""; position:absolute; left:50%; top:55%; z-index:-1;
+    width:640px; height:240px; transform:translateX(-50%);
+    background:radial-gradient(130% 120% at 50% 0%,
+      rgba(139,92,246,.50) 0%, rgba(168,85,247,.40) 18%, rgba(217,70,239,.34) 40%,
+      rgba(236,72,153,.26) 62%, rgba(244,114,182,.18) 82%,
+      rgba(196,181,253,.10) 93%, transparent 100%);
+    filter:blur(24px); opacity:0; pointer-events:none;
+    animation: share-splash 1.9s ease-out 8s backwards;
+  }
+  /* "Offer a thing" field + its icons — 10s */
+  body.intro-anim #acc-que{ animation: share-in 1s ease 10s backwards }
+  /* Next button + stepper — fade in upwards over 7s, 5s after the logo (11s) */
+  body.intro-anim .section-nav,
+  body.intro-anim .section-buttons{ animation: share-in-up 7s ease 11s backwards }
+  /* the "+" buttons (reveal + add-reason) — 15s */
+  body.intro-anim .expand-plus,
+  body.intro-anim .for-reasons .add-reason{ animation: share-in 1s ease 15s backwards }
+
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{
+      animation-duration:.01ms !important; animation-delay:0s !important;
+      transition-duration:.01ms !important; transition-delay:0s !important;
+    }
+  }
+
+  /* ── ported QUE block from offer.html ── */
+  .pill-select{
+    appearance:none; -webkit-appearance:none;
+    background:var(--accent-soft); color:var(--accent-deep);
+    border:1px solid transparent; border-radius:var(--radius-pill);
+    padding:8px 32px 8px 14px; font:600 13px/1 var(--font-ui);
+    cursor:pointer;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='%236d28d9' d='M4 6l4 4 4-4z'/></svg>");
+    background-repeat:no-repeat; background-position: right 10px center;
+    background-size: 14px;
+    transition: all var(--fast);
+  }
+  .pill-select:hover{ background-color: color-mix(in srgb, var(--accent-soft) 60%, #fff); border-color: var(--accent) }
+
+  .acc-bar{
+    background:transparent; border:0;
+    border-radius:var(--radius-lg); box-shadow:none;
+    overflow:visible;
+  }
+  .acc-summary{
+    position:relative; cursor:pointer;
+    display:flex; align-items:center; gap:12px;
+    padding:13px 56px 13px 22px;
+    font-family:var(--font-display); font-weight:600;
+    font-size:2.1rem; letter-spacing:.16em; color:var(--ink);
+    transition:background var(--fast);
+  }
+  .acc-summary:hover{ background:rgba(0,0,0,.03) }
+  .acc-chevron{
+    position:absolute; right:10px; top:50%;
+    transform:translateY(-50%);
+    width:46px; height:46px; padding:0;
+    display:flex; align-items:center; justify-content:center;
+    border:0; border-radius:50%; background:transparent;
+    color:var(--muted); cursor:pointer;
+    font:300 2.3rem/1 var(--font-ui);
+    transition:background var(--fast), color var(--fast);
+  }
+  .acc-chevron::before{ content:"+" }
+  .acc-chevron:hover{ background:rgba(0,0,0,.07); color:var(--accent-deep) }
+  .acc-bar.is-open > .acc-summary{ border-bottom:1px solid var(--line) }
+  .acc-bar.is-open > .acc-summary .acc-chevron::before{ content:"✕"; font-size:1.8rem }
+  .acc-body{ display:none; padding:22px }
+  .acc-bar.is-open > .acc-body{ display:block }
+
+  .acc-summary--field{
+    letter-spacing:normal; padding:9px 56px;
+    display:flex; justify-content:center; align-items:center; gap:8px;
+    flex-wrap:wrap;
+  }
+  .acc-summary--field .text-input{
+    width:45%; min-width:140px;
+    text-align:center;
+  }
+
+  #acc-que{ overflow:visible; margin-bottom:8px; }
+  .acc-field-border-tools{
+    position:absolute; left:50%; bottom:-17px;
+    transform:translateX(-50%);
+    display:flex; align-items:center; gap:6px;
+    z-index:5;
+  }
+  .acc-field-border-tools .title-magic{ gap:6px; position:relative; }
+  .acc-field-border-tools .title-magic .title-bots{
+    position:absolute; right:calc(100% + 6px); top:50%;
+    transform:translateY(-50%);
+    padding:4px 8px; margin:0;
+    border-left:0; border-right:1px dashed var(--line-strong);
+    background:#fff; border-radius:var(--radius-pill);
+    box-shadow:var(--shadow-xs);
+    white-space:nowrap; z-index:6;
+  }
+  .acc-field-border-tools .title-magic-btn,
+  .acc-field-border-tools .acc-mic-btn{
+    width:34px; height:34px; padding:0; margin:0;
+    display:inline-grid; place-items:center;
+    border:1px solid var(--line-strong); border-radius:50%;
+    background:#fff; color:var(--accent);
+    font-size:1rem; line-height:1; cursor:pointer;
+    box-shadow:var(--shadow-xs);
+    transition:all var(--fast);
+  }
+  .acc-field-border-tools .title-magic-btn:hover,
+  .acc-field-border-tools .acc-mic-btn:hover{
+    border-color:var(--accent); color:var(--accent-deep);
+    background:var(--accent-soft); transform:translateY(-1px);
+  }
+  .acc-field-border-tools .title-magic-btn[aria-pressed="true"]{
+    background:linear-gradient(180deg, var(--accent), var(--accent-deep));
+    color:#fff; border-color:transparent;
+  }
+  .acc-field-border-tools .acc-mic-btn{ position:relative; overflow:hidden; }
+  .acc-field-border-tools .acc-mic-btn input[type=file]{
+    position:absolute; inset:0; width:100%; height:100%;
+    opacity:0; cursor:pointer;
+  }
+
+  .title-magic{ display: inline-flex; align-items: center; gap: 6px; }
+  .title-magic .title-magic-btn{
+    padding: 10px 14px;
+    color: var(--accent);
+  }
+  .title-magic .title-magic-btn[aria-pressed="true"]{
+    background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+    color: #fff; border-color: transparent;
+  }
+  .title-magic .title-bots{
+    display: none;
+    gap: 4px;
+    padding-left: 6px;
+    border-left: 1px dashed var(--line-strong);
+  }
+  .title-magic:has(.title-magic-btn[aria-pressed="true"]) .title-bots{
+    display: inline-flex;
+  }
+  .title-magic .bot-pick{
+    width: 32px; height: 32px;
+  }
+
+  /* Map */
+  .map-wrap{
+    margin: 0 0 16px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-xs);
+    background:
+      repeating-linear-gradient(45deg, var(--paper-warm) 0 14px, #fff 14px 28px);
+    min-height: 220px;
+    display: grid; place-items: center; position: relative;
+  }
+  .map-wrap[hidden]{ display:none }
+  .map-wrap iframe{ width: 100%; height: 240px; border: 0; display: block }
+
+  /* Two-column header */
+  .grid-top{
+    display:grid; gap: 18px;
+    margin: 4px 0 14px;
+    align-items: stretch;
+    grid-template-columns: minmax(0,1.4fr) minmax(0,1fr);
+  }
+  .grid-top .col-desc{ display: flex; flex-direction: column; }
+  .grid-top .col-side{
+    display: flex; flex-direction: column; align-items: stretch;
+    gap: 10px;
+    height: 100%;
+  }
+  .grid-top .col-side .map-wrap{
+    width: 100%; max-width: none; margin: 0;
+    height: 280px; flex: 0 0 auto;
+    position: relative;
+    overflow: hidden;
+  }
+  .grid-top .col-side .map-wrap iframe{
+    width: 100%;
+    height: calc(100% + 30px);
+    min-height: calc(280px + 30px);
+    margin-bottom: -30px;
+    display: block;
+  }
+  .grid-top .col-side .worthing-panel,
+  .grid-top .col-side .more-details-panel{ margin: 0; }
+  .map-top-controls{
+    display: flex; justify-content: flex-start; align-items: center; gap: 10px;
+    flex-wrap: wrap;
+  }
+  .map-top-controls #getCoordsBtn{ margin-left: auto; }
+  .map-top-controls #mapZone{ margin-right: auto; }
+  .extras-row .offer-cat-select{ flex: 0 0 auto; }
+  .col-side .coords-field{
+    flex: 0 1 200px; min-width: 0;
+    padding: 8px 14px;
+    background: var(--paper);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-pill);
+    font: 13px/1.4 var(--font-ui); color: var(--ink);
+    transition: all var(--fast);
+  }
+  .col-side .coords-field:focus{ outline: none; border-color: var(--accent); }
+  .col-side .coords-field[hidden]{ display: none; }
+  @media (max-width: 760px){
+    .grid-top{ grid-template-columns: 1fr }
+  }
+
+  /* Description + side tags */
+  .desc-row{
+    display: flex; gap: 12px; align-items: stretch;
+    margin-bottom: 24px;
+  }
+  .desc-row .ta-field{ flex: 1; min-width: 0; margin-bottom: 0; }
+  .desc-side-tags{
+    display: flex; flex-direction: column; gap: 8px;
+    justify-content: center; flex-shrink: 0;
+  }
+  .desc-side-tags .tag-chip{ white-space: nowrap }
+
+  .tag-chip{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:8px 14px; background:#fff; border:1px solid var(--line-strong);
+    border-radius:var(--radius-pill); cursor:pointer; font-weight:600; font-size:.88rem;
+    transition: all var(--fast);
+  }
+  .tag-chip input{ position:absolute; opacity:0; pointer-events:none }
+  .tag-chip:hover{ border-color:var(--accent); color:var(--accent-deep) }
+  .tag-chip:has(input:checked){
+    background: var(--accent-soft); border-color: var(--accent); color: var(--accent-deep);
+  }
+  .tag-chip:has(input:checked)::after{ content:"★"; color:var(--accent); font-weight:800 }
+
+  /* More details / Worthing toggles */
+  #acc-que .more-details-toggle,
+  #acc-que .worthing-toggle{
+    position: absolute; opacity: 0; pointer-events: none; width:1px; height:1px;
+    left: -9999px;
+  }
+  .extras-wrap{ display: flex; flex-direction: column; gap: 8px; margin: 0 0 14px; }
+  .extras-row{
+    display: flex; gap: 8px; flex-wrap: nowrap;
+    align-items: center; justify-content: space-between;
+  }
+  #acc-que .grid-top:has(.worthing-toggle:checked) .worthing-btn{
+    background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+    color: #fff; border-color: transparent;
+  }
+  .worthing-panel{
+    display: none;
+    margin-top: 4px;
+    padding: 12px;
+    background: var(--paper);
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius-sm);
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  #acc-que .grid-top:has(.worthing-toggle:checked) .worthing-panel{ display: grid; }
+  .worth-row{
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+  .worth-name{
+    font: 600 .85rem/1 var(--font-ui);
+    color: var(--ink-soft);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: color var(--fast);
+  }
+  .worth-name:hover{ color: var(--accent-deep); }
+  .worth-bars{ display: flex; gap: 4px; }
+  .worth-bar{
+    flex: 1; height: 22px;
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    padding: 0;
+    transition: all var(--fast);
+  }
+  .worth-bar:hover{ border-color: var(--accent); transform: translateY(-1px); }
+  .worth-bar.is-on{ border-color: transparent; }
+  /* Progressive purple scale */
+  .worth-bar.is-on[data-val="1"]{ background: #ddd6fe; }
+  .worth-bar.is-on[data-val="2"]{ background: #c4b5fd; }
+  .worth-bar.is-on[data-val="3"]{ background: #a78bfa; }
+  .worth-bar.is-on[data-val="4"]{ background: #8b5cf6; }
+  .worth-bar.is-on[data-val="5"]{ background: #6d28d9; }
+  .worth-row:has(.worth-bar.is-on) .worth-bar:not(.is-on){
+    opacity: .5;
+    border-color: transparent;
+  }
+  #acc-que .grid-top:has(.more-details-toggle:checked) .more-details-btn{
+    background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+    color: #fff; border-color: transparent;
+  }
+  .more-details-panel{
+    display: none;
+    padding: 10px;
+    background: var(--paper);
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius-sm);
+    grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 6px;
+  }
+  #acc-que .grid-top:has(.more-details-toggle:checked) .more-details-panel{ display: grid }
+  .more-details-panel label.clause{
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; background: #fff;
+    border: 1px solid var(--line); border-radius: var(--radius-sm);
+    cursor: pointer; font-size: .85rem; font-weight: 500;
+    color: var(--ink-soft);
+    transition: all var(--fast);
+  }
+  .more-details-panel label.clause:hover{ color: var(--accent-deep); }
+  .more-details-panel label.clause input{
+    position: absolute; opacity: 0; pointer-events: none; width:1px; height:1px;
+  }
+  .more-details-panel label.clause:has(input:checked){
+    background: var(--accent-soft); border-color: var(--accent); color: var(--accent-deep);
+  }
+  .more-details-panel:has(input:checked) label.clause:not(:has(input:checked)){ opacity: .5; }
+  .more-details-panel .clause-ico{ display: none }
+
+  .text-input{
+    width:100%; padding:13px 15px;
+    background:var(--paper); border:1px solid var(--line-strong); border-radius:var(--radius-sm);
+    font: 15px/1.4 var(--font-ui); color:inherit;
+    transition: all var(--fast);
+  }
+  .text-input:focus{ outline:none; border-color:var(--accent); background:#fff; box-shadow:0 0 0 3px var(--accent-glow) }
+
+  /* Bot row (lovely/joy/wisdom) revealed by magic */
+  #acc-que .bot-row{
+    display: none;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    padding-left: 4px;
+    margin-left: 2px;
+    border-left: 1px dashed var(--line-strong);
+  }
+  #acc-que .ta-bottom-tools:has(.opt-magic.is-on) .bot-row{ display: inline-flex; }
+  .bot-pick{
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: #fff; border: 1px solid var(--line-strong);
+    cursor: pointer;
+    font-size: 1rem; line-height: 1;
+    display: inline-grid; place-items: center;
+    transition: all var(--fast);
+    padding: 0;
+  }
+  .bot-pick:hover{ transform: translateY(-2px); border-color: var(--accent); }
+  .bot-pick:focus,
+  .bot-pick:focus-visible{ outline: none; }
+  .bot-pick.is-on{
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    transform: scale(1.06);
+    box-shadow: 0 4px 10px -2px var(--accent-glow);
+  }
+  .bot-pick[data-bot="lovely"].is-on,
+  .bot-pick[data-title-bot="lovely"].is-on{ background: #fce7f3; border-color: #ec4899 }
+  .bot-pick[data-bot="joy"].is-on,
+  .bot-pick[data-title-bot="joy"].is-on{    background: #fef3c7; border-color: #f59e0b }
+  .bot-pick[data-bot="wisdom"].is-on,
+  .bot-pick[data-title-bot="wisdom"].is-on{ background: var(--accent-soft); border-color: var(--accent) }
+  .bot-pick.bot-close{
+    color: var(--muted);
+    font-size: .85rem;
+    margin-left: 4px;
+  }
+  .bot-pick.bot-close:hover{
+    color: var(--accent-deep);
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+
+  /* opt-magic tool variant inside .ta-bottom-tools */
+  .ta-tool.opt-magic{ color: var(--accent) }
+  .ta-tool.opt-magic.is-on{
+    background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+    color: #fff; border-color: transparent;
+  }
+  #acc-que .ta-field .ta-bottom-tools .bot-row{ margin-left: 4px }
+
+  /* ====================================================================
+     INVITATION ACTION-GRID — ported from blogynormal §15 (summary panel),
+     mirroring offer/freed.html. All rules are scoped under .inv-body so
+     they only style the Invitation's interior. Hidden-input ids
+     (cycle-save, magic-toggle, etc.) only exist inside .inv-body, so
+     `body:has(#id:checked)` only fires when an Invitation toggle is active.
+     ==================================================================== */
+
+  .inv-body .action-grid{ display:flex; flex-direction:column; gap: 2rem; }
+  .inv-body .action-row{ display:flex; flex-wrap:wrap; gap: .5rem; justify-content:flex-start }
+  .inv-body .action-row.right{
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+    gap: .35rem;
+  }
+
+  /* Ghost buttons — blogynormal default. Scoped to .inv-body so the rest of
+     shary's .btn (pill look) is untouched. */
+  .inv-body .btn{
+    display:inline-flex; align-items:center; gap:.25rem;
+    height: 36px; padding: 0 .55rem;
+    border-radius: var(--radius-pill);
+    font: 600 .82rem/1 var(--font-ui);
+    letter-spacing: .04em; cursor: pointer;
+    text-decoration: none;
+    border: 1px solid var(--line-strong);
+    background: transparent; color: var(--ink-soft);
+    transition: var(--btn-trans), transform var(--fast);
+  }
+  .inv-body .btn.ghost{ background: transparent; border: 1px solid var(--line-strong); color: var(--ink-soft); }
+  .inv-body .btn.ghost:hover{
+    background: var(--fill-soft); border-color: var(--accent); color: var(--accent-deep);
+    box-shadow: 0 6px 16px var(--accent-glow); transform: translateY(-1px);
+  }
+  .inv-body .btn.ghost:active{
+    background: var(--fill-pressed); color:#fff; border-color: var(--accent);
+    transform: translateY(0); box-shadow: none;
+  }
+  .inv-body .btn.solid{ background: var(--grad-active); color:#fff; border:1px solid var(--accent-deep); }
+  .inv-body .btn.solid:hover{ filter: brightness(1.06); transform: translateY(-1px); }
+
+  /* Top action-row buttons (Insight / Magic / Copy) — 15% smaller */
+  .inv-body .action-row > .btn,
+  .inv-body .action-row > .insight-cycle .btn{
+    height: 31px;
+    padding: 0 .47rem;
+    font-size: .7rem;
+  }
+
+  /* Clause output — magic-variant swap (shary's #sentence keeps .sentence) */
+  .inv-body .clause-magic{ display:none; }
+  body:has(#magic-toggle:checked) .inv-body .clause-default{ display:none; }
+  body:has(#magic-toggle:checked) .inv-body .clause-magic{ display:block; }
+  .inv-body .magic-btn-summary .label-on{ display:none; }
+  body:has(#magic-toggle:checked) .inv-body .magic-btn-summary .label-off{ display:none; }
+  body:has(#magic-toggle:checked) .inv-body .magic-btn-summary .label-on{ display:inline; }
+  body:has(#magic-toggle:checked) .inv-body .magic-btn-summary{
+    background: var(--fill-pressed); color:#fff; border-color: var(--accent);
+  }
+
+  /* Insight cycle — 5 states (0 empty + 4 texts) */
+  .inv-body .insight-cycle{ display:inline-flex; position:relative; }
+  .inv-body .insight-step{ display:none; }
+  body:has(#insight-0:checked) .inv-body .insight-step:nth-child(1),
+  body:has(#insight-1:checked) .inv-body .insight-step:nth-child(2),
+  body:has(#insight-2:checked) .inv-body .insight-step:nth-child(3),
+  body:has(#insight-3:checked) .inv-body .insight-step:nth-child(4),
+  body:has(#insight-4:checked) .inv-body .insight-step:nth-child(5){ display:inline-flex; }
+  body:has(#insight-1:checked) .inv-body .insight-step:nth-child(2),
+  body:has(#insight-2:checked) .inv-body .insight-step:nth-child(3),
+  body:has(#insight-3:checked) .inv-body .insight-step:nth-child(4),
+  body:has(#insight-4:checked) .inv-body .insight-step:nth-child(5){
+    background: var(--fill-pressed); color:#fff; border-color: var(--accent);
+  }
+  .inv-body .insight-panel{
+    display:none;
+    margin-top: .9rem; padding: .9rem 1rem;
+    border-radius: 12px;
+    background: rgba(var(--accent-rgb), .06);
+    border: 1px solid rgba(var(--accent-rgb), .18);
+    font-size: .88rem; line-height: 1.55; color: var(--ink);
+  }
+  body:has(#insight-1:checked) .inv-body .insight-1-content,
+  body:has(#insight-2:checked) .inv-body .insight-2-content,
+  body:has(#insight-3:checked) .inv-body .insight-3-content,
+  body:has(#insight-4:checked) .inv-body .insight-4-content{ display:block; }
+
+  /* Views subtab — sits immediately below the Insight/Magic/Copy row */
+  .inv-body .action-row--views{
+    display:flex;
+    visibility:hidden;
+    justify-content:flex-start;
+    gap:.25rem;
+    margin: -16px 0 0 0;
+    min-height: 22px;
+  }
+  body:has(#views-open:checked) .inv-body .action-row--views{ visibility: visible; }
+  .inv-body .action-row--views .view-pick{
+    height: 22px !important;
+    padding: 0 .5rem !important;
+    font-size: .75rem !important;
+    line-height: 1;
+    border-radius: 6px;
+  }
+  body:has(#view-bars:checked)     .inv-body .view-pick[for="view-bars"],
+  body:has(#view-vertical:checked) .inv-body .view-pick[for="view-vertical"],
+  body:has(#view-axial:checked)    .inv-body .view-pick[for="view-axial"],
+  body:has(#view-spider:checked)   .inv-body .view-pick[for="view-spider"]{
+    background: var(--fill-pressed); color:#fff; border-color: var(--accent);
+  }
+  body:has(#views-open:checked) .inv-body .views-btn,
+  body:has(#view-bars:checked, #view-vertical:checked, #view-axial:checked, #view-spider:checked) .inv-body .views-btn{
+    background: var(--fill-soft); border-color: var(--accent); color: var(--accent-deep);
+  }
+
+  /* Chart slot — collapsed when no view marked. */
+  .inv-body .cssviz-out{
+    margin-top: .85rem;
+    padding-top: .7rem;
+    border-top: 1px dashed rgba(0,0,0,.08);
+  }
+  body:not(:has(#view-bars:checked, #view-vertical:checked, #view-axial:checked, #view-spider:checked)) .inv-body .cssviz-out{
+    display:none;
+  }
+  .inv-body .cssviz{ display:none; max-width: 360px; margin: 0 auto; }
+  body:has(#view-bars:checked) .inv-body .cssviz--bars{ display:block; }
+  body:has(#view-vertical:checked) .inv-body .cssviz--vertical{
+    display:flex; align-items:flex-end; justify-content:space-around; gap:.7rem;
+  }
+  body:has(#view-vertical:checked) .inv-body .cssviz--bars{ display:none; }
+  .inv-body .cssviz--svg{ text-align:center; color: var(--ink-mute); font-size:.8rem }
+  body:has(#view-axial:checked) .inv-body .cssviz--svg,
+  body:has(#view-spider:checked) .inv-body .cssviz--svg{ display:block; }
+  body:has(#view-axial:checked):not(:has(#view-bars:checked)):not(:has(#view-vertical:checked)) .inv-body .cssviz--bars,
+  body:has(#view-axial:checked):not(:has(#view-bars:checked)):not(:has(#view-vertical:checked)) .inv-body .cssviz--vertical,
+  body:has(#view-spider:checked):not(:has(#view-bars:checked)):not(:has(#view-vertical:checked)) .inv-body .cssviz--bars,
+  body:has(#view-spider:checked):not(:has(#view-bars:checked)):not(:has(#view-vertical:checked)) .inv-body .cssviz--vertical{
+    display:none;
+  }
+  .inv-body .cssbar{ display:flex; align-items:center; gap:.55rem; margin:.34rem 0; }
+  .inv-body .cssbar-emo{ width:1.5em; text-align:center; font-size:1.1rem }
+  .inv-body .cssbar-trk{
+    position:relative; flex:1; height:10px;
+    background: rgba(0,0,0,.08); border-radius:999px; overflow:hidden;
+  }
+  .inv-body .cssbar-trk > i{
+    position:absolute; left:0; top:0; bottom:0; width:0;
+    background: var(--accent); transition: width .2s ease;
+  }
+  .inv-body .csscol{ display:flex; flex-direction:column; align-items:center; gap:.35rem; }
+  .inv-body .csscol-trk{
+    position:relative; width:14px; height:104px;
+    background: rgba(0,0,0,.08); border-radius:999px; overflow:hidden;
+  }
+  .inv-body .csscol-trk > i{
+    position:absolute; left:0; right:0; bottom:0; height:0;
+    background: var(--accent); transition: height .2s ease;
+  }
+
+  /* Copy hint */
+  .inv-body .copy-btn{ margin: 0; }
+  .inv-body .copy-hint-panel{
+    display:none;
+    margin-top:.6rem; padding:.7rem .9rem;
+    border-radius: 10px;
+    background: rgba(0,0,0,.04);
+    border: 1px dashed var(--line-strong);
+    font-size:.85rem; line-height:1.5; color: var(--ink-soft);
+    text-align:center;
+  }
+  .inv-body .copy-hint-panel kbd{
+    display:inline-block; padding:1px 6px; margin:0 1px;
+    font: 600 .78rem/1 var(--font-ui);
+    background:#fff; border:1px solid var(--line-strong);
+    border-bottom-width: 2px; border-radius:4px;
+    color: var(--ink);
+  }
+  body:has(#copy-hint:checked) .inv-body .copy-hint-panel{ display:block; }
+  body:has(#copy-hint:checked) .inv-body .copy-btn{
+    background: var(--fill-pressed); color:#fff; border-color: var(--accent);
+  }
+
+  /* Save / Share / Publish cycles */
+  .inv-body .save-wrap, .inv-body .share-wrap, .inv-body .pub-wrap{
+    position:relative; display:inline-flex; flex-direction:column;
+  }
+  .inv-body .save-wrap { align-items:flex-start; }
+  .inv-body .share-wrap{ align-items:center; }
+  .inv-body .pub-wrap  { align-items:flex-end; }
+  .inv-body .cycle-trigger{ position:relative; display:inline-flex; }
+  .inv-body .cycle-step{ display:none; }
+  .inv-body .save-btn, .inv-body .share-btn, .inv-body .publish-btn{
+    height: 28px; padding: 0 .55rem; font-size:.7rem; white-space:nowrap;
+  }
+  .inv-body .save-wrap  .cycle-step--open,
+  .inv-body .pub-wrap   .cycle-step--open,
+  .inv-body .share-wrap .cycle-step--open{ display:inline-flex; }
+  body:has(#cycle-save:checked)  .inv-body .save-wrap  .cycle-step--open,
+  body:has(#cycle-pub:checked)   .inv-body .pub-wrap   .cycle-step--open,
+  body:has(#cycle-share:checked) .inv-body .share-wrap .cycle-step--open,
+  .inv-body .save-wrap.is-open  .cycle-step--open,
+  .inv-body .pub-wrap.is-open   .cycle-step--open,
+  .inv-body .share-wrap.is-open .cycle-step--open{ display:none; }
+  body:has(#cycle-save:checked)  .inv-body .save-wrap  .cycle-step--close,
+  body:has(#cycle-pub:checked)   .inv-body .pub-wrap   .cycle-step--close,
+  body:has(#cycle-share:checked) .inv-body .share-wrap .cycle-step--close,
+  .inv-body .save-wrap.is-open  .cycle-step--close,
+  .inv-body .pub-wrap.is-open   .cycle-step--close,
+  .inv-body .share-wrap.is-open .cycle-step--close{ display:inline-flex; }
+  body:has(#cycle-save:checked)  .inv-body .save-btn,
+  body:has(#cycle-pub:checked)   .inv-body .publish-btn,
+  body:has(#cycle-share:checked) .inv-body .share-btn,
+  .inv-body .save-wrap.is-open  .save-btn,
+  .inv-body .pub-wrap.is-open   .publish-btn,
+  .inv-body .share-wrap.is-open .share-btn{
+    background: var(--fill-pressed); color:#fff; border-color: var(--accent);
+  }
+
+  /* Sub-rows — in-flow inside the cycle-trigger (column flex), ordered
+     above / below the trigger. */
+  .inv-body .cycle-trigger{ flex-direction: column; align-items: inherit; gap: .35rem; }
+  .inv-body .cycle-row{
+    display:none;
+    flex-wrap:nowrap; gap:.25rem;
+    white-space:nowrap;
+  }
+  .inv-body .cycle-row.above{ order: -1; }
+  .inv-body .cycle-row.below{ order:  1; }
+  .inv-body .cycle-row.app-row{ order: -2; }
+  .inv-body .save-btn, .inv-body .share-btn, .inv-body .publish-btn{ order: 0; }
+  .inv-body .pub-wrap .go-btn{ order: 0; }
+  .inv-body .save-wrap  .cycle-row{ justify-content:flex-start; }
+  .inv-body .pub-wrap   .cycle-row{ justify-content:flex-end; }
+  .inv-body .share-wrap .cycle-row{ justify-content:center; }
+  body:has(#cycle-save:checked)  .inv-body .save-wrap  .cycle-row,
+  body:has(#cycle-pub:checked)   .inv-body .pub-wrap   .cycle-row,
+  body:has(#cycle-share:checked) .inv-body .share-wrap .cycle-row,
+  .inv-body .save-wrap.is-open  .cycle-row,
+  .inv-body .share-wrap.is-open .cycle-row,
+  .inv-body .pub-wrap.is-open   .cycle-row{ display:inline-flex; }
+  body:has(#cycle-pub:checked) .inv-body .pub-wrap .cycle-row.pub-row--schedule,
+  .inv-body .pub-wrap.is-open .cycle-row.pub-row--schedule{ display:none; }
+  body:has(#cycle-pub:checked):has(#pub-plat-0asis:checked) .inv-body .pub-wrap .cycle-row.pub-row--schedule,
+  .inv-body .pub-wrap.is-open.plat-0asis .cycle-row.pub-row--schedule{ display:inline-flex; }
+
+  /* Sub-row buttons — smaller, squared */
+  .inv-body .cycle-row .btn{
+    height: 25px; padding: 0 .5rem; border-radius:4px;
+    font-size:.72rem; letter-spacing:.03em;
+  }
+  .inv-body .cycle-row .btn:hover{ box-shadow:none; transform:none; }
+  body:has(#save-app:checked)         .inv-body [for="save-app"],
+  body:has(#save-fmt-txt:checked)     .inv-body [for="save-fmt-txt"],
+  body:has(#save-fmt-md:checked)      .inv-body [for="save-fmt-md"],
+  body:has(#save-fmt-jpg:checked)     .inv-body [for="save-fmt-jpg"],
+  body:has(#save-fmt-html:checked)    .inv-body [for="save-fmt-html"],
+  body:has(#save-fmt-csv:checked)     .inv-body [for="save-fmt-csv"],
+  body:has(#save-fmt-xml:checked)     .inv-body [for="save-fmt-xml"],
+  body:has(#save-fmt-json:checked)    .inv-body [for="save-fmt-json"],
+  body:has(#pub-all:checked)          .inv-body [for="pub-all"],
+  body:has(#pub-plat-wizardry:checked) .inv-body [for="pub-plat-wizardry"],
+  body:has(#pub-plat-reddit:checked)  .inv-body [for="pub-plat-reddit"],
+  body:has(#pub-plat-0asis:checked)   .inv-body [for="pub-plat-0asis"],
+  body:has(#pub-plat-mastodon:checked) .inv-body [for="pub-plat-mastodon"],
+  body:has(#pub-plat-bsky:checked)    .inv-body [for="pub-plat-bsky"],
+  body:has(#pub-plat-threads:checked) .inv-body [for="pub-plat-threads"],
+  body:has(#pub-plat-x:checked)       .inv-body [for="pub-plat-x"],
+  body:has(#pub-plat-tumblr:checked)  .inv-body [for="pub-plat-tumblr"],
+  body:has(#pub-plat-medium:checked)  .inv-body [for="pub-plat-medium"]{
+    background: var(--accent);
+    color:#fff;
+    border-color: var(--accent-deep);
+    box-shadow: inset 0 0 0 1px var(--accent-deep), 0 2px 6px var(--accent-glow);
+  }
+
+  /* App pill — bigger, rounder, with a click animation */
+  .inv-body .app-row [for="save-app"]{
+    height: calc(25px * 1.15); padding: 0 .8rem; border-radius:999px;
+    font-weight: 700;
+    transition: transform var(--fast), box-shadow var(--fast), background var(--fast);
+  }
+  .inv-body .app-row [for="save-app"]:hover{ box-shadow: 0 4px 10px var(--accent-glow); }
+  .inv-body .app-row [for="save-app"]:active{ animation: app-press .35s ease; }
+  @keyframes app-press{
+    0%   { transform: scale(1); }
+    40%  { transform: scale(.9);  box-shadow: 0 0 0 6px var(--accent-glow); }
+    100% { transform: scale(1);   box-shadow: 0 4px 10px var(--accent-glow); }
+  }
+
+  /* Platform 3-pane slider sitting below Publish */
+  .inv-body .plat-row{ align-items:center; gap: .25rem; }
+  .inv-body .plat-viewport{
+    --plat-set-w: 13.5rem;
+    overflow:hidden; width: var(--plat-set-w);
+  }
+  .inv-body .plat-track{
+    display:flex; flex-wrap:nowrap;
+    transition: transform .35s ease; will-change: transform;
+  }
+  .inv-body .plat-set{
+    display:inline-flex; flex: 0 0 var(--plat-set-w); width: var(--plat-set-w); gap:.25rem;
+  }
+  .inv-body .plat-set .btn{
+    flex: 1 1 0; min-width: 0; padding: 0 .35rem;
+    text-align:center; justify-content:center;
+  }
+  body:has(#pub-plat-set-1:checked) .inv-body .plat-track{ transform: translateX(calc(-1 * var(--plat-set-w))); }
+  body:has(#pub-plat-set-2:checked) .inv-body .plat-track{ transform: translateX(calc(-2 * var(--plat-set-w))); }
+  .inv-body .plat-nav{
+    display:none;
+    align-items:center; justify-content:center;
+    width:22px; height:25px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    background: rgba(255,255,255,.6);
+    cursor:pointer; font-size:.95rem; line-height:1;
+    color: var(--ink-soft);
+    user-select:none;
+  }
+  .inv-body .plat-nav:hover{ background: var(--accent); color:#fff; border-color: var(--accent-deep); }
+  body:has(#pub-plat-set-0:checked) .inv-body .plat-nav[data-when-set="0"],
+  body:has(#pub-plat-set-1:checked) .inv-body .plat-nav[data-when-set="1"],
+  body:has(#pub-plat-set-2:checked) .inv-body .plat-nav[data-when-set="2"]{ display:inline-flex; }
+
+  /* Inline Go button — collapsed until Publish is open */
+  .inv-body .pub-wrap .go-btn{
+    min-width: 0; max-width: 0; padding: 0; margin: 0;
+    border-width: 0; opacity: 0; overflow: hidden;
+    white-space: nowrap; height: 29px; font-size: .72rem;
+    text-decoration: none;
+    transition: max-width .3s ease, padding .3s ease, margin .3s ease, opacity .25s ease .05s;
+  }
+  body:has(#cycle-pub:checked) .inv-body .pub-wrap .go-btn,
+  .inv-body .pub-wrap.is-open .go-btn{
+    max-width: 6rem; padding: 0 .55rem; margin-left: .35rem;
+    border-width: 1px; opacity: 1;
+  }
+
+  /* Schedule row */
+  .inv-body .pub-row--schedule{
+    align-items:center; gap:.35rem; padding:0;
+    flex-wrap:nowrap; white-space:nowrap;
+  }
+  .inv-body .pub-row--schedule .pub-hh,
+  .inv-body .pub-row--schedule .pub-mm,
+  .inv-body .pub-row--schedule .pub-target{
+    height: 25px; padding: 0 .4rem;
+    font: 600 .72rem/1 var(--font-ui); letter-spacing: .03em;
+    color: var(--ink); background: rgba(255,255,255,.9);
+    border: 1px solid var(--line-strong); border-radius: 4px;
+    outline: none;
+    transition: border-color var(--fast), box-shadow var(--fast);
+  }
+  .inv-body .pub-row--schedule .pub-hh:focus,
+  .inv-body .pub-row--schedule .pub-mm:focus,
+  .inv-body .pub-row--schedule .pub-target:focus{
+    border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow);
+  }
+  .inv-body .pub-row--schedule .pub-colon{
+    font: 700 .85rem/1 var(--font-ui); color: var(--ink-soft);
+  }
+  .inv-body .pub-row--schedule .pub-all-btn{ flex: 0 0 auto; }
+
+  /* Calendar control + popup panel */
+  .inv-body .pub-cal-wrap{ position:relative; display:inline-flex; }
+  .inv-body .pub-cal{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:30px; height:25px; padding:0;
+    border:1px solid var(--line-strong); border-radius:4px;
+    background: rgba(255,255,255,.9);
+    cursor:pointer; line-height:1;
+    transition: border-color var(--fast), box-shadow var(--fast), background var(--fast);
+  }
+  .inv-body .pub-cal:hover, .inv-body .pub-cal:focus-within{
+    border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow);
+  }
+  body:has(#pub-cal-open:checked) .inv-body .pub-cal{
+    background: var(--accent); color:#fff; border-color: var(--accent-deep);
+  }
+  .inv-body .pub-cal .pub-cal-icon{ pointer-events:none; font-size:.95rem; line-height:1; }
+  .inv-body .pub-cal-panel{
+    display:none; position:absolute;
+    bottom: calc(100% + 6px); left: 0; z-index: 60;
+    padding: 24px .5rem .45rem;
+    background:#fff; border:1px solid var(--line-strong); border-radius:8px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.15);
+    white-space:nowrap;
+  }
+  body:has(#pub-cal-open:checked) .inv-body .pub-cal-panel{
+    display:inline-flex; align-items:center; gap:.3rem;
+  }
+  .inv-body .pub-cal-close{
+    position:absolute; top:4px; left:4px;
+    width:18px; height:18px;
+    display:inline-flex; align-items:center; justify-content:center;
+    border-radius:50%; background: rgba(255,255,255,.9);
+    border:1px solid var(--line); color: var(--ink);
+    font: 700 .85rem/1 var(--font-ui);
+    cursor:pointer;
+    transition: background var(--fast), color var(--fast), border-color var(--fast);
+  }
+  .inv-body .pub-cal-close:hover{ background: var(--accent); color:#fff; border-color: var(--accent-deep); }
+  .inv-body .pub-cal-sel{
+    height:25px; padding: 0 .35rem;
+    font: 600 .72rem/1 var(--font-ui); letter-spacing:.03em;
+    color: var(--ink); background: rgba(255,255,255,.9);
+    border:1px solid var(--line-strong); border-radius:4px;
+    outline:none; cursor:pointer;
+  }
+  .inv-body .pub-cal-sel:focus{ border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+
+  /* Platform intro panels */
+  .inv-body .plat-intro{
+    display:none;
+    width:100%; max-width:320px;
+    margin-top: .35rem;
+    padding: .6rem .8rem;
+    background: transparent; border:0; border-radius:0;
+    text-align:center;
+    font-size:.85rem; color: var(--ink); line-height:1.5;
+  }
+  .inv-body .plat-intro p{ margin: 0 0 .35rem; }
+  .inv-body .plat-intro p:last-child{ margin-bottom: 0; }
+  body:has(#cycle-pub:checked):has(#pub-plat-wizardry:checked) .inv-body .plat-intro--wizardry,
+  body:has(#cycle-pub:checked):has(#pub-plat-reddit:checked)   .inv-body .plat-intro--reddit,
+  body:has(#cycle-pub:checked):has(#pub-plat-0asis:checked)    .inv-body .plat-intro--0asis{ display:block; }
+  .inv-body .pub-wrap .plat-intro{ margin-top: calc(25px + .35rem); }
+
+  /* Boty wizardry grid (3×3) */
+  .inv-body .wizardry-grid{
+    display:grid; grid-template-columns: repeat(3, 1fr); gap:.45rem;
+  }
+  .inv-body .wizardry-cell{
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+    gap:.15rem; min-height: 64px; padding: .45rem .35rem;
+    border:1px solid var(--line); border-radius:10px;
+    background: rgba(255,255,255,.85);
+    font-size:.78rem; text-align:center; cursor:pointer;
+    transition: var(--btn-trans), opacity var(--fast), transform var(--fast), background var(--fast);
+  }
+  .inv-body .wizardry-cell:hover{
+    border-color: var(--accent); background: var(--fill-soft); transform: translateY(-1px);
+  }
+  .inv-body .wizardry-cell-icon{ font-size: 1.6rem; line-height: 1; }
+  .inv-body .wizardry-cell-name{ font: 700 .72rem/1 var(--font-ui); color: var(--ink-soft); letter-spacing: .04em; }
+  .inv-body .wizardry-cell-info{
+    display:none; margin-top: .25rem;
+    font: 400 .7rem/1.35 var(--font-ui); color: var(--ink);
+  }
+  body:has(input[name="wizardry-pick"]:not(#wizardry-none):checked) .inv-body .wizardry-cell{ opacity: .5; }
+  body:has(#wizardry-sage:checked)  .inv-body .wizardry-cell[for="wizardry-sage"],
+  body:has(#wizardry-spark:checked) .inv-body .wizardry-cell[for="wizardry-spark"],
+  body:has(#wizardry-echo:checked)  .inv-body .wizardry-cell[for="wizardry-echo"],
+  body:has(#wizardry-coral:checked) .inv-body .wizardry-cell[for="wizardry-coral"],
+  body:has(#wizardry-nova:checked)  .inv-body .wizardry-cell[for="wizardry-nova"],
+  body:has(#wizardry-lyra:checked)  .inv-body .wizardry-cell[for="wizardry-lyra"],
+  body:has(#wizardry-mira:checked)  .inv-body .wizardry-cell[for="wizardry-mira"],
+  body:has(#wizardry-pico:checked)  .inv-body .wizardry-cell[for="wizardry-pico"],
+  body:has(#wizardry-vega:checked)  .inv-body .wizardry-cell[for="wizardry-vega"]{
+    opacity: 1;
+    border-color: var(--accent-deep);
+    background: var(--fill-mid);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+  }
+  body:has(#wizardry-sage:checked)  .inv-body .wizardry-cell[for="wizardry-sage"]  .wizardry-cell-info,
+  body:has(#wizardry-spark:checked) .inv-body .wizardry-cell[for="wizardry-spark"] .wizardry-cell-info,
+  body:has(#wizardry-echo:checked)  .inv-body .wizardry-cell[for="wizardry-echo"]  .wizardry-cell-info,
+  body:has(#wizardry-coral:checked) .inv-body .wizardry-cell[for="wizardry-coral"] .wizardry-cell-info,
+  body:has(#wizardry-nova:checked)  .inv-body .wizardry-cell[for="wizardry-nova"]  .wizardry-cell-info,
+  body:has(#wizardry-lyra:checked)  .inv-body .wizardry-cell[for="wizardry-lyra"]  .wizardry-cell-info,
+  body:has(#wizardry-mira:checked)  .inv-body .wizardry-cell[for="wizardry-mira"]  .wizardry-cell-info,
+  body:has(#wizardry-pico:checked)  .inv-body .wizardry-cell[for="wizardry-pico"]  .wizardry-cell-info,
+  body:has(#wizardry-vega:checked)  .inv-body .wizardry-cell[for="wizardry-vega"]  .wizardry-cell-info{ display:block; }
+
+  /* Download row — Save's format ticks light up the download button */
+  .inv-body .download-row{ display:flex; width:100%; margin-top: .6rem; }
+  .inv-body .dl-btn{
+    --dl-base: 60;
+    --dl-txt:0; --dl-md:0; --dl-jpg:0; --dl-html:0; --dl-csv:0; --dl-xml:0; --dl-json:0; --dl-app:0;
+    flex: 1 1 0; min-width: 0; width: 100%;
+    height: 36px; padding: 0 .72rem;
+    border-radius: 4px;
+    font-weight: 700; font-size: .86rem; letter-spacing: .03em;
+    text-decoration: none;
+    display:inline-flex; align-items:center; justify-content:center;
+    opacity: calc(
+      (var(--dl-base) + var(--dl-txt) + var(--dl-md) + var(--dl-jpg) + var(--dl-html)
+       + var(--dl-csv) + var(--dl-xml) + var(--dl-json) + var(--dl-app)) / 100
+    );
+    transition: opacity var(--fast);
+  }
+  body:has(#save-fmt-txt:checked)  .inv-body .dl-btn{ --dl-txt: 5; }
+  body:has(#save-fmt-md:checked)   .inv-body .dl-btn{ --dl-md:  5; }
+  body:has(#save-fmt-jpg:checked)  .inv-body .dl-btn{ --dl-jpg: 5; }
+  body:has(#save-fmt-html:checked) .inv-body .dl-btn{ --dl-html:5; }
+  body:has(#save-fmt-csv:checked)  .inv-body .dl-btn{ --dl-csv: 5; }
+  body:has(#save-fmt-xml:checked)  .inv-body .dl-btn{ --dl-xml: 5; }
+  body:has(#save-fmt-json:checked) .inv-body .dl-btn{ --dl-json:5; }
+  body:has(#save-app:checked)      .inv-body .dl-btn{ --dl-app:25; }
+  .inv-body .dl-btn .dl-results, .inv-body .dl-btn .dl-app{ display:none; }
+  body:has(#save-fmt-txt:checked)  .inv-body .dl-btn .dl-results,
+  body:has(#save-fmt-md:checked)   .inv-body .dl-btn .dl-results,
+  body:has(#save-fmt-jpg:checked)  .inv-body .dl-btn .dl-results,
+  body:has(#save-fmt-html:checked) .inv-body .dl-btn .dl-results,
+  body:has(#save-fmt-csv:checked)  .inv-body .dl-btn .dl-results,
+  body:has(#save-fmt-xml:checked)  .inv-body .dl-btn .dl-results,
+  body:has(#save-fmt-json:checked) .inv-body .dl-btn .dl-results{ display:inline; }
+  body:has(#save-app:checked) .inv-body .dl-btn .dl-app{ display:inline; }
+
+  /* Hide the bare radio/checkbox state inputs from the page */
+  .inv-body .ctl{ position:absolute; opacity:0; pointer-events:none; width:1px; height:1px; }
+
+  /* ── translaty — page-translation engine + worldball switcher ── */
+  /* i18n span toggle (CSS-only): hide every non-active language */
+  .es{display:none}                                  /* default view = .en */
+  body:has(#lang-es:checked) .en{display:none}
+  body:has(#lang-es:checked) .es{display:inline}
+  /* worldball switcher (🌐 opens the language options) */
+  /* language selector lives inside the topbar menu now — styled as a menu row */
+  .menu-lang{ padding:0 }
+  .menu-lang .lang{ margin:0 }
+  .menu-lang summary.worldball{
+    width:auto; height:auto; border:0; border-radius:var(--radius-sm);
+    justify-content:flex-start; gap:9px; padding:9px 12px; margin:0;
+    font:600 .88rem/1.2 var(--font-ui); color:var(--ink); background:transparent;
+  }
+  .menu-lang summary.worldball:hover,
+  .menu-lang .lang[open]>summary.worldball{ background:var(--accent-soft); color:var(--accent-deep) }
+  .menu-lang .lang-opts{ position:static; margin:2px 0 4px; padding:0 12px; border:0; background:transparent; box-shadow:none; gap:6px }
+  .menu-lang .lang label{ min-height:34px; flex:1 1 auto; justify-content:center }
+  .lang{display:inline-block;position:relative;margin:.2rem 0 .6rem}
+  .lang>summary{list-style:none;cursor:pointer;width:40px;height:40px;border:1px solid #999;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;font-size:1.35rem;line-height:1;-webkit-user-select:none;user-select:none}
+  .lang>summary::-webkit-details-marker{display:none}
+  .lang[open]>summary{border-color:#333;background:#f2f2f2}
+  .lang-opts{position:absolute;right:0;z-index:10;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;
+    background:#fff;border:1px solid #999;border-radius:12px;padding:6px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+  .lang input{position:absolute;opacity:0;pointer-events:none}
+  .lang label{cursor:pointer;padding:0 12px;min-height:40px;display:inline-flex;align-items:center;border:1px solid #999;border-radius:11px;white-space:nowrap}
+  .lang input:checked + label{background:#333;color:#fff;font-weight:bold;border-color:#333}
+  @media (prefers-color-scheme:dark){
+    .lang>summary{border-color:#777} .lang[open]>summary{background:#2a2a2a;border-color:#999}
+    .lang-opts{background:#222;border-color:#777;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+    .lang label{border-color:#777}
+    .lang input:checked + label{background:#e9e9e9;color:#111;border-color:#e9e9e9}
+  }
+</style>
+</head>
+<body class="intro-anim">
+
+<input type="checkbox" id="info-toggle" class="info-toggle">
+
+<div class="flove-bar">
+  <div class="topmenu">
+    <button type="button" class="brand" id="menuBtn" aria-haspopup="true" aria-expanded="false" aria-label="Menu" data-aria-en="Menu" data-aria-es="Menú">
+      <!-- Shary mark · canonical registry: images/apps/logos/economy/economy-logos.html
+           (Shary · live, gradient lg-sha). Kept inline so the app stays
+           self-contained. The .logo-wrap anchors the entrance splash. -->
+      <span class="logo-wrap">
+      <svg class="flove-mark" aria-hidden="true" viewBox="0 0 100 100" width="1em" height="1em">
+        <defs>
+          <linearGradient id="g-shary" x1="78" y1="82" x2="48" y2="14" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#8b5cf6"/>
+            <stop offset="55%" stop-color="#a855f7"/>
+            <stop offset="100%" stop-color="#ec4899"/>
+          </linearGradient>
+        </defs>
+        <g stroke="url(#g-shary)" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="50" cy="50" r="27"/>
+          <circle cx="77" cy="50" r="6"/>
+        </g>
+        <circle cx="50" cy="50" r="8" fill="url(#g-shary)"/>
+      </svg>
+      </span>
+      <span class="flove-app-name">Shary</span>
+    </button>
+    <div class="menu-pop" id="menuPop" hidden>
+      <label class="menu-item" for="info-toggle">ℹ️ <span class="en" lang="en">About Shary</span><span class="es" lang="es">Acerca de Shary</span></label>
+      <a class="menu-item" href="../index.html">🏠 <span class="en" lang="en">flove launcher</span><span class="es" lang="es">lanzador de flove</span></a>
+      <a class="menu-item" href="../../appy/appy-basic.html">👤 <span class="en" lang="en">Profile</span><span class="es" lang="es">Perfil</span></a>
+      <a class="menu-item" href="https://flove.org" target="_blank" rel="noopener">🌐 flove.org</a>
+      <div class="menu-lang">
+        <details class="lang">
+          <summary class="worldball" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐 <span class="en" lang="en">Language</span><span class="es" lang="es">Idioma</span></summary>
+          <div class="lang-opts">
+            <input type="radio" name="lang" id="lang-en" checked><label for="lang-en">English</label>
+            <input type="radio" name="lang" id="lang-es"><label for="lang-es">Español</label>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="app-info" id="app-info">
+  <div class="container">
+    <h1>SHARY · <em><span class="en" lang="en">lending conditions</span><span class="es" lang="es">condiciones de préstamo</span></em></h1>
+  </div>
+</section>
+
+<main class="container">
+
+ <form id="thingForm" autocomplete="off">
+   <!-- ░░ QUE — título, descripción, mapa, worth ░░ -->
+   <div class="acc-bar" id="acc-que">
+     <div class="acc-summary acc-summary--field">
+       <input class="text-input" id="offerTitle" type="text" placeholder="Offer a thing here" data-ph-en="Offer a thing here" data-ph-es="Ofrece algo aquí">
+       <!-- Magia + micrófono colgando del borde inferior del campo, centrados -->
+       <div class="acc-field-border-tools">
+         <div class="title-magic">
+           <button type="button" class="btn small title-magic-btn" id="titleMagicBtn" aria-pressed="false" aria-label="Magic" data-aria-en="Magic" data-aria-es="Magia">✦</button>
+           <div class="title-bots" id="titleBots">
+             <button type="button" class="bot-pick" data-title-bot="lovely" aria-label="Lovely" data-aria-en="Lovely" data-aria-es="Cariño">😍</button>
+             <button type="button" class="bot-pick" data-title-bot="joy"    aria-label="Joy" data-aria-en="Joy" data-aria-es="Alegría">😂</button>
+             <button type="button" class="bot-pick" data-title-bot="wisdom" aria-label="Wisdom" data-aria-en="Wisdom" data-aria-es="Sabiduría">🔥</button>
+             <button type="button" class="bot-pick bot-close" data-bot-close="title" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">✕</button>
+           </div>
+         </div>
+         <label class="acc-mic-btn" aria-label="Audio" data-aria-en="Audio" data-aria-es="Audio">🎤<input type="file" accept="audio/*" id="offerTitle-mic" aria-label="Upload audio" data-aria-en="Upload audio" data-aria-es="Subir audio"></label>
+       </div>
+     </div>
+     <div class="acc-body">
+
+   <!-- Top grid: Title + Where + Additional + Description on the left, Map (centered top) on the right -->
+   <div class="grid-top">
+     <div class="col-desc">
+       <div class="desc-row">
+         <div class="ta-field">
+           <textarea id="offerName" data-opt-ta="offerName" rows="3" placeholder="Description" data-ph-en="Description" data-ph-es="Descripción"></textarea>
+           <div class="ta-bottom-tools">
+             <label class="ta-tool" aria-label="Audio" data-aria-en="Audio" data-aria-es="Audio">🎤<input type="file" accept="audio/*" id="offerName-mic" aria-label="Upload audio" data-aria-en="Upload audio" data-aria-es="Subir audio"></label>
+             <label class="ta-tool" aria-label="File" data-aria-en="File" data-aria-es="Archivo">📎<input type="file" id="offerName-file" aria-label="Upload file" data-aria-en="Upload file" data-aria-es="Subir archivo"></label>
+             <button type="button" class="ta-tool opt-magic" data-magic-for="offerName" aria-label="Magic" data-aria-en="Magic" data-aria-es="Magia">✦</button>
+             <div class="bot-row" data-bots-for="offerName">
+               <button type="button" class="bot-pick" data-bot="lovely" aria-label="Lovely" data-aria-en="Lovely" data-aria-es="Cariño">😍</button>
+               <button type="button" class="bot-pick" data-bot="joy"    aria-label="Joy" data-aria-en="Joy" data-aria-es="Alegría">😂</button>
+               <button type="button" class="bot-pick" data-bot="wisdom" aria-label="Wisdom" data-aria-en="Wisdom" data-aria-es="Sabiduría">🔥</button>
+               <button type="button" class="bot-pick bot-close" data-bot-close="offerName" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">✕</button>
+             </div>
+           </div>
+         </div>
+         <div class="desc-side-tags">
+           <label class="tag-chip"><input type="checkbox" id="eco"> <span class="en" lang="en">Ecological</span><span class="es" lang="es">Ecológico</span></label>
+           <label class="tag-chip"><input type="checkbox" id="craft"> <span class="en" lang="en">Crafted</span><span class="es" lang="es">Artesano</span></label>
+         </div>
+       </div>
+
+       <div class="extras-wrap">
+         <div class="extras-row">
+           <input type="checkbox" class="more-details-toggle" id="more-details-toggle">
+           <label class="btn small more-details-btn" for="more-details-toggle"><span class="en" lang="en">More details</span><span class="es" lang="es">Más detalles</span></label>
+           <select class="pill-select offer-cat-select" id="offerCat" aria-label="Sector" data-aria-en="Sector" data-aria-es="Sector">
+             <option value="" disabled selected hidden data-en="Sectors" data-es="Sectores">Sectors</option>
+             <option data-en="Tools" data-es="Herramientas">Tools</option>
+             <option data-en="Clothes" data-es="Ropa">Clothes</option>
+             <option data-en="Games" data-es="Juegos">Games</option>
+             <option data-en="Books" data-es="Libros">Books</option>
+             <option data-en="Food" data-es="Comida">Food</option>
+             <option data-en="Music" data-es="Música">Music</option>
+             <option data-en="Services" data-es="Servicios">Services</option>
+           </select>
+           <input type="checkbox" class="worthing-toggle" id="worthing-toggle">
+           <label class="btn small worthing-btn" for="worthing-toggle">✦ <span class="en" lang="en">Worth it</span><span class="es" lang="es">Merece la pena</span></label>
+         </div>
+         <div class="more-details-panel">
+           <label class="clause"><input type="checkbox" name="dealy-clause" value="essential"><span class="clause-ico">⭐</span><span class="en" lang="en">Essential</span><span class="es" lang="es">Esencial</span></label>
+           <label class="clause"><input type="checkbox" name="dealy-clause" value="useful"><span class="clause-ico">⭐</span><span class="en" lang="en">Useful</span><span class="es" lang="es">Útil</span></label>
+           <label class="clause"><input type="checkbox" name="dealy-clause" value="purposeful"><span class="clause-ico">⭐</span><span class="en" lang="en">Purposeful</span><span class="es" lang="es">Con propósito</span></label>
+           <label class="clause"><input type="checkbox" name="dealy-clause" value="endorsed"><span class="clause-ico">⭐</span><span class="en" lang="en">Endorsed by someone</span><span class="es" lang="es">Avalado por alguien</span></label>
+           <label class="clause"><input type="checkbox" name="dealy-clause" value="climatyful"><span class="clause-ico">⭐</span>Climatyful</label>
+           <label class="clause"><input type="checkbox" name="dealy-clause" value="socialisty-49"><span class="clause-ico">⭐</span>Socialisty 49</label>
+           <label class="clause"><input type="checkbox" name="dealy-clause" value="socialisty-99"><span class="clause-ico">⭐</span>Socialisty 99</label>
+           <label class="clause"><input type="checkbox" name="use-clause" value="transportable"><span class="clause-ico">🏙️</span><span class="en" lang="en">Transportable</span><span class="es" lang="es">Transportable</span></label>
+           <label class="clause"><input type="checkbox" name="use-clause" value="all-climates"><span class="clause-ico">🏙️</span><span class="en" lang="en">Used under all possible climates</span><span class="es" lang="es">Usado en todos los climas posibles</span></label>
+         </div>
+         <div class="worthing-panel">
+           <div class="worth-row" data-cat="sym">
+             <span class="worth-name"><span class="en" lang="en">Symbolical</span><span class="es" lang="es">Simbólico</span></span>
+             <div class="worth-bars" role="radiogroup" aria-label="Symbolical" data-aria-en="Symbolical" data-aria-es="Simbólico">
+               <button type="button" class="worth-bar" data-val="1" aria-label="1"></button>
+               <button type="button" class="worth-bar" data-val="2" aria-label="2"></button>
+               <button type="button" class="worth-bar" data-val="3" aria-label="3"></button>
+               <button type="button" class="worth-bar" data-val="4" aria-label="4"></button>
+               <button type="button" class="worth-bar" data-val="5" aria-label="5"></button>
+             </div>
+           </div>
+           <div class="worth-row" data-cat="hist">
+             <span class="worth-name"><span class="en" lang="en">Historical</span><span class="es" lang="es">Histórico</span></span>
+             <div class="worth-bars" role="radiogroup" aria-label="Historical" data-aria-en="Historical" data-aria-es="Histórico">
+               <button type="button" class="worth-bar" data-val="1" aria-label="1"></button>
+               <button type="button" class="worth-bar" data-val="2" aria-label="2"></button>
+               <button type="button" class="worth-bar" data-val="3" aria-label="3"></button>
+               <button type="button" class="worth-bar" data-val="4" aria-label="4"></button>
+               <button type="button" class="worth-bar" data-val="5" aria-label="5"></button>
+             </div>
+           </div>
+           <div class="worth-row" data-cat="ideal">
+             <span class="worth-name"><span class="en" lang="en">Ideal</span><span class="es" lang="es">Ideal</span></span>
+             <div class="worth-bars" role="radiogroup" aria-label="Ideal" data-aria-en="Ideal" data-aria-es="Ideal">
+               <button type="button" class="worth-bar" data-val="1" aria-label="1"></button>
+               <button type="button" class="worth-bar" data-val="2" aria-label="2"></button>
+               <button type="button" class="worth-bar" data-val="3" aria-label="3"></button>
+               <button type="button" class="worth-bar" data-val="4" aria-label="4"></button>
+               <button type="button" class="worth-bar" data-val="5" aria-label="5"></button>
+             </div>
+           </div>
+           <div class="worth-row" data-cat="pot">
+             <span class="worth-name"><span class="en" lang="en">Potential</span><span class="es" lang="es">Potencial</span></span>
+             <div class="worth-bars" role="radiogroup" aria-label="Potential" data-aria-en="Potential" data-aria-es="Potencial">
+               <button type="button" class="worth-bar" data-val="1" aria-label="1"></button>
+               <button type="button" class="worth-bar" data-val="2" aria-label="2"></button>
+               <button type="button" class="worth-bar" data-val="3" aria-label="3"></button>
+               <button type="button" class="worth-bar" data-val="4" aria-label="4"></button>
+               <button type="button" class="worth-bar" data-val="5" aria-label="5"></button>
+             </div>
+           </div>
+           <div class="worth-row" data-cat="func">
+             <span class="worth-name"><span class="en" lang="en">Functional</span><span class="es" lang="es">Funcional</span></span>
+             <div class="worth-bars" role="radiogroup" aria-label="Functional" data-aria-en="Functional" data-aria-es="Funcional">
+               <button type="button" class="worth-bar" data-val="1" aria-label="1"></button>
+               <button type="button" class="worth-bar" data-val="2" aria-label="2"></button>
+               <button type="button" class="worth-bar" data-val="3" aria-label="3"></button>
+               <button type="button" class="worth-bar" data-val="4" aria-label="4"></button>
+               <button type="button" class="worth-bar" data-val="5" aria-label="5"></button>
+             </div>
+           </div>
+           <div class="worth-row" data-cat="aff">
+             <span class="worth-name"><span class="en" lang="en">Affordable</span><span class="es" lang="es">Asequible</span></span>
+             <div class="worth-bars" role="radiogroup" aria-label="Affordable" data-aria-en="Affordable" data-aria-es="Asequible">
+               <button type="button" class="worth-bar" data-val="1" aria-label="1"></button>
+               <button type="button" class="worth-bar" data-val="2" aria-label="2"></button>
+               <button type="button" class="worth-bar" data-val="3" aria-label="3"></button>
+               <button type="button" class="worth-bar" data-val="4" aria-label="4"></button>
+               <button type="button" class="worth-bar" data-val="5" aria-label="5"></button>
+             </div>
+           </div>
+           <div class="worth-row" data-cat="resp">
+             <span class="worth-name"><span class="en" lang="en">Respectful</span><span class="es" lang="es">Respetuoso</span></span>
+             <div class="worth-bars" role="radiogroup" aria-label="Respectful" data-aria-en="Respectful" data-aria-es="Respetuoso">
+               <button type="button" class="worth-bar" data-val="1" aria-label="1"></button>
+               <button type="button" class="worth-bar" data-val="2" aria-label="2"></button>
+               <button type="button" class="worth-bar" data-val="3" aria-label="3"></button>
+               <button type="button" class="worth-bar" data-val="4" aria-label="4"></button>
+               <button type="button" class="worth-bar" data-val="5" aria-label="5"></button>
+             </div>
+           </div>
+           <div class="worth-row" data-cat="regen">
+             <span class="worth-name"><span class="en" lang="en">(Re)generative</span><span class="es" lang="es">(Re)generativo</span></span>
+             <div class="worth-bars" role="radiogroup" aria-label="(Re)generative" data-aria-en="(Re)generative" data-aria-es="(Re)generativo">
+               <button type="button" class="worth-bar" data-val="1" aria-label="1"></button>
+               <button type="button" class="worth-bar" data-val="2" aria-label="2"></button>
+               <button type="button" class="worth-bar" data-val="3" aria-label="3"></button>
+               <button type="button" class="worth-bar" data-val="4" aria-label="4"></button>
+               <button type="button" class="worth-bar" data-val="5" aria-label="5"></button>
+             </div>
+           </div>
+         </div><!-- /.worthing-panel -->
+       </div><!-- /.extras-wrap -->
+     </div><!-- /.col-desc -->
+
+     <div class="col-side">
+       <div class="map-top-controls">
+         <select class="pill-select map-zone" id="mapZone" aria-label="Zone" data-aria-en="Zone" data-aria-es="Zona">
+           <option value="" disabled selected data-en="Zones" data-es="Zonas">Zones</option>
+           <option data-en="East" data-es="Este">East</option><option data-en="West" data-es="Oeste">West</option><option data-en="North" data-es="Norte">North</option><option data-en="South" data-es="Sur">South</option>
+         </select>
+         <input type="text" class="coords-field" id="coordsField" placeholder="40.4168° N, 3.7038° W" readonly hidden>
+         <button type="button" class="btn small" id="getCoordsBtn"><span class="en" lang="en">Get coords</span><span class="es" lang="es">Obtener coordenadas</span></button>
+       </div>
+       <div class="map-wrap" id="mapWrap">
+         <iframe src="https://www.openstreetmap.org/export/embed.html?bbox=-3.74,40.40,-3.66,40.44&amp;layer=mapnik" loading="lazy" title="Map" aria-label="Map" data-aria-en="Map" data-aria-es="Mapa"></iframe>
+       </div>
+     </div><!-- /.col-side -->
+   </div><!-- /.grid-top -->
+     </div><!-- /.acc-body -->
+   </div><!-- /#acc-que -->
+ </form>
+
+ <div class="lend-wrap">
+
+  <input type="radio" name="secnav" id="sec-for" class="secnav-radio" checked>
+  <input type="radio" name="secnav" id="sec-1" class="secnav-radio">
+  <input type="radio" name="secnav" id="sec-3" class="secnav-radio">
+  <input type="radio" name="secnav" id="sec-4" class="secnav-radio">
+
+  <section class="lend-conditions" id="lend">
+
+    <div class="card section" data-sec="for">
+      <div class="for-grid">
+
+        <div class="for-col" data-expand="0">
+          <div class="for-col-head">
+            <button type="button" class="expand-plus" aria-label="Show more reasons" data-aria-en="Show more reasons" data-aria-es="Mostrar más razones">＋</button>
+            <input type="text" class="new-reason-input" placeholder="New reason…" aria-label="New reason" data-ph-en="New reason…" data-ph-es="Nueva razón…" data-aria-en="New reason" data-aria-es="Nueva razón">
+          </div>
+          <fieldset>
+            <legend class="vh"><span class="en" lang="en">Because — reasons for lending</span><span class="es" lang="es">Porque — razones para prestar</span></legend>
+            <div class="for-reasons reasons-cloud">
+              <label class="reason-chip parent-chip" data-pid="0"><input type="checkbox" name="reason"> I have plenty</label>
+              <label class="reason-chip parent-chip" data-pid="1"><input type="checkbox" name="reason"> it's just sitting there</label>
+              <label class="reason-chip parent-chip" data-pid="2"><input type="checkbox" name="reason"> I trust you</label>
+              <label class="reason-chip parent-chip" data-pid="3"><input type="checkbox" name="reason"> someone helped me once</label>
+              <label class="reason-chip parent-chip" data-pid="4"><input type="checkbox" name="reason"> it's fair</label>
+              <label class="reason-chip parent-chip" data-pid="5"><input type="checkbox" name="reason"> it's safer</label>
+
+              <label class="reason-chip child-chip" data-parent="0"><input type="checkbox" name="reason"> I have more than I need</label>
+              <label class="reason-chip child-chip" data-parent="0"><input type="checkbox" name="reason"> it'd go unused otherwise</label>
+              <label class="reason-chip child-chip" data-parent="0"><input type="checkbox" name="reason"> I won't miss it</label>
+              <label class="reason-chip child-chip" data-parent="0"><input type="checkbox" name="reason"> lending it loses me nothing</label>
+              <label class="reason-chip child-chip" data-parent="1"><input type="checkbox" name="reason"> it only gathers dust</label>
+              <label class="reason-chip child-chip" data-parent="1"><input type="checkbox" name="reason"> I'm not using it anyway</label>
+              <label class="reason-chip child-chip" data-parent="2"><input type="checkbox" name="reason"> trust has to start somewhere</label>
+              <label class="reason-chip child-chip" data-parent="3"><input type="checkbox" name="reason"> I was lent to before</label>
+              <label class="reason-chip child-chip" data-parent="3"><input type="checkbox" name="reason"> I'm passing it on</label>
+              <label class="reason-chip child-chip" data-parent="3"><input type="checkbox" name="reason"> kindness should circulate</label>
+              <label class="reason-chip child-chip" data-parent="4"><input type="checkbox" name="reason"> no one should buy what they'll use once</label>
+              <label class="reason-chip child-chip" data-parent="4"><input type="checkbox" name="reason"> access shouldn't depend on money</label>
+              <label class="reason-chip child-chip" data-parent="4"><input type="checkbox" name="reason"> sharing evens things out</label>
+              <label class="reason-chip child-chip" data-parent="5"><input type="checkbox" name="reason"> I set the conditions</label>
+              <label class="reason-chip child-chip" data-parent="5"><input type="checkbox" name="reason"> conditions make sharing safe</label>
+
+              <button type="button" class="extra-plus add-reason" aria-label="Add a reason" title="Add a reason">＋</button>
+            </div>
+          </fieldset>
+          <div class="for-docked"></div>
+        </div>
+
+        <div class="for-col" data-expand="0">
+          <div class="for-col-head">
+            <button type="button" class="expand-plus" aria-label="Show more reasons" title="Show more reasons">＋</button>
+            <input type="text" class="new-reason-input" placeholder="New reason…" aria-label="New reason">
+          </div>
+          <fieldset>
+            <legend class="vh">For — what it is lent for</legend>
+            <div class="for-reasons reasons-cloud">
+              <label class="reason-chip parent-chip" data-pid="0"><input type="checkbox" name="reason"> giving better</label>
+              <label class="reason-chip parent-chip" data-pid="1"><input type="checkbox" name="reason"> connecting</label>
+              <label class="reason-chip parent-chip" data-pid="2"><input type="checkbox" name="reason"> improving</label>
+              <label class="reason-chip parent-chip" data-pid="3"><input type="checkbox" name="reason"> building community</label>
+
+              <label class="reason-chip child-chip" data-parent="0"><input type="checkbox" name="reason"> happy to help</label>
+              <label class="reason-chip child-chip" data-parent="0"><input type="checkbox" name="reason"> pay it forward</label>
+              <label class="reason-chip child-chip" data-parent="0"><input type="checkbox" name="reason"> care is contagious</label>
+              <label class="reason-chip child-chip" data-parent="1"><input type="checkbox" name="reason"> a shared item still feels mine</label>
+              <label class="reason-chip child-chip" data-parent="1"><input type="checkbox" name="reason"> letting it travel</label>
+              <label class="reason-chip child-chip" data-parent="2"><input type="checkbox" name="reason"> saves everyone money</label>
+              <label class="reason-chip child-chip" data-parent="2"><input type="checkbox" name="reason"> less waste</label>
+              <label class="reason-chip child-chip" data-parent="2"><input type="checkbox" name="reason"> better for the planet</label>
+              <label class="reason-chip child-chip" data-parent="2"><input type="checkbox" name="reason"> objects want to circulate</label>
+              <label class="reason-chip child-chip" data-parent="3"><input type="checkbox" name="reason"> to lend is to multiply</label>
+              <label class="reason-chip child-chip" data-parent="3"><input type="checkbox" name="reason"> ownership is a loan from time</label>
+              <label class="reason-chip child-chip" data-parent="3"><input type="checkbox" name="reason"> things gain stories when shared</label>
+
+              <button type="button" class="extra-plus add-reason" aria-label="Add a reason" title="Add a reason">＋</button>
+            </div>
+          </fieldset>
+          <div class="for-docked"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card section" data-sec="1">
+      <div class="scope-grid">
+        <fieldset>
+          <legend class="vh">Who may borrow — closeness</legend>
+          <div class="choices inline bare">
+            <label><input type="checkbox" name="for" id="for-close"> Close</label>
+            <label><input type="checkbox" name="for" id="for-near"> Near</label>
+            <label><input type="checkbox" name="for" id="for-all"> All</label>
+          </div>
+          <div class="close-subchips">
+            <label class="reason-chip child-chip"><input type="checkbox" name="reason"> I trust my neighbours</label>
+            <label class="reason-chip child-chip"><input type="checkbox" name="reason"> so it reaches close people first</label>
+            <label class="reason-chip child-chip"><input type="checkbox" name="reason"> testing trust at small scale</label>
+          </div>
+          <input class="ppl-input" type="text" id="people" placeholder="e.g., friends, neighbors, community">
+        </fieldset>
+        <div class="scope-right">
+          <fieldset>
+            <legend class="vh">Purposes of the loan</legend>
+            <div class="ta-field">
+              <input type="checkbox" class="ta-magic-state" id="purposes-magic-state">
+              <textarea id="purposes" rows="4" placeholder="Purposes: study, repair, event, research…"></textarea>
+              <label class="ta-magic" for="purposes-magic-state" aria-label="Magic" title="Magic">✦</label>
+              <div class="ta-bottom-tools">
+                <label class="ta-tool" title="Audio">🎤<input type="file" accept="audio/*" id="purposes-mic" aria-label="Upload audio"></label>
+                <label class="ta-tool" title="File">📎<input type="file" id="purposes-file" aria-label="Upload file"></label>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+    </div>
+
+    <div class="card section" data-sec="3">
+      <fieldset>
+        <legend class="vh">Time and space — return terms</legend>
+        <div class="choices inline">
+          <label><input type="radio" name="ts" id="ts-where"> Use it where it is</label>
+          <label><input type="radio" name="ts" id="ts-backafter"> Back after use</label>
+          <label><input type="radio" name="ts" id="ts-onrequest"> Back on request</label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend class="vh">Additional notes</legend>
+        <div class="ta-field">
+          <input type="checkbox" class="ta-magic-state" id="additional-magic-state">
+          <textarea id="additional" rows="3" placeholder="Anything else worth noting…"></textarea>
+          <label class="ta-magic" for="additional-magic-state" aria-label="Magic" title="Magic">✦</label>
+          <div class="ta-bottom-tools">
+            <label class="ta-tool" title="Audio">🎤<input type="file" accept="audio/*" id="additional-mic" aria-label="Upload audio"></label>
+            <label class="ta-tool" title="File">📎<input type="file" id="additional-file" aria-label="Upload file"></label>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="card section" data-sec="4">
+      <div class="tree">
+        <div class="tree-col">
+          <fieldset class="lvl-1">
+            <legend class="vh">How much — less or more</legend>
+            <div class="split-btn">
+              <label><input type="checkbox" name="t1" id="t-less"> Less</label>
+              <label><input type="checkbox" name="t1" id="t-more"> More</label>
+            </div>
+          </fieldset>
+          <fieldset class="lvl-2">
+            <legend class="vh">When — past, current or future</legend>
+            <div class="split-btn">
+              <label><input type="checkbox" name="t2" id="t-past"> Past</label>
+              <label><input type="checkbox" name="t2" id="t-current"> Current</label>
+              <label><input type="checkbox" name="t2" id="t-future"> Future</label>
+            </div>
+          </fieldset>
+          <fieldset class="lvl-3">
+            <legend class="vh">Kind — experience, use or offering</legend>
+            <div class="stack">
+              <label><input type="checkbox" name="t3" id="t-experience"> Experience</label>
+              <label><input type="checkbox" name="t3" id="t-use"> Use</label>
+              <label><input type="checkbox" name="t3" id="t-offering"> Offering</label>
+            </div>
+          </fieldset>
+        </div>
+        <div class="tree-col">
+          <fieldset class="lvl-4">
+            <legend>of</legend>
+            <div class="split-btn">
+              <label><input type="checkbox" name="t4" id="t-similar"> Similar</label>
+              <label><input type="checkbox" name="t4" id="t-different"> Different</label>
+            </div>
+          </fieldset>
+          <fieldset class="lvl-5">
+            <legend class="vh">Applies to — offers, things or relations</legend>
+            <div class="stack">
+              <label><input type="checkbox" name="t5" id="t-offers"><span class="opt-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13 21a1.6 1.6 0 0 1-2.2 0L3 13.2V3.4h9.8z"/><circle cx="7.4" cy="7.8" r="1.4"/></svg></span> Offers</label>
+              <label><input type="checkbox" name="t5" id="t-things"><span class="opt-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span> Things</label>
+              <label><input type="checkbox" name="t5" id="t-relations"><span class="opt-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="18" cy="18" r="2.4"/><path d="M8.1 10.9 15.9 7.1M8.1 13.1l7.8 3.8"/></svg></span> Relations</label>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+      <div class="tree-more-wrap">
+        <input type="checkbox" id="tree-more-toggle">
+        <label class="extra-plus" for="tree-more-toggle" aria-label="Show more dimensions" title="Past · current · future · similar · different · note">＋</label>
+      </div>
+      <fieldset class="pref-note-field">
+        <legend class="vh">Notes on your preferences</legend>
+        <div class="ta-field pref-ta">
+          <input type="checkbox" class="ta-magic-state" id="pref-note-magic-state">
+          <textarea id="pref-note" rows="3" placeholder="Notes on your preferences…"></textarea>
+          <label class="ta-magic" for="pref-note-magic-state" aria-label="Magic" title="Magic">✦</label>
+          <div class="ta-bottom-tools">
+            <label class="ta-tool" title="Audio">🎤<input type="file" accept="audio/*" id="pref-note-mic" aria-label="Upload audio"></label>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="section-nav">
+      <button type="button" class="sec-move sec-back" id="secBack" aria-label="Previous section" data-aria-en="Previous section" data-aria-es="Sección anterior"><span aria-hidden="true">←</span> <span class="en" lang="en">Back</span><span class="es" lang="es">Atrás</span></button>
+      <button type="button" class="sec-move sec-next" id="secNext" aria-label="Next section" data-aria-en="Next section" data-aria-es="Sección siguiente"><span class="en" lang="en">Next</span><span class="es" lang="es">Siguiente</span> <span aria-hidden="true">→</span></button>
+    </div>
+
+    <div class="section-buttons">
+      <label class="section-btn" for="sec-for" data-sec="for"><span class="en" lang="en">Reasons</span><span class="es" lang="es">Razones</span><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21C12 21 4 16.5 4 9.7 4 6.7 6 5 8 5c2 0 4 2 4 2s2-2 4-2c2 0 4 1.7 4 4.7C20 16.5 12 21 12 21Z"/></svg></span></label>
+      <label class="section-btn" for="sec-1" data-sec="1"><span class="en" lang="en">Who</span><span class="es" lang="es">Quién</span><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><circle cx="17" cy="9.5" r="2.4"/><path d="M16 14.3c2.6.3 4.5 2.3 4.5 4.7"/></svg></span></label>
+      <label class="section-btn" for="sec-3" data-sec="3"><span class="en" lang="en">Time / Space</span><span class="es" lang="es">Tiempo / Espacio</span><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5.3l3.4 2.2"/></svg></span></label>
+      <label class="section-btn" for="sec-4" data-sec="4"><span class="en" lang="en">Preferences</span><span class="es" lang="es">Preferencias</span><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h8M16 7h4"/><path d="M4 12h3M11 12h9"/><path d="M4 17h7M15 17h5"/><circle cx="14" cy="7" r="2.3"/><circle cx="9" cy="12" r="2.3"/><circle cx="13" cy="17" r="2.3"/></svg></span></label>
+    </div>
+
+    <div class="invite-block" id="inviteBlock" hidden>
+      <input type="checkbox" id="invite-toggle" class="invite-toggle">
+      <label class="invite-btn" for="invite-toggle" id="inviteBtn" data-progress="0"><span class="inv-title" id="invTitle">✦</span></label>
+      <div class="invite-card inv-body">
+
+      <!-- Hidden state inputs — drive the CSS-only state machine for the
+           magic toggle, insight cycle, copy hint, Save/Share/Publish
+           cycles, platform picker and calendar popup. -->
+      <input class="ctl" type="checkbox" id="magic-toggle">
+      <input class="ctl" type="checkbox" id="copy-hint">
+      <input class="ctl" type="radio" name="insight" id="insight-0" checked>
+      <input class="ctl" type="radio" name="insight" id="insight-1">
+      <input class="ctl" type="radio" name="insight" id="insight-2">
+      <input class="ctl" type="radio" name="insight" id="insight-3">
+      <input class="ctl" type="radio" name="insight" id="insight-4">
+      <input class="ctl" type="radio" name="cycle" id="cycle-none" checked>
+      <input class="ctl" type="radio" name="cycle" id="cycle-save">
+      <input class="ctl" type="radio" name="cycle" id="cycle-share">
+      <input class="ctl" type="radio" name="cycle" id="cycle-pub">
+      <input class="ctl" type="checkbox" id="save-fmt-txt">
+      <input class="ctl" type="checkbox" id="save-fmt-md">
+      <input class="ctl" type="checkbox" id="save-fmt-jpg">
+      <input class="ctl" type="checkbox" id="save-fmt-html">
+      <input class="ctl" type="checkbox" id="save-fmt-csv">
+      <input class="ctl" type="checkbox" id="save-fmt-xml">
+      <input class="ctl" type="checkbox" id="save-fmt-json">
+      <input class="ctl" type="checkbox" id="save-app">
+      <input class="ctl" type="radio" name="pub-plat-set" id="pub-plat-set-0" checked>
+      <input class="ctl" type="radio" name="pub-plat-set" id="pub-plat-set-1">
+      <input class="ctl" type="radio" name="pub-plat-set" id="pub-plat-set-2">
+      <input class="ctl" type="radio" name="pub-plat" id="pub-plat-none" checked>
+      <input class="ctl" type="radio" name="pub-plat" id="pub-plat-wizardry">
+      <input class="ctl" type="radio" name="pub-plat" id="pub-plat-reddit">
+      <input class="ctl" type="radio" name="pub-plat" id="pub-plat-0asis">
+      <input class="ctl" type="radio" name="pub-plat" id="pub-plat-mastodon">
+      <input class="ctl" type="radio" name="pub-plat" id="pub-plat-bsky">
+      <input class="ctl" type="radio" name="pub-plat" id="pub-plat-threads">
+      <input class="ctl" type="radio" name="pub-plat" id="pub-plat-x">
+      <input class="ctl" type="radio" name="pub-plat" id="pub-plat-tumblr">
+      <input class="ctl" type="radio" name="pub-plat" id="pub-plat-medium">
+      <input class="ctl" type="radio" name="wizardry-pick" id="wizardry-none" checked>
+      <input class="ctl" type="radio" name="wizardry-pick" id="wizardry-sage">
+      <input class="ctl" type="radio" name="wizardry-pick" id="wizardry-spark">
+      <input class="ctl" type="radio" name="wizardry-pick" id="wizardry-echo">
+      <input class="ctl" type="radio" name="wizardry-pick" id="wizardry-coral">
+      <input class="ctl" type="radio" name="wizardry-pick" id="wizardry-nova">
+      <input class="ctl" type="radio" name="wizardry-pick" id="wizardry-lyra">
+      <input class="ctl" type="radio" name="wizardry-pick" id="wizardry-mira">
+      <input class="ctl" type="radio" name="wizardry-pick" id="wizardry-pico">
+      <input class="ctl" type="radio" name="wizardry-pick" id="wizardry-vega">
+      <input class="ctl" type="checkbox" id="pub-cal-open">
+      <input class="ctl" type="checkbox" id="pub-all">
+
+      <!-- INSIGHT PANELS — one is revealed per cycle state (1..4); state 0 = none -->
+      <section class="insight-panel insight-1-content" aria-label="Insight · Who">
+        <strong>💡 Who</strong> — who may borrow this, and from how close?
+        <p>Name the circle your loan travels through: who you trust first, who it might reach next, whose need it answers. The relations you can name are the ones you can tune.</p>
+      </section>
+      <section class="insight-panel insight-2-content" aria-label="Insight · For">
+        <strong>💡 For</strong> — what is it lent for, and on what terms?
+        <p>Read the purpose of your offer. Study, repair, an event, plain use — each invites a different care. Naming it clarifies what you expect back.</p>
+      </section>
+      <section class="insight-panel insight-3-content" aria-label="Insight · Where">
+        <strong>💡 Where / When</strong> — where does it stay, and when does it return?
+        <p>Underline the edges: used in place, returned after use, returned on request. What stays flexible on purpose, and what is better said out loud?</p>
+      </section>
+      <section class="insight-panel insight-4-content" aria-label="Insight · Why">
+        <strong>💡 Why</strong> — why does this framing matter?
+        <p>Ask what kind of trust your invitation builds — generous, careful, open. The shape of the sentence is already half of the answer.</p>
+      </section>
+
+      <p class="sentence clause-default" aria-live="polite" id="sentence">
+        I agree to lend <strong class="thing-title-slot">this item</strong><!--
+        --><span class="thing-slot thing-sector-slot"></span><!--
+        --><span class="thing-slot thing-desc-slot"></span><!--
+        --><span class="thing-slot thing-tags-slot"></span><!--
+        --><span class="thing-slot thing-zone-slot"></span><!--
+        --><span class="thing-slot thing-coords-slot"></span>
+        <span class="seg for-close"> for <strong>close</strong> people</span>
+        <span class="seg for-near"> for <strong>near</strong> people</span>
+        <span class="seg for-all"> for <strong>all</strong> people</span>
+        <span class="people-slot"></span>
+        <span class="purposes-slot"></span>.
+        I want you to use it
+        <span class="seg ts-where"><strong>where it is</strong></span>
+        <span class="seg ts-backafter">and <strong>bring it back after use</strong></span>
+        <span class="seg ts-onrequest">and <strong>bring it back on request</strong></span>.
+        <span class="thing-slot thing-details-slot"></span>
+        <span class="thing-slot thing-worth-slot"></span>
+        <span class="thing-slot thing-media-slot"></span>
+        <span class="sentence-gap" aria-hidden="true"></span>
+        Preferently for who
+        <span class="seg t-more"><strong>more</strong></span>
+        <span class="seg t-less"><strong>less</strong></span>
+        <span class="seg t-past"><strong>past</strong></span>
+        <span class="seg t-current"><strong>current</strong></span>
+        <span class="seg t-future"><strong>future</strong></span>
+        <span class="seg t-experience"><strong>experience</strong></span>
+        <span class="seg t-use"><strong>use</strong></span>
+        <span class="seg t-offering"><strong>offering</strong></span>
+        of
+        <span class="seg t-similar"><strong>similar</strong></span>
+        <span class="seg t-different"><strong>different</strong></span>
+        <span class="seg t-offers"><strong>offers</strong></span>
+        <span class="seg t-things"><strong>things</strong></span>
+        <span class="seg t-relations"><strong>relations</strong></span>.
+      </p>
+      <p class="sentence clause-magic" id="sentenceMagic" aria-live="polite">
+        ✨ A warmer re-telling of your invitation will appear here.
+      </p>
+      <div class="extra-info-wrap">
+        <input type="checkbox" class="extra-info-toggle" id="extra-invite-toggle">
+        <label class="extra-plus" for="extra-invite-toggle" aria-label="Add additional information" title="Additional information">＋</label>
+        <div class="extra-info">
+          <textarea id="extra-invite" rows="3" placeholder="Additional information…"></textarea>
+          <div class="ta-bottom-tools">
+            <label class="ta-tool" title="Audio">🎤<input type="file" accept="audio/*" id="extra-invite-mic" aria-label="Upload audio"></label>
+            <label class="ta-tool" title="File">📎<input type="file" id="extra-invite-file" aria-label="Upload file"></label>
+          </div>
+        </div>
+      </div>
+      <div class="action-grid">
+
+        <!-- TOP ACTION-ROW · Insight / Magic / Copy -->
+        <div class="action-row">
+          <span class="insight-cycle">
+            <label class="btn ghost insight-step" for="insight-1" aria-label="Show insight 1">Insight</label>
+            <label class="btn ghost insight-step" for="insight-2" aria-label="Show insight 2">Insight · 1/4</label>
+            <label class="btn ghost insight-step" for="insight-3" aria-label="Show insight 3">Insight · 2/4</label>
+            <label class="btn ghost insight-step" for="insight-4" aria-label="Show insight 4">Insight · 3/4</label>
+            <label class="btn ghost insight-step" for="insight-0" aria-label="Close insights">Insight · 4/4</label>
+          </span>
+          <label class="btn ghost magic-btn-summary" for="magic-toggle">
+            <span class="label-off">Magic</span>
+            <span class="label-on">Phrase</span>
+          </label>
+          <label class="btn ghost copy-btn" for="copy-hint" title="Copy" aria-label="How to copy the phrase">Copy</label>
+        </div>
+
+        <div class="copy-hint-panel" role="status">
+          Select the phrase above (triple-click selects the whole paragraph), then press <kbd>Ctrl</kbd>+<kbd>C</kbd> on Windows/Linux or <kbd>⌘</kbd>+<kbd>C</kbd> on Mac to copy it.
+        </div>
+
+        <!-- SAVE · SHARE · PUBLISH -->
+        <div class="action-row right">
+
+          <!-- SAVE -->
+          <span class="save-wrap">
+            <span class="cycle-trigger">
+              <label class="btn ghost save-btn cycle-step cycle-step--open"  for="cycle-save" title="Save">💾 Save</label>
+              <label class="btn ghost save-btn cycle-step cycle-step--close" for="cycle-none" title="Close">💾 Save</label>
+              <span class="cycle-row below">
+                <label class="btn ghost" for="save-fmt-txt"  title="Txt"  data-fmt="txt">TXT</label>
+                <label class="btn ghost" for="save-fmt-md"   title="Md"   data-fmt="md">MD</label>
+                <label class="btn ghost" for="save-fmt-jpg"  title="Jpg"  data-fmt="jpg">JPG</label>
+                <label class="btn ghost" for="save-fmt-html" title="Html" data-fmt="html">HTML</label>
+                <label class="btn ghost" for="save-fmt-csv"  title="Csv"  data-fmt="csv">CSV</label>
+                <label class="btn ghost" for="save-fmt-xml"  title="Xml"  data-fmt="xml">XML</label>
+                <label class="btn ghost" for="save-fmt-json" title="Json" data-fmt="json">JSON</label>
+              </span>
+              <span class="cycle-row app-row">
+                <label class="btn ghost" for="save-app" title="App">App</label>
+              </span>
+            </span>
+          </span>
+
+          <!-- SHARE -->
+          <span class="share-wrap">
+            <span class="cycle-trigger">
+              <label class="btn ghost share-btn cycle-step cycle-step--open"  for="cycle-share" title="Share">📤 Share</label>
+              <label class="btn ghost share-btn cycle-step cycle-step--close" for="cycle-none"  title="Close">📤 Share</label>
+              <span class="cycle-row below">
+                <button type="button" class="btn ghost share-sub" data-share="print"  title="Print">🖨 Print</button>
+                <button type="button" class="btn ghost share-sub" data-share="mobile" title="Share with a mobile app">📱 Mobile</button>
+                <button type="button" class="btn ghost share-sub" data-share="apps"   title="Share menu (all apps)">🌐 Apps</button>
+                <a class="btn ghost share-sub" href="mailto:?subject=A%20shary%20lending%20invitation&body=%5BYour%20lending%20conditions%5D%0A%0A%E2%80%94%20flove%20%C2%B7%20shary" title="Send by email">📧 Email</a>
+              </span>
+            </span>
+          </span>
+
+          <!-- PUBLISH -->
+          <div class="pub-wrap">
+            <span class="cycle-trigger">
+              <span class="cycle-row above pub-row--schedule" role="group" aria-label="Nety publish schedule">
+                <span class="pub-cal-wrap">
+                  <label class="pub-cal" for="pub-cal-open" aria-label="Pick a date" title="Pick a date" tabindex="0">
+                    <span class="pub-cal-icon" aria-hidden="true">📅</span>
+                  </label>
+                  <span class="pub-cal-panel" role="group" aria-label="Pick day, month and year">
+                    <label class="pub-cal-close" for="pub-cal-open" title="Close" aria-label="Close calendar" tabindex="0">×</label>
+                    <select class="pub-cal-sel pub-cal-d" aria-label="Day">
+                      <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                      <option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option>
+                      <option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15" selected>15</option>
+                      <option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option>
+                      <option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option>
+                      <option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option>
+                      <option value="31">31</option>
+                    </select>
+                    <select class="pub-cal-sel pub-cal-m" aria-label="Month">
+                      <option value="1">Jan</option><option value="2">Feb</option><option value="3">Mar</option><option value="4">Apr</option>
+                      <option value="5" selected>May</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Aug</option>
+                      <option value="9">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+                    </select>
+                    <select class="pub-cal-sel pub-cal-y" aria-label="Year">
+                      <option value="2024">2024</option><option value="2025">2025</option><option value="2026" selected>2026</option>
+                      <option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option>
+                    </select>
+                  </span>
+                </span>
+                <select class="pub-hh" aria-label="Hour">
+                  <option value="00">00</option><option value="01">01</option><option value="02">02</option><option value="03">03</option>
+                  <option value="04">04</option><option value="05">05</option><option value="06">06</option><option value="07">07</option>
+                  <option value="08">08</option><option value="09">09</option><option value="10">10</option><option value="11">11</option>
+                  <option value="12" selected>12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option>
+                  <option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option>
+                  <option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option>
+                </select>
+                <span class="pub-colon" aria-hidden="true">:</span>
+                <select class="pub-mm" aria-label="Minute">
+                  <option value="00" selected>00</option><option value="05">05</option><option value="10">10</option><option value="15">15</option>
+                  <option value="20">20</option><option value="25">25</option><option value="30">30</option><option value="35">35</option>
+                  <option value="40">40</option><option value="45">45</option><option value="50">50</option><option value="55">55</option>
+                </select>
+                <select class="pub-target" aria-label="Audience">
+                  <option value="groups" selected>Groups</option>
+                  <option value="friends">Friends</option>
+                  <option value="followers">Followers</option>
+                  <option value="lists">Lists</option>
+                  <option value="links">Links</option>
+                </select>
+                <label class="btn ghost pub-all-btn" for="pub-all" title="All">All</label>
+              </span>
+              <label class="btn ghost publish-btn cycle-step cycle-step--open"  for="cycle-pub"  title="Publish">📨 Publish</label>
+              <label class="btn ghost publish-btn cycle-step cycle-step--close" for="cycle-none" title="Close">📨 Publish</label>
+              <a class="btn solid go-btn" href="#" data-publish-go title="Go">✈ Go</a>
+              <span class="cycle-row below plat-row">
+                <span class="plat-viewport">
+                  <span class="plat-track">
+                    <span class="plat-set">
+                      <label class="btn ghost" for="pub-plat-wizardry" title="Wizy">Wizy</label>
+                      <label class="btn ghost" for="pub-plat-reddit"   title="Reddit">Reddit</label>
+                      <label class="btn ghost" for="pub-plat-0asis"    title="Nety">Nety</label>
+                    </span>
+                    <span class="plat-set">
+                      <label class="btn ghost" for="pub-plat-mastodon" title="Mastodon">Mastodon</label>
+                      <label class="btn ghost" for="pub-plat-bsky"     title="Bluesky">Bluesky</label>
+                      <label class="btn ghost" for="pub-plat-threads"  title="Threads">Threads</label>
+                    </span>
+                    <span class="plat-set">
+                      <label class="btn ghost" for="pub-plat-x"        title="X">X</label>
+                      <label class="btn ghost" for="pub-plat-tumblr"   title="Tumblr">Tumblr</label>
+                      <label class="btn ghost" for="pub-plat-medium"   title="Medium">Medium</label>
+                    </span>
+                  </span>
+                </span>
+                <label class="plat-nav" for="pub-plat-set-1" data-when-set="0" title="More platforms" aria-label="More platforms">＋</label>
+                <label class="plat-nav" for="pub-plat-set-2" data-when-set="1" title="More platforms" aria-label="More platforms">＋</label>
+                <label class="plat-nav" for="pub-plat-set-0" data-when-set="2" title="More platforms" aria-label="More platforms">＋</label>
+              </span>
+            </span>
+            <div class="plat-intro plat-intro--wizardry">
+              <p class="plat-intro-lead">Wizy publishes to a chosen bot.</p>
+              <div class="wizardry-grid">
+                <label class="wizardry-cell" for="wizardry-sage"  title="Sage"  data-wizardry="sage">
+                  <span class="wizardry-cell-icon">🦉</span>
+                  <span class="wizardry-cell-name">Sage</span>
+                  <span class="wizardry-cell-info">Wise and contemplative.<br>Reflects, summarises and adds depth.</span>
+                </label>
+                <label class="wizardry-cell" for="wizardry-spark" title="Spark" data-wizardry="spark">
+                  <span class="wizardry-cell-icon">⚡</span>
+                  <span class="wizardry-cell-name">Spark</span>
+                  <span class="wizardry-cell-info">Quick-witted and energetic.<br>Punchy ideas, fast turns of phrase.</span>
+                </label>
+                <label class="wizardry-cell" for="wizardry-echo"  title="Echo"  data-wizardry="echo">
+                  <span class="wizardry-cell-icon">🐦</span>
+                  <span class="wizardry-cell-name">Echo</span>
+                  <span class="wizardry-cell-info">Mirrors what you say.<br>Helps you hear your voice back.</span>
+                </label>
+                <label class="wizardry-cell" for="wizardry-coral" title="Coral" data-wizardry="coral">
+                  <span class="wizardry-cell-icon">🪸</span>
+                  <span class="wizardry-cell-name">Coral</span>
+                  <span class="wizardry-cell-info">Warm and supportive.<br>Gentle correction and care.</span>
+                </label>
+                <label class="wizardry-cell" for="wizardry-nova"  title="Nova"  data-wizardry="nova">
+                  <span class="wizardry-cell-icon">🌟</span>
+                  <span class="wizardry-cell-name">Nova</span>
+                  <span class="wizardry-cell-info">Bright and visionary.<br>Big-picture, hopeful clarity.</span>
+                </label>
+                <label class="wizardry-cell" for="wizardry-lyra"  title="Lyra"  data-wizardry="lyra">
+                  <span class="wizardry-cell-icon">🎵</span>
+                  <span class="wizardry-cell-name">Lyra</span>
+                  <span class="wizardry-cell-info">Lyrical and rhythmic.<br>Turns prose nearly musical.</span>
+                </label>
+                <label class="wizardry-cell" for="wizardry-mira"  title="Mira"  data-wizardry="mira">
+                  <span class="wizardry-cell-icon">🔮</span>
+                  <span class="wizardry-cell-name">Mira</span>
+                  <span class="wizardry-cell-info">Intuitive and visionary.<br>Spots the patterns others miss.</span>
+                </label>
+                <label class="wizardry-cell" for="wizardry-pico"  title="Pico"  data-wizardry="pico">
+                  <span class="wizardry-cell-icon">🐝</span>
+                  <span class="wizardry-cell-name">Pico</span>
+                  <span class="wizardry-cell-info">Tiny, precise, busy.<br>Polishes the details with care.</span>
+                </label>
+                <label class="wizardry-cell" for="wizardry-vega"  title="Vega"  data-wizardry="vega">
+                  <span class="wizardry-cell-icon">🦊</span>
+                  <span class="wizardry-cell-name">Vega</span>
+                  <span class="wizardry-cell-info">Cool and confident.<br>Cuts through noise with poise.</span>
+                </label>
+              </div>
+            </div>
+            <div class="plat-intro plat-intro--reddit">
+              <p>Reddit is a social platform of communities and discussions. <a href="https://reddit.com/" target="_blank" rel="noopener">reddit.com</a></p>
+            </div>
+            <div class="plat-intro plat-intro--0asis">
+              <p>Nety is a Friend2Friend Groupware. <a href="https://flove.org/apps/nety" target="_blank" rel="noopener">Nety</a></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- DOWNLOAD ROW — opacity reflects how many formats / App are armed -->
+        <div class="download-row">
+          <a class="btn solid dl-btn" id="dlBtn" href="#" title="Download bundle of marked formats">
+            <span class="dl-base">Download</span><span class="dl-results">&nbsp;results</span><span class="dl-app">&nbsp;App</span>
+          </a>
+        </div>
+
+      </div>
+      </div>
+    </div>
+
+  </section>
+
+ </div>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+  const $  = (s,r=document) => r.querySelector(s);
+  const $$ = (s,r=document) => [...r.querySelectorAll(s)];
+  const KEY = "flove:shary:v1";
+
+  let toastT;
+  const toast = m => { const el=$("#toast"); el.textContent=m; el.classList.add("is-visible"); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove("is-visible"),1700); };
+
+  /* ── Topbar menu — logo/title toggle a deselectable dropdown ──────── */
+  const menuBtn = $("#menuBtn"), menuPop = $("#menuPop");
+  if (menuBtn && menuPop){
+    const setMenu = open => {
+      menuPop.hidden = !open;
+      menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    };
+    menuBtn.addEventListener("click", e => { e.stopPropagation(); setMenu(menuPop.hidden); });
+    // clicking any item (or outside) closes the menu; label toggles still fire
+    menuPop.addEventListener("click", () => setMenu(false));
+    // …but interacting with the language selector keeps the menu open
+    menuPop.querySelector(".menu-lang")?.addEventListener("click", e => e.stopPropagation());
+    document.addEventListener("click", e => {
+      if (!menuPop.hidden && !e.target.closest(".topmenu")) setMenu(false);
+    });
+    document.addEventListener("keydown", e => { if (e.key === "Escape") setMenu(false); });
+  }
+
+  // ===== Section wizard — Next / Back step through the sections in order =====
+  const SEC_ORDER = ["sec-for","sec-1","sec-3","sec-4"];   // shary has no sec-2
+  const curSecIndex = () => SEC_ORDER.findIndex(id => document.getElementById(id)?.checked);
+  function gotoSec(i){
+    i = Math.max(0, Math.min(SEC_ORDER.length - 1, i));
+    const r = document.getElementById(SEC_ORDER[i]);
+    if (r){ r.checked = true; r.dispatchEvent(new Event("change", { bubbles: true })); }
+    document.querySelector(".container")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  $("#secNext")?.addEventListener("click", () => gotoSec((curSecIndex() < 0 ? 0 : curSecIndex()) + 1));
+  $("#secBack")?.addEventListener("click", () => gotoSec((curSecIndex() < 0 ? 0 : curSecIndex()) - 1));
+
+  // Entrance animation is scoped to body.intro-anim; drop it once the staged
+  // fade-in has finished (~18.5s: stepper/Next run 11s + 7s) so chips revealed
+  // by "+" appear instantly. Revealing via "+" ends it early too.
+  const endIntro = () => document.body.classList.remove("intro-anim");
+  setTimeout(endIntro, 18500);
+  $$(".expand-plus").forEach(b => b.addEventListener("click", endIntro, { once: true }));
+
+  const pSlot = $(".people-slot");
+  const uSlot = $(".purposes-slot");
+
+  function updateSlots(){
+    const p = $("#people").value.trim();
+    const u = $("#purposes").value.trim();
+    pSlot.textContent = p ? ` (specifically: "${p}")` : "";
+    uSlot.textContent = u ? ` for purposes like "${u}"` : "";
+  }
+
+  // Invitation button — flamier blue every 3 selections / texts added
+  const inviteBtn = $("#inviteBtn");
+  function updateProgress(){
+    if (!inviteBtn) return;
+    let count = 0;
+    ["for","ts","t1","t2","t3","t4","t5","reason"].forEach(n => {
+      count += $$(`input[name="${n}"]:checked`).length;
+    });
+    ["#people","#purposes","#additional","#pref-note","#extra-invite"].forEach(s => {
+      const el = $(s);
+      if (el && el.value.trim()) count++;
+    });
+    inviteBtn.dataset.progress = String(Math.min(6, Math.floor(count / 3)));
+  }
+
+  // Reasons clouds — drifting cloud · 3-step "+" reveal · click a tab to dock it
+  $$(".reasons-cloud").forEach(cloud => {
+    const col = cloud.closest(".for-col");
+    const newInput = col ? col.querySelector(".new-reason-input") : null;
+    const addBtn = cloud.querySelector(".add-reason");
+    const expandBtn = col ? col.querySelector(".expand-plus") : null;
+    const dock = col ? col.querySelector(".for-docked") : null;
+
+    // ── Chips are positioned by a JS physics loop: each chip has a small
+    //    velocity, bounces off the cloud walls (stays inside its column),
+    //    and bounces off other chips on contact — no overlap, direction
+    //    alters on touch. ──
+    const visibleChips = () =>
+      $$(":scope > .reason-chip, :scope > .add-reason", cloud)
+        .filter(c => c.style.display !== "none");
+
+    const physics = new Map(); // chip element → {x, y, w, h, vx, vy}  (all in % of cloud)
+    let rafId = null;
+
+    const randVel = () => (Math.random() - 0.5) * 0.30;  // ≈ ±9 %/s at 60 fps
+
+    function measureChip(el, cloudRect){
+      const r = el.getBoundingClientRect();
+      return {
+        w: r.width  && cloudRect.width  ? (r.width  / cloudRect.width)  * 100 : 10,
+        h: r.height && cloudRect.height ? (r.height / cloudRect.height) * 100 : 10,
+      };
+    }
+
+    function syncPhysicsList(){
+      const chips = visibleChips();
+      const cloudRect = cloud.getBoundingClientRect();
+      if (!cloudRect.width || !cloudRect.height) return;
+      // prune stale entries (chip docked, removed, or hidden)
+      Array.from(physics.keys()).forEach(el => {
+        if (el.parentNode !== cloud || el.style.display === "none"){
+          physics.delete(el);
+        }
+      });
+      // seed new chips at their grid-home position
+      chips.forEach(c => {
+        if (physics.has(c)) return;
+        const m = measureChip(c, cloudRect);
+        physics.set(c, {
+          x: parseFloat(c.dataset.homeX) || 0,
+          y: parseFloat(c.dataset.homeY) || 0,
+          w: m.w, h: m.h,
+          vx: randVel(),
+          vy: randVel(),
+        });
+      });
+    }
+
+    function stepPhysics(){
+      const cloudRect = cloud.getBoundingClientRect();
+      if (!cloudRect.width || !cloudRect.height){
+        rafId = requestAnimationFrame(stepPhysics);
+        return;
+      }
+      // prune + refresh sizes (chips may have wrapped or fonts loaded late)
+      const items = [];
+      Array.from(physics.keys()).forEach(el => {
+        if (el.parentNode !== cloud || el.style.display === "none"){
+          physics.delete(el);
+          return;
+        }
+        const it = physics.get(el);
+        const m = measureChip(el, cloudRect);
+        it.w = m.w; it.h = m.h;
+        items.push({ el, it });
+      });
+      // integrate + wall bounce
+      for (const { it } of items){
+        it.x += it.vx;
+        it.y += it.vy;
+        if (it.x < 0)            { it.x = 0;            it.vx =  Math.abs(it.vx); }
+        if (it.x + it.w > 100)   { it.x = 100 - it.w;   it.vx = -Math.abs(it.vx); }
+        if (it.y < 0)            { it.y = 0;            it.vy =  Math.abs(it.vy); }
+        if (it.y + it.h > 100)   { it.y = 100 - it.h;   it.vy = -Math.abs(it.vy); }
+      }
+      // pairwise AABB resolution — push apart along the shallowest overlap
+      // axis and swap velocity components on that axis (elastic, equal mass)
+      for (let i = 0; i < items.length; i++){
+        const a = items[i].it;
+        for (let j = i + 1; j < items.length; j++){
+          const b = items[j].it;
+          if (a.x < b.x + b.w && a.x + a.w > b.x &&
+              a.y < b.y + b.h && a.y + a.h > b.y){
+            const dx = Math.min(a.x + a.w - b.x, b.x + b.w - a.x);
+            const dy = Math.min(a.y + a.h - b.y, b.y + b.h - a.y);
+            if (dx < dy){
+              const push = dx / 2;
+              if (a.x < b.x){ a.x -= push; b.x += push; }
+              else          { a.x += push; b.x -= push; }
+              const t = a.vx; a.vx = b.vx; b.vx = t;
+            } else {
+              const push = dy / 2;
+              if (a.y < b.y){ a.y -= push; b.y += push; }
+              else          { a.y += push; b.y -= push; }
+              const t = a.vy; a.vy = b.vy; b.vy = t;
+            }
+          }
+        }
+      }
+      // commit positions to DOM
+      for (const { el, it } of items){
+        el.style.left = it.x.toFixed(2) + "%";
+        el.style.top  = it.y.toFixed(2) + "%";
+      }
+      rafId = requestAnimationFrame(stepPhysics);
+    }
+
+    const layout = () => {
+      const chips = visibleChips();
+      // shuffle so a group's children scatter across the cloud, not sit together
+      for (let i = chips.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [chips[i], chips[j]] = [chips[j], chips[i]];
+      }
+      // Seed positions on a grid that fits inside the cloud, so chips don't
+      // start clumped. Physics takes over from there.
+      const cols = Math.max(1, Math.ceil(Math.sqrt(chips.length)));
+      const rows = Math.max(1, Math.ceil(chips.length / cols));
+      const colDen = Math.max(1, cols - 1);
+      const rowDen = Math.max(1, rows - 1);
+      chips.forEach((c, i) => {
+        const hx = +(4 + (i % cols)        / colDen * 80).toFixed(2);
+        const hy = +(4 + Math.floor(i/cols)/ rowDen * 88).toFixed(2);
+        c.dataset.homeX = hx;
+        c.dataset.homeY = hy;
+        c.style.left = hx + "%";
+        c.style.top  = hy + "%";
+        // reseed velocity so re-laid-out chips don't keep stale momentum
+        const ex = physics.get(c);
+        if (ex){ ex.x = hx; ex.y = hy; ex.vx = randVel(); ex.vy = randVel(); }
+      });
+      syncPhysicsList();
+      if (!rafId && physics.size && !matchMedia("(prefers-reduced-motion: reduce)").matches){
+        rafId = requestAnimationFrame(stepPhysics);
+      }
+    };
+
+    // 3 steps: 0 = two parents · 1 = all parents · 2 = all parents + children
+    function applyExpand(){
+      const state = +(col.dataset.expand || 0);
+      const parents = $$(":scope > .parent-chip", cloud);
+      const kids    = $$(":scope > .child-chip", cloud);
+      parents.forEach((p,i) => { p.style.display = (state >= 1 || i < 2) ? "inline-flex" : "none"; });
+      if (state >= 2){
+        kids.forEach(k => {
+          if (k.style.display !== "inline-flex"){
+            const p = cloud.querySelector('.parent-chip[data-pid="' + k.dataset.parent + '"]');
+            if (p && p.style.left){ k.style.left = p.style.left; k.style.top = p.style.top; }
+            k.style.display = "inline-flex";
+          }
+        });
+        setTimeout(layout, 40);
+      } else {
+        kids.forEach(k => { k.style.display = "none"; });
+        layout();
+      }
+    }
+    expandBtn?.addEventListener("click", () => {
+      col.dataset.expand = String(((+(col.dataset.expand || 0)) + 1) % 3);
+      applyExpand();
+    });
+
+    // click a tab → it docks into the 2-column grid below; click again → back to the cloud
+    cloud.addEventListener("change", e => {
+      const chip = e.target.closest(".reason-chip");
+      if (!chip || !dock || !cloud.contains(chip)) return;
+      if (e.target.checked){ chip.style.display = ""; dock.appendChild(chip); }
+    });
+    dock?.addEventListener("change", e => {
+      const chip = e.target.closest(".reason-chip");
+      if (!chip || e.target.checked) return;
+      chip.style.display = "inline-flex";
+      cloud.insertBefore(chip, addBtn || null);
+      layout();
+    });
+
+    applyExpand();
+    // No more setInterval drift — the rAF physics loop above runs continuously.
+
+    // "+" in the cloud — type a custom reason; Enter adds it as a parent tab
+    const addChip = txt => {
+      const lbl = document.createElement("label");
+      lbl.className = "reason-chip parent-chip";
+      lbl.style.display = "inline-flex";
+      lbl.style.animation = "none";   // custom chips appear at once, no intro fade
+      const cb = document.createElement("input");
+      cb.type = "checkbox"; cb.name = "reason";
+      lbl.append(cb, document.createTextNode(" " + txt));
+      cloud.insertBefore(lbl, addBtn || null);
+      layout();
+    };
+    addBtn?.addEventListener("click", () => {
+      if (!newInput) return;
+      newInput.classList.toggle("is-open");
+      if (newInput.classList.contains("is-open")) newInput.focus();
+    });
+    newInput?.addEventListener("keydown", e => {
+      if (e.key === "Enter"){
+        e.preventDefault();
+        const txt = newInput.value.trim();
+        if (txt) addChip(txt);
+        newInput.value = "";
+        newInput.classList.remove("is-open");
+      } else if (e.key === "Escape"){
+        newInput.value = "";
+        newInput.classList.remove("is-open");
+      }
+    });
+  });
+
+  function snapshot(){
+    const radios = ["for","ts","t1","t2","t3","t4","t5"].reduce((o,name) => {
+      const r = document.querySelector(`input[name="${name}"]:checked`);
+      o[name] = r ? r.id : "";
+      return o;
+    }, {});
+    return Object.assign(radios, {
+      people:     $("#people").value,
+      purposes:   $("#purposes").value,
+      additional: $("#additional").value
+    });
+  }
+  // Highlight mic/file tools once a file is picked
+  $$(".ta-tool input[type=file]").forEach(inp => {
+    inp.addEventListener("change", () => {
+      inp.parentElement.classList.toggle("has-file", !!inp.files.length);
+    });
+  });
+
+  $("#lend").addEventListener("input", () => { updateSlots(); updateProgress(); });
+  $("#lend").addEventListener("change", () => { updateSlots(); updateProgress(); });
+
+  // ====================================================================
+  //  INVITATION ACTION-GRID — ported from offer/freed.html (blogynormal §15)
+  // ====================================================================
+  function fullText(){
+    return $("#sentence").textContent.replace(/\s+/g, " ").trim();
+  }
+  function escMagic(s){ return String(s).replace(/[<>&]/g, c => ({"<":"&lt;",">":"&gt;","&":"&amp;"}[c])); }
+
+  function buildHTMLDoc(){
+    const text = fullText();
+    const esc = s => s.replace(/[<>&]/g, c => ({"<":"&lt;",">":"&gt;","&":"&amp;"}[c]));
+    return `<!doctype html><html><head><meta charset="utf-8"><title>Shary · Lending Conditions</title>
+<style>body{background:#fbfaff;color:#1a1232;font-family:Georgia,serif;padding:32px;max-width:680px;margin:auto;line-height:1.6}
+h1{color:#6d28d9;font-family:Georgia,serif;border-bottom:2px dashed #8b5cf6;padding-bottom:8px}
+em{color:#423066}</style></head>
+<body><h1>✦ Shary · Lending Conditions</h1>
+<p>${esc(text)}</p></body></html>`;
+  }
+  function renderJPG(cb){
+    const W = 880, H = 560, P = 36;
+    const canvas = document.createElement("canvas");
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    const grad = ctx.createLinearGradient(0, 0, W, H);
+    grad.addColorStop(0, "#f5f0ff"); grad.addColorStop(1, "#fbfaff");
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = "#8b5cf6"; ctx.lineWidth = 3;
+    ctx.setLineDash([8, 8]); ctx.strokeRect(P/2, P/2, W - P, H - P);
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#6d28d9";
+    ctx.font = "700 28px Georgia, serif";
+    ctx.fillText("✦ Shary · Lending Conditions", P, P + 24);
+    ctx.fillStyle = "#1a1232";
+    ctx.font = "500 17px Georgia, serif";
+    const text = fullText();
+    const maxW = W - P*2;
+    const maxY = H - P - 30;            // leave room for the footer
+    const words = text.split(/\s+/);
+    let line = "", y = P + 70, clipped = false;
+    for (const w of words){
+      const test = line ? line + " " + w : w;
+      if (ctx.measureText(test).width > maxW) {
+        if (y > maxY){ ctx.fillText("…", P, y); clipped = true; break; }
+        ctx.fillText(line, P, y); line = w; y += 26;
+      } else { line = test; }
+    }
+    if (!clipped && line) ctx.fillText(y > maxY ? "…" : line, P, y);
+    ctx.fillStyle = "rgba(66,48,102,.5)";
+    ctx.font = "italic 13px Georgia, serif";
+    ctx.fillText("flove · shary", P, H - P);
+    canvas.toBlob(cb, "image/jpeg", 0.92);
+  }
+  function downloadBlob(blob, filename){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 80);
+  }
+  function buildCSV(){
+    const rows = [["field","value"]];
+    const data = { ...snapshot(), conditions: fullText() };
+    Object.entries(data).forEach(([k,v]) => rows.push([k, String(v ?? "").replace(/"/g, '""')]));
+    return rows.map(r => r.map(c => /[",\n]/.test(c) ? `"${c}"` : c).join(",")).join("\n") + "\n";
+  }
+  function buildXML(){
+    const data = { ...snapshot(), conditions: fullText() };
+    const esc = s => String(s ?? "").replace(/[<>&'"]/g, c => ({"<":"&lt;",">":"&gt;","&":"&amp;","'":"&apos;","\"":"&quot;"}[c]));
+    const body = Object.entries(data).map(([k,v]) => `  <${k}>${esc(v)}</${k}>`).join("\n");
+    return `<?xml version="1.0" encoding="UTF-8"?>\n<shary>\n${body}\n</shary>\n`;
+  }
+  function buildMD(){
+    return `# ✦ Shary · Lending Conditions\n\n${fullText()}\n`;
+  }
+
+  // ===== MAGIC TOGGLE — rewrite the same selections in a warmer voice =====
+  function renderMagic(){
+    const target = $("#sentenceMagic");
+    if (!target) return;
+    const title = (($(".thing-title-slot")?.textContent) || "this item").trim();
+    const ppl   = $("#people")?.value.trim();
+    const purp  = $("#purposes")?.value.trim();
+    const note  = $("#pref-note")?.value.trim();
+    const extra = $("#extra-invite")?.value.trim();
+    const scope = $("#for-close")?.checked ? "those close to me"
+                : $("#for-near")?.checked  ? "people nearby"
+                : $("#for-all")?.checked   ? "anyone who needs it"
+                : "you";
+    const ret = $("#ts-where")?.checked      ? "right where it lives"
+              : $("#ts-backafter")?.checked  ? "and find its way back after use"
+              : $("#ts-onrequest")?.checked  ? "and return whenever I ask"
+              : "";
+    const bits = [];
+    bits.push(`✨ With open hands I lend <strong>${escMagic(title)}</strong> to ${scope}`);
+    if (ppl)  bits.push(`— especially ${escMagic(ppl)}`);
+    if (purp) bits.push(`so it can serve ${escMagic(purp)}`);
+    bits.push(".");
+    if (ret)   bits.push(`Use it ${ret}.`);
+    if (note)  bits.push(escMagic(note.endsWith(".") ? note : note + "."));
+    if (extra) bits.push(`— ${escMagic(extra)}`);
+    target.innerHTML = bits.join(" ").replace(/\s+\./g, ".");
+  }
+  $("#lend").addEventListener("input",  renderMagic);
+  $("#lend").addEventListener("change", renderMagic);
+
+  // ===== COPY — Clipboard API on click, with keyboard hint via CSS =====
+  $(".copy-btn")?.addEventListener("click", () => {
+    if (!navigator.clipboard) return;
+    navigator.clipboard.writeText(fullText()).then(
+      () => toast("✓ Phrase copied"),
+      () => {/* fall back to keyboard hint */}
+    );
+  });
+
+  // ===== Mutually exclusive cycles (Save / Share / Publish) =====
+  const cycleWraps = { save: $(".save-wrap"), share: $(".share-wrap"), pub: $(".pub-wrap") };
+  function closeAllCycles(){
+    Object.values(cycleWraps).forEach(w => { if (w) w.classList.remove("is-open"); });
+    const none = $("#cycle-none"); if (none) none.checked = true;
+  }
+  function toggleCycle(key){
+    const w = cycleWraps[key]; if (!w) return;
+    const wasOpen = w.classList.contains("is-open");
+    closeAllCycles();
+    if (!wasOpen){
+      w.classList.add("is-open");
+      const r = $("#cycle-" + key); if (r) r.checked = true;
+    }
+  }
+  $$(".save-wrap .cycle-step, .share-wrap .cycle-step, .pub-wrap .cycle-step").forEach(lbl => {
+    lbl.addEventListener("click", e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const wrap = lbl.closest(".save-wrap, .share-wrap, .pub-wrap");
+      const key  = wrap.classList.contains("save-wrap") ? "save"
+                 : wrap.classList.contains("share-wrap") ? "share" : "pub";
+      if (lbl.classList.contains("cycle-step--close")) closeAllCycles();
+      else                                              toggleCycle(key);
+    });
+  });
+  document.addEventListener("click", e => {
+    if (e.target.closest(".save-wrap, .share-wrap, .pub-wrap, .insight-cycle, .copy-btn, .copy-hint-panel, .pub-cal-panel, .magic-btn-summary, .plat-intro, .download-row")) return;
+    closeAllCycles();
+    const copyHint = $("#copy-hint"); if (copyHint && copyHint.checked) copyHint.checked = false;
+    const calOpen = $("#pub-cal-open"); if (calOpen && calOpen.checked) calOpen.checked = false;
+  });
+
+  // Keep .pub-wrap.plat-0asis class in sync so the schedule row reveal works.
+  $$('input[name="pub-plat"]').forEach(r => {
+    r.addEventListener("change", () => {
+      cycleWraps.pub?.classList.toggle("plat-0asis", $("#pub-plat-0asis")?.checked);
+    });
+  });
+
+  // ===== SHARE handlers =====
+  $$('.share-sub[data-share]').forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const action = btn.dataset.share;
+      const text   = fullText();
+      const title  = "✦ Shary · Lending Conditions";
+      if (action === "print") { window.print(); return; }
+      if (action === "mobile" || action === "apps"){
+        // Share ladder: standalone HTML file → text-only → clipboard.
+        const htmlFile = new File([buildHTMLDoc()], "shary-lending.html", { type: "text/html" });
+        if (navigator.canShare && navigator.canShare({ files: [htmlFile] })){
+          try { await navigator.share({ title, text, files: [htmlFile] }); toast("✓ Shared"); return; }
+          catch(_) { /* cancelled or unsupported → fall through */ }
+        }
+        if (navigator.share){
+          try { await navigator.share({ title, text }); toast("✓ Shared"); return; }
+          catch(_) { return; /* user cancelled */ }
+        }
+        if (navigator.clipboard){
+          try { await navigator.clipboard.writeText(text); toast("✓ Copied — paste to share"); return; }
+          catch(_) { /* fall through */ }
+        }
+        toast("Web Share not supported here");
+      }
+    });
+  });
+
+  // ===== PUBLISH (Go) handler =====
+  $('[data-publish-go]')?.addEventListener("click", e => {
+    e.preventDefault();
+    const plat = document.querySelector('input[name="pub-plat"]:checked');
+    const platKey = plat ? plat.id.replace("pub-plat-","") : "none";
+    if (platKey === "none"){ toast("Pick a platform first"); return; }
+    const audience = $(".pub-target")?.value || "groups";
+    if (platKey === "0asis"){
+      const d  = $(".pub-cal-d")?.value, m = $(".pub-cal-m")?.value, y = $(".pub-cal-y")?.value;
+      const hh = $(".pub-hh")?.value, mm = $(".pub-mm")?.value;
+      toast(`✓ Scheduled on Nety for ${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")} ${hh}:${mm} · to ${audience}`);
+    } else if (platKey === "wizardry"){
+      const bot = document.querySelector('input[name="wizardry-pick"]:checked');
+      const botKey = bot ? bot.id.replace("wizardry-","") : "none";
+      if (botKey === "none"){ toast("Pick a Wizy first"); return; }
+      toast(`✓ Sent to Wizy · ${botKey}`);
+    } else {
+      toast(`✓ Published to ${platKey} · to ${audience}`);
+    }
+    const none = $("#cycle-none"); if (none) none.checked = true;
+  });
+
+  // ===== DOWNLOAD bundle — what's ticked under Save gets emitted =====
+  const fmtBuilders = {
+    txt:  () => ({ blob: new Blob([fullText() + "\n"], { type:"text/plain;charset=utf-8" }),       name:"shary-lending.txt" }),
+    md:   () => ({ blob: new Blob([buildMD()],         { type:"text/markdown;charset=utf-8" }),    name:"shary-lending.md" }),
+    html: () => ({ blob: new Blob([buildHTMLDoc()],    { type:"text/html;charset=utf-8" }),        name:"shary-lending.html" }),
+    csv:  () => ({ blob: new Blob([buildCSV()],        { type:"text/csv;charset=utf-8" }),         name:"shary-lending.csv" }),
+    xml:  () => ({ blob: new Blob([buildXML()],        { type:"application/xml;charset=utf-8" }),  name:"shary-lending.xml" }),
+    json: () => ({ blob: new Blob([JSON.stringify({ ...snapshot(), conditions: fullText() }, null, 2)], { type:"application/json;charset=utf-8" }), name:"shary-lending.json" }),
+  };
+  $("#dlBtn")?.addEventListener("click", e => {
+    e.preventDefault();
+    const picks = ["txt","md","jpg","html","csv","xml","json"].filter(f => $("#save-fmt-"+f)?.checked);
+    const wantApp = $("#save-app")?.checked;
+    if (!picks.length && !wantApp){ toast("Tick one or more formats under Save first"); return; }
+    if (wantApp){ toast("App destination — coming soon"); }
+    picks.forEach(f => {
+      if (f === "jpg"){
+        renderJPG(b => { if (!b){ toast("JPG not supported"); return; } downloadBlob(b, "shary-lending.jpg"); });
+        return;
+      }
+      const { blob, name } = fmtBuilders[f]();
+      downloadBlob(blob, name);
+    });
+    if (picks.length) toast(`✓ Downloaded ${picks.length} file${picks.length>1?"s":""}`);
+  });
+
+  try{ localStorage.removeItem(KEY); }catch(e){}
+  updateSlots();
+  updateProgress();
+  renderMagic();
+})();
+
+// ── ported QUE handlers from offer.html ──
+(function(){
+  const $  = s => document.querySelector(s);
+  const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+
+  // Minimal wizard helper — keeps any user-typed text, only swaps the
+  // bot-inserted suggestion (stored on the element as a dataset string).
+  const wizard = {
+    inject(el, text){
+      if (!el) return;
+      const prev = el.dataset.botText || "";
+      let base = el.value || "";
+      if (prev && base.endsWith(prev)) base = base.slice(0, -prev.length);
+      const next = text || "";
+      el.value = base + next;
+      el.dataset.botText = next;
+    },
+    clear(el){
+      if (!el) return;
+      const prev = el.dataset.botText || "";
+      if (prev && (el.value || "").endsWith(prev)){
+        el.value = el.value.slice(0, -prev.length);
+      }
+      el.dataset.botText = "";
+    },
+  };
+
+  const TITLE_MAGIC_SEED = "✦ a thing you love";
+  const TITLE_BOT_TEXTS = {
+    lovely: ["a lovely gift", "a tender share", "a warm offering", "something kind", "with love"],
+    joy:    ["a joyful share", "fun to use!", "a smile-maker", "playful & free", "joy goes here"],
+    wisdom: ["a wise share", "useful & lasting", "tested & trusted", "built to share", "passed-on wisdom"],
+  };
+  const DESC_BOT_TEXTS = {
+    lovely: ["A loving description — kept gently and given freely.", "I share this with care; please return it the same way.", "Made or chosen with affection — happy to pass it on.", "A small loving thing for whoever needs it.", "Shared with warmth."],
+    joy:    ["Fun, easy to use, brings a smile.", "Bring it back with a story attached.", "Light, playful, easy to share.", "A small joy on loan.", "Pure fun on loan!"],
+    wisdom: ["Long-lasting, well kept, worth borrowing.", "Tested, useful, ready to be shared.", "Built to last; please treat it the same.", "Solid and well-used — ready for more lives.", "Wisdom hands-on."],
+  };
+  const titleBotCounters = { lovely: 0, joy: 0, wisdom: 0 };
+  const descBotCounters  = { lovely: 0, joy: 0, wisdom: 0 };
+
+  // ── Title magic button ── toggles aria-pressed and seeds/clears title
+  const titleMagicBtn = $("#titleMagicBtn");
+  if (titleMagicBtn){
+    titleMagicBtn.addEventListener("click", () => {
+      const pressed = titleMagicBtn.getAttribute("aria-pressed") === "true";
+      const next = !pressed;
+      titleMagicBtn.setAttribute("aria-pressed", next ? "true" : "false");
+      const titleInput = $("#offerTitle");
+      if (next){
+        wizard.inject(titleInput, TITLE_MAGIC_SEED);
+      } else {
+        wizard.clear(titleInput);
+        Object.keys(titleBotCounters).forEach(k => { titleBotCounters[k] = 0; });
+        $$('.title-bots .bot-pick').forEach(b => b.classList.remove("is-on"));
+      }
+    });
+  }
+
+  // ── Title bot pickers (cycle 5 texts, single-select) ──
+  $$('.title-bots .bot-pick[data-title-bot]').forEach(b => {
+    b.addEventListener("click", () => {
+      const bot = b.dataset.titleBot;
+      titleBotCounters[bot] = (titleBotCounters[bot] + 1) % 6;
+      const count = titleBotCounters[bot];
+      $$('.title-bots .bot-pick').forEach(x => x.classList.remove("is-on"));
+      const titleInput = $("#offerTitle");
+      if (count === 0){
+        wizard.clear(titleInput);
+      } else {
+        wizard.inject(titleInput, TITLE_BOT_TEXTS[bot][count - 1]);
+        b.classList.add("is-on");
+      }
+    });
+  });
+
+  // ── opt-magic (description ✦) → toggle is-on (reveals bot row via CSS)
+  $$('#acc-que .ta-bottom-tools .opt-magic').forEach(btn => {
+    btn.addEventListener("click", () => {
+      const key  = btn.dataset.magicFor;
+      const ta   = document.querySelector(`[data-opt-ta="${key}"]`);
+      const on   = btn.classList.toggle("is-on");
+      const wrap = btn.closest(".ta-bottom-tools");
+      Object.keys(descBotCounters).forEach(k => { descBotCounters[k] = 0; });
+      $$('.bot-pick', wrap).forEach(b => b.classList.remove("is-on"));
+      if (on){
+        wizard.inject(ta, "✨ a thing worth sharing");
+      } else {
+        wizard.clear(ta);
+      }
+    });
+  });
+
+  // ── bot-row pickers (description: cycle 5 texts) ──
+  $$('#acc-que .bot-row .bot-pick[data-bot]').forEach(btn => {
+    btn.addEventListener("click", () => {
+      const bot = btn.dataset.bot;
+      const wrap = btn.closest(".bot-row");
+      const key = wrap.dataset.botsFor;
+      const ta = document.querySelector(`[data-opt-ta="${key}"]`);
+      descBotCounters[bot] = (descBotCounters[bot] + 1) % 6;
+      const count = descBotCounters[bot];
+      $$('.bot-pick', wrap).forEach(b => b.classList.remove("is-on"));
+      if (count === 0){
+        wizard.clear(ta);
+      } else {
+        wizard.inject(ta, (DESC_BOT_TEXTS[bot] || [])[count - 1] || "");
+        btn.classList.add("is-on");
+      }
+    });
+  });
+
+  // ── bot-close (✕) buttons ──
+  $$('#acc-que .bot-pick.bot-close').forEach(btn => {
+    btn.addEventListener("click", () => {
+      const target = btn.dataset.botClose;
+      if (target === "title"){
+        wizard.clear($("#offerTitle"));
+        Object.keys(titleBotCounters).forEach(k => { titleBotCounters[k] = 0; });
+        $$('.title-bots .bot-pick').forEach(b => b.classList.remove("is-on"));
+        if (titleMagicBtn) titleMagicBtn.setAttribute("aria-pressed", "false");
+        return;
+      }
+      const row = btn.closest(".bot-row");
+      const key = row.dataset.botsFor;
+      const ta = document.querySelector(`[data-opt-ta="${key}"]`);
+      if (ta) wizard.clear(ta);
+      $$('.bot-pick', row).forEach(b => b.classList.remove("is-on"));
+      const wrap = row.closest(".ta-bottom-tools");
+      const magic = wrap && wrap.querySelector(`.opt-magic[data-magic-for="${key}"]`);
+      if (magic) magic.classList.remove("is-on");
+      Object.keys(descBotCounters).forEach(k => { descBotCounters[k] = 0; });
+    });
+  });
+
+  // ── worth-bar: click to set level for that row; click active top bar to clear
+  function setWorth(row, val){
+    $$('.worth-bar', row).forEach(b => {
+      const v = parseInt(b.dataset.val, 10);
+      b.classList.toggle("is-on", v <= val);
+    });
+  }
+  $$('#acc-que .worth-bar').forEach(b => {
+    b.addEventListener("click", () => {
+      const row = b.closest(".worth-row");
+      const val = parseInt(b.dataset.val, 10);
+      const current = $$('.worth-bar.is-on', row).length;
+      setWorth(row, current === val ? 0 : val);
+    });
+  });
+
+  // ── worth-name: click to clear that row
+  $$('#acc-que .worth-name').forEach(name => {
+    name.addEventListener("click", () => {
+      const row = name.closest(".worth-row");
+      setWorth(row, 0);
+    });
+  });
+
+  // ── Get coords (geolocation) ──
+  const getBtn = $("#getCoordsBtn"), coordsField = $("#coordsField");
+  if (getBtn && coordsField){
+    getBtn.addEventListener("click", () => {
+      if (coordsField.hasAttribute("hidden")){
+        if (navigator.geolocation){
+          navigator.geolocation.getCurrentPosition(
+            pos => {
+              const lat = pos.coords.latitude.toFixed(4);
+              const lon = pos.coords.longitude.toFixed(4);
+              const ns  = lat >= 0 ? "N" : "S";
+              const ew  = lon >= 0 ? "E" : "W";
+              coordsField.value = `${Math.abs(lat)}° ${ns}, ${Math.abs(lon)}° ${ew}`;
+            },
+            () => { if (!coordsField.value) coordsField.value = "40.4168° N, 3.7038° W"; }
+          );
+        }
+        if (!coordsField.value) coordsField.value = "40.4168° N, 3.7038° W";
+        coordsField.removeAttribute("hidden");
+        getBtn.textContent = "Hide coords";
+      } else {
+        coordsField.setAttribute("hidden", "");
+        getBtn.textContent = "Get coords";
+      }
+    });
+  }
+
+  // ── acc-summary click toggles .is-open (ignore inner controls) ──
+  $$("#acc-que").forEach(bar => {
+    const head = bar.querySelector(".acc-summary");
+    if (!head) return;
+    head.addEventListener("click", e => {
+      if (e.target.closest(".text-input")) return;
+      if (e.target.closest(".acc-field-border-tools")) return;
+      bar.classList.toggle("is-open");
+    });
+  });
+
+  // ── highlight ta-tool when a file is picked (scoped to #acc-que to avoid double-binding) ──
+  $$('#acc-que .ta-tool input[type=file], #acc-que .acc-mic-btn input[type=file]').forEach(inp => {
+    inp.addEventListener("change", () => {
+      inp.parentElement.classList.toggle("has-file", !!inp.files.length);
+    });
+  });
+
+  // ── Weave thing-info values into the Invitation sentence ──
+  const WORTH_NAMES = {
+    sym:   "symbolical",
+    hist:  "historical",
+    ideal: "ideal",
+    pot:   "potential",
+    func:  "functional",
+    aff:   "affordable",
+    resp:  "respectful",
+    regen: "(re)generative",
+  };
+  const sentenceEl = $("#sentence");
+  if (sentenceEl){
+    const slot = (cls) => sentenceEl.querySelector("." + cls);
+    const titleEl = $("#offerTitle");
+    const descEl  = $("#offerName");
+    const ecoCb   = $("#eco");
+    const craftCb = $("#craft");
+    const sectorEl = $("#offerCat");
+    const zoneEl   = $("#mapZone");
+    const coordsEl = $("#coordsField");
+
+    function refreshSentence(){
+      // Title becomes the subject of the sentence
+      const hasTitle = !!(titleEl && titleEl.value.trim());
+      // The Invitation only appears once the thing's title carries text —
+      // it is not summoned by the "for" reasons or the "why" additions.
+      // Collapsed, it shows just that title; clicking it opens the full summary.
+      const inviteBlock = $("#inviteBlock");
+      if (inviteBlock) inviteBlock.hidden = !hasTitle;
+      const invTitle = document.getElementById("invTitle");
+      if (invTitle) invTitle.textContent = hasTitle ? ("✦ " + titleEl.value.trim()) : "✦";
+      const titleSlot = slot("thing-title-slot");
+      if (titleSlot){
+        const t = (titleEl && titleEl.value.trim()) || "this item";
+        titleSlot.textContent = t;
+      }
+      // Sector — "(a Tool)"
+      const sectorSlot = slot("thing-sector-slot");
+      if (sectorSlot){
+        const v = sectorEl && sectorEl.value;
+        sectorSlot.innerHTML = v ? " (a <strong>" + v.toLowerCase() + "</strong>)" : "";
+      }
+      // Description — em-dash + quoted description
+      const descSlot = slot("thing-desc-slot");
+      if (descSlot){
+        const v = descEl && descEl.value.trim();
+        descSlot.innerHTML = v ? " — <em>" + escapeHTML(v) + "</em>" : "";
+      }
+      // Tags — ", which is ecological and crafted"
+      const tagsSlot = slot("thing-tags-slot");
+      if (tagsSlot){
+        const tags = [];
+        if (ecoCb   && ecoCb.checked)   tags.push("ecological");
+        if (craftCb && craftCb.checked) tags.push("crafted");
+        tagsSlot.innerHTML = tags.length
+          ? ", which is <strong>" + tags.join(" and ") + "</strong>"
+          : "";
+      }
+      // Zone — "from the East"
+      const zoneSlot = slot("thing-zone-slot");
+      if (zoneSlot){
+        const v = zoneEl && zoneEl.value;
+        zoneSlot.innerHTML = v ? " from the <strong>" + v + "</strong>" : "";
+      }
+      // Coords — "(40.42° N, 3.70° W)"
+      const coordsSlot = slot("thing-coords-slot");
+      if (coordsSlot){
+        const v = coordsEl && !coordsEl.hidden && coordsEl.value.trim();
+        coordsSlot.innerHTML = v ? " (<em>" + escapeHTML(v) + "</em>)" : "";
+      }
+      // More-details adjectives — use the input value (essential/useful/…) so
+      // the slot text doesn't pick up the ⭐ icon from the visible label
+      const detSlot = slot("thing-details-slot");
+      if (detSlot){
+        const flags = $$('#acc-que .more-details-panel input[type=checkbox]:checked')
+          .map(cb => (cb.value || "").replace(/-/g, " "))
+          .filter(Boolean);
+        detSlot.innerHTML = flags.length
+          ? " This thing is <strong>" + flags.join(", ") + "</strong>."
+          : "";
+      }
+      // Worth-it — "Its worth: symbolical 4/5, functional 5/5."
+      const worthSlot = slot("thing-worth-slot");
+      if (worthSlot){
+        const parts = [];
+        $$('#acc-que .worth-row').forEach(row => {
+          const cat = row.dataset.cat;
+          const lit = row.querySelectorAll(".worth-bar.is-on").length;
+          if (cat && lit > 0 && WORTH_NAMES[cat]){
+            parts.push(WORTH_NAMES[cat] + " " + lit + "/5");
+          }
+        });
+        worthSlot.innerHTML = parts.length
+          ? " Its worth: <strong>" + parts.join(", ") + "</strong>."
+          : "";
+      }
+      // Media uploads — "Includes title audio, description audio, description file."
+      const mediaSlot = slot("thing-media-slot");
+      if (mediaSlot){
+        const bits = [];
+        const titleAudio = $("#offerTitle-mic");
+        const descAudio  = $("#offerName-mic");
+        const descFile   = $("#offerName-file");
+        if (titleAudio && titleAudio.files && titleAudio.files.length) bits.push("title audio");
+        if (descAudio  && descAudio.files  && descAudio.files.length)  bits.push("description audio");
+        if (descFile   && descFile.files   && descFile.files.length)   bits.push("description file");
+        mediaSlot.innerHTML = bits.length
+          ? " Includes <strong>" + bits.join(", ") + "</strong>."
+          : "";
+      }
+    }
+    function escapeHTML(s){
+      return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+    }
+
+    // wire listeners on every QUE input that feeds the sentence
+    [titleEl, descEl].forEach(el => el && el.addEventListener("input", refreshSentence));
+    [ecoCb, craftCb].forEach(cb => cb && cb.addEventListener("change", refreshSentence));
+    [sectorEl, zoneEl, coordsEl].forEach(el => el && el.addEventListener("change", refreshSentence));
+    if (coordsEl){
+      // coordsField gets filled programmatically and un-hidden — observe attr changes
+      new MutationObserver(refreshSentence).observe(coordsEl, { attributes: true, attributeFilter: ["hidden", "value"] });
+      coordsEl.addEventListener("input", refreshSentence);
+    }
+    $$('#acc-que .more-details-panel input[type=checkbox]').forEach(cb =>
+      cb.addEventListener("change", refreshSentence)
+    );
+    $$('#acc-que .worth-bar, #acc-que .worth-name').forEach(b =>
+      b.addEventListener("click", () => setTimeout(refreshSentence, 0))
+    );
+    // file uploads in the QUE section also feed the sentence
+    ['#offerTitle-mic', '#offerName-mic', '#offerName-file'].forEach(sel => {
+      const inp = $(sel);
+      if (inp) inp.addEventListener('change', refreshSentence);
+    });
+    // Title magic / title-bot picks / description magic / description-bot
+    // picks set #offerTitle.value or #offerName.value programmatically via
+    // wizard.inject(), which does NOT fire an 'input' event — listen on the
+    // buttons themselves and refresh on the next tick.
+    $$('#acc-que .title-magic-btn, #acc-que .title-bots .bot-pick, #acc-que .ta-bottom-tools .opt-magic, #acc-que .ta-bottom-tools .bot-row .bot-pick').forEach(b =>
+      b.addEventListener('click', () => setTimeout(refreshSentence, 0))
+    );
+    refreshSentence();
+  }
+})();
+
+// ── translaty engine — language switch + data-* swap + persistence ──
+(function(){
+  const LS = 'translaty-lang';
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const radios = () => Array.from(document.querySelectorAll('input[name="lang"]'));
+  const curLang = () => { const r = radios().find(x => x.checked); return r ? r.id.replace('lang-', '') : 'en'; };
+  window.floveCurLang = curLang;
+  function applyLang(){
+    const li = curLang();
+    document.documentElement.lang = li;
+    document.querySelectorAll('option[data-en]').forEach(o => { if (o.dataset[li] != null) o.textContent = o.dataset[li]; });
+    document.querySelectorAll('[data-ph-en]').forEach(el => { const v = el.dataset['ph' + cap(li)]; if (v != null) el.placeholder = v; });
+    document.querySelectorAll('[data-aria-en]').forEach(el => { const v = el.dataset['aria' + cap(li)]; if (v != null) el.setAttribute('aria-label', v); });
+    try { localStorage.setItem(LS, li); } catch (_) {}
+    document.dispatchEvent(new CustomEvent('translaty:lang', { detail: li }));
+  }
+  function init(){
+    let saved = null; try { saved = localStorage.getItem(LS) || localStorage.getItem('translate2-lang'); } catch (_) {}
+    if (saved){ const r = document.getElementById('lang-' + saved); if (r) r.checked = true; }
+    radios().forEach(r => r.addEventListener('change', () => {
+      applyLang();
+      const d = document.querySelector('details.lang'); if (d) d.open = false;
+    }));
+    applyLang();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+</body>
+</html>

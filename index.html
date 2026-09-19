@@ -1,0 +1,1839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="author" content="Marc (marcflove)">
+<meta name="copyright" content="© 2026 Marc · CC BY-SA 4.0">
+<link rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">
+<title>FLOVE</title>
+<!-- PWA: install flove as an app (manifest + icons) -->
+<link rel="manifest" href="solo/manifest.webmanifest">
+<meta name="theme-color" content="#ff8a3a">
+<link rel="apple-touch-icon" href="solo/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="flove">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='12' y1='0' x2='88' y2='0' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='%23ff3344'/><stop offset='.5' stop-color='%23ff8a3a'/><stop offset='1' stop-color='%23ffd633'/></linearGradient></defs><path d='M50 60 C 22 60, 12 38, 16 18 C 38 22, 54 38, 50 60 Z' fill='url(%23g)'/><path d='M50 60 C 78 60, 88 38, 84 18 C 62 22, 46 38, 50 60 Z' fill='url(%23g)'/><path d='M50 58 C 50 72, 50 84, 50 92' stroke='url(%23g)' stroke-width='5' stroke-linecap='round' fill='none'/></svg>">
+<!-- font payload trimmed from ~465 KB → ~95 KB by:
+     1. Fraunces — sub-setted to the 5 glyphs of "flove" via &text=flove
+        (drops unused weights 400, 500; keeps opsz variable axis for crisp rendering at large sizes)
+     2. Inter    — only weight 600 (the only weight .btn renders);
+        body's default Inter 400 falls back to system-ui safely (no visible body text)
+     3. JetBrains Mono — kept (400 used by .btn-hint, 500 by .slogan) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300&text=flove&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── tokens ──────────────────────────────────────────────────────── */
+:root {
+  --bg-1:#fff8f1; --bg-2:#f4f1ff; --bg-3:#effdf7;
+  --ink:#1a1820;  --mut:#6a6478;  --line:rgba(20,16,32,.10);
+  --accent:#ff8a8a; --accent-soft:#ffd9d9;
+  --dream-1:#ff8aae; --dream-2:#8ab4ff; --dream-3:#b48aff; --dream-4:#8affd0; --dream-5:#ffd28a;
+}
+:root.dark {
+  --bg-1:#1a1820; --bg-2:#221e2a; --bg-3:#1e1a26;
+  --ink:#f0ecf4;  --mut:#9a94a8;  --line:rgba(240,236,244,.12);
+  --accent:#ff8a8a; --accent-soft:#4a2030;
+  --dream-1:#ff8aae; --dream-2:#8ab4ff; --dream-3:#b48aff; --dream-4:#8affd0; --dream-5:#ffd28a;
+}
+/* @property = registered vars that interpolate via transition (Houdini) */
+@property --c1 { syntax:'<number>'; initial-value:0; inherits:false; }
+@property --c2 { syntax:'<number>'; initial-value:0; inherits:false; }
+@property --c3 { syntax:'<number>'; initial-value:0; inherits:false; }
+@property --logo-l-violet-stop { syntax:'<percentage>'; initial-value:60%; inherits:true; }
+
+* { box-sizing:border-box; }
+html, body { margin:0; padding:0; max-width:100%; overflow-x:hidden; }
+body {
+  font-family:'Inter',system-ui,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(1100px 700px at 110% -10%, var(--bg-3) 0, transparent 55%),
+    radial-gradient(900px 600px at -10% 110%, var(--bg-2) 0, transparent 55%),
+    var(--bg-1);
+  min-height:100svh;   /* fallback: small viewport (URL bar shown) */
+  min-height:100dvh;   /* dynamic viewport: match the visible area, no empty space below when the URL bar hides */
+  transition: background .5s ease, color .3s ease;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;   /* keep the blurred bg blobs from spawning a sideways scrollbar */
+  overflow-y:auto;     /* but let the page scroll down when content grows past the viewport */
+}
+
+.stage {
+  position:relative; z-index:2;
+  min-height:100svh;
+  min-height:100dvh;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:6vmin 5vmin;
+  gap:clamp(1.4rem, 4vmin, 3rem);
+  text-align:center;
+}
+
+/* ─── logo ────────────────────────────────────────────────────────── */
+.logo {
+  position:relative;
+  font-family:'Fraunces','Cormorant Garamond',serif;
+  font-weight:300;
+  /* pin a text-size optical axis so the high-contrast display cut doesn't drop
+     the 'e' crossbar (auto drives opsz→144 at this size, hairlining it away) */
+  font-optical-sizing:none;
+  font-variation-settings:'opsz' 36;
+  font-size:clamp(6.5rem, 26vmin, 17rem);
+  line-height:.92;
+  letter-spacing:-.025em;
+  margin:0;
+  color:var(--ink);
+  filter: drop-shadow(0 0 30px rgba(200,150,230,.35));
+  text-shadow: 0 0 40px rgba(255,138,174,.18), 0 0 80px rgba(180,138,255,.10);
+  opacity:0;
+  animation: logoIn 1.95s cubic-bezier(.25,.6,.2,1) .2s forwards;
+}
+@keyframes logoIn { to { opacity:1; } }
+
+/* "f" — rainbow gradient, click-driven opacity */
+.logo-fl {
+  background: linear-gradient(98deg, #ffd633 0%, #6dd933 22%, #2a9aff 44%, #6a3aff 60%, #c133ff 75%, #5b3a7a 88%, var(--ink) 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  opacity:var(--logo-color-opacity, .25);
+  transition: opacity .5s cubic-bezier(.25,.7,.3,1);
+}
+/* "l" — small violet kiss with zigzag edge (3 stacked gradients), full opacity */
+.logo-l {
+  background:
+    linear-gradient(108deg, transparent calc(var(--logo-l-violet-stop) - 2%), var(--ink) calc(var(--logo-l-violet-stop) + 12%)),
+    linear-gradient(72deg,  transparent calc(var(--logo-l-violet-stop) - 5%), var(--ink) calc(var(--logo-l-violet-stop) + 15%)),
+    linear-gradient(to right, #c133ff 0%, #c133ff var(--logo-l-violet-stop), var(--ink) calc(var(--logo-l-violet-stop) + 15%), var(--ink) 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  transition: --logo-l-violet-stop .5s cubic-bezier(.25,.7,.3,1);
+}
+.logo-ove { color:var(--ink); opacity:.95; }
+
+/* ─── per-state vars (drive opacity, violet stop, click effects) ──── */
+:root:has(#s0:checked) { --logo-color-opacity:.35; --logo-l-violet-stop:60%;
+  --ring-c:#ff8aae; --ring-w:2px; --ring-s:solid; --ring-end:2.8;
+  --sparkle-scale:1.8; --sparkle-rot:110deg;
+  --sparkle-bg:
+    radial-gradient(circle 2.5px at 50% 8%,  #fff 99%, transparent 100%),
+    radial-gradient(circle 2px   at 90% 25%, var(--accent) 99%, transparent 100%),
+    radial-gradient(circle 2.5px at 78% 78%, var(--dream-2) 99%, transparent 100%),
+    radial-gradient(circle 2px   at 22% 86%, var(--dream-3) 99%, transparent 100%),
+    radial-gradient(circle 2.5px at 8% 38%,  var(--dream-5) 99%, transparent 100%),
+    radial-gradient(circle 1.5px at 38% 14%, var(--accent-soft) 99%, transparent 100%),
+    radial-gradient(circle 1.5px at 62% 92%, var(--dream-4) 99%, transparent 100%),
+    radial-gradient(circle 1.5px at 14% 62%, #fff 99%, transparent 100%);
+}
+:root:has(#s1:checked) { --logo-color-opacity:.50; --logo-l-violet-stop:55%;
+  --ring-c:#8ac4ff; --ring-w:2px; --ring-s:solid; --ring-end:3.4;
+  --sparkle-scale:2; --sparkle-rot:-130deg;
+  --sparkle-bg:
+    radial-gradient(circle 3px   at 50% 50%, #ffe58a 99%, transparent 100%),
+    radial-gradient(circle 2px   at 20% 30%, #ffd28a 99%, transparent 100%),
+    radial-gradient(circle 2px   at 80% 30%, #ffd28a 99%, transparent 100%),
+    radial-gradient(circle 2px   at 30% 80%, #ffe58a 99%, transparent 100%),
+    radial-gradient(circle 2px   at 70% 80%, #ffe58a 99%, transparent 100%),
+    radial-gradient(circle 1.5px at 50% 12%, #fff 99%, transparent 100%),
+    radial-gradient(circle 1.5px at 50% 88%, #fff 99%, transparent 100%),
+    radial-gradient(circle 1.5px at 12% 50%, #fff 99%, transparent 100%),
+    radial-gradient(circle 1.5px at 88% 50%, #fff 99%, transparent 100%);
+}
+:root:has(#s2:checked) { --logo-color-opacity:.75; --logo-l-violet-stop:50%;
+  --ring-c:#ffd28a; --ring-w:3px; --ring-s:solid; --ring-end:2.5;
+  --sparkle-scale:1.6; --sparkle-rot:200deg;
+  --sparkle-bg:
+    radial-gradient(circle 4px at 50% 22%, var(--dream-1) 99%, transparent 100%),
+    radial-gradient(circle 4px at 22% 50%, var(--dream-1) 99%, transparent 100%),
+    radial-gradient(circle 4px at 78% 50%, var(--dream-1) 99%, transparent 100%),
+    radial-gradient(circle 4px at 50% 78%, var(--dream-1) 99%, transparent 100%),
+    radial-gradient(circle 2px at 50% 50%, var(--accent) 99%, transparent 100%);
+}
+:root:has(#s3:checked) { --logo-color-opacity:1; --logo-l-violet-stop:45%;
+  --ring-c:#b48aff; --ring-w:2px; --ring-s:dashed; --ring-end:3;
+  --sparkle-scale:1.9; --sparkle-rot:80deg;
+  --sparkle-bg:
+    radial-gradient(circle 2px   at 18% 22%, #8affd0 99%, transparent 100%),
+    radial-gradient(circle 2.5px at 36% 14%, #8affd0 99%, transparent 100%),
+    radial-gradient(circle 2px   at 60% 18%, #8affd0 99%, transparent 100%),
+    radial-gradient(circle 2.5px at 80% 26%, #8affd0 99%, transparent 100%),
+    radial-gradient(circle 2px   at 88% 50%, #6dd933 99%, transparent 100%),
+    radial-gradient(circle 2px   at 76% 78%, #6dd933 99%, transparent 100%),
+    radial-gradient(circle 2.5px at 50% 86%, #6dd933 99%, transparent 100%),
+    radial-gradient(circle 2px   at 22% 78%, #8affd0 99%, transparent 100%),
+    radial-gradient(circle 2.5px at 10% 50%, #8affd0 99%, transparent 100%);
+}
+:root:has(#s4:checked) { --logo-color-opacity:1; --logo-l-violet-stop:40%;
+  --ring-c:#8affd0; --ring-w:2px; --ring-s:solid; --ring-end:3.2;
+  --sparkle-scale:2.1; --sparkle-rot:320deg;
+  --sparkle-bg:
+    radial-gradient(circle 3px   at 12% 14%, #ff3344 99%, transparent 100%),
+    radial-gradient(circle 2.5px at 30% 22%, #ff8a3a 99%, transparent 100%),
+    radial-gradient(circle 3px   at 50% 12%, #ffd633 99%, transparent 100%),
+    radial-gradient(circle 2.5px at 70% 22%, #6dd933 99%, transparent 100%),
+    radial-gradient(circle 3px   at 88% 14%, #2a9aff 99%, transparent 100%),
+    radial-gradient(circle 2.5px at 14% 50%, #c133ff 99%, transparent 100%),
+    radial-gradient(circle 3px   at 88% 50%, #ff3344 99%, transparent 100%),
+    radial-gradient(circle 2.5px at 14% 86%, #ffd633 99%, transparent 100%),
+    radial-gradient(circle 3px   at 50% 88%, #2a9aff 99%, transparent 100%),
+    radial-gradient(circle 2.5px at 86% 86%, #c133ff 99%, transparent 100%);
+}
+.logo .sprout-leaf {
+  opacity: var(--logo-color-opacity, .25);
+  transition: opacity .5s cubic-bezier(.25,.7,.3,1);
+}
+.state-input { position:absolute; width:0; height:0; margin:0; opacity:0; pointer-events:none; }
+
+/* ─── sprout area + cycle buttons covering the whole logo ─────────── */
+.logo .star-area {
+  position:relative;
+  display:inline-block;
+  width:.76em; height:.76em;
+  vertical-align:-.04em;
+  margin-right:-.04em;
+}
+.logo .star {
+  position:relative; display:block;
+  width:100%; height:100%;
+  transform-origin:center;
+  --c1:0; --c2:0; --c3:0;
+  transform: scale(calc(1 + var(--c1) * .22));
+  filter:
+    drop-shadow(0 0 calc(12px + var(--c1) * 22px) rgba(255,110,138, calc(.55 + var(--c1) * .4)))
+    drop-shadow(0 0 calc(26px + var(--c1) * 40px) rgba(150,138,220, calc(.28 + var(--c1) * .4)));
+  transition:
+    --c1 1.0s cubic-bezier(.2,.7,.3,1),
+    --c2 1.6s cubic-bezier(.2,.6,.3,1) .15s,
+    --c3 1.9s cubic-bezier(.2,.5,.3,1) .35s;
+}
+.logo .star svg { display:block; width:100%; height:100%; }
+.logo .sprout-tail { stroke-dasharray:1; stroke-dashoffset:1; transition: stroke-dashoffset 1s cubic-bezier(.25,.7,.3,1); }
+:root:has(#s4:checked) .logo .sprout-tail { stroke-dashoffset:0; }
+
+.logo .star-cycle-btn {
+  position:absolute; inset:0;
+  display:none; cursor:pointer; user-select:none;
+  background:transparent; z-index:4;
+}
+:root:has(#s0:checked) .logo .star-cycle-btn[data-st="0"],
+:root:has(#s1:checked) .logo .star-cycle-btn[data-st="1"],
+:root:has(#s2:checked) .logo .star-cycle-btn[data-st="2"],
+:root:has(#s3:checked) .logo .star-cycle-btn[data-st="3"],
+:root:has(#s4:checked) .logo .star-cycle-btn[data-st="4"] { display:block; }
+
+/* press: jump c-vars to 1 instantly; release decays smoothly via transition */
+.logo:has(.star-cycle-btn:active) .star {
+  --c1:1; --c2:1; --c3:1;
+  transition: --c1 0s, --c2 0s, --c3 0s;
+}
+
+/* ring (::before) and sparkle burst (::after) — driven by per-state vars */
+.logo .star::before {
+  content:""; position:absolute; inset:-10%;
+  border-radius:50%;
+  border: var(--ring-w, 2px) var(--ring-s, solid) var(--ring-c, #ff8aae);
+  opacity: calc(var(--c2) * .85);
+  transform: scale(calc(1 + (1 - var(--c2)) * var(--ring-end, 2.8)));
+  pointer-events:none; z-index:1;
+}
+.logo .star::after {
+  content:""; position:absolute; inset:-130%;
+  background: var(--sparkle-bg);
+  filter: drop-shadow(0 0 5px var(--accent-soft));
+  transform: scale(calc(.4 + (1 - var(--c3)) * var(--sparkle-scale, 1.8))) rotate(calc((1 - var(--c3)) * var(--sparkle-rot, 110deg)));
+  opacity: calc(var(--c3) * (1 - var(--c3)) * 4);
+  pointer-events:none; z-index:2;
+}
+
+/* ─── colour splash (rainbow rises from below) ────────────────────── */
+.splash {
+  position:fixed; inset:0; z-index:0;
+  pointer-events:none; opacity:0;
+  transform-origin:50% 100%;
+  background:
+    radial-gradient(circle at 20% 88%, #ff3355 0, transparent 52%),
+    radial-gradient(circle at 33% 82%, #ff8a2a 0, transparent 52%),
+    radial-gradient(circle at 46% 90%, #ffd633 0, transparent 52%),
+    radial-gradient(circle at 56% 80%, #33d97a 0, transparent 52%),
+    radial-gradient(circle at 66% 86%, #2a9aff 0, transparent 52%),
+    radial-gradient(circle at 78% 82%, #6a3aff 0, transparent 52%),
+    radial-gradient(circle at 50% 98%, #c133ff 0, transparent 56%);
+  filter: blur(44px) saturate(2.2);
+  animation: splashBurst 2s cubic-bezier(.2,.85,.25,1) 1.8s forwards;
+}
+@keyframes splashBurst {
+  0%   { opacity:0;    transform:translateY(55vh)  scale(.45) rotate(-6deg); filter:blur(60px) saturate(1.8); }
+  22%  { opacity:.167; transform:translateY(18vh)  scale(.95) rotate(3deg);  filter:blur(30px) saturate(3); }
+  50%  { opacity:.167; transform:translateY(-8vh)  scale(1.25) rotate(-2deg);filter:blur(44px) saturate(2.6); }
+  78%  { opacity:.092; transform:translateY(-30vh) scale(1.5) rotate(4deg);  filter:blur(60px) saturate(2.2); }
+  100% { opacity:0;    transform:translateY(-55vh) scale(1.75) rotate(-3deg);filter:blur(80px) saturate(2); }
+}
+
+/* ─── slogan ──────────────────────────────────────────────────────── */
+.slogan {
+  margin:0;
+  font-family:'JetBrains Mono', ui-monospace, monospace;
+  font-weight:500;
+  font-size:clamp(1rem, 2.6vmin, 1.4rem);
+  color:var(--mut);
+  letter-spacing:.01em;
+  display:flex; justify-content:center;
+}
+.slogan .typed {
+  display:none; white-space:nowrap; overflow:hidden;
+  width:0; border-right:2px solid transparent;
+  vertical-align:bottom;
+}
+:root:has(#s0:checked) .slogan .typed[data-st="0"] { display:inline-block; width:9ch;  animation: typeIn 1.6s steps(8, end) 5s both, caretBlink .5s linear 5s 4, caretFade .35s linear 7s forwards; }
+:root:has(#s1:checked) .slogan .typed[data-st="1"] { display:inline-block; width:16ch; animation: typeIn 3s   steps(15, end) both, caretBlink .5s linear 6, caretFade .35s linear 3s forwards; }
+:root:has(#s2:checked) .slogan .typed[data-st="2"] { display:inline-block; width:17ch; animation: typeIn 3.2s steps(16, end) both, caretBlink .5s linear 7, caretFade .35s linear 3.2s forwards; }
+:root:has(#s3:checked) .slogan .typed[data-st="3"] { display:inline-block; width:12ch; animation: typeIn 2.2s steps(11, end) both, caretBlink .5s linear 5, caretFade .35s linear 2.2s forwards; }
+:root:has(#s4:checked) .slogan .typed[data-st="4"] { display:inline-block; width:21ch; animation: typeIn 4s   steps(20, end) both, caretBlink .5s linear 8, caretFade .35s linear 4s forwards; }
+@keyframes typeIn { from { width:0; } }
+@keyframes caretBlink { 0%,50% { border-right-color:var(--accent); } 50.01%,100% { border-right-color:transparent; } }
+@keyframes caretFade  { from { border-right-color:var(--accent); } to { border-right-color:transparent; } }
+
+/* ─── CTA buttons ─────────────────────────────────────────────────── */
+.cta {
+  margin-top:clamp(.96rem, 2.4vmin, 1.6rem);
+  display:flex; flex-direction:column; align-items:center;
+  /* the sound row lives inside what used to be the buttons↔house gap, so the
+     gap is halved (minus half the 2.8rem icon) to keep the house at its old height */
+  gap:calc(clamp(2.8rem, 9.2vmin, 7.2rem) * .5 - 1.4rem);
+  padding:0 3.2vmin;
+}
+
+/* WEB → apps-intro: the home fades out to white over 5s, then opens the intro */
+.web-fade{ position:fixed; inset:0; z-index:99999; background:#fffdf8; opacity:0;
+  pointer-events:none; transition:opacity 5s linear; }
+.web-fade.on{ opacity:1; pointer-events:auto; }
+@media (prefers-reduced-motion: reduce){ .web-fade{ transition:opacity .4s linear; } }
+/* 'Why ?' → intro slides: the home fades out to white over 4s */
+.why-fade{ position:fixed; inset:0; z-index:99998; background:#fffdf8; opacity:0;
+  pointer-events:none; transition:opacity 4s linear; }
+.why-fade.on{ opacity:1; pointer-events:auto; }
+@media (prefers-reduced-motion: reduce){ .why-fade{ transition:opacity .4s linear; } }
+.cta-row {
+  position:relative;
+  display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-start;
+  gap:clamp(1.76rem, 5.6vmin, 4.4rem);
+}
+/* panda peeking above the Docs button, hugging its left border.
+   Not shown from the start: the neutral panda appears on the 3rd logo click
+   (#s3), and the 4th click (#s4) swaps it for the neutral-talking panda in
+   the same spot (never bottom-right). */
+.docs-panda, .docs-panda-talk {
+  position:absolute; z-index:3; width:3.05rem; height:auto;
+  left:-7px; bottom:calc(100% - 4px);
+  pointer-events:none; opacity:0;
+  transform:rotate(-8deg);
+  filter:drop-shadow(0 5px 12px rgba(60,30,90,.24));
+}
+:root:has(#s3:checked) .docs-panda { opacity:1; animation:pandaIn .8s cubic-bezier(.2,.8,.2,1) forwards; }
+:root:has(#s4:checked) .docs-panda-talk { opacity:1; animation:pandaIn .8s cubic-bezier(.2,.8,.2,1) forwards; }
+@keyframes pandaIn {
+  from { opacity:0; transform:translateY(16px) rotate(-14deg) scale(.5); }
+  to   { opacity:1; transform:rotate(-8deg); }
+}
+/* violet plume — red(docs) + blue(apps) winds meet in the gap → violet sparks upward */
+.cta-row::after {
+  content:""; position:absolute; left:50%; bottom:34%;
+  width:184px; height:152px; transform:translate(-50%, 8px);
+  pointer-events:none; z-index:2; opacity:0;
+  /* rounded bloom (not a vertical streak): near-circular radii + a wide-than-tall box
+     keep the blobs round, so the plume reads as a soft loop rather than a straight line */
+  background:
+    radial-gradient(46% 44% at 50% 58%, rgba(184,124,255,.55) 0%, transparent 72%),
+    radial-gradient(34% 33% at 40% 50%, rgba(164,104,255,.44) 0%, transparent 76%),
+    radial-gradient(33% 32% at 60% 46%, rgba(206,160,255,.42) 0%, transparent 76%),
+    radial-gradient(52% 46% at 50% 74%, rgba(150,90,255,.26) 0%, transparent 82%);
+  background-repeat:no-repeat;
+  background-size: 140% 140%, 128% 128%, 124% 124%, 150% 150%;
+  filter: blur(11px);   /* dissolve the edges → no border, sits integrated in the gap */
+  animation: violetSpark 9s ease-in-out 4, violetDrift 4.6s ease-in-out 8;
+}
+.btn {
+  position:relative;
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:clamp(8.8rem, 22.9vmin, 12.5rem);
+  padding:1.1em .9em;
+  font-family:'Inter',sans-serif; font-weight:600;
+  font-size:clamp(1.05rem, 2.4vmin, 1.35rem);
+  letter-spacing:.01em;
+  color:var(--ink); text-decoration:none;
+  background:rgba(255,255,255,.74);
+  border:1px solid var(--line);
+  border-radius:999px;
+  box-shadow:
+    0 -8px 16px -10px rgba(40,20,70,.28) inset,
+    0 12px 28px -10px rgba(60,30,90,.36);
+  text-shadow: 0 1px 0 rgba(255,255,255,.55);          /* slight emboss on the label */
+  opacity:0; transform:translateY(28px) scale(.7);
+  transition: transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .45s ease, background .45s ease, color .35s ease;
+}
+/* docs + apps now flow like the intro's grey — same moving-gradient trick, tinted:
+   docs=reddish (gusts right) · apps=blueish (gusts left) — soft radial blobs drift, no sliding line. */
+.btn-docs {
+  background:
+    radial-gradient(65% 120% at 28% 52%, color-mix(in srgb, #ff6a7d 20%, transparent) 0%, transparent 60%),
+    radial-gradient(55% 105% at 72% 48%, color-mix(in srgb, #ff97a6 20%, transparent) 0%, transparent 62%),
+    linear-gradient(0deg, #efedf1, #f4f2f6);
+  background-repeat:no-repeat;
+  background-size: 210% 170%, 200% 165%, 100% 100%;
+  color:#1a1820;
+  animation: settleIn 1.05s cubic-bezier(.2,.9,.25,1.1) 8.6s forwards, huddleLeft  2.8s ease-in-out 13.7s 3, windRight 9s ease-in-out infinite;
+}
+.btn-apps {
+  background:
+    radial-gradient(65% 120% at 72% 52%, color-mix(in srgb, #5a9bff 20%, transparent) 0%, transparent 60%),
+    radial-gradient(55% 105% at 28% 48%, color-mix(in srgb, #8fbaff 20%, transparent) 0%, transparent 62%),
+    linear-gradient(0deg, #edeef2, #f2f3f7);
+  background-repeat:no-repeat;
+  background-size: 210% 170%, 200% 165%, 100% 100%;
+  color:#1a1820;
+  animation: settleIn 1.05s cubic-bezier(.2,.9,.25,1.1) 9.8s forwards, huddleRight 2.8s ease-in-out 13.7s 3, windLeft 9s ease-in-out infinite;
+}
+@keyframes huddleLeft  { 0%,100% { translate:0 0; } 50% { translate: 22px 0; } }
+@keyframes huddleRight { 0%,100% { translate:0 0; } 50% { translate:-22px 0; } }
+
+/* audio-icon sway: Docs/Apps drift apart and return on each song toggle
+   (keeps the same animation list as the base buttons, + the sway step) */
+@keyframes swayL { 0%,100% { translate:0 0; } 50% { translate:22px 0; } }
+@keyframes swayR { 0%,100% { translate:0 0; } 50% { translate:-22px 0; } }
+.cta-row.swaying .btn-docs {
+  animation: settleIn 1.05s cubic-bezier(.2,.9,.25,1.1) 8.6s forwards, huddleLeft 2.8s ease-in-out 13.7s 3, windRight 9s ease-in-out infinite, swayL 2.4s ease-in-out infinite;
+}
+.cta-row.swaying .btn-apps {
+  animation: settleIn 1.05s cubic-bezier(.2,.9,.25,1.1) 9.8s forwards, huddleRight 2.8s ease-in-out 13.7s 3, windLeft 9s ease-in-out infinite, swayR 2.4s ease-in-out infinite;
+}
+@keyframes settleIn {
+  0%   { opacity:0; transform:translateY(28px) scale(.7) rotate(-3deg); filter:blur(8px); }
+  55%  { opacity:1; transform:translateY(-6px) scale(1.05) rotate(.6deg); filter:blur(0); }
+  78%  { transform:translateY(2px) scale(.985) rotate(-.3deg); }
+  100% { opacity:1; transform:translateY(0) scale(1) rotate(0); filter:blur(0); }
+}
+
+/* windy drift: soft blobs gust across, then ease back — no hard sliding line.
+   docs gusts right + apps gusts left → they converge in the gap between them. */
+@keyframes windRight { 0% { background-position: 8% 38%, -6% 60%, 0 0; }  50% { background-position: 70% 56%, 96% 44%, 0 0; }  100% { background-position: 8% 38%, -6% 60%, 0 0; } }
+@keyframes windLeft  { 0% { background-position: 92% 38%, 106% 60%, 0 0; } 50% { background-position: 30% 56%, 4% 44%, 0 0; }   100% { background-position: 92% 38%, 106% 60%, 0 0; } }
+/* where red + blue winds touch (mid-cycle), a violet plume sparks up from the centre gap */
+@keyframes violetSpark {
+  0%   { opacity:0;   transform:translate(-50%, 18px)  scale(.5); }   /* 1 — starts 2× smaller */
+  14%  { opacity:.8;  transform:translate(-50%, 8px)   scale(.5); }   /* 1 */
+  55%  { opacity:.85; transform:translate(-50%, -22px) scale(2); }    /* 3 */
+  90%  { opacity:.6;  transform:translate(-50%, -52px) scale(4); }    /* 4 */
+  100% { opacity:0;   transform:translate(-50%, -64px) scale(4); }
+}
+/* internal shimmer so the plume keeps moving while it rises */
+@keyframes violetDrift {
+  0%, 100% { background-position: 50% 82%, 40% 62%, 60% 46%, 50% 100%; }
+  50%      { background-position: 54% 70%, 35% 50%, 65% 34%, 45% 90%; }
+}
+
+
+/* button sparks (::after) and conic glow (::before) */
+.btn::after {
+  content:""; position:absolute; inset:-55%;
+  pointer-events:none; z-index:2; opacity:0;
+  background:
+    radial-gradient(circle 2.5px at 50% 6%,  #fff 99%, transparent 100%),
+    radial-gradient(circle 2px   at 92% 22%, var(--accent) 99%, transparent 100%),
+    radial-gradient(circle 2.5px at 78% 78%, var(--dream-2) 99%, transparent 100%),
+    radial-gradient(circle 2px   at 22% 86%, var(--dream-3) 99%, transparent 100%),
+    radial-gradient(circle 2.5px at 8% 38%,  var(--dream-5) 99%, transparent 100%),
+    radial-gradient(circle 1.5px at 38% 14%, var(--accent-soft) 99%, transparent 100%),
+    radial-gradient(circle 1.5px at 62% 92%, var(--dream-4) 99%, transparent 100%),
+    radial-gradient(circle 1.5px at 14% 62%, #fff 99%, transparent 100%),
+    radial-gradient(circle 1.5px at 86% 50%, var(--dream-1) 99%, transparent 100%);
+  filter: drop-shadow(0 0 5px var(--accent-soft));
+  transform: scale(.3);
+}
+.btn-docs::after { animation: sparkBurst 1.2s ease-out 8.8s forwards; }
+.btn-apps::after { animation: sparkBurst 1.2s ease-out 10s forwards; }
+@keyframes sparkBurst {
+  0%   { opacity:0; transform:scale(.3) rotate(-20deg); filter:drop-shadow(0 0 0 var(--accent-soft)); }
+  18%  { opacity:1; transform:scale(.95) rotate(0); filter:drop-shadow(0 0 8px var(--accent-soft)); }
+  55%  { opacity:1; transform:scale(1.35) rotate(45deg); filter:drop-shadow(0 0 6px var(--accent-soft)); }
+  100% { opacity:0; transform:scale(1.95) rotate(110deg); filter:blur(3px); }
+}
+
+/* ─── theme toggle ────────────────────────────────────────────────── */
+.theme-btn {
+  width:2.4rem; height:2.4rem; border-radius:50%;
+  border:0; background:transparent;
+  cursor:pointer; font-size:1.1rem; line-height:1;
+  display:grid; place-items:center;
+  transition: transform .3s ease;
+}
+.theme-btn:hover { transform:scale(1.08); }
+.theme-icon-light, .theme-icon-dark { display:grid; place-items:center; }
+.theme-icon-dark { display:none; }
+.theme-btn svg { width:1.45rem; height:1.45rem; display:block; filter:drop-shadow(0 2px 5px rgba(120,60,200,.18)); }
+:root.dark .theme-icon-light { display:none; }
+:root.dark .theme-icon-dark { display:grid; }
+:root.dark .theme-btn { background:transparent; border-color:transparent; }
+
+/* sun-moon toggle: first row of the cta column, centered above the buttons —
+   same column gap as the volume icon row, revealed 20s after load */
+.theme-toggle { display:flex; align-items:center; justify-content:center; gap:.55rem;
+  opacity:0; animation: themeReveal 1s ease-out 20s forwards; }
+@keyframes themeReveal { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* ─── language worldball (translaty EN/ES toggle) ────────────────── */
+details.lang{ position:relative; }
+details.lang > summary{
+  list-style:none; width:2.4rem; height:2.4rem; border-radius:50%;
+  background:transparent; border:0; cursor:pointer; font-size:1.1rem; line-height:1;
+  display:grid; place-items:center; transition:transform .28s ease;
+}
+details.lang > summary::-webkit-details-marker{ display:none; }
+details.lang > summary:hover, details.lang[open] > summary{ transform:scale(1.1); }
+.lang-menu{
+  position:absolute; right:0; top:calc(100% + 8px); z-index:60; min-width:8.4rem;
+  background:#fff; border:1px solid rgba(20,16,32,.10); border-radius:14px;
+  padding:.4rem; box-shadow:0 12px 32px rgba(20,16,32,.16); text-align:left;
+}
+.lang-menu label{ display:flex; gap:.55rem; align-items:center; padding:.42rem .6rem;
+  cursor:pointer; border-radius:9px; font-size:.92rem; color:inherit; }
+.lang-menu label:hover{ background:rgba(20,16,32,.05); }
+.lang-menu input{ accent-color:#ff8a3a; }
+:root.dark .lang-menu{ background:#221c2f; border-color:rgba(255,255,255,.14);}
+:root.dark .lang-menu label:hover{ background:rgba(255,255,255,.08); }
+
+/* ─── volume/music button (own row below the Docs/Apps buttons, delayed reveal) ─ */
+.vol-btn {
+  position:relative; z-index:6;
+  width:2.8rem; height:2.8rem; border-radius:50%;
+  border:0; background:transparent;
+  cursor:pointer; line-height:1;
+  display:grid; place-items:center;
+  color:var(--ink);
+  opacity:0; pointer-events:none; transform:translateY(-16px);
+  transition: opacity 3s ease-out, transform 3s ease-out;
+}
+/* the sound-icon row: sits between the buttons and the house, centered */
+.cta-sounds {
+  display:flex; justify-content:center; align-items:center;
+}
+.vol-btn svg { width:2rem; height:2rem; }
+.vol-btn.show { opacity:1; pointer-events:auto; transform:translateY(0); }
+.vol-btn:hover { transform:scale(1.1); }
+.vol-btn.playing svg { animation: volDou 1.1s cubic-bezier(.45,.05,.55,.95) infinite; }
+@keyframes volDou {
+  0%,100% { transform: scaleY(1) scaleX(1); }
+  25%     { transform: scaleY(1.24) scaleX(.92); }
+  50%     { transform: scaleY(.84) scaleX(1.08); }
+  75%     { transform: scaleY(1.18) scaleX(.95); }
+}
+
+/* audio-fx canvas: full-screen matrix / fractal / spectrum behind the stage,
+   shown only while its mp3 is playing (logo click cycle) */
+.bgfx {
+  position:fixed; inset:0; z-index:1;
+  width:100%; height:100%;
+  pointer-events:none;
+  opacity:0;
+  transition: opacity .6s ease;
+}
+.bgfx.on { opacity:1; }
+
+/* ─── house animation (replaces Intro button) ─────────────────────── */
+.house-btn {
+  display:flex; flex-direction:row; align-items:center; justify-content:center;
+  gap:clamp(.9rem, 3.2vmin, 1.7rem);
+  cursor:pointer; text-decoration:none;
+  margin-top:clamp(.5rem, 1.6vmin, 1rem);
+  position:relative;
+}
+.house-group{ display:flex; flex-direction:column; align-items:center; align-self:center; gap:4px; position:relative }
+.house-why{
+  appearance:none; cursor:pointer; font:inherit; border:none; background:transparent;
+  font-family:'JetBrains Mono', ui-monospace, monospace;
+  font-size:clamp(.72rem, 1.8vmin, .9rem); font-weight:600; letter-spacing:.03em;
+  color:var(--mut); white-space:nowrap; padding:.1rem .5rem;
+  position:absolute; z-index:2;
+  top:12%; left:50%;
+  transform:translateX(calc(-50% - 20px)) translateY(6px);   /* 10px left of centre, starts low */
+  opacity:0; pointer-events:none;
+  transition:opacity .5s ease, transform .5s cubic-bezier(.2,.8,.2,1), color .18s ease;
+}
+.house-btn.on .house-why{ opacity:1; pointer-events:auto; transform:translateX(calc(-50% - 20px)) translateY(-10px) }
+.house-why:hover{ color:#ff8a3a }
+.house-why:focus-visible{ outline:none; color:#ff8a3a }
+.house-rail{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.6rem; position:relative;
+  opacity:0; transform:translateY(8px); pointer-events:none;
+  transition:opacity .5s ease, transform .5s cubic-bezier(.2,.8,.2,1); }
+.house-btn.on .house-rail{ opacity:1; transform:translateY(0); pointer-events:auto }
+.house-rail-l{ gap:10px }
+.house-rail-l .house-dl{ transform:translateX(20px) }
+details.house-lang{ opacity:0; transform:translateY(8px); pointer-events:none;
+  transition:opacity .5s ease, transform .5s cubic-bezier(.2,.8,.2,1); }
+.house-btn.on details.house-lang{ opacity:1; transform:translateY(0); pointer-events:auto }
+.house-group .lang-menu{ right:auto; left:50%; transform:translateX(-50%); top:auto; bottom:calc(100% + 10px) }
+.house-opt{ appearance:none; cursor:pointer; font:inherit; display:flex; flex-direction:column; align-items:center; gap:2px;
+  background:transparent; border:1px solid transparent; border-radius:14px;
+  padding:.3rem .5rem; color:inherit; white-space:nowrap;
+  box-shadow:0 0 0 rgba(0,0,0,0);
+  transition:transform .15s ease, color .18s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease; }
+.house-opt:hover, .house-opt[aria-expanded="true"]{
+  color:#ff8a3a; transform:translateY(-1px);
+  background:
+    radial-gradient(130% 100% at 30% 18%, rgba(255,178,150,.3), transparent 55%),
+    linear-gradient(135deg, rgba(255,138,174,.14), rgba(180,138,255,.14));
+  border-color: rgba(255,160,120,.45);
+  box-shadow: 0 10px 26px -12px rgba(200,140,255,.5);
+}
+.house-opt .opt-ico{ font-size:1.05rem; line-height:1 }
+.house-opt .opt-ico svg{ width:1.86rem; height:1.86rem; display:block }
+.house-rail-row{ display:flex; gap:.45rem; justify-content:center; align-items:flex-start }
+.opt-label{
+  font-family:'JetBrains Mono', ui-monospace, monospace;
+  font-size:clamp(.68rem, 1.6vmin, .82rem); font-weight:500;
+  color:var(--mut); white-space:nowrap;
+  opacity:0; transform:translateY(-3px);
+  transition:opacity .2s ease, transform .2s ease, color .2s ease;
+}
+.house-opt:hover .opt-label, .house-opt[aria-expanded="true"] .opt-label, .house-opt:focus-visible .opt-label{ opacity:1; transform:none; color:var(--ink) }
+.house-hoists, .house-hosts{ display:inline-block }
+.house-hosts{
+  font-family:'JetBrains Mono', ui-monospace, monospace;
+  font-size:clamp(.7rem,1.7vmin,.85rem); letter-spacing:.02em;
+  color:var(--mut);
+  opacity:0; transform:translateY(4px);
+  transition:opacity .3s ease, transform .3s ease, color .3s ease;
+}
+.house-group:hover .house-hosts, .house-group:focus-within .house-hosts{ opacity:1; transform:none; color:var(--ink) }
+.house-panel{ position:relative; width:min(21rem, 88vw); margin:.4rem auto 0; z-index:60;
+  background:#fff; border:1px solid var(--line); border-radius:16px;
+  padding:.9rem 1rem; box-shadow:0 10px 30px rgba(20,16,32,.14); text-align:left;
+  display:none; }
+.house-panel.open{ display:block; animation: hpIn .22s ease; }
+@keyframes hpIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+.house-panel h4{ margin:0 0 .3rem; font-size:.95rem; color:var(--mut); font-weight:600 }
+.house-panel p{ margin:0 0 .55rem; color:var(--mut); font-size:.8rem; line-height:1.45 }
+.hp-qr{ display:flex; justify-content:center; margin:.35rem 0 }
+.hp-qr svg{ width:118px; height:118px; background:#fff; border-radius:10px }
+.hp-actions{ display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap }
+.hp-btn{ appearance:none; cursor:pointer; font:inherit; font-size:.78rem; font-weight:600; color:var(--ink);
+  background:#fff; border:1px solid var(--line); border-radius:999px; padding:.38rem .85rem;
+  transition:border-color .15s ease, color .15s ease; }
+.hp-btn:hover{ border-color:#ff8a3a }
+.hp-btn.done{ border-color:#2aa86a; color:#1c8f4c }
+a.hp-btn{ text-decoration:none; text-align:center; display:inline-block }
+.hp-urls{ display:grid; gap:.2rem; margin-top:.4rem }
+.hp-url{ font-family:ui-monospace, "SF Mono", monospace; font-size:.7rem; color:var(--mut); word-break:break-all; line-height:1.35 }
+.hp-lower{ margin-top:.55rem; color:var(--mut); font-size:.74rem; line-height:1.45 }
+.hp-lower .hp-link, a.hp-link{ color:#ff8a3a; text-decoration:underline; cursor:pointer }
+.house-wrap {
+  position:relative;
+  width:clamp(4.6rem, 11.5vmin, 6.6rem);
+  height:clamp(4.6rem, 11.5vmin, 6.6rem);
+  margin-top:15px;
+  opacity:0; transform:scale(.85);
+  animation: houseAppear 2s cubic-bezier(.2,.8,.2,1) 23s forwards;
+  transition: transform .4s cubic-bezier(.2,.8,.2,1), filter .4s ease;
+}
+@keyframes houseAppear { to { opacity:1; transform:scale(1); } }
+.house-wrap:hover { transform:translateY(-4px) scale(1.08); }
+.house-wrap:hover .house-glow { opacity:.6; transform:scale(1.2); }
+.house-svg { display:block; width:100%; height:100%; overflow:visible; }
+
+.house-glow {
+  position:absolute; inset:-35%; border-radius:50%; z-index:-1; opacity:0;
+  background: radial-gradient(circle, rgba(255,138,174,.35) 0%, rgba(180,138,255,.20) 45%, transparent 70%);
+  filter:blur(16px);
+  transition: opacity .5s ease, transform .6s ease;
+}
+
+.house-svg .h-stroke {
+  fill:none; stroke:var(--ink); stroke-width:2; stroke-linecap:round; stroke-linejoin:round;
+  stroke-dasharray:var(--len); stroke-dashoffset:var(--len);
+}
+.h-roof    { --len:108; animation: houseDraw 3s ease-out 28s forwards; }
+.h-wall-l  { --len:40;  animation: houseDraw 3s ease-out 31s forwards; }
+.h-wall-t  { --len:60;  animation: houseDraw 3s ease-out 31s forwards; }
+.h-wall-r  { --len:40;  animation: houseDraw 3s ease-out 31s forwards; }
+@keyframes houseDraw { to { stroke-dashoffset:0; } }
+
+.h-wall-fill {
+  fill:var(--bg-2); opacity:0;
+  animation: houseFill 1.5s ease-out 32s forwards;
+}
+.h-door-fill {
+  fill:var(--accent); opacity:0;
+  animation: houseFill 1s ease-out 33.5s forwards;
+}
+@keyframes houseFill { to { opacity:1; } }
+
+.house-wrap::after {
+  content:""; position:absolute; top:-4px; right:2px;
+  width:7px; height:7px; border-radius:50%;
+  background:var(--accent);
+  opacity:0; transform:scale(0);
+   animation: houseSparkle .5s cubic-bezier(.2,.8,.3,1) 35s forwards;
+}
+@keyframes houseSparkle {
+  0%   { opacity:0; transform:scale(0); }
+  50%  { opacity:1; transform:scale(1.4); }
+  100% { opacity:.7; transform:scale(1); }
+}
+
+/* platform icons — hidden by default, show on click */
+.house-icons {
+  display:flex; flex-direction:row; gap:10px;
+  opacity:0; transform:translateY(8px);
+  transition: opacity .5s ease, transform .5s cubic-bezier(.2,.8,.2,1);
+  pointer-events:none;
+}
+.house-dl {
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  text-decoration:none; cursor:pointer;
+  padding:.3rem .6rem; border-radius:14px;
+  border:1px solid transparent;
+  box-shadow:0 0 0 rgba(0,0,0,0);
+  transition: background .2s ease, border-color .2s ease, box-shadow .2s ease, transform .14s ease;
+}
+.house-dl:hover {
+  background:
+    radial-gradient(130% 100% at 30% 18%, rgba(255,178,150,.32), transparent 55%),
+    linear-gradient(135deg, rgba(255,138,174,.15), rgba(180,138,255,.15));
+  border-color: rgba(255,160,120,.45);
+  box-shadow: 0 10px 26px -12px rgba(200,140,255,.5);
+  transform:translateY(-2px);
+}
+.house-dl-label {
+  font-family:'JetBrains Mono', ui-monospace, monospace;
+  font-size:clamp(.78rem, 1.9vmin, .95rem); font-weight:500;
+  color:var(--mut); white-space:nowrap;
+  opacity:0; transform:translateY(-4px);
+  transition:opacity .2s ease, transform .2s ease, color .2s ease;
+}
+.house-dl:hover .house-dl-label, .house-dl:focus-visible .house-dl-label { opacity:1; transform:none; color:var(--ink); }
+.house-dl-icons {
+  display:flex; gap:10px; align-items:center;
+  font-size:clamp(.9rem, 2.2vmin, 1.1rem);
+}
+.house-dl-icons svg { width:1.86em; height:1.86em; display:block; }
+
+
+.btn::before {
+  content:""; position:absolute; inset:-2px;
+  border-radius:inherit;
+  background: conic-gradient(from 140deg, transparent 0%, var(--accent-soft) 18%, transparent 36%, transparent 60%, var(--dream-2) 75%, transparent 92%);
+  opacity:0; z-index:-1;
+  transition: opacity .4s ease;
+  filter: blur(14px);
+}
+.btn:hover, .btn:focus-visible {
+  outline:none;
+  box-shadow:
+    0 -10px 20px -12px rgba(40,20,70,.30) inset,
+    0 20px 40px -14px rgba(120,60,200,.42),
+    0 0 0 6px rgba(255,138,138,.10);
+  background: rgba(255,255,255,.85);
+}
+.btn:hover::before, .btn:focus-visible::before { opacity:.9; }
+/* Docs button hover → red glow/ring (Apps keeps the shared violet one) */
+.btn-docs:hover, .btn-docs:focus-visible {
+  box-shadow:
+    0 -10px 20px -12px rgba(150,22,22,.32) inset,
+    0 20px 40px -14px rgba(255,58,58,.44),
+    0 0 0 6px rgba(255,58,58,.16);
+}
+.btn:active {
+  transform: translateY(-2px) scale(.97);
+  box-shadow:
+    0 -5px 12px -8px rgba(40,20,70,.40) inset,
+    0 8px 18px -12px rgba(120,60,200,.5),
+    0 0 0 8px rgba(255,138,138,.14);
+  transition: transform .18s ease, box-shadow .25s ease, background .25s ease;
+}
+.btn:active .btn-hint { opacity:0; transition: opacity .15s ease; }
+
+/* button text cycling — fade-out (transition) + type-in (animation) */
+.btn-cycle { display:inline-flex; align-items:baseline; position:relative; z-index:1; }
+.btn-text {
+  display:inline-block; white-space:nowrap; overflow:hidden;
+  width:0; opacity:0; vertical-align:bottom;
+  transition: opacity .35s ease, width .35s ease;
+}
+:root:has(#s0:checked) .btn-docs .btn-text[data-st~="0"], :root:has(#s1:checked) .btn-docs .btn-text[data-st~="1"], :root:has(#s3:checked) .btn-docs .btn-text[data-st~="3"] { opacity:1; width:4ch; }
+:root:has(#s2:checked) .btn-docs .btn-text[data-st~="2"] { opacity:1; width:6ch;  animation: typeIn 1.2s steps(6,  end) forwards; }
+:root:has(#s4:checked) .btn-docs .btn-text[data-st~="4"] { opacity:1; width:4ch;  animation: typeIn .8s  steps(4,  end) forwards; }
+:root:has(#s0:checked) .btn-apps .btn-text[data-st~="0"], :root:has(#s1:checked) .btn-apps .btn-text[data-st~="1"], :root:has(#s3:checked) .btn-apps .btn-text[data-st~="3"] { opacity:1; width:4ch; }
+:root:has(#s2:checked) .btn-apps .btn-text[data-st~="2"] { opacity:1; width:8ch;  animation: typeIn 1.6s steps(8,  end) forwards; }
+:root:has(#s4:checked) .btn-apps .btn-text[data-st~="4"] { opacity:1; width:3ch;  animation: typeIn .6s  steps(3,  end) forwards; }
+
+/* while the behappy dance plays, Docs worries and Apps becomes be Appy —
+   the state-cycle texts hide and the .dance ones type in: "Docs worry" over
+   the first 4s, then "be Appy" types over the next 4s (delayed), held on */
+.cta-row.swaying .btn-cycle .btn-text:not(.dance) { opacity:0 !important; width:0 !important; animation:none !important; }
+.cta-row.swaying .btn-docs .btn-text.dance { opacity:1; width:10ch; animation: typeIn 4s steps(10, end) both; }
+.cta-row.swaying .btn-apps .btn-text.dance { opacity:1; width:7ch;  animation: typeIn 4s steps(7,  end) 4s both; }
+
+/* press bloom: subtle opacity flash while a button is held */
+.press-bloom {
+  position:fixed; inset:0; z-index:1;
+  pointer-events:none;
+  opacity:0;
+  background:
+    radial-gradient(circle at 14% 22%, #ff8aa0 0, transparent 40%),
+    radial-gradient(circle at 30% 30%, #ffb27a 0, transparent 40%),
+    radial-gradient(circle at 46% 44%, #ffe58a 0, transparent 40%),
+    radial-gradient(circle at 58% 58%, #95eba8 0, transparent 40%),
+    radial-gradient(circle at 72% 70%, #8ac6ff 0, transparent 40%),
+    radial-gradient(circle at 86% 80%, #a08aff 0, transparent 40%),
+    radial-gradient(circle at 50% 92%, #d68aff 0, transparent 40%);
+  transition: opacity .3s ease;
+}
+body:has(.btn:active) .press-bloom {
+  opacity:.18;
+  transition: opacity .15s ease;
+}
+
+.btn-hint {
+  position:absolute; top:calc(100% + 14px); left:50%;
+  font-family:'JetBrains Mono', ui-monospace, monospace;
+  font-size:clamp(.7rem, 1.6vmin, .82rem);
+  font-weight:400;
+  color:var(--mut);
+  white-space:nowrap; letter-spacing:.02em;
+  opacity:0; transform: translate(-50%, -8px);
+  transition: opacity .35s ease .04s, transform .45s cubic-bezier(.2,.7,.3,1.4) .04s;
+  pointer-events:none; z-index:1;
+}
+.btn-hint::before { content:"↑ "; color:var(--accent); opacity:.8; }
+.btn:hover .btn-hint, .btn:focus-visible .btn-hint { opacity:1; transform: translate(-50%, 0); }
+
+/* ─── dream veil (idle background ballet) ─────────────────────────── */
+.dream-veil {
+  position:fixed; inset:0; z-index:1;
+  pointer-events:none; opacity:0; overflow:hidden;
+  animation: dreamCycle 40s linear infinite;
+}
+body:has(.btn:hover) .dream-veil, body:has(.btn:hover) .dream-veil *,
+body:has(.btn:active) .dream-veil, body:has(.btn:active) .dream-veil * { animation-play-state: paused; }
+.dream-blob {
+  position:absolute; width:90vmax; height:90vmax;
+  border-radius:50%;
+  opacity:.32;
+}
+.dream-blob.b1 { background: radial-gradient(circle, var(--dream-1) 0, transparent 80%); top:-30%; left:-25%;  animation: drift1 26s ease-in-out infinite; }
+.dream-blob.b2 { background: radial-gradient(circle, var(--dream-2) 0, transparent 80%); top: 10%; right:-30%; animation: drift2 32s ease-in-out infinite; }
+.dream-blob.b3 { background: radial-gradient(circle, var(--dream-3) 0, transparent 80%); bottom:-30%; left:5%; animation: drift3 28s ease-in-out infinite; }
+.dream-blob.b4 { background: radial-gradient(circle, var(--dream-4) 0, transparent 80%); top: 45%; left:35%;   animation: drift4 24s ease-in-out infinite; }
+.dream-blob.b5 { background: radial-gradient(circle, var(--dream-5) 0, transparent 80%); bottom:10%; right:10%;animation: drift5 36s ease-in-out infinite; }
+@keyframes drift1 { 0%,100%{transform:translate(0,0) scale(1)}    50%{transform:translate(18vw,12vh) scale(1.25)} }
+@keyframes drift2 { 0%,100%{transform:translate(0,0) scale(1.05)} 50%{transform:translate(-14vw,16vh) scale(.85)} }
+@keyframes drift3 { 0%,100%{transform:translate(0,0) scale(1)}    50%{transform:translate(12vw,-14vh) scale(1.18)} }
+@keyframes drift4 { 0%,100%{transform:translate(-6vw,6vh) scale(.95)} 50%{transform:translate(10vw,-10vh) scale(1.2)} }
+@keyframes drift5 { 0%,100%{transform:translate(0,0) scale(1)}    50%{transform:translate(-16vw,-12vh) scale(1.1)} }
+@keyframes dreamCycle {
+  0%, 62% { opacity:0;   transform:scale(1)    rotate(0)     skew(0,0);          filter:hue-rotate(0deg);  }
+  78%     { opacity:1;   transform:scale(1)    rotate(0)     skew(0,0);          filter:hue-rotate(60deg); }
+  92%     { opacity:1;   transform:scale(1)    rotate(0)     skew(0,0);          filter:hue-rotate(380deg);}
+  93.5%   { opacity:1;   transform:scale(1.08) rotate(2deg)  skew(-2deg,1deg);   filter:hue-rotate(400deg);}
+  95%     { opacity:1;   transform:scale(.86)  rotate(-4deg) skew(3deg,-2deg);   filter:hue-rotate(420deg);}
+  96.5%   { opacity:.85; transform:scale(1.18) rotate(6deg)  skew(-4deg,2deg);   filter:hue-rotate(440deg);}
+  100%    { opacity:0;   transform:scale(.04)  rotate(-22deg);                   filter:hue-rotate(460deg);}
+}
+
+/* ─── Bubbles door (pure-CSS :target reveal) ──────────────────────── */
+/* Bubbles in place: opening the Bubbles door (a #bubbles :target link) fades the
+   whole home out over 4s and reveals the inlined bubbles view underneath.
+   Pure-CSS via :target, so apps/puzzy/keys.html can deep-link index.html#bubbles. */
+.bubbles-view {
+  position:fixed; inset:0; z-index:60; display:none; overflow:hidden;
+  background:
+    radial-gradient(1100px 700px at 110% -10%, var(--bg-3) 0, transparent 55%),
+    radial-gradient(900px 600px at -10% 110%, var(--bg-2) 0, transparent 55%),
+    var(--bg-1);
+}
+.bubbles-view:target { display:block; animation: bubblesReveal 4s ease forwards; }
+@keyframes bubblesReveal { from { opacity:0; } to { opacity:1; } }
+/* fade every actual home layer out over the same 4s */
+body:has(.bubbles-view:target) .stage,
+body:has(.bubbles-view:target) .splash,
+body:has(.bubbles-view:target) .press-bloom,
+body:has(.bubbles-view:target) .dream-veil,
+body:has(.bubbles-view:target) .flove-foot {
+  opacity:0 !important; pointer-events:none;
+  transition: opacity 4s ease;
+}
+
+/* ── inlined bubbles view (was bubbles.html) — everything scoped under .bubbles-view ── */
+/* dreamy drifting blobs — reuse the drift1‒5 keyframes already defined above */
+/* slowly-flowing grey backdrop — same moving-gradient trick as the buttons, but big and slow.
+   It darkens step by step as the cloud grows: --murk (a brightness factor) drops with each rev state. */
+.bubbles-view { --murk:1;   --desat:1; }
+.bubbles-view:has(#r1:checked) { --murk:.93; --desat:.88; }
+.bubbles-view:has(#r2:checked) { --murk:.86; --desat:.76; }
+.bubbles-view:has(#r3:checked) { --murk:.79; --desat:.64; }
+.bubbles-view:has(#r4:checked) { --murk:.72; --desat:.52; }
+.bubbles-view:has(#r5:checked) { --murk:.65; --desat:.41; }
+.bubbles-view:has(#r6:checked) { --murk:.58; --desat:.31; }
+.bubbles-view:has(#r7:checked) { --murk:.52; --desat:.21; }
+.bubbles-view:has(#r8:checked) { --murk:.46; --desat:.12; }
+.bubbles-view .bv-flow {
+  position:absolute; inset:0; z-index:0; pointer-events:none;
+  background: linear-gradient(115deg,
+    #f3f3f6 0%, #d9d9e0 16%, #ececf1 32%, #c7c7d1 48%,
+    #e2e2e8 64%, #cfcfd8 80%, #f3f3f6 100%);
+  background-size:300% 100%;
+  background-position:0% 50%;
+  animation: bvFlow 70s linear infinite;
+  filter: brightness(var(--murk, 1));
+  transition: filter 1.4s ease;
+}
+@keyframes bvFlow { from { background-position:0% 50%; } to { background-position:300% 50%; } }
+
+.bubbles-view .bv-veil { position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+.bubbles-view .bv-blob { position:absolute; width:80vmax; height:80vmax; border-radius:50%;
+  filter:blur(32px) saturate(var(--desat,1)); opacity:.42;
+  transition: filter 1.6s ease; }
+.bubbles-view .bv-blob.b1 { background:radial-gradient(circle, var(--dream-1) 0, transparent 65%); top:-30%; left:-25%;  animation:drift1 26s ease-in-out infinite; }
+.bubbles-view .bv-blob.b2 { background:radial-gradient(circle, var(--dream-2) 0, transparent 65%); top: 10%; right:-30%; animation:drift2 32s ease-in-out infinite; }
+.bubbles-view .bv-blob.b3 { background:radial-gradient(circle, var(--dream-3) 0, transparent 65%); bottom:-30%; left:5%; animation:drift3 28s ease-in-out infinite; }
+.bubbles-view .bv-blob.b4 { background:radial-gradient(circle, var(--dream-4) 0, transparent 65%); top: 45%; left:35%;   animation:drift4 24s ease-in-out infinite; }
+.bubbles-view .bv-blob.b5 { background:radial-gradient(circle, var(--dream-5) 0, transparent 65%); bottom:10%; right:10%;animation:drift5 36s ease-in-out infinite; }
+
+/* floating bubbles — pure CSS (mini tier): static <label> bubbles + hidden
+   radios; :has() reveals each bubble's pre-written panel. No JS, no collisions. */
+.bubbles-view .bub-radio { position:absolute; width:0; height:0; opacity:0; pointer-events:none; }
+/* empty-space tap = grow the cloud: a stacked-scrim counter chain. Only the current
+   rev state's scrim sits on top; tapping it advances rev (blooms the next pair). At r8
+   (all 18 shown) the scrim points back to #b-none, restoring click-away-to-close. */
+.bubbles-view .scrim { position:absolute; inset:0; z-index:1; display:none; }
+.bubbles-view:has(#r0:checked) .scrim[data-rev="0"],
+.bubbles-view:has(#r1:checked) .scrim[data-rev="1"],
+.bubbles-view:has(#r2:checked) .scrim[data-rev="2"],
+.bubbles-view:has(#r3:checked) .scrim[data-rev="3"],
+.bubbles-view:has(#r4:checked) .scrim[data-rev="4"],
+.bubbles-view:has(#r5:checked) .scrim[data-rev="5"],
+.bubbles-view:has(#r6:checked) .scrim[data-rev="6"],
+.bubbles-view:has(#r7:checked) .scrim[data-rev="7"],
+.bubbles-view:has(#r8:checked) .scrim[data-rev="8"] { display:block; }
+.bubbles-view .bubble {
+  position:absolute; left:var(--x,50%); top:var(--y,50%);
+  width:var(--size,96px); height:var(--size,96px);
+  display:flex; align-items:center; justify-content:center; text-align:center;
+  border-radius:50%; color:var(--ink); font-weight:700; letter-spacing:.2px;
+  font-size:calc(var(--size,96px) * .22);
+  background:radial-gradient(circle at 33% 27%,
+    rgba(255,255,255,.9) 0%, rgba(255,255,255,.22) 24%,
+    var(--bub,#8ab4ff) 58%, var(--bub,#8ab4ff) 100%);
+  border:2px solid var(--fam, rgba(255,255,255,.6));
+  box-shadow: inset 0 0 18px rgba(255,255,255,.55), 0 8px 22px rgba(80,40,120,.14);
+  cursor:pointer; user-select:none; z-index:2; will-change:transform, opacity;
+  /* hidden until its reveal step is reached; blooms in via the transition below.
+     float uses the `translate` longhand so `transform` stays free for the bloom scale. */
+  opacity:0; transform:scale(.32); pointer-events:none;
+  transition: opacity .7s ease, transform .8s cubic-bezier(.2,.85,.3,1);
+  animation: bfloat1 var(--dur,22s) ease-in-out infinite;
+  animation-delay: var(--delay,0s);
+}
+.bubbles-view .bubble.f2 { animation-name: bfloat2; }
+.bubbles-view .bubble.f3 { animation-name: bfloat3; }
+.bubbles-view .bubble.f4 { animation-name: bfloat4; }
+.bubbles-view .bubble.f5 { animation-name: bfloat5; }
+.bubbles-view .bubble.f6 { animation-name: bfloat6; }
+
+/* family colours — border + hover/click highlight (red=docs · blue=apps · green=intro) */
+.bubbles-view .bubble.fam-docs  { --fam:#ff5a6e; --fam-soft:rgba(255,90,110,.24); --fam-shadow:rgba(255,60,90,.32); }
+.bubbles-view .bubble.fam-apps  { --fam:#5a9bff; --fam-soft:rgba(90,155,255,.24); --fam-shadow:rgba(60,120,255,.32); }
+.bubbles-view .bubble.fam-intro { --fam:#3fd98a; --fam-soft:rgba(63,217,138,.26); --fam-shadow:rgba(40,200,120,.32); }
+
+/* reveal gating: the step-0 trio shows at once; each empty-space tap blooms the next pair */
+.bubbles-view .bubble[data-step="0"] { opacity:1; transform:scale(1); pointer-events:auto; }
+.bubbles-view:is(:has(#r1:checked),:has(#r2:checked),:has(#r3:checked),:has(#r4:checked),:has(#r5:checked),:has(#r6:checked),:has(#r7:checked),:has(#r8:checked)) .bubble[data-step="1"],
+.bubbles-view:is(:has(#r2:checked),:has(#r3:checked),:has(#r4:checked),:has(#r5:checked),:has(#r6:checked),:has(#r7:checked),:has(#r8:checked)) .bubble[data-step="2"],
+.bubbles-view:is(:has(#r3:checked),:has(#r4:checked),:has(#r5:checked),:has(#r6:checked),:has(#r7:checked),:has(#r8:checked)) .bubble[data-step="3"],
+.bubbles-view:is(:has(#r4:checked),:has(#r5:checked),:has(#r6:checked),:has(#r7:checked),:has(#r8:checked)) .bubble[data-step="4"],
+.bubbles-view:is(:has(#r5:checked),:has(#r6:checked),:has(#r7:checked),:has(#r8:checked)) .bubble[data-step="5"],
+.bubbles-view:is(:has(#r6:checked),:has(#r7:checked),:has(#r8:checked)) .bubble[data-step="6"],
+.bubbles-view:is(:has(#r7:checked),:has(#r8:checked)) .bubble[data-step="7"],
+.bubbles-view:has(#r8:checked) .bubble[data-step="8"] {
+  opacity:1; transform:scale(1); pointer-events:auto;
+}
+
+.bubbles-view .bubble:hover { filter:brightness(1.06);
+  box-shadow: inset 0 0 18px rgba(255,255,255,.6), 0 0 0 3px var(--fam-soft), 0 10px 26px var(--fam-shadow,rgba(80,40,120,.2)); }
+.bubbles-view .bub-radio:checked + .bubble {
+  box-shadow: inset 0 0 20px rgba(255,255,255,.78), 0 0 0 4px var(--fam-soft), 0 14px 32px var(--fam-shadow,rgba(80,40,120,.30));
+}
+@keyframes bfloat1 { 0%,100%{translate:0 0} 50%{translate:12px -18px} }
+@keyframes bfloat2 { 0%,100%{translate:0 0} 50%{translate:-16px -11px} }
+@keyframes bfloat3 { 0%,100%{translate:0 0} 50%{translate:13px 15px} }
+@keyframes bfloat4 { 0%,100%{translate:0 0} 50%{translate:-12px 17px} }
+@keyframes bfloat5 { 0%,100%{translate:0 0} 50%{translate:17px 7px} }
+@keyframes bfloat6 { 0%,100%{translate:0 0} 50%{translate:-17px -7px} }
+
+/* chrome: home link */
+.bubbles-view .home-link {
+  position:absolute; top:1rem; left:1.1rem; z-index:5;
+  font-family:'JetBrains Mono', ui-monospace, monospace; font-size:.82rem; font-weight:500;
+  color:var(--mut); text-decoration:none; padding:.4rem .7rem; border-radius:999px;
+  background:rgba(255,255,255,.6); border:1px solid rgba(20,16,32,.10);
+  backdrop-filter:blur(8px) saturate(140%); transition:background .15s, color .15s;
+}
+.bubbles-view .home-link:hover { color:var(--ink); background:rgba(255,255,255,.9); }
+
+/* calm infobox — fixed bottom-centre; the tapped bubble's radio reveals it via :has() */
+.bubbles-view .info-box {
+  position:fixed; z-index:6; left:50%; bottom:10vh;
+  width:min(340px, 86vw); max-width:86vw;
+  padding:1rem 1.1rem 1.05rem; border-radius:18px;
+  background:rgba(255,255,255,.92); border:1px solid rgba(255,255,255,.7);
+  box-shadow:0 18px 44px rgba(80,40,120,.20), inset 0 0 0 1px rgba(255,255,255,.5);
+  color:var(--ink);
+  opacity:0; transform:translate(-50%,14px) scale(.96); filter:blur(8px); pointer-events:none;
+  transition:opacity .5s ease, transform .5s cubic-bezier(.2,.8,.2,1), filter .5s ease;
+}
+.bubbles-view:has(#b-love:checked)  #ib-love,
+.bubbles-view:has(#b-true:checked)  #ib-true,
+.bubbles-view:has(#b-care:checked)  #ib-care,
+.bubbles-view:has(#b-give:checked)  #ib-give,
+.bubbles-view:has(#b-share:checked) #ib-share,
+.bubbles-view:has(#b-dream:checked) #ib-dream,
+.bubbles-view:has(#b-near:checked)  #ib-near,
+.bubbles-view:has(#b-link:checked)  #ib-link,
+.bubbles-view:has(#b-vibe:checked)  #ib-vibe,
+.bubbles-view:has(#b-joy:checked)   #ib-joy,
+.bubbles-view:has(#b-hope:checked)  #ib-hope,
+.bubbles-view:has(#b-trust:checked) #ib-trust,
+.bubbles-view:has(#b-free:checked)  #ib-free,
+.bubbles-view:has(#b-soul:checked)  #ib-soul,
+.bubbles-view:has(#b-flow:checked)  #ib-flow,
+.bubbles-view:has(#b-life:checked)  #ib-life,
+.bubbles-view:has(#b-art:checked)   #ib-art,
+.bubbles-view:has(#b-we:checked)    #ib-we {
+  opacity:1; transform:translate(-50%,0) scale(1); filter:blur(0); pointer-events:auto;
+}
+.bubbles-view .info-box .ib-kind {
+  font-family:'JetBrains Mono', ui-monospace, monospace; font-size:.6rem; letter-spacing:1.6px;
+  text-transform:uppercase; font-weight:600; color:var(--mut);
+}
+.bubbles-view .info-box .ib-title {
+  margin:.15rem 0 .4rem; font-size:1.35rem; font-weight:700; letter-spacing:-.01em;
+  background:linear-gradient(100deg, var(--bub,#8ab4ff), #b48aff);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.bubbles-view .info-box .ib-text { margin:0; font-size:.9rem; line-height:1.55; color:rgba(26,24,32,.82); }
+.bubbles-view .info-box .ib-close {
+  position:absolute; top:.5rem; right:.55rem; width:1.7rem; height:1.7rem; cursor:pointer;
+  border-radius:50%; border:1px solid rgba(20,16,32,.12); background:rgba(255,255,255,.6);
+  color:var(--mut); font-size:1rem; line-height:1; display:grid; place-items:center;
+}
+.bubbles-view .info-box .ib-close:hover { color:var(--ink); border-color:rgba(20,16,32,.25); }
+@media (prefers-reduced-motion: reduce) {
+  .bubbles-view .bubble { animation:none; opacity:1; transform:none; pointer-events:auto; transition:none; }
+  .bubbles-view .bv-blob, .bubbles-view .bv-flow { animation:none; }
+  .bubbles-view .info-box { transition:opacity .2s ease; }
+}
+
+
+/* ─── responsive + reduced motion ─────────────────────────────────── */
+@media (max-width: 640px) {
+  .cta { gap:.8rem; width:min(22rem, 86vw); }
+  .cta-row { flex-direction:column; gap:2.72rem; width:100%; }
+  .btn { width:100%; padding:1.15em 1.6em; }
+  .btn-hint { font-size:.78rem; }
+  .splash { filter: blur(30px) saturate(2) !important; }
+  .dream-blob { filter: none !important; }
+  .logo { filter: drop-shadow(0 0 20px rgba(200,150,230,.3)) !important; text-shadow:none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo, .logo .star, .slogan .typed, .btn, .btn-text {
+    animation:none !important; opacity:1 !important;
+    filter:none !important; transform:none !important; translate:0 0 !important;
+  }
+  .slogan .typed { display:none !important; }
+  :root:has(#s0:checked) .slogan .typed[data-st="0"],
+  :root:has(#s1:checked) .slogan .typed[data-st="1"],
+  :root:has(#s2:checked) .slogan .typed[data-st="2"],
+  :root:has(#s3:checked) .slogan .typed[data-st="3"],
+  :root:has(#s4:checked) .slogan .typed[data-st="4"] { display:inline-block !important; width:auto !important; border-right:0 !important; overflow:visible !important; }
+  .btn-text { display:none !important; width:auto !important; transition:none !important; }
+  :root:has(#s0:checked) .btn-text[data-st~="0"],
+  :root:has(#s1:checked) .btn-text[data-st~="1"],
+  :root:has(#s2:checked) .btn-text[data-st~="2"],
+  :root:has(#s3:checked) .btn-text[data-st~="3"],
+  :root:has(#s4:checked) .btn-text[data-st~="4"] { display:inline-block !important; }
+  .cta-row.swaying .btn-cycle .btn-text.dance { display:inline-block !important; }
+  .btn::after, .splash, .dream-veil, .dream-blob { animation:none !important; opacity:0 !important; }
+  .dream-blob { display:none !important; }
+  .theme-toggle { animation:none !important; opacity:1 !important; transform:none !important; }
+  .vol-btn { transition:none !important; }
+  .docs-panda, .docs-panda-talk { animation:none !important; opacity:0 !important; }
+  .docs-panda-talk { display:none !important; }
+  :root:has(#s3:checked) .docs-panda, :root:has(#s4:checked) .docs-panda { opacity:1 !important; }
+  .cta-row::after { animation:none !important; opacity:0 !important; }
+  .press-bloom { transition:none !important; opacity:0 !important; display:none !important; }
+  .logo .star::before, .logo .star::after { display:none !important; }
+  .logo .star { transition:none !important; }
+}
+
+/* ─── footer (license + author) ───────────────────────────────────── */
+.flove-foot {
+  position: fixed;
+  bottom: 1rem; left: 0; right: 0;
+  z-index: 4;
+  text-align: center;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: .68rem;
+  letter-spacing: .04em;
+  color: var(--ink-faint, #6f6890);
+  opacity: 0;
+  animation: footFadeIn 1.2s ease-out 11s forwards;
+}
+.flove-foot a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dotted currentColor;
+}
+.flove-foot a:hover, .flove-foot a:focus-visible { color: var(--ink-dim, #b9b0d4); }
+@keyframes footFadeIn { to { opacity: .55; } }
+@media (prefers-reduced-motion: reduce) {
+  .flove-foot { animation: none; opacity: .55; }
+}
+
+
+/* ── translaty i18n engine (worldball switcher + EN/ES toggle) ── */
+.es{display:none}
+body:has(#lang-es:checked) .en{display:none}
+body:has(#lang-es:checked) .es{display:inline}
+/* Spanish: text differs in length, so drop the English-tuned ch-width clip + type-in */
+:root:has(#lang-es:checked):has(#s0:checked) .slogan .typed[data-st="0"],
+:root:has(#lang-es:checked):has(#s1:checked) .slogan .typed[data-st="1"],
+:root:has(#lang-es:checked):has(#s2:checked) .slogan .typed[data-st="2"],
+:root:has(#lang-es:checked):has(#s3:checked) .slogan .typed[data-st="3"],
+:root:has(#lang-es:checked):has(#s4:checked) .slogan .typed[data-st="4"]{width:auto;animation:none;border-right:0}
+:root:has(#lang-es:checked):has(#s0:checked) .btn-docs .btn-text[data-st~="0"],
+:root:has(#lang-es:checked):has(#s1:checked) .btn-docs .btn-text[data-st~="1"],
+:root:has(#lang-es:checked):has(#s3:checked) .btn-docs .btn-text[data-st~="3"],
+:root:has(#lang-es:checked):has(#s2:checked) .btn-docs .btn-text[data-st~="2"],
+:root:has(#lang-es:checked):has(#s4:checked) .btn-docs .btn-text[data-st~="4"],
+:root:has(#lang-es:checked):has(#s0:checked) .btn-apps .btn-text[data-st~="0"],
+:root:has(#lang-es:checked):has(#s1:checked) .btn-apps .btn-text[data-st~="1"],
+:root:has(#lang-es:checked):has(#s3:checked) .btn-apps .btn-text[data-st~="3"],
+:root:has(#lang-es:checked):has(#s2:checked) .btn-apps .btn-text[data-st~="2"],
+:root:has(#lang-es:checked):has(#s4:checked) .btn-apps .btn-text[data-st~="4"],
+
+</style>
+<script src="solo/apps/appy/appy-qr.js" defer></script>
+</head>
+<body>
+
+<!-- 5 cycling state radios — pure-CSS click counter (0 → 4 → 0 → …) -->
+<input class="state-input" type="radio" name="st" id="s0" checked tabindex="-1" aria-hidden="true">
+<input class="state-input" type="radio" name="st" id="s1" tabindex="-1" aria-hidden="true">
+<input class="state-input" type="radio" name="st" id="s2" tabindex="-1" aria-hidden="true">
+<input class="state-input" type="radio" name="st" id="s3" tabindex="-1" aria-hidden="true">
+<input class="state-input" type="radio" name="st" id="s4" tabindex="-1" aria-hidden="true">
+
+
+<main class="stage">
+  <h1 class="logo">
+    <span class="star-area" role="img" aria-label="sprout">
+      <span class="star"><svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="sproutGrad" x1="12" y1="0" x2="88" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#ff3344"/><stop offset="50%" stop-color="#ff8a3a"/><stop offset="100%" stop-color="#ffd633"/></linearGradient></defs><path class="sprout-leaf" d="M50 60 C 22 60, 12 38, 16 18 C 38 22, 54 38, 50 60 Z" fill="url(#sproutGrad)"/><path class="sprout-leaf" d="M50 60 C 78 60, 88 38, 84 18 C 62 22, 46 38, 50 60 Z" fill="url(#sproutGrad)"/><path class="sprout-tail" d="M50 58 C 50 72, 50 84, 50 92" stroke="url(#sproutGrad)" stroke-width="5" stroke-linecap="round" fill="none" pathLength="1"/></svg></span>
+    </span><span class="logo-fl">f</span><span class="logo-l">l</span><span class="logo-ove">ove</span>
+    <label class="star-cycle-btn" data-st="0" for="s1" aria-label="next slogan"></label>
+    <label class="star-cycle-btn" data-st="1" for="s2" aria-label="next slogan"></label>
+    <label class="star-cycle-btn" data-st="2" for="s3" aria-label="next slogan"></label>
+    <label class="star-cycle-btn" data-st="3" for="s4" aria-label="next slogan"></label>
+    <label class="star-cycle-btn" data-st="4" for="s0" aria-label="next slogan"></label>
+  </h1>
+  <p class="slogan">
+    <span class="typed t0" data-st="0"><span class="en" lang="en">All near</span><span class="es" lang="es">Todo cerca</span></span>
+    <span class="typed t1" data-st="1"><span class="en" lang="en">Love links more</span><span class="es" lang="es">El amor une más</span></span>
+    <span class="typed t2" data-st="2"><span class="en" lang="en">Vibe up together</span><span class="es" lang="es">Vibremos juntos</span></span>
+    <span class="typed t3" data-st="3"><span class="en" lang="en">Dive and Do</span><span class="es" lang="es">Lánzate y actúa</span></span>
+    <span class="typed t4" data-st="4"><span class="en" lang="en">What's in your love?</span><span class="es" lang="es">¿Qué hay en tu amor?</span></span>
+  </p>
+  <nav class="cta" aria-label="primary">
+    <div class="theme-toggle">
+      <button type="button" class="theme-btn" id="themeToggle" aria-label="Toggle dark mode">
+        <span class="theme-icon-light"><svg viewBox="0 0 24 24" aria-hidden="true"><defs><radialGradient id="sunGrad" cx="50%" cy="46%" r="62%"><stop offset="0%" stop-color="#fffbe8"/><stop offset="34%" stop-color="#ffe066"/><stop offset="68%" stop-color="#ff9d3b"/><stop offset="100%" stop-color="#ff6a2a"/></radialGradient></defs><circle cx="12" cy="12" r="7.2" fill="url(#sunGrad)"/><g stroke="#ffb64d" stroke-width="1.8" stroke-linecap="round"><path d="M12 1.6v2.5M12 19.9v2.5M1.6 12h2.5M19.9 12h2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/></g></svg></span>
+        <span class="theme-icon-dark"><svg viewBox="0 0 24 24" aria-hidden="true"><defs><radialGradient id="moonGrad" cx="42%" cy="38%" r="72%"><stop offset="0%" stop-color="#ffffff"/><stop offset="55%" stop-color="#e9e0c8"/><stop offset="100%" stop-color="#b9b0a0"/></radialGradient></defs><path d="M20.6 12.9A8.8 8.8 0 1 1 11.1 3.4a6.9 6.9 0 0 0 9.5 9.5Z" fill="url(#moonGrad)"/><g fill="#c4b9a6" opacity=".8"><circle cx="17.6" cy="8.4" r="1.5"/><circle cx="15.2" cy="13.6" r="1.0"/><circle cx="18.6" cy="12.6" r="0.7"/><circle cx="14.6" cy="9.8" r="0.8"/></g></svg></span>
+      </button>
+    </div>
+    <div class="cta-row">
+      <a class="btn btn-docs" href="docs/index.html">
+        <img class="docs-panda" src="central/shared/media/images/apps/logos/keys/imagotipo/panda-neutral.svg" alt="" aria-hidden="true">
+        <img class="docs-panda-talk" src="central/shared/media/images/apps/logos/keys/imagotipo/panda-neutral-talk.gif" alt="" aria-hidden="true">
+        <span class="btn-cycle">
+          <span class="btn-text" data-st="0 1 3"><span class="en" lang="en">Docs</span><span class="es" lang="es">Docs</span></span>
+          <span class="btn-text" data-st="2"><span class="en" lang="en">Theory</span><span class="es" lang="es">Teoría</span></span>
+          <span class="btn-text" data-st="4"><span class="en" lang="en">Wise</span><span class="es" lang="es">Sabio</span></span>
+          <span class="btn-text dance" data-st="dance"><span class="en" lang="en">Docs worry</span><span class="es" lang="es">Docs worry</span></span>
+        </span>
+        <span class="btn-hint"><span class="en" lang="en">Simplex wholism</span><span class="es" lang="es">Simplex wholism</span></span>
+      </a>
+      <!-- Apps → the apps intro/launcher (solo/apps/, served as its index).
+           The downloads live in the Download button below. -->
+      <a class="btn btn-apps" href="solo/apps/" data-web-fade>
+        <span class="btn-cycle">
+          <span class="btn-text" data-st="0 1 3"><span class="en" lang="en">Apps</span><span class="es" lang="es">Apps</span></span>
+          <span class="btn-text" data-st="2"><span class="en" lang="en">Practice</span><span class="es" lang="es">Práctica</span></span>
+          <span class="btn-text" data-st="4"><span class="en" lang="en">Joy</span><span class="es" lang="es">Alegría</span></span>
+          <span class="btn-text dance" data-st="dance"><span class="en" lang="en">be Appy</span><span class="es" lang="es">be Appy</span></span>
+        </span>
+      </a>
+    </div>
+    <div class="cta-sounds">
+      <button type="button" class="vol-btn" id="volToggle" aria-label="play music"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-linecap="round"><g stroke="#fff" stroke-width="2.3"><path d="M4 9.5a6 6 0 0 1 0 5"/><path d="M8.5 6.5a10 10 0 0 1 0 11"/><path d="M13 3.5a14 14 0 0 1 0 17"/></g><g stroke="currentColor" stroke-width="2"><path d="M4 9.5a6 6 0 0 1 0 5"/><path d="M8.5 6.5a10 10 0 0 1 0 11"/><path d="M13 3.5a14 14 0 0 1 0 17"/></g></svg></button>
+    </div>
+    <div class="house-btn">
+      <div class="house-rail house-rail-l">
+        <a class="house-dl" href="solo/flove-solo.zip" download>
+          <span class="house-dl-icons">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12.504 0c-.155 0-.315.008-.48.021-4.226.333-3.105 4.807-3.17 6.298-.076 1.092-.3 1.953-1.05 3.02-.885 1.051-2.127 2.75-2.716 4.521-.278.832-.41 1.684-.287 2.489a.424.424 0 00-.11.135c-.26.268-.45.6-.663.839-.199.199-.485.267-.797.4-.313.136-.658.269-.864.68-.09.189-.136.394-.132.602 0 .199.027.4.055.536.058.399.116.728.04.97-.249.68-.28 1.145-.106 1.484.174.334.535.47.94.601.81.2 1.91.135 2.774.6.926.466 1.866.67 2.616.47.526-.116.97-.464 1.208-.946.587-.003 1.23-.269 2.26-.334.699-.058 1.574.267 2.577.2.025.134.063.198.114.333l.003.003c.391.778 1.113 1.132 1.884 1.071.771-.06 1.592-.536 2.257-1.306.631-.765 1.683-1.084 2.378-1.503.348-.199.629-.469.649-.853.023-.4-.2-.811-.714-1.376v-.097l-.003-.003c-.17-.2-.25-.535-.338-.926-.085-.401-.182-.786-.492-1.046h-.003c-.059-.054-.123-.067-.188-.135a.357.357 0 00-.19-.064c.431-1.278.264-2.55-.173-3.694-.533-1.41-1.465-2.638-2.175-3.483-.796-1.005-1.576-1.957-1.56-3.368.026-2.152.236-6.133-3.544-6.139zm.529 3.405h.013c.213 0 .396.062.584.198.19.135.33.332.438.533.105.259.158.459.166.724 0-.02.006-.04.006-.06v.105a.086.086 0 01-.004-.021l-.004-.024a1.807 1.807 0 01-.15.706.953.953 0 01-.213.335.71.71 0 00-.088-.042c-.104-.045-.198-.064-.284-.133a1.312 1.312 0 00-.22-.066c.05-.06.146-.133.183-.198.053-.128.082-.264.088-.402v-.02a1.21 1.21 0 00-.061-.4c-.045-.134-.101-.2-.183-.333-.084-.066-.167-.132-.267-.132h-.016c-.093 0-.176.03-.262.132a.8.8 0 00-.205.334 1.18 1.18 0 00-.09.4v.019c.002.089.008.179.02.267-.193-.067-.438-.135-.607-.202a1.635 1.635 0 01-.018-.2v-.02a1.772 1.772 0 01.15-.768c.082-.22.232-.406.43-.533a.985.985 0 01.594-.2zm-2.962.059h.036c.142 0 .27.048.399.135.146.129.264.288.344.465.09.199.14.4.153.667v.004c.007.134.006.2-.002.266v.08c-.03.007-.056.018-.083.024-.152.055-.274.135-.393.2.012-.09.013-.18.003-.267v-.015c-.012-.133-.04-.2-.082-.333a.613.613 0 00-.166-.267.248.248 0 00-.183-.064h-.021c-.071.006-.13.04-.186.132a.552.552 0 00-.12.27.944.944 0 00-.023.33v.015c.012.135.037.2.08.334.046.134.098.2.166.268.01.009.02.018.034.024-.07.057-.117.07-.176.136a.304.304 0 01-.131.068 2.62 2.62 0 01-.275-.402 1.772 1.772 0 01-.155-.667 1.759 1.759 0 01.08-.668 1.43 1.43 0 01.283-.535c.128-.133.26-.2.418-.2zm1.37 1.706c.332 0 .733.065 1.216.399.293.2.523.269 1.052.468h.003c.255.136.405.266.478.399v-.131a.571.571 0 01.016.47c-.123.31-.516.643-1.063.842v.002c-.268.135-.501.333-.775.465-.276.135-.588.292-1.012.267a1.139 1.139 0 01-.448-.067 3.566 3.566 0 01-.322-.198c-.195-.135-.363-.332-.612-.465v-.005h-.005c-.4-.246-.616-.512-.686-.71-.07-.268-.005-.47.193-.6.224-.135.38-.271.483-.336.104-.074.143-.102.176-.131h.002v-.003c.169-.202.436-.47.839-.601.139-.036.294-.065.466-.065zm2.8 2.142c.358 1.417 1.196 3.475 1.735 4.473.286.534.855 1.659 1.102 3.024.156-.005.33.018.513.064.646-1.671-.546-3.467-1.089-3.966-.22-.2-.232-.335-.123-.335.59.534 1.365 1.572 1.646 2.757.13.535.16 1.104.021 1.67.067.028.135.06.205.067 1.032.534 1.413.938 1.23 1.537v-.043c-.06-.003-.12 0-.18 0h-.016c.151-.467-.182-.825-1.065-1.224-.915-.4-1.646-.336-1.77.465-.008.043-.013.066-.018.135-.068.023-.139.053-.209.064-.43.268-.662.669-.793 1.187-.13.533-.17 1.156-.205 1.869v.003c-.02.334-.17.838-.319 1.35-1.5 1.072-3.58 1.538-5.348.334a2.645 2.645 0 00-.402-.533 1.45 1.45 0 00-.275-.333c.182 0 .338-.03.465-.067a.615.615 0 00.314-.334c.108-.267 0-.697-.345-1.163-.345-.467-.931-.995-1.788-1.521-.63-.4-.986-.87-1.15-1.396-.165-.534-.143-1.085-.015-1.645.245-1.07.873-2.11 1.274-2.763.107-.065.037.135-.408.974-.396.751-1.14 2.497-.122 3.854a8.123 8.123 0 01.647-2.876c.564-1.278 1.743-3.504 1.836-5.268.048.036.217.135.289.202.218.133.38.333.59.465.21.201.477.335.876.335.039.003.075.006.11.006.412 0 .73-.134.997-.268.29-.134.52-.334.74-.4h.005c.467-.135.835-.402 1.044-.7zm2.185 8.958c.037.6.343 1.245.882 1.377.588.134 1.434-.333 1.791-.765l.211-.01c.315-.007.577.01.847.268l.003.003c.208.199.305.53.391.876.085.4.154.78.409 1.066.486.527.645.906.636 1.14l.003-.007v.018l-.003-.012c-.015.262-.185.396-.498.595-.63.401-1.746.712-2.457 1.57-.618.737-1.37 1.14-2.036 1.191-.664.053-1.237-.2-1.574-.898l-.005-.003c-.21-.4-.12-1.025.056-1.69.176-.668.428-1.344.463-1.897.037-.714.076-1.335.195-1.814.12-.465.308-.797.641-.984l.045-.022zm-10.814.049h.01c.053 0 .105.005.157.014.376.055.706.333 1.023.752l.91 1.664.003.003c.243.533.754 1.064 1.189 1.637.434.598.77 1.131.729 1.57v.006c-.057.744-.48 1.148-1.125 1.294-.645.135-1.52.002-2.395-.464-.968-.536-2.118-.469-2.857-.602-.369-.066-.61-.2-.723-.4-.11-.2-.113-.602.123-1.23v-.004l.002-.003c.117-.334.03-.752-.027-1.118-.055-.401-.083-.71.043-.94.16-.334.396-.4.69-.533.294-.135.64-.202.915-.47h.002v-.002c.256-.268.445-.601.668-.838.19-.201.38-.336.663-.336zm7.159-9.074c-.435.201-.945.535-1.488.535-.542 0-.97-.267-1.28-.466-.154-.134-.28-.268-.373-.335-.164-.134-.144-.333-.074-.333.109.016.129.134.199.2.096.066.215.2.36.333.292.2.68.467 1.167.467.485 0 1.053-.267 1.398-.466.195-.135.445-.334.648-.467.156-.136.149-.267.279-.267.128.016.034.134-.147.332a8.097 8.097 0 01-.69.468zm-1.082-1.583V5.64c-.006-.02.013-.042.029-.05.074-.043.18-.027.26.004.063 0 .16.067.15.135-.006.049-.085.066-.135.066-.055 0-.092-.043-.141-.068-.052-.018-.146-.008-.163-.065zm-.551 0c-.02.058-.113.049-.166.066-.047.025-.086.068-.14.068-.05 0-.13-.02-.136-.068-.01-.066.088-.133.15-.133.08-.031.184-.047.259-.005.019.009.036.03.03.05v.02h.003z"/></svg>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#f25022" d="M1 1h10v10H1z"/><path fill="#7fba00" d="M13 1h10v10H13z"/><path fill="#00a4ef" d="M1 13h10v10H1z"/><path fill="#ffb900" d="M13 13h10v10H13z"/></svg>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.56-1.702"/></svg>
+          </span>
+          <span class="house-dl-label">Download&nbsp;.zip</span>
+        </a>
+      </div>
+      <div class="house-group">
+        <button type="button" class="house-why" aria-label="Why flove · the intro tour">Why</button>
+        <span class="house-wrap">
+          <span class="house-glow" aria-hidden="true"></span>
+          <svg class="house-svg" viewBox="0 0 100 100" aria-hidden="true">
+            <rect class="h-wall-fill" x="20" y="45" width="60" height="40"/>
+            <polyline class="h-stroke h-roof" points="14,47 50,18 86,47"/>
+            <polyline class="h-stroke h-wall-l" points="20,85 20,45"/>
+            <polyline class="h-stroke h-wall-t" points="20,45 80,45"/>
+            <polyline class="h-stroke h-wall-r" points="80,45 80,85"/>
+            <rect class="h-door-fill" x="42" y="62" width="12" height="23" rx="2"/>
+          </svg>
+        </span>
+        <span class="house-hosts">Local hosts</span>
+        <details class="lang house-lang" id="houseLang">
+          <summary aria-label="Language / Idioma" title="Language · Idioma">🌐</summary>
+          <div class="lang-menu">
+            <label><input type="radio" name="lang" id="lang-en" checked> English</label>
+            <label><input type="radio" name="lang" id="lang-es"> Español</label>
+          </div>
+        </details>
+      </div>
+      <div class="house-rail house-rail-r" role="group" aria-label="phone options">
+        <div class="house-rail-row">
+        <button type="button" class="house-opt" data-opt="termux" aria-expanded="false" aria-label="Termux: run flove on this phone">
+          <span class="opt-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3.2" y="3.2" width="17.6" height="17.6" rx="4.5" fill="currentColor" fill-opacity=".12" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M8.4 8.4l4 3.6-4 3.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12.8 15.6h3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="opt-label"><span class="en" lang="en">Termux</span><span class="es" lang="es">Termux</span></span>
+        </button>
+        <button type="button" class="house-opt" data-opt="net" aria-expanded="false" aria-label="Wi-Fi: reach flove over the network">
+          <span class="opt-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+              <path d="M5 9.5a10 10 0 0 1 14 0"/>
+              <path d="M8 12.8a6 6 0 0 1 8 0"/>
+              <path d="M11 16.1a2 2 0 0 1 2 0"/>
+              <circle cx="12" cy="18.7" r=".9" fill="currentColor" stroke="none"/>
+            </svg>
+          </span>
+          <span class="opt-label"><span class="en" lang="en">Wi-Fi</span><span class="es" lang="es">Wi-Fi…</span></span>
+        </button>
+        <button type="button" class="house-opt" data-opt="apk" aria-expanded="false" aria-label="Android: install the ready-made app">
+          <span class="opt-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#3ddc84" d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.56-1.702"/>
+            </svg>
+          </span>
+          <span class="opt-label"><span class="en" lang="en">Android</span><span class="es" lang="es">Android</span></span>
+        </button>
+        </div>
+        <div class="house-panel" id="panel-termux" aria-hidden="true" inert>
+          <h4><span class="en" lang="en">Android · Termux</span><span class="es" lang="es">Android · en Termux</span></h4>
+          <p><span class="en" lang="en">Run flove right on your Android phone — no internet or network at all. Run the command or scan the QR.</span><span class="es" lang="es">Ejecuta flove en tu propio móvil Android — sin internet ni red. Ejecuta el comando o escanea el QR.</span></p>
+          <div class="hp-qr" id="qr-termux"></div>
+          <div class="hp-actions"><button type="button" class="hp-btn" data-copy="termux"><span class="en" lang="en">copy command</span><span class="es" lang="es">copiar comando</span></button></div>
+        </div>
+        <div class="house-panel" id="panel-net" aria-hidden="true" inert>
+          <h4><span class="en" lang="en">Wi-Fi</span><span class="es" lang="es">Wi-Fi…</span></h4>
+          <p><span class="en" lang="en">Open the same flove on your phone — over your Wi-Fi, or via Tailscale from any network (HTTPS, so offline works there too).</span><span class="es" lang="es">Abre Flove por tu Wi-Fi, o por tu red (Tailscale) desde cualquier red; por HTTPS también funciona sin conexión.</span></p>
+          <div class="hp-qr" id="qr-net"></div>
+          <div class="hp-urls" id="hpUrls"></div>
+          <div class="hp-actions"><button type="button" class="hp-btn" data-copy="net"><span class="en" lang="en">copy address</span><span class="es" lang="es">copiar dirección</span></button></div>
+        </div>
+        <div class="house-panel" id="panel-apk" aria-hidden="true" inert>
+          <h4><span class="en" lang="en">Android app</span><span class="es" lang="es">App de Android</span></h4>
+          <p><span class="en" lang="en">Install the ready-made app — a small wrapper around flove.org. Download, allow installing apps from this source when prompted, then open it.</span><span class="es" lang="es">Instala la app lista para usar: un pequeño envoltorio de flove.org. Descárgala y permite «instalar apps desconocidas» cuando lo pida.</span></p>
+          <div class="hp-actions"><a class="hp-btn" id="apkLink" href="https://github.com/floveorg/floveorg.github.io/releases/latest/download/flove.aab" target="_blank" rel="noopener"><span class="en" lang="en">Download .aab</span><span class="es" lang="es">Descargar .aab</span></a></div>
+          <div class="hp-actions"><button type="button" class="hp-btn" data-copy="apk"><span class="en" lang="en">copy link</span><span class="es" lang="es">copiar enlace</span></button></div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</main>
+
+<div class="splash" aria-hidden="true"></div>
+<div class="press-bloom" aria-hidden="true"></div>
+<div class="dream-veil" aria-hidden="true">
+  <div class="dream-blob b1"></div>
+  <div class="dream-blob b2"></div>
+  <div class="dream-blob b3"></div>
+  <div class="dream-blob b4"></div>
+  <div class="dream-blob b5"></div>
+</div>
+<canvas class="bgfx" id="bgfx" aria-hidden="true"></canvas>
+
+<!-- Bubbles, inlined (was bubbles.html) — pure CSS, 0 JS (mini tier). The
+     Intro/Bubbles door is a #bubbles :target link that fades the home out and
+     reveals this view. apps/puzzy/keys.html deep-links index.html#bubbles.
+     Each bubble is a <label> tied to a hidden radio; :has() shows its panel,
+     and the click-away scrim resets to #b-none. -->
+<section class="bubbles-view" id="bubbles" aria-label="flove · bubbles">
+  <a class="home-link" href="#" aria-label="back to flove home" data-aria-en="back to flove home" data-aria-es="volver al inicio de flove">← <span class="en" lang="en">home</span><span class="es" lang="es">inicio</span></a>
+  <div class="bv-flow" aria-hidden="true"></div>
+  <div class="bv-veil" aria-hidden="true">
+    <div class="bv-blob b1"></div>
+    <div class="bv-blob b2"></div>
+    <div class="bv-blob b3"></div>
+    <div class="bv-blob b4"></div>
+    <div class="bv-blob b5"></div>
+  </div>
+
+  <!-- default "nothing selected" (glimpse group) -->
+  <input class="bub-radio" type="radio" name="bub" id="b-none" checked tabindex="-1" aria-hidden="true">
+
+  <!-- reveal counter (pure-CSS): r0 = 3 bubbles; each empty-space tap blooms the next pair; r8 = all 18 -->
+  <input class="bub-radio" type="radio" name="rev" id="r0" checked tabindex="-1" aria-hidden="true">
+  <input class="bub-radio" type="radio" name="rev" id="r1" tabindex="-1" aria-hidden="true">
+  <input class="bub-radio" type="radio" name="rev" id="r2" tabindex="-1" aria-hidden="true">
+  <input class="bub-radio" type="radio" name="rev" id="r3" tabindex="-1" aria-hidden="true">
+  <input class="bub-radio" type="radio" name="rev" id="r4" tabindex="-1" aria-hidden="true">
+  <input class="bub-radio" type="radio" name="rev" id="r5" tabindex="-1" aria-hidden="true">
+  <input class="bub-radio" type="radio" name="rev" id="r6" tabindex="-1" aria-hidden="true">
+  <input class="bub-radio" type="radio" name="rev" id="r7" tabindex="-1" aria-hidden="true">
+  <input class="bub-radio" type="radio" name="rev" id="r8" tabindex="-1" aria-hidden="true">
+  <!-- empty-space scrims: only the current rev state's scrim is on top; tapping it advances the counter -->
+  <label class="scrim" data-rev="0" for="r1" aria-hidden="true"></label>
+  <label class="scrim" data-rev="1" for="r2" aria-hidden="true"></label>
+  <label class="scrim" data-rev="2" for="r3" aria-hidden="true"></label>
+  <label class="scrim" data-rev="3" for="r4" aria-hidden="true"></label>
+  <label class="scrim" data-rev="4" for="r5" aria-hidden="true"></label>
+  <label class="scrim" data-rev="5" for="r6" aria-hidden="true"></label>
+  <label class="scrim" data-rev="6" for="r7" aria-hidden="true"></label>
+  <label class="scrim" data-rev="7" for="r8" aria-hidden="true"></label>
+  <label class="scrim" data-rev="8" for="b-none" aria-hidden="true"></label>
+
+  <!-- the cloud: one hidden radio + one label per word -->
+  <input class="bub-radio" type="radio" name="bub" id="b-love"><label class="bubble f1 fam-intro" for="b-love" data-step="0" style="--bub:#ff8aae;--x:7%;--y:16%;--size:104px;--dur:24s;--delay:0s"><span class="en" lang="en">love</span><span class="es" lang="es">amor</span></label>
+  <input class="bub-radio" type="radio" name="bub" id="b-true"><label class="bubble f2 fam-docs" for="b-true" data-step="0" style="--bub:#b48aff;--x:29%;--y:9%;--size:86px;--dur:27s;--delay:.06s"><span class="en" lang="en">true</span><span class="es" lang="es">verdad</span></label>
+  <input class="bub-radio" type="radio" name="bub" id="b-care"><label class="bubble f3 fam-apps" for="b-care" data-step="0" style="--bub:#8affd0;--x:50%;--y:15%;--size:96px;--dur:22s;--delay:.12s"><span class="en" lang="en">care</span><span class="es" lang="es">cuidado</span></label>
+  <input class="bub-radio" type="radio" name="bub" id="b-give"><label class="bubble f4 fam-apps" for="b-give" data-step="1" style="--bub:#ffd28a;--x:69%;--y:10%;--size:80px;--dur:29s;--delay:.18s"><span class="en" lang="en">give</span><span class="es" lang="es">dar</span></label>
+  <input class="bub-radio" type="radio" name="bub" id="b-share"><label class="bubble f5 fam-intro" for="b-share" data-step="1" style="--bub:#8ab4ff;--x:84%;--y:20%;--size:92px;--dur:25s;--delay:.24s"><span class="en" lang="en">share</span><span class="es" lang="es">compartir</span></label>
+  <input class="bub-radio" type="radio" name="bub" id="b-dream"><label class="bubble f6 fam-apps" for="b-dream" data-step="2" style="--bub:#ff9bd0;--x:16%;--y:36%;--size:110px;--dur:31s;--delay:.30s"><span class="en" lang="en">dream</span><span class="es" lang="es">soñar</span></label>
+  <input class="bub-radio" type="radio" name="bub" id="b-near"><label class="bubble f1 fam-docs" for="b-near" data-step="2" style="--bub:#8ad0ff;--x:39%;--y:32%;--size:78px;--dur:23s;--delay:.36s"><span class="en" lang="en">near</span><span class="es" lang="es">cerca</span></label>
+  <input class="bub-radio" type="radio" name="bub" id="b-link"><label class="bubble f2 fam-docs" for="b-link" data-step="3" style="--bub:#a0e8c4;--x:58%;--y:38%;--size:88px;--dur:26s;--delay:.42s"><span class="en" lang="en">link</span><span class="es" lang="es">unir</span></label>
+  <input class="bub-radio" type="radio" name="bub" id="b-vibe"><label class="bubble f3 fam-docs" for="b-vibe" data-step="3" style="--bub:#ffc16a;--x:79%;--y:34%;--size:84px;--dur:28s;--delay:.48s"><span class="en" lang="en">vibe</span><span class="es" lang="es">vibra</span></label>
+  <input class="bub-radio" type="radio" name="bub" id="b-joy"><label class="bubble f4 fam-apps" for="b-joy" data-step="4" style="--bub:#ff8a8a;--x:9%;--y:56%;--size:96px;--dur:24s;--delay:.54s"><span class="en" lang="en">joy</span><span class="es" lang="es">alegría</span></label>
+  <input class="bub-radio" type="radio" name="bub" id="b-hope"><label class="bubble f5 fam-intro" for="b-hope" data-step="4" style="--bub:#9ad0ff;--x:33%;--y:52%;--size:80px;--dur:30s;--delay:.60s"><span class="en" lang="en">hope</span><span class="es" lang="es">esperanza</span></label>
+  <input class="bub-radio" type="radio" name="bub" id="b-trust"><label class="bubble f6 fam-apps" for="b-trust" data-step="5" style="--bub:#c79bff;--x:54%;--y:56%;--size:100px;--dur:22s;--delay:.66s"><span class="en" lang="en">trust</span><span class="es" lang="es">confianza</span></label>
+  <input class="bub-radio" type="radio" name="bub" id="b-free"><label class="bubble f1 fam-intro" for="b-free" data-step="5" style="--bub:#8affc0;--x:75%;--y:52%;--size:86px;--dur:27s;--delay:.72s"><span class="en" lang="en">free</span><span class="es" lang="es">libre</span></label>
+  <input class="bub-radio" type="radio" name="bub" id="b-soul"><label class="bubble f2 fam-apps" for="b-soul" data-step="6" style="--bub:#d6a8ff;--x:86%;--y:49%;--size:76px;--dur:25s;--delay:.78s"><span class="en" lang="en">soul</span><span class="es" lang="es">alma</span></label>
+  <input class="bub-radio" type="radio" name="bub" id="b-flow"><label class="bubble f3 fam-intro" for="b-flow" data-step="6" style="--bub:#7ad6ff;--x:21%;--y:76%;--size:90px;--dur:29s;--delay:.84s"><span class="en" lang="en">flow</span><span class="es" lang="es">fluir</span></label>
+  <input class="bub-radio" type="radio" name="bub" id="b-life"><label class="bubble f4 fam-apps" for="b-life" data-step="7" style="--bub:#ffb27a;--x:43%;--y:78%;--size:82px;--dur:23s;--delay:.90s"><span class="en" lang="en">life</span><span class="es" lang="es">vida</span></label>
+  <input class="bub-radio" type="radio" name="bub" id="b-art"><label class="bubble f5 fam-apps" for="b-art" data-step="7" style="--bub:#ff9b6a;--x:63%;--y:74%;--size:94px;--dur:26s;--delay:.96s"><span class="en" lang="en">art</span><span class="es" lang="es">arte</span></label>
+  <input class="bub-radio" type="radio" name="bub" id="b-we"><label class="bubble f6 fam-intro" for="b-we" data-step="8" style="--bub:#8affd0;--x:82%;--y:77%;--size:78px;--dur:31s;--delay:1.02s"><span class="en" lang="en">we</span><span class="es" lang="es">nosotros</span></label>
+
+  <!-- one pre-written glimpse panel per word (shown via :has() above) -->
+  <aside class="info-box" id="ib-love" aria-label="love" style="--bub:#ff8aae"><label class="ib-close" for="b-none" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</label><div class="ib-kind"><span class="en" lang="en">Introductory</span><span class="es" lang="es">Introductorio</span></div><h2 class="ib-title"><span class="en" lang="en">love</span><span class="es" lang="es">amor</span></h2><p class="ib-text"><span class="en" lang="en">flove is love made operational — a slower internet where relating, not extracting, is the point.</span><span class="es" lang="es">flove es el amor hecho operativo — una internet más lenta donde el sentido es relacionarse, no extraer.</span></p></aside>
+  <aside class="info-box" id="ib-true" aria-label="true" style="--bub:#b48aff"><label class="ib-close" for="b-none" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</label><div class="ib-kind"><span class="en" lang="en">Insight</span><span class="es" lang="es">Perspectiva</span></div><h2 class="ib-title"><span class="en" lang="en">true</span><span class="es" lang="es">verdad</span></h2><p class="ib-text"><span class="en" lang="en">Nothing here is just true or false. Every rating is fuzzy — a shade along seven canonical axes.</span><span class="es" lang="es">Aquí nada es solo verdadero o falso. Cada valoración es difusa — un matiz sobre siete ejes canónicos.</span></p></aside>
+  <aside class="info-box" id="ib-care" aria-label="care" style="--bub:#8affd0"><label class="ib-close" for="b-none" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</label><div class="ib-kind"><span class="en" lang="en">General</span><span class="es" lang="es">General</span></div><h2 class="ib-title"><span class="en" lang="en">care</span><span class="es" lang="es">cuidado</span></h2><p class="ib-text"><span class="en" lang="en">Apps like Trusty, MyFamily and Parenty turn care into small, concrete gestures you can actually act on.</span><span class="es" lang="es">Apps como Trusty, MyFamily y Parenty convierten el cuidado en gestos pequeños y concretos que sí puedes llevar a cabo.</span></p></aside>
+  <aside class="info-box" id="ib-give" aria-label="give" style="--bub:#ffd28a"><label class="ib-close" for="b-none" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</label><div class="ib-kind"><span class="en" lang="en">General</span><span class="es" lang="es">General</span></div><h2 class="ib-title"><span class="en" lang="en">give</span><span class="es" lang="es">dar</span></h2><p class="ib-text"><span class="en" lang="en">The Offer apps — Inventary, Freed, Shareful — let you give, ask and lend with clear, kind conditions.</span><span class="es" lang="es">Las apps de Oferta — Inventary, Freed, Shareful — te dejan dar, pedir y prestar con condiciones claras y amables.</span></p></aside>
+  <aside class="info-box" id="ib-share" aria-label="share" style="--bub:#8ab4ff"><label class="ib-close" for="b-none" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</label><div class="ib-kind"><span class="en" lang="en">Introductory</span><span class="es" lang="es">Introductorio</span></div><h2 class="ib-title"><span class="en" lang="en">share</span><span class="es" lang="es">compartir</span></h2><p class="ib-text"><span class="en" lang="en">Sharing in flove is peer-to-peer first: your data, your drawer, your terms.</span><span class="es" lang="es">Compartir en flove es P2P ante todo: tus datos, tu cajón, tus condiciones.</span></p></aside>
+  <aside class="info-box" id="ib-dream" aria-label="dream" style="--bub:#ff9bd0"><label class="ib-close" for="b-none" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</label><div class="ib-kind"><span class="en" lang="en">Insight</span><span class="es" lang="es">Perspectiva</span></div><h2 class="ib-title"><span class="en" lang="en">dream</span><span class="es" lang="es">soñar</span></h2><p class="ib-text"><span class="en" lang="en">∞ apps yet to come. Anyone can dream one and whisper it into the launcher — the form is short, the love is long.</span><span class="es" lang="es">∞ apps por venir. Cualquiera puede soñar una y susurrarla al lanzador — el formulario es corto, el amor es largo.</span></p></aside>
+  <aside class="info-box" id="ib-near" aria-label="near" style="--bub:#8ad0ff"><label class="ib-close" for="b-none" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</label><div class="ib-kind"><span class="en" lang="en">General</span><span class="es" lang="es">General</span></div><h2 class="ib-title"><span class="en" lang="en">near</span><span class="es" lang="es">cerca</span></h2><p class="ib-text"><span class="en" lang="en">Closeness is a coordinate here — flove maps relations across four trees: o · t · c · u.</span><span class="es" lang="es">Aquí la cercanía es una coordenada — flove mapea las relaciones en cuatro árboles: o · t · c · u.</span></p></aside>
+  <aside class="info-box" id="ib-link" aria-label="link" style="--bub:#a0e8c4"><label class="ib-close" for="b-none" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</label><div class="ib-kind"><span class="en" lang="en">Insight</span><span class="es" lang="es">Perspectiva</span></div><h2 class="ib-title"><span class="en" lang="en">link</span><span class="es" lang="es">unir</span></h2><p class="ib-text"><span class="en" lang="en">flovenet is the P2P layer: a resilient mesh that links people directly, with no middle to capture them.</span><span class="es" lang="es">flovenet es la capa P2P: una malla resiliente que une a las personas directamente, sin un medio que las capture.</span></p></aside>
+  <aside class="info-box" id="ib-vibe" aria-label="vibe" style="--bub:#ffc16a"><label class="ib-close" for="b-none" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</label><div class="ib-kind"><span class="en" lang="en">General</span><span class="es" lang="es">General</span></div><h2 class="ib-title"><span class="en" lang="en">vibe</span><span class="es" lang="es">vibra</span></h2><p class="ib-text"><span class="en" lang="en">Senses are meta-raters — colour any scale with hear · touch · view · taste · smell.</span><span class="es" lang="es">Los sentidos son meta-valoradores — tiñe cualquier escala con oír · tacto · vista · gusto · olfato.</span></p></aside>
+  <aside class="info-box" id="ib-joy" aria-label="joy" style="--bub:#ff8a8a"><label class="ib-close" for="b-none" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</label><div class="ib-kind"><span class="en" lang="en">Introductory</span><span class="es" lang="es">Introductorio</span></div><h2 class="ib-title"><span class="en" lang="en">joy</span><span class="es" lang="es">alegría</span></h2><p class="ib-text"><span class="en" lang="en">Puzzy is the playful core: rate, relate and combine ideas with joy, not judgement.</span><span class="es" lang="es">Puzzy es el núcleo lúdico: valora, relaciona y combina ideas con alegría, no con juicio.</span></p></aside>
+  <aside class="info-box" id="ib-hope" aria-label="hope" style="--bub:#9ad0ff"><label class="ib-close" for="b-none" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</label><div class="ib-kind"><span class="en" lang="en">Insight</span><span class="es" lang="es">Perspectiva</span></div><h2 class="ib-title"><span class="en" lang="en">hope</span><span class="es" lang="es">esperanza</span></h2><p class="ib-text"><span class="en" lang="en">A slower internet is a hopeful bet — tools that compose, that you own, that never rush you.</span><span class="es" lang="es">Una internet más lenta es una apuesta esperanzada — herramientas que se combinan, que son tuyas y que nunca te apuran.</span></p></aside>
+  <aside class="info-box" id="ib-trust" aria-label="trust" style="--bub:#c79bff"><label class="ib-close" for="b-none" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</label><div class="ib-kind"><span class="en" lang="en">General</span><span class="es" lang="es">General</span></div><h2 class="ib-title"><span class="en" lang="en">trust</span><span class="es" lang="es">confianza</span></h2><p class="ib-text"><span class="en" lang="en">Trusty builds trust one scope at a time. Good limits are a gift for both sides.</span><span class="es" lang="es">Trusty construye confianza ámbito a ámbito. Los buenos límites son un regalo para ambas partes.</span></p></aside>
+  <aside class="info-box" id="ib-free" aria-label="free" style="--bub:#8affc0"><label class="ib-close" for="b-none" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</label><div class="ib-kind"><span class="en" lang="en">Introductory</span><span class="es" lang="es">Introductorio</span></div><h2 class="ib-title"><span class="en" lang="en">free</span><span class="es" lang="es">libre</span></h2><p class="ib-text"><span class="en" lang="en">flove is free as in freedom — FOSS first, no lock-in, with libre alternatives always named.</span><span class="es" lang="es">flove es libre como en libertad — FOSS ante todo, sin ataduras, nombrando siempre alternativas libres.</span></p></aside>
+  <aside class="info-box" id="ib-soul" aria-label="soul" style="--bub:#d6a8ff"><label class="ib-close" for="b-none" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</label><div class="ib-kind"><span class="en" lang="en">Insight</span><span class="es" lang="es">Perspectiva</span></div><h2 class="ib-title"><span class="en" lang="en">soul</span><span class="es" lang="es">alma</span></h2><p class="ib-text"><span class="en" lang="en">Souls and 5Loves explore your inner being — identity as something tended, never sold.</span><span class="es" lang="es">Almas y 5Loves exploran tu ser interior — la identidad como algo que se cuida, nunca se vende.</span></p></aside>
+  <aside class="info-box" id="ib-flow" aria-label="flow" style="--bub:#7ad6ff"><label class="ib-close" for="b-none" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</label><div class="ib-kind"><span class="en" lang="en">General</span><span class="es" lang="es">General</span></div><h2 class="ib-title"><span class="en" lang="en">flow</span><span class="es" lang="es">fluir</span></h2><p class="ib-text"><span class="en" lang="en">“ke fluya” — flove grows bottom-up, without skipping stages or rushing the work.</span><span class="es" lang="es">«ke fluya» — flove crece de abajo arriba, sin saltarse etapas ni apurar el trabajo.</span></p></aside>
+  <aside class="info-box" id="ib-life" aria-label="life" style="--bub:#ffb27a"><label class="ib-close" for="b-none" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</label><div class="ib-kind"><span class="en" lang="en">General</span><span class="es" lang="es">General</span></div><h2 class="ib-title"><span class="en" lang="en">life</span><span class="es" lang="es">vida</span></h2><p class="ib-text"><span class="en" lang="en">From birth charts (Astry) to legacy (DieSafe), flove follows a whole life, gently.</span><span class="es" lang="es">De la carta natal (Astry) al legado (DieSafe), flove acompaña una vida entera, con suavidad.</span></p></aside>
+  <aside class="info-box" id="ib-art" aria-label="art" style="--bub:#ff9b6a"><label class="ib-close" for="b-none" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</label><div class="ib-kind"><span class="en" lang="en">Insight</span><span class="es" lang="es">Perspectiva</span></div><h2 class="ib-title"><span class="en" lang="en">art</span><span class="es" lang="es">arte</span></h2><p class="ib-text"><span class="en" lang="en">Keys and Holóniké treat glyphs and gestures as art — meaning you can see and hold.</span><span class="es" lang="es">Keys y Holóniké tratan glifos y gestos como arte — significado que puedes ver y sostener.</span></p></aside>
+  <aside class="info-box" id="ib-we" aria-label="we" style="--bub:#8affd0"><label class="ib-close" for="b-none" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</label><div class="ib-kind"><span class="en" lang="en">Introductory</span><span class="es" lang="es">Introductorio</span></div><h2 class="ib-title"><span class="en" lang="en">we</span><span class="es" lang="es">nosotros</span></h2><p class="ib-text"><span class="en" lang="en">flove is a we: crowdparenting, crowdcrafting, confluences — many hands, one garden.</span><span class="es" lang="es">flove es un nosotros: crianza colectiva, creación colectiva, confluencias — muchas manos, un jardín.</span></p></aside>
+</section>
+
+<script>
+  // Audio base — central/shared/media/audio. This is the central (flove.org) index: it keeps the sounds, so it must
+  // load its audio from the central media. The solo package strips audio (see build-flove-zip.sh) for small size.
+  var AUDIO_BASE = 'central/shared/media/audio/';
+  // Image base — central/shared/media/images. Same rule as audio: the central index keeps the art.
+  var IMG_BASE = 'central/shared/media/images/';
+  // Register the solo service worker so flove works fully offline once installed.
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('solo/sw.js').catch(function(){});
+    });
+  }
+</script>
+<script>
+  // Click anywhere outside an open popover (worldball) collapses it.
+  document.addEventListener('click', function(e){
+    document.querySelectorAll('details.lang[open]').forEach(function(d){
+      if (!d.contains(e.target)) d.open = false;
+    });
+  });
+</script>
+<script>
+  // translaty engine — switches the page language, translates option/placeholder/
+  // aria bits, remembers the choice under the shared flove:lang key, syncs <html lang>.
+  (function(){
+    const LS = 'flove:lang', LS_OLD = 'translaty-lang';
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+    const radios = () => Array.from(document.querySelectorAll('input[name="lang"]'));
+    const curLang = () => { const r = radios().find(x => x.checked); return r ? r.id.replace('lang-', '') : 'en'; };
+    const stored = () => { try { return localStorage.getItem(LS) || localStorage.getItem(LS_OLD) || localStorage.getItem('translate2-lang'); } catch (_) { return null; } };
+    const urlLang = () => { try { return new URLSearchParams(location.search).get('lang'); } catch (_) { return null; } };
+    function applyLang(){
+      const li = curLang();
+      document.documentElement.lang = li;
+      document.querySelectorAll('option[data-en]').forEach(o => { if (o.dataset[li] != null) o.textContent = o.dataset[li]; });
+      document.querySelectorAll('[data-ph-en]').forEach(el => { const v = el.dataset['ph' + cap(li)]; if (v != null) el.placeholder = v; });
+      document.querySelectorAll('[data-aria-en]').forEach(el => { const v = el.dataset['aria' + cap(li)]; if (v != null) el.setAttribute('aria-label', v); });
+      try { localStorage.setItem(LS, li); } catch (_) {}
+    }
+    function init(){
+      const want = urlLang() || stored();
+      if (want){ const r = document.getElementById('lang-' + want); if (r) r.checked = true; }
+      radios().forEach(r => r.addEventListener('change', () => {
+        applyLang();
+        const d = document.querySelector('details.lang'); if (d) d.open = false;
+      }));
+      applyLang();
+      // Tell other load-time listeners (e.g. the install hint) the resolved language,
+      // since setting .checked programmatically above doesn't fire a change event.
+      const cur = document.getElementById('lang-' + curLang());
+      if (cur) cur.dispatchEvent(new Event('change'));
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  })();
+</script>
+<script>
+/* WEB (Apps → get flove → web): fade the home out to white over 5s, then open
+   apps-intro. Same relative route in localhost and file://. A modified click
+   (new tab / cmd / ctrl) passes straight through; reduced-motion → quick fade. */
+(function(){
+  var link = document.querySelector('[data-web-fade]');
+  if(!link) return;
+  var veil = document.createElement('div');
+  veil.className = 'web-fade';
+  veil.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(veil);
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var wait = reduce ? 450 : 5000;
+  link.addEventListener('click', function(e){
+    if(e.metaKey || e.ctrlKey || e.shiftKey || e.button){ return; }   // let new-tab/modified clicks through
+    e.preventDefault();
+    var href = link.getAttribute('href');
+    veil.classList.add('on');
+    setTimeout(function(){ location.href = href; }, wait);
+  });
+})();
+</script>
+<script>
+/* theme toggle: light (default) ↔ dark */
+(function(){
+  var btn = document.getElementById('themeToggle');
+  if (!btn) return;
+  var root = document.documentElement;
+  var stored = tryGet('flove-theme');
+  if (stored === 'dark') root.classList.add('dark');
+  btn.addEventListener('click', function(){
+    if (root.classList.contains('dark')) chime('moon');   /* clicked the moon → soft night call */
+    else chime('sun');                                    /* clicked the sun  → uplifting & natural */
+    root.classList.toggle('dark');
+    trySet('flove-theme', root.classList.contains('dark') ? 'dark' : 'light');
+  });
+  function chime(kind){
+    try {
+      var a = new Audio(AUDIO_BASE + (kind === 'sun' ? 'sun.mp3' : 'moon.mp3'));
+      a.play().catch(function(){});
+    } catch (_) {}
+  }
+  function tryGet(k){ try { return localStorage.getItem(k); } catch(_){ return null; } }
+  function trySet(k,v){ try { localStorage.setItem(k,v); } catch(_){} }
+})();
+</script>
+<script>
+/* house button: click toggles the two download rails (desktop icons / phone options) visible */
+(function(){
+  var house = document.querySelector('.house-btn');
+  if (!house) return;
+house.addEventListener('click', function(e){
+    if (e.target.closest('.house-dl') || e.target.closest('.house-opt') || e.target.closest('.house-panel') || e.target.closest('.house-lang') || e.target.closest('.house-why')) return;
+    house.classList.toggle('on');
+  });
+})();
+</script>
+<script>
+/* audio icon: fades in below the buttons after 5s and stays fixed once shown.
+   Click → behappy plays and the Docs/Apps buttons sway; after 25s of movement
+   the song fades out over 4s and stops (buttons return to rest). Clicking again
+   while playing stops everything at once. */
+(function(){
+  var btn = document.getElementById('volToggle');
+  if (!btn) return;
+  var row = document.querySelector('.cta-row');
+  var song = new Audio(AUDIO_BASE + 'behappy.mp3');
+  song.preload = 'auto'; song.loop = true; song.load();
+  var playing = false;
+  var danceTimer = null;                    /* 25s of button movement → fade */
+  var fadeTimer = null;                     /* rAF during the 7s song fade-out */
+
+  function sway(show){
+    if (!row) return;
+    row.classList.remove('swaying');
+    void row.offsetWidth;                   /* restart the sway on every toggle */
+    if (show) row.classList.add('swaying');
+  }
+  function stopSong(){
+    if (danceTimer){ clearTimeout(danceTimer); danceTimer = null; }
+    if (fadeTimer){ cancelAnimationFrame(fadeTimer); fadeTimer = null; }
+    try { song.pause(); } catch(_) {}
+    try { song.currentTime = 0; } catch(_) {}
+    song.volume = 1;
+    playing = false;
+    btn.classList.remove('playing');
+    sway(false);
+  }
+  function fadeSongOut(){
+    var t0 = performance.now();
+    (function step(){
+      var p = Math.min(1, (performance.now() - t0) / 4000);
+      try { song.volume = 1 - p; } catch(_) {}
+      if (p < 1 && playing){ fadeTimer = requestAnimationFrame(step); }
+      else { stopSong(); }
+    })();
+  }
+
+  setTimeout(function(){ btn.classList.add('show'); }, 15000);
+  btn.addEventListener('click', function(){
+    if (playing){ stopSong(); return; }
+    stopSong();                             /* reset any prior dance state */
+    playing = true;
+    btn.classList.add('playing');
+    try { song.currentTime = 0; song.play().catch(function(){}); } catch(_) {}
+    sway(true);
+    danceTimer = setTimeout(fadeSongOut, 25000);   /* 25s of movement, then fade the song over 4s */
+  });
+})();
+</script>
+<script>
+/* button sounds: Apps → crash.mp3, Docs → thrill.mp3, house → relax.mp3 */
+(function(){
+  function play(file){
+    try {
+      var a = new Audio(AUDIO_BASE + file);
+      a.play().catch(function(){});
+    } catch (_) {}
+  }
+  var apps = document.querySelector('.btn-apps');
+  if (apps) apps.addEventListener('click', function(){ play('crash.mp3'); });
+  var docs = document.querySelector('.btn-docs');
+  if (docs) docs.addEventListener('click', function(e){
+    play('thrill.mp3');
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+    e.preventDefault();
+    var href = this.getAttribute('href');
+    setTimeout(function(){ location.href = href; }, 1300);   /* let the thrill ring */
+  });
+  var house = document.querySelector('.house-btn');
+  if (house) house.addEventListener('click', function(e){
+    if (e.target.closest('.house-dl') || e.target.closest('.house-opt') || e.target.closest('.house-panel') || e.target.closest('.house-lang') || e.target.closest('.house-why')) return;
+    play('relax.mp3');
+  });
+})();
+</script>
+<script>
+/* 'Why ?' → the intro slides: fade the home out to white over 4s, then open
+   solo/localhost-intro.html (the always-visible tour, no saved-language gate).
+   Same relative route in the localhost download and on the live site
+   (flove.org/solo/localhost-intro.html), so it works from outside too. A
+   modified click (new tab / cmd / ctrl) passes straight through; reduced-motion
+   → quick fade. */
+(function(){
+  var why = document.querySelector('.house-why');
+  if (!why) return;
+  var veil = document.createElement('div');
+  veil.className = 'why-fade';
+  veil.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(veil);
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var wait = reduce ? 450 : 4000;
+  why.addEventListener('click', function(e){
+    if(e.metaKey || e.ctrlKey || e.shiftKey || e.button){ return; }   // let new-tab/modified clicks through
+    e.preventDefault();
+    veil.classList.add('on');
+    setTimeout(function(){ location.href = 'solo/localhost-intro.html'; }, wait);
+  });
+})();
+</script>
+<script>
+/* logo + title: each click advances the narration cycle —
+   1st → Docs.mp3 + matrix rain bg · 2nd → simplex-song.mp3 + fractal geometry bg ·
+   3rd → simplex-talk.mp3 + fractal geometry bg · 4th → More.mp3 + spectrum bg ·
+   5th → crash.mp3 */
+(function(){
+  var logo = document.querySelector('h1.logo');
+  var canvas = document.getElementById('bgfx');
+  if (!logo || !canvas) return;
+  var ctx = canvas.getContext('2d');
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var TRACKS = [
+    { file:AUDIO_BASE + 'Docs.mp3',         mode:'matrix'  },
+    { file:AUDIO_BASE + 'simplex-song.mp3', mode:'fractal' },
+    { file:AUDIO_BASE + 'simplex-talk.mp3', mode:'waves'   },
+    { file:AUDIO_BASE + 'More.mp3',         mode:null      },
+    { file:AUDIO_BASE + 'crash.mp3',        mode:null      }
+  ];
+
+  var audio = new Audio();
+  var analyser = null, actx = null;
+  var step = -1, running = false, raf = null;
+  var drops = [], nCols = 0, fRot = 0, hue = 0, frame = 0, waveT = 0;
+  var FONT = 16, band = null;
+  var GLYPHS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF#$%&';
+
+  function size(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    nCols = Math.max(1, Math.floor(canvas.width / FONT));
+    drops = [];
+    for (var i = 0; i < nCols; i++) drops.push((Math.random() * -20) | 0);
+  }
+  window.addEventListener('resize', size);
+  size();
+
+  function clearAll(){
+    running = false;
+    if (raf) cancelAnimationFrame(raf);
+    raf = null;
+    if (analyser){ try { analyser.disconnect(); } catch(_){} analyser = null; }
+    if (actx){ try { actx.close(); } catch(_){} actx = null; }
+    try { audio.pause(); } catch(_) {}
+    audio.removeAttribute('src');
+    audio.load();
+    canvas.classList.remove('on');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  function startTrack(i){
+    clearAll();
+    var t = TRACKS[i];
+    if (!t.file) return;                          /* empty slots: nothing to play */
+    if (t.mode === 'specto'){
+      try {
+        actx = new (window.AudioContext || window.webkitAudioContext)();
+        var src = actx.createMediaElementSource(audio);
+        analyser = actx.createAnalyser();
+        analyser.fftSize = 512;
+        analyser.smoothingTimeConstant = .82;
+        band = new Uint8Array(analyser.frequencyBinCount);
+        src.connect(analyser);
+        analyser.connect(actx.destination);
+        if (actx.state === 'suspended') actx.resume();
+      } catch(_) { analyser = null; actx = null; }
+    }
+    audio.src = t.file;
+    audio.loop = false;
+    audio.play().catch(function(){});
+    audio.addEventListener('ended', function onEnd(){
+      audio.removeEventListener('ended', onEnd);
+      clearAll();
+    });
+    if (!t.mode) return;    /* sound-only (crash) / More: no canvas bg */
+    canvas.classList.add('on');
+    if (reduced) return;
+    running = true;
+    raf = requestAnimationFrame(function tick(){
+      if (!running){ ctx.clearRect(0, 0, canvas.width, canvas.height); return; }
+      if (++frame % 3) { raf = requestAnimationFrame(tick); return; }  /* animations run 3× slower */
+      if (t.mode === 'matrix') drawMatrix();
+      else if (t.mode === 'fractal') drawFractal();
+      else if (t.mode === 'waves') drawWaves();
+      else drawSpecto();
+      raf = requestAnimationFrame(tick);
+    });
+  }
+
+  logo.addEventListener('click', function(){
+    step = (step + 1) % TRACKS.length;
+    startTrack(step);
+  });
+
+  function isDark(){
+    return document.documentElement.classList.contains('dark');
+  }
+
+  /* matrix rain — translucent veil matches the theme so the trail never tints the page */
+  function drawMatrix(){
+    ctx.fillStyle = isDark() ? 'rgba(8,10,18,.10)' : 'rgba(250,248,255,.14)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.font = FONT + 'px monospace';
+    for (var i = 0; i < nCols; i++){
+      var ch = GLYPHS[(Math.random() * GLYPHS.length) | 0];
+      var y = drops[i] * FONT;
+      ctx.fillStyle = Math.random() > .96 ? '#c8ffe0' : (isDark() ? '#37ff8e' : '#12b96a');
+      ctx.fillText(ch, i * FONT, y);
+      if (y > canvas.height && Math.random() > .976) drops[i] = (Math.random() * -20) | 0;
+      drops[i]++;
+    }
+  }
+
+  /* fractal geometry — nested triangles, each corner hosts a smaller rotated one */
+  function drawFractal(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    hue = (hue + .4) % 360;
+    fRot += .012;
+    var r = Math.min(canvas.width, canvas.height) * .42;
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = 'hsla(' + hue + ', 85%, 62%, .55)';
+    nest(canvas.width / 2, canvas.height / 2, r, fRot, 4);
+  }
+  function nest(cx, cy, r, rot, depth){
+    var a, i, x, y;
+    ctx.beginPath();
+    for (i = 0; i < 3; i++){
+      a = rot + i * (Math.PI * 2 / 3);
+      x = cx + r * Math.cos(a); y = cy + r * Math.sin(a);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+    if (depth > 0){
+      for (i = 0; i < 3; i++){
+        a = rot + i * (Math.PI * 2 / 3);
+        nest(cx + (r / 2) * Math.cos(a), cy + (r / 2) * Math.sin(a), r / 2, rot + .1, depth - 1);
+      }
+    }
+  }
+
+  /* podcast waves — smooth equalizer bars swaying across the middle */
+  function drawWaves(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    waveT += .02;
+    var NW = 48, cx = canvas.width / 2, cy = canvas.height / 2;
+    var bw = Math.max(4, canvas.width / (NW * 2.6));
+    var gap = bw * .6;
+    var x0 = cx - (NW * (bw + gap)) / 2;
+    for (var i = 0; i < NW; i++){
+      var t = waveT * 3.2;
+      var env = Math.abs(Math.sin(i * .42 + t));
+      var mod = Math.sin(i * .13 + t * .7);
+      var v = Math.max(.08, Math.min(1, env * .8 + mod * .25));
+      var h = v * canvas.height * .3;
+      var x = x0 + i * (bw + gap);
+      ctx.fillStyle = 'hsla(' + (225 + i * 2.2) + ', 85%, 62%, .5)';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x, cy - h / 2, bw, h, bw / 2);
+      else ctx.rect(x, cy - h / 2, bw, h);
+      ctx.fill();
+    }
+  }
+
+  /* spectrum bars — live analyser data; idle sine if the AudioContext failed */
+  function drawSpecto(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!analyser || !band){ drawIdle(); return; }
+    analyser.getByteFrequencyData(band);
+    var bars = 72, bw = canvas.width / bars, bins = band.length;
+    var top = canvas.height * .58;
+    for (var i = 0; i < bars; i++){
+      var v = band[(i * bins / bars) | 0] / 255;
+      var bh = Math.max(4, v * top);
+      var h = 250 + v * 90;
+      ctx.fillStyle = 'hsla(' + h + ', 85%, 62%, .5)';
+      ctx.fillRect(i * bw + bw * .18, canvas.height - bh, bw * .64, bh);
+    }
+  }
+  function drawIdle(){
+    var t = (Date.now() / 1200) % (Math.PI * 2);
+    ctx.beginPath();
+    ctx.strokeStyle = 'hsla(260, 80%, 64%, .4)';
+    ctx.lineWidth = 2;
+    for (var x = 0; x <= canvas.width; x += 4){
+      var y = canvas.height / 2 + Math.sin(x * .02 + t) * 18 + Math.sin(x * .007 + t * .6) * 26;
+      if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+})();
+</script>
+
+<script>
+/* Download house: the two right-rail options (Android/Termux · Over the network)
+   open an info-and-actions panel ABOVE the house with a scannable QR. The apk
+   download is kept here, documented as a lower option — not on the home page. */
+(function(){
+  var PANELS = { termux: document.getElementById('panel-termux'),
+                 net: document.getElementById('panel-net'),
+                 apk: document.getElementById('panel-apk') };
+  if (!PANELS.termux || !PANELS.net || !PANELS.apk) return;
+  var opts = Array.prototype.slice.call(document.querySelectorAll('.house-opt'));
+  var cur = null, pick = location.origin;
+  var TERMUX = 'pkg install -y python; curl -sLo flove.zip https://flove.org/solo/flove-solo.zip; unzip -oq flove.zip; cd flove-solo; python3 -m http.server 8642';
+  var APK = 'https://github.com/floveorg/floveorg.github.io/releases/latest/download/flove.aab';
+  function QR(el, t){ if (el && window.drawQR) el.innerHTML = drawQR(t, 128); }
+  function copy(btn, text){ try{ navigator.clipboard.writeText(text); }catch(e){} btn.classList.add('done'); setTimeout(function(){ btn.classList.remove('done'); }, 1400); }
+
+  function paintUrls(){
+    var host = document.getElementById('hpUrls'); if (!host) return;
+    host.innerHTML = '';
+    urlRows.forEach(function(r){
+      var d = document.createElement('div'); d.className = 'hp-url';
+      d.textContent = r[1] + ' · ' + r[0]; host.appendChild(d);
+    });
+  }
+  function show(kind, btn){
+    if (cur === kind){ close(); return; }
+    close();
+    var p = PANELS[kind]; if (!p) return;
+    p.removeAttribute('inert'); p.setAttribute('aria-hidden','false'); p.classList.add('open');
+    if (kind === 'termux') QR(document.getElementById('qr-termux'), TERMUX);
+    else if (kind === 'net') { QR(document.getElementById('qr-net'), pick); paintUrls(); }
+    cur = kind;
+    opts.forEach(function(o){ o.setAttribute('aria-expanded', o === btn ? 'true' : 'false'); });
+  }
+  function close(){
+    cur = null;
+    opts.forEach(function(o){ o.setAttribute('aria-expanded','false'); });
+    Object.keys(PANELS).forEach(function(k){
+      PANELS[k].setAttribute('inert',''); PANELS[k].setAttribute('aria-hidden','true'); PANELS[k].classList.remove('open');
+    });
+  }
+  opts.forEach(function(o){ o.addEventListener('click', function(e){ e.stopPropagation(); show(o.getAttribute('data-opt'), o); }); });
+  document.addEventListener('click', function(){ close(); });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-copy]'), function(b){
+    b.addEventListener('click', function(){
+      var which = b.getAttribute('data-copy');
+      copy(b, which==='termux' ? TERMUX : (which==='apk' ? APK : pick));
+    });
+  });
+
+  // network panel: resolve the best reachable address (Tailscale → LAN → origin)
+  var urlRows = [[location.origin, 'server']];
+  fetch('devices.json').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }).then(function(d){
+    var lan = (d && d.lan) || [], ts = (d && d.tailscale) || '';
+    pick = ts || lan[0] || location.origin;
+    urlRows = [];
+    if (ts) urlRows.push([ts, 'Tailscale']);
+    if (lan[0]) urlRows.push([lan[0], 'same Wi-Fi']);
+    if (cur === 'net') paintUrls();
+  });
+})();
+</script>
+
+</body>
+</html>

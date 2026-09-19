@@ -1,0 +1,1976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parenty · FLOVE</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff6b3a' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><circle cx='7' cy='8.6' r='2'/><path d='M3.8 19.5 a3.2 3.8 0 0 1 6.4 0'/><circle cx='17' cy='8.6' r='2'/><path d='M13.8 19.5 a3.2 3.8 0 0 1 6.4 0'/><circle cx='12' cy='13' r='1.6'/><path d='M9.6 20 a2.4 2.8 0 0 1 4.8 0'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+:root{
+  --bg:#f8fafc;
+  --card:#ffffff;
+  --ink:#0f172a;
+  --muted:#475569;
+  --brand:#4f46e5;
+  --brand-2:#22c55e;
+  --soft: #e2e8f0;
+  --app-c1:#ff3344;
+  --app-c2:#ff8a3a;
+  --app-c3:#ffd633;
+  --app-accent:#ff6b3a;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: 'Quicksand', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color:var(--ink);
+  background:transparent;          /* let the sunset scene show through */
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* ============================================================
+   SUNSET SCENE — hilly landscape, wind, sun, animals & birds
+   Intensity rises with --intensity (0 → 1), driven by JS.
+   ============================================================ */
+.scene{
+  position:fixed; inset:0; z-index:-1;
+  overflow:hidden;
+  pointer-events:none;
+}
+.sky{
+  position:absolute; inset:0;
+  background:linear-gradient(180deg, var(--sky-1), var(--sky-2) 22%, var(--sky-3) 50%, var(--sky-4) 78%, var(--sky-5) 100%);
+  transition: background 1.4s ease;
+}
+
+/* ---------- 5 INTENSITY LEVELS (every 2 selections darkens & deepens) ---------- */
+body{
+  --sky-1:#f3b3c2;
+  --sky-2:#f5b489;
+  --sky-3:#ffd07a;
+  --sky-4:#ffd9a3;
+  --sky-5:#e7a690;
+}
+body[data-intensity="1"]{
+  --sky-1:#e08aa3;
+  --sky-2:#ec8a64;
+  --sky-3:#ffaa5a;
+  --sky-4:#ffba7c;
+  --sky-5:#c97a72;
+}
+body[data-intensity="2"]{
+  --sky-1:#c25b80;
+  --sky-2:#e0613f;
+  --sky-3:#fb8044;
+  --sky-4:#e58459;
+  --sky-5:#9a4a52;
+}
+body[data-intensity="3"]{
+  --sky-1:#933657;
+  --sky-2:#c0411d;
+  --sky-3:#d75620;
+  --sky-4:#b15433;
+  --sky-5:#683040;
+}
+body[data-intensity="4"]{
+  --sky-1:#5b1f3d;
+  --sky-2:#8a2614;
+  --sky-3:#a23314;
+  --sky-4:#722414;
+  --sky-5:#3a142a;
+}
+body[data-intensity="5"]{
+  --sky-1:#321224;
+  --sky-2:#4b1208;
+  --sky-3:#601a08;
+  --sky-4:#3a1006;
+  --sky-5:#160714;
+}
+
+/* hill silhouettes — three layers, gentle wind sway */
+.hills{
+  position:absolute; left:-2%; right:-2%; bottom:0;
+  width:104%;
+  pointer-events:none;
+}
+.hills--back { height:36vh; bottom:0; opacity:.7; animation:wind-back 11s ease-in-out infinite alternate; }
+.hills--mid  { height:30vh; bottom:0; opacity:.85; animation:wind-mid 8s ease-in-out infinite alternate; }
+.hills--front{ height:24vh; bottom:0;            animation:wind-front 6s ease-in-out infinite alternate; }
+.hills path  { transition:fill 1.4s ease; }
+.hills--back path { fill:var(--hill-back,  #8e5566); }
+.hills--mid  path { fill:var(--hill-mid,   #6c3a55); }
+.hills--front path{ fill:var(--hill-front, #3e2238); }
+body[data-intensity="1"]{ --hill-back:#864559; --hill-mid:#5a2a47; --hill-front:#2c1828; }
+body[data-intensity="2"]{ --hill-back:#7a3247; --hill-mid:#4a1f3a; --hill-front:#1f1020; }
+body[data-intensity="3"]{ --hill-back:#5a1f33; --hill-mid:#36142a; --hill-front:#170a1a; }
+body[data-intensity="4"]{ --hill-back:#3a0d20; --hill-mid:#22091c; --hill-front:#0d0410; }
+body[data-intensity="5"]{ --hill-back:#1c0612; --hill-mid:#10040e; --hill-front:#04020a; }
+
+@keyframes wind-back  { from { transform:translateX(-1.2%) } to { transform:translateX(1.2%) } }
+@keyframes wind-mid   { from { transform:translateX(-1.8%) } to { transform:translateX(1.8%) } }
+@keyframes wind-front { from { transform:translateX(-2.4%) } to { transform:translateX(2.4%) } }
+
+/* wind-bent grass strip at very bottom */
+.grass-band{
+  position:absolute; left:0; right:0; bottom:0;
+  height:6vh;
+  display:flex; align-items:flex-end; justify-content:space-between;
+  padding:0 1vw;
+  pointer-events:none;
+}
+.grass-blade{
+  display:inline-block;
+  width:2px; height:100%;
+  background:linear-gradient(180deg, transparent 0%, #4a2238 70%, #2a0f25 100%);
+  transform-origin:bottom center;
+  border-radius:2px;
+  animation:grass-sway 1.8s ease-in-out infinite alternate;
+}
+@keyframes grass-sway{
+  from { transform:skewX(-15deg) translateX(-2px) scaleY(.95); }
+  to   { transform:skewX( 18deg) translateX(2px)  scaleY(1.02); }
+}
+
+/* ============================================================
+   ADDONS — 10 sets, revealed one by one as user selects
+   ============================================================ */
+.addon{
+  position:absolute;
+  font-size:2rem;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.25));
+  opacity:0;
+  transition:opacity 1.2s ease;
+  will-change:transform, opacity;
+}
+.addon.on{ opacity:1; }
+
+/* Set 1 — eagle continuous zigzag: fast diagonal dive down-left, then ×3 SLOWER diagonal climb up-right (climb spends 3× the time of a dive) */
+.addon-1{ top:-3vh; right:-3vw; left:auto; font-size:2.4rem; animation:eagle-zigzag 36s linear infinite; }
+@keyframes eagle-zigzag{
+  0%     { transform:translate(0,      0)   rotate(-30deg); }   /* top-right entry */
+  6.67%  { transform:translate(-40vw, 80vh) rotate( 30deg); }   /* dive 1 — down-left (fast) */
+  26.67% { transform:translate(-25vw,  0)   rotate(-18deg); }   /* climb 1 — diagonal, slow (×3 the dive's time) */
+  33.33% { transform:translate(-65vw, 80vh) rotate( 30deg); }   /* dive 2 from where climb 1 ended */
+  53.33% { transform:translate(-50vw,  0)   rotate(-18deg); }   /* climb 2 — slow */
+  60%    { transform:translate(-90vw, 80vh) rotate( 30deg); }   /* dive 3 */
+  80%    { transform:translate(-75vw,  0)   rotate(-18deg); }   /* climb 3 — slow */
+  100%   { transform:translate(-115vw,50vh) rotate( 25deg); }   /* exit off-screen left */
+}
+
+/* Set 2 — rabbit hops chaotically around the horizontal centre of the bottom */
+.addon-2{ bottom:4vh; left:50%; right:auto; margin-left:-1rem; animation:rabbit-chaos 9s ease-in-out infinite; }
+@keyframes rabbit-chaos{
+  0%   { transform:translate(0,0)          rotate(0); }
+  9%   { transform:translate( 8vw,-14px)   rotate(-4deg); }
+  17%  { transform:translate(14vw,0)       rotate( 3deg); }
+  25%  { transform:translate(-5vw,-10px)   rotate(-6deg); }
+  34%  { transform:translate(-18vw,-16px)  rotate( 4deg); }
+  43%  { transform:translate(-10vw,0)      rotate(-2deg); }
+  52%  { transform:translate(12vw,-12px)   rotate( 5deg); }
+  60%  { transform:translate(20vw,-4px)    rotate(-3deg); }
+  68%  { transform:translate( 6vw,-14px)   rotate( 6deg); }
+  77%  { transform:translate(-14vw,0)      rotate(-4deg); }
+  86%  { transform:translate(-6vw,-10px)   rotate( 2deg); }
+  100% { transform:translate(0,0)          rotate(0); }
+}
+
+/* Set 3 — blue bird circling just above the flock */
+.addon-3{ top:52vh; left:50vw; animation:bird-circle 9s linear infinite; }
+@keyframes bird-circle{
+  0%    { transform:translate(0,    0)    rotate(  0deg); }
+  12.5% { transform:translate(4vw, -3vh)  rotate( 45deg); }
+  25%   { transform:translate(8vw, -4vh)  rotate( 90deg); }
+  37.5% { transform:translate(12vw,-3vh)  rotate(135deg); }
+  50%   { transform:translate(16vw, 0)    rotate(180deg); }
+  62.5% { transform:translate(12vw, 3vh)  rotate(225deg); }
+  75%   { transform:translate(8vw,  4vh)  rotate(270deg); }
+  87.5% { transform:translate(4vw,  3vh)  rotate(315deg); }
+  100%  { transform:translate(0,    0)    rotate(360deg); }
+}
+
+/* Set 4 — deer (bottom-right) */
+.addon-4{ bottom:6vh; right:7vw; animation:deer-step 4s ease-in-out infinite; }
+@keyframes deer-step{
+  0%,100% { transform:translateX(0) rotate(0); }
+  50%     { transform:translateX(-6px) rotate(-1deg); }
+}
+
+/* Set 5 — butterfly fluttering chaotically in the lower-left area, 3× slower */
+.addon-5{ bottom:14vh; left:3vw; top:auto; font-size:1.5rem; animation:butterfly-chaos 22.5s linear infinite; }
+@keyframes butterfly-chaos{
+  0%   { transform:translate(0,0)         rotate(-12deg); }
+  7%   { transform:translate(6vw,-5vh)    rotate(22deg); }
+  13%  { transform:translate(2vw,-1vh)    rotate(-18deg); }
+  19%  { transform:translate(11vw,-7vh)   rotate(34deg); }
+  25%  { transform:translate(8vw,2vh)     rotate(-25deg); }
+  32%  { transform:translate(15vw,-3vh)   rotate(15deg); }
+  38%  { transform:translate(20vw,-9vh)   rotate(-30deg); }
+  45%  { transform:translate(16vw,-4vh)   rotate(28deg); }
+  52%  { transform:translate(22vw,1vh)    rotate(-14deg); }
+  59%  { transform:translate(13vw,-6vh)   rotate(20deg); }
+  66%  { transform:translate(7vw,0)       rotate(-22deg); }
+  73%  { transform:translate(10vw,-3vh)   rotate(32deg); }
+  80%  { transform:translate(4vw,-8vh)    rotate(-18deg); }
+  87%  { transform:translate(8vw,-2vh)    rotate(24deg); }
+  94%  { transform:translate(3vw,-1vh)    rotate(-16deg); }
+  100% { transform:translate(0,0)         rotate(-12deg); }
+}
+
+/* Set 6 — flock of three doves crossing the mid-lower part of the screen */
+.addon-6{ top:62vh; right:-14vw; font-size:1.5rem; letter-spacing:.4rem; animation:flock 30s linear infinite; }
+@keyframes flock{
+  0%   { transform:translateX(0); }
+  100% { transform:translateX(-140vw); }
+}
+
+/* Set 7 — fox (bottom-left, further) */
+.addon-7{ bottom:4vh; left:18vw; animation:trot 3.2s ease-in-out infinite; }
+@keyframes trot{
+  0%,100% { transform:translateX(0) translateY(0); }
+  25%     { transform:translateX(-2px) translateY(-2px) rotate(-1deg); }
+  75%     { transform:translateX(2px)  translateY(-2px) rotate(1deg); }
+}
+
+/* Set 8 — full-body cock/chicken bobbing up from below-center */
+.addon-8{ bottom:-2.6rem; left:45vw; font-size:2.4rem; animation:chicken-bob 5.5s ease-in-out infinite; }
+
+/* Set 9 — sheep grazing (bottom-right, further in) */
+.addon-9{ bottom:5vh; right:20vw; animation:graze 5s ease-in-out infinite; }
+@keyframes graze{
+  0%,100% { transform:translateY(0); }
+  50%     { transform:translateY(-3px) translateX(-3px); }
+}
+
+/* Set 10 — wolf silhouette on far ridge (bottom-left, deep) */
+.addon-10{ bottom:14vh; left:2vw; font-size:1.6rem; opacity:.85; animation:howl 6s ease-in-out infinite; }
+.addon-10.on{ opacity:.85; }
+@keyframes howl{
+  0%,80%,100% { transform:rotate(0); }
+  85%         { transform:translateY(-4px) rotate(-6deg); }
+  90%         { transform:translateY(-2px) rotate(-3deg); }
+}
+
+/* (Chicken was always-on; now lives as addon-8 — see below. Keyframe kept.) */
+@keyframes chicken-bob{
+  0%, 100%{ transform:translateY(0)    rotate(0); }
+  18%     { transform:translateY(-4.5rem) rotate(-4deg); }
+  36%     { transform:translateY(-1rem)   rotate(3deg); }
+  54%     { transform:translateY(-5rem)   rotate(-5deg); }
+  72%     { transform:translateY(-.6rem)  rotate(2deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hills, .grass-blade, .addon { animation:none !important; }
+}
+
+/* ---------- TOPBAR (floats over content — sections invade the central space) ---------- */
+.flove-bar{
+  position:absolute; top:0; left:0; right:0; z-index:99;
+  display:flex; align-items:center; gap:14px;
+  padding:12px 18px;
+  font-size:22px;       /* base – children use em units */
+  letter-spacing:.3px;
+  background:transparent;
+  border-bottom:0;
+  color:#3a1d11;
+  pointer-events:none;     /* let central content underneath be interactive */
+}
+.flove-bar > *{ pointer-events:auto; }   /* but topbar items themselves remain clickable */
+.flove-bar a.flove-home{
+  display:inline-flex; align-items:center; gap:6px;
+  text-decoration:none; color:inherit; font-weight:600;
+  padding:.3em .55em; border-radius:999px;
+  font-size:.7em;
+  transition:background .2s, transform .2s;
+}
+.flove-bar a.flove-home:hover{ background:rgba(255,107,58,.12); transform:translateX(-2px); }
+.flove-bar .flove-mark-link{
+  display:inline-flex; align-items:center; text-decoration:none; color:inherit;
+  background:transparent; border:0; padding:0; margin:0;
+  border-radius:0; box-shadow:none; cursor:pointer;
+  transition:opacity .2s;
+}
+.flove-bar .flove-mark-link:hover{ background:transparent; box-shadow:none; filter:none; transform:none; opacity:.85; }
+.flove-bar .flove-mark-link:focus-visible{ outline:2px solid var(--app-accent); outline-offset:4px; border-radius:8px; }
+.flove-bar .flove-mark{ width:2em; height:2em; }     /* doubled */
+.flove-bar .flove-app-name{
+  font-size:1em;                                    /* doubled */
+  font-weight:900;
+  letter-spacing:-.01em;
+  font-family:'Playfair Display', serif;
+  color:#3a1d11;
+  -webkit-text-stroke:1px #000;                     /* half-thickness black border */
+  paint-order:stroke fill;
+}
+/* thinner black outline around the parenting glyph */
+.flove-bar .flove-mark{
+  filter:
+    drop-shadow( .75px 0 0 #000) drop-shadow(-.75px 0 0 #000)
+    drop-shadow(0  .75px 0 #000) drop-shadow(0 -.75px 0 #000);
+}
+.flove-bar .flove-spacer{ flex:1; }
+.flove-bar .flove-mark{ vertical-align:-.15em; overflow:visible; }
+
+.app-name-toggle{
+  background:transparent; border:0; padding:0; margin:0;
+  font:inherit; letter-spacing:inherit; color:inherit;
+  cursor:pointer; transition:opacity .2s, color .2s;
+}
+.app-name-toggle:hover{ opacity:.78; }
+.app-name-toggle:focus-visible{
+  outline:2px solid var(--app-accent); outline-offset:4px; border-radius:8px;
+}
+.app-name-toggle[aria-expanded="true"]{ color:var(--app-accent); }
+
+/* "All" expand-all button in header */
+.all-btn{
+  appearance:none; cursor:pointer;
+  background:transparent;
+  border:1.5px solid rgba(58,29,17,.25);
+  color:#3a1d11;
+  padding:.35em .85em;
+  border-radius:999px;
+  font-size:.55em; font-weight:700; letter-spacing:.04em;
+  text-transform:uppercase;
+  display:inline-flex; align-items:center; gap:.35em;
+  box-shadow:none;
+  transition:background .2s, border-color .2s, transform .15s, color .2s;
+}
+.all-btn:hover{ background:rgba(255,107,58,.12); border-color:var(--app-accent); transform:translateY(-1px); }
+.all-btn[aria-pressed="true"]{
+  background:linear-gradient(90deg, var(--app-c1), var(--app-c2), var(--app-c3));
+  color:white; border-color:transparent;
+}
+
+/* ── app info panel (opened from the ⓘ menu entry) ── */
+.app-info-panel{
+  max-width:1100px;
+  margin:4.5rem auto 0;     /* clear the floating (absolute) topbar */
+  padding:0 1.2rem;
+  position:relative;
+  z-index:100;
+}
+.app-info-panel[hidden]{ display:none; }
+.app-info__text{
+  margin:0 0 1.2rem;
+  padding:1rem 1.2rem;
+  background:rgba(255,247,238,.92);
+  border:1px solid #f2d8be;
+  border-left:4px solid var(--app-accent);
+  border-radius:18px;
+  color:#3a1d11;
+  line-height:1.55;
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+}
+.app-info__text h2{
+  font-family:'Playfair Display', serif;
+  margin:0 0 .5rem;
+  color:var(--app-accent);
+  font-size:1.4rem;
+}
+.app-info__text p{ margin:0 0 .6rem; }
+.app-info__text p:last-child{ margin:0; font-style:italic; color:var(--muted); }
+.app-info__video{
+  width:100%; max-height:60vh;
+  border-radius:24px; background:#000; display:block;
+}
+.app-info__close{
+  display:block; margin:1.2rem auto 0;
+  padding:.9rem 2rem; font-size:1.1rem; font-weight:700;
+  border-radius:999px;
+  background:var(--app-accent); color:#fff;
+  border:2px solid var(--app-accent); cursor:pointer;
+  box-shadow:0 6px 14px rgba(255,107,58,.25);
+  transition:background .15s, transform .15s, box-shadow .15s, filter .15s;
+}
+.app-info__close:hover{ filter:saturate(1.1); transform:translateY(-1px); box-shadow:0 10px 20px rgba(255,107,58,.3); }
+.topmenu{
+  position:absolute; top:60px; right:14px; z-index:120;
+  min-width:200px;
+  background:rgba(255,255,255,.75);
+  backdrop-filter:blur(12px) saturate(140%);
+  -webkit-backdrop-filter:blur(12px) saturate(140%);
+  border:1px solid rgba(58,29,17,.10);
+  border-radius:14px;
+  padding:.4rem;
+  box-shadow:0 18px 40px -12px rgba(120,60,20,.28);
+  animation: menuDrop .18s ease;
+}
+.topmenu[hidden]{ display:none; }
+@keyframes menuDrop {
+  from { opacity:0; transform:translateY(-4px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.topmenu__item{
+  appearance:none; cursor:pointer;
+  display:flex; align-items:center; gap:.55rem;
+  width:100%; text-align:left;
+  background:transparent; color:#3a1d11;
+  border:0;
+  padding:.55rem .7rem; border-radius:10px;
+  font-size:.92rem; font-weight:600;
+  box-shadow:none;
+  transition:background .15s, color .15s;
+}
+.topmenu__item:hover{ background:rgba(255,107,58,.12); color:#1a0f08; transform:none; }
+.topmenu__sep{ height:1px; background:rgba(58,29,17,.08); margin:.3rem .4rem; }
+
+.site-header{
+  padding:1.6rem 1.2rem .8rem;
+  text-align:center;
+}
+.site-header h1{
+  font-family:'Playfair Display', serif;
+  font-weight:700;
+  font-size: clamp(1.6rem, 1rem + 2vw, 2.6rem);
+  margin:0 0 .4rem;
+  letter-spacing:.5px;
+}
+.subtitle{color:var(--muted); margin:0;}
+
+.layout{
+  display:block;
+  padding:.4rem 1rem 1rem;       /* tiny top padding — sections rise into header */
+  max-width:1100px;
+  margin:0 auto;
+}
+
+.card{
+  background:rgba(255, 248, 235, .03);          /* near-transparent — scene reads through */
+  border-radius:18px;
+  box-shadow: 0 6px 20px rgba(120,60,20,.10);
+  padding:1.2rem 1.4rem 1.4rem;
+  border:1px solid rgba(255,229,207,.20);
+}
+.card.section.step-pane{
+  min-height: 30rem;          /* equal size for all sections (Growth baseline) */
+  display:flex;
+  flex-direction:column;
+}
+
+.section h2{
+  margin:.2rem 0 1.4rem;
+  text-align:center;
+}
+.pill{
+  display:inline-block;
+  background:transparent;
+  padding:0;
+  border:0;
+  font-family:'Playfair Display', serif;
+  font-weight:900;
+  font-size:1.6rem;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  background-image:linear-gradient(90deg, var(--app-c1), var(--app-c2), var(--app-c3));
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent; color:transparent;
+  -webkit-text-stroke:1px #000;            /* thinner black border (half of 2px) */
+  paint-order:stroke fill;
+}
+
+.groups{
+  display:grid;
+  gap:.8rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 780px){
+  .groups{ grid-template-columns: 1fr 1fr; }
+}
+
+.group{
+  border:1px dashed #f1d6b8;
+  border-radius:14px;
+  padding:.8rem;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  position:relative;
+  overflow:hidden;
+}
+.group:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(120,60,20,.06);
+  border-color:#fbc18f;
+}
+.group legend{
+  padding:0 .4rem;
+  font-weight:700;
+  color:#3a1d11;
+}
+
+.group legend{ margin-top:1.2rem; }       /* row of space between button groups */
+.group legend:first-of-type{ margin-top:0; }
+.scale{ display:flex; flex-wrap:wrap; gap:1rem .9rem; margin:.6rem 0 .4rem; padding:.3rem 0; }
+
+/* sub-button row (e.g. Reviewable, smaller, only shows when parent is selected) */
+.sub-scale{
+  display:none;
+  margin:.4rem 0 .2rem;
+  padding-left:1rem;
+}
+/* (sub-scale reveal rule removed with the Relation question) */
+.sub-scale label.sub{
+  display:inline-flex; align-items:center;
+  padding:.25rem .65rem; border-radius:999px;
+  background:transparent; border:1px dashed #f2d8be;
+  cursor:pointer; user-select:none;
+  font-size:.78rem; font-weight:600; color:#6b3a1f;
+  transition: all .2s ease;
+}
+.sub-scale label.sub:hover{ border-color:var(--app-accent); color:#3a1d11; }
+.sub-scale label.sub input{ position:absolute; opacity:0; pointer-events:none; width:0; height:0; }
+.sub-scale label.sub:has(input:checked){
+  background:linear-gradient(135deg, var(--app-c1), var(--app-c2), var(--app-c3));
+  border-color:transparent; color:white;
+  box-shadow:0 4px 10px rgba(255,107,58,.28);
+}
+
+.scale label, .chk, .sub-scale label.sub{
+  display:inline-flex; align-items:center;
+  padding:.45rem .9rem; border-radius:999px;
+  background:#fff7ee; border:1px solid #f2d8be;
+  cursor:pointer; user-select:none;
+  font-weight:600; color:#3a1d11;
+  position:relative;
+  transform-origin:center;
+  transition: transform .22s ease, background .25s, color .25s, border-color .25s, box-shadow .2s;
+}
+.scale label input[type="radio"]{ position:absolute; opacity:0; pointer-events:none; width:0; height:0; }
+.chk input, .sub-scale label.sub input{ position:absolute; opacity:0; pointer-events:none; width:0; height:0; }
+.chk span{ transition:color .25s, font-weight .2s; }
+
+.scale label:hover, .chk:hover, .sub-scale label.sub:hover{
+  border-color:#ff8a3a;
+  box-shadow:0 4px 12px rgba(255,138,58,.18);
+}
+
+/* ----- 3-click cumulative scale: 1.1× / 1.2× / 1.3× ----- */
+.scale label[data-clicks="1"], .chk[data-clicks="1"], .sub-scale label.sub[data-clicks="1"]{ transform:scale(1.1); }
+.scale label[data-clicks="2"], .chk[data-clicks="2"], .sub-scale label.sub[data-clicks="2"]{ transform:scale(1.2); }
+.scale label[data-clicks="3"], .chk[data-clicks="3"], .sub-scale label.sub[data-clicks="3"]{ transform:scale(1.3); }
+
+/* Active (any click count > 0) — gradient bg + bold black text */
+.scale label[data-clicks="1"], .scale label[data-clicks="2"], .scale label[data-clicks="3"],
+.chk[data-clicks="1"],         .chk[data-clicks="2"],         .chk[data-clicks="3"],
+.sub-scale label.sub[data-clicks="1"], .sub-scale label.sub[data-clicks="2"], .sub-scale label.sub[data-clicks="3"]{
+  background:radial-gradient(circle at 30% 30%, #fff7d8 0%, #ffd633 25%, #ff8a3a 60%, #ff3344 100%);
+  border-color:transparent;
+  color:#000; font-weight:900;
+  box-shadow:0 8px 22px rgba(255,107,58,.4);
+  z-index:2;
+}
+.chk[data-clicks="1"] span, .chk[data-clicks="2"] span, .chk[data-clicks="3"] span{ color:#000; font-weight:900; }
+
+.checks{ display:flex; flex-wrap:wrap; gap:1rem .9rem; padding:.3rem 0; }
+
+.fld{ display:block; }
+.fld input{
+  width:100%; padding:.8rem .9rem; border-radius:12px; outline:none;
+  border:1.5px solid #f2d8be; background:#fff7ee; transition:border-color .2s ease, box-shadow .2s ease;
+}
+.fld input:focus{ border-color:#ff8a3a; box-shadow: 0 0 0 6px rgba(255,138,58,.15); background:white; }
+
+button{
+  appearance:none; border:none; border-radius:12px; padding:.7rem 1rem; font-weight:800; cursor:pointer;
+  background:linear-gradient(90deg, var(--app-c1), var(--app-c2), var(--app-c3));
+  color:white;
+  box-shadow: 0 10px 24px rgba(255,107,58,.28);
+  transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;
+  font-family:inherit;
+}
+button:hover{ transform: translateY(-1px); filter:saturate(1.1); box-shadow: 0 14px 28px rgba(255,107,58,.35); }
+button.ghost{ background:#fff5e6; color:#3a1d11; box-shadow:none; border:1px solid #f2d8be; }
+button.ghost:hover{ background:white; }
+
+/* ---------- ADD-MORE: + toggle, panel, save chips ---------- */
+.add-area{
+  display:flex; flex-direction:column; gap:.8rem;
+  margin-top:auto;             /* push to bottom — keeps section heights uniform */
+  padding-top:1.2rem;
+  align-items:center;          /* center the + and chips */
+  text-align:center;
+}
+.saved-chips{ justify-content:center; }
+.saved-chips{
+  display:flex; flex-wrap:wrap; gap:.5rem;
+  width:100%;
+}
+.saved-chips:empty{ display:none; }
+.saved-chip{
+  display:inline-flex; align-items:center; gap:.4rem;
+  padding:.4rem .5rem .4rem .8rem;
+  background:linear-gradient(90deg, rgba(255,51,68,.10), rgba(255,138,58,.12), rgba(255,214,51,.14));
+  border:1px solid rgba(255,138,58,.35);
+  border-radius:999px;
+  font-weight:600; color:#3a1d11;
+  max-width:100%;
+  animation: chipPop .25s ease;
+}
+.saved-chip > span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:42ch; }
+.chip-x{
+  appearance:none; background:white; color:#475569;
+  border:1.5px solid #f2d8be; border-radius:50%;
+  width:1.5rem; height:1.5rem; padding:0;
+  display:inline-flex; align-items:center; justify-content:center;
+  font-size:.95rem; font-weight:700; line-height:1;
+  cursor:pointer; box-shadow:none;
+  transition: background .15s ease, color .15s ease, transform .15s ease;
+}
+.chip-x:hover{ background:#fee2e2; color:#b91c1c; border-color:#fecaca; transform:scale(1.08); box-shadow:none; }
+
+@keyframes chipPop {
+  from { opacity:0; transform:translateY(-3px) scale(.96); }
+  to   { opacity:1; transform:translateY(0)    scale(1);   }
+}
+
+/* + button sits on the bottom border of the section, centered, half above / half below */
+.add-toggle{
+  position:absolute;
+  bottom:0; left:50%;
+  transform: translate(-50%, 50%);
+  z-index:5;
+  appearance:none; border:none; cursor:pointer;
+  width:3rem; height:3rem; padding:0;
+  border-radius:50%;
+  background:linear-gradient(135deg, var(--app-c1), var(--app-c2), var(--app-c3));
+  color:white;
+  font-size:1.6rem; font-weight:800; line-height:1;
+  display:inline-flex; align-items:center; justify-content:center;
+  box-shadow:
+    0 0 0 4px #ffffff,
+    0 0 0 5px rgba(255,138,58,.45),
+    0 10px 24px rgba(255,107,58,.28);
+  transition: transform .15s ease, box-shadow .2s ease, filter .2s ease, background .25s ease;
+}
+.add-toggle:hover{ transform: translate(-50%, calc(50% - 1px)) scale(1.04); filter:saturate(1.1); }
+.add-toggle:active{ transform: translate(-50%, 50%) scale(.92); box-shadow:
+    0 0 0 4px #ffffff,
+    0 0 0 5px rgba(255,138,58,.6),
+    0 4px 10px rgba(255,107,58,.4); }
+.add-toggle.is-open{
+  background:linear-gradient(135deg, #ef4444, #f59e0b);
+  transform: translate(-50%, 50%) rotate(45deg);
+}
+.add-toggle.is-open:active{ transform: translate(-50%, 50%) rotate(45deg) scale(.92); }
+
+/* the section needs to be positioning context for the absolute + */
+.card.section.step-pane{ position:relative; }
+
+.add-panel{
+  width:100%;
+  display:flex; flex-wrap:wrap; gap:.6rem; align-items:center;
+  padding:.8rem;
+  background:#fff7ee;
+  border:1px dashed #f5c79a;
+  border-radius:14px;
+  animation: panelDrop .22s ease;
+}
+.add-panel[hidden]{ display:none; }
+@keyframes panelDrop {
+  from { opacity:0; transform:translateY(-4px); }
+  to   { opacity:1; transform:translateY(0);    }
+}
+
+.input-with-icons{
+  position:relative; flex:1 1 280px; min-width:240px;
+  display:flex; align-items:center;
+}
+.input-with-icons input.add-text{
+  width:100%;
+  padding:.7rem 5.4rem .7rem 1rem;
+  border-radius:999px;
+  border:1.5px solid #f2d8be;
+  background:white;
+  outline:none;
+  font-family:inherit; font-size:.95rem; color:#3a1d11;
+  transition:border-color .2s, box-shadow .2s;
+}
+.input-with-icons input.add-text:focus{
+  border-color:#ff8a3a;
+  box-shadow:0 0 0 6px rgba(255,138,58,.15);
+}
+.icon-btn{
+  position:absolute; top:50%; transform:translateY(-50%);
+  width:2.1rem; height:2.1rem; padding:0;
+  border-radius:50%;
+  display:inline-flex; align-items:center; justify-content:center;
+  background:#fff5e6; color:#c2410c;
+  border:1px solid #f2d8be;
+  cursor:pointer;
+  box-shadow:none;
+  font-size:.85rem; font-weight:500;
+  transition: background .15s, color .15s, transform .15s;
+}
+.icon-btn:hover{ background:var(--app-accent); color:white; border-color:transparent; transform:translateY(-50%) scale(1.05); box-shadow:none; }
+.icon-btn.mic{ right:.5rem; }
+.icon-btn.upload{ right:3rem; }
+.icon-btn.mic.recording{
+  background:#ef4444; color:white; border-color:#ef4444;
+  animation: micPulse 1.1s ease-in-out infinite;
+}
+@keyframes micPulse {
+  0%,100%{ box-shadow:0 0 0 0 rgba(239,68,68,.35); }
+  50%    { box-shadow:0 0 0 6px rgba(239,68,68,.05); }
+}
+.icon-btn input[type="file"]{ display:none; }
+
+.add-save{
+  padding:.6rem 1rem;
+  font-size:.9rem;
+  border-radius:999px;
+}
+
+/* ---------- RESUME / MY OFFER ---------- */
+.phrase{ margin-top:1rem; }
+.phrase .sentence{ line-height:1.7; }
+.action-grid{
+  margin-top:1.2rem;
+  display:flex; flex-direction:column; gap:.55rem;
+}
+.action-row{
+  display:flex; flex-wrap:wrap; gap:.55rem;
+}
+.action-row.right{ justify-content:flex-end; }
+.btn{
+  appearance:none; border:1px solid #f2d8be;
+  background:#fff7ee; color:#3a1d11;
+  padding:.6rem 1rem; font-weight:700; font-size:.92rem;
+  border-radius:999px;
+  cursor:pointer;
+  box-shadow:none;
+  display:inline-flex; align-items:center; gap:.45rem;
+  transition: background .15s, transform .15s, box-shadow .15s, border-color .15s, color .15s;
+  font-family:inherit;
+}
+.btn:hover{ background:white; transform:translateY(-1px); box-shadow:0 6px 14px rgba(120,60,20,.08); border-color:#ff8a3a; }
+.btn.solid{
+  background:linear-gradient(90deg, var(--app-c1), var(--app-c2), var(--app-c3));
+  color:white; border-color:transparent;
+  box-shadow:0 10px 24px rgba(255,107,58,.28);
+}
+.btn.solid:hover{ filter:saturate(1.1); box-shadow:0 14px 28px rgba(255,107,58,.35); }
+.btn.ghost{ background:transparent; }
+
+.toast{
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+  background:#3a1d11; color:white; padding:.7rem 1.1rem;
+  border-radius:999px; font-weight:600;
+  opacity:0; pointer-events:none;
+  transition: opacity .2s ease, transform .2s ease;
+  z-index:200;
+}
+.toast.show{ opacity:1; transform:translateX(-50%) translateY(-4px); }
+
+/* ============================================================
+   STEP-BY-STEP (CSS-only radio stepper, realy.html pattern)
+   ============================================================ */
+.step-radio{ position:absolute; opacity:0; pointer-events:none; width:0; height:0; }
+
+.step-pane{ display:none !important; }
+#step-0:checked ~ * .step-pane[data-step="0"],
+#step-1:checked ~ * .step-pane[data-step="1"],
+#step-2:checked ~ * .step-pane[data-step="2"],
+#step-3:checked ~ * .step-pane[data-step="3"],
+#step-4:checked ~ * .step-pane[data-step="4"],
+#step-5:checked ~ * .step-pane[data-step="5"],
+#step-6:checked ~ * .step-pane[data-step="6"]{
+  display:block !important;
+  animation: stepEnter .35s ease both;
+}
+@keyframes stepEnter {
+  from { opacity:0; transform:translateY(14px); filter:blur(4px); }
+  to   { opacity:1; transform:translateY(0);    filter:blur(0);   }
+}
+
+/* "All" override: show every pane simultaneously */
+body.show-all .step-pane{ display:block !important; animation:none; margin-bottom:4.5rem; }
+body.show-all .step-pane:last-of-type{ margin-bottom:0; }
+body.show-all .progress-nav{ display:none !important; }
+
+/* ← → arrows live INSIDE the progress-nav, above the step bar */
+.arrow-row{
+  display:flex; align-items:center; justify-content:center;
+  gap:24px;
+  margin-bottom:.8rem;
+}
+.arrow-row .arrow-slot{
+  position:relative;
+  display:inline-flex;
+  width:44px; height:44px;
+}
+.arrow-row .step-btn{ position:absolute; inset:0; display:none; }
+
+/* show only the prev / next that matches the current step */
+#step-1:checked ~ * .step-prev[for="step-0"],
+#step-2:checked ~ * .step-prev[for="step-1"],
+#step-3:checked ~ * .step-prev[for="step-2"],
+#step-4:checked ~ * .step-prev[for="step-3"],
+#step-5:checked ~ * .step-prev[for="step-4"],
+#step-6:checked ~ * .step-prev[for="step-5"]{ display:inline-flex; }
+
+#step-0:checked ~ * .step-next[for="step-1"],
+#step-1:checked ~ * .step-next[for="step-2"],
+#step-2:checked ~ * .step-next[for="step-3"],
+#step-3:checked ~ * .step-next[for="step-4"],
+#step-4:checked ~ * .step-next[for="step-5"],
+#step-5:checked ~ * .step-next[for="step-6"]{ display:inline-flex; }
+.step-btn{
+  appearance:none;
+  width:44px; height:44px;
+  border-radius:50%;
+  border:1.5px solid rgba(255,138,58,.45);
+  background:rgba(255,255,255,.7);
+  color:#3a1d11;
+  font:inherit; font-size:1.25rem; font-weight:800;
+  cursor:pointer;
+  display:inline-flex; align-items:center; justify-content:center;
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+  box-shadow:0 4px 14px rgba(255,107,58,.18);
+  transition:background .15s, border-color .15s, transform .15s, box-shadow .15s, opacity .2s;
+}
+.step-btn:hover{
+  background:white; border-color:var(--app-accent);
+  transform:translateY(-1px);
+  box-shadow:0 8px 22px rgba(255,107,58,.3);
+}
+.step-btn:focus-visible{ outline:2px solid var(--app-accent); outline-offset:3px; }
+
+/* Progress bar stays at bottom of main; arrows row sits above it */
+.progress-nav{
+  display:flex; flex-direction:column; align-items:center;
+  margin:1.4rem auto 1.6rem;
+  padding:.5rem;
+  max-width:780px;
+}
+
+/* Progress bar with clickable nodes — full width of progress-nav (was being shrunk to content) */
+.step-progress-bar{
+  position:relative;
+  width:100%;
+  max-width:560px;
+  display:flex; align-items:flex-start; justify-content:space-between;
+  padding:30px 0 6px;            /* room for nodes scaled up to 3× */
+}
+.step-progress-bar::before,
+.step-progress-bar::after{
+  content:''; position:absolute; top:38px; height:2px; pointer-events:none;
+}
+.step-progress-bar::before{
+  left:8px; right:8px;
+  background:rgba(58,29,17,.15);
+}
+.step-progress-bar::after{
+  left:8px;
+  width:calc((100% - 16px) * var(--progress, 0) / 100);
+  background:linear-gradient(90deg, var(--app-c1), var(--app-c2), var(--app-c3));
+  transition:width .35s ease;
+  box-shadow:0 0 12px rgba(255,138,58,.4);
+}
+.step-item{
+  position:relative; z-index:1;
+  flex:0 0 auto;
+  display:flex; flex-direction:column; align-items:center; gap:30px;     /* node ↔ label spacing for scale(3) */
+  background:transparent; border:0; padding:0;
+  cursor:pointer; font:inherit; color:inherit;
+}
+
+/* (flames removed) */
+.step-node{
+  width:22px; height:22px; border-radius:50%;
+  /* idle: faint cream wash, no hard edge */
+  background:
+    radial-gradient(circle at 35% 35%, rgba(255,238,200,.45) 0%, rgba(255,238,200,0) 65%),
+    radial-gradient(circle at 65% 70%, rgba(209,164,122,.30) 0%, rgba(209,164,122,0) 70%);
+  border:0;
+  transition: background .35s ease, transform .25s var(--flove-ease, cubic-bezier(.2,.8,.2,1));
+  transform-origin:center;
+}
+.step-item:hover .step-node{ transform:scale(1.18); }
+
+/* 2× when the section that this node points to has any selection — only the gradient grows, no rings */
+.step-item.has-selection .step-node{ transform:scale(2); }
+
+/* 3× when this node is the current step (ID specificity wins over .has-selection) */
+#step-0:checked ~ * .step-item:nth-child(1) .step-node,
+#step-1:checked ~ * .step-item:nth-child(2) .step-node,
+#step-2:checked ~ * .step-item:nth-child(3) .step-node,
+#step-3:checked ~ * .step-item:nth-child(4) .step-node,
+#step-4:checked ~ * .step-item:nth-child(5) .step-node,
+#step-5:checked ~ * .step-item:nth-child(6) .step-node,
+#step-6:checked ~ * .step-item:nth-child(7) .step-node{
+  transform:scale(3);
+}
+
+/* 3× every node when all sections have selections */
+body.all-selected .step-item .step-node{ transform:scale(3); }
+.step-label{
+  font-size:.72rem; font-weight:900;
+  color:#fff;                              /* white fill */
+  -webkit-text-stroke:1px #fff;            /* white outline (no black) */
+  paint-order:stroke fill;
+  letter-spacing:.04em; text-transform:uppercase;
+  white-space:nowrap;
+  transition: font-size .25s ease, color .25s ease;
+}
+/* Active step (node clicked): solid white fill with the same thin black border */
+#step-0:checked ~ * .step-item:nth-child(1) .step-label,
+#step-1:checked ~ * .step-item:nth-child(2) .step-label,
+#step-2:checked ~ * .step-item:nth-child(3) .step-label,
+#step-3:checked ~ * .step-item:nth-child(4) .step-label,
+#step-4:checked ~ * .step-item:nth-child(5) .step-label,
+#step-5:checked ~ * .step-item:nth-child(6) .step-label,
+#step-6:checked ~ * .step-item:nth-child(7) .step-label{
+  color:#fff;
+}
+.step-label .full{ display:none; }
+.step-label .short{ display:inline; }
+/* On the current step, swap to full label, larger + bolder */
+#step-0:checked ~ * .step-item:nth-child(1) .step-label .full,
+#step-1:checked ~ * .step-item:nth-child(2) .step-label .full,
+#step-2:checked ~ * .step-item:nth-child(3) .step-label .full,
+#step-3:checked ~ * .step-item:nth-child(4) .step-label .full,
+#step-4:checked ~ * .step-item:nth-child(5) .step-label .full,
+#step-5:checked ~ * .step-item:nth-child(6) .step-label .full,
+#step-6:checked ~ * .step-item:nth-child(7) .step-label .full{ display:inline; }
+
+#step-0:checked ~ * .step-item:nth-child(1) .step-label .short,
+#step-1:checked ~ * .step-item:nth-child(2) .step-label .short,
+#step-2:checked ~ * .step-item:nth-child(3) .step-label .short,
+#step-3:checked ~ * .step-item:nth-child(4) .step-label .short,
+#step-4:checked ~ * .step-item:nth-child(5) .step-label .short,
+#step-5:checked ~ * .step-item:nth-child(6) .step-label .short,
+#step-6:checked ~ * .step-item:nth-child(7) .step-label .short{ display:none; }
+
+#step-0:checked ~ * .step-item:nth-child(1) .step-label,
+#step-1:checked ~ * .step-item:nth-child(2) .step-label,
+#step-2:checked ~ * .step-item:nth-child(3) .step-label,
+#step-3:checked ~ * .step-item:nth-child(4) .step-label,
+#step-4:checked ~ * .step-item:nth-child(5) .step-label,
+#step-5:checked ~ * .step-item:nth-child(6) .step-label,
+#step-6:checked ~ * .step-item:nth-child(7) .step-label{
+  font-size:1.05rem;
+  font-weight:900;
+  opacity:1;
+}
+
+/* highlight current + completed nodes — many small radial blobs of mixed colours, fading to transparent (tie-dye look, no lines) */
+#step-0:checked ~ * .step-item:nth-child(1) .step-node,
+#step-1:checked ~ * .step-item:nth-child(-n+2) .step-node,
+#step-2:checked ~ * .step-item:nth-child(-n+3) .step-node,
+#step-3:checked ~ * .step-item:nth-child(-n+4) .step-node,
+#step-4:checked ~ * .step-item:nth-child(-n+5) .step-node,
+#step-5:checked ~ * .step-item:nth-child(-n+6) .step-node,
+#step-6:checked ~ * .step-item:nth-child(-n+7) .step-node{
+  background:
+    radial-gradient(circle at 28% 30%, rgba(255,247,216,.95) 0%, rgba(255,247,216,0) 55%),
+    radial-gradient(circle at 70% 25%, rgba(255,214,51,.95)  0%, rgba(255,214,51,0)  60%),
+    radial-gradient(circle at 75% 70%, rgba(255,138,58,.95)  0%, rgba(255,138,58,0)  62%),
+    radial-gradient(circle at 30% 75%, rgba(255,51,68,.95)   0%, rgba(255,51,68,0)   62%),
+    radial-gradient(circle at 50% 50%, rgba(255,180,80,.7)   0%, rgba(255,180,80,0)  70%);
+  background-blend-mode: screen, screen, screen, screen, normal;
+}
+#step-0:checked ~ * .step-item:nth-child(1) .step-label,
+#step-1:checked ~ * .step-item:nth-child(2) .step-label,
+#step-2:checked ~ * .step-item:nth-child(3) .step-label,
+#step-3:checked ~ * .step-item:nth-child(4) .step-label,
+#step-4:checked ~ * .step-item:nth-child(5) .step-label,
+#step-5:checked ~ * .step-item:nth-child(6) .step-label,
+#step-6:checked ~ * .step-item:nth-child(7) .step-label{ opacity:1; color:#fff; }
+
+/* progress fill widths */
+#step-0:checked ~ * .step-progress-bar{ --progress: 0;  }
+#step-1:checked ~ * .step-progress-bar{ --progress: 17; }
+#step-2:checked ~ * .step-progress-bar{ --progress: 33; }
+#step-3:checked ~ * .step-progress-bar{ --progress: 50; }
+#step-4:checked ~ * .step-progress-bar{ --progress: 67; }
+#step-5:checked ~ * .step-progress-bar{ --progress: 83; }
+#step-6:checked ~ * .step-progress-bar{ --progress: 100;}
+
+/* ── visually-hidden utility (accessible labels with no visual footprint) ── */
+.visually-hidden{
+  position:absolute !important;
+  width:1px; height:1px;
+  padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%);
+  white-space:nowrap; border:0;
+}
+
+/* ── translaty i18n engine (CSS-only span toggle) — en (base) + es ── */
+.es{display:none}                                  /* default view = .en */
+body:has(#lang-es:checked) .en{display:none}
+body:has(#lang-es:checked) .es{display:inline}
+
+/* ── worldball switcher (🌐 opens the language options) ── */
+.lang{display:inline-block;position:relative;margin:0}
+.lang>summary{list-style:none;cursor:pointer;width:2em;height:2em;border:1.5px solid rgba(58,29,17,.25);border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;font-size:.7em;line-height:1;-webkit-user-select:none;user-select:none;color:#3a1d11;
+  transition:background .2s, border-color .2s}
+.lang>summary::-webkit-details-marker{display:none}
+.lang>summary:hover{background:rgba(255,107,58,.12);border-color:var(--app-accent)}
+.lang[open]>summary{border-color:var(--app-accent);background:rgba(255,107,58,.18)}
+.lang-opts{position:absolute;right:0;z-index:130;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;
+  background:rgba(255,255,255,.85);backdrop-filter:blur(12px) saturate(140%);-webkit-backdrop-filter:blur(12px) saturate(140%);
+  border:1px solid rgba(58,29,17,.12);border-radius:12px;padding:6px;box-shadow:0 18px 40px -12px rgba(120,60,20,.28)}
+.lang input{position:absolute;opacity:0;pointer-events:none}
+.lang label{cursor:pointer;padding:0 12px;min-height:40px;display:inline-flex;align-items:center;border:1px solid rgba(58,29,17,.2);border-radius:11px;white-space:nowrap;color:#3a1d11;font-weight:600;font-size:.85rem}
+.lang input:checked + label{background:var(--app-accent);color:#fff;font-weight:bold;border-color:var(--app-accent)}
+</style>
+</head>
+<body data-selections="0" data-intensity="0">
+
+<!-- ============== SUNSET SCENE BACKDROP ============== -->
+<div class="scene" aria-hidden="true">
+  <div class="sky"></div>
+
+  <!-- 3 hill layers (parallax-style wind sway) -->
+  <svg class="hills hills--back" preserveAspectRatio="none" viewBox="0 0 1000 200">
+    <path d="M0 110 Q 140 60 280 90 T 540 80 T 820 70 T 1000 80 V200 H0Z"/>
+  </svg>
+  <svg class="hills hills--mid" preserveAspectRatio="none" viewBox="0 0 1000 200">
+    <path d="M0 130 Q 110 100 250 120 T 480 130 T 740 110 T 1000 125 V200 H0Z"/>
+  </svg>
+  <svg class="hills hills--front" preserveAspectRatio="none" viewBox="0 0 1000 200">
+    <path d="M0 160 Q 90 130 220 150 T 450 170 T 720 150 T 1000 162 V200 H0Z"/>
+  </svg>
+
+  <!-- wind-bent grass strip -->
+  <div class="grass-band">
+    <span class="grass-blade"></span><span class="grass-blade"></span><span class="grass-blade"></span>
+    <span class="grass-blade"></span><span class="grass-blade"></span><span class="grass-blade"></span>
+    <span class="grass-blade"></span><span class="grass-blade"></span><span class="grass-blade"></span>
+    <span class="grass-blade"></span><span class="grass-blade"></span><span class="grass-blade"></span>
+    <span class="grass-blade"></span><span class="grass-blade"></span><span class="grass-blade"></span>
+    <span class="grass-blade"></span><span class="grass-blade"></span><span class="grass-blade"></span>
+    <span class="grass-blade"></span><span class="grass-blade"></span>
+  </div>
+
+  <!-- 10 progressive addon sets — birds & animals (sides emphasised) -->
+  <span class="addon addon-1"  aria-hidden="true">🦅</span>
+  <span class="addon addon-2"  aria-hidden="true">🐇</span>
+  <span class="addon addon-3"  aria-hidden="true">🐦</span>
+  <span class="addon addon-4"  aria-hidden="true">🦌</span>
+  <span class="addon addon-5"  aria-hidden="true">🦋</span>
+  <span class="addon addon-6"  aria-hidden="true">🕊️🕊️🕊️</span>
+  <span class="addon addon-7"  aria-hidden="true">🦊</span>
+  <span class="addon addon-8"  aria-hidden="true">🐓</span>
+  <span class="addon addon-9"  aria-hidden="true">🐑</span>
+  <span class="addon addon-10" aria-hidden="true">🐺</span>
+</div>
+
+<!-- Step state (radio-driven CSS-only stepper) -->
+<input type="radio" name="step" id="step-0" class="step-radio" checked>
+<input type="radio" name="step" id="step-1" class="step-radio">
+<input type="radio" name="step" id="step-2" class="step-radio">
+<input type="radio" name="step" id="step-3" class="step-radio">
+<input type="radio" name="step" id="step-4" class="step-radio">
+<input type="radio" name="step" id="step-5" class="step-radio">
+<input type="radio" name="step" id="step-6" class="step-radio">
+
+<header class="flove-bar">
+  <button type="button" class="flove-mark-link" id="floveMarkBtn" aria-haspopup="true" aria-expanded="false" aria-controls="topmenu" aria-label="Open menu" data-aria-en="Open menu" data-aria-es="Abrir menú">
+    <!-- Custom parenting glyph (from the flove logo set): 5 dots + cross -->
+    <svg class="flove-mark" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="#ff6b3a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="8.6" r="2"/><path d="M3.8 19.5 a3.2 3.8 0 0 1 6.4 0"/><circle cx="17" cy="8.6" r="2"/><path d="M13.8 19.5 a3.2 3.8 0 0 1 6.4 0"/><circle cx="12" cy="13" r="1.6"/><path d="M9.6 20 a2.4 2.8 0 0 1 4.8 0"/></svg>
+  </button>
+  <button type="button" class="flove-app-name app-name-toggle" id="aboutBtn" aria-haspopup="true" aria-expanded="false" aria-controls="topmenu">Parenty</button>
+  <span class="flove-spacer"></span>
+  <button type="button" class="all-btn" id="allBtn" aria-pressed="false" title="Show all sections at once" data-aria-en="Show all sections at once" data-aria-es="Mostrar todas las secciones a la vez"><span class="en" lang="en">All</span><span class="es" lang="es">Todas</span></button>
+</header>
+
+<section class="app-info-panel" id="appInfoPanel" hidden aria-labelledby="aboutBtn">
+  <div class="app-info__text">
+    <h2><span class="en" lang="en">What is Parenty?</span><span class="es" lang="es">¿Qué es Parenty?</span></h2>
+    <p><span class="en" lang="en">Parenty is flove's space for <em>crowdparenting</em> — a calm form to put words on how you'd raise a child together: closeness, approach, emotion, growth and the everyday. Fill it at your pace; the summary builds itself as you choose, and you share it only when you want to.</span><span class="es" lang="es">Parenty es el espacio de flove para la <em>crianza colectiva</em>: un formulario tranquilo para poner palabras a cómo criaríais juntas: cercanía, enfoque, emoción, crecimiento y lo cotidiano. Rellénalo a tu ritmo; el resumen se construye solo a medida que eliges, y lo compartes solo cuando quieres.</span></p>
+    <p><span class="en" lang="en">Slow it · flow it · love it.</span><span class="es" lang="es">Despacito · que fluya · con amor.</span></p>
+  </div>
+  <video class="app-info__video" controls preload="metadata">
+    <!-- TODO: add source <source src="parenty.mp4" type="video/mp4"> -->
+    <span class="en" lang="en">Your browser does not support the video tag.</span><span class="es" lang="es">Tu navegador no admite la etiqueta de vídeo.</span>
+  </video>
+  <button type="button" class="app-info__close" id="appInfoCloseBtn"><span class="en" lang="en">✕ Close</span><span class="es" lang="es">✕ Cerrar</span></button>
+</section>
+
+<div class="topmenu" id="topmenu" hidden role="menu" aria-labelledby="aboutBtn">
+  <button type="button" class="topmenu__item" data-act="info"    role="menuitem">ⓘ <span class="en" lang="en">What is Parenty?</span><span class="es" lang="es">¿Qué es Parenty?</span></button>
+  <div class="topmenu__sep" role="separator"></div>
+  <button type="button" class="topmenu__item" data-act="reset"   role="menuitem">⟲ <span class="en" lang="en">Reset all</span><span class="es" lang="es">Reiniciar todo</span></button>
+  <button type="button" class="topmenu__item" data-act="export"  role="menuitem">📦 <span class="en" lang="en">Export JSON</span><span class="es" lang="es">Exportar JSON</span></button>
+  <button type="button" class="topmenu__item" data-act="md"      role="menuitem">📝 <span class="en" lang="en">Export Markdown</span><span class="es" lang="es">Exportar Markdown</span></button>
+  <button type="button" class="topmenu__item" data-act="xml"     role="menuitem">🔖 <span class="en" lang="en">Export XML</span><span class="es" lang="es">Exportar XML</span></button>
+  <button type="button" class="topmenu__item" data-act="csv"     role="menuitem">📊 <span class="en" lang="en">Export CSV</span><span class="es" lang="es">Exportar CSV</span></button>
+  <button type="button" class="topmenu__item" data-act="html"    role="menuitem">🌐 <span class="en" lang="en">Export HTML</span><span class="es" lang="es">Exportar HTML</span></button>
+  <button type="button" class="topmenu__item" data-act="jpg"     role="menuitem">🖼 <span class="en" lang="en">Export JPG</span><span class="es" lang="es">Exportar JPG</span></button>
+  <button type="button" class="topmenu__item" data-act="import"  role="menuitem">📥 <span class="en" lang="en">Import JSON</span><span class="es" lang="es">Importar JSON</span></button>
+  <div class="topmenu__sep" role="separator"></div>
+  <button type="button" class="topmenu__item" data-act="print"   role="menuitem">🖨 <span class="en" lang="en">Print</span><span class="es" lang="es">Imprimir</span></button>
+  <button type="button" class="topmenu__item" data-act="about"   role="menuitem">◐ <span class="en" lang="en">About</span><span class="es" lang="es">Acerca de</span></button>
+  <div class="topmenu__sep" role="separator"></div>
+  <a class="topmenu__item" href="../appy/appy-basic.html" role="menuitem">👤 <span class="en" lang="en">Profile</span><span class="es" lang="es">Perfil</span></a>
+  <a class="topmenu__item" href="https://flove.org" target="_blank" rel="noopener" role="menuitem">🌸 <span class="en" lang="en">flove.org</span><span class="es" lang="es">flove.org</span></a>
+  <div class="topmenu__sep" role="separator"></div>
+  <details class="lang">
+    <summary class="worldball" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐</summary>
+    <div class="lang-opts">
+      <input type="radio" name="lang" id="lang-en" checked><label for="lang-en">English</label>
+      <input type="radio" name="lang" id="lang-es"><label for="lang-es">Español</label>
+    </div>
+  </details>
+</div>
+<input type="file" id="importFile" accept="application/json" hidden>
+
+<main class="layout">
+  <form id="crowdForm" class="form-area" autocomplete="on">
+    <button type="submit" class="visually-hidden" tabindex="-1"><span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></button>
+
+    <!-- ===== STEP 0 · PARENTS ===== -->
+    <section class="card section step-pane" data-step="0">
+      <h2><span class="pill"><span class="en" lang="en">Parents</span><span class="es" lang="es">Padres</span></span></h2>
+      <div class="groups">
+
+      <fieldset class="group">
+        <legend><span class="en" lang="en">Closeness</span><span class="es" lang="es">Cercanía</span></legend>
+        <div class="scale">
+          <label><input type="radio" name="closeness" value="Couple"><span class="en" lang="en">Couple</span><span class="es" lang="es">Pareja</span></label>
+          <label><input type="radio" name="closeness" value="Friend"><span class="en" lang="en">Friend</span><span class="es" lang="es">Amistad</span></label>
+          <label><input type="radio" name="closeness" value="Companion"><span class="en" lang="en">Companion</span><span class="es" lang="es">Compañía</span></label>
+          <label><input type="radio" name="closeness" value="Polite"><span class="en" lang="en">Polite</span><span class="es" lang="es">Cortés</span></label>
+          <label><input type="radio" name="closeness" value="Cold"><span class="en" lang="en">Cold</span><span class="es" lang="es">Distante</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend><span class="en" lang="en">Approach</span><span class="es" lang="es">Enfoque</span></legend>
+        <div class="scale">
+          <label><input type="radio" name="openness" value="Strict"><span class="en" lang="en">Strict</span><span class="es" lang="es">Estricto</span></label>
+          <label><input type="radio" name="openness" value="Propositive"><span class="en" lang="en">Propositive</span><span class="es" lang="es">Propositivo</span></label>
+          <label><input type="radio" name="openness" value="Normal"><span class="en" lang="en">Normal</span><span class="es" lang="es">Normal</span></label>
+          <label><input type="radio" name="openness" value="Open"><span class="en" lang="en">Open</span><span class="es" lang="es">Abierto</span></label>
+          <label><input type="radio" name="openness" value="Free"><span class="en" lang="en">Free</span><span class="es" lang="es">Libre</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend><span class="en" lang="en">Emotion</span><span class="es" lang="es">Emoción</span></legend>
+        <div class="scale">
+          <label><input type="radio" name="emotion" value="Love"><span class="en" lang="en">Love</span><span class="es" lang="es">Amor</span></label>
+          <label><input type="radio" name="emotion" value="Cute"><span class="en" lang="en">Cute</span><span class="es" lang="es">Ternura</span></label>
+          <label><input type="radio" name="emotion" value="Care"><span class="en" lang="en">Care</span><span class="es" lang="es">Cuidado</span></label>
+          <label><input type="radio" name="emotion" value="Collabore"><span class="en" lang="en">Collabore</span><span class="es" lang="es">Colaboración</span></label>
+          <label><input type="radio" name="emotion" value="Help"><span class="en" lang="en">Help</span><span class="es" lang="es">Ayuda</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend><span class="en" lang="en">Intensity</span><span class="es" lang="es">Intensidad</span></legend>
+        <div class="scale">
+          <label><input type="radio" name="intensity" value="Very much"><span class="en" lang="en">Very much</span><span class="es" lang="es">Muchísimo</span></label>
+          <label><input type="radio" name="intensity" value="Much"><span class="en" lang="en">Much</span><span class="es" lang="es">Mucho</span></label>
+          <label><input type="radio" name="intensity" value="Some"><span class="en" lang="en">Some</span><span class="es" lang="es">Algo</span></label>
+          <label><input type="radio" name="intensity" value="Little"><span class="en" lang="en">Little</span><span class="es" lang="es">Poco</span></label>
+          <label><input type="radio" name="intensity" value="None"><span class="en" lang="en">None</span><span class="es" lang="es">Nada</span></label>
+        </div>
+      </fieldset>
+
+      </div><!-- /.groups -->
+
+      <div class="add-area">
+        <div class="saved-chips" aria-live="polite"></div>
+        <button type="button" class="add-toggle" aria-expanded="false" aria-label="Add note" data-aria-en="Add note" data-aria-es="Añadir nota">+</button>
+        <div class="add-panel" hidden>
+          <div class="input-with-icons">
+            <input type="text" class="add-text" placeholder="Add more details…" aria-label="Add more details" data-aria-en="Add more details" data-aria-es="Añadir más detalles" data-ph-en="Add more details…" data-ph-es="Añade más detalles…">
+            <label class="icon-btn upload" title="Attach file" aria-label="Attach file" data-aria-en="Attach file" data-aria-es="Adjuntar archivo">
+              <i class="fas fa-paperclip" aria-hidden="true"></i>
+              <input type="file" aria-label="Attach file" data-aria-en="Attach file" data-aria-es="Adjuntar archivo">
+            </label>
+            <button type="button" class="icon-btn mic" title="Record voice" aria-label="Record voice" data-aria-en="Record voice" data-aria-es="Grabar voz"><i class="fas fa-microphone" aria-hidden="true"></i></button>
+          </div>
+          <button type="button" class="add-save"><span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STEP 1 · ENVIRONMENT ===== -->
+    <section class="card section step-pane" data-step="1">
+      <h2><span class="pill"><span class="en" lang="en">Environment</span><span class="es" lang="es">Entorno</span></span></h2>
+      <div class="groups">
+        <fieldset class="group">
+          <legend><span class="en" lang="en">Coexistence with</span><span class="es" lang="es">Convivencia con</span></legend>
+          <div class="checks">
+            <label class="chk"><input type="checkbox" name="coexistence" value="adults"><span><span class="en" lang="en">Adults</span><span class="es" lang="es">Adultos</span></span></label>
+            <label class="chk"><input type="checkbox" name="coexistence" value="close adults"><span><span class="en" lang="en">Close adults</span><span class="es" lang="es">Adultos cercanos</span></span></label>
+            <label class="chk"><input type="checkbox" name="coexistence" value="more children"><span><span class="en" lang="en">More children</span><span class="es" lang="es">Más niños</span></span></label>
+            <label class="chk"><input type="checkbox" name="coexistence" value="siblings"><span><span class="en" lang="en">Siblings</span><span class="es" lang="es">Hermanos</span></span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="group">
+          <legend><span class="en" lang="en">Surroundings</span><span class="es" lang="es">Alrededores</span></legend>
+          <div class="checks">
+            <label class="chk"><input type="checkbox" name="surroundings" value="nature"><span><span class="en" lang="en">Nature</span><span class="es" lang="es">Naturaleza</span></span></label>
+            <label class="chk"><input type="checkbox" name="surroundings" value="deep nature"><span><span class="en" lang="en">Deep nature</span><span class="es" lang="es">Naturaleza profunda</span></span></label>
+            <label class="chk"><input type="checkbox" name="surroundings" value="urban"><span><span class="en" lang="en">Urban</span><span class="es" lang="es">Urbano</span></span></label>
+            <label class="chk"><input type="checkbox" name="surroundings" value="nomad"><span><span class="en" lang="en">Nomad</span><span class="es" lang="es">Nómada</span></span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="group">
+          <legend><span class="en" lang="en">Schooling</span><span class="es" lang="es">Escolarización</span></legend>
+          <div class="checks">
+            <label class="chk"><input type="checkbox" name="schooling" value="public school"><span><span class="en" lang="en">Public</span><span class="es" lang="es">Pública</span></span></label>
+            <label class="chk"><input type="checkbox" name="schooling" value="private school"><span><span class="en" lang="en">Private</span><span class="es" lang="es">Privada</span></span></label>
+            <label class="chk"><input type="checkbox" name="schooling" value="alternative schooling"><span><span class="en" lang="en">Alternative</span><span class="es" lang="es">Alternativa</span></span></label>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="add-area">
+        <div class="saved-chips" aria-live="polite"></div>
+        <button type="button" class="add-toggle" aria-expanded="false" aria-label="Add note" data-aria-en="Add note" data-aria-es="Añadir nota">+</button>
+        <div class="add-panel" hidden>
+          <div class="input-with-icons">
+            <input type="text" class="add-text" placeholder="Add more details…" aria-label="Add more details" data-aria-en="Add more details" data-aria-es="Añadir más detalles" data-ph-en="Add more details…" data-ph-es="Añade más detalles…">
+            <label class="icon-btn upload" title="Attach file" aria-label="Attach file" data-aria-en="Attach file" data-aria-es="Adjuntar archivo">
+              <i class="fas fa-paperclip" aria-hidden="true"></i>
+              <input type="file" aria-label="Attach file" data-aria-en="Attach file" data-aria-es="Adjuntar archivo">
+            </label>
+            <button type="button" class="icon-btn mic" title="Record voice" aria-label="Record voice" data-aria-en="Record voice" data-aria-es="Grabar voz"><i class="fas fa-microphone" aria-hidden="true"></i></button>
+          </div>
+          <button type="button" class="add-save"><span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STEP 2 · PARENTAL EDUCATION ===== -->
+    <section class="card section step-pane" data-step="2">
+      <h2><span class="pill"><span class="en" lang="en">Education</span><span class="es" lang="es">Educación</span></span></h2>
+      <div class="groups">
+        <fieldset class="group">
+          <legend><span class="en" lang="en">Mother(s) role</span><span class="es" lang="es">Rol de la(s) madre(s)</span></legend>
+          <div class="checks">
+            <label class="chk"><input type="checkbox" name="mother" value="very implicated"><span><span class="en" lang="en">Very implicated</span><span class="es" lang="es">Muy implicada</span></span></label>
+            <label class="chk"><input type="checkbox" name="mother" value="implicated"><span><span class="en" lang="en">Implicated</span><span class="es" lang="es">Implicada</span></span></label>
+            <label class="chk"><input type="checkbox" name="mother" value="companion"><span><span class="en" lang="en">Companion</span><span class="es" lang="es">Compañera</span></span></label>
+            <label class="chk"><input type="checkbox" name="mother" value="passive"><span><span class="en" lang="en">Passive</span><span class="es" lang="es">Pasiva</span></span></label>
+            <label class="chk"><input type="checkbox" name="mother" value="challenging"><span><span class="en" lang="en">Challenging</span><span class="es" lang="es">Exigente</span></span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="group">
+          <legend><span class="en" lang="en">Father(s) role</span><span class="es" lang="es">Rol del/de los padre(s)</span></legend>
+          <div class="checks">
+            <label class="chk"><input type="checkbox" name="father" value="very implicated"><span><span class="en" lang="en">Very implicated</span><span class="es" lang="es">Muy implicado</span></span></label>
+            <label class="chk"><input type="checkbox" name="father" value="implicated"><span><span class="en" lang="en">Implicated</span><span class="es" lang="es">Implicado</span></span></label>
+            <label class="chk"><input type="checkbox" name="father" value="companion"><span><span class="en" lang="en">Companion</span><span class="es" lang="es">Compañero</span></span></label>
+            <label class="chk"><input type="checkbox" name="father" value="passive"><span><span class="en" lang="en">Passive</span><span class="es" lang="es">Pasivo</span></span></label>
+            <label class="chk"><input type="checkbox" name="father" value="challenging"><span><span class="en" lang="en">Challenging</span><span class="es" lang="es">Exigente</span></span></label>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="add-area">
+        <div class="saved-chips" aria-live="polite"></div>
+        <button type="button" class="add-toggle" aria-expanded="false" aria-label="Add note" data-aria-en="Add note" data-aria-es="Añadir nota">+</button>
+        <div class="add-panel" hidden>
+          <div class="input-with-icons">
+            <input type="text" class="add-text" placeholder="Add more details…" aria-label="Add more details" data-aria-en="Add more details" data-aria-es="Añadir más detalles" data-ph-en="Add more details…" data-ph-es="Añade más detalles…">
+            <label class="icon-btn upload" title="Attach file" aria-label="Attach file" data-aria-en="Attach file" data-aria-es="Adjuntar archivo">
+              <i class="fas fa-paperclip" aria-hidden="true"></i>
+              <input type="file" aria-label="Attach file" data-aria-en="Attach file" data-aria-es="Adjuntar archivo">
+            </label>
+            <button type="button" class="icon-btn mic" title="Record voice" aria-label="Record voice" data-aria-en="Record voice" data-aria-es="Grabar voz"><i class="fas fa-microphone" aria-hidden="true"></i></button>
+          </div>
+          <button type="button" class="add-save"><span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STEP 3 · GROWING UP ===== -->
+    <section class="card section step-pane" data-step="3">
+      <h2><span class="pill"><span class="en" lang="en">Growth</span><span class="es" lang="es">Crecimiento</span></span></h2>
+      <div class="groups">
+        <fieldset class="group"><legend><span class="en" lang="en">Gestation</span><span class="es" lang="es">Gestación</span></legend>
+          <label class="fld"><span class="visually-hidden"><span class="en" lang="en">Gestation details</span><span class="es" lang="es">Detalles de la gestación</span></span><input type="text" name="gestation" placeholder="Add details…" data-ph-en="Add details…" data-ph-es="Añade detalles…"></label>
+        </fieldset>
+        <fieldset class="group"><legend><span class="en" lang="en">Lactation</span><span class="es" lang="es">Lactancia</span></legend>
+          <label class="fld"><span class="visually-hidden"><span class="en" lang="en">Lactation details</span><span class="es" lang="es">Detalles de la lactancia</span></span><input type="text" name="lactation" placeholder="Add details…" data-ph-en="Add details…" data-ph-es="Añade detalles…"></label>
+        </fieldset>
+        <fieldset class="group"><legend><span class="en" lang="en">Co-sleep</span><span class="es" lang="es">Colecho</span></legend>
+          <label class="fld"><span class="visually-hidden"><span class="en" lang="en">Co-sleep details</span><span class="es" lang="es">Detalles del colecho</span></span><input type="text" name="co-sleep" placeholder="Add details…" data-ph-en="Add details…" data-ph-es="Añade detalles…"></label>
+        </fieldset>
+        <fieldset class="group"><legend><span class="en" lang="en">Infancy</span><span class="es" lang="es">Infancia</span></legend>
+          <label class="fld"><span class="visually-hidden"><span class="en" lang="en">Infancy details</span><span class="es" lang="es">Detalles de la infancia</span></span><input type="text" name="infancy" placeholder="Add details…" data-ph-en="Add details…" data-ph-es="Añade detalles…"></label>
+        </fieldset>
+      </div>
+
+      <div class="add-area">
+        <div class="saved-chips" aria-live="polite"></div>
+        <button type="button" class="add-toggle" aria-expanded="false" aria-label="Add note" data-aria-en="Add note" data-aria-es="Añadir nota">+</button>
+        <div class="add-panel" hidden>
+          <div class="input-with-icons">
+            <input type="text" class="add-text" placeholder="Add more details…" aria-label="Add more details" data-aria-en="Add more details" data-aria-es="Añadir más detalles" data-ph-en="Add more details…" data-ph-es="Añade más detalles…">
+            <label class="icon-btn upload" title="Attach file" aria-label="Attach file" data-aria-en="Attach file" data-aria-es="Adjuntar archivo">
+              <i class="fas fa-paperclip" aria-hidden="true"></i>
+              <input type="file" aria-label="Attach file" data-aria-en="Attach file" data-aria-es="Adjuntar archivo">
+            </label>
+            <button type="button" class="icon-btn mic" title="Record voice" aria-label="Record voice" data-aria-en="Record voice" data-aria-es="Grabar voz"><i class="fas fa-microphone" aria-hidden="true"></i></button>
+          </div>
+          <button type="button" class="add-save"><span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STEP 4 · ECONOMY ===== -->
+    <section class="card section step-pane" data-step="4">
+      <h2><span class="pill"><span class="en" lang="en">Economy</span><span class="es" lang="es">Economía</span></span></h2>
+      <div class="groups">
+        <fieldset class="group">
+          <legend><span class="en" lang="en">Living style</span><span class="es" lang="es">Estilo de vida</span></legend>
+          <div class="checks">
+            <label class="chk"><input type="checkbox" name="living" value="simple"><span><span class="en" lang="en">Simple</span><span class="es" lang="es">Sencillo</span></span></label>
+            <label class="chk"><input type="checkbox" name="living" value="average"><span><span class="en" lang="en">Average</span><span class="es" lang="es">Medio</span></span></label>
+            <label class="chk"><input type="checkbox" name="living" value="gentle"><span><span class="en" lang="en">Gentle</span><span class="es" lang="es">Holgado</span></span></label>
+            <label class="chk"><input type="checkbox" name="living" value="rich"><span><span class="en" lang="en">Rich</span><span class="es" lang="es">Acomodado</span></span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="group">
+          <legend><span class="en" lang="en">Grants needed</span><span class="es" lang="es">Ayudas necesarias</span></legend>
+          <div class="checks">
+            <label class="chk"><input type="checkbox" name="grants" value="material"><span><span class="en" lang="en">Material</span><span class="es" lang="es">Material</span></span></label>
+            <label class="chk"><input type="checkbox" name="grants" value="time"><span><span class="en" lang="en">Time</span><span class="es" lang="es">Tiempo</span></span></label>
+            <label class="chk"><input type="checkbox" name="grants" value="money"><span><span class="en" lang="en">Money</span><span class="es" lang="es">Dinero</span></span></label>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="add-area">
+        <div class="saved-chips" aria-live="polite"></div>
+        <button type="button" class="add-toggle" aria-expanded="false" aria-label="Add note" data-aria-en="Add note" data-aria-es="Añadir nota">+</button>
+        <div class="add-panel" hidden>
+          <div class="input-with-icons">
+            <input type="text" class="add-text" placeholder="Add more details…" aria-label="Add more details" data-aria-en="Add more details" data-aria-es="Añadir más detalles" data-ph-en="Add more details…" data-ph-es="Añade más detalles…">
+            <label class="icon-btn upload" title="Attach file" aria-label="Attach file" data-aria-en="Attach file" data-aria-es="Adjuntar archivo">
+              <i class="fas fa-paperclip" aria-hidden="true"></i>
+              <input type="file" aria-label="Attach file" data-aria-en="Attach file" data-aria-es="Adjuntar archivo">
+            </label>
+            <button type="button" class="icon-btn mic" title="Record voice" aria-label="Record voice" data-aria-en="Record voice" data-aria-es="Grabar voz"><i class="fas fa-microphone" aria-hidden="true"></i></button>
+          </div>
+          <button type="button" class="add-save"><span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STEP 5 · OTHER CONSIDERATIONS ===== -->
+    <section class="card section step-pane" data-step="5">
+      <h2><span class="pill"><span class="en" lang="en">Others</span><span class="es" lang="es">Otros</span></span></h2>
+
+      <div class="add-area">
+        <div class="saved-chips" aria-live="polite"></div>
+        <button type="button" class="add-toggle" aria-expanded="false" aria-label="Add note" data-aria-en="Add note" data-aria-es="Añadir nota">+</button>
+        <div class="add-panel" hidden>
+          <div class="input-with-icons">
+            <input type="text" class="add-text" placeholder="Add more details…" aria-label="Add more details" data-aria-en="Add more details" data-aria-es="Añadir más detalles" data-ph-en="Add more details…" data-ph-es="Añade más detalles…">
+            <label class="icon-btn upload" title="Attach file" aria-label="Attach file" data-aria-en="Attach file" data-aria-es="Adjuntar archivo">
+              <i class="fas fa-paperclip" aria-hidden="true"></i>
+              <input type="file" aria-label="Attach file" data-aria-en="Attach file" data-aria-es="Adjuntar archivo">
+            </label>
+            <button type="button" class="icon-btn mic" title="Record voice" aria-label="Record voice" data-aria-en="Record voice" data-aria-es="Grabar voz"><i class="fas fa-microphone" aria-hidden="true"></i></button>
+          </div>
+          <button type="button" class="add-save"><span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STEP 6 · MY OFFER (RESUME) ===== -->
+    <section class="card section step-pane phrase" data-step="6">
+      <h2><span class="pill"><span class="en" lang="en">Offer</span><span class="es" lang="es">Oferta</span></span></h2>
+      <p class="sentence" id="sentence">
+        <span class="chunk who"><span class="en" lang="en">We keep a</span><span class="es" lang="es">Mantenemos una</span></span>
+        <span class="chunk close"> <em>‹closeness›</em> <span class="en" lang="en">closeness</span><span class="es" lang="es">cercanía</span></span>
+        <span class="chunk glue">,</span>
+        <span class="chunk open"> <span class="en" lang="en">with</span><span class="es" lang="es">con</span> <em>‹openness›</em> <span class="en" lang="en">openness</span><span class="es" lang="es">apertura</span></span>
+        <span class="chunk glue">;</span>
+        <span class="chunk feel"> <span class="en" lang="en">we feel</span><span class="es" lang="es">sentimos</span> <em>‹emotion›</em></span>
+        <span class="chunk inten"> <span class="en" lang="en">at</span><span class="es" lang="es">con</span> <em>‹intensity›</em> <span class="en" lang="en">intensity</span><span class="es" lang="es">intensidad</span></span>
+        <span class="chunk edu">.</span>
+      </p>
+
+      <div class="action-grid">
+        <div class="action-row">
+          <button type="button" class="btn" id="btnInsight"><i class="fas fa-lightbulb" aria-hidden="true"></i> <span class="en" lang="en">Insight</span><span class="es" lang="es">Resumen</span></button>
+          <button type="button" class="btn" id="btnCreative"><i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i> <span class="en" lang="en">Creative</span><span class="es" lang="es">Creativo</span></button>
+          <button type="button" class="btn" id="btnCopy"><i class="fas fa-copy" aria-hidden="true"></i> <span class="en" lang="en">Copy</span><span class="es" lang="es">Copiar</span></button>
+        </div>
+        <div class="action-row right">
+          <button type="button" class="btn ghost" id="btnSave"><i class="fas fa-floppy-disk" aria-hidden="true"></i> <span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></button>
+          <button type="button" class="btn" id="btnShare"><i class="fas fa-share-alt" aria-hidden="true"></i> <span class="en" lang="en">Share</span><span class="es" lang="es">Compartir</span></button>
+          <button type="button" class="btn solid" id="btnPublish"><i class="fas fa-paper-plane" aria-hidden="true"></i> <span class="en" lang="en">Publish</span><span class="es" lang="es">Publicar</span></button>
+        </div>
+      </div>
+    </section>
+
+  </form>
+
+  <!-- Step navigation: arrows ABOVE the progress bar -->
+  <nav class="progress-nav" aria-label="Step navigation" data-aria-en="Step navigation" data-aria-es="Navegación por pasos">
+    <div class="arrow-row" role="group" aria-label="Step prev / next" data-aria-en="Step prev / next" data-aria-es="Paso anterior / siguiente">
+      <span class="arrow-slot">
+        <label class="step-btn step-prev" for="step-0" aria-label="Previous" data-aria-en="Previous" data-aria-es="Anterior">←</label>
+        <label class="step-btn step-prev" for="step-1" aria-label="Previous" data-aria-en="Previous" data-aria-es="Anterior">←</label>
+        <label class="step-btn step-prev" for="step-2" aria-label="Previous" data-aria-en="Previous" data-aria-es="Anterior">←</label>
+        <label class="step-btn step-prev" for="step-3" aria-label="Previous" data-aria-en="Previous" data-aria-es="Anterior">←</label>
+        <label class="step-btn step-prev" for="step-4" aria-label="Previous" data-aria-en="Previous" data-aria-es="Anterior">←</label>
+        <label class="step-btn step-prev" for="step-5" aria-label="Previous" data-aria-en="Previous" data-aria-es="Anterior">←</label>
+      </span>
+      <span class="arrow-slot">
+        <label class="step-btn step-next" for="step-1" aria-label="Next" data-aria-en="Next" data-aria-es="Siguiente">→</label>
+        <label class="step-btn step-next" for="step-2" aria-label="Next" data-aria-en="Next" data-aria-es="Siguiente">→</label>
+        <label class="step-btn step-next" for="step-3" aria-label="Next" data-aria-en="Next" data-aria-es="Siguiente">→</label>
+        <label class="step-btn step-next" for="step-4" aria-label="Next" data-aria-en="Next" data-aria-es="Siguiente">→</label>
+        <label class="step-btn step-next" for="step-5" aria-label="Next" data-aria-en="Next" data-aria-es="Siguiente">→</label>
+        <label class="step-btn step-next" for="step-6" aria-label="Next" data-aria-en="Next" data-aria-es="Siguiente">→</label>
+      </span>
+    </div>
+    <div class="step-progress-bar">
+      <label class="step-item" for="step-0" title="Parents" data-aria-en="Parents" data-aria-es="Padres" aria-label="Parents"><span class="step-node"></span><span class="step-label"><span class="short"><span class="en" lang="en">Parents</span><span class="es" lang="es">Padres</span></span><span class="full"><span class="en" lang="en">Parents</span><span class="es" lang="es">Padres</span></span></span></label>
+      <label class="step-item" for="step-1" title="Environment" data-aria-en="Environment" data-aria-es="Entorno" aria-label="Environment"><span class="step-node"></span><span class="step-label"><span class="short"><span class="en" lang="en">Envt.</span><span class="es" lang="es">Entor.</span></span><span class="full"><span class="en" lang="en">Environment</span><span class="es" lang="es">Entorno</span></span></span></label>
+      <label class="step-item" for="step-2" title="Parental education" data-aria-en="Parental education" data-aria-es="Educación parental" aria-label="Parental education"><span class="step-node"></span><span class="step-label"><span class="short"><span class="en" lang="en">Educ.</span><span class="es" lang="es">Educ.</span></span><span class="full"><span class="en" lang="en">Education</span><span class="es" lang="es">Educación</span></span></span></label>
+      <label class="step-item" for="step-3" title="Growing up" data-aria-en="Growing up" data-aria-es="Crecimiento" aria-label="Growing up"><span class="step-node"></span><span class="step-label"><span class="short"><span class="en" lang="en">Growth</span><span class="es" lang="es">Crec.</span></span><span class="full"><span class="en" lang="en">Growth</span><span class="es" lang="es">Crecimiento</span></span></span></label>
+      <label class="step-item" for="step-4" title="Economy" data-aria-en="Economy" data-aria-es="Economía" aria-label="Economy"><span class="step-node"></span><span class="step-label"><span class="short"><span class="en" lang="en">Econ.</span><span class="es" lang="es">Econ.</span></span><span class="full"><span class="en" lang="en">Economy</span><span class="es" lang="es">Economía</span></span></span></label>
+      <label class="step-item" for="step-5" title="Other considerations" data-aria-en="Other considerations" data-aria-es="Otras consideraciones" aria-label="Other considerations"><span class="step-node"></span><span class="step-label"><span class="short"><span class="en" lang="en">Other</span><span class="es" lang="es">Otros</span></span><span class="full"><span class="en" lang="en">Others</span><span class="es" lang="es">Otros</span></span></span></label>
+      <label class="step-item" for="step-6" title="My offer" data-aria-en="My offer" data-aria-es="Mi oferta" aria-label="My offer"><span class="step-node"></span><span class="step-label"><span class="short"><span class="en" lang="en">Offer</span><span class="es" lang="es">Oferta</span></span><span class="full"><span class="en" lang="en">Offer</span><span class="es" lang="es">Oferta</span></span></span></label>
+    </div>
+  </nav>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// ── translaty engine — switches the page language and translates the bits CSS
+//    can't reach (placeholders, aria-labels, <option> text), remembers the
+//    choice, and keeps <html lang> in sync. en (base) + es.
+(function(){
+  const LS = 'translaty-lang';
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const radios = () => Array.from(document.querySelectorAll('input[name="lang"]'));
+  const curLang = () => { const r = radios().find(x => x.checked); return r ? r.id.replace('lang-', '') : 'en'; };
+  function applyLang(){
+    const li = curLang();
+    document.documentElement.lang = li;
+    document.querySelectorAll('option[data-en]').forEach(o => { if (o.dataset[li] != null) o.textContent = o.dataset[li]; });
+    document.querySelectorAll('[data-ph-en]').forEach(el => { const v = el.dataset['ph' + cap(li)]; if (v != null) el.placeholder = v; });
+    document.querySelectorAll('[data-aria-en]').forEach(el => { const v = el.dataset['aria' + cap(li)]; if (v != null) el.setAttribute('aria-label', v); });
+    try { localStorage.setItem(LS, li); } catch (_) {}
+    document.dispatchEvent(new CustomEvent('translaty:lang', { detail: li }));
+  }
+  function init(){
+    let saved = null; try { saved = localStorage.getItem(LS) || localStorage.getItem('translate2-lang'); } catch (_) {}
+    if (saved){ const r = document.getElementById('lang-' + saved); if (r) r.checked = true; }
+    radios().forEach(r => r.addEventListener('change', () => {
+      applyLang();
+      const d = document.querySelector('details.lang'); if (d) d.open = false;
+    }));
+    applyLang();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+
+(function(){
+  // ----- i18n helper for JS-generated strings -----
+  const LANG = () => document.documentElement.lang === 'es' ? 'es' : 'en';
+  const STR = {
+    copied:        { en:'Copied ✓',                       es:'Copiado ✓' },
+    copyFail:      { en:'Could not copy',                  es:'No se pudo copiar' },
+    copiedShare:   { en:'Copied (share unsupported)',      es:'Copiado (no se puede compartir)' },
+    savedTxt:      { en:'Saved as TXT ✓',                  es:'Guardado como TXT ✓' },
+    reset:         { en:'Reset ✓',                         es:'Reiniciado ✓' },
+    exported:      { en:'Exported JSON ✓',                 es:'JSON exportado ✓' },
+    imported:      { en:'Imported ✓',                      es:'Importado ✓' },
+    importFail:    { en:'Import failed',                   es:'Error al importar' },
+    creativeSoon:  { en:'Creative rewrite (coming soon)',  es:'Reescritura creativa (próximamente)' },
+    noNotes:       { en:'No notes yet — tap + to add one', es:'Aún no hay notas: toca + para añadir una' },
+    aboutLine:     { en:'Parenty · crowdparenting plan',   es:'Parenty · plan de crianza colectiva' },
+    confirmReset:  { en:'Reset all selections and notes?', es:'¿Reiniciar todas las selecciones y notas?' },
+    voiceUnsup:    { en:'Voice not supported',             es:'Voz no compatible' },
+    delete:        { en:'Delete',                          es:'Eliminar' },
+    notesHeading:  { en:'Notes:',                          es:'Notas:' },
+    shareTitle:    { en:'Parenty · My offer',              es:'Parenty · Mi oferta' },
+  };
+  const t = (k) => (STR[k] && STR[k][LANG()]) || (STR[k] && STR[k].en) || k;
+  const noteCount = (n) => LANG() === 'es'
+    ? `${n} nota${n > 1 ? 's' : ''} añadida${n > 1 ? 's' : ''}`
+    : `${n} note${n > 1 ? 's' : ''} added`;
+  window.__parentyI18n = { t, LANG, noteCount };
+
+  // ----- ADD-MORE: +/× toggle + Save → chip + chip × → delete -----
+  document.querySelectorAll('.add-area').forEach(area => {
+    const chipsBox = area.querySelector('.saved-chips');
+    const toggle   = area.querySelector('.add-toggle');
+    const panel    = area.querySelector('.add-panel');
+    const input    = panel.querySelector('.add-text');
+    const saveBtn  = panel.querySelector('.add-save');
+    const fileIn   = panel.querySelector('input[type="file"]');
+
+    const close = () => {
+      panel.hidden = true;
+      toggle.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    };
+    const open = () => {
+      panel.hidden = false;
+      toggle.classList.add('is-open');
+      toggle.setAttribute('aria-expanded', 'true');
+      setTimeout(() => input.focus(), 30);
+    };
+
+    toggle.addEventListener('click', () => panel.hidden ? open() : close());
+
+    const addChip = (text, fileName) => {
+      if (!text && !fileName) return;
+      const chip = document.createElement('span');
+      chip.className = 'saved-chip';
+      const label = document.createElement('span');
+      label.textContent = fileName ? `${text || ''}${text ? ' · ' : ''}📎 ${fileName}` : text;
+      const x = document.createElement('button');
+      x.type = 'button'; x.className = 'chip-x';
+      x.setAttribute('aria-label', t('delete')); x.textContent = '×';
+      x.addEventListener('click', () => chip.remove());
+      chip.append(label, x);
+      chipsBox.appendChild(chip);
+    };
+
+    saveBtn.addEventListener('click', () => {
+      const text = input.value.trim();
+      const file = fileIn.files && fileIn.files[0];
+      if (!text && !file) { input.focus(); return; }
+      addChip(text, file ? file.name : '');
+      input.value = ''; fileIn.value = '';
+      close();
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); saveBtn.click(); }
+      else if (e.key === 'Escape') close();
+    });
+  });
+
+  // ----- VOICE → fills the nearest .add-text -----
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  document.querySelectorAll('.icon-btn.mic').forEach(btn => {
+    if (!SR) { btn.disabled = true; btn.title = t('voiceUnsup'); btn.setAttribute('aria-label', t('voiceUnsup')); return; }
+    const input = btn.closest('.input-with-icons').querySelector('.add-text');
+    let rec = null, active = false;
+    btn.addEventListener('click', () => {
+      if (active) { try { rec.stop(); } catch(_){} return; }
+      rec = new SR();
+      rec.continuous = true; rec.interimResults = true;
+      rec.lang = navigator.language || 'en-US';
+      let base = input.value.trim();
+      rec.addEventListener('result', (e) => {
+        let interim = '', finalTxt = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const t = e.results[i][0].transcript;
+          if (e.results[i].isFinal) finalTxt += t; else interim += t;
+        }
+        if (finalTxt) base = (base ? base + ' ' : '') + finalTxt.trim();
+        input.value = (base + (interim ? ' ' + interim : '')).trim();
+      });
+      const stop = () => { active = false; btn.classList.remove('recording'); };
+      rec.addEventListener('end', stop);
+      rec.addEventListener('error', stop);
+      try { rec.start(); active = true; btn.classList.add('recording'); }
+      catch(_) { stop(); }
+    });
+  });
+
+  // ----- 3-CLICK CYCLE (each tap +10% size, 4th click resets to 0) -----
+  const addonNodes = Array.from(document.querySelectorAll('.scene .addon'));
+
+  // Intensity interpolation: continuous 0 → 1 over 10 selections.
+  // 10 selections lands exactly at the original `data-intensity="1"` palette
+  // (no more deep-sunset levels 2-5).
+  const SKY_0  = [[243,179,194], [245,180,137], [255,208,122], [255,217,163], [231,166,144]];
+  const SKY_1  = [[224,138,163], [236,138,100], [255,170,90],  [255,186,124], [201,122,114]];
+  const HILL_0 = [[142, 85,102], [108, 58, 85], [ 62, 34, 56]];
+  const HILL_1 = [[134, 69, 89], [ 90, 42, 71], [ 44, 24, 40]];
+  const lerp = (a, b, t) => Math.round(a + (b - a) * t);
+  const applyIntensity = (t) => {
+    for (let i = 0; i < 5; i++) {
+      const r = lerp(SKY_0[i][0], SKY_1[i][0], t);
+      const g = lerp(SKY_0[i][1], SKY_1[i][1], t);
+      const b = lerp(SKY_0[i][2], SKY_1[i][2], t);
+      document.body.style.setProperty('--sky-' + (i + 1), `rgb(${r},${g},${b})`);
+    }
+    const hillVar = ['--hill-back', '--hill-mid', '--hill-front'];
+    for (let i = 0; i < 3; i++) {
+      const r = lerp(HILL_0[i][0], HILL_1[i][0], t);
+      const g = lerp(HILL_0[i][1], HILL_1[i][1], t);
+      const b = lerp(HILL_0[i][2], HILL_1[i][2], t);
+      document.body.style.setProperty(hillVar[i], `rgb(${r},${g},${b})`);
+    }
+  };
+
+  const updateScene = () => {
+    const selected = document.querySelectorAll('[data-clicks="1"], [data-clicks="2"], [data-clicks="3"]').length;
+    const t = Math.min(selected / 10, 1);
+    document.body.dataset.intensity  = '';                              // discrete buckets disabled — JS drives the vars
+    document.body.dataset.selections = String(Math.min(selected, 10));
+    applyIntensity(t);
+    addonNodes.forEach((a, i) => a.classList.toggle('on', selected >= i + 1));
+  };
+
+  const clickPills = document.querySelectorAll('.scale label, .chk, .sub-scale label.sub');
+  clickPills.forEach(pill => {
+    pill.addEventListener('click', (e) => {
+      e.preventDefault();
+      const input = pill.querySelector('input');
+      if (!input) return;
+      let clicks = parseInt(pill.dataset.clicks || '0', 10);
+      clicks = (clicks + 1) % 4;     // 0 → 1 → 2 → 3 → 0
+
+      if (input.type === 'radio') {
+        // reset peers in same radio group
+        document.querySelectorAll(`input[type="radio"][name="${input.name}"]`).forEach(other => {
+          if (other === input) return;
+          const peer = other.closest('label, .chk');
+          if (peer) peer.dataset.clicks = '0';
+          other.checked = false;
+        });
+      }
+
+      pill.dataset.clicks = String(clicks);
+      input.checked = clicks > 0;
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      updateScene();
+    });
+  });
+  updateScene();
+
+  // ----- LIVE PHRASE -----
+  const slots = {
+    closeness: '.chunk.close em',
+    openness:  '.chunk.open em',
+    emotion:   '.chunk.feel em',
+    intensity: '.chunk.inten em',
+  };
+  // English value (load-bearing, used by import/export) → localized display label
+  const VAL_LABEL = {
+    Couple:{en:'Couple',es:'pareja'}, Friend:{en:'Friend',es:'amistad'}, Companion:{en:'Companion',es:'compañía'}, Polite:{en:'Polite',es:'cortés'}, Cold:{en:'Cold',es:'distante'},
+    Strict:{en:'Strict',es:'estricta'}, Propositive:{en:'Propositive',es:'propositiva'}, Normal:{en:'Normal',es:'normal'}, Open:{en:'Open',es:'abierta'}, Free:{en:'Free',es:'libre'},
+    Love:{en:'Love',es:'amor'}, Cute:{en:'Cute',es:'ternura'}, Care:{en:'Care',es:'cuidado'}, Collabore:{en:'Collabore',es:'colaboración'}, Help:{en:'Help',es:'ayuda'},
+    'Very much':{en:'Very much',es:'muchísima'}, Much:{en:'Much',es:'mucha'}, Some:{en:'Some',es:'alguna'}, Little:{en:'Little',es:'poca'}, None:{en:'None',es:'ninguna'},
+  };
+  const PH = { closeness:{en:'‹closeness›',es:'‹cercanía›'}, openness:{en:'‹openness›',es:'‹apertura›'}, emotion:{en:'‹emotion›',es:'‹emoción›'}, intensity:{en:'‹intensity›',es:'‹intensidad›'} };
+  const phrase = () => {
+    const lg = LANG();
+    Object.entries(slots).forEach(([name, sel]) => {
+      const checked = document.querySelector(`input[name="${name}"]:checked`);
+      const el = document.querySelector(sel);
+      if (!el) return;
+      if (checked) { const m = VAL_LABEL[checked.value]; el.textContent = m ? m[lg] : checked.value; }
+      else { el.textContent = PH[name][lg]; }
+    });
+  };
+  document.querySelectorAll('input[type="radio"]:not(.step-radio)')
+    .forEach(r => r.addEventListener('change', phrase));
+  document.addEventListener('translaty:lang', phrase);   // refresh phrase labels on language switch
+  phrase();
+
+  // ----- ACTION BUTTONS -----
+  const toast = document.getElementById('toast');
+  const flash = (msg) => {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(flash._t);
+    flash._t = setTimeout(() => toast.classList.remove('show'), 1600);
+  };
+  // read only the strings for the active language (skip the hidden-language spans)
+  const sentenceText = () => {
+    const off = LANG() === 'es' ? 'en' : 'es';
+    const root = document.getElementById('sentence').cloneNode(true);
+    root.querySelectorAll('.' + off).forEach(n => n.remove());
+    return root.textContent.replace(/\s+/g, ' ').trim();
+  };
+  const allChips = () => Array.from(document.querySelectorAll('.saved-chip > span:first-child')).map(s => s.textContent);
+  const fullText = () => {
+    const chips = allChips();
+    return sentenceText() + (chips.length ? '\n\n' + t('notesHeading') + '\n• ' + chips.join('\n• ') : '');
+  };
+
+  // ===== Export surface (§13.12) — every format serializes from collectState() =====
+  const L = (en, es) => (LANG() === 'es' ? es : en);
+  const esc     = s => String(s == null ? '' : s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const escAttr = s => esc(s).replace(/"/g, '&quot;');
+  const mdEsc   = s => String(s == null ? '' : s).replace(/([\\`*_{}\[\]()#+\-!|])/g, '\\$1');
+  const csvQ    = v => { const s = String(v == null ? '' : v); return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  function downloadBlob(body, mime, filename){
+    const blob = new Blob([body], { type: mime });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  // <app>-summary.<ext>, "summary" localized to the active UI language (§13.12 F).
+  const SUMMARY_WORD = { en: 'summary', es: 'resumen' };
+  const fileBase = () => 'parenty-' + (SUMMARY_WORD[LANG()] || 'summary');
+  // Flat key/value list shared by csv / md / xml — same model the JSON export
+  // serializes, so every format round-trips the SAME items (parity).
+  function flatFields(){
+    const d = collectState();
+    const rows = [];
+    Object.keys(d).filter(k => k[0] !== '_').forEach(k => {
+      rows.push([k, Array.isArray(d[k]) ? d[k].join('; ') : String(d[k])]);
+    });
+    (d._notes || []).forEach(n => { if (n.chips && n.chips.length) rows.push(['note: ' + (n.section || ''), n.chips.join('; ')]); });
+    return rows;
+  }
+  const buildJSON = () => JSON.stringify(collectState(), null, 2);
+  function buildCSV(){
+    const rows = [['field', 'value']].concat(flatFields());
+    return rows.map(r => r.map(csvQ).join(',')).join('\r\n') + '\r\n';
+  }
+  function buildXML(){
+    let out = '<?xml version="1.0" encoding="UTF-8"?>\n<parenty>\n';
+    out += '  <phrase>' + esc(sentenceText()) + '</phrase>\n';
+    out += flatFields().map(([k, v]) => `  <field name="${escAttr(k)}">${esc(v)}</field>`).join('\n');
+    out += '\n</parenty>\n';
+    return out;
+  }
+  function buildMarkdown(){
+    let out = `# Parenty\n\n${sentenceText()}\n\n`;
+    out += `## ${L('Details', 'Detalles')}\n\n| ${L('field', 'campo')} | ${L('value', 'valor')} |\n| --- | --- |\n`;
+    out += flatFields().map(([k, v]) => `| ${mdEsc(k)} | ${mdEsc(v)} |`).join('\n') + '\n';
+    const chips = allChips();
+    if (chips.length) out += `\n## ${t('notesHeading')}\n\n` + chips.map(c => `- ${mdEsc(c)}`).join('\n') + '\n';
+    return out;
+  }
+  function buildHTML(){
+    const rows  = flatFields().map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join('');
+    const chips = allChips();
+    const notes = chips.length ? `<h2>${esc(t('notesHeading'))}</h2><ul>${chips.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : '';
+    return `<!doctype html><html lang="${LANG()}"><head><meta charset="utf-8">`
+      + `<meta name="viewport" content="width=device-width,initial-scale=1"><title>Parenty</title>`
+      + `<style>body{font:15px/1.6 system-ui,sans-serif;max-width:680px;margin:2rem auto;padding:1rem;color:#1a0f08}`
+      + `h1{font-family:Georgia,serif;color:#ff6b3a}table{border-collapse:collapse;width:100%}`
+      + `th,td{border:1px solid #e7dccd;padding:.3rem .55rem;text-align:left}th{width:34%;color:#a06a48}</style></head>`
+      + `<body><h1>Parenty</h1><p>${esc(sentenceText())}</p><table>${rows}</table>${notes}</body></html>`;
+  }
+  function renderJPG(cb){
+    const W = 720, H = 560, canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff7ef'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#ff6b3a'; ctx.font = '700 32px Georgia, serif';
+    ctx.fillText('Parenty', 24, 50);
+    ctx.fillStyle = '#1a0f08'; ctx.font = '500 15px system-ui';
+    const lines = [sentenceText()].concat(flatFields().map(([k, v]) => `${k}: ${v}`));
+    const maxRows = Math.floor((H - 110) / 24);
+    lines.slice(0, maxRows).forEach((ln, i) => ctx.fillText(ln.slice(0, 74), 24, 90 + i * 24));
+    if (lines.length > maxRows){
+      ctx.fillStyle = '#a0673a';
+      ctx.fillText(L(`… +${lines.length - maxRows} more`, `… +${lines.length - maxRows} más`), 24, 90 + maxRows * 24);
+    }
+    ctx.fillStyle = 'rgba(255,107,58,.5)'; ctx.font = 'italic 12px system-ui';
+    ctx.fillText('flove · parenty', 24, H - 20);
+    canvas.toBlob(cb, 'image/jpeg', 0.92);
+  }
+  // Web Share API: summary text + standalone HTML file, guarded by canShare({files}).
+  async function shareToDevice(){
+    const text = fullText();
+    if (navigator.share){
+      try {
+        const file = new File([buildHTML()], fileBase() + '.html', { type: 'text/html' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) await navigator.share({ title: t('shareTitle'), text, files: [file] });
+        else await navigator.share({ title: t('shareTitle'), text, url: location.href });
+        return;
+      } catch (err) { if (err && err.name === 'AbortError') return; }
+    }
+    navigator.clipboard?.writeText(text).then(() => flash(t('copiedShare')));
+  }
+
+  document.getElementById('btnCopy').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(fullText()); flash(t('copied')); }
+    catch(_) { flash(t('copyFail')); }
+  });
+  document.getElementById('btnShare').addEventListener('click', shareToDevice);
+  document.getElementById('btnPublish').addEventListener('click', () => window.print());
+  document.getElementById('btnSave').addEventListener('click', () => {
+    downloadBlob(fullText(), 'text/plain;charset=utf-8', fileBase() + '.txt');
+    flash(t('savedTxt'));
+  });
+  document.getElementById('btnInsight').addEventListener('click', () => {
+    const chips = allChips();
+    flash(chips.length ? noteCount(chips.length) : t('noNotes'));
+  });
+  document.getElementById('btnCreative').addEventListener('click', () => flash(t('creativeSoon')));
+
+  // ----- "All" toggle: expand every step pane -----
+  const allBtn = document.getElementById('allBtn');
+  allBtn.addEventListener('click', () => {
+    const on = document.body.classList.toggle('show-all');
+    allBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    if (on) window.scrollTo({ top:0, behavior:'smooth' });
+  });
+
+  // ----- STEP NODE HIGHLIGHTS (2× per section / 3× when all done) -----
+  const sectionPanes = Array.from(document.querySelectorAll('.step-pane'));
+  const stepItems    = Array.from(document.querySelectorAll('.step-progress-bar .step-item'));
+  const sectionHasSelection = (sec) => {
+    if (sec.querySelector('input[type="radio"]:checked, input[type="checkbox"]:checked')) return true;
+    if (Array.from(sec.querySelectorAll('input[type="text"]')).some(i => i.value.trim())) return true;
+    if (sec.querySelector('.saved-chip')) return true;
+    return false;
+  };
+  const refreshNodes = () => {
+    let allDone = true;
+    sectionPanes.forEach((sec, i) => {
+      const has = sectionHasSelection(sec);
+      if (stepItems[i]) stepItems[i].classList.toggle('has-selection', has);
+      if (!has) allDone = false;
+    });
+    document.body.classList.toggle('all-selected', allDone);
+  };
+  document.addEventListener('input',  refreshNodes);
+  document.addEventListener('change', refreshNodes);
+  // also when chips are added/removed (DOM mutations under .saved-chips)
+  new MutationObserver(refreshNodes).observe(document.body, { subtree:true, childList:true });
+  refreshNodes();
+
+  // ----- App info panel (opened from the ⓘ menu entry) -----
+  const appInfoPanel    = document.getElementById('appInfoPanel');
+  const appInfoCloseBtn = document.getElementById('appInfoCloseBtn');
+  const openAppInfo  = () => { appInfoPanel?.removeAttribute('hidden'); };
+  const closeAppInfo = () => {
+    const v = appInfoPanel?.querySelector('video');
+    if (v) v.pause();
+    appInfoPanel?.setAttribute('hidden', '');
+  };
+  appInfoCloseBtn?.addEventListener('click', closeAppInfo);
+
+  // ----- Transparent topmenu (opens from the logo + app name) -----
+  const triggers = [
+    document.getElementById('floveMarkBtn'),
+    document.getElementById('aboutBtn'),
+  ].filter(Boolean);
+  const menu    = document.getElementById('topmenu');
+  const setMenu = (open) => {
+    menu.hidden = !open;
+    triggers.forEach(trg => trg.setAttribute('aria-expanded', open ? 'true' : 'false'));
+  };
+  triggers.forEach(trg => trg.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setMenu(menu.hidden);
+  }));
+  document.addEventListener('click', (e) => {
+    if (!menu.hidden && !menu.contains(e.target) && !triggers.some(trg => trg.contains(e.target))) setMenu(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') setMenu(false);
+  });
+
+  // ----- Topmenu actions -----
+  const collectState = () => {
+    const data = {};
+    document.querySelectorAll('input[type="radio"]:checked:not(.step-radio), input[type="checkbox"]:checked').forEach(el => {
+      const k = el.name;
+      if (el.type === 'checkbox') { (data[k] ||= []).push(el.value); }
+      else { data[k] = el.value; }
+    });
+    document.querySelectorAll('input[type="text"]').forEach(el => {
+      if (el.name && el.value.trim()) data[el.name] = el.value.trim();
+    });
+    data._notes = Array.from(document.querySelectorAll('.card.section')).map(sec => ({
+      section: sec.querySelector('.pill')?.textContent?.trim(),
+      chips: Array.from(sec.querySelectorAll('.saved-chip > span:first-child')).map(s => s.textContent),
+    })).filter(s => s.chips.length);
+    return data;
+  };
+  const importFile = document.getElementById('importFile');
+  menu.querySelectorAll('.topmenu__item').forEach(item => {
+    item.addEventListener('click', () => {
+      const act = item.dataset.act;
+      setMenu(false);
+      if (act === 'info') {
+        openAppInfo();
+      } else if (act === 'reset') {
+        if (!confirm(t('confirmReset'))) return;
+        document.querySelectorAll('input[type="radio"]:not(.step-radio), input[type="checkbox"]').forEach(el => el.checked = false);
+        document.querySelectorAll('input[type="text"]').forEach(el => el.value = '');
+        document.querySelectorAll('[data-clicks]').forEach(el => el.dataset.clicks = '0');
+        document.querySelectorAll('.saved-chip').forEach(c => c.remove());
+        document.getElementById('step-0').checked = true;
+        updateScene();
+        phrase(); flash(t('reset'));
+      } else if (act === 'export') {
+        downloadBlob(buildJSON(), 'application/json;charset=utf-8', fileBase() + '.json');
+        flash(t('exported'));
+      } else if (act === 'md') {
+        downloadBlob(buildMarkdown(), 'text/markdown;charset=utf-8', fileBase() + '.md');
+        flash(t('exported'));
+      } else if (act === 'xml') {
+        downloadBlob(buildXML(), 'application/xml;charset=utf-8', fileBase() + '.xml');
+        flash(t('exported'));
+      } else if (act === 'csv') {
+        downloadBlob(buildCSV(), 'text/csv;charset=utf-8', fileBase() + '.csv');
+        flash(t('exported'));
+      } else if (act === 'html') {
+        downloadBlob(buildHTML(), 'text/html;charset=utf-8', fileBase() + '.html');
+        flash(t('exported'));
+      } else if (act === 'jpg') {
+        renderJPG(b => { if (b){ downloadBlob(b, 'image/jpeg', fileBase() + '.jpg'); flash(t('exported')); } else flash(t('importFail')); });
+      } else if (act === 'import') {
+        importFile.click();
+      } else if (act === 'print') {
+        window.print();
+      } else if (act === 'about') {
+        flash(t('aboutLine'));
+      }
+    });
+  });
+  importFile.addEventListener('change', async () => {
+    const f = importFile.files?.[0]; if (!f) return;
+    try {
+      const data = JSON.parse(await f.text());
+      // back-compat: keys renamed to match the corrected UI labels
+      const KEY_ALIAS = { convivence: 'coexistence', lactancy: 'lactation' };
+      Object.entries(data).forEach(([rawK, v]) => {
+        if (rawK.startsWith('_')) return;
+        const k = KEY_ALIAS[rawK] || rawK;
+        if (Array.isArray(v)) {
+          v.forEach(val => {
+            const cb = document.querySelector(`input[type="checkbox"][name="${k}"][value="${val}"]`);
+            if (cb) cb.checked = true;
+          });
+        } else {
+          const radio = document.querySelector(`input[type="radio"][name="${k}"][value="${v}"]`);
+          if (radio) radio.checked = true;
+          else {
+            const text = document.querySelector(`input[type="text"][name="${k}"]`);
+            if (text) text.value = v;
+          }
+        }
+      });
+      // sync each restored pill's click-state so the scene & sizing reflect the import
+      document.querySelectorAll('.scale label, .chk, .sub-scale label.sub').forEach(pill => {
+        const input = pill.querySelector('input');
+        pill.dataset.clicks = (input && input.checked) ? '1' : '0';
+      });
+      updateScene(); refreshNodes();
+      phrase(); flash(t('imported'));
+    } catch(_) { flash(t('importFail')); }
+    importFile.value = '';
+  });
+})();
+</script>
+
+</body>
+</html>

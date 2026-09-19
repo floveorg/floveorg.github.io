@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#d32f2f">
+<meta name="color-scheme" content="light">
+<title>BlogyNormal</title>
+<meta name="description" content="BlogyNormal — the normal tier of blogy: topbar with magic labelers, a Love/Summary stepper, a ✦ wizard that injects text and a ★ rater, icon counters, and a summary with a magic-phrase swap and the full action row. Medium-complexity standard. CSS-driven, with one small inline script for the wizard text-insert. Tiers: mini · basic · normal · advanced · super.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path fill='%23d32f2f' fill-rule='evenodd' d='M16 27.5C16 27.5 3.5 19.8 3.5 11.2 3.5 7.3 6.6 4.5 10 4.5 12.7 4.5 15 6 16 8.2 17 6 19.3 4.5 22 4.5 25.4 4.5 28.5 7.3 28.5 11.2 28.5 19.8 16 27.5 16 27.5Z M7.6 17.3 h2.2 v3.2 h-2.2 z M11.1 15.3 h2.2 v5.2 h-2.2 z M14.6 13.3 h2.2 v7.2 h-2.2 z'/></svg>">
+<style>
+/* ============================================================
+   BLOGYNORMAL — the NORMAL tier of blogy (medium-complexity standard)
+   tiers:  mini → basic → normal → advanced → super
+
+   Renders every standardised blogy element at a middle complexity,
+   between blogy-basic-css.html and blogy-advanced.html. CSS-driven (state in
+   hidden .ctl inputs read with :has()), plus ONE small inline script at
+   the end of the body for the wizard text-insert (CSS can't write into
+   a <textarea>).
+
+   Elements shown (normal / medium-complexity level):
+     · Topbar    — mark + title + MAGIC labels (3) + tier badge
+                   + tier-switcher + ☰ menu  (no compass)
+     · Menu      — About blogy (opens an info box below the topbar) ·
+                   Language (dropdown) · Related apps (blogyadvanced card) ·
+                   Flove home — no underlines, subicons bare
+                   (same menu as blogybasic)
+     · Content   — field with the 🎤 mic on its bottom border, and the
+                   ✦ wizard + ★ rater stacked to its right (basic layout);
+                   icon counters (👆 clicks · 💞 selections · ⭐ stars).
+                   The ✦ wizard INJECTS text into the field: same wizard
+                   cycles 3 texts, 4th resets; editing keeps the text and
+                   the next wizard click appends after it.
+     · Stepper   — 2 steps (Who · Summary), nav bar at the BOTTOM
+     · Summary   — phrase + magic-phrase swap + INSIGHTS (one cycling
+                   button) + Magic·Copy (left) / Save·Share·Publish (right)
+     · Modal     — New label
+   ============================================================ */
+
+:root{
+  --accent-rgb: 211,47,47;
+  --accent: rgb(var(--accent-rgb));
+  --accent-deep: #9a0007;
+  --accent-glow: rgba(var(--accent-rgb),.35);
+  --ink: #212121;
+  --ink-soft: #5a5a5a;
+  --ink-mute: #8a8a8a;
+  --line: rgba(0,0,0,.10);
+  --line-strong: rgba(0,0,0,.18);
+  --fill-soft: rgba(var(--accent-rgb),.08);
+  --fill-mid: rgba(var(--accent-rgb),.14);
+  --panel-bg: rgba(255,255,255,.85);
+  --panel-border: rgba(var(--accent-rgb),.25);
+  --panel-shadow: 0 10px 28px rgba(0,0,0,.10);
+  --font-ui: system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --font-display: 'Georgia','Times New Roman',serif;
+  --radius: 14px;
+  --radius-pill: 999px;
+  --bounce: cubic-bezier(.2,.8,.2,1);
+  --fast: .15s var(--bounce);
+}
+
+*{ box-sizing: border-box; }
+html, body{ margin: 0; padding: 0; overflow-x: hidden; }
+body{
+  min-height: 100vh;
+  font-family: var(--font-ui);
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 18% 18%, var(--fill-soft), transparent 45%),
+    linear-gradient(180deg, #fafafa, #e9e9e9);
+  background-attachment: fixed;
+  -webkit-tap-highlight-color: transparent;
+  animation: page-in .5s var(--bounce);
+}
+@keyframes page-in{ from{ opacity: 0; transform: translateY(4px);} to{ opacity: 1; transform: none;} }
+
+label[for]{ cursor: pointer; user-select: none; }
+.ctl{ position: fixed; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; margin: 0; }
+
+/* i18n */
+.l-es{ display: none; }
+body:has(#lang-es:checked) .l-en{ display: none; }
+body:has(#lang-es:checked) .l-es{ display: inline; }
+
+/* ── 1. TOPBAR ─────────────────────────────────────────────── */
+.topbar{
+  position: sticky; top: 0; z-index: 10;
+  background: rgba(255,255,255,.82);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+.topbar-inner{
+  position: relative;
+  max-width: 460px; margin: 0 auto;
+  display: flex; align-items: center; gap: .4rem;
+  padding: .6rem .9rem;
+}
+.mark{
+  font-size: 1.7rem; line-height: 1; color: var(--accent);
+  filter: drop-shadow(0 0 8px var(--accent-glow));
+  transition: transform var(--fast);
+}
+.mark:hover{ transform: scale(1.08); }
+/* logo glyph swaps per chosen labeler */
+.mark .mk{ display: none; }
+.mark .mk-default{ display: inline; }
+body:has([name="labeler"]:checked:not(#labeler-none)) .mark .mk-default{ display: none; }
+body:has(#labeler-formal:checked)   .mark .mk-formal{ display: inline; }
+body:has(#labeler-informal:checked) .mark .mk-informal{ display: inline; }
+body:has(#labeler-hotter:checked)   .mark .mk-hotter{ display: inline; }
+
+.title-wrap{ display: flex; align-items: baseline; gap: .45rem; min-width: 0; }
+.title{
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 1.25rem; letter-spacing: -.01em; line-height: 1;
+  background: linear-gradient(90deg, var(--accent), #ff8a65 60%, var(--accent));
+  background-clip: text; -webkit-background-clip: text; color: transparent;
+}
+.title-mood{
+  font-family: var(--font-display); font-size: .95rem; color: var(--accent);
+  white-space: nowrap;
+}
+.title-mood > span{ display: none; }
+body:has(#labeler-formal:checked)   .tm-formal,
+body:has(#labeler-informal:checked) .tm-informal,
+body:has(#labeler-hotter:checked)   .tm-hotter{ display: inline; }
+
+.topbar-spacer{ flex: 1; }
+
+/* shared round topbar button look */
+.topbar-btn{
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 0; background: transparent; cursor: pointer;
+  transition: background var(--fast), color var(--fast), transform var(--fast);
+}
+
+/* ── magic labelers — ✨ toggles a 3-chip personality row ────────── */
+.magic-wrap{ position: relative; display: inline-flex; align-items: center; gap: .3rem; flex-shrink: 0; }
+.magic-btn{ color: var(--accent-deep); font-size: 1.5rem; }
+.magic-btn:hover, .magic-btn:focus-visible{ background: rgba(var(--accent-rgb),.5); color: #fff; }
+body:has(#magic-open:checked) .magic-btn{ background: var(--accent); color: #fff; }
+.labelers{
+  display: flex; align-items: center; gap: .3rem;
+  max-width: 0; overflow: hidden; opacity: 0; pointer-events: none;
+  /* A11y (0-JS build): collapsed but still rendered, so visibility:hidden
+     pulls the focusable chips out of tab order + a11y tree. Delayed during
+     close so it stays visible through the collapse animation. */
+  visibility: hidden;
+  transition: max-width .35s var(--bounce), opacity .2s var(--bounce), visibility 0s linear .35s;
+}
+body:has(#magic-open:checked) .labelers{ max-width: 180px; opacity: 1; pointer-events: auto; visibility: visible; transition: max-width .35s var(--bounce), opacity .2s var(--bounce), visibility 0s; }
+/* labeler icons + their group are bare — no borders, no backgrounds */
+.labelers{ border: 0; background: transparent; }
+.labeler{
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 50%;
+  font-size: 1rem; line-height: 1;
+  background: transparent; border: 0;
+  transition: transform var(--fast), background var(--fast);
+}
+.labeler:hover{ background: var(--fill-soft); transform: translateY(-1px); }
+/* selected labeler — grows, no border/background */
+body:has(#labeler-formal:checked)   .labeler[for="labeler-formal"],
+body:has(#labeler-informal:checked) .labeler[for="labeler-informal"],
+body:has(#labeler-hotter:checked)   .labeler[for="labeler-hotter"]{
+  background: transparent; transform: scale(1.35);
+}
+.labeler-add{ color: var(--accent); font-size: 1.1rem; }
+.labeler-add:hover{ background: rgba(var(--accent-rgb),.5); color: #fff; }
+.labeler-reset{ color: var(--ink-soft); font-size: 1.05rem; }
+.labeler-reset:hover{ background: var(--fill-soft); color: var(--accent-deep); }
+/* per-labeler intro — a different title + text shows for each labeler */
+.labeler-intro > div{ display: none; margin: 0 0 .9rem; }
+.labeler-intro h3{ margin: 0 0 .2rem; font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; color: var(--ink); }
+.labeler-intro p{ margin: 0; font-size: .9rem; line-height: 1.5; color: var(--ink-soft); }
+body:has(#labeler-formal:checked)   .labeler-intro-formal,
+body:has(#labeler-informal:checked) .labeler-intro-informal,
+body:has(#labeler-hotter:checked)   .labeler-intro-hotter{ display: block; animation: card-in .35s var(--bounce); }
+
+/* level badge — shows the complexity standard of this file */
+
+/* ── level-switcher (Simple · Medium · Advanced) ─────────────── */
+.level-pop{ position: relative; display: inline-flex; align-items: center; flex-shrink: 0; }
+.level-pop-btn{ color: var(--ink-soft); }
+.level-pop-btn svg{ display: block; }
+.level-pop-btn:hover, .level-pop-btn:focus-visible,
+body:has(#level-open:checked) .level-pop-btn{ color: #fff; background: var(--accent); }
+.level-pop-rays{
+  position: absolute; right: calc(100% + 8px); top: 50%; transform: translateY(-50%);
+  display: none; align-items: center; gap: 1.1rem;
+  margin: 0; padding: .3rem .55rem; list-style: none;
+  background: var(--panel-bg); border: 1px solid var(--panel-border);
+  border-radius: 999px; box-shadow: var(--panel-shadow);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  white-space: nowrap; z-index: 20;
+}
+body:has(#level-open:checked) .level-pop-rays{ display: flex; }
+.level-pop-step{
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; gap: .2rem;
+  padding: .2rem .4rem; border-radius: 8px; text-decoration: none; color: inherit;
+  transition: background var(--fast);
+}
+.level-pop-step:hover{ background: var(--fill-soft); }
+/* links between nodes — visible accent connectors (target non-last <li>) */
+.level-pop-rays > li:not(:last-child) .level-pop-step::after{
+  content: ""; position: absolute; top: 7px; left: 100%;
+  width: 1.1rem; height: 2px; background: rgba(var(--accent-rgb),.5); z-index: 0;
+}
+.level-pop-node{
+  width: 12px; height: 12px; border-radius: 50%;
+  background: #fff; border: 2px solid var(--line-strong);
+  transition: background var(--fast), border-color var(--fast), transform var(--fast), box-shadow var(--fast);
+}
+/* size progression — mini (smallest) → super (largest) */
+.level-pop-rays > li:nth-child(1) .level-pop-node{ width: 9px;  height: 9px;  }
+.level-pop-rays > li:nth-child(2) .level-pop-node{ width: 11px; height: 11px; }
+.level-pop-rays > li:nth-child(3) .level-pop-node{ width: 9px;  height: 9px;  }
+.level-pop-rays > li:nth-child(4) .level-pop-node{ width: 15px; height: 15px; }
+.level-pop-rays > li:nth-child(5) .level-pop-node{ width: 22px; height: 22px; }
+.level-pop-step:hover .level-pop-node{ border-color: var(--accent); }
+.level-pop-label{ font: 600 .6rem/1 var(--font-ui); color: var(--ink-soft); white-space: nowrap; }
+.level-pop-step:hover .level-pop-label{ color: var(--accent-deep); }
+.level-pop-step--current .level-pop-node{
+  background: var(--accent); border-color: var(--accent-deep);
+  transform: scale(1.18); box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.level-pop-step--current .level-pop-label{ color: var(--accent-deep); font-weight: 700; }
+/* work-in-progress tiers (Advanced, Super): dimmed to 30% + not clickable */
+.level-pop-step--wip{ opacity: .3; pointer-events: none; cursor: default; }
+
+/* ── menu button + overlay ─────────────────────────────────── */
+.menu-btn{ width: 34px; height: 34px; border-radius: 10px; font-size: 1.2rem; color: var(--ink);
+  display: inline-flex; align-items: center; justify-content: center; transition: background var(--fast); }
+.menu-btn:hover, .menu-btn:focus-visible{ background: var(--fill-mid); }
+.menu-btn--close{ display: none; }
+body:has(#m:checked) .menu-btn--open{ display: none; }
+body:has(#m:checked) .menu-btn--close{ display: inline-flex; }
+.menu-overlay{ position: fixed; inset: 0; z-index: 8; background: transparent; opacity: 0; pointer-events: none; transition: opacity var(--fast); }
+body:has(#m:checked) .menu-overlay{ opacity: 1; pointer-events: auto; }
+
+/* ── 2. MENU panel — search + language + sound + design links ── */
+/* menu panel sits below the title, anchored to the LEFT edge */
+.menu-panel{
+  position: absolute; top: calc(100% + .5rem); left: .9rem;
+  width: 250px; max-width: calc(100vw - 1.8rem);
+  margin: 0; padding: .45rem; list-style: none;
+  background: var(--panel-bg); border: 1px solid var(--panel-border);
+  border-radius: var(--radius); box-shadow: var(--panel-shadow);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  z-index: 12; opacity: 0; transform: translateY(-6px); pointer-events: none;
+  transition: opacity var(--fast), transform var(--fast);
+}
+body:has(#m:checked) .menu-panel{ opacity: 1; transform: none; pointer-events: auto; }
+.menu-row{
+  display: flex; align-items: center; gap: .6rem;
+  padding: .5rem .55rem; border-radius: 10px;
+  color: var(--ink); font: 500 .92rem var(--font-ui); text-decoration: none; transition: background var(--fast);
+}
+.menu-row:hover{ background: var(--fill-soft); }
+.menu-row .mi{ font-size: 1.05rem; color: var(--accent-deep); width: 1.3em; text-align: center; }
+.menu-divider{ height: 1px; margin: .3rem .4rem; background: var(--line); }
+.menu-section-title{ padding: .3rem .55rem; font: 700 .72rem var(--font-ui); letter-spacing: .04em; text-transform: uppercase; color: var(--ink-mute); }
+/* sound toggle switch */
+
+/* ── 3. STEPPER nav bar — Who · Sound · Summary ──────────────── */
+main{ max-width: 460px; margin: 1rem auto 2rem; padding: 0 .9rem; }
+.stepnav{
+  display: flex; align-items: center; justify-content: center; gap: 0;
+  margin: 1.6rem 0 1.1rem;   /* sits below with a consistent top gap across steps */
+}
+.stepnav-node{
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: .25rem;
+  padding: 0 1.3rem; text-decoration: none; color: var(--ink-soft);
+}
+.stepnav-node:not(:last-child)::after{
+  content: ""; position: absolute; top: 7px; left: calc(50% + .9rem);
+  width: calc(100% - 1.8rem + 20px); height: 2px; background: var(--line-strong);
+}
+.stepnav-dot{
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #fff; border: 2px solid var(--line-strong); z-index: 1;
+  transition: background var(--fast), border-color var(--fast), transform var(--fast), box-shadow var(--fast);
+}
+.stepnav-label{ font: 600 .72rem/1 var(--font-ui); color: var(--ink-soft); }
+.stepnav-node:hover .stepnav-dot{ border-color: var(--accent); }
+body:has(#step-who:checked)     .stepnav-node[for="step-who"]     .stepnav-dot,
+body:has(#step-summary:checked) .stepnav-node[for="step-summary"] .stepnav-dot{
+  background: var(--accent); border-color: var(--accent-deep);
+  transform: scale(1.2); box-shadow: 0 0 0 3px var(--accent-glow);
+}
+body:has(#step-who:checked)     .stepnav-node[for="step-who"]     .stepnav-label,
+body:has(#step-summary:checked) .stepnav-node[for="step-summary"] .stepnav-label{ color: var(--accent-deep); font-weight: 700; }
+
+/* step panels */
+.step-panel{ display: none; animation: card-in .45s var(--bounce) both; }
+body:has(#step-who:checked)     .step-panel--who,
+body:has(#step-summary:checked) .step-panel--summary{ display: block; }
+@keyframes card-in{ from{ opacity: 0; transform: translateY(8px);} to{ opacity: 1; transform: none;} }
+
+.card{ padding: 1.1rem 1rem 1.2rem; }
+
+/* ── 4. CONTENT — entry field + ✦ bot + ★ rater ─────────────── */
+.entry-field{
+  position: relative; border: 2px solid var(--line-strong); border-radius: 12px;
+  padding: .8rem .9rem; transition: border-color var(--fast), box-shadow var(--fast);
+}
+.entry-field:focus-within{ border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.entry-textarea{
+  display: block; width: 100%; min-height: 5em; margin: 0; padding: 0; border: 0; resize: none;
+  font-family: inherit; font-size: 1.15rem; line-height: 1.4; color: var(--ink); background: transparent; position: relative; z-index: 1;
+}
+.entry-textarea:focus-visible{ outline: none; }
+.ghost-placeholder{ position: absolute; top: .8rem; left: .9rem; pointer-events: none; color: var(--ink-mute); font-size: 1.15rem; line-height: 1.4; display: none; }
+.entry-field:has(.entry-textarea:placeholder-shown) .ghost-placeholder{ display: block; }
+/* field on the left · ✦/★ stacked to its right · mic on the field's
+   bottom border — the same arrangement as blogybasic */
+.field-wrap{ display: flex; align-items: flex-start; gap: .5rem; margin-bottom: 1.6rem; }
+.field-wrap .entry-field{ flex: 1; min-width: 0; padding-bottom: 1.4rem; }
+.field-side{ display: flex; flex-direction: column; gap: .45rem; flex-shrink: 0; }
+.entry-actions{ display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin-top: 10px; }
+.entry-actions .add-btn{ margin-left: 0; }   /* Add sits right after the counters */
+.tool-btn{
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: transparent; border: 0; color: var(--accent-deep);
+  font-size: 1rem; cursor: pointer;
+  transition: background var(--fast), border-color var(--fast), transform var(--fast);
+}
+.tool-btn:hover{ background: transparent; }   /* no highlight when inactive — keep the original display */
+.tool-cell{ position: relative; display: inline-flex; }
+.tool-pop{
+  position: absolute; bottom: calc(100% + .4rem); left: 0;
+  display: none; align-items: center; gap: .3rem;
+  padding: .3rem .4rem; list-style: none; margin: 0;
+  background: var(--panel-bg); border: 1px solid var(--panel-border);
+  border-radius: 999px; box-shadow: var(--panel-shadow);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); white-space: nowrap; z-index: 6;
+}
+body:has(#wizard-open:checked)  .tool-cell--wizard  .tool-pop{ display: inline-flex; }
+/* side-column popovers align to the right edge so they don't overflow */
+.field-side .tool-pop{ left: auto; right: 0; }
+/* wizard (sub-wizards) popover — nudged 5px down, no background */
+.tool-cell--wizard .tool-pop{ transform: translateY(10px); background: transparent; border: 0; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.chip{
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 50%; font-size: 1rem;
+  background: transparent; border: 0; color: inherit; cursor: pointer;
+  transition: transform var(--fast), background var(--fast), border-color var(--fast);
+}
+.chip:hover{ background: var(--fill-soft); transform: translateY(-1px); }
+
+/* ── rater — reactions open to the RIGHT of the ♥ (multi-select) ─────
+   the panel sits in the flex-shrink:0 field-side, so the flex:1 field
+   on its left shrinks to make room. ＋ reveals 20 more, then 30 more. */
+.tool-cell--rate{ display: flex; align-items: flex-start; gap: .25rem; }
+.rate-panel{ display: none; flex-direction: column; gap: .25rem; }
+body:has(#rate-open:checked) .rate-panel{ display: flex; }
+.rate-set{ display: flex; flex-wrap: wrap; justify-content: center; gap: .15rem; max-width: 168px; }   /* ~5 per row */
+/* base row = the 5 senses (hear·touch·view·taste·smell): keep all five on
+   ONE row, packed to the left and a touch smaller so they never wrap */
+.rate-set.rate-base{ flex-wrap: nowrap; justify-content: flex-start; max-width: none; gap: .1rem; }
+.rate-base .rate-chip{ width: 24px; height: 24px; font-size: .95rem; }
+.rate-x1, .rate-x2{ display: none; }
+.rate-more.rate-more2-btn{ display: none; }   /* second ＋ hidden until the first list opens */
+/* first ＋ → reveals the 20-list and turns into × (collapse) */
+.rate-more1-btn .rm-close{ display: none; }
+body:has(#rate-more1:checked) .rate-more1-btn .rm-plus{ display: none; }
+body:has(#rate-more1:checked) .rate-more1-btn .rm-close{ display: inline; }
+body:has(#rate-more1:checked) .rate-x1{ display: flex; }
+/* second ＋ appears below the 20-list, then disappears once the 30-list opens */
+body:has(#rate-more1:checked) .rate-more2-btn{ display: inline-flex; }
+body:has(#rate-more2:checked)  .rate-more2-btn{ display: none; }
+/* the 30-list needs BOTH open, so the × (collapsing the first) hides it too */
+body:has(#rate-more1:checked):has(#rate-more2:checked) .rate-x2{ display: flex; }
+.rate-chip{
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 50%; font-size: .95rem;
+  background: transparent; border: 0; cursor: pointer;
+  transition: transform var(--fast), background var(--fast);
+}
+.rate-chip:hover{ background: var(--fill-soft); transform: translateY(-1px); }
+.rate-chip.picked{ transform: scale(1.2); background: rgba(var(--accent-rgb),.18); }   /* selected — slight red tone */
+/* icon-fill logic ───────────────────────────────────────────
+   default: both transparent inside.
+   ♥ heart — while OPEN (subitems displayed): red inside + slight red
+     around. Closed (second click): transparent + reactions unselected (JS).
+   ✦ magic — slight red AROUND only while its popover is OPEN; red INSIDE
+     only when a wizard subitem is actively selected (text added). */
+/* ♥ heart — mirror blogyadvanced: outline ♡ (neutral) by default,
+   filled ♥ + red colour while the rater is open (no background fill) */
+.rate-trigger{ color: var(--ink-soft); }
+.rate-trigger::before{ content: "♡"; }
+body:has(#rate-open:checked) .rate-trigger{ color: var(--accent); background: transparent; box-shadow: none; }
+body:has(#rate-open:checked) .rate-trigger::before{ content: "♥"; }
+/* ✦ magic — red glyph; fills with the red gradient (white glyph) ONLY
+   when a wizard sub is selected (opening alone doesn't fill it) */
+body.wiz-text .tool-cell--wizard > .tool-btn{ background: linear-gradient(150deg, var(--accent), var(--accent-deep)); color: #fff; }
+/* the active wizard chip keeps a slight reddish fill */
+.chip.wiz-active{ background: rgba(var(--accent-rgb),.18); }
+.rate-more{
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 50%; align-self: center;
+  color: var(--accent); font-size: 1rem; cursor: pointer; transition: background var(--fast), color var(--fast);
+}
+.rate-more:hover{ background: rgba(var(--accent-rgb),.5); color: #fff; }
+/* mic — bare, centred on the field's bottom border */
+/* mic + file cluster, centred on the field's bottom border */
+.field-fab{ position: absolute; bottom: -23px; left: 50%; transform: translateX(-50%); z-index: 2; display: flex; gap: .4rem; }
+.mic-btn, .file-btn{ background: transparent; border: 0; }
+.mic-btn:hover, .file-btn:hover{ background: var(--fill-soft); }
+.file-btn{ position: relative; overflow: hidden; }
+.file-input{ position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+body:has(#mic-on:checked) .mic-btn{ background: var(--accent); color: #fff; animation: mic-pulse 1.3s ease-in-out infinite; }
+@keyframes mic-pulse{ 0%,100%{ box-shadow: 0 0 0 0 var(--accent-glow);} 50%{ box-shadow: 0 0 0 6px rgba(var(--accent-rgb),0);} }
+.mic-hint{ display: none; margin: .1rem 0 0; font: 500 .76rem var(--font-ui); color: var(--accent-deep); }
+body:has(#mic-on:checked) .mic-hint{ display: block; }
+/* wizard chip — a tiny pulse when it injects text */
+.chip.just-injected{ animation: pop .35s var(--bounce); }
+@keyframes pop{ 0%{ transform: scale(1);} 50%{ transform: scale(1.25);} 100%{ transform: scale(1);} }
+.add-btn{
+  margin-left: auto; display: inline-flex; align-items: center; justify-content: center; gap: .35rem;
+  padding: .5rem 1.1rem; border: 0; border-radius: var(--radius-pill);
+  font: 600 .92rem var(--font-ui); color: #fff;
+  background: linear-gradient(150deg, var(--accent), var(--accent-deep));
+  box-shadow: 0 6px 16px rgba(var(--accent-rgb),.35); cursor: pointer;
+  transition: transform var(--fast), box-shadow var(--fast), filter var(--fast);
+}
+.add-btn:hover{ transform: translateY(-1px); filter: brightness(1.05); }
+.add-btn:active{ transform: translateY(0) scale(.98); }
+
+
+/* ── 5. SUMMARY — phrase + magic swap + Copy + Bars chart ────── */
+.summary-box{
+  padding: 1.1rem 1rem 3.6rem; border: 1px solid var(--panel-border); border-radius: var(--radius);  /* two rows of room below Save·Share·Publish */
+  background: var(--panel-bg); box-shadow: var(--panel-shadow);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+/* summary title — above the box, centered, no icon */
+.summary-title{ margin: 0 0 .6rem; font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; color: var(--ink); text-align: center; }
+/* Save opens its submenu below — grow the box's white area further */
+body:has(#save-open:checked) .summary-box{ padding-bottom: 5rem; }
+.clause{ display: block; margin: 0; font-size: 1rem; line-height: 1.55; color: var(--ink-soft); }
+.clause code{ font: .85em ui-monospace,Menlo,Consolas,monospace; background: var(--fill-soft); color: var(--accent-deep); padding: .05em .35em; border-radius: 5px; }
+.summary-phrase{ color: var(--ink); white-space: pre-wrap; }
+/* rater reaction shows BEFORE the text · labelers show at the END */
+.summary-rx{ font-size: 1.15em; }
+.summary-rx:not(:empty){ margin-right: .4rem; }
+.summary-after{ font-size: 1.15em; }
+.summary-after:not(:empty){ margin-left: .4rem; }
+.clause-magic{ display: none; }
+body:has(#magic-toggle:checked) .clause-default{ display: none; }
+body:has(#magic-toggle:checked) .clause-magic{ display: block; }
+.summary-actions{ display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .9rem; }
+.btn-ghost{
+  display: inline-flex; align-items: center; gap: .35rem;
+  padding: .42rem .95rem; border: 1px solid var(--line-strong); border-radius: var(--radius-pill);
+  background: transparent; font: 600 .82rem var(--font-ui); color: var(--ink); cursor: pointer;
+  transition: background var(--fast), border-color var(--fast), color var(--fast);
+}
+.btn-ghost:hover, .btn-ghost:focus-visible{ background: var(--fill-soft); border-color: var(--accent); color: var(--accent-deep); }
+body:has(#magic-toggle:checked) .magic-summary-btn{ background: var(--accent); color: #fff; border-color: var(--accent-deep); }
+.magic-summary-btn .l-on{ display: none; }
+body:has(#magic-toggle:checked) .magic-summary-btn .l-off{ display: none; }
+body:has(#magic-toggle:checked) .magic-summary-btn .l-on{ display: inline; }
+
+/* ── insights — ONE cycling button: none→who→what→where→why→none ── */
+.insight-cycle .insight-step{ display: none; }   /* only the current-state label shows */
+body:has(#insight-none:checked)  .insight-step--0,
+body:has(#insight-who:checked)   .insight-step--1,
+body:has(#insight-what:checked)  .insight-step--2,
+body:has(#insight-where:checked) .insight-step--3,
+body:has(#insight-why:checked)   .insight-step--4{ display: inline-flex; }
+.insight-panel{ display: none; margin-top: .6rem; padding: .7rem .8rem; border-left: 3px solid var(--accent); background: var(--fill-soft); border-radius: 0 10px 10px 0; font-size: .92rem; line-height: 1.5; color: var(--ink); animation: card-in .35s var(--bounce); }
+.insight-panel strong{ color: var(--accent-deep); }
+body:has(#insight-who:checked)   .insight-panel--who,
+body:has(#insight-what:checked)  .insight-panel--what,
+body:has(#insight-where:checked) .insight-panel--where,
+body:has(#insight-why:checked)   .insight-panel--why{ display: block; }
+
+/* summary action row — Magic+Copy left, Save/Share/Publish right */
+/* Insight·Magic·Copy in one row aligned left; Save·Share·Publish
+   aligned right, in two rows below */
+.summary-actions{ flex-direction: column; align-items: stretch; gap: .6rem; }
+.actions-left{ display: flex; flex-wrap: wrap; gap: .5rem; justify-content: flex-start; }
+/* Save · Share · Publish — all in one row, two rows below the left row */
+.actions-right{ display: flex; flex-direction: row; flex-wrap: wrap; justify-content: flex-end; gap: .5rem; margin-top: 2.6rem; }
+.insight-cycle .btn-ghost{ white-space: nowrap; }
+
+/* counters */
+/* counters — icon chips (like blogyadvanced's arcade counters) */
+.counters{ display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .2rem; }
+.counter{ display: inline-flex; align-items: center; gap: .35rem; padding: .28rem .6rem; border-radius: 999px; background: var(--fill-soft); font: 700 .82rem var(--font-ui); }
+.counter .counter-ico{ font-size: .95rem; }
+.counter b{ color: var(--accent-deep); }
+
+/* ── Advanced-unlock gamification ───────────────────────────── */
+/* message above the field — shown for 5s when the threshold is reached */
+.unlock-msg{
+  display: none; margin: 0 0 .8rem; padding: .6rem .8rem; border-radius: 10px;
+  background: var(--grad-active, linear-gradient(150deg, var(--accent), var(--accent-deep)));
+  color: #fff; font: 700 .92rem var(--font-ui); text-align: center;
+  box-shadow: 0 8px 22px rgba(var(--accent-rgb),.4);
+}
+.unlock-msg.show{ display: block; animation: unlock-pop .4s var(--bounce); }
+@keyframes unlock-pop{ from{ opacity:0; transform: translateY(-6px) scale(.96);} to{ opacity:1; transform:none;} }
+/* counters celebrate for 3s */
+.counters.celebrate .counter{ animation: counter-party .6s ease-in-out 5; }
+@keyframes counter-party{ 0%,100%{ transform: none; } 25%{ transform: translateY(-4px) scale(1.15) rotate(-4deg);} 75%{ transform: translateY(-2px) scale(1.1) rotate(4deg);} }
+.counters.celebrate .counter{ background: var(--fill-mid); box-shadow: 0 0 0 2px var(--accent-glow); }
+/* unlocked Advanced tier step + its parent ◆ icon — permanent glow */
+/* unlocked Advanced — no red fill / no box; just a red aura on the node
+   border and around the label text */
+.level-pop-step.is-unlocked{ opacity: 1; pointer-events: auto; cursor: pointer; background: transparent; }
+.level-pop-step.is-unlocked .level-pop-node{ background: transparent; border-color: var(--accent); box-shadow: 0 0 8px 2px rgba(var(--accent-rgb),.75); }
+.level-pop-step.is-unlocked .level-pop-label{ color: var(--accent-deep); font-weight: 700; text-shadow: 0 0 6px var(--accent-glow), 0 0 3px var(--accent-glow); }
+/* parent ◆ icon — border highlight only (no red fill inside) */
+.level-pop-btn.is-unlocked{ color: var(--accent-deep); background: transparent; box-shadow: inset 0 0 0 2px var(--accent); animation: unlock-glow 1.8s ease-in-out infinite; }
+@keyframes unlock-glow{ 0%,100%{ box-shadow: inset 0 0 0 2px var(--accent), 0 0 0 2px var(--accent-glow);} 50%{ box-shadow: inset 0 0 0 2px var(--accent), 0 0 0 6px rgba(var(--accent-rgb),.25);} }
+
+/* language — current language with a ▾ caret that opens a dropdown */
+.menu-lang{ display: flex; align-items: center; gap: .6rem; padding: .55rem .65rem; border-radius: 10px; cursor: pointer; transition: background var(--fast); }
+.menu-lang:hover{ background: var(--fill-soft); }
+.menu-lang .mi{ font-size: 1.05rem; color: var(--accent-deep); width: 1.3em; text-align: center; }
+.menu-lang-cur{ font: 600 .92rem var(--font-ui); color: var(--ink); }
+.lang-caret{ margin-left: auto; color: var(--ink-soft); transition: transform var(--fast); }
+body:has(#lang-more:checked) .lang-caret{ transform: rotate(180deg); }
+.menu-lang-others{ display: none; flex-direction: column; padding: .1rem .4rem .3rem; }
+body:has(#lang-more:checked) .menu-lang-others{ display: flex; }
+.menu-sub{ display: flex; align-items: center; gap: .5rem; padding: .42rem .6rem; border-radius: 8px; font: 500 .9rem var(--font-ui); color: var(--ink-soft); text-decoration: none; transition: background var(--fast); }
+.menu-sub:hover{ background: var(--fill-soft); }
+.menu-sub .lang-check{ margin-left: auto; color: var(--accent); font-weight: 700; opacity: 0; }
+body:has(#lang-en:checked) .menu-sub[for="lang-en"],
+body:has(#lang-es:checked) .menu-sub[for="lang-es"]{ color: var(--accent-deep); font-weight: 700; }
+body:has(#lang-en:checked) .menu-sub[for="lang-en"] .lang-check,
+body:has(#lang-es:checked) .menu-sub[for="lang-es"] .lang-check{ opacity: 1; }
+
+/* related apps card — same pattern as blogyadvanced (§2.13) */
+.related-apps-card{ list-style: none; margin: .25rem .15rem; padding: .55rem .55rem .6rem; background: rgba(var(--accent-rgb),.06); border: 1px solid rgba(var(--accent-rgb),.18); border-radius: 12px; }
+.related-apps-head{ display: flex; align-items: center; justify-content: space-between; margin: 0 0 .45rem; }
+.related-apps-title{ font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-mute); }
+.related-apps-foryou{ display: inline-flex; align-items: center; padding: .2rem .5rem; border-radius: 999px; border: 1px solid rgba(var(--accent-rgb),.45); background: rgba(var(--accent-rgb),.10); color: var(--accent-deep); font-size: .72rem; font-weight: 600; letter-spacing: .03em; cursor: pointer; transition: background var(--fast), transform var(--fast); }
+.related-apps-foryou:hover{ background: rgba(var(--accent-rgb),.20); transform: translateY(-1px); }
+.related-foryou-close{ display: none; }
+body:has(#related-foryou:checked) .related-foryou-open{ display: none; }
+body:has(#related-foryou:checked) .related-foryou-close{ display: inline; }
+.related-apps-grid, .related-apps-more{ list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3,1fr); gap: .35rem; }
+.related-apps-more{ margin-top: .4rem; display: none; }
+body:has(#related-foryou:checked) .related-apps-more{ display: grid; }
+.related-apps-grid li > a, .related-apps-more li > a{ display: flex; flex-direction: column; align-items: center; gap: .15rem; padding: .35rem .25rem; border-radius: 8px; font-size: .72rem; color: var(--ink); text-decoration: none; transition: background var(--fast), color var(--fast); }
+.related-apps-grid li > a:hover, .related-apps-more li > a:hover{ background: var(--fill-mid); color: var(--accent-deep); }
+/* subicons bare — no border, no background */
+.related-app-logo{ display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: transparent; border: 0; font-size: 1rem; }
+.related-app-name{ font-weight: 600; letter-spacing: .02em; }
+.related-apps-all{ display: inline-block; margin-top: .4rem; padding: .2rem .55rem; font-size: .72rem; font-weight: 600; color: var(--accent-deep); background: rgba(var(--accent-rgb),.10); border: 1px solid rgba(var(--accent-rgb),.35); border-radius: 999px; text-decoration: none; }
+.related-apps-all:hover{ background: rgba(var(--accent-rgb),.20); }
+
+/* About info box — drops in below the topbar when About blogy is clicked */
+.about-box{ display: none; max-width: 460px; margin: 0 auto; padding: 1rem .9rem 1.1rem; }
+body:has(#about-open:checked) .about-box{ display: block; animation: card-in .35s var(--bounce); }
+.about-inner{ position: relative; padding: 1rem 1.1rem; border: 1px solid var(--panel-border); border-radius: var(--radius); background: var(--panel-bg); box-shadow: var(--panel-shadow); }
+.about-inner h2{ margin: 0 0 .4rem; font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; color: var(--ink); }
+.about-inner p{ margin: 0; font-size: .92rem; line-height: 1.55; color: var(--ink-soft); }
+.about-close{ position: absolute; top: .5rem; right: .5rem; width: 28px; height: 28px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: var(--ink-soft); transition: background var(--fast); }
+.about-close:hover{ background: var(--fill-soft); color: var(--accent-deep); }
+
+/* ── share / save / publish popovers — bare (no border/background) ── */
+.act-cell{ position: relative; display: inline-flex; }
+.act-pop{
+  position: absolute; top: calc(100% + .35rem); right: 0; display: none; flex-direction: row; flex-wrap: nowrap;
+  align-items: center; gap: .3rem; margin: 0; padding: .15rem; list-style: none;
+  background: transparent; border: 0; box-shadow: none; white-space: nowrap; z-index: 6;
+}
+/* Save submenu opens BELOW; Publish submenu opens ABOVE its button — both horizontal */
+.act-cell--publish .act-pop{ top: auto; bottom: calc(100% + .35rem); }
+body:has(#share-open:checked)   .act-cell--share   .act-pop,
+body:has(#save-open:checked)    .act-cell--save    .act-pop,
+body:has(#publish-open:checked) .act-cell--publish .act-pop{ display: flex; }
+.act-pop a, .act-pop label{
+  display: flex; align-items: center; gap: .5rem; padding: .45rem .55rem; border-radius: 8px;
+  font: 500 .85rem var(--font-ui); color: var(--ink); text-decoration: none; transition: background var(--fast);
+}
+.act-pop a:hover, .act-pop label:hover{ background: var(--fill-soft); }
+body:has(#share-open:checked)   .share-btn,
+body:has(#save-open:checked)    .save-btn,
+body:has(#publish-open:checked) .publish-btn{ background: var(--fill-soft); border-color: var(--accent); color: var(--accent-deep); }
+
+/* ── 6. MODAL — New label ───────────────────────────────────── */
+.modal-overlay{
+  position: fixed; inset: 0; z-index: 40; display: none;
+  align-items: center; justify-content: center; padding: 1rem;
+  background: rgba(0,0,0,.32); backdrop-filter: blur(2px);
+}
+body:has(#newlabel-open:checked) .modal-overlay--label,
+body:has(#newwiz-open:checked)   .modal-overlay--wiz{ display: flex; animation: page-in .25s var(--bounce); }
+.modal{
+  position: relative; z-index: 1;   /* sit above the click-catch so clicks inside don't close it */
+  width: 320px; max-width: 100%; max-height: 86vh; overflow: auto; padding: 1.2rem 1.1rem;
+  background: #fff; border-radius: var(--radius); box-shadow: 0 24px 60px rgba(0,0,0,.28);
+}
+.modal-head{ display: flex; align-items: center; margin: 0 0 .8rem; font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; color: var(--ink); }
+.modal-close{ margin-left: auto; width: 28px; height: 28px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: var(--ink-soft); transition: background var(--fast); }
+.modal-close:hover{ background: var(--fill-soft); color: var(--accent-deep); }
+.modal label.field-label, .modal .field-label{ display: block; font: 600 .78rem var(--font-ui); color: var(--ink-soft); margin: .6rem 0 .25rem; }
+/* emoji picker — 5 per row, 10 rows */
+.emoji-grid{ display: grid; grid-template-columns: repeat(5, 1fr); gap: .15rem; max-height: 200px; overflow-y: auto; padding: .2rem; border: 1px solid var(--line-strong); border-radius: 10px; }
+.emoji-cell{ display: inline-flex; align-items: center; justify-content: center; aspect-ratio: 1; border: 0; background: transparent; border-radius: 8px; font-size: 1.25rem; cursor: pointer; transition: background var(--fast), transform var(--fast); }
+.emoji-cell:hover{ background: var(--fill-soft); transform: scale(1.1); }
+.emoji-cell.is-chosen{ background: var(--accent); }
+.modal input[type=text]{ width: 100%; padding: .55rem .7rem; border: 1px solid var(--line-strong); border-radius: 10px; font: 400 .95rem var(--font-ui); }
+.modal input:focus-visible{ outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.modal-actions{ display: flex; justify-content: flex-end; gap: .5rem; margin-top: 1rem; }
+
+.showcase-note{ max-width: 460px; margin: 1.6rem auto 2.4rem; padding: 0 .9rem; font: 400 .78rem/1.5 var(--font-ui); color: var(--ink-mute); text-align: center; }
+.showcase-note code{ font: .9em ui-monospace,Menlo,Consolas,monospace; color: var(--accent-deep); }
+
+@media (max-width: 420px){
+  .topbar-inner{ padding: .55rem .6rem; gap: .25rem; }
+  .title-mood{ display: none; }
+  .stepnav-node{ padding: 0 .9rem; }
+}
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{ animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── state controls ─────────────────────────────────────────── -->
+<input type="checkbox" id="m"          class="ctl"><!-- menu -->
+<input type="checkbox" id="level-open" class="ctl"><!-- level-switcher -->
+<input type="radio" name="lang" id="lang-en" class="ctl" checked>
+<input type="radio" name="lang" id="lang-es" class="ctl">
+
+
+<!-- magic labelers: 3 personalities (formal/informal/hotter) + none -->
+<input type="checkbox" id="magic-open" class="ctl">
+<input type="radio" name="labeler" id="labeler-none"     class="ctl" checked>
+<input type="radio" name="labeler" id="labeler-formal"   class="ctl">
+<input type="radio" name="labeler" id="labeler-informal" class="ctl">
+<input type="radio" name="labeler" id="labeler-hotter"   class="ctl">
+
+<!-- stepper: 2 steps (Who · Summary) — sits at the bottom of main -->
+<input type="radio" name="step" id="step-who"     class="ctl" checked>
+<input type="radio" name="step" id="step-summary" class="ctl">
+
+<!-- wizard suggester popover toggle (chips inject text via the inline script) -->
+<input type="checkbox" id="wizard-open" class="ctl">
+<!-- mic listening toggle -->
+<input type="checkbox" id="mic-on" class="ctl">
+
+<!-- rater: 5 senses (hear·touch·view·taste·smell) as the base meta-rater, multi-select -->
+<input type="checkbox" id="rate-open"  class="ctl"><!-- rater panel -->
+<input type="checkbox" id="rate-more1" class="ctl"><!-- +reactions (the 4 original main raters come first) -->
+<input type="checkbox" id="rate-more2" class="ctl"><!-- +30 reactions -->
+
+<!-- insights: a single cycle — none → who → what → where → why → none -->
+<input type="radio" name="insight" id="insight-none"  class="ctl" checked>
+<input type="radio" name="insight" id="insight-who"   class="ctl">
+<input type="radio" name="insight" id="insight-what"  class="ctl">
+<input type="radio" name="insight" id="insight-where" class="ctl">
+<input type="radio" name="insight" id="insight-why"   class="ctl">
+
+<!-- language dropdown · About info box · related apps "For you" expander -->
+<input type="checkbox" id="lang-more"     class="ctl">
+<input type="checkbox" id="about-open"    class="ctl">
+<input type="checkbox" id="related-foryou" class="ctl">
+
+<!-- summary extras + sound toggle + modals + action popovers -->
+<input type="checkbox" id="magic-toggle" class="ctl">
+<input type="checkbox" id="share-open"    class="ctl">
+<input type="checkbox" id="save-open"     class="ctl">
+<input type="checkbox" id="publish-open"  class="ctl">
+<input type="checkbox" id="newlabel-open" class="ctl">
+<input type="checkbox" id="newwiz-open"   class="ctl"><!-- New wizard modal -->
+
+<!-- ── 1. TOPBAR ─────────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="topbar-inner">
+
+    <label class="mark" for="m" title="Menu" aria-label="Menu" tabindex="0">
+      <span class="mk mk-default"><svg viewBox="0 0 32 32" aria-hidden="true" style="width:.95em;height:.95em;display:inline-block;vertical-align:-.16em"><path fill="currentColor" fill-rule="evenodd" d="M16 27.5C16 27.5 3.5 19.8 3.5 11.2 3.5 7.3 6.6 4.5 10 4.5 12.7 4.5 15 6 16 8.2 17 6 19.3 4.5 22 4.5 25.4 4.5 28.5 7.3 28.5 11.2 28.5 19.8 16 27.5 16 27.5Z M7.6 17.3 h2.2 v3.2 h-2.2 z M11.1 15.3 h2.2 v5.2 h-2.2 z M14.6 13.3 h2.2 v7.2 h-2.2 z"/></svg></span>
+      <span class="mk mk-formal">🎩</span>
+      <span class="mk mk-informal">👋</span>
+      <span class="mk mk-hotter">🔥</span>
+    </label>
+    <div class="title-wrap">
+      <label class="title" for="m" title="blogy — normal" tabindex="0">blogy</label>
+      <span class="title-mood" aria-hidden="true">
+        <span class="tm-formal">· formal</span>
+        <span class="tm-informal">· informal</span>
+        <span class="tm-hotter">· hotter</span>
+      </span>
+    </div>
+
+    <span class="topbar-spacer"></span>
+
+
+    <!-- magic labelers -->
+    <div class="magic-wrap">
+      <div class="labelers" role="radiogroup" aria-label="Personality (label)">
+        <label class="labeler labeler-reset" for="labeler-none" title="Reset to normal" aria-label="Reset labeler" tabindex="0">↺</label>
+        <label class="labeler" for="labeler-formal"   title="Formal"   aria-label="Formal"   tabindex="0">🎩</label>
+        <label class="labeler" for="labeler-informal" title="Informal" aria-label="Informal" tabindex="0">👋</label>
+        <label class="labeler" for="labeler-hotter"   title="Hotter"   aria-label="Hotter"   tabindex="0">🔥</label>
+        <label class="labeler labeler-add topbar-btn" for="newlabel-open" title="New label" aria-label="Add a label" tabindex="0" style="width:30px;height:30px">＋</label>
+      </div>
+      <label class="magic-btn topbar-btn" for="magic-open" title="Magic" aria-label="Magic labels" tabindex="0">✨</label>
+    </div>
+
+    <!-- tier-switcher (Mini · Basic · Normal · Advanced · Super) -->
+    <div class="level-pop">
+      <ul class="level-pop-rays" role="menu" aria-label="blogy tiers">
+        <li><a class="level-pop-step" href="blogy-mini-css.html" title="Mini tier"><span class="level-pop-node" aria-hidden="true"></span><span class="level-pop-label"><span class="l-en">Mini</span><span class="l-es">Mini</span></span></a></li>
+        <li><a class="level-pop-step" href="blogy-basic-css.html" title="Basic tier"><span class="level-pop-node" aria-hidden="true"></span><span class="level-pop-label"><span class="l-en">Basic</span><span class="l-es">Básico</span></span></a></li>
+        <li><a class="level-pop-step level-pop-step--current" href="blogy-normal-css.html" aria-current="page" title="Normal tier (current)"><span class="level-pop-node" aria-hidden="true"></span><span class="level-pop-label"><span class="l-en">Normal</span><span class="l-es">Normal</span></span></a></li>
+        <li><a class="level-pop-step level-pop-step--wip" href="blogy-advanced.html" title="Advanced tier (in development)" aria-disabled="true" tabindex="-1"><span class="level-pop-node" aria-hidden="true"></span><span class="level-pop-label"><span class="l-en">Advanced</span><span class="l-es">Avanzado</span></span></a></li>
+        <li><a class="level-pop-step level-pop-step--wip" href="blogy-super.html" title="Super tier (in development)" aria-disabled="true" tabindex="-1"><span class="level-pop-node" aria-hidden="true"></span><span class="level-pop-label"><span class="l-en">Super</span><span class="l-es">Súper</span></span></a></li>
+      </ul>
+      <label class="level-pop-btn topbar-btn" for="level-open" title="Tiers" aria-label="Show tiers" tabindex="0">
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="currentColor">
+          <rect x="1.1" y="15" width="2.6" height="5" rx="1"/>
+          <rect x="5.9" y="12" width="2.6" height="8" rx="1"/>
+          <rect x="10.7" y="9" width="2.6" height="11" rx="1"/>
+          <rect x="15.5" y="6" width="2.6" height="14" rx="1" opacity=".28"/>
+          <rect x="20.3" y="3" width="2.6" height="17" rx="1" opacity=".28"/>
+        </svg>
+      </label>
+    </div>
+
+
+    <!-- ── 2. MENU panel ─────────────────────────────────────── -->
+    <ul class="menu-panel" role="menu" aria-label="Menu">
+      <!-- 1 · About blogy — opens an info box below the topbar -->
+      <li><label class="menu-row" for="about-open" tabindex="0" role="menuitem">
+        <span class="mi">♡</span>
+        <span class="l-en">About blogy</span><span class="l-es">Acerca de blogy</span>
+      </label></li>
+
+      <li class="menu-divider" role="separator" aria-hidden="true"></li>
+      <!-- 2 · Language — current language; ▾ opens a dropdown to pick another -->
+      <li><label class="menu-lang" for="lang-more" tabindex="0" role="button" aria-label="Language">
+        <span class="mi">🌐</span>
+        <span class="menu-lang-cur"><span class="l-en">English</span><span class="l-es">Español</span></span>
+        <span class="lang-caret" aria-hidden="true">▾</span>
+      </label></li>
+      <li class="menu-lang-others" role="radiogroup" aria-label="Choose language">
+        <label class="menu-sub" for="lang-en" tabindex="0">🇬🇧 English <span class="lang-check" aria-hidden="true">✓</span></label>
+        <label class="menu-sub" for="lang-es" tabindex="0">🇪🇸 Español <span class="lang-check" aria-hidden="true">✓</span></label>
+      </li>
+
+      <li class="menu-divider" role="separator" aria-hidden="true"></li>
+      <!-- 3 · Related apps — same card as blogyadvanced (★ For you reveals more) -->
+      <li class="related-apps-card">
+        <div class="related-apps-head">
+          <span class="related-apps-title"><span class="l-en">Related apps</span><span class="l-es">Apps relacionadas</span></span>
+          <label class="related-apps-foryou" for="related-foryou" tabindex="0" title="For you">
+            <span class="related-foryou-open">★ <span class="l-en">For you</span><span class="l-es">Para ti</span></span>
+            <span class="related-foryou-close">× <span class="l-en">Close</span><span class="l-es">Cerrar</span></span>
+          </label>
+        </div>
+        <ul class="related-apps-grid" role="menu">
+          <li><a href="https://flove.org/daty" title="daty"><span class="related-app-logo">💞</span><span class="related-app-name">daty</span></a></li>
+          <li><a href="https://flove.org/lovy" title="lovy"><span class="related-app-logo">💗</span><span class="related-app-name">lovy</span></a></li>
+          <li><a href="https://flove.org/wanty" title="wanty"><span class="related-app-logo">✨</span><span class="related-app-name">wanty</span></a></li>
+        </ul>
+        <ul class="related-apps-more" role="menu">
+          <li><a href="https://flove.org/hoty" title="hoty"><span class="related-app-logo">🔥</span><span class="related-app-name">hoty</span></a></li>
+          <li><a href="https://flove.org/maty" title="maty"><span class="related-app-logo">🤝</span><span class="related-app-name">maty</span></a></li>
+          <li><a href="https://flove.org/sensy" title="sensy"><span class="related-app-logo">🫧</span><span class="related-app-name">sensy</span></a></li>
+        </ul>
+        <a class="related-apps-all" href="https://flove.org/apps" title="All apps"><span class="l-en">All apps</span><span class="l-es">Todas</span></a>
+      </li>
+
+      <li class="menu-divider" role="separator" aria-hidden="true"></li>
+      <!-- 4 · Flove home -->
+      <li><a class="menu-row" href="https://flove.org" target="_blank" rel="noopener" role="menuitem">
+        <span class="mi">🌱</span>
+        <span class="l-en">Flove home</span><span class="l-es">Inicio de flove</span>
+      </a></li>
+    </ul>
+
+  </div>
+</header>
+
+<label class="menu-overlay" for="m" aria-hidden="true"></label>
+
+<!-- About info box — sits directly below the topbar, toggled by the
+     "About blogy" menu item (#about-open) -->
+<section class="about-box" role="region" aria-label="About blogy">
+  <div class="about-inner">
+    <label class="about-close" for="about-open" tabindex="0" aria-label="Close">×</label>
+    <h2><span class="l-en">About blogy</span><span class="l-es">Acerca de blogy</span></h2>
+    <p>
+      <span class="l-en">blogy is a tiny love journal: write what's in your love, shape its tone with the magic labelers, let a wizard inject a phrasing, and react with a heart. This is the <strong>normal</strong> tier — the medium standard, with a stepper and a fuller summary.</span>
+      <span class="l-es">blogy es un pequeño diario de amor: escribe lo que hay en tu amor, dale tono con los labelers mágicos, deja que un wizard inserte una frase y reacciona con un corazón. Este es el tier <strong>normal</strong> — el estándar medio, con stepper y un resumen más completo.</span>
+    </p>
+  </div>
+</section>
+
+<!-- ── 3. CONTENT (stepper nav moved to the bottom of main) ───── -->
+<main>
+
+  <!-- STEP · Who -->
+  <section class="step-panel step-panel--who card">
+    <p class="unlock-msg" role="status" aria-live="polite"><span class="l-en">You can now play the Advanced mode</span><span class="l-es">Ya puedes jugar el modo Avanzado</span></p>
+
+    <!-- per-labeler intro — title + text changes with the chosen labeler -->
+    <div class="labeler-intro" aria-live="polite">
+      <div class="labeler-intro-formal">
+        <h3><span class="l-en">Measured &amp; precise</span><span class="l-es">Medido y preciso</span></h3>
+        <p><span class="l-en">A careful, respectful register — for words meant to land with weight.</span><span class="l-es">Un registro cuidadoso y respetuoso — para palabras que deben pesar.</span></p>
+      </div>
+      <div class="labeler-intro-informal">
+        <h3><span class="l-en">Warm &amp; close</span><span class="l-es">Cálido y cercano</span></h3>
+        <p><span class="l-en">Easy, friendly, human — like talking to someone you trust.</span><span class="l-es">Fácil, amistoso, humano — como hablar con alguien de confianza.</span></p>
+      </div>
+      <div class="labeler-intro-hotter">
+        <h3><span class="l-en">Bold &amp; alive</span><span class="l-es">Atrevido y vivo</span></h3>
+        <p><span class="l-en">Brighter, braver phrasing — turn the heat up a little.</span><span class="l-es">Frases más vivas y valientes — sube un poco la temperatura.</span></p>
+      </div>
+    </div>
+
+    <form class="entry-form" action="mailto:publish@flove.org" method="post" enctype="text/plain">
+      <div class="field-wrap">
+        <div class="entry-field">
+          <textarea class="entry-textarea" name="love" rows="3" maxlength="1000" placeholder=" " required></textarea>
+          <span class="ghost-placeholder" aria-hidden="true"><span class="l-en">What's in your love?</span><span class="l-es">¿Qué hay en tu amor?</span></span>
+          <!-- 🎤 mic + 📎 file upload — centred on the field's bottom border -->
+          <div class="field-fab">
+            <label class="tool-btn mic-btn" for="mic-on" title="Mic — dictate" aria-label="Microphone" tabindex="0">🎤</label>
+            <label class="tool-btn file-btn" title="Attach a file" aria-label="Attach a file" tabindex="0">📎<input type="file" class="file-input" aria-hidden="true"></label>
+          </div>
+        </div>
+
+        <!-- ✦ wizard + ★ rater stacked to the right, each in its own row -->
+        <div class="field-side">
+          <span class="tool-cell tool-cell--wizard">
+            <ul class="tool-pop" role="group" aria-label="Wizard suggestions">
+              <li><button type="button" class="chip" data-wiz="lovely" title="Lovely" aria-label="Lovely wizard" tabindex="0">😍</button></li>
+              <li><button type="button" class="chip" data-wiz="joy"    title="Joy"    aria-label="Joy wizard"    tabindex="0">😂</button></li>
+              <li><button type="button" class="chip" data-wiz="wisdom" title="Wisdom" aria-label="Wisdom wizard" tabindex="0">🔥</button></li>
+              <li class="wiz-add-slot"><label class="chip" for="newwiz-open" title="New wizard" aria-label="Add a wizard" tabindex="0">＋</label></li>
+            </ul>
+            <label class="tool-btn" for="wizard-open" title="Wizards — click a chip to add text" aria-label="Wizard suggestions" tabindex="0">✦</label>
+          </span>
+          <span class="tool-cell tool-cell--rate">
+            <label class="tool-btn rate-trigger" for="rate-open" title="Rate" aria-label="Rate" tabindex="0"></label>
+            <!-- the 5 senses (hear·touch·view·taste·smell) open to the RIGHT
+                 of the heart as the base meta-rater (multi-select); ＋ reveals
+                 the reactions (the 4 original main raters first), then another
+                 ＋ reveals 30 more -->
+            <div class="rate-panel" role="group" aria-label="Senses and reactions">
+              <div class="rate-set rate-base" data-rate-set aria-label="Senses"></div>
+              <!-- centred ＋ below the senses; becomes × to collapse -->
+              <label class="rate-more rate-more1-btn" for="rate-more1" title="More reactions" aria-label="More reactions" tabindex="0"><span class="rm-plus">＋</span><span class="rm-close">×</span></label>
+              <div class="rate-set rate-x1" data-rate-set aria-label="More reactions"></div>
+              <!-- second ＋ appears below the expanded list; vanishes once used -->
+              <label class="rate-more rate-more2-btn" for="rate-more2" title="Even more" aria-label="Even more reactions" tabindex="0">＋</label>
+              <div class="rate-set rate-x2" data-rate-set aria-label="Even more reactions"></div>
+            </div>
+          </span>
+        </div>
+      </div>
+
+      <p class="mic-hint" aria-live="polite"><span class="l-en">🎤 Listening… (dictation is wired in the advanced tier)</span><span class="l-es">🎤 Escuchando… (el dictado se activa en el tier avanzado)</span></p>
+
+      <!-- counters (icon chips, like blogyadvanced) share the Add row -->
+      <div class="entry-actions">
+        <div class="counters" aria-label="Counters">
+          <span class="counter" title="Clicks"><span class="counter-ico">👆</span><b id="c-clicks">0</b></span>
+          <span class="counter" title="Selections"><span class="counter-ico">💞</span><b id="c-sel">0</b></span>
+          <span class="counter" title="Stars — filled textareas"><span class="counter-ico">⭐</span><b id="c-stars">0</b></span>
+        </div>
+        <!-- Add commits the entry and jumps to the Summary step -->
+        <label class="add-btn" for="step-summary" title="Add — go to Summary" tabindex="0">＋ <span class="l-en">Add</span><span class="l-es">Añadir</span></label>
+      </div>
+    </form>
+  </section>
+
+  <!-- STEP · Summary -->
+  <section class="step-panel step-panel--summary">
+    <h2 class="summary-title"><span class="l-en">Summary</span><span class="l-es">Resumen</span></h2>
+    <div class="summary-box">
+      <output class="clause clause-default">
+        <span class="summary-empty"><span class="l-en">A summary of what you added shows up here — your words and the reactions you picked.</span><span class="l-es">Aquí aparece un resumen de lo que añadiste — tus palabras y las reacciones que elegiste.</span></span>
+        <span class="summary-rx" aria-label="Reaction"></span>
+        <span class="summary-phrase" data-flove-phrase></span>
+        <span class="summary-after" aria-label="Labelers"></span>
+      </output>
+      <output class="clause clause-magic">
+        ✨ <span class="l-en">A warmer, looser re-telling of the very same words — alive and unhurried.</span><span class="l-es">Una reescritura más cálida y suelta de las mismas palabras — viva y sin prisa.</span>
+      </output>
+
+      <!-- insight panels (revealed by the cycling Insight button in the row below) -->
+      <div class="insight-panel insight-panel--who"><strong><span class="l-en">Who</span><span class="l-es">Quién</span></strong> — <span class="l-en">who is involved, and at what distance? The relations you can name are the ones you can tune.</span><span class="l-es">¿quién está implicado, y a qué distancia? Las relaciones que sabes nombrar son las que puedes afinar.</span></div>
+      <div class="insight-panel insight-panel--what"><strong><span class="l-en">What</span><span class="l-es">Qué</span></strong> — <span class="l-en">what is being asked, offered or proposed? Naming the move clarifies what you want back.</span><span class="l-es">¿qué se pide, se ofrece o se propone? Nombrar el gesto aclara qué quieres a cambio.</span></div>
+      <div class="insight-panel insight-panel--where"><strong><span class="l-en">Where</span><span class="l-es">Dónde</span></strong> — <span class="l-en">where do the boundaries sit, and what stays uncertain on purpose?</span><span class="l-es">¿dónde están los límites, y qué queda incierto a propósito?</span></div>
+      <div class="insight-panel insight-panel--why"><strong><span class="l-en">Why</span><span class="l-es">Por qué</span></strong> — <span class="l-en">why does this framing matter? The form of the sentence is already half the answer.</span><span class="l-es">¿por qué importa este encuadre? La forma de la frase ya es la mitad de la respuesta.</span></div>
+
+      <!-- Insight·Magic·Copy in one row (left); Save·Share·Publish right, two rows below -->
+      <div class="summary-actions">
+        <span class="actions-left">
+          <!-- insights — ONE cycling button: none→who→what→where→why→reset -->
+          <span class="insight-cycle" aria-label="Insights">
+            <label class="btn-ghost insight-step insight-step--0" for="insight-who"   tabindex="0">💡 <span class="l-en">Insight</span><span class="l-es">Insight</span></label>
+            <label class="btn-ghost insight-step insight-step--1" for="insight-what"  tabindex="0">💡 <span class="l-en">Insight</span><span class="l-es">Insight</span></label>
+            <label class="btn-ghost insight-step insight-step--2" for="insight-where" tabindex="0">💡 <span class="l-en">Insight</span><span class="l-es">Insight</span></label>
+            <label class="btn-ghost insight-step insight-step--3" for="insight-why"   tabindex="0">💡 <span class="l-en">Insight</span><span class="l-es">Insight</span></label>
+            <label class="btn-ghost insight-step insight-step--4" for="insight-none"  tabindex="0">💡 <span class="l-en">Insight</span><span class="l-es">Insight</span></label>
+          </span>
+          <label class="btn-ghost magic-summary-btn" for="magic-toggle" aria-label="Toggle magic phrase">
+            <span class="l-off"><span class="l-en">Magic</span><span class="l-es">Magia</span></span>
+            <span class="l-on"><span class="l-en">Phrase</span><span class="l-es">Frase</span></span>
+          </label>
+          <button type="button" class="btn-ghost"><span class="l-en">Copy</span><span class="l-es">Copiar</span></button>
+        </span>
+        <span class="actions-right">
+          <!-- Save · Share · Publish — all in one row; Save submenu opens
+               below, Publish submenu opens above -->
+          <span class="act-cell act-cell--save">
+            <ul class="act-pop" aria-label="Save as">
+              <li><a href="mailto:?subject=blogy%20.txt"><span>📄</span> .txt</a></li>
+              <li><a href="mailto:?subject=blogy%20.md"><span>📝</span> .md</a></li>
+              <li><a href="mailto:?subject=blogy%20.jpg"><span>🖼️</span> .jpg</a></li>
+            </ul>
+            <label class="btn-ghost save-btn" for="save-open" tabindex="0"><span class="l-en">Save</span><span class="l-es">Guardar</span></label>
+          </span>
+          <span class="act-cell act-cell--share">
+            <ul class="act-pop" aria-label="Share to">
+              <li><a href="mailto:?subject=blogy&body=A%20little%20love%20from%20blogy"><span>✉️</span><span class="l-en">Email</span><span class="l-es">Correo</span></a></li>
+              <li><label for="share-open"><span>🔗</span><span class="l-en">Copy link</span><span class="l-es">Copiar enlace</span></label></li>
+            </ul>
+            <label class="btn-ghost share-btn" for="share-open" tabindex="0"><span class="l-en">Share</span><span class="l-es">Compartir</span></label>
+          </span>
+          <span class="act-cell act-cell--publish">
+            <ul class="act-pop" aria-label="Publish to">
+              <li><a href="mailto:publish@flove.org?subject=Wizy"><span>🤖</span> Wizy</a></li>
+              <li><a href="mailto:publish@flove.org?subject=Reddit"><span>👽</span> Reddit</a></li>
+              <li><a href="mailto:publish@flove.org?subject=Nety"><span>🌴</span> Nety</a></li>
+            </ul>
+            <label class="btn-ghost publish-btn" for="publish-open" tabindex="0"><span class="l-en">Publish</span><span class="l-es">Publicar</span></label>
+          </span>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- stepper nav — moved to the BOTTOM of main (Who · Summary) -->
+  <nav class="stepnav" aria-label="Steps">
+    <label class="stepnav-node" for="step-who" tabindex="0"><span class="stepnav-dot" aria-hidden="true"></span><span class="stepnav-label"><span class="l-en">Love</span><span class="l-es">Amor</span></span></label>
+    <label class="stepnav-node" for="step-summary" tabindex="0"><span class="stepnav-dot" aria-hidden="true"></span><span class="stepnav-label"><span class="l-en">Summary</span><span class="l-es">Resumen</span></span></label>
+  </nav>
+</main>
+
+<!-- ── 6. MODAL — New label (was "New ray") ──────────────────── -->
+<div class="modal-overlay modal-overlay--label">
+  <label class="modal-overlay-catch" for="newlabel-open" aria-hidden="true" style="position:absolute;inset:0"></label>
+  <div class="modal" role="dialog" aria-modal="true" aria-label="New label">
+    <h2 class="modal-head"><span class="l-en">New label</span><span class="l-es">Nueva etiqueta</span>
+      <label class="modal-close" for="newlabel-open" tabindex="0" aria-label="Close">×</label>
+    </h2>
+    <form action="mailto:labels@flove.org" method="post" enctype="text/plain">
+      <label class="field-label" for="nl-name"><span class="l-en">Name</span><span class="l-es">Nombre</span></label>
+      <input type="text" id="nl-name" name="label-name" placeholder="e.g. cosy" maxlength="40">
+      <label class="field-label" for="nl-emoji"><span class="l-en">Emoji</span><span class="l-es">Emoji</span></label>
+      <input type="text" id="nl-emoji" name="label-emoji" placeholder="🌙" maxlength="4">
+      <div class="modal-actions">
+        <label class="btn-ghost" for="newlabel-open" tabindex="0"><span class="l-en">Cancel</span><span class="l-es">Cancelar</span></label>
+        <button class="add-btn" type="submit" style="margin:0">＋ <span class="l-en">Save</span><span class="l-es">Guardar</span></button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── MODAL — New wizard (added to the ✦ list after wisdom, before ＋) ── -->
+<div class="modal-overlay modal-overlay--wiz">
+  <label class="modal-overlay-catch" for="newwiz-open" aria-hidden="true" style="position:absolute;inset:0"></label>
+  <div class="modal" role="dialog" aria-modal="true" aria-label="New wizard">
+    <h2 class="modal-head"><span class="l-en">New wizard</span><span class="l-es">Nuevo wizard</span>
+      <label class="modal-close" for="newwiz-open" tabindex="0" aria-label="Close">×</label>
+    </h2>
+    <form id="newwiz-form" onsubmit="return false">
+      <span class="field-label"><span class="l-en">Emoji</span><span class="l-es">Emoji</span></span>
+      <div class="emoji-grid" id="nw-emoji-grid" role="radiogroup" aria-label="Choose an emoji"></div>
+      <input type="hidden" id="nw-emoji" value="">
+      <label class="field-label" for="nw-name"><span class="l-en">Name</span><span class="l-es">Nombre</span></label>
+      <input type="text" id="nw-name" placeholder="e.g. cosy" maxlength="24">
+      <label class="field-label" for="nw-t1"><span class="l-en">Suggested text 1</span><span class="l-es">Texto sugerido 1</span></label>
+      <input type="text" id="nw-t1" placeholder="…" maxlength="240">
+      <label class="field-label" for="nw-t2"><span class="l-en">Suggested text 2</span><span class="l-es">Texto sugerido 2</span></label>
+      <input type="text" id="nw-t2" placeholder="…" maxlength="240">
+      <label class="field-label" for="nw-t3"><span class="l-en">Suggested text 3</span><span class="l-es">Texto sugerido 3</span></label>
+      <input type="text" id="nw-t3" placeholder="…" maxlength="240">
+      <div class="modal-actions">
+        <label class="btn-ghost" for="newwiz-open" tabindex="0"><span class="l-en">Cancel</span><span class="l-es">Cancelar</span></label>
+        <button class="add-btn" type="button" id="saveWiz" style="margin:0">＋ <span class="l-en">Save</span><span class="l-es">Guardar</span></button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============================================================
+     Wizard text-insert — the ONLY JavaScript in this tier.
+     CSS cannot write into a <textarea>, so this small script handles
+     the ✦ wizard chips:
+       · click a wizard → inserts its suggestion text
+       · click the SAME wizard again → cycles 3 different texts
+       · 4th click → resets (removes that wizard's contribution)
+       · if the user edits the field (even adds a space), the inserted
+         text is kept and the next wizard click APPENDS after it.
+     ============================================================ -->
+<script>
+(function(){
+  var ta = document.querySelector('.entry-textarea');
+  if(!ta) return;
+  var WIZ = {
+    lovely: [
+      {en:"Dear reader, with care and respect, I share the following for your consideration.", es:"Estimado lector, con cuidado y respeto, comparto lo siguiente para tu consideración."},
+      {en:"If it helps, I'm here — softly, slowly, on your terms.",                            es:"Si ayuda, aquí estoy — con suavidad, despacio, a tu ritmo."},
+      {en:"Thank you for trusting me with this. Let's hold it gently.",                        es:"Gracias por confiarme esto. Sostengámoslo con delicadeza."}
+    ],
+    joy: [
+      {en:"Hey! What if we do it together and have a blast?",  es:"¡Eh! ¿Y si lo hacemos juntos y la pasamos genial?"},
+      {en:"Plot twist: we make it a game and laugh through it.", es:"Giro inesperado: lo convertimos en juego y nos reímos."},
+      {en:"Snacks ready, music up — let's gooo!",               es:"Snacks listos, música arriba — ¡vamos!"}
+    ],
+    wisdom: [
+      {en:"Where the air leans and the silence writes, there beats what has no name yet.", es:"Donde el aire se inclina y el silencio escribe, late lo que aún no tiene nombre."},
+      {en:"The river does not argue with the stone; it learns the stone's shape.",         es:"El río no discute con la piedra; aprende la forma de la piedra."},
+      {en:"What we cannot say aloud, we can say slowly — and still be heard.",              es:"Lo que no podemos decir en voz alta, podemos decirlo despacio — y seguir siendo escuchados."}
+    ]
+  };
+  var esOn = function(){ var es = document.getElementById('lang-es'); return es && es.checked; };
+  var pick = function(bot, step){ var t = WIZ[bot][step]; return esOn() ? t.es : t.en; };
+
+  var base = '';        // committed content before the active suggestion
+  var inserted = '';    // the suggestion segment we last wrote
+  var activeWizard = null; // which wizard is currently cycling
+  var step = 0;         // index into the 3 texts
+
+  function set(v){
+    ta.value = v;
+    ta.dispatchEvent(new Event('input', {bubbles:true}));
+    ta.focus();
+  }
+  function pristine(bot){ return activeWizard === bot && ta.value === (base + inserted); }
+
+  function markWizState(){
+    /* the field holds wizard text while there's a live suggestion or
+       committed wizard base; flag the body + the active chip */
+    var has = !!(inserted || (activeWizard && base));
+    document.body.classList.toggle('wiz-text', has);
+    document.querySelectorAll('.chip[data-wiz].wiz-active').forEach(function(c){ c.classList.remove('wiz-active'); });
+    if(activeWizard){
+      var c = document.querySelector('.chip[data-wiz="' + activeWizard + '"]');
+      if(c) c.classList.add('wiz-active');
+    }
+  }
+  function wireWizard(btn){
+    btn.addEventListener('click', function(ev){
+      ev.preventDefault();
+      var bot = btn.getAttribute('data-wiz');
+      if(!WIZ[bot]) return;
+      if(pristine(bot)){
+        step += 1;
+        if(step >= WIZ[bot].length){    // past the last text → reset this wizard
+          inserted = ''; activeWizard = null; step = 0;
+          set(base);
+        } else {                        // cycle to a different text in place
+          inserted = pick(bot, step);
+          set(base + inserted);
+        }
+      } else {                          // field was edited (or other wizard) → append
+        base = ta.value + (ta.value && !/\s$/.test(ta.value) ? ' ' : '');
+        inserted = pick(bot, 0);
+        activeWizard = bot; step = 0;
+        set(base + inserted);
+      }
+      markWizState();
+      btn.classList.remove('just-injected'); void btn.offsetWidth; btn.classList.add('just-injected');
+    });
+  }
+  document.querySelectorAll('.tool-cell--wizard .chip[data-wiz]').forEach(wireWizard);
+
+  /* New-wizard emoji picker — 5 per row, 10 rows (50). Click sets #nw-emoji. */
+  var emojiGrid = document.getElementById('nw-emoji-grid'),
+      emojiHidden = document.getElementById('nw-emoji');
+  if(emojiGrid){
+    var EMOJIS = ['😍','😂','🔥','❤️','✨','🌙','🌈','🦄','🎭','🤓','😈','🥰','😘','🤔','😆','🙂','😎','🤗','😇','🥳','💞','💖','💘','💌','💕','🌹','🌸','🌻','🍀','⭐','🌟','⚡','🌊','🍃','☕','🍷','🎈','🎉','🎁','📜','🕊️','🔮','🧩','🎨','🎵','📖','🗝️','🧭','⚓','🌴'];
+    EMOJIS.forEach(function(em){
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'emoji-cell'; b.textContent = em; b.setAttribute('aria-label', em);
+      b.addEventListener('click', function(){
+        emojiGrid.querySelectorAll('.is-chosen').forEach(function(x){ x.classList.remove('is-chosen'); });
+        b.classList.add('is-chosen'); if(emojiHidden) emojiHidden.value = em;
+      });
+      emojiGrid.appendChild(b);
+    });
+  }
+
+  /* New wizard — Save registers its texts and inserts a chip after wisdom,
+     before the ＋ slot, then wires it like the built-ins. */
+  var saveWiz = document.getElementById('saveWiz');
+  if(saveWiz){
+    saveWiz.addEventListener('click', function(){
+      var emoji = (document.getElementById('nw-emoji').value || '✦').trim() || '✦';
+      var name  = (document.getElementById('nw-name').value || 'wizard').trim() || 'wizard';
+      var texts = ['nw-t1','nw-t2','nw-t3'].map(function(id){ return document.getElementById(id).value.trim(); }).filter(Boolean);
+      if(!texts.length) return;         // need at least one suggested text
+      var key = 'wiz-custom-' + (Object.keys(WIZ).length + 1);
+      WIZ[key] = texts.map(function(t){ return {en:t, es:t}; });
+      var li = document.createElement('li');
+      var b  = document.createElement('button');
+      b.type = 'button'; b.className = 'chip'; b.setAttribute('data-wiz', key);
+      b.title = name; b.setAttribute('aria-label', name + ' wizard'); b.tabIndex = 0;
+      b.textContent = emoji;
+      li.appendChild(b);
+      var slot = document.querySelector('.tool-cell--wizard .wiz-add-slot');
+      slot.parentNode.insertBefore(li, slot);    // after the last wizard, before ＋
+      wireWizard(b);
+      ['nw-emoji','nw-name','nw-t1','nw-t2','nw-t3'].forEach(function(id){ document.getElementById(id).value = ''; });
+      if(emojiGrid) emojiGrid.querySelectorAll('.is-chosen').forEach(function(x){ x.classList.remove('is-chosen'); });
+      var open = document.getElementById('newwiz-open'); if(open) open.checked = false;
+    });
+  }
+
+  /* ---- rater — multi-select reaction palette to the right of the ♥ ----
+     base = the 5 senses (hear·touch·view·taste·smell, the canonical flove
+     meta-rater) · ＋ reveals the reaction list (the 4 original main raters
+     come first) · ＋ reveals 30 more. Picks feed the summary. */
+  var LABELER  = {'labeler-formal':'🎩','labeler-informal':'👋','labeler-hotter':'🔥'};
+  /* the 5 senses replace the old base reactions; titles label each chip */
+  var SENSE_LABELS = {'👂':'Hear','🖐️':'Touch','👁️':'View','👅':'Taste','👃':'Smell'};
+  var REACT_BASE = ['👂','🖐️','👁️','👅','👃'];   /* hear · touch · view · taste · smell */
+  /* the 4 former main raters (kiss·fun·thoughts·fire) now lead the +list */
+  var REACT_X1 = ['😘','😆','🤔','🔥','🥰','😎','🤗','😇','🥳','😈','🙂','😅','😌','🤩','😋','🤭','😏','🥲','😴','🤝'];
+  var HEART = '😘';   /* the kiss-with-heart is the "heart" shown before the text */
+  var REACT_X2 = ['💞','💖','💘','💗','💓','💕','💌','🌹','🌸','🌻','🍀','⭐','🌟','⚡','🌈','🌙','🌊','🍃','☕','🍷','🎈','🎉','🎁','🕊️','🔮','🎨','🎵','📖','🧭'];
+  var picked = new Set();
+  function fillRateSet(sel, list){
+    var box = document.querySelector(sel); if(!box) return;
+    list.forEach(function(em){
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'rate-chip'; b.textContent = em;
+      var lbl = SENSE_LABELS[em] || em;             /* senses get a named label */
+      b.setAttribute('aria-label', lbl); b.title = lbl;
+      if(SENSE_LABELS[em]) b.setAttribute('data-sense', lbl.toLowerCase());
+      b.addEventListener('click', function(){
+        if(picked.has(em)){ picked.delete(em); b.classList.remove('picked'); }
+        else { picked.add(em); b.classList.add('picked'); }
+        refresh(); updateSummary();
+      });
+      box.appendChild(b);
+    });
+  }
+  fillRateSet('.rate-base', REACT_BASE);
+  fillRateSet('.rate-x1',   REACT_X1);
+  fillRateSet('.rate-x2',   REACT_X2);
+  /* collapsing the first list (×) also collapses the second */
+  var more1 = document.getElementById('rate-more1'), more2 = document.getElementById('rate-more2');
+  if(more1 && more2){ more1.addEventListener('change', function(){ if(!more1.checked) more2.checked = false; }); }
+
+  /* ---- live summary: field text + the selections made ---- */
+  var phraseEl = document.querySelector('.summary-phrase'),
+      rxEl     = document.querySelector('.summary-rx'),
+      afterEl  = document.querySelector('.summary-after'),
+      emptyEl  = document.querySelector('.summary-empty');
+  function labelerPick(){ for(var id in LABELER){ var e = document.getElementById(id); if(e && e.checked) return LABELER[id]; } return ''; }
+  /* phrase output: ❤️ heart · text · the other picks — senses + reactions —
+     trail at the end (subemojis) */
+  function updateSummary(){
+    var v = ta.value;
+    var heart = picked.has(HEART) ? HEART : '';
+    var subs  = Array.from(picked).filter(function(e){ return e !== HEART; }).join(' ');
+    if(rxEl)     rxEl.textContent     = heart;   /* heart → before the text */
+    if(phraseEl) phraseEl.textContent = v;       /* the added text */
+    if(afterEl)  afterEl.textContent  = subs;    /* subemojis → at the end */
+    if(emptyEl)  emptyEl.style.display = (v.trim() || heart || subs) ? 'none' : '';
+  }
+
+  /* ---- counters (👆 clicks · 💞 selections · ⭐ stars) + Advanced unlock ----
+     Threshold: ≥1 star, ≥2 selections, ≥10 clicks → enable & highlight the
+     Advanced tier, party the counters for 3s, flash a 5s message. */
+  var cClicks = document.getElementById('c-clicks'),
+      cSel    = document.getElementById('c-sel'),
+      cStars  = document.getElementById('c-stars');
+  var clicks = 0, unlocked = false;
+  function selCount(){ return picked.size + (labelerPick() ? 1 : 0) + ((activeWizard || inserted) ? 1 : 0); }
+  function starCount(){ return ta.value.trim() ? 1 : 0; }
+  function refresh(){
+    if(cSel)   cSel.textContent   = selCount();
+    if(cStars) cStars.textContent = starCount();
+    checkUnlock();
+  }
+  function checkUnlock(){
+    if(unlocked) return;
+    if(starCount() >= 1 && selCount() >= 2 && clicks >= 10){ unlocked = true; doUnlock(); }
+  }
+  function doUnlock(){
+    var adv = document.querySelector('.level-pop-step[href$="blogy-advanced.html"]');
+    if(adv){ adv.classList.remove('level-pop-step--wip'); adv.classList.add('is-unlocked'); adv.removeAttribute('aria-disabled'); adv.setAttribute('tabindex','0'); }
+    var btn = document.querySelector('.level-pop-btn'); if(btn) btn.classList.add('is-unlocked');
+    var counters = document.querySelector('.counters');
+    if(counters){ counters.classList.add('celebrate'); setTimeout(function(){ counters.classList.remove('celebrate'); }, 3000); }
+    var msg = document.querySelector('.unlock-msg');
+    if(msg){ msg.classList.add('show'); setTimeout(function(){ msg.classList.remove('show'); }, 5000); }
+  }
+  document.querySelectorAll('.tool-cell .chip, .rate-chip, .rate-more, .tool-btn, .add-btn, .labeler, .level-pop-btn, .magic-btn').forEach(function(el){
+    el.addEventListener('click', function(){ clicks++; if(cClicks) cClicks.textContent = clicks; checkUnlock(); });
+  });
+  ta.addEventListener('input', function(){
+    if(!ta.value){ base = ''; inserted = ''; activeWizard = null; step = 0; }  /* field cleared → no wizard text */
+    markWizState();
+    refresh(); updateSummary();
+  });
+  /* ♥ second click (collapse) → unselect every reaction + reset the lists */
+  var rateOpen = document.getElementById('rate-open');
+  if(rateOpen){
+    rateOpen.addEventListener('change', function(){
+      if(!rateOpen.checked){
+        picked.clear();
+        document.querySelectorAll('.rate-chip.picked').forEach(function(c){ c.classList.remove('picked'); });
+        if(more1) more1.checked = false;
+        if(more2) more2.checked = false;
+        refresh(); updateSummary();
+      }
+    });
+  }
+  /* labeler / language changes refresh the counters + summary */
+  document.addEventListener('change', function(ev){
+    if(ev.target && /^(labeler|lang)-/.test(ev.target.id || '')){ refresh(); updateSummary(); }
+  });
+  refresh(); updateSummary();
+})();
+</script>
+
+</body>
+</html>

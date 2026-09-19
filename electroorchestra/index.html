@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="author" content="Marc (marcflove)">
+<meta name="copyright" content="© 2026 Marc · CC BY-SA 4.0">
+<meta name="description" content="ElectroOrchestra — sessions and remixes by MarcFlove: Progressive, Chill and HardTech, with the note-emit × onda-modulada mark.">
+<title>ElectroOrchestra · sessions &amp; remixes</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><rect width='120' height='120' rx='26' fill='%23121019'/><ellipse cx='38' cy='88' rx='14' ry='11' transform='rotate(-22 38 88)' fill='%23e9e4ff'/><line x1='50' y1='83' x2='50' y2='32' stroke='%23e9e4ff' stroke-width='8' stroke-linecap='round'/><path d='M73.47 43.62 A20 20 0 0 1 73.47 76.38' fill='none' stroke='%23b3f04a' stroke-width='8' stroke-linecap='round'/><path d='M80.93 32.97 A33 33 0 0 1 80.93 87.03' fill='none' stroke='%23b3f04a' stroke-width='8' stroke-linecap='round'/></svg>">
+<style>
+  @font-face{ font-family:"Orbitron"; src:url("fonts/Orbitron.ttf") format("truetype"); font-weight:100 900; font-display:swap; }
+
+  :root{
+    --ink:#121019;
+    --ink-2:#0d0c12;
+    --card:#181321;
+    --card-2:#1b1726;
+    --line:rgba(179,240,74,.14);
+    --volt:#b3f04a;
+    --mark:#e9e4ff;
+    --indigo:#7d5cff;
+    --tir:#c9c2d8;
+    --mut:#59506b;
+    --marc:#ff8a8a;
+    --g-flove:linear-gradient(96deg,#ff3344,#ff8a3a 50%,#ffd633);
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0;
+    background:
+      radial-gradient(52vmax 40vmax at 112% -6%, rgba(179,240,74,.07), transparent 60%),
+      radial-gradient(46vmax 40vmax at -8% 108%, rgba(125,92,255,.08), transparent 60%),
+      var(--ink);
+    color:var(--tir);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+    line-height:1.5;
+    min-height:100svh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .env{ width:min(860px,92vw); margin-inline:auto; }
+  .os{ font-family:"Orbitron",sans-serif; }
+
+  /* ══ header hub — logo + title, click opens the menu ══ */
+  header{ padding:clamp(2rem,6vh,3.6rem) 0 1.2rem; }
+  .top{ display:flex; align-items:center; gap:1.1rem; flex-wrap:wrap; }
+  .hub{ position:relative; display:flex; align-items:center; gap:.9rem; width:max-content; }
+
+  /* ══ site nav — Styles · Artists dropdowns ══ */
+  .nav{ display:flex; flex-direction:column; align-items:center; gap:.5rem; }
+  .filter-row{ display:flex; align-items:flex-end; gap:.5rem; flex-wrap:wrap; justify-content:center; }
+  .style-controls{ display:flex; flex-direction:column; gap:.25rem; }
+  .drop{ position:relative; }
+  .drop-btn{
+    display:inline-flex; align-items:center; gap:.5rem;
+    background:var(--card); color:var(--mark); border:1px solid var(--line);
+    border-radius:99px; padding:.52rem .95rem; cursor:pointer;
+    font-family:"Orbitron",sans-serif; font-weight:700; font-size:.6rem; letter-spacing:.22em; text-transform:uppercase;
+    transition:border-color .15s,color .15s;
+  }
+  .drop-btn:hover{ border-color:rgba(179,240,74,.45); color:var(--volt); }
+  .drop-btn .cn{ font-size:.5rem; line-height:1; transition:transform .2s; }
+  .drop.open .drop-btn .cn{ transform:rotate(180deg); }
+  .drop-list{
+    position:absolute; top:calc(100% + .55rem); left:0; z-index:40;
+    min-width:190px; background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:.35rem; display:flex; flex-direction:column; gap:.22rem;
+    box-shadow:0 22px 54px -22px rgba(0,0,0,.72);
+  }
+  .drop-list[hidden]{ display:none; }
+  #dd-artists .drop-list{ left:auto; right:0; }
+  .filter-option{
+    display:flex; align-items:center; gap:.65rem; min-height:44px; cursor:pointer;
+    color:var(--tir); border-radius:10px; padding:.56rem .75rem;
+    font-family:"Orbitron",sans-serif; font-size:.62rem; letter-spacing:.14em; text-transform:uppercase;
+    transition:background .12s,color .12s;
+  }
+  .filter-option:hover, .filter-option:has(input:checked){ background:var(--card-2); color:var(--volt); }
+  .filter-option input{ accent-color:var(--volt); margin:0; flex:none; }
+  #style-options input, #artist-options input{ position:absolute; width:1px; height:1px; overflow:hidden;
+    clip-path:inset(50%); white-space:nowrap; }
+  .filter-option:focus-within{ outline:2px solid var(--volt); outline-offset:-2px; }
+  .filter-count{ color:var(--volt); letter-spacing:0; }
+  .filter-reset{ color:var(--volt); background:var(--card); border:1px solid var(--line);
+    border-radius:99px; padding:.4rem .75rem; cursor:pointer; margin-left:.3rem;
+    font-family:"Orbitron",sans-serif; font-weight:700; font-size:.58rem; letter-spacing:.2em; text-transform:uppercase;
+    transition:border-color .15s,color .15s,background .15s; }
+  .filter-reset:hover{ border-color:rgba(179,240,74,.45); }
+  .filter-reset[aria-pressed="true"]{ background:var(--volt); color:var(--ink); border-color:var(--volt); }
+  [hidden]{ display:none !important; }
+  .solf{ font-style:normal; display:inline-grid; place-items:center; flex:none;
+    width:26px; height:26px; padding:0; border:1px solid var(--marc); border-radius:50%;
+    background:transparent; color:var(--marc); font-size:1.12rem; line-height:1; cursor:pointer;
+    transition:background .15s,color .15s,box-shadow .15s; }
+  .solf:hover{ box-shadow:0 0 0 2px color-mix(in srgb,var(--marc) 24%,transparent); }
+  .solf[aria-pressed="true"]{ background:var(--marc); color:var(--ink); }
+  .solf:focus-visible{ outline:2px solid var(--mark); outline-offset:3px; }
+  .hub-btn{
+    display:flex; align-items:center; gap:.9rem;
+    background:none; border:0; padding:0; margin:0; cursor:pointer;
+    color:inherit; font:inherit; -webkit-tap-highlight-color:transparent;
+    border-radius:14px;
+  }
+  .hub-btn:focus-visible{ outline:2px solid var(--volt); outline-offset:3px; }
+  .hub-btn svg{ width:clamp(58px,18vmin,84px); height:auto; display:block; filter:drop-shadow(0 6px 18px rgba(125,92,255,.22)); transition:transform .25s; }
+  .hub-btn:hover svg{ transform:scale(1.04) rotate(-1.5deg); }
+  .hub-name{ text-align:left; font-family:"Orbitron",sans-serif; font-weight:900; letter-spacing:.04em; line-height:1.02; }
+  .hub-name .a{ display:block; font-size:clamp(1.05rem,4vw,1.9rem); color:var(--volt); }
+  .hub-name .b{ display:block; font-size:clamp(.72rem,2.6vw,1.2rem); letter-spacing:.34em; color:var(--mark); }
+  .hub-caret{ font-family:"Orbitron",sans-serif; color:var(--mut); font-size:.8rem; align-self:flex-end; padding-bottom:.3rem; transition:color .2s; }
+  .hub-btn[aria-expanded="true"] .hub-caret{ color:var(--volt); transform:rotate(180deg); display:inline-block; }
+  .hub-btn[aria-expanded="true"] .hub-caret{ transform:rotate(180deg); }
+
+  /* ══ menu ══ */
+  .menu{
+    position:absolute; top:calc(100% + .7rem); left:0; z-index:40;
+    min-width:min(300px,86vw);
+    background:var(--card); border:1px solid var(--line); border-radius:16px;
+    padding:.5rem; display:flex; flex-direction:column; gap:.3rem;
+    box-shadow:0 24px 60px -24px rgba(0,0,0,.7);
+  }
+  .menu[hidden]{ display:none; }
+  .chip{
+    display:flex; align-items:center; gap:.65rem; width:100%;
+    background:var(--card-2); border:1px solid color-mix(in srgb,var(--c,var(--volt)) 34%, transparent);
+    border-radius:12px; padding:.7rem .85rem; cursor:pointer; color:var(--mark);
+    font-family:"Orbitron",sans-serif; font-weight:700; font-size:.78rem; letter-spacing:.14em; text-transform:uppercase;
+    transition:background .15s, transform .1s;
+  }
+  .chip:hover{ background:color-mix(in srgb,var(--c,var(--volt)) 12%, var(--card-2)); }
+  .chip:active{ transform:scale(.985); }
+  .chip .dot{ width:10px; height:10px; border-radius:50%; background:var(--c,var(--volt)); box-shadow:0 0 12px var(--c,var(--volt)); }
+
+  /* ══ sections ══ */
+  .sec{ padding:3.2rem 0 .8rem; }
+  .sec h2{
+    margin:0 0 1rem; font-family:"Orbitron",sans-serif; font-weight:700;
+    font-size:1.44rem; letter-spacing:.34em; text-transform:uppercase; color:var(--volt);
+  }
+  .grid{ display:grid; gap:.8rem; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); }
+
+  /* ══ cards ══ */
+  .card{
+    position:relative; overflow:hidden;
+    background:var(--card); border:1px solid var(--line); border-radius:16px;
+    padding:2rem 1rem .85rem;
+    display:flex; flex-direction:column; gap:.9rem;
+    transition:border-color .2s, transform .15s;
+  }
+  .card:hover{ transform:translateY(-2px); }
+  .card h3{ display:flex; align-items:center; flex-wrap:wrap; gap:.4rem; margin:0;
+    font-family:"Orbitron",sans-serif; font-weight:900; font-size:1.3rem; letter-spacing:.03em; color:var(--mark); }
+  .clip-markers{ display:inline-flex; align-items:center; gap:.25rem; }
+  .clip-duration{ position:absolute; top:.55rem; right:1rem; color:var(--tir);
+    font:500 .7rem/1.2 ui-monospace,monospace; font-variant-numeric:tabular-nums; }
+  .card:has(.dl) .clip-duration{ right:2.8rem; }
+  .dl{
+    position:absolute; top:.45rem; right:1rem; z-index:2;
+    width:21px; height:21px; display:grid; place-items:center;
+    background:var(--card); border:1.3px solid var(--volt); border-radius:50%; color:var(--volt);
+    text-decoration:none; transition:background .15s,color .15s,box-shadow .15s;
+  }
+  .dl:hover{ background:var(--volt); color:var(--ink); box-shadow:0 0 0 4px rgba(179,240,74,.12); }
+  .dl:focus-visible{ outline:2px solid var(--mark); outline-offset:2px; }
+  .dl svg{ width:9px; height:9px; display:block; }
+  .card h3 a{ color:inherit; text-decoration:none; }
+  .card h3 a:hover{ color:var(--volt); }
+  .card .row{ margin-top:auto; display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; }
+  .card-video{ width:100%; aspect-ratio:16/9; background:#000; border:0; border-radius:12px; display:block; }
+  .card-videos{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:.6rem; }
+  .who{
+    display:inline-flex; align-items:center; gap:.4rem;
+    font-size:.6rem; letter-spacing:.18em; text-transform:uppercase; font-weight:700;
+    color:var(--marc); border:1px solid color-mix(in srgb,var(--marc) 40%, transparent);
+    border-radius:99px; padding:.24rem .58rem;
+  }
+  .who .dot{ width:6px; height:6px; border-radius:50%; background:var(--marc); }
+  a.who{ text-decoration:none; transition:border-color .15s,color .15s; }
+  a.who:hover{ border-color:color-mix(in srgb,var(--volt) 60%, transparent); color:var(--volt); }
+  a.who:focus-visible{ outline:2px solid var(--volt); outline-offset:2px; }
+  .who--guest{ color:var(--mut); border-color:color-mix(in srgb,var(--mut) 55%, transparent); }
+  .who--guest .dot{ background:var(--mut); }
+  .card.active{ border-color:var(--volt); }
+  .card.ext{ border-style:dashed; }
+  .card.ext .play{ color:var(--indigo); border-color:var(--indigo); }
+  .card.ext .play:hover{ background:var(--indigo); color:var(--ink); }
+
+  .play{
+    width:46px; height:46px; border-radius:50%; flex:none; cursor:pointer;
+    display:grid; place-items:center; margin-left:auto;
+    background:transparent; border:1.6px solid var(--volt); color:var(--volt);
+    transition:background .18s, color .18s, box-shadow .18s;
+    position:relative;
+  }
+  .play:hover{ background:var(--volt); color:var(--ink); box-shadow:0 0 0 6px rgba(179,240,74,.12); }
+  .play svg{ width:17px; height:17px; display:block; }
+  .play .p-pause{ display:none; }
+  .play.is-playing{ background:var(--volt); color:var(--ink); }
+  .play.is-playing .p-play{ display:none; }
+  .play.is-playing .p-pause{ display:flex; align-items:center; gap:3px; }
+  .p-pause i{ display:block; width:3px; border-radius:2px; background:currentColor; }
+  .p-pause i:nth-child(1){ height:9px; }
+  .p-pause i:nth-child(2){ height:13px; }
+  .p-pause i:nth-child(3){ height:7px; }
+
+  .prog{ height:3px; border-radius:2px; background:rgba(179,240,74,.16); overflow:hidden; }
+  .prog i{ display:block; height:100%; width:0; background:var(--volt); border-radius:2px; }
+
+  .ext-link{ display:inline-flex; align-items:center; gap:.35rem; margin-left:auto;
+    font-family:"Orbitron",sans-serif; font-size:.62rem; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--indigo); text-decoration:none; border:1.4px solid var(--indigo); border-radius:99px; padding:.34rem .7rem; }
+
+  /* ══ artists — minimal comic-hero roster ══ */
+  .artists{ border-top:1px solid var(--line); margin-top:1.4rem; padding:1.4rem 0 2.2rem; }
+  .artists summary{ cursor:pointer; margin-bottom:.9rem; font-family:"Orbitron",sans-serif; font-weight:700; font-size:.72rem;
+    letter-spacing:.34em; text-transform:uppercase; color:var(--volt); }
+  .hero{ position:relative; overflow:hidden; display:flex; align-items:center; gap:1rem;
+    background:var(--card); border:1px solid var(--line); border-radius:18px; padding:1.1rem 1.2rem;
+    scroll-margin-top:2rem; }
+  .hero::before{ content:""; position:absolute; width:130px; height:130px; right:-34px; top:-34px; pointer-events:none;
+    background-image:radial-gradient(circle, color-mix(in srgb,var(--a,#ff8a8a) 20%, transparent) 1.4px, transparent 2px);
+    background-size:11px 11px; opacity:.8; }
+  .hero::after{ content:""; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(115deg, transparent 55%, color-mix(in srgb,var(--a,#ff8a8a) 9%, transparent)); }
+  .hero-ico{
+    position:relative; flex:none; width:66px; aspect-ratio:1; border-radius:50%; padding:3px;
+    display:grid; place-items:center; background:var(--ring,var(--g-flove));
+    border:2px solid color-mix(in srgb,var(--a,#ff8a8a) 70%, #fff);
+  }
+  .hero-ico svg{ width:100%; height:100%; display:block; background:var(--card-2); border-radius:50%;
+    filter:drop-shadow(0 6px 14px rgba(0,0,0,.5)); }
+  .hero-meta{ position:relative; display:flex; flex-direction:column; gap:.34rem; min-width:0; }
+  .hero__tag{ width:max-content; font-family:"Orbitron",sans-serif; font-size:.55rem; letter-spacing:.24em; text-transform:uppercase;
+    color:var(--a,#ff8a8a); border:1px solid color-mix(in srgb,var(--a,#ff8a8a) 45%, transparent); border-radius:99px; padding:.2rem .55rem; }
+  .hero h3{ margin:0; font-family:"Orbitron",sans-serif; font-weight:900; letter-spacing:.05em; color:var(--mark); font-size:1.05rem; }
+  .hero__desc{ font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:var(--mut); }
+  .hero__role{ margin-left:auto; align-self:flex-end; font-family:"Orbitron",sans-serif; font-size:.55rem; letter-spacing:.22em;
+    text-transform:uppercase; color:var(--volt); border:1px solid rgba(179,240,74,.28); border-radius:99px; padding:.22rem .55rem; white-space:nowrap; }
+  /* band (ensemble) — flipped, bigger */
+  .hero--band{ flex-direction:column; text-align:center; gap:.7rem; justify-content:center;
+    border-color:color-mix(in srgb,#b3f04a 34%, var(--line)); padding:1.5rem 1.2rem; }
+  .hero--band .hero-ico{ width:84px; }
+  .hero--band .hero-meta{ align-items:center; }
+  .hero--band .hero__role{ margin:0; }
+
+  /* ══ modals ══ */
+  dialog{
+    border:1px solid var(--line); border-radius:18px; padding:0;
+    background:var(--card); color:var(--tir); width:min(460px,92vw);
+    box-shadow:0 34px 90px -30px rgba(0,0,0,.85);
+  }
+  dialog::backdrop{ background:rgba(13,12,18,.74); backdrop-filter:blur(2px); }
+  dialog[open]{ animation:pop .22s ease-out; }
+  @keyframes pop{ from{ transform:scale(.96); opacity:0; } to{ transform:scale(1); opacity:1; } }
+  .dlg{ padding:1.4rem 1.5rem 1.5rem; }
+  .dlg-head{ display:flex; align-items:center; gap:.7rem; margin-bottom:1rem; }
+  .dlg-head .dot{ width:11px; height:11px; border-radius:50%; box-shadow:0 0 14px currentColor; }
+  .dlg h2{ margin:0; font-family:"Orbitron",sans-serif; font-weight:900; font-size:1.05rem; letter-spacing:.08em; color:var(--mark); }
+  .dlg p{ margin:0 0 .6rem; font-size:.88rem; color:var(--tir); }
+  .dlg a{ color:var(--volt); }
+  .dlg-close{ margin-top:.9rem; width:100%; cursor:pointer;
+    background:var(--card-2); color:var(--tir); border:1px solid var(--line);
+    border-radius:12px; padding:.55rem; font-family:"Orbitron",sans-serif; font-size:.64rem;
+    letter-spacing:.24em; text-transform:uppercase; }
+  .dlg-close:hover{ color:var(--volt); border-color:rgba(179,240,74,.4); }
+  .video-placeholder{ aspect-ratio:16/9; display:grid; place-content:center; gap:.6rem; text-align:center;
+    border:1px dashed #ffd633; border-radius:12px; background:var(--ink); color:var(--tir); }
+  .video-placeholder span{ font-size:2rem; color:#ffd633; }
+
+  /* ══ footer · onda viva → sube arriba ══ */
+  .foot{ text-align:center; padding:2.2rem 1rem 4.4rem; }
+  .foot-btn{ background:none; border:0; padding:0; margin:0; cursor:pointer; color:inherit;
+    border-radius:14px; -webkit-tap-highlight-color:transparent; }
+  .foot-btn:focus-visible{ outline:2px solid var(--volt); outline-offset:4px; }
+  .foot-btn svg{ width:min(430px,80vw); height:auto; display:inline-block; }
+  .foot-btn .wl{ transform-box:fill-box; transform-origin:50% 50%; animation:wlift 2.3s ease-in-out infinite; }
+  @keyframes wlift{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+    html{ scroll-behavior:auto; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="env">
+    <div class="top">
+    <div class="hub">
+      <button class="hub-btn" id="hub" aria-haspopup="menu" aria-expanded="false" aria-controls="menu">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <rect x="3" y="3" width="114" height="114" rx="27" fill="#121019" stroke="rgba(125,92,255,.38)" stroke-width="1.6"/>
+          <ellipse cx="38" cy="88" rx="14" ry="11" transform="rotate(-22 38 88)" fill="#e9e4ff"/>
+          <line x1="50" y1="83" x2="50" y2="32" stroke="#e9e4ff" stroke-width="5.5" stroke-linecap="round"/>
+          <path d="M 73.47 43.62 A 20 20 0 0 1 73.47 76.38" fill="none" stroke="#b3f04a" stroke-width="5.5" stroke-linecap="round"/>
+          <path d="M 80.93 32.97 A 33 33 0 0 1 80.93 87.03" fill="none" stroke="#b3f04a" stroke-width="5.5" stroke-linecap="round"/>
+          <path d="M 88.38 22.32 A 46 46 0 0 1 88.38 97.68" fill="none" stroke="#b3f04a" stroke-width="5.5" stroke-linecap="round"/>
+        </svg>
+        <span class="hub-name"><span class="a">ELECTRO</span><span class="b">ORCHESTRA</span></span>
+        <span class="hub-caret">▼</span>
+      </button>
+
+      <nav class="menu" id="menu" role="menu" hidden>
+        <button class="chip" role="menuitem" style="--c:#b3f04a" data-open="about">
+          <span class="dot"></span><span>About</span>
+        </button>
+        <button class="chip" role="menuitem" style="--c:#ffd633" data-open="guide">
+          <span class="dot"></span><span>Guide</span>
+        </button>
+        <button class="chip" role="menuitem" style="--c:#7d5cff" data-open="contact">
+          <span class="dot"></span><span>Contact</span>
+        </button>
+      </nav>
+    </div>
+
+    <nav class="nav" aria-label="Site sections">
+      <div class="filter-row">
+      <div class="style-controls">
+        <button type="button" class="filter-reset" aria-pressed="false" hidden>All</button>
+      <div class="drop" id="dd-styles">
+        <button class="drop-btn" aria-controls="style-options" aria-expanded="false">Styles <span class="filter-count" hidden></span><span class="cn" aria-hidden="true">▼</span></button>
+        <div class="drop-list" id="style-options" role="group" aria-label="Filter by styles" hidden>
+          <label class="filter-option"><input type="checkbox" data-filter="styles" value="progressive">Progressive</label>
+          <label class="filter-option"><input type="checkbox" data-filter="styles" value="chill">Chill</label>
+          <label class="filter-option"><input type="checkbox" data-filter="styles" value="hardtech">HardTech</label>
+          <label class="filter-option"><input type="checkbox" data-filter="styles" value="classical">Classical</label>
+          <label class="filter-option"><input type="checkbox" data-filter="styles" value="diy">DIY</label>
+          <label class="filter-option"><input type="checkbox" data-filter="styles" value="ebm">EBM</label>
+        </div>
+      </div>
+      </div>
+      <div class="drop" id="dd-artists">
+        <button class="drop-btn" aria-controls="artist-options" aria-expanded="false">Artists <span class="filter-count" hidden></span><span class="cn" aria-hidden="true">▼</span></button>
+        <div class="drop-list" id="artist-options" role="group" aria-label="Filter by artists" hidden>
+          <label class="filter-option"><input type="checkbox" data-filter="artists" value="marcflove">MarcFlove</label>
+          <label class="filter-option"><input type="checkbox" data-filter="artists" value="electroorchestra">ElectroOrchestra</label>
+          <label class="filter-option"><input type="checkbox" data-filter="artists" value="veltra">Veltra</label>
+        </div>
+      </div>
+      </div>
+    </nav>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="env" id="styles">
+
+    <section class="sec">
+      <h2>Sessions</h2>
+      <div class="grid">
+
+        <article class="card" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/3111ElectrOrchestra/Progressive%20ElectrOrchestra%20%231.m4a" data-direction="up" data-styles="progressive" data-artists="marcflove" id="styles-progressive">
+          <time class="clip-duration" datetime="PT22M43S" title="22 minutes 43 seconds">22:43</time>
+          <a class="dl" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/3111ElectrOrchestra/Progressive%20ElectrOrchestra%20%231.m4a" download="ElectroOrchestra - Progressive.m4a" title="Download the Progressive clip" aria-label="Download the Progressive clip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M5 21h14"/></svg>
+          </a>
+          <h3><a href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/3111ElectrOrchestra/Progressive%20ElectrOrchestra%20%231.m4a" download="ElectroOrchestra - Progressive.m4a">Progressive</a></h3>
+          <div class="prog"><i></i></div>
+          <div class="row">
+            <span class="who"><span class="dot"></span>MarcFlove</span>
+            <button class="play" aria-label="Play Progressive">
+              <svg class="p-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a.9.9 0 0 0 1.37.76l10.2-6.5a.9.9 0 0 0 0-1.52L9.37 4.74A.9.9 0 0 0 8 5.5Z"/></svg>
+              <span class="p-pause"><i></i></span>
+            </button>
+          </div>
+        </article>
+
+        <article class="card" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/3111ElectrOrchestra/ElectrOrchestra%232Chill.m4a" data-direction="up" data-styles="chill" data-artists="marcflove" id="styles-chill">
+          <time class="clip-duration" datetime="PT15M18S" title="15 minutes 18 seconds">15:18</time>
+          <a class="dl" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/3111ElectrOrchestra/ElectrOrchestra%232Chill.m4a" download="ElectroOrchestra - Chill.m4a" title="Download the Chill clip" aria-label="Download the Chill clip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M5 21h14"/></svg>
+          </a>
+          <h3><a href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/3111ElectrOrchestra/ElectrOrchestra%232Chill.m4a" download="ElectroOrchestra - Chill.m4a">Chill</a></h3>
+          <div class="prog"><i></i></div>
+          <div class="row">
+            <span class="who"><span class="dot"></span>MarcFlove</span>
+            <button class="play" aria-label="Play Chill">
+              <svg class="p-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a.9.9 0 0 0 1.37.76l10.2-6.5a.9.9 0 0 0 0-1.52L9.37 4.74A.9.9 0 0 0 8 5.5Z"/></svg>
+              <span class="p-pause"><i></i></span>
+            </button>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>Remixes</h2>
+      <div class="grid">
+
+        <article class="card" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/3111ElectrOrchestra/Arriba.m4a" data-direction="up" data-styles="hardtech classical" data-artists="marcflove" id="styles-hardtech">
+          <time class="clip-duration" datetime="PT6M8S" title="6 minutes 8 seconds">6:08</time>
+          <a class="dl" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/3111ElectrOrchestra/Arriba.m4a" download="ElectroOrchestra - HardTech.m4a" title="Download the HardTech clip" aria-label="Download the HardTech clip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M5 21h14"/></svg>
+          </a>
+          <h3 id="styles-classical"><a href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/3111ElectrOrchestra/Arriba.m4a" download="ElectroOrchestra - HardTech.m4a" title="HardTech — features classical music">HardTech</a><span class="clip-markers"><button type="button" class="solf" data-style-toggle="classical" aria-pressed="false" title="Toggle Classical clips" aria-label="Toggle Classical clips">♪</button></span></h3>
+          <div class="prog"><i></i></div>
+          <div class="row">
+            <span class="who"><span class="dot"></span>MarcFlove</span>
+            <button class="play" aria-label="Play HardTech">
+              <svg class="p-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a.9.9 0 0 0 1.37.76l10.2-6.5a.9.9 0 0 0 0-1.52L9.37 4.74A.9.9 0 0 0 8 5.5Z"/></svg>
+              <span class="p-pause"><i></i></span>
+            </button>
+          </div>
+        </article>
+
+        </div>
+    </section>
+
+    <section class="sec">
+      <h2>Videoclips</h2>
+      <div class="grid">
+
+        <article class="card card--video" data-direction="up" data-styles="diy" data-artists="marcflove">
+          <time class="clip-duration" datetime="PT1M18S" title="1 minute 18 seconds">1:18</time>
+          <a class="dl" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/312Dance/songs/TecnoLow.mp4" download="ElectroOrchestra - LowDIY.mp4" title="Download the LowDIY clip" aria-label="Download the LowDIY clip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M5 21h14"/></svg>
+          </a>
+          <h3><a href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/312Dance/songs/TecnoLow.mp4" target="_blank" rel="noopener">LowDIY</a></h3>
+          <video class="card-video" controls preload="none" src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/312Dance/songs/TecnoLow.mp4"></video>
+          <div class="row">
+            <span class="who"><span class="dot"></span>MarcFlove</span>
+          </div>
+        </article>
+
+        <article class="card card--video" data-direction="up" data-styles="ebm" data-artists="marcflove">
+          <time class="clip-duration" datetime="PT6M39S" title="6 minutes 39 seconds">6:39</time>
+          <a class="dl" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/312Dance/songs/EBM-Mascleta.mp4" download="ElectroOrchestra - EBM-Mascleta.mp4" title="Download the EBM-Mascleta clip" aria-label="Download the EBM-Mascleta clip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M5 21h14"/></svg>
+          </a>
+          <h3><a href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/312Dance/songs/EBM-Mascleta.mp4" target="_blank" rel="noopener">EBM-Mascleta</a></h3>
+          <video class="card-video" controls preload="none" src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/312Dance/songs/EBM-Mascleta.mp4"></video>
+          <div class="row">
+            <span class="who"><span class="dot"></span>MarcFlove</span>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <details class="artists" id="artists">
+      <summary class="env">Artists</summary>
+      <div class="env">
+        <div class="grid" id="roster"></div>
+      </div>
+    </details>
+
+    <section class="sec">
+      <h2>Links</h2>
+      <div class="grid">
+
+        <article class="card card--video" id="links-worakls">
+          <h3>Worakls</h3>
+          <div class="card-videos">
+            <iframe class="card-video" src="https://www.youtube-nocookie.com/embed/Va-sa7OEYjg" title="Adagio for Square — Worakls Orchestra Tour 2022 — Live" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            <iframe class="card-video" src="https://www.youtube-nocookie.com/embed/IzD5SvVIguw" title="Worakls Orchestra — Crow (live Zénith Montpellier 2022)" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            <iframe class="card-video" src="https://www.youtube-nocookie.com/embed/iRBZzg5coEo" title="&quot;Orchestras are boring&quot;, they said" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            <iframe class="card-video" src="https://www.youtube-nocookie.com/embed/QRQwZDWz1Pw" title="Worakls Orchestra live at Château La Coste in France for Cercle" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          </div>
+          <div class="row">
+            <a class="who who--guest" href="https://www.youtube.com/channel/UCswumVYAf0SKczPSoRGHxcQ" target="_blank" rel="noopener" title="Worakls on YouTube"><span class="dot"></span>Worakls Orchestra</a>
+          </div>
+        </article>
+
+        <article class="card card--video" id="links-ibiza">
+          <time class="clip-duration" title="Live performance recorded in Ibiza">live</time>
+          <h3>IBIZA Orchestral — Adagio for Strings</h3>
+          <iframe class="card-video" src="https://www.youtube-nocookie.com/embed/8NIkxqdGcr4" title="IBIZA Orchestral — Adagio for Strings" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          <div class="row">
+            <a class="who who--guest" href="https://www.youtube.com/@IBIZAOrchestral" target="_blank" rel="noopener" title="IBIZA Orchestral on YouTube"><span class="dot"></span>IBIZA Orchestral</a>
+          </div>
+        </article>
+
+        <article class="card card--video" id="links-safriduo">
+          <time class="clip-duration" title="Live TV performance">live tv</time>
+          <h3>Safri Duo — Played-A-Live (LIVE)</h3>
+          <iframe class="card-video" src="https://www.youtube-nocookie.com/embed/E6nGRIeSWlc" title="Safri Duo — Played-A-Live (LIVE)" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          <div class="row">
+            <a class="who who--guest" href="https://www.youtube.com/channel/UChxvFvpbG7hdyFv9LbceNFg" target="_blank" rel="noopener" title="Safri Duo on YouTube"><span class="dot"></span>Safri Duo</a>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="foot">
+  <button type="button" class="foot-btn" id="foot-btn" aria-label="Volver arriba" title="Volver arriba">
+    <svg viewBox="0 0 300 100" role="img" aria-label="ElectroOrchestra · onda viva">
+      <g font-family="Orbitron,sans-serif" font-weight="700" font-size="30">
+        <text class="wl" style="animation-delay:0s" x="42" y="50" fill="#b3f04a">E</text>
+        <text class="wl" style="animation-delay:.12s" x="73" y="41" fill="#b3f04a">L</text>
+        <text class="wl" style="animation-delay:.24s" x="104" y="46" fill="#b3f04a">E</text>
+        <text class="wl" style="animation-delay:.36s" x="135" y="57" fill="#b3f04a">C</text>
+        <text class="wl" style="animation-delay:.48s" x="166" y="48" fill="#b3f04a">T</text>
+        <text class="wl" style="animation-delay:.6s" x="197" y="61" fill="#b3f04a">R</text>
+        <text class="wl" style="animation-delay:.72s" x="228" y="53" fill="#b3f04a">O</text>
+      </g>
+      <g font-family="Orbitron,sans-serif" font-weight="700" font-size="26">
+        <text class="wl" style="animation-delay:.09s" x="36" y="84" fill="#ffffff">O</text>
+        <text class="wl" style="animation-delay:.21s" x="62" y="92" fill="#ffffff">R</text>
+        <text class="wl" style="animation-delay:.33s" x="88" y="81" fill="#ffffff">C</text>
+        <text class="wl" style="animation-delay:.45s" x="114" y="77" fill="#ffffff">H</text>
+        <text class="wl" style="animation-delay:.57s" x="140" y="89" fill="#ffffff">E</text>
+        <text class="wl" style="animation-delay:.69s" x="166" y="93" fill="#ffffff">S</text>
+        <text class="wl" style="animation-delay:.81s" x="192" y="79" fill="#ffffff">T</text>
+        <text class="wl" style="animation-delay:.93s" x="218" y="86" fill="#ffffff">R</text>
+        <text class="wl" style="animation-delay:1.05s" x="244" y="76" fill="#ffffff">A</text>
+      </g>
+    </svg>
+  </button>
+</footer>
+
+<!-- About modal -->
+<dialog id="dlg-about" aria-labelledby="about-t">
+  <div class="dlg">
+    <div class="dlg-head">
+      <span class="dot" style="color:#b3f04a;background:#b3f04a"></span>
+      <h2 id="about-t">About</h2>
+    </div>
+    <p>Electro-Techno is over synthetic and Orchestras can be very much empowered with Electronic music. We explore this beautiful under-enjoyed link. More Orchestra to Electro and More Electro to Orchestras!</p>
+    <form method="dialog"><button class="dlg-close" value="ok">Close</button></form>
+  </div>
+</dialog>
+
+<!-- Contact modal -->
+<dialog id="dlg-contact" aria-labelledby="contact-t">
+  <div class="dlg">
+    <div class="dlg-head">
+      <span class="dot" style="color:#7d5cff;background:#7d5cff"></span>
+      <h2 id="contact-t">Contact</h2>
+    </div>
+    <p>Contact us to add your electro orquestas here and for proposing us anything.</p>
+    <form method="dialog"><button class="dlg-close" value="ok">Close</button></form>
+  </div>
+</dialog>
+
+<dialog id="dlg-guide" aria-labelledby="guide-t">
+  <div class="dlg">
+    <div class="dlg-head">
+      <span class="dot" style="color:#ffd633;background:#ffd633"></span>
+      <h2 id="guide-t">Guide</h2>
+    </div>
+    <div class="video-placeholder"><span aria-hidden="true">▶</span><p>Video coming soon</p></div>
+    <form method="dialog"><button class="dlg-close" value="ok">Close</button></form>
+  </div>
+</dialog>
+
+<audio id="player" preload="none"></audio>
+
+<script>
+(function(){
+  var hub=document.getElementById('hub'), menu=document.getElementById('menu');
+
+  /* ── menu — opened from title or logo ── */
+  function setMenu(on){
+    menu.hidden=!on;
+    hub.setAttribute('aria-expanded', on?'true':'false');
+  }
+  hub.addEventListener('click', function(e){
+    e.stopPropagation();
+    setMenu(menu.hidden);
+  });
+
+  menu.addEventListener('click', function(e){
+    var chip=e.target.closest('.chip'); if(!chip) return;
+    setMenu(false);
+    var t=chip.dataset.open;
+    var dialog=document.getElementById('dlg-'+t);
+    if(dialog) dialog.showModal();
+  });
+
+  /* ── site nav — Styles · Artists dropdowns ── */
+  var stylesDD=document.getElementById('dd-styles'), artistsDD=document.getElementById('dd-artists');
+  var stylesBtn=stylesDD.querySelector('.drop-btn'), stylesList=stylesDD.querySelector('.drop-list');
+  var artistsBtn=artistsDD.querySelector('.drop-btn'), artistsList=artistsDD.querySelector('.drop-list');
+  var artists=document.getElementById('artists');
+
+  function setDD(dd,btn,list,on){
+    list.hidden=!on;
+    btn.setAttribute('aria-expanded', on?'true':'false');
+    dd.classList.toggle('open', on);
+  }
+  function setHash(h){ try{ history.replaceState(null,'', h?'#'+h:location.pathname+location.search); }catch(_){ location.hash=h; } }
+
+  var selected={styles:new Set(),artists:new Set()};
+  var filterInputs=Array.from(document.querySelectorAll('input[data-filter]'));
+  var clipCards=Array.from(document.querySelectorAll('main .card'));
+  var filterReset=document.querySelector('.filter-reset');
+
+  function applyFilters(updateHash){
+    clipCards.forEach(function(card){
+      // Match any selection within a group, and every selected group together.
+      var matchesGroups=Object.keys(selected).every(function(group){
+        var values=(card.dataset[group] || '').split(/\s+/);
+        return selected[group].size===0 || values.some(function(value){ return selected[group].has(value); });
+      });
+      card.hidden=!matchesGroups;
+    });
+    document.querySelectorAll('main .sec').forEach(function(section){
+      section.hidden=!Array.from(section.querySelectorAll('.card')).some(function(card){ return !card.hidden; });
+    });
+    document.querySelectorAll('[data-style-toggle]').forEach(function(chip){
+      chip.setAttribute('aria-pressed',String(selected.styles.has(chip.dataset.styleToggle)));
+    });
+    filterInputs.forEach(function(input){ input.checked=selected[input.dataset.filter].has(input.value); });
+    [stylesDD,artistsDD].forEach(function(dd,i){
+      var size=selected[i===0?'styles':'artists'].size;
+      var badge=dd.querySelector('.filter-count');
+      badge.hidden=size===0;
+      badge.textContent='('+size+')';
+    });
+    var anyFilter=selected.styles.size>0 || selected.artists.size>0;
+    filterReset.hidden=!anyFilter;
+    filterReset.setAttribute('aria-pressed', anyFilter?'true':'false');
+    if(updateHash){
+      var params=new URLSearchParams();
+      Object.keys(selected).forEach(function(group){
+        if(selected[group].size) params.set(group,Array.from(selected[group]).join(','));
+      });
+      setHash(params.size?'filters?'+params.toString():'styles');
+    }
+  }
+  document.addEventListener('click',function(e){
+    var solf=e.target.closest('[data-style-toggle]');
+    if(solf){
+      var value=solf.dataset.styleToggle;
+      if(selected.styles.has(value)) selected.styles.delete(value); else selected.styles.add(value);
+      applyFilters(true);
+      return;
+    }
+  });
+  filterInputs.forEach(function(input){
+    input.addEventListener('change',function(){
+      var group=selected[input.dataset.filter];
+      if(input.checked) group.add(input.value); else group.delete(input.value);
+      applyFilters(true);
+    });
+  });
+  document.querySelector('.filter-reset').addEventListener('click',function(){
+    selected.styles.clear(); selected.artists.clear();
+    applyFilters(true);
+    filterReset.focus();
+  });
+  function readFilterHash(){
+    var hash=location.hash;
+    if(hash!=='' && hash.indexOf('#styles')!==0 && hash.indexOf('#filters?')!==0) return;
+    selected.styles.clear(); selected.artists.clear();
+    if(hash.indexOf('#filters?')===0){
+      var params=new URLSearchParams(hash.slice(9));
+      filterInputs.forEach(function(input){
+        if((params.get(input.dataset.filter) || '').split(',').includes(input.value)) selected[input.dataset.filter].add(input.value);
+      });
+    } else {
+      filterInputs.filter(function(input){ return input.dataset.filter==='styles'; }).forEach(function(input){
+        if(hash==='#styles-'+input.value) selected.styles.add(input.value);
+      });
+    }
+    applyFilters(false);
+  }
+  window.addEventListener('hashchange',readFilterHash);
+  readFilterHash();
+
+  function showArtists(on, scrollTo){
+    artists.open=on;
+    if(on){
+      if(scrollTo){
+        setTimeout(function(){ var el=document.getElementById(scrollTo); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); },40);
+      } else {
+        artists.scrollIntoView({behavior:'smooth',block:'start'});
+      }
+    }
+  }
+
+  stylesBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    var open=stylesList.hidden;
+    setDD(stylesDD,stylesBtn,stylesList,open);
+    setDD(artistsDD,artistsBtn,artistsList,false);
+  });
+
+  artistsBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    var open=artistsList.hidden;
+    setDD(artistsDD,artistsBtn,artistsList,open);
+    setDD(stylesDD,stylesBtn,stylesList,false);
+  });
+
+  document.addEventListener('click', function(e){
+    if(!menu.hidden && !menu.contains(e.target) && hub!==e.target && !hub.contains(e.target)) setMenu(false);
+    if(!stylesList.hidden && !stylesDD.contains(e.target)) setDD(stylesDD,stylesBtn,stylesList,false);
+    if(!artistsList.hidden && !artistsDD.contains(e.target)) setDD(artistsDD,artistsBtn,artistsList,false);
+  });
+  document.addEventListener('keydown',function(e){
+    if(e.key!=='Escape') return;
+    if(!stylesList.hidden){ setDD(stylesDD,stylesBtn,stylesList,false); stylesBtn.focus(); }
+    if(!artistsList.hidden){ setDD(artistsDD,artistsBtn,artistsList,false); artistsBtn.focus(); }
+  });
+
+  /* ── artists — minimal comic-hero roster, 5 humanized icons, random per artist ── */
+  var ICON_VANGUARD='<svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M14 58c2.4-10.8 9.6-13.6 19-13.6s16.6 2.8 19 13.6Z" fill="#251d39"/><rect x="23" y="17" width="18" height="27" rx="9" fill="#251d39"/><rect x="24.5" y="28.5" width="15" height="6.5" rx="3.25" fill="#b3f04a"/><circle cx="20.5" cy="25" r="1.7" fill="#b3f04a"/><circle cx="43.5" cy="25" r="1.7" fill="#b3f04a"/><path d="M28 51l-2.2 5.5h12.4L36 51Z" fill="#b3f04a"/></svg>';
+  var ICON_KNIGHT='<svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M14 58c2.4-10.8 9.6-13.6 19-13.6s16.6 2.8 19 13.6Z" fill="#251d39"/><path d="M22.5 41V21.5c0-6 4.3-9.5 9.5-9.5s9.5 3.5 9.5 9.5V41Z" fill="#251d39"/><path d="M26 16.5l6-7.5 6 7.5" stroke="#7d5cff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="24.5" y="25.5" width="15" height="6" rx="3" fill="#7d5cff"/><circle cx="27" cy="15.5" r="1.4" fill="#7d5cff"/><circle cx="37" cy="15.5" r="1.4" fill="#7d5cff"/><path d="M22.5 41h19v4h-19Z" fill="#7d5cff"/></svg>';
+  var ICON_PULSE='<svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M13 58c2.4-10.8 9.6-13.6 19-13.6s16.6 2.8 19 13.6Z" fill="#251d39"/><rect x="23" y="19" width="18" height="25" rx="9" fill="#251d39"/><line x1="32" y1="16" x2="32" y2="8" stroke="#ffd633" stroke-width="2.4" stroke-linecap="round"/><circle cx="32" cy="6.5" r="2.1" fill="#ffd633"/><rect x="24" y="26.5" width="16" height="7" rx="3" fill="#ffd633"/><path d="M29 37h6" stroke="#ffd633" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="52.5" r="3.4" fill="#ffd633"/></svg>';
+  var ICON_COWL='<svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M14.5 58c2.6-11.6 9.4-15.4 17.5-15.4s14.9 3.8 17.5 15.4Z" fill="#ff8a8a"/><path d="M16 58c2.2-9.4 8.6-13.6 16-13.6S48 48.6 50 58Z" fill="#251d39"/><path d="M23 24c0-8 3.4-12.5 9-12.5s9 4.5 9 12.5l-4 9h-10Z" fill="#251d39"/><ellipse cx="32" cy="29" rx="4.2" ry="6.5" fill="#15101f"/><path d="M27.5 48l4.5-5 4.5 5-4.5 6Z" fill="#ff8a8a"/></svg>';
+  var ICON_APEX='<svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M11.5 58c3-11.6 10-15.4 20.5-15.4S48.9 46.4 51.5 58Z" fill="#e9e4ff"/><rect x="24" y="22" width="16" height="22" rx="8" fill="#251d39"/><path d="M23 23l1.6-7 4.6 3.8 2.8-8 2.8 8 4.6-3.8 1.6 7Z" fill="#e9e4ff"/><rect x="25.5" y="30" width="13" height="4.5" rx="2.25" fill="#15101f"/><path d="M32 49.5l1.4 3 3.3.4-2.5 2.3.6 3.2-2.8-1.6-2.8 1.6.6-3.2-2.5-2.3 3.3-.4Z" fill="#b3f04a"/></svg>';
+  var ICON_WAVES='<svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><circle cx="32" cy="32" r="4.5" fill="#b3f04a"/><g stroke="#e9e4ff" stroke-width="3" stroke-linecap="round"><path d="M25.6 20.9 Q32 16 38.4 20.9"/><path d="M21.9 14.5 Q32 7.5 42.1 14.5"/><path d="M18.1 8 Q32 -1 45.9 8"/></g></svg>';
+  var ICON_MONOGRAM='<svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><circle cx="32" cy="32" r="25" stroke="#7d5cff" stroke-width="2.4"/><text x="32" y="38.5" text-anchor="middle" font-family="Orbitron,sans-serif" font-weight="900" font-size="19" fill="#e9e4ff">E<tspan fill="#b3f04a">//</tspan><tspan fill="#e9e4ff">O</tspan></text></svg>';
+
+  var HERO_TYPES=[
+    {name:'vanguard', svg:ICON_VANGUARD},
+    {name:'knight',   svg:ICON_KNIGHT},
+    {name:'pulse',    svg:ICON_PULSE},
+    {name:'cowl',     svg:ICON_COWL},
+    {name:'apex',     svg:ICON_APEX},
+    {name:'waves',    svg:ICON_WAVES},
+    {name:'monogram', svg:ICON_MONOGRAM}
+  ];
+
+  var ROSTER=[
+    {id:'artists-marcflove', name:'MarcFlove', kind:'solo', tag:'author', hero:'waves',
+     desc:'sessions · remixes', accent:'#ff8a8a', ring:'var(--g-flove)'},
+    {id:'artists-electroorchestra', name:'ElectroOrchestra', kind:'band', tag:'Brand', hero:'monogram',
+     desc:'', accent:'#b3f04a',
+     ring:'conic-gradient(from 220deg,#b3f04a,#7d5cff 55%,#b3f04a)'}
+  ];
+
+  var iconQueue=[];
+  function nextHeroIcon(){
+    if(!iconQueue.length){
+      iconQueue=HERO_TYPES.slice();
+      for(var i=iconQueue.length-1;i>0;i--){
+        var j=Math.floor(Math.random()*(i+1)), t=iconQueue[i];
+        iconQueue[i]=iconQueue[j]; iconQueue[j]=t;
+      }
+    }
+    return iconQueue.pop();
+  }
+
+  function buildRoster(){
+    var wrap=document.getElementById('roster');
+    if(!wrap) return;
+    ROSTER.forEach(function(ar){
+      // Existing portraits exchanged; new artists receive a saved random type.
+      var heroName=ar.hero;
+      if(!heroName){
+        try{ heroName=localStorage.getItem('electroorchestra.hero.'+ar.id); }catch(_){}
+      }
+      var hero=HERO_TYPES.find(function(t){ return t.name===heroName; }) || nextHeroIcon();
+      try{ localStorage.setItem('electroorchestra.hero.'+ar.id,hero.name); }catch(_){}
+      var el=document.createElement('article');
+      el.className='hero hero--'+ar.kind;
+      el.id=ar.id;
+      el.dataset.hero=hero.name;
+      el.style.setProperty('--a', ar.accent);
+      el.style.setProperty('--ring', ar.ring);
+      el.innerHTML=
+        '<div class="hero-ico">'+hero.svg+'</div>'+
+        '<div class="hero-meta">'+
+          '<h3>'+ar.name+'</h3>'+
+          (ar.desc?'<span class="hero__desc">'+ar.desc+'</span>':'')+
+          '<span class="hero__role">'+ar.tag+'</span>'+
+        '</div>';
+      wrap.appendChild(el);
+    });
+  }
+  buildRoster();
+
+  /* deep-link: #artists / #artists-* expands the section on load */
+  (function(){
+    var h=location.hash;
+    if(h.slice(0,8)==='#artists'){
+      showArtists(true, h.slice(1));
+    }
+  })();
+
+  /* ── player — own tracks, auto-next on end ── */
+  var audio=document.getElementById('player');
+  var cards=[].slice.call(document.querySelectorAll('.card[data-src]'));
+  var tracks=cards.map(function(c,i){ return {card:c, src:c.dataset.src, idx:i}; });
+  var current=-1;
+
+  function resetPause(except){
+    cards.forEach(function(c){
+      var p=c.querySelector('.play');
+      p.classList.remove('is-playing');
+      c.classList.remove('active');
+      var b=c.querySelector('.prog i'); if(b) b.style.width='0%';
+    });
+    if(except && except!==-1) current=except;
+  }
+
+  function activate(idx){
+    cards.forEach(function(c,i){
+      c.classList.toggle('active', i===idx);
+      c.querySelector('.play').classList.toggle('is-playing', i===idx);
+      if(i===idx){ var b=c.querySelector('.prog i'); if(b) b.style.width='0%'; }
+    });
+  }
+
+  cards.forEach(function(card,i){
+    var btn=card.querySelector('.play'), bar=card.querySelector('.prog i');
+    btn.addEventListener('click', function(){
+      if(current===i){
+        if(audio.paused){ audio.play(); btn.classList.add('is-playing'); card.classList.add('active'); }
+        else { audio.pause(); btn.classList.remove('is-playing'); card.classList.remove('active'); }
+        return;
+      }
+      current=i;
+      audio.src=tracks[i].src;
+      activate(i);
+      audio.play();
+    });
+  });
+
+  audio.addEventListener('timeupdate', function(){
+    if(current<0) return;
+    if(audio.duration>0){
+      var bar=tracks[current].card.querySelector('.prog i');
+      if(bar) bar.style.width=(audio.currentTime/audio.duration*100)+'%';
+    }
+  });
+
+  audio.addEventListener('ended', function(){
+    var next=(current+1)%tracks.length;
+    current=next;
+    audio.src=tracks[next].src;
+    activate(next);
+    audio.play();
+  });
+
+  /* ── download buttons — grab the clip and save it, not just navigate ── */
+  document.addEventListener('click', function(e){
+    var dl=e.target.closest('a.dl');
+    if(!dl) return;
+    var href=dl.getAttribute('href');
+    if(!href) return;
+    e.preventDefault();
+    fetch(href).then(function(res){
+      if(!res.ok) throw new Error('bad status');
+      return res.blob();
+    }).then(function(blob){
+      var url=URL.createObjectURL(blob);
+      var a=document.createElement('a');
+      a.href=url;
+      a.download=dl.getAttribute('download')||href.split('/').pop();
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+    }).catch(function(){
+      /* cross-origin without CORS — open the clip so it can still be saved */
+      window.open(href,'_blank','noopener');
+    });
+  });
+
+  /* ── footer · onda viva → sube arriba ── */
+  (function(){
+    var footBtn=document.getElementById('foot-btn');
+    if(!footBtn) return;
+    footBtn.addEventListener('click', function(){
+      var smooth=!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      window.scrollTo({ top:0, behavior:smooth?'smooth':'auto' });
+    });
+  })();
+})();
+</script>
+</body>
+</html>

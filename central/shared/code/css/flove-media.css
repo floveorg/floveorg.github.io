@@ -1,0 +1,135 @@
+/* ============================================================
+   flove-media.css · tags floating space + player/playlists/threads
+   — abstracted from risa/index (tag-space.flowing, player, threads,
+   video boxes, paginator, quick-menu). Uses --app-accent palette.
+   ============================================================ */
+
+/* ── TAGS FLOATING SPACE ── */
+.tag-space{position:relative; width:100%; height:460px; border:none; background:transparent; overflow:hidden; padding:0}
+.tag-space.flowing .chip{position:absolute; left:0; top:0}
+.tag-space .chips-hint{position:absolute; inset:0; margin:auto; display:grid; place-items:center; max-width:34ch; text-align:center; font-size:.95rem; opacity:.65; padding:0 1rem}
+.tag-space .chip{
+  border:1.6px solid var(--app-accent); background:var(--paper-card); color:var(--ink);
+  font-family:var(--font-ui); font-weight:600; border-radius:999px; padding:7px 15px; cursor:pointer;
+  box-shadow:0 3px 8px -3px var(--shadow); transition:transform .12s, background .12s; user-select:none;
+}
+.tag-space .chip:hover{transform:scale(1.07)}
+.tag-space .chip[aria-pressed="true"]{background:var(--app-accent); color:#fff; border-color:var(--app-accent)}
+.tag-space .chip.plus-chip, .tag-space .chip.minus-chip{font-weight:800; font-size:.95rem; padding:6px 14px}
+.tag-space .chip.plus-chip.done{opacity:.5}
+.tag-space .chip.fav-chip{font-size:1.05rem}
+.tag-space .chip.reciente{font-weight:700}
+.tag-space .chip.pinned-chip{position:absolute; z-index:2}
+
+/* ── MEDIA TOGGLE (audio/vídeo, abstraído en el reproductor) ── */
+.media-toggle{display:flex; gap:8px; flex:none; align-items:center}
+.mt-btn{border:2.5px solid var(--ink); border-radius:999px; background:var(--paper-card); color:var(--ink);
+  display:grid; place-items:center; line-height:0; cursor:pointer; padding:9px}
+.mt-btn:hover{transform:translateY(-2px)}
+.mt-btn[aria-pressed="true"].mt-audio{background:var(--marigold,#ffb020)}
+.mt-btn[aria-pressed="true"].mt-video{background:var(--grape,#5b2fa0); color:#fff}
+
+/* ── PLAYER / PLAYLIST ── */
+.player-col{background:var(--paper-card); border:1.5px solid var(--line); border-radius:var(--radius); padding:16px; box-shadow:0 2px 12px -2px var(--shadow)}
+.title-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap; gap:8px}
+.title-head h3{font-family:var(--font-display); font-weight:700; font-size:1.05rem}
+.transport{display:flex; gap:6px; align-items:center}
+.transport button{width:34px; height:34px; border-radius:50%; border:1.6px solid var(--line-strong); background:var(--paper-card); cursor:pointer; display:grid; place-items:center; font-size:.85rem; transition:all .12s}
+.transport button:hover{background:var(--app-accent); color:#fff; border-color:var(--app-accent)}
+.transport button.playing{background:var(--app-accent); color:#fff; border-color:var(--app-accent)}
+.transport .play-btn{min-width:46px; padding:0 6px; border-radius:999px; font-weight:700}
+
+.tracklist{list-style:none}
+.trackitem{display:flex; align-items:center; gap:10px; padding:10px 8px; border-bottom:1px solid var(--line); cursor:pointer; transition:background .1s; border-radius:8px}
+.trackitem:hover{background:var(--app-accent-soft)}
+.trackitem.active{background:var(--app-accent-soft)}
+.trackitem .tag{font-size:.68rem; font-weight:700; padding:1px 7px; border-radius:999px; flex-shrink:0}
+.trackitem .tag.dl{background:var(--app-accent); color:#fff}
+.trackitem .tag.link{background:var(--line); color:var(--muted)}
+.trackitem .ti{flex:1; min-width:0}
+.trackitem .clip-title{background:none; border:none; font-family:var(--font-ui); font-weight:600; font-size:.88rem; color:var(--ink); cursor:pointer; padding:0; text-align:left; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.trackitem .clip-title:hover{color:var(--app-accent-deep)}
+.trackitem .by{font-size:.72rem; color:var(--muted); display:block}
+.trackitem .clip-tag{display:inline-block; font-size:.62rem; padding:1px 7px; background:var(--app-accent-soft); border-radius:999px; color:var(--app-accent-deep); margin:1px 3px 0 0; cursor:pointer}
+/* autor del clip enlazado a su perfil (#/u/<key> o t.me) — bylineOf */
+.trackitem a.clip-author{font-weight:700; color:var(--app-accent-deep); text-decoration:none}
+.trackitem a.clip-author:hover{text-decoration:underline}
+.trackitem a.clip-author.clip-flove::after{content:'↗'; font-size:.62em; vertical-align:super; margin-left:2px}
+.trackitem a.clip-tg-link{font-size:.68rem; font-weight:700; color:var(--app-accent-deep); text-decoration:none; white-space:nowrap; margin-left:5px; border-bottom:1.5px dashed var(--line-strong)}
+.trackitem a.clip-tg-link:hover{text-decoration:underline; border-bottom-color:var(--app-accent)}
+.trackitem .orig{font-size:.68rem; color:var(--muted); flex-shrink:0; margin-left:6px}
+.trackitem .clip-video-btn, .trackitem .reply-btn{background:none; border:1.5px solid var(--line-strong); border-radius:999px; font-size:.72rem; padding:3px 9px; cursor:pointer; color:var(--ink-soft); flex-shrink:0}
+.trackitem .clip-video-btn.on{background:var(--app-accent); color:#fff; border-color:var(--app-accent)}
+.trackitem .fav-star, .trackitem .share-btn{background:none; border:none; cursor:pointer; font-size:.9rem; color:var(--muted); padding:2px}
+.trackitem .fav-star.on{color:var(--marigold)}
+.trackitem.clip-reply-row{padding-left:0}
+
+/* threads */
+.thread-item{display:flex; align-items:center; gap:6px}
+.thread-item .tag{order:-1}
+.thread-toggle-line{display:flex; align-items:center; gap:6px; margin-top:2px}
+.thread-arrow-btn{background:none; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:5px; font-size:.8rem; color:var(--app-accent-deep); padding:2px 6px; border-radius:8px}
+.thread-arrow-btn:hover{background:var(--app-accent-soft)}
+.thread-count{font-size:.53rem; font-weight:700; background:var(--app-accent-soft); padding:1px 7px; border-radius:999px}
+
+/* video box */
+.clip-video-box{margin-top:6px; border-radius:12px; overflow:hidden; border:1.5px solid var(--line)}
+.clip-video-box video{width:100%; display:block; max-height:340px; background:#000}
+
+/* paginator */
+.paginator{display:flex; flex-direction:column; align-items:center; gap:8px; padding:10px 0 0}
+.paginator[hidden]{display:none}
+.paginator .pg-btns{display:flex; gap:8px; align-items:center}
+.paginator .chip{padding:7px 14px; font-size:.82rem; border:1.6px solid var(--line-strong); border-radius:999px; background:var(--paper-card); cursor:pointer; font-family:var(--font-ui); font-weight:700; color:var(--ink-soft)}
+.paginator .chip:hover{background:var(--app-accent-soft)}
+.paginator .chip[aria-pressed="true"]{background:var(--app-accent); color:#fff}
+.paginator .pg-label{font-size:.72rem; color:var(--muted)}
+.paginator .pg-repo{font-size:.72rem; color:var(--app-accent-deep)}
+
+/* now-playing line */
+.plname, .track{font-size:.8rem; color:var(--ink-soft)}
+.plname{font-family:var(--font-display); font-weight:700}
+
+/* quick menu */
+.quick-menu{position:fixed; z-index:400; background:var(--paper-card); border:2px solid var(--app-accent); border-radius:16px; padding:8px; box-shadow:0 12px 30px -8px var(--shadow); min-width:170px}
+.quick-menu .quick-opt{display:block; width:100%; text-align:left; padding:8px 12px; border:none; background:none; font-family:var(--font-ui); font-size:.86rem; font-weight:600; cursor:pointer; border-radius:10px; color:var(--ink)}
+.quick-menu .quick-opt:hover{background:var(--app-accent-soft)}
+.quick-menu .quick-emojis{display:flex; gap:2px; justify-content:center; padding:6px 0; border-top:1px solid var(--line); margin-top:6px}
+.quick-menu .quick-emoji{background:none; border:none; font-size:1.25rem; cursor:pointer; padding:4px}
+.quick-menu .quick-actions{display:flex; justify-content:center; gap:4px; border-top:1px solid var(--line); padding-top:6px}
+.quick-menu .quick-act{width:34px; height:34px; border-radius:50%; border:1.5px solid var(--line-strong); background:none; cursor:pointer; font-size:.9rem; display:grid; place-items:center; color:var(--ink-soft); text-decoration:none}
+.quick-menu .quick-act:hover{background:var(--app-accent); color:#fff}
+.quick-menu .quick-act.on{color:var(--marigold)}
+.quick-reply-row{display:flex; gap:4px; border-bottom:1px solid var(--line); padding-bottom:6px; margin-bottom:6px}
+.quick-reply-row .quick-opt{flex:1; text-align:center; border-radius:10px; padding:8px 6px}
+.quick-reply-row .quick-opt.remix{flex:0 0 33%; background:var(--marigold,#ffb020); color:#fff; font-weight:700}
+.quick-reply-row .quick-opt.remix:hover{filter:brightness(1.1)}
+.thread-item.clip-remix{background:linear-gradient(135deg, rgba(255,176,32,.12), rgba(255,120,60,.08)); border-left:3px solid var(--marigold); padding-left:8px !important; border-radius:0 8px 8px 0}
+
+/* reacciones del clip: chip agregador (primer emoji + contador) y desglose */
+.trackitem .react-chip{flex:0 0 auto; display:inline-flex; align-items:center; gap:3px; border:0;
+  background:var(--paper-card); border-radius:999px; padding:1px 8px 2px; cursor:pointer; font-family:var(--font-ui);
+  font-size:.7rem; line-height:1; transform:translateY(5px); transition:background .12s}
+.trackitem .react-chip:hover{background:var(--app-accent-soft)}
+.trackitem .react-emoji{font-size:.8rem; display:inline-block; transition:transform .15s ease}
+.trackitem .react-chip:hover .react-emoji{transform:scale(1.2); animation:emoji-bob .35s ease-in-out infinite alternate}
+.trackitem .react-count{font-weight:800; color:var(--muted)}
+.react-pop{position:fixed; z-index:400; background:var(--paper-card); border:2px solid var(--app-accent); border-radius:14px;
+  padding:6px; box-shadow:0 12px 30px -8px var(--shadow); min-width:220px; max-width:340px; display:grid; gap:2px}
+.react-pop-row{display:flex; align-items:center; gap:8px; width:100%; text-align:left; padding:7px 10px; border:none;
+  background:none; cursor:pointer; border-radius:9px; font-family:var(--font-ui); font-size:.84rem; color:var(--ink)}
+.react-pop-row:hover{background:none}
+.react-pop-row[aria-pressed="true"]{background:none}
+.react-pop-emoji{font-size:1.1rem; line-height:1; display:inline-block; transition:transform .15s ease}
+.react-pop-row:hover .react-pop-emoji{transform:scale(1.2); animation:emoji-bob .35s ease-in-out infinite alternate}
+.react-pop-row[aria-pressed="true"] .react-pop-emoji{transform:scale(1.4)}
+@keyframes emoji-bob{from{transform:scale(1.12) translateY(0)}to{transform:scale(1.2) translateY(-3px)}}
+.react-pop-count{font-weight:800; min-width:1.3em}
+.react-pop-users{color:var(--muted); font-size:.78rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.react-pop-sep{text-align:center; color:var(--muted); opacity:.4; font-size:.7rem; line-height:1; padding:2px 0}
+a.react-user{color:var(--app-accent-deep); text-decoration:none; font-weight:600}
+a.react-user:hover{text-decoration:underline}
+.react-more{flex:0 0 auto; border:1.5px solid var(--line-strong); background:var(--paper-card); color:var(--ink); border-radius:999px; padding:1px 9px; font-size:.72rem; font-weight:800; cursor:pointer; margin-left:4px}
+.react-more:hover{background:var(--app-accent); color:#fff}
+
+@media(prefers-reduced-motion:reduce){.tag-space.flowing .chip{animation:none; transition:none}}

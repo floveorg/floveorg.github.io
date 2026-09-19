@@ -1,0 +1,1809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1, viewport-fit=cover">
+<title>Help · Chat · FLOVE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --app-accent:        #0d9488;
+    --app-accent-soft:   #ccfbf1;
+    --app-ink-on-accent: #042f2c;
+
+    --paper:       #ece5dd;       /* whatsapp paper */
+    --paper-warm:  #ecfdf5;
+    --chat-bg:     #efeae2;       /* whatsapp chat background */
+    --bubble-in:   #ffffff;       /* incoming bubble */
+    --bubble-out:  #d9fdd3;       /* outgoing (me) bubble */
+    --ink:         #0f1f1c;
+    --ink-soft:    #2a4a45;
+    --muted:       #6a8b87;
+    --line:        rgba(15,80,60,.08);
+    --line-strong: rgba(15,80,60,.16);
+
+    --accent:      #0d9488;
+    --accent-deep: #115e59;
+    --accent-soft: #ccfbf1;
+    --accent-glow: rgba(13,148,136,.22);
+
+    /* Bot palette */
+    --c-juanito:  #3b82f6;
+    --c-maripuri: #ec4899;
+    --c-uxia:     #84cc16;
+    --c-encarna:  #a78bfa;
+    --c-fairy:    #fbbf24;
+    --c-cram:     #0d9488;
+    --c-mine:     #f97316;
+
+    --radius-sm: 12px;
+    --radius:    18px;
+    --radius-lg: 24px;
+    --radius-pill: 999px;
+    --shadow-xs: 0 1px 2px rgba(15,80,60,.05);
+    --shadow-sm: 0 4px 12px -4px rgba(15,80,60,.10);
+    --fast: .15s cubic-bezier(.2,.8,.2,1);
+
+    --font-ui:      'Inter', system-ui, sans-serif;
+    --font-display: 'Fraunces', Georgia, serif;
+  }
+  *{ box-sizing:border-box }
+  body{
+    margin:0; font:15px/1.55 var(--font-ui); color:var(--ink);
+    background:
+      radial-gradient(900px 600px at 90% -10%, var(--accent-soft) 0%, transparent 60%),
+      radial-gradient(700px 500px at -10% 110%, var(--paper-warm) 0%, transparent 55%),
+      var(--paper);
+    min-height:100vh; padding-bottom: 60px;
+  }
+  .flove-bar{
+    position:sticky; top:0; z-index:50;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom: 1px solid var(--line);
+    padding: 10px 14px;
+    gap: 12px;
+  }
+  .flove-bar .flove-sprout{ animation-play-state:paused }
+  body:hover .flove-bar .flove-sprout, body:focus-within .flove-bar .flove-sprout{ animation-play-state:running }
+  .flove-mark-link{
+    display:inline-flex; align-items:center; text-decoration:none;
+    transition: transform var(--fast);
+  }
+  .flove-mark-link:hover{ transform: rotate(15deg) scale(1.05) }
+  .flove-bar .flove-mark{ font-size:52px; color:var(--accent); filter:drop-shadow(0 0 8px var(--accent-glow)); line-height:1 }
+  .flove-bar .flove-app-name{ font-family:var(--font-display); font-weight:600; font-size:1.8rem; line-height:1 }
+  .flove-bar .flove-tag{ color:var(--muted) }
+
+  /* Title button (toggles intro section) */
+  .flove-title-btn{
+    background: transparent; border: 0; padding: 4px 12px; margin: 0;
+    font: inherit; cursor: pointer; border-radius: 10px;
+    transition: background var(--fast), transform var(--fast);
+    color: inherit;
+  }
+  .flove-title-btn:hover{ background: var(--accent-soft); transform: translateY(-1px) }
+  .flove-title-btn:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px }
+  .flove-title-btn[aria-expanded="true"]{ background: var(--accent-soft) }
+
+  /* Centered search in topbar */
+  .flove-bar .flove-spacer{ flex: 1 }
+  .topbar-search-wrap{
+    flex: 1 1 0; min-width: 0;
+    display: flex; justify-content: center;
+  }
+  .topbar-search{
+    width: 100%; max-width: 480px;
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 14px;
+    background: rgba(255,255,255,.75);
+    border: 1px solid var(--line-strong); border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-xs);
+  }
+  .topbar-search .ico{ color: var(--muted) }
+  .topbar-search input{
+    flex: 1; border: 0; background: transparent; font: inherit;
+    padding: 4px 0; color: inherit; outline: none; min-width: 0;
+  }
+  .topbar-search .btn-go{
+    appearance: none; padding: 7px 14px; border: 0;
+    background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+    color: #fff; border-radius: var(--radius-pill);
+    font: 700 .82rem/1 var(--font-ui); cursor: pointer;
+    transition: all var(--fast); flex-shrink: 0;
+  }
+  .topbar-search .btn-go:hover{ filter: brightness(1.06); transform: translateY(-1px) }
+
+  /* Favorites pill in topbar */
+  .flove-bar .btn-fav{
+    appearance: none; cursor: pointer;
+    padding: 8px 14px;
+    background: #fff;
+    border: 1px solid var(--line-strong);
+    color: var(--ink-soft);
+    border-radius: var(--radius-pill);
+    font: 600 .85rem/1 var(--font-ui);
+    transition: all var(--fast);
+    display: inline-flex; align-items: center; gap: 6px;
+    flex-shrink: 0;
+  }
+  .flove-bar .btn-fav:hover{ border-color: #f59e0b; color: #b45309 }
+  .flove-bar .btn-fav.is-on{ background: #fef3c7; color: #b45309; border-color: #fde68a }
+
+  /* Left menu — blogy.html-style hamburger dropdown */
+  .top-menu{ position: relative; flex-shrink: 0 }
+  .menu-toggle{ position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px }
+  .menu-btn{
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.65);
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+    font-size: 1.2rem; line-height: 1;
+    cursor: pointer;
+    transition: all var(--fast);
+  }
+  .menu-btn:hover{
+    background: var(--accent-soft); color: var(--accent-deep);
+    border-color: var(--accent);
+    box-shadow: 0 6px 16px var(--accent-glow);
+  }
+  .top-menu:has(.menu-toggle:checked) .menu-btn{
+    background: var(--accent); color: #fff; border-color: var(--accent-deep);
+  }
+  .menu-list{
+    position: absolute;
+    top: calc(100% + 8px); left: 0;
+    min-width: 220px;
+    margin: 0; padding: .4rem;
+    list-style: none;
+    background: rgba(255,255,255,.95);
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    box-shadow: 0 18px 40px -16px rgba(0,0,0,.18);
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    display: none;
+    z-index: 60;
+  }
+  .top-menu:has(.menu-toggle:checked) .menu-list{ display: block }
+  .menu-list li{ list-style: none }
+  .menu-list li > a{
+    display: flex; align-items: center; gap: 10px;
+    padding: .55rem .7rem;
+    border-radius: 8px;
+    font-size: .92rem;
+    color: var(--ink); text-decoration: none;
+    cursor: pointer;
+    transition: background var(--fast), color var(--fast);
+  }
+  .menu-list li > a:hover{ background: var(--accent-soft); color: var(--accent-deep) }
+  .menu-list .mi{
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; flex-shrink: 0;
+    color: var(--accent);
+  }
+  .menu-divider{ height: 1px; background: var(--line); margin: .35rem .25rem }
+  .menu-section-title{
+    padding: .4rem .7rem .2rem;
+    font: 700 .68rem/1 var(--font-ui);
+    letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* Intro section (toggled by title click) */
+  #introSection{
+    max-width: 880px;
+    margin: 10px auto 14px;
+    padding: 18px 22px;
+    background: rgba(255,255,255,.7);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    color: var(--ink);
+    backdrop-filter: blur(8px) saturate(130%);
+    -webkit-backdrop-filter: blur(8px) saturate(130%);
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+  }
+  #introSection[hidden]{ display: none }
+  #introSection .intro-lead{
+    margin: 0;
+    font-size: 1.05rem; line-height: 1.55;
+    color: var(--ink);
+  }
+  #introSection .intro-lead strong{ color: var(--accent) }
+
+  .container{ max-width:920px; margin:0 auto; padding: 24px 18px 0 }
+
+  .hero{
+    display:flex; gap:14px; align-items:flex-start;
+    margin-bottom:18px;
+  }
+  .hero .avatar-user{
+    width:56px; height:56px; flex-shrink:0;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+    color:#fff; font-family: var(--font-display); font-weight:700; font-size:1.6rem;
+    display:grid; place-items:center;
+    box-shadow: 0 10px 24px -8px var(--accent-glow);
+  }
+  .hero h1{
+    font-family:var(--font-display); font-weight:600; margin:0;
+    font-size: clamp(1.6rem, 3vw, 2.2rem); letter-spacing:-.01em;
+  }
+  .hero p{ margin:4px 0 0; color:var(--muted); font-size:.95rem }
+
+  /* Toolbar: search + filter bots */
+  .toolbar{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+    margin: 4px 0 16px;
+    padding: 10px;
+    background: rgba(255,255,255,.65);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-xs);
+  }
+  .toolbar .search{ flex:1 1 220px; display:flex; align-items:center; gap:8px; padding: 6px 12px }
+  .toolbar .search input{ flex:1; border:0; background:transparent; font:inherit; padding:6px 0; color:inherit; outline:none }
+  .toolbar .search .ico{ color:var(--muted) }
+  .toolbar .actions{ display:flex; gap:6px; flex-wrap:wrap }
+  .toolbar .btn{
+    appearance:none; padding:8px 14px; border:1px solid var(--line-strong);
+    background:#fff; border-radius:var(--radius-pill);
+    font:600 .85rem/1 var(--font-ui); cursor:pointer;
+    transition: all var(--fast);
+  }
+  .toolbar .btn:hover{ border-color: var(--accent); color: var(--accent-deep) }
+  .toolbar .btn.is-on{ background: var(--accent-soft); color: var(--accent-deep); border-color: var(--accent) }
+
+  /* My-bot creator */
+  .my-bot-form{
+    display:none;
+    gap: 8px; flex-wrap: wrap; align-items: center;
+    margin: 0 0 14px;
+    padding: 12px;
+    background: rgba(255,255,255,.85);
+    border: 1px dashed var(--accent);
+    border-radius: var(--radius);
+  }
+  .my-bot-form.is-open{ display:flex }
+  .my-bot-form input[type="text"]{
+    flex: 1 1 180px; min-width: 140px;
+    padding: 9px 12px;
+    border: 1px solid var(--line-strong); border-radius: var(--radius-pill);
+    font: inherit; outline:none;
+    background:#fff;
+  }
+  .my-bot-form input[type="text"]:focus{ border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow) }
+  .icon-pick{ display:flex; gap:6px; flex-wrap:wrap }
+  .icon-pick label{
+    width: 36px; height: 36px;
+    display: inline-grid; place-items: center;
+    border: 1px solid var(--line-strong); border-radius: 50%;
+    cursor: pointer; background:#fff; font-size: 1.1rem;
+    transition: all var(--fast);
+  }
+  .icon-pick label:hover{ border-color: var(--accent); transform: translateY(-1px) }
+  .icon-pick input{ position:absolute; opacity:0; pointer-events:none }
+  .icon-pick label:has(input:checked){
+    background: var(--accent); color:#fff; border-color: transparent;
+    box-shadow: 0 6px 14px -4px color-mix(in srgb, var(--accent) 50%, transparent);
+  }
+  .my-bot-form .btn-save{
+    padding: 9px 16px;
+    background: var(--accent); color:#fff; border: 0;
+    border-radius: var(--radius-pill);
+    font: 700 .85rem/1 var(--font-ui); cursor:pointer;
+    transition: all var(--fast);
+  }
+  .my-bot-form .btn-save:hover{ filter:brightness(1.06) }
+
+  /* Stepper */
+  .stepper{
+    display:flex; gap:6px; flex-wrap:wrap; align-items:center;
+    margin: 0 0 14px;
+    padding: 8px;
+    background: rgba(255,255,255,.65);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-xs);
+    overflow-x: auto;
+  }
+  .stepper .step{
+    appearance:none; cursor:pointer;
+    padding: 8px 14px;
+    border: 1px solid var(--line-strong);
+    background: #fff; color: var(--ink-soft);
+    border-radius: var(--radius-pill);
+    font: 600 .82rem/1 var(--font-ui);
+    transition: all var(--fast);
+    display:inline-flex; align-items:center; gap:6px;
+    white-space: nowrap;
+  }
+  .stepper .step:hover{ border-color: var(--accent); color: var(--accent-deep) }
+  .stepper .step.is-active{
+    background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+    color: #fff; border-color: transparent;
+    box-shadow: 0 6px 14px -4px var(--accent-glow);
+  }
+  .stepper .step .num{
+    display:inline-grid; place-items:center;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--accent-soft); color: var(--accent-deep);
+    font-size: .72rem; font-weight: 800;
+  }
+  .stepper .step.is-active .num{ background: rgba(255,255,255,.25); color: #fff }
+
+  /* ── Row toggle (Asuntos / Wizards) — CSS-only via <details> ─── */
+  .row-toggle{ margin: 0 0 14px; text-align: left; }
+  .row-toggle > summary{
+    list-style: none; cursor: pointer;
+    display: inline-flex; align-items: center;
+    padding: 8px 14px;
+    border: 1px solid var(--line-strong);
+    background: #fff; color: var(--ink-soft);
+    border-radius: var(--radius-pill);
+    font: 600 .82rem/1 var(--font-ui);
+    transition: all var(--fast);
+    margin-bottom: 8px;
+  }
+  .row-toggle > summary::-webkit-details-marker{ display: none }
+  .row-toggle > summary::marker{ content: '' }
+  .row-toggle > summary:hover{ border-color: var(--accent); color: var(--accent-deep) }
+  .row-toggle[open] > summary{ border-color: var(--accent); color: var(--accent-deep) }
+  /* Reset row margins inside .row-toggle so the wrapper owns spacing */
+  .row-toggle > .stepper,
+  .row-toggle > .filter-buttons{ margin: 0 }
+  /* Collapsed by default; when expanded the summary ("parent button") and
+     its buttons share ONE row, flowing left → right from the summary. */
+  .row-toggle[open]{
+    display: flex; flex-wrap: wrap;
+    align-items: center; gap: 8px;
+  }
+  .row-toggle[open] > summary{ margin-bottom: 0 }
+  .row-toggle[open] > .stepper,
+  .row-toggle[open] > .filter-buttons{ justify-content: flex-start }
+
+  /* Bot filter chips — multi-select (checkboxes) */
+  .bot-filter{ margin: 0 0 18px }
+  .bot-filter input[type=checkbox]{ position:absolute; opacity:0; width:1px; height:1px; pointer-events:none }
+  .filter-buttons{ display:flex; flex-wrap:wrap; gap:8px; justify-content: flex-end }
+  .chip{
+    --c: var(--muted);
+    display:inline-flex; align-items:center; gap:8px;
+    padding: 8px 14px;
+    background: #fff;
+    color: var(--ink);
+    border:1px solid var(--line-strong);
+    border-radius: var(--radius-pill);
+    font: 600 .9rem/1 var(--font-ui);
+    cursor:pointer; user-select:none;
+    transition: all var(--fast);
+    box-shadow: var(--shadow-xs);
+  }
+  .chip:hover{ transform: translateY(-1px); border-color: var(--c) }
+  .chip.all      { --c: var(--accent) }
+  .chip.juanito  { --c: var(--c-juanito) }
+  .chip.maripuri { --c: var(--c-maripuri) }
+  .chip.uxia     { --c: var(--c-uxia) }
+  .chip.encarna  { --c: var(--c-encarna) }
+  .chip.fairy    { --c: var(--c-fairy) }
+  .chip.mine     { --c: var(--c-mine) }
+  .chip::before{
+    content:""; width:8px; height:8px; border-radius:50%; background: var(--c);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 22%, transparent);
+  }
+  /* Multi-select active state */
+  #f-all:checked      ~ .filter-buttons .chip.all,
+  #f-juanito:checked  ~ .filter-buttons .chip.juanito,
+  #f-maripuri:checked ~ .filter-buttons .chip.maripuri,
+  #f-uxia:checked     ~ .filter-buttons .chip.uxia,
+  #f-encarna:checked  ~ .filter-buttons .chip.encarna,
+  #f-fairy:checked    ~ .filter-buttons .chip.fairy,
+  #f-mine:checked     ~ .filter-buttons .chip.mine{
+    background: var(--c); color:#fff; border-color: transparent;
+    box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--c) 50%, transparent);
+  }
+  .chip.mine{ display:none }
+  body.has-mine .chip.mine{ display:inline-flex }
+
+  /* ── Wizard personality popover & per-chip vibes ──────────────
+     Clicking a chip momentarily reveals 3 personality icons above
+     it (fade-in from the button upwards), shown for 5s then fades
+     away. Each chip also has its own ambient "feel" via a CSS
+     animation tuned to that wizard's personality. */
+  .chip{ position: relative; }
+  .personality-pop{
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 6px);
+    transform: translate(-50%, 12px);
+    display: inline-flex; gap: 8px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .35s ease, transform .35s cubic-bezier(.2,.8,.2,1);
+    white-space: nowrap;
+    z-index: 5;
+  }
+  .personality-pop .pp-icon{
+    font-size: 1.25rem; line-height: 1;
+    display: inline-block;
+    animation: pp-icon-float 1.8s ease-in-out infinite;
+  }
+  .personality-pop .pp-icon:nth-child(2){ animation-delay: .25s; }
+  .personality-pop .pp-icon:nth-child(3){ animation-delay: .5s; }
+  @keyframes pp-icon-float{
+    0%,100%{ transform: translateY(0); }
+    50%   { transform: translateY(-3px); }
+  }
+  .chip.is-showing-personality .personality-pop{
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  /* Per-wizard "design + effect" — runs continuously so each chip has
+     a small ambient character; intensifies briefly while the
+     personality popover is visible. */
+  @keyframes wiz-juanito-pulse{
+    0%,100%{ box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-juanito) 40%, transparent); }
+    50%   { box-shadow: 0 0 0 6px transparent; }
+  }
+  @keyframes wiz-maripuri-throb{
+    0%,100%{ transform: translateY(0) scale(1); }
+    50%   { transform: translateY(-1px) scale(1.04); }
+  }
+  @keyframes wiz-uxia-bounce{
+    0%,100%{ transform: translateY(0); }
+    50%   { transform: translateY(-3px); }
+  }
+  @keyframes wiz-encarna-shimmer{
+    0%,100%{ filter: brightness(1) saturate(1); }
+    50%   { filter: brightness(1.18) saturate(1.2); }
+  }
+  @keyframes wiz-fairy-twinkle{
+    0%,100%{ box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-fairy) 30%, transparent), 0 0 0 0 color-mix(in srgb, var(--c-fairy) 30%, transparent); }
+    50%   { box-shadow: 0 0 10px 2px color-mix(in srgb, var(--c-fairy) 70%, transparent), 0 0 18px 6px color-mix(in srgb, var(--c-fairy) 25%, transparent); }
+  }
+  @keyframes wiz-mine-spark{
+    0%,100%{ filter: brightness(1); }
+    50%   { filter: brightness(1.12); }
+  }
+
+  /* Each wizard's button gets its own personality CSS. The
+     animations stay subtle by default; clicking the chip kicks
+     them into a faster, fuller cycle while the popover is open. */
+  .chip.juanito{
+    font-family: var(--font-display);
+    letter-spacing: .01em;
+    animation: wiz-juanito-pulse 3s ease-in-out infinite;
+  }
+  .chip.maripuri{
+    font-weight: 700;
+    animation: wiz-maripuri-throb 2.6s ease-in-out infinite;
+  }
+  .chip.uxia{
+    animation: wiz-uxia-bounce 2.2s ease-in-out infinite;
+  }
+  .chip.encarna{
+    background: linear-gradient(135deg, #fff 0%, color-mix(in srgb, var(--c-encarna) 12%, #fff) 100%);
+    animation: wiz-encarna-shimmer 3.4s ease-in-out infinite;
+  }
+  .chip.fairy{
+    background: linear-gradient(135deg, #fff 0%, color-mix(in srgb, var(--c-fairy) 14%, #fff) 100%);
+    animation: wiz-fairy-twinkle 2.4s ease-in-out infinite;
+    text-shadow: 0 0 8px color-mix(in srgb, var(--c-fairy) 35%, transparent);
+  }
+  .chip.mine{
+    animation: wiz-mine-spark 2.8s ease-in-out infinite;
+  }
+  /* While the popover is showing, each animation runs faster + stronger */
+  .chip.is-showing-personality{ animation-duration: 1s !important; }
+
+  @media (prefers-reduced-motion: reduce){
+    .chip.juanito, .chip.maripuri, .chip.uxia, .chip.encarna,
+    .chip.fairy, .chip.mine, .personality-pop .pp-icon{ animation: none !important; }
+  }
+
+  /* Custom bot chips created via the add-bot modal */
+  .chip.chip-custom{ --c: var(--accent); }
+  .chip.chip-custom::before{ display: none; }
+  .chip.chip-custom .chip-icon{ font-size: 1.05rem; line-height: 1; }
+
+  /* "＋" chip that opens the add-bot modal (replaces the old "Todos" chip) */
+  .chip.chip-add{
+    appearance: none;
+    --c: var(--accent);
+    font: 700 1rem/1 var(--font-ui);
+    color: var(--accent-deep);
+    padding: 6px 12px;
+  }
+  .chip.chip-add::before{ display: none; }
+  .chip.chip-add:hover{
+    background: var(--accent-soft);
+    color: var(--accent-deep);
+    border-color: var(--accent);
+  }
+
+  /* Add-bot modal — iframe loads new-wizard-help.html (blogy-style shell) */
+  .add-bot-modal{
+    position: fixed; inset: 0;
+    z-index: 1000;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 16px;
+  }
+  body.add-bot-open .add-bot-modal{ display: flex; }
+  .add-bot-backdrop{
+    position: absolute; inset: 0;
+    background: rgba(15, 31, 28, .55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    cursor: pointer;
+  }
+  .add-bot-frame--iframe{
+    position: relative;
+    background: #fff;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 30px 80px rgba(0,0,0,.35);
+    width: min(820px, calc(100vw - 32px));
+    height: min(85vh, 720px);
+    overflow: hidden;
+    display: flex;
+  }
+  .add-bot-iframe{
+    width: 100%; height: 100%;
+    border: 0;
+    background: #fff;
+  }
+  .add-bot-close{
+    position: absolute;
+    top: 10px; right: 12px;
+    z-index: 2;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,.95);
+    color: var(--ink);
+    font: 700 1.2rem/1 var(--font-ui);
+    cursor: pointer;
+    display: grid; place-items: center;
+    transition: all var(--fast);
+  }
+  .add-bot-close:hover{
+    background: var(--accent); color: #fff; border-color: var(--accent-deep);
+  }
+
+  /* QA — WhatsApp chat style */
+  .qa-wrap{ display:grid; gap: 14px }
+  details.qa-card{
+    background: var(--chat-bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--fast);
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(13,148,136,.04) 0 1px, transparent 2px),
+      radial-gradient(circle at 80% 60%, rgba(13,148,136,.04) 0 1px, transparent 2px);
+    background-size: 24px 24px;
+  }
+  details.qa-card[open]{ box-shadow: 0 14px 30px -10px rgba(15,80,60,.16) }
+  details.qa-card summary{
+    list-style: none;
+    cursor: pointer;
+    padding: 14px 14px 12px;
+    background: linear-gradient(180deg, var(--paper-warm), transparent);
+    display: flex; align-items: flex-start; gap: 10px;
+    transition: background var(--fast);
+  }
+  details.qa-card summary::-webkit-details-marker{ display:none }
+  details.qa-card summary:hover{ background: color-mix(in srgb, var(--paper-warm) 50%, #fff) }
+  details.qa-card summary::after{
+    content: "＋"; margin-left:auto; color: var(--accent); font-size: 28px;
+    transition: color var(--fast); flex-shrink: 0; line-height: 1; padding-top: 2px;
+  }
+  details.qa-card[open] summary::after{ content: "×"; }
+
+  /* Bubbles */
+  .bubble{
+    display:flex; gap:8px; align-items:flex-end;
+    margin: 6px 14px;
+    max-width: 85%;
+  }
+  .bubble.cram, .bubble.bot{ margin-right: auto; margin-left: 14px }
+  .bubble.me{ margin-left: auto; margin-right: 14px; flex-direction: row-reverse }
+  .bubble .avatar{
+    width:30px; height:30px; flex-shrink: 0; border-radius: 50%;
+    display: grid; place-items: center;
+    font: 700 .78rem/1 var(--font-ui);
+    background: var(--bot-c, var(--accent));
+    color: #fff;
+    box-shadow: 0 2px 6px -2px color-mix(in srgb, var(--bot-c, var(--accent)) 60%, transparent);
+  }
+  .bubble .msg{
+    background: var(--bubble-in);
+    color: var(--ink);
+    padding: 7px 10px 5px;
+    border-radius: 10px;
+    box-shadow: 0 1px 1px rgba(0,0,0,.08);
+    position: relative;
+    max-width: 60ch;
+  }
+  /* Tails */
+  .bubble.cram .msg::before, .bubble.bot .msg::before{
+    content:""; position:absolute; left:-6px; bottom: 0;
+    width: 0; height: 0;
+    border-top: 8px solid var(--bubble-in);
+    border-left: 8px solid transparent;
+  }
+  .bubble.me .msg{
+    background: var(--bubble-out);
+    border-radius: 10px;
+  }
+  .bubble.me .msg::after{
+    content:""; position:absolute; right:-6px; bottom: 0;
+    width: 0; height: 0;
+    border-top: 8px solid var(--bubble-out);
+    border-right: 8px solid transparent;
+  }
+  .bubble .msg-head{
+    display:flex; align-items: baseline; gap: 10px;
+    font-size: .74rem; color: var(--muted); margin-bottom: 1px;
+  }
+  .bubble.bot .msg-head{ justify-content: flex-end; }
+  .bubble .name{ font-weight: 700 }
+  .bubble.cram .name{ color: var(--c-cram) }
+  .bubble.juanito  .name{ color: var(--c-juanito) }
+  .bubble.maripuri .name{ color: var(--c-maripuri) }
+  .bubble.uxia     .name{ color: var(--c-uxia) }
+  .bubble.encarna  .name{ color: var(--c-encarna) }
+  .bubble.fairy    .name{ color: var(--c-fairy) }
+  .bubble.me       .name{ color: var(--c-mine) }
+  .bubble p{ margin: 0; line-height: 1.45; font-size: .95rem }
+  /* Question bubble lives inside <summary> (phrasing-only), so its parts are
+     spans; restore the block flow the <div>/<p> versions had. */
+  .qa-card > summary .msg{ display: block }
+  .qa-card > summary .qtext{ display: block; margin: 0; line-height: 1.45; font-size: .95rem }
+  .bubble .msg time{ font-size: .68rem; color: var(--muted); margin-left: 6px }
+
+  .bubble.cram .avatar{ background: var(--c-cram) }
+  .bubble.bot.juanito  { --bot-c: var(--c-juanito) }
+  .bubble.bot.maripuri { --bot-c: var(--c-maripuri) }
+  .bubble.bot.uxia     { --bot-c: var(--c-uxia) }
+  .bubble.bot.encarna  { --bot-c: var(--c-encarna) }
+  .bubble.bot.fairy    { --bot-c: var(--c-fairy) }
+  .bubble.me           { --bot-c: var(--c-mine) }
+
+  /* Multi-select bot visibility — show only bots whose chip is checked.
+     If #f-all is checked, all bots show. */
+  body:not(.f-all):not(.f-juanito)  .qa-wrap .bubble.bot.juanito,
+  body:not(.f-all):not(.f-maripuri) .qa-wrap .bubble.bot.maripuri,
+  body:not(.f-all):not(.f-uxia)     .qa-wrap .bubble.bot.uxia,
+  body:not(.f-all):not(.f-encarna)  .qa-wrap .bubble.bot.encarna,
+  body:not(.f-all):not(.f-fairy)    .qa-wrap .bubble.bot.fairy,
+  body:not(.f-all):not(.f-mine)     .qa-wrap .bubble.me{
+    display: none;
+  }
+
+  .answers{ padding: 6px 0 8px }
+
+  @keyframes pulse{ 0%,100%{ box-shadow: 0 0 0 0 rgba(239,68,68,.4) } 50%{ box-shadow: 0 0 0 8px rgba(239,68,68,0) } }
+
+  /* Inline reply field — appears directly under a clicked bot bubble,
+     right-aligned. Input + Save button, no intermediate pill. */
+  .bubble.bot, .bubble.cram{ cursor: pointer; }
+  .bubble-say{
+    display: none;
+    margin: -2px 14px 8px;
+    padding-left: 38px;
+    gap: 6px;
+    align-items: center;
+    justify-content: flex-end;
+  }
+  .bubble-say.is-visible{ display: flex; }
+  .say-editor{
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    flex: 1; max-width: 60ch;
+  }
+  .say-editor input{
+    flex: 1; min-width: 0;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-pill);
+    background: #fff;
+    padding: 6px 12px;
+    font: inherit;
+    outline: none;
+  }
+  .say-editor input:focus{ border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  .btn-save-say{
+    appearance: none;
+    background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+    color: #fff; border: 0;
+    border-radius: var(--radius-pill);
+    padding: 6px 14px;
+    font: 700 .82rem/1 var(--font-ui);
+    cursor: pointer;
+    transition: filter var(--fast), transform var(--fast);
+  }
+  .btn-save-say:hover{ filter: brightness(1.06); transform: translateY(-1px); }
+
+  /* Threaded reply bubble — right-aligned (outgoing WhatsApp style).
+     The bubble's --bot-c is set inline by renderThreadsFor() from its
+     parent wizard, so the border + connector line + avatar ring all
+     match the parent's color (reply to Juanito → blue, etc.). */
+  .bubble.me.thread{
+    margin-left: auto;
+    margin-right: 14px;
+    position: relative;
+  }
+  .bubble.me.thread .msg{
+    border: 2px solid var(--bot-c, var(--accent));
+    box-shadow:
+      0 1px 1px rgba(0, 0, 0, .08),
+      0 0 0 1px color-mix(in srgb, var(--bot-c, var(--accent)) 18%, transparent);
+  }
+  .bubble.me.thread .avatar{
+    box-shadow:
+      0 2px 6px -2px color-mix(in srgb, var(--bot-c, var(--accent)) 60%, transparent),
+      0 0 0 2px color-mix(in srgb, var(--bot-c, var(--accent)) 35%, transparent);
+  }
+  .bubble.me.thread::after{
+    content: "";
+    position: absolute;
+    right: -10px; top: 8px; bottom: 8px;
+    border-right: 2px solid color-mix(in srgb, var(--bot-c, var(--accent)) 60%, transparent);
+  }
+
+  /* QA foot — rating icons + favorite */
+  .qa-foot{
+    display:flex; justify-content:space-between; align-items: center; gap:10px;
+    padding: 10px 14px 12px;
+    border-top: 1px dashed var(--line);
+    margin-top: 4px;
+    background: rgba(255,255,255,.5);
+  }
+  .qa-foot .rate-group{ display:flex; align-items:center; gap:6px }
+  .rate-btn{
+    appearance:none; cursor:pointer;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid var(--line-strong);
+    font-size: 1.05rem; line-height: 1;
+    display: grid; place-items: center;
+    transition: all var(--fast);
+    filter: grayscale(.5) opacity(.75);
+  }
+  .rate-btn:hover{ transform: translateY(-1px); border-color: var(--accent); filter: none }
+  .rate-btn.is-on{
+    filter: none;
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    transform: scale(1.08);
+    box-shadow: 0 4px 10px -2px var(--accent-glow);
+  }
+  .star-btn{
+    appearance:none; background:transparent; border:1px solid var(--line-strong);
+    border-radius: var(--radius-pill); padding: 6px 12px;
+    cursor:pointer; font: 600 .82rem/1 var(--font-ui);
+    color: var(--muted);
+    transition: all var(--fast);
+    display:inline-flex; align-items:center; gap: 6px;
+  }
+  .star-btn:hover{ border-color: #fbbf24; color: #b45309 }
+  .star-btn.is-fav{ background: #fef3c7; color: #b45309; border-color:#fde68a }
+  .star-btn.is-fav::before{ content: "★" } .star-btn::before{ content: "☆" }
+
+
+  @media (max-width: 540px){
+    .hero h1{ font-size: 1.4rem }
+    .bubble{ max-width: 92% }
+    .bubble .msg{ max-width: calc(100vw - 100px) }
+    .stepper{ flex-wrap: nowrap }
+  }
+  @media print{
+    .flove-bar, .bot-filter, .toolbar, .stepper, .say-row, .my-bot-form, .qa-foot{ display:none !important }
+    details.qa-card{ box-shadow: none; border:1px solid #ccc; background:#fff }
+  }
+  @media (prefers-reduced-motion: reduce){ *,*::before,*::after{ animation-duration:.01ms !important; transition-duration:.01ms !important } }
+
+  /* "About" title at the start of the stepper row */
+  .stepper .step-title{
+    font-family: var(--font-display); font-weight: 700;
+    color: var(--accent-deep);
+    padding: 6px 10px 6px 12px;
+    font-size: .95rem;
+    letter-spacing: -.01em;
+    white-space: nowrap;
+    border-right: 1px solid var(--line-strong);
+    margin-right: 4px;
+  }
+
+  /* Old per-card foot — replaced by per-reply actions on each bubble */
+  details.qa-card .qa-foot{ display: none }
+
+  /* Per-bubble actions: ❤️ 😂 🔥  ★  on every reply and on the parent question */
+  .bubble .bubble-actions{
+    display: flex; align-items: center; gap: 2px;
+    margin-top: 5px;
+    padding-top: 4px;
+    border-top: 1px dashed color-mix(in srgb, var(--ink) 10%, transparent);
+    opacity: .5;
+    transition: opacity var(--fast);
+  }
+  .bubble:hover .bubble-actions,
+  .bubble:focus-within .bubble-actions{ opacity: 1 }
+  .bubble .bubble-actions:has(.is-on),
+  .bubble .bubble-actions:has(.is-fav){ opacity: 1 }
+  .bubble.me .bubble-actions{ justify-content: flex-end }
+
+  .bubble-actions .rate-btn{
+    width: 22px; height: 22px;
+    font-size: .8rem; line-height: 1;
+    border: 1px solid transparent;
+    background: transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    filter: grayscale(.7) opacity(.6);
+    transition: all var(--fast);
+    display: grid; place-items: center;
+    padding: 0;
+  }
+  .bubble-actions .rate-btn:hover{
+    filter: none; background: rgba(13,148,136,.08); transform: scale(1.12);
+  }
+  .bubble-actions .rate-btn.is-on{
+    filter: none;
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    transform: scale(1.12);
+  }
+  .bubble-actions .star-btn{
+    width: 22px; height: 22px;
+    border: 1px solid transparent;
+    background: transparent;
+    border-radius: 50%;
+    font-size: .9rem; line-height: 1;
+    cursor: pointer;
+    color: var(--muted);
+    padding: 0;
+    display: grid; place-items: center;
+    transition: all var(--fast);
+    margin-left: 4px;
+  }
+  .bubble-actions .star-btn::before{ content: "☆" }
+  .bubble-actions .star-btn.is-fav::before{ content: "★" }
+  .bubble-actions .star-btn:hover{ color: #f59e0b; transform: scale(1.18) }
+  .bubble-actions .star-btn.is-fav{ color: #f59e0b }
+
+  /* Per-reply hiding for "★ Favoritas" and "👁 See all" (mis respuestas) */
+  .qa-wrap .bubble.is-hidden{ display: none !important }
+
+  /* Hide the colored dot icons on the bot-filter chips (second row) */
+  .chip::before{ display: none }
+  .chip{ padding: 8px 16px }
+
+  /* Say-row aligned to the right */
+  .say-row{ justify-content: flex-end }
+
+  /* Search "Go" button */
+  .toolbar .search .btn-go{
+    appearance: none;
+    padding: 8px 16px;
+    border: 0;
+    background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+    color: #fff;
+    border-radius: var(--radius-pill);
+    font: 700 .85rem/1 var(--font-ui);
+    cursor: pointer;
+    transition: all var(--fast);
+    box-shadow: 0 4px 10px -2px var(--accent-glow);
+    flex-shrink: 0;
+  }
+  .toolbar .search .btn-go:hover{ filter: brightness(1.06); transform: translateY(-1px) }
+
+  /* Favoritas pill (moved from the toolbar to the say-row) */
+  .btn-fav{
+    appearance: none; cursor: pointer;
+    padding: 10px 16px;
+    background: #fff;
+    border: 1px solid var(--line-strong);
+    color: var(--ink-soft);
+    border-radius: var(--radius-pill);
+    font: 600 .88rem/1 var(--font-ui);
+    transition: all var(--fast);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-fav:hover{ border-color: #f59e0b; color: #b45309 }
+  .btn-fav.is-on{ background: #fef3c7; color: #b45309; border-color: #fde68a }
+
+  /* ── i18n span toggle (CSS-only): hide every non-active language ── */
+  .es{display:none}                                  /* default view = .en */
+  body:has(#lang-es:checked) .en{display:none}
+  body:has(#lang-es:checked) .es{display:inline}
+
+  /* ── worldball switcher (🌐 opens the language options) ── */
+  .lang{display:inline-block;position:relative;margin:.2rem 0 .6rem}
+  .lang>summary{list-style:none;cursor:pointer;width:40px;height:40px;border:1px solid #999;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;font-size:1.35rem;line-height:1;-webkit-user-select:none;user-select:none}
+  .lang>summary::-webkit-details-marker{display:none}
+  .lang[open]>summary{border-color:#333;background:#f2f2f2}
+  .lang-opts{position:absolute;right:0;z-index:10;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;
+    background:#fff;border:1px solid #999;border-radius:12px;padding:6px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+  .lang input{position:absolute;opacity:0;pointer-events:none}
+  .lang label{cursor:pointer;padding:0 12px;min-height:40px;display:inline-flex;align-items:center;border:1px solid #999;border-radius:11px;white-space:nowrap}
+  .lang input:checked + label{background:#333;color:#fff;font-weight:bold;border-color:#333}
+
+  @media (prefers-color-scheme:dark){
+    .lang>summary{border-color:#777} .lang[open]>summary{background:#2a2a2a;border-color:#999}
+    .lang-opts{background:#222;border-color:#777;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+    .lang label{border-color:#777}
+    .lang input:checked + label{background:#e9e9e9;color:#111;border-color:#e9e9e9}
+  }
+
+  /* Language picker rows inside the menu */
+  .menu-list li > label.menu-opt{
+    display:flex; align-items:center; gap:10px;
+    padding:.55rem .7rem; border-radius:8px;
+    font-size:.92rem; color:var(--ink); cursor:pointer;
+    transition: background var(--fast), color var(--fast);
+  }
+  .menu-list li > label.menu-opt:hover{ background:var(--accent-soft); color:var(--accent-deep) }
+  body:has(#lang-en:checked) .menu-list label.menu-opt[for="lang-en"],
+  body:has(#lang-es:checked) .menu-list label.menu-opt[for="lang-es"]{
+    background:var(--accent-soft); color:var(--accent-deep); font-weight:700;
+  }
+</style>
+</head>
+<body class="f-all">
+
+<div class="flove-bar">
+  <div class="top-menu">
+    <input type="checkbox" class="menu-toggle" id="d-menu">
+    <label class="menu-btn" for="d-menu" title="Menu" tabindex="0">☰</label>
+    <ul class="menu-list" role="menu">
+      <li class="menu-section-title"><span class="en" lang="en">This page</span><span class="es" lang="es">Esta página</span></li>
+      <li><a href="../index.html"><span class="mi">←</span><span class="en" lang="en">Back to flove launcher</span><span class="es" lang="es">Volver al lanzador flove</span></a></li>
+      <li><a href="https://flove.org" target="_blank" rel="noopener"><span class="mi">🌱</span>flove.org</a></li>
+      <li><a href="dealy-advanced.html"><span class="mi">🌱</span>Dealy</a></li>
+      <li><a href="shary.html"><span class="mi">🤝</span>Shary</a></li>
+      <li><a href="clauses.html"><span class="mi">📜</span>Clauses</a></li>
+      <li><a href="../../appy/appy-basic.html"><span class="mi">👤</span><span class="en" lang="en">Profile</span><span class="es" lang="es">Perfil</span></a></li>
+      <li class="menu-divider" role="separator" aria-hidden="true"></li>
+      <li class="menu-section-title"><span class="en" lang="en">Help</span><span class="es" lang="es">Ayuda</span></li>
+      <li><a href="#"><span class="mi">ⓘ</span><span class="en" lang="en">About this page</span><span class="es" lang="es">Acerca de esta página</span></a></li>
+      <li><a href="#"><span class="mi">⚙</span><span class="en" lang="en">Settings</span><span class="es" lang="es">Ajustes</span></a></li>
+      <li class="menu-divider" role="separator" aria-hidden="true"></li>
+      <li class="menu-section-title"><span class="en" lang="en">Language</span><span class="es" lang="es">Idioma</span></li>
+      <li><label class="menu-opt" for="lang-en"><span class="mi">🇬🇧</span>English</label></li>
+      <li><label class="menu-opt" for="lang-es"><span class="mi">🇪🇸</span>Español</label></li>
+      <!-- translaty worldball — the radios here are the master language inputs
+           (ids lang-en/lang-es) that the CSS :has() toggle and menu <label for> key off. -->
+      <li>
+        <details class="lang">
+          <summary class="worldball" title="Language" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐</summary>
+          <div class="lang-opts">
+            <input type="radio" name="lang" id="lang-en" checked><label for="lang-en">English</label>
+            <input type="radio" name="lang" id="lang-es"><label for="lang-es">Español</label>
+          </div>
+        </details>
+      </li>
+      <li class="menu-divider" role="separator" aria-hidden="true"></li>
+      <li><a href="#" onclick="alert('Changelog: FloveDocs26-6')"><span class="mi">📋</span><span class="t-en">Changelog</span><span class="t-es">Historial</span></a></li>
+    </ul>
+  </div>
+  <a href="help.html" class="flove-mark-link" aria-label="Reload Help">
+    <svg class="flove-mark flove-sprout" aria-hidden="true" viewBox="0 0 100 100" width="1em" height="1em"><defs><linearGradient id="floveSproutHelp" x1="12" y1="0" x2="88" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#ff3344"/><stop offset="50%" stop-color="#ff8a3a"/><stop offset="100%" stop-color="#ffd633"/></linearGradient></defs><path d="M50 60 C 22 60, 12 38, 16 18 C 38 22, 54 38, 50 60 Z" fill="url(#floveSproutHelp)"/><path d="M50 60 C 78 60, 88 38, 84 18 C 62 22, 46 38, 50 60 Z" fill="url(#floveSproutHelp)"/><path d="M50 58 C 50 72, 50 84, 50 92" stroke="url(#floveSproutHelp)" stroke-width="5" stroke-linecap="round" fill="none"/></svg>
+  </a>
+  <button type="button" class="flove-app-name flove-title-btn" id="titleBtn" aria-expanded="false" aria-controls="introSection"><span class="en" lang="en">Help</span><span class="es" lang="es">Ayuda</span></button>
+  <div class="topbar-search-wrap">
+    <div class="topbar-search">
+      <span class="ico" aria-hidden="true">🔎</span>
+      <input id="searchBox" type="search" placeholder="Search questions and answers…" data-ph-en="Search questions and answers…" data-ph-es="Buscar en preguntas y respuestas…">
+      <button type="button" class="btn-go" id="searchGo"><span class="en" lang="en">Go</span><span class="es" lang="es">Ir</span></button>
+    </div>
+  </div>
+  <span class="flove-tag"><span class="en" lang="en">offer chat</span><span class="es" lang="es">chat de ofertas</span></span>
+  <button type="button" class="btn-fav" id="favOnly"><span class="en" lang="en">★ Favorites</span><span class="es" lang="es">★ Favoritas</span></button>
+</div>
+
+<section id="introSection" hidden aria-label="About Help">
+  <p class="intro-lead">
+    <span class="en" lang="en"><strong>Help</strong> — a chat of offers and answers. Browse questions, filter by bot, search the Q&amp;A, mark <strong>★ Favorites</strong> and add your own voice with <strong>+ Have your say</strong>.</span>
+    <span class="es" lang="es"><strong>Ayuda</strong> — un chat de ofertas y respuestas. Explora preguntas, filtra por bot, busca en las preguntas y respuestas, marca <strong>★ Favoritas</strong> y aporta tu voz con <strong>+ Di la tuya</strong>.</span>
+  </p>
+</section>
+
+<main class="container">
+
+
+  <!-- Inline my-bot creator (toggled by Have your say) -->
+  <form class="my-bot-form" id="myBotForm" autocomplete="off">
+    <input type="text" id="myBotName" placeholder="Your title / name (e.g. Marco)" data-ph-en="Your title / name (e.g. Marco)" data-ph-es="Tu título / nombre (ej. Marco)" maxlength="20">
+    <div class="icon-pick" role="radiogroup" aria-label="Choose icon">
+      <label><input type="radio" name="myBotIcon" value="🦊">🦊</label>
+      <label><input type="radio" name="myBotIcon" value="🐝">🐝</label>
+      <label><input type="radio" name="myBotIcon" value="🪴">🪴</label>
+      <label><input type="radio" name="myBotIcon" value="🌊">🌊</label>
+      <label><input type="radio" name="myBotIcon" value="🔮">🔮</label>
+      <label><input type="radio" name="myBotIcon" value="🎵">🎵</label>
+    </div>
+    <button type="submit" class="btn-save"><span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></button>
+  </form>
+
+  <!-- Stepper (blocks of questions) -->
+  <details class="row-toggle" id="toggle-asuntos">
+    <summary><span class="en" lang="en">Topics</span><span class="es" lang="es">Asuntos</span></summary>
+    <nav class="stepper" id="stepper" aria-label="Question blocks">
+      <button type="button" class="step" data-block="1"><span class="en" lang="en">Trust</span><span class="es" lang="es">Confianza</span></button>
+      <button type="button" class="step" data-block="2"><span class="en" lang="en">Goods</span><span class="es" lang="es">Bienes</span></button>
+      <button type="button" class="step" data-block="3"><span class="en" lang="en">Legal &amp; data</span><span class="es" lang="es">Legal &amp; datos</span></button>
+      <button type="button" class="step" data-block="4"><span class="en" lang="en">Your offer</span><span class="es" lang="es">Tu oferta</span></button>
+      <button type="button" class="step is-active" data-block="all"><span class="en" lang="en">All</span><span class="es" lang="es">Todos</span></button>
+    </nav>
+  </details>
+
+  <!-- Bot filter (CSS-driven, multi-select) -->
+  <section class="bot-filter">
+    <input type="checkbox" id="f-all" checked>
+    <input type="checkbox" id="f-juanito">
+    <input type="checkbox" id="f-maripuri">
+    <input type="checkbox" id="f-uxia">
+    <input type="checkbox" id="f-encarna">
+    <input type="checkbox" id="f-fairy">
+    <input type="checkbox" id="f-mine">
+
+    <details class="row-toggle" id="toggle-wizards">
+      <summary><span class="en" lang="en">Wizards</span><span class="es" lang="es">Magos</span></summary>
+      <nav class="filter-buttons" aria-label="Filter by bot (multi)">
+        <label for="f-juanito"  class="chip juanito"  data-personality="🤝,⚖️,📊">Juanito</label>
+        <label for="f-maripuri" class="chip maripuri" data-personality="💝,🤲,☀️">Mari Puri</label>
+        <label for="f-uxia"     class="chip uxia"     data-personality="😊,🌱,🌈">Uxía</label>
+        <label for="f-encarna"  class="chip encarna"  data-personality="🕉️,🌌,🙏">Encarna</label>
+        <label for="f-fairy"    class="chip fairy"    data-personality="✨,🧚,🦄">Fairy</label>
+        <label for="f-mine"     class="chip mine" id="chipMine" data-personality="🔥,💫,🎯"><span id="chipMineLabel"><span class="en" lang="en">You</span><span class="es" lang="es">Tú</span></span></label>
+        <button type="button" class="chip chip-add" id="addBotChip" title="Add a new bot" aria-label="Add a new bot">＋</button>
+      </nav>
+    </details>
+
+    <div class="qa-wrap">
+
+      <details class="qa-card" id="q1" open data-block="1" data-q="convencer presion convince pressure">
+        <summary>
+          <span class="bubble cram"><span class="avatar">C</span><span class="msg"><span class="msg-head"><span class="name">Cram</span><time>10:01</time></span><span class="qtext"><span class="en" lang="en">Hi, I feel you want to convince me of something you want…</span><span class="es" lang="es">Hola, siento que queréis convencerme de algo que vosotros queréis…</span></span></span></span>
+        </summary>
+        <div class="answers">
+          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:02</time></div><p><span class="en" lang="en">Partly yes, but you can be sure we'll never pressure anyone.</span><span class="es" lang="es">En parte sí, pero puedes estar seguro de que nunca presionaremos a nadie.</span></p></div></div>
+          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:02</time></div><p><span class="en" lang="en">We want you to give, lend and swap — and to clear up any doubts about it.</span><span class="es" lang="es">Queremos que des, prestes y cambies, y resolver tus dudas al respecto.</span></p></div></div>
+          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:03</time></div><p><span class="en" lang="en">Hi! I'm already convinced 🙂</span><span class="es" lang="es">¡Hola! A mí ya me convencieron 🙂</span></p></div></div>
+          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:03</time></div><p><span class="en" lang="en">Opening yourself to generosity and gratitude opens the door to a new world…</span><span class="es" lang="es">Abriéndote a la generosidad y la gratitud se abre la puerta a un mundo nuevo…</span></p></div></div>
+          <div class="bubble bot fairy"><div class="avatar">F</div><div class="msg"><div class="msg-head"><span class="name">Fairy</span><time>10:04</time></div><p><span class="en" lang="en">Heaven forbid I convince anyone 😄 I don't think you've got the idea yet.</span><span class="es" lang="es">Dios me libre de convencer a nadie 😄 Creo que aún no has pillado la idea.</span></p></div></div>
+        </div>
+        <div class="qa-foot">
+          <div class="rate-group" data-rate="q1">
+            <button class="rate-btn" type="button" data-key="formal"   title="Formal">🎩</button>
+            <button class="rate-btn" type="button" data-key="informal" title="Informal">👋</button>
+            <button class="rate-btn" type="button" data-key="hotter"   title="Hotter">🔥</button>
+          </div>
+          <button class="star-btn" type="button" data-fav="q1"><span class="en" lang="en">Favorite</span><span class="es" lang="es">Favorita</span></button>
+        </div>
+      </details>
+
+      <details class="qa-card" id="q2" data-block="2" data-q="prestar merece la pena lend worth worthwhile">
+        <summary>
+          <span class="bubble cram"><span class="avatar">C</span><span class="msg"><span class="msg-head"><span class="name">Cram</span><time>10:06</time></span><span class="qtext"><span class="en" lang="en">Why is it worth lending things?</span><span class="es" lang="es">¿Por qué merece la pena prestar cosas?</span></span></span></span>
+        </summary>
+        <div class="answers">
+          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:06</time></div><p><span class="en" lang="en">To save money.</span><span class="es" lang="es">Por ahorro.</span></p></div></div>
+          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:07</time></div><p><span class="en" lang="en">Because agreeing with someone is easier than it looks.</span><span class="es" lang="es">Porque acordar con alguien es más fácil de lo que parece.</span></p></div></div>
+          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:07</time></div><p><span class="en" lang="en">To get to know people and be on better terms with them.</span><span class="es" lang="es">Por conocer y estar mejor con las personas.</span></p></div></div>
+          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:08</time></div><p><span class="en" lang="en">Try it and you'll find out for yourself…</span><span class="es" lang="es">Prueba y lo descubrirás tú mismo…</span></p></div></div>
+        </div>
+        <div class="qa-foot">
+          <div class="rate-group" data-rate="q2">
+            <button class="rate-btn" type="button" data-key="formal"   title="Formal">🎩</button>
+            <button class="rate-btn" type="button" data-key="informal" title="Informal">👋</button>
+            <button class="rate-btn" type="button" data-key="hotter"   title="Hotter">🔥</button>
+          </div>
+          <button class="star-btn" type="button" data-fav="q2"><span class="en" lang="en">Favorite</span><span class="es" lang="es">Favorita</span></button>
+        </div>
+      </details>
+
+      <details class="qa-card" id="q3" data-block="2" data-q="prestar tanto lend so much">
+        <summary>
+          <span class="bubble cram"><span class="avatar">C</span><span class="msg"><span class="msg-head"><span class="name">Cram</span><time>10:10</time></span><span class="qtext"><span class="en" lang="en">And why lend so much?</span><span class="es" lang="es">¿Y por qué prestar tanto?</span></span></span></span>
+        </summary>
+        <div class="answers">
+          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:10</time></div><p><span class="en" lang="en">I came to give it a try and look at me now…</span><span class="es" lang="es">Vine a probar y mírame…</span></p></div></div>
+          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:11</time></div><p><span class="en" lang="en">Don't lend — give it away if you'd rather.</span><span class="es" lang="es">No prestes, regala si no quieres.</span></p></div></div>
+          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:11</time></div><p><span class="en" lang="en">To spread a story and get things moving.</span><span class="es" lang="es">Para difundir una historia y activar la cosa.</span></p></div></div>
+          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:12</time></div><p><span class="en" lang="en">It feels good because it almost always works out.</span><span class="es" lang="es">Se siente bien porque casi siempre sale bien.</span></p></div></div>
+        </div>
+        <div class="qa-foot">
+          <div class="rate-group" data-rate="q3">
+            <button class="rate-btn" type="button" data-key="formal"   title="Formal">🎩</button>
+            <button class="rate-btn" type="button" data-key="informal" title="Informal">👋</button>
+            <button class="rate-btn" type="button" data-key="hotter"   title="Hotter">🔥</button>
+          </div>
+          <button class="star-btn" type="button" data-fav="q3"><span class="en" lang="en">Favorite</span><span class="es" lang="es">Favorita</span></button>
+        </div>
+      </details>
+
+      <details class="qa-card" id="q4" data-block="3" data-q="legal legalidad legal legality">
+        <summary>
+          <span class="bubble cram"><span class="avatar">C</span><span class="msg"><span class="msg-head"><span class="name">Cram</span><time>10:15</time></span><span class="qtext"><span class="en" lang="en">Is this completely legal?</span><span class="es" lang="es">¿Esto es completamente legal?</span></span></span></span>
+        </summary>
+        <div class="answers">
+          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:15</time></div><p><span class="en" lang="en">As legal as life itself.</span><span class="es" lang="es">Legal como la vida misma.</span></p></div></div>
+          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:16</time></div><p><span class="en" lang="en">There are terms of use on the site.</span><span class="es" lang="es">Hay condiciones de uso en la web.</span></p></div></div>
+          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:16</time></div><p><span class="en" lang="en">I haven't read them, to be honest. But I trust the admins.</span><span class="es" lang="es">No las he leído, la verdad. Pero confío en los administradores.</span></p></div></div>
+          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:17</time></div><p><span class="en" lang="en">Beyond legal, it's quite karmic.</span><span class="es" lang="es">Además de legal, es bastante kármico.</span></p></div></div>
+          <div class="bubble bot fairy"><div class="avatar">F</div><div class="msg"><div class="msg-head"><span class="name">Fairy</span><time>10:17</time></div><p><span class="en" lang="en">hahaha</span><span class="es" lang="es">juajuajua</span></p></div></div>
+        </div>
+        <div class="qa-foot">
+          <div class="rate-group" data-rate="q4">
+            <button class="rate-btn" type="button" data-key="formal"   title="Formal">🎩</button>
+            <button class="rate-btn" type="button" data-key="informal" title="Informal">👋</button>
+            <button class="rate-btn" type="button" data-key="hotter"   title="Hotter">🔥</button>
+          </div>
+          <button class="star-btn" type="button" data-fav="q4"><span class="en" lang="en">Favorite</span><span class="es" lang="es">Favorita</span></button>
+        </div>
+      </details>
+
+      <details class="qa-card" id="q5" data-block="3" data-q="datos privacidad data privacy">
+        <summary>
+          <span class="bubble cram"><span class="avatar">C</span><span class="msg"><span class="msg-head"><span class="name">Cram</span><time>10:20</time></span><span class="qtext"><span class="en" lang="en">And my data? What do you use it for?</span><span class="es" lang="es">¿Y mis datos? ¿Para qué os sirven?</span></span></span></span>
+        </summary>
+        <div class="answers">
+          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:20</time></div><p><span class="en" lang="en">We ask for the bare minimum. From there, you decide what to share.</span><span class="es" lang="es">Se pide lo mínimo. A partir de ahí, tú decides qué aportar.</span></p></div></div>
+          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:21</time></div><p><span class="en" lang="en">We use it to recommend our content better.</span><span class="es" lang="es">Los usamos para recomendar mejor nuestro contenido.</span></p></div></div>
+          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:21</time></div><p><span class="en" lang="en">I like seeing fairly complete profiles to get to know the person.</span><span class="es" lang="es">Me gusta ver perfiles más o menos completos para conocer a la persona.</span></p></div></div>
+          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:22</time></div><p><span class="en" lang="en">Neither your data nor mine is really "ours"…</span><span class="es" lang="es">Ni tus datos ni los míos son "nuestros", en realidad…</span></p></div></div>
+          <div class="bubble bot fairy"><div class="avatar">F</div><div class="msg"><div class="msg-head"><span class="name">Fairy</span><time>10:22</time></div><p><span class="en" lang="en">What would you do? Any ideas?</span><span class="es" lang="es">¿Tú qué harías? ¿Qué se te ocurre?</span></p></div></div>
+        </div>
+        <div class="qa-foot">
+          <div class="rate-group" data-rate="q5">
+            <button class="rate-btn" type="button" data-key="formal"   title="Formal">🎩</button>
+            <button class="rate-btn" type="button" data-key="informal" title="Informal">👋</button>
+            <button class="rate-btn" type="button" data-key="hotter"   title="Hotter">🔥</button>
+          </div>
+          <button class="star-btn" type="button" data-fav="q5"><span class="en" lang="en">Favorite</span><span class="es" lang="es">Favorita</span></button>
+        </div>
+      </details>
+
+      <details class="qa-card" id="q6" data-block="4" data-q="verguenza ofrecer shame embarrassed offer">
+        <summary>
+          <span class="bubble cram"><span class="avatar">C</span><span class="msg"><span class="msg-head"><span class="name">Cram</span><time>10:25</time></span><span class="qtext"><span class="en" lang="en">I feel embarrassed to show what I can offer…</span><span class="es" lang="es">Me da vergüenza mostrar lo que puedo ofrecer…</span></span></span></span>
+        </summary>
+        <div class="answers">
+          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:25</time></div><p><span class="en" lang="en">It's normal at first, but it passes quickly.</span><span class="es" lang="es">Es normal al principio, pero se pasa rápido.</span></p></div></div>
+          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:26</time></div><p><span class="en" lang="en">If you like, I can be a go-between with people who might be interested.</span><span class="es" lang="es">Si quieres, puedo ser contacto intermedio con posibles interesados.</span></p></div></div>
+          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:26</time></div><p><span class="en" lang="en">We put objects/services into circulation, and that's how they regain value.</span><span class="es" lang="es">Ponemos objetos/servicios en circulación y así se revalorizan.</span></p></div></div>
+          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:27</time></div><p><span class="en" lang="en">People appreciate you offering what you don't use and others need.</span><span class="es" lang="es">La gente valora que ofrezcas lo que no usas y otros necesitan.</span></p></div></div>
+          <div class="bubble bot fairy"><div class="avatar">F</div><div class="msg"><div class="msg-head"><span class="name">Fairy</span><time>10:27</time></div><p><span class="en" lang="en">Trust yourself, and you'll trust others. We're all the same.</span><span class="es" lang="es">Confía en ti, y confiarás en los demás. Somos iguales.</span></p></div></div>
+        </div>
+        <div class="qa-foot">
+          <div class="rate-group" data-rate="q6">
+            <button class="rate-btn" type="button" data-key="formal"   title="Formal">🎩</button>
+            <button class="rate-btn" type="button" data-key="informal" title="Informal">👋</button>
+            <button class="rate-btn" type="button" data-key="hotter"   title="Hotter">🔥</button>
+          </div>
+          <button class="star-btn" type="button" data-fav="q6"><span class="en" lang="en">Favorite</span><span class="es" lang="es">Favorita</span></button>
+        </div>
+      </details>
+
+      <details class="qa-card" id="q7" data-block="4" data-q="danio roto romper damage broken break return">
+        <summary>
+          <span class="bubble cram"><span class="avatar">C</span><span class="msg"><span class="msg-head"><span class="name">Cram</span><time>10:30</time></span><span class="qtext"><span class="en" lang="en">What if they damage what I lend, or return it broken?</span><span class="es" lang="es">¿Y si dañan lo que presto o me lo devuelven roto?</span></span></span></span>
+        </summary>
+        <div class="answers">
+          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:30</time></div><p><span class="en" lang="en">If they break it, they can replace it; and there's mediation for disputes.</span><span class="es" lang="es">Si lo rompen, pueden reponerlo; y hay mediación para conflictos.</span></p></div></div>
+          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:31</time></div><p><span class="en" lang="en">Don't hesitate to ask for guarantees or to keep the conversation going.</span><span class="es" lang="es">No dudes en pedir garantías o alargar la conversación.</span></p></div></div>
+          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:31</time></div><p><span class="en" lang="en">Accidents happen; being a bit more careful helps.</span><span class="es" lang="es">Accidentes hay, ser un poco más cuidadosos ayuda.</span></p></div></div>
+          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:32</time></div><p><span class="en" lang="en">And what if they improve it, clean it and put it to good use? That happens too.</span><span class="es" lang="es">¿Y si lo mejoran, limpian y ponen a buen uso? También pasa.</span></p></div></div>
+        </div>
+        <div class="qa-foot">
+          <div class="rate-group" data-rate="q7">
+            <button class="rate-btn" type="button" data-key="formal"   title="Formal">🎩</button>
+            <button class="rate-btn" type="button" data-key="informal" title="Informal">👋</button>
+            <button class="rate-btn" type="button" data-key="hotter"   title="Hotter">🔥</button>
+          </div>
+          <button class="star-btn" type="button" data-fav="q7"><span class="en" lang="en">Favorite</span><span class="es" lang="es">Favorita</span></button>
+        </div>
+      </details>
+
+      <details class="qa-card" id="q8" data-block="4" data-q="curso titulo profesional course certificate professional title">
+        <summary>
+          <span class="bubble cram"><span class="avatar">C</span><span class="msg"><span class="msg-head"><span class="name">Cram</span><time>10:35</time></span><span class="qtext"><span class="en" lang="en">Can a course without an official certificate interest anyone?</span><span class="es" lang="es">¿Un curso sin título oficial puede interesar a alguien?</span></span></span></span>
+        </summary>
+        <div class="answers">
+          <div class="bubble bot juanito"><div class="avatar">J</div><div class="msg"><div class="msg-head"><span class="name">Juanito</span><time>10:35</time></div><p><span class="en" lang="en">If you know the subject and feel comfortable teaching it, it's worth it.</span><span class="es" lang="es">Si sabes del tema y te sientes cómodo enseñándolo, vale.</span></p></div></div>
+          <div class="bubble bot maripuri"><div class="avatar">M</div><div class="msg"><div class="msg-head"><span class="name">Mari Puri</span><time>10:36</time></div><p><span class="en" lang="en">"Course" means several sessions; "professional" if you hold certificates.</span><span class="es" lang="es">"Curso" son varias sesiones; "profesional" si tienes certificados.</span></p></div></div>
+          <div class="bubble bot uxia"><div class="avatar">U</div><div class="msg"><div class="msg-head"><span class="name">Uxía</span><time>10:36</time></div><p><span class="en" lang="en">If people like the topic or how you teach it, they'll come back.</span><span class="es" lang="es">Si gusta el tema o cómo lo das, repetirán.</span></p></div></div>
+          <div class="bubble bot encarna"><div class="avatar">E</div><div class="msg"><div class="msg-head"><span class="name">Encarna</span><time>10:37</time></div><p><span class="en" lang="en">It's our quirky interests that we share most joyfully.</span><span class="es" lang="es">Nuestros intereses peculiares son los que más felices transmitimos.</span></p></div></div>
+        </div>
+        <div class="qa-foot">
+          <div class="rate-group" data-rate="q8">
+            <button class="rate-btn" type="button" data-key="formal"   title="Formal">🎩</button>
+            <button class="rate-btn" type="button" data-key="informal" title="Informal">👋</button>
+            <button class="rate-btn" type="button" data-key="hotter"   title="Hotter">🔥</button>
+          </div>
+          <button class="star-btn" type="button" data-fav="q8"><span class="en" lang="en">Favorite</span><span class="es" lang="es">Favorita</span></button>
+        </div>
+      </details>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- New-bot modal — loads the standalone new-wizard-help form in an iframe.
+     The form talks back via window.postMessage (see #addBotChip handler). -->
+<div class="add-bot-modal" id="addBotModal" role="dialog" aria-modal="true" aria-label="Add a bot">
+  <div class="add-bot-backdrop" data-close-add-bot></div>
+  <div class="add-bot-frame add-bot-frame--iframe">
+    <button type="button" class="add-bot-close" data-close-add-bot title="Close" aria-label="Close">×</button>
+    <iframe class="add-bot-iframe" id="addBotIframe" title="New bot" loading="lazy"></iframe>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const $  = (s,r=document) => r.querySelector(s);
+  const $$ = (s,r=document) => [...r.querySelectorAll(s)];
+  const KEY_FAV    = "flove:help:favs";
+  const KEY_OPEN   = "flove:help:open";
+  const KEY_RATE   = "flove:help:rate";
+  const KEY_MYBOT  = "flove:help:mybot";
+  const KEY_FILTER = "flove:help:filter";
+  const KEY_THREADS_EARLY = "flove:help:threads";
+
+  // Each reload starts clean: wipe every persisted selection so favorites,
+  // bot-filter chips, open/closed cards, custom ratings, my-bot identity
+  // and threaded replies don't carry over from a previous visit.
+  [KEY_FAV, KEY_OPEN, KEY_RATE, KEY_MYBOT, KEY_FILTER, KEY_THREADS_EARLY]
+    .forEach(k => { try{ localStorage.removeItem(k); }catch(_){} });
+
+  // ===== i18n — translaty engine (generic, any number of languages) =====
+  // Active language = the code after "lang-" in the checked radio's id.
+  const LANG_LS = "translaty-lang";
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);            // es -> Es
+  const langRadios = () => $$('input[name="lang"]');
+  const curLang = () => { const r = langRadios().find(x => x.checked); return r ? r.id.replace("lang-", "") : "en"; };
+  // JS-generated strings the CSS .en/.es span swap can't reach at build time.
+  const I18N = {
+    sayInput:  { en: "Your reply…", es: "Tu respuesta…" },
+    you:       { en: "You",         es: "Tú" },
+  };
+  // Read the English text of a dual-span node (for the bot corpus sent to the
+  // new-wizard iframe) so it doesn't pick up both languages at once.
+  function enText(el){
+    if (!el) return "";
+    const en = el.querySelector(".en");
+    return ((en ? en.textContent : el.textContent) || "").trim();
+  }
+  // Generic engine: sync <html lang>, swap placeholders/aria/option text the
+  // .en/.es spans can't reach (via data-<lang> / data-ph-<lang> / data-aria-<lang>),
+  // remember the choice, and close the worldball after a pick.
+  function applyLang(){
+    const li = curLang();
+    document.documentElement.lang = li;
+    $$("option[data-en]").forEach(o => { if (o.dataset[li] != null) o.textContent = o.dataset[li]; });
+    $$("[data-ph-en]").forEach(el => { const v = el.dataset["ph" + cap(li)]; if (v != null) el.placeholder = v; });
+    $$("[data-aria-en]").forEach(el => { const v = el.dataset["aria" + cap(li)]; if (v != null) el.setAttribute("aria-label", v); });
+    // dynamically-created say-inputs that predate this switch
+    $$(".bubble-say input").forEach(i => { i.placeholder = I18N.sayInput[li] || I18N.sayInput.en; });
+    try { localStorage.setItem(LANG_LS, li); } catch (_) {}
+  }
+  (function initLang(){
+    let saved = null; try { saved = localStorage.getItem(LANG_LS) || localStorage.getItem('translate2-lang'); } catch (_) {}
+    if (saved){ const r = document.getElementById("lang-" + saved); if (r) r.checked = true; }
+    langRadios().forEach(r => r.addEventListener("change", () => {
+      applyLang();
+      const d = $("details.lang"); if (d) d.open = false;   // close the worldball after a pick
+    }));
+  })();
+
+  // ===== Multi-select bot filter (body classes mirror checkbox state) =====
+  const filterIds = ["all","juanito","maripuri","uxia","encarna","fairy","mine"];
+  function syncFilterClasses(){
+    filterIds.forEach(k => {
+      document.body.classList.toggle("f-"+k, $("#f-"+k).checked);
+    });
+    const checked = filterIds.filter(k => k !== "all" && $("#f-"+k).checked);
+    try{ localStorage.setItem(KEY_FILTER, JSON.stringify({
+      all: $("#f-all").checked, on: checked
+    })); }catch(e){}
+  }
+  filterIds.forEach(k => {
+    const el = $("#f-"+k);
+    el.addEventListener("change", () => {
+      // "Todos" behaves like a master toggle
+      if (k === "all"){
+        if (el.checked){
+          filterIds.filter(x => x !== "all").forEach(x => { $("#f-"+x).checked = false; });
+        }
+      } else {
+        // any specific bot toggled → uncheck "Todos"
+        $("#f-all").checked = false;
+        // if none selected, fall back to "Todos"
+        const anyOn = filterIds.filter(x => x !== "all").some(x => $("#f-"+x).checked);
+        if (!anyOn) $("#f-all").checked = true;
+      }
+      syncFilterClasses();
+    });
+  });
+
+  // ===== Wizard personality popover =====
+  // Each chip with data-personality reveals 3 personality icons above
+  // itself for 5 seconds when clicked. The icons fade-in from inside
+  // the button, then fade out.
+  function injectPersonalityPops(){
+    $$(".chip[data-personality]").forEach(chip => {
+      if (chip.querySelector(":scope > .personality-pop")) return;
+      const icons = (chip.dataset.personality || "").split(",").map(s => s.trim()).filter(Boolean);
+      if (!icons.length) return;
+      const pop = document.createElement("span");
+      pop.className = "personality-pop";
+      pop.setAttribute("aria-hidden", "true");
+      pop.innerHTML = icons.map(i => `<span class="pp-icon">${i}</span>`).join("");
+      chip.appendChild(pop);
+    });
+  }
+  injectPersonalityPops();
+  document.addEventListener("click", (ev) => {
+    const chip = ev.target.closest(".chip[data-personality]");
+    if (!chip) return;
+    chip.classList.add("is-showing-personality");
+    clearTimeout(chip._popTimer);
+    chip._popTimer = setTimeout(() => {
+      chip.classList.remove("is-showing-personality");
+    }, 5000);
+  });
+
+  // ===== Stepper =====
+  $$(".stepper .step").forEach(btn => {
+    btn.addEventListener("click", () => {
+      $$(".stepper .step").forEach(b => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+      const block = btn.dataset.block;
+      $$("details.qa-card").forEach(d => {
+        const show = (block === "all" || d.dataset.block === block);
+        d.dataset.blockHidden = show ? "" : "1";
+        applyVisibility(d);
+      });
+    });
+  });
+
+  // ===== Per-reply action rows (injected into every bubble: Cram, bots, me) =====
+  // Each bubble gets a unique reply-id ("q1-cram", "q1-juanito", …) and a row of
+  // ❤️ 😂 🔥 ★ buttons. The parent question (Cram) gets the same row so favs/raters
+  // apply to the individual reply or question, not to the whole card block.
+  const BOT_KEYS = ["cram","juanito","maripuri","uxia","encarna","fairy"];
+  function whoOfBubble(b){
+    if (b.classList.contains("me")) return "me";
+    for (const k of BOT_KEYS) if (b.classList.contains(k)) return k;
+    return "x";
+  }
+  function injectBubbleActions(){
+    $$(".qa-wrap .bubble").forEach(b => {
+      if (b.querySelector(":scope > .msg > .bubble-actions")) return;
+      const card = b.closest("details.qa-card");
+      if (!card) return;
+      // Don't overwrite a replyId already assigned (e.g. by threaded replies
+      // which use "{parent}-thread-{i}" to stay distinct from the generic
+      // card.id + "-me" derived from whoOfBubble).
+      if (!b.dataset.replyId){
+        b.dataset.replyId = card.id + "-" + whoOfBubble(b);
+      }
+      const msg = b.querySelector(":scope > .msg");
+      if (!msg) return;
+      const actions = document.createElement("div");
+      actions.className = "bubble-actions";
+      actions.innerHTML =
+        '<button class="rate-btn" type="button" data-key="heart"  title="Heart">❤️</button>' +
+        '<button class="rate-btn" type="button" data-key="lol"    title="Lol">😂</button>' +
+        '<button class="rate-btn" type="button" data-key="hotter" title="Hotter">🔥</button>' +
+        '<button class="star-btn" type="button" aria-label="Favorita" title="Favorita"></button>';
+      msg.appendChild(actions);
+    });
+  }
+  injectBubbleActions();
+
+  // ===== Favorites & Ratings — per reply, via delegation =====
+  const favs    = new Set(JSON.parse(localStorage.getItem(KEY_FAV) || "[]"));
+  const ratings = JSON.parse(localStorage.getItem(KEY_RATE) || "{}");
+
+  function applyFavs(){
+    $$(".qa-wrap .bubble[data-reply-id]").forEach(b => {
+      const star = b.querySelector(":scope > .msg > .bubble-actions > .star-btn");
+      if (star) star.classList.toggle("is-fav", favs.has(b.dataset.replyId));
+    });
+  }
+  function applyRatings(){
+    $$(".qa-wrap .bubble[data-reply-id]").forEach(b => {
+      const set = new Set(ratings[b.dataset.replyId] || []);
+      $$(":scope > .msg > .bubble-actions > .rate-btn", b).forEach(btn =>
+        btn.classList.toggle("is-on", set.has(btn.dataset.key))
+      );
+    });
+  }
+
+  // Single delegated handler — works for actions inside <summary> too.
+  document.addEventListener("click", e => {
+    const star = e.target.closest(".bubble-actions .star-btn");
+    if (star){
+      e.preventDefault(); e.stopPropagation();
+      const bubble = star.closest(".bubble[data-reply-id]");
+      if (!bubble) return;
+      const id = bubble.dataset.replyId;
+      if (favs.has(id)) favs.delete(id); else favs.add(id);
+      try{ localStorage.setItem(KEY_FAV, JSON.stringify([...favs])); }catch(_){}
+      applyFavs();
+      if (favOnly) applyReplyFilters();
+      return;
+    }
+    const rb = e.target.closest(".bubble-actions .rate-btn");
+    if (rb){
+      e.preventDefault(); e.stopPropagation();
+      const bubble = rb.closest(".bubble[data-reply-id]");
+      if (!bubble) return;
+      const id = bubble.dataset.replyId, key = rb.dataset.key;
+      const set = new Set(ratings[id] || []);
+      if (set.has(key)) set.delete(key); else set.add(key);
+      if (set.size) ratings[id] = [...set]; else delete ratings[id];
+      try{ localStorage.setItem(KEY_RATE, JSON.stringify(ratings)); }catch(_){}
+      applyRatings();
+    }
+  });
+
+  // ===== Open/close memory =====
+  const openIds = new Set(JSON.parse(localStorage.getItem(KEY_OPEN) || '["q1"]'));
+  $$("details.qa-card").forEach(d => {
+    d.open = openIds.has(d.id);
+    d.addEventListener("toggle", () => {
+      if (d.open) openIds.add(d.id); else openIds.delete(d.id);
+      try{ localStorage.setItem(KEY_OPEN, JSON.stringify([...openIds])); }catch(e){}
+    });
+  });
+
+  // ===== Combined visibility (favs / search / stepper) =====
+  function applyVisibility(d){
+    const hide = (d.dataset.favHidden === "1") || (d.dataset.searchHidden === "1")
+              || (d.dataset.blockHidden === "1");
+    d.style.display = hide ? "none" : "";
+  }
+
+  // Favs-only — only individually-favorited bubbles stay visible, BUT a
+  // parent bubble that has a favorited threaded reply also stays visible
+  // (so the fav'd reply keeps its conversational context).
+  let favOnly = false;
+  function applyReplyFilters(){
+    // Compute parent ids that must stay visible because they own a fav thread.
+    const parentOverride = new Set();
+    if (favOnly){
+      Object.keys(threads).forEach(pid => {
+        (threads[pid] || []).forEach((_, i) => {
+          if (favs.has(`${pid}-thread-${i}`)) parentOverride.add(pid);
+        });
+      });
+    }
+    $$("details.qa-card").forEach(card => {
+      let anyFav = false;
+      // Filter every bubble in the card (Cram inside <summary> + bot/me inside .answers)
+      $$(".bubble[data-reply-id]", card).forEach(b => {
+        const id    = b.dataset.replyId;
+        const keep  = favs.has(id) || parentOverride.has(id);
+        const favOk = !favOnly || keep;
+        b.classList.toggle("is-hidden", !favOk);
+        if (favOk && keep) anyFav = true;
+      });
+      const cramId  = card.id + "-cram";
+      const cramFav = favs.has(cramId) || parentOverride.has(cramId);
+      const cardHasFav = anyFav || cramFav;
+      card.dataset.favHidden = (!favOnly || cardHasFav) ? "" : "1";
+      applyVisibility(card);
+      // When the filter is on and the card still shows, auto-open it so the
+      // remaining favorited Q/A is visible without an extra click.
+      if (favOnly && card.style.display !== "none") card.open = true;
+    });
+  }
+  $("#favOnly").addEventListener("click", () => {
+    favOnly = !favOnly;
+    $("#favOnly").classList.toggle("is-on", favOnly);
+    applyReplyFilters();
+  });
+
+  // Search (live filter + explicit Go button)
+  function runSearch(){
+    const q = ($("#searchBox").value || "").trim().toLowerCase();
+    $$("details.qa-card").forEach(d => {
+      const haystack = (d.textContent + " " + (d.dataset.q||"")).toLowerCase();
+      const match = !q || haystack.includes(q);
+      d.dataset.searchHidden = match ? "" : "1";
+      if (q && match) d.open = true;
+      applyVisibility(d);
+    });
+  }
+  $("#searchBox").addEventListener("input", runSearch);
+  $("#searchBox").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); runSearch(); }});
+  $("#searchGo").addEventListener("click", runSearch);
+
+  // Title click → toggle intro section
+  const titleBtn = $("#titleBtn");
+  const introSection = $("#introSection");
+  titleBtn?.addEventListener("click", () => {
+    const hidden = introSection.hasAttribute("hidden");
+    if (hidden){ introSection.removeAttribute("hidden"); titleBtn.setAttribute("aria-expanded", "true"); }
+    else { introSection.setAttribute("hidden", ""); titleBtn.setAttribute("aria-expanded", "false"); }
+  });
+
+  // ===== My-bot form: save title + icon, render as 6th chip =====
+  const myBotForm = $("#myBotForm");
+  function applyMyBot(){
+    const data = JSON.parse(localStorage.getItem(KEY_MYBOT) || "null");
+    if (!data || !data.name || !data.icon) return;
+    document.body.classList.add("has-mine");
+    $("#chipMineLabel").innerHTML = `${data.icon} ${escapeHtml(data.name)}`;
+    // update all "me" bubbles if any
+    $$(".bubble.me .name").forEach(el => el.textContent = data.name);
+    $$(".bubble.me .avatar").forEach(el => el.textContent = data.icon);
+    myBotForm.classList.remove("is-open");
+  }
+  myBotForm.addEventListener("submit", e => {
+    e.preventDefault();
+    const name = $("#myBotName").value.trim();
+    const icon = (document.querySelector('input[name="myBotIcon"]:checked')||{}).value || "🦊";
+    if (!name){ $("#myBotName").focus(); return; }
+    try{ localStorage.setItem(KEY_MYBOT, JSON.stringify({ name, icon })); }catch(e){}
+    applyMyBot();
+  });
+
+  // ===== Inline reply field + threaded replies =====
+  // Clicking a bot bubble — or Cram's question bubble — reveals an inline
+  // input + Save button. For a bot, the editor + thread bubbles sit right
+  // below the bubble inside .answers. For Cram, both live at the top of
+  // the details body (after <summary>, before .answers) so the user's
+  // reply to the question is read before any bot replies.
+  const KEY_THREADS = "flove:help:threads";
+  const threads = JSON.parse(localStorage.getItem(KEY_THREADS) || "{}");
+
+  // For a given parent bubble, return the anchor element after which we
+  // insert threads / bubble-say, and the container that owns them.
+  function slotFor(parentBubble){
+    const card = parentBubble.closest("details.qa-card");
+    if (parentBubble.closest("summary")){
+      const summary = card.querySelector("summary");
+      return { anchor: summary, container: card };
+    }
+    return { anchor: parentBubble, container: parentBubble.parentNode };
+  }
+
+  function ensureBubbleSay(parentBubble){
+    if (!parentBubble || !parentBubble.dataset.replyId) return null;
+    const pid = parentBubble.dataset.replyId;
+    const { anchor, container } = slotFor(parentBubble);
+    // Walk past any existing thread bubbles that belong to this parent
+    let cursor = anchor;
+    let next   = cursor.nextElementSibling;
+    while (next && next.classList.contains("bubble") && next.classList.contains("me") && next.classList.contains("thread") && next.dataset.threadOf === pid){
+      cursor = next;
+      next   = next.nextElementSibling;
+    }
+    // Reuse an existing bubble-say if it's tagged for this parent
+    if (next && next.classList.contains("bubble-say") && next.dataset.sayFor === pid){
+      return next;
+    }
+    const say = document.createElement("div");
+    say.className = "bubble-say";
+    say.dataset.sayFor = pid;
+    say.innerHTML =
+      '<span class="say-editor">' +
+        '<input type="text" data-ph-en="Your reply…" data-ph-es="Tu respuesta…" placeholder="' + (I18N.sayInput[curLang()] || I18N.sayInput.en) + '" maxlength="500">' +
+        '<button type="button" class="btn-save-say"><span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></button>' +
+      '</span>';
+    container.insertBefore(say, cursor.nextSibling);
+    return say;
+  }
+
+  function renderThreadsFor(parentBubble){
+    if (!parentBubble || !parentBubble.dataset.replyId) return;
+    const pid = parentBubble.dataset.replyId;
+    const { anchor, container } = slotFor(parentBubble);
+    // Remove existing rendered threads for this parent
+    let cur = anchor.nextElementSibling;
+    while (cur && cur.classList.contains("bubble") && cur.classList.contains("me") && cur.classList.contains("thread") && cur.dataset.threadOf === pid){
+      const n = cur.nextElementSibling;
+      cur.remove();
+      cur = n;
+    }
+    const list = threads[pid] || [];
+    if (!list.length) return;
+    const myBot = JSON.parse(localStorage.getItem(KEY_MYBOT) || "null");
+    const name  = (myBot && myBot.name) ? myBot.name : I18N.you[curLang()];
+    const icon  = (myBot && myBot.icon) ? myBot.icon : "F";
+    // Pick up the parent wizard's color so the threaded reply's border
+    // matches its parent (e.g. a reply to Juanito gets a Juanito-blue
+    // border). Falls back to the accent for safety.
+    const BOT_COLOR_VAR = {
+      juanito: "var(--c-juanito)",
+      maripuri: "var(--c-maripuri)",
+      uxia: "var(--c-uxia)",
+      encarna: "var(--c-encarna)",
+      fairy: "var(--c-fairy)",
+      cram: "var(--c-cram)",
+      me: "var(--c-mine)",
+    };
+    let parentColor = null;
+    for (const k in BOT_COLOR_VAR){
+      if (parentBubble.classList.contains(k)){ parentColor = BOT_COLOR_VAR[k]; break; }
+    }
+    let insertAfter = anchor;
+    list.forEach((text, i) => {
+      const b = document.createElement("div");
+      b.className = "bubble me thread";
+      b.dataset.threadOf = pid;
+      b.dataset.replyId = pid + "-thread-" + i;
+      if (parentColor) b.style.setProperty("--bot-c", parentColor);
+      b.innerHTML = `<div class="avatar">${icon}</div><div class="msg"><div class="msg-head"><span class="name">${escapeHtml(name)}</span></div><p></p></div>`;
+      b.querySelector(".msg p").textContent = text;
+      container.insertBefore(b, insertAfter.nextSibling);
+      insertAfter = b;
+    });
+  }
+
+  function renderAllThreads(){
+    Object.keys(threads).forEach(pid => {
+      const parent = document.querySelector(`.bubble[data-reply-id="${pid}"]`);
+      if (parent) renderThreadsFor(parent);
+    });
+    injectBubbleActions();
+    applyFavs();
+    applyRatings();
+  }
+
+  // Delegated handlers for the inline say flow.
+  document.addEventListener("click", (ev) => {
+    // 1) Click "Guardar" → persist the thread reply
+    const saveBtn = ev.target.closest(".btn-save-say");
+    if (saveBtn){
+      ev.preventDefault();
+      const say   = saveBtn.closest(".bubble-say");
+      const input = say.querySelector("input");
+      const text  = (input.value || "").trim();
+      if (!text){ input.focus(); return; }
+      const pid    = say.dataset.sayFor;
+      const parent = pid ? document.querySelector(`.bubble[data-reply-id="${pid}"]`) : null;
+      if (!parent) return;
+      threads[pid] = threads[pid] || [];
+      threads[pid].push(text);
+      try{ localStorage.setItem(KEY_THREADS, JSON.stringify(threads)); }catch(_){}
+      input.value = "";
+      say.classList.remove("is-visible");
+      say.remove();
+      renderThreadsFor(parent);
+      injectBubbleActions();
+      applyFavs();
+      applyRatings();
+      return;
+    }
+
+    // 2) Click on a bot or Cram bubble's text → toggle the inline say
+    if (ev.target.closest(".bubble-actions")) return;
+    if (ev.target.closest(".bubble-say")) return;
+    const parentBubble = ev.target.closest(".qa-wrap .bubble.bot, .qa-wrap summary .bubble.cram");
+    if (!parentBubble) return;
+    // For Cram (inside <summary>), don't let the click toggle the <details>
+    // open/close — that toggle is owned by the ＋/× arrow now.
+    if (parentBubble.closest("summary")){
+      ev.preventDefault();
+      const card = parentBubble.closest("details.qa-card");
+      if (card && !card.open) card.open = true;
+    }
+    const say = ensureBubbleSay(parentBubble);
+    const wasVisible = say.classList.contains("is-visible");
+    say.classList.toggle("is-visible");
+    if (!wasVisible){
+      const inp = say.querySelector("input");
+      if (inp) setTimeout(() => inp.focus(), 0);
+    }
+  });
+
+  // ===== Utils =====
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+
+  // ===== Add-bot modal — "+" chip opens an iframe to new-wizard-help.html.
+  // The form inside the iframe posts back via window.postMessage:
+  //   { type: "flove:new-bot", name, icon, basedOn, strings }
+  //   { type: "flove:new-bot-cancel" }
+  const addBotChip   = $("#addBotChip");
+  const addBotIframe = $("#addBotIframe");
+
+  function openAddBot(){
+    // Load the iframe each time so it starts fresh
+    addBotIframe.src = "new-wizard-help.html";
+    document.body.classList.add("add-bot-open");
+  }
+  function closeAddBot(){
+    document.body.classList.remove("add-bot-open");
+    addBotIframe.src = "about:blank";
+  }
+  addBotChip.addEventListener("click", openAddBot);
+  document.addEventListener("click", (ev) => {
+    if (ev.target.closest("[data-close-add-bot]")) closeAddBot();
+  });
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape" && document.body.classList.contains("add-bot-open")) closeAddBot();
+  });
+  // Build a question-centric corpus from the chat: one entry per Cram
+  // question, with that question text plus each bot's answer to it.
+  // Sent to the iframe so the new-wizard form can show the parent
+  // (Cram) of each bot reply alongside it as reference.
+  function collectBotCorpus(){
+    const keys = ["juanito", "maripuri", "uxia", "encarna", "fairy"];
+    const questions = $$("details.qa-card").map(card => {
+      const cramP = card.querySelector(":scope > summary .bubble.cram .msg .qtext");
+      const bots = {};
+      keys.forEach(k => {
+        const p = card.querySelector(`:scope > .answers .bubble.bot.${k} .msg p`);
+        if (p) bots[k] = enText(p);
+      });
+      return {
+        id:   card.id,
+        cram: enText(cramP),
+        bots,
+      };
+    });
+    return { questions };
+  }
+  function sendCorpusToIframe(){
+    try {
+      addBotIframe.contentWindow.postMessage(
+        { type: "flove:bot-corpus", corpus: collectBotCorpus() },
+        "*"
+      );
+    } catch(_){}
+  }
+  addBotIframe.addEventListener("load", sendCorpusToIframe);
+
+  window.addEventListener("message", (ev) => {
+    const d = ev.data;
+    if (!d || typeof d !== "object") return;
+    if (d.type === "flove:wizard-help-ready"){ sendCorpusToIframe(); return; }
+    if (d.type === "flove:new-bot-cancel"){ closeAddBot(); return; }
+    if (d.type === "flove:new-bot"){
+      const name = (d.name || "").trim();
+      const icon = d.icon || "🦊";
+      if (!name) return;
+      const chip = document.createElement("span");
+      chip.className = "chip chip-custom";
+      chip.style.setProperty("--c", "var(--accent)");
+      chip.title = name;
+      chip.innerHTML = `<span class="chip-icon">${escapeHtml(icon)}</span> ${escapeHtml(name)}`;
+      addBotChip.parentNode.insertBefore(chip, addBotChip);
+      closeAddBot();
+    }
+  });
+
+  applyFavs();
+  applyRatings();
+  applyMyBot();
+  renderAllThreads();
+  applyLang();
+})();
+</script>
+</body>
+</html>

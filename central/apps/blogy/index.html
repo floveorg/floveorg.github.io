@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#6c5ce7" id="themeColor">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="flove:distro" content="central">
+<meta name="flove:tier" content="normal">
+<meta name="flove:app" content="blogy">
+<meta name="description" content="blogy basic — post, share, discover">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path fill='%236c5ce7' fill-rule='evenodd' d='M16 27.5C16 27.5 3.5 19.8 3.5 11.2 3.5 7.3 6.6 4.5 10 4.5 12.7 4.5 15 6 16 8.2 17 6 19.3 4.5 22 4.5 25.4 4.5 28.5 7.3 28.5 11.2 28.5 19.8 16 27.5 16 27.5Z M7.6 17.3 h2.2 v3.2 h-2.2 z M11.1 15.3 h2.2 v5.2 h-2.2 z M14.6 13.3 h2.2 v7.2 h-2.2 z'/></svg>">
+<title>blogy · Central</title>
+<link rel="stylesheet" href="../../shared/code/css/flove.css">
+<style>
+/* blogy accent overrides */
+:root{--blogy-accent:#6c5ce7}
+[data-theme="dark"]{--accent:#7aa2f7;--signal:#9ece6a;--warn:#e0af68;--danger:#f7768e}
+[data-theme="light"]{--accent:#6c5ce7;--signal:#02855c;--warn:#b9820a;--danger:#dd3b3b}
+
+/* composer */
+.composer{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:.8rem;margin-bottom:.8rem}
+.composer textarea{width:100%;font-family:"Space Mono",monospace;font-size:.6rem;color:var(--ink);
+  background:transparent;border:none;outline:none;resize:none;min-height:60px;line-height:1.6}
+.composer textarea::placeholder{color:var(--muted)}
+.composer-bar{display:flex;align-items:center;gap:.5rem;margin-top:.5rem;flex-wrap:wrap}
+/* privacy dropdown (next to publish) */
+.priv-wrap{position:relative;display:inline-block}
+.priv-trigger{display:flex;align-items:center;gap:.2rem;font-size:.42rem;letter-spacing:.06em;text-transform:uppercase;padding:.25rem .5rem;border-radius:999px;border:none;background:rgba(108,92,231,.08);color:var(--accent);cursor:pointer;font-family:"Space Mono",monospace;transition:background .12s}
+.priv-trigger:active{transform:scale(.95)}
+.priv-trigger.open svg{transform:rotate(180deg)}
+.priv-dd{position:absolute;top:calc(100% + 4px);right:0;z-index:50;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:.25rem;box-shadow:0 4px 16px -4px rgba(0,0,0,.15);display:none;min-width:120px}
+.priv-dd.open{display:block;animation:ddIn .15s ease both}
+.priv-opt{display:block;width:100%;text-align:left;font-family:"Space Mono",monospace;font-size:.4rem;letter-spacing:.04em;padding:.3rem .5rem;border-radius:5px;border:none;background:transparent;color:var(--ink);cursor:pointer;transition:background .1s}
+.priv-opt:hover{background:rgba(108,92,231,.06)}
+.priv-opt.active{color:var(--accent);font-weight:600}
+.pub-btn{margin-left:auto;font-family:"Space Mono",monospace;font-size:.5rem;font-weight:700;
+  padding:.4rem .8rem;border-radius:8px;border:none;
+  background:var(--accent);color:#fff;cursor:pointer;min-height:36px}
+.pub-btn:active{transform:scale(.95)}
+.pub-btn:disabled{opacity:.4;cursor:default}
+.pub-btn:disabled:active{transform:none}
+
+/* category picker (shown while composing) */
+.cat-picker{display:none;margin-top:.6rem}
+#catPickGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:.35rem}
+.cat-pick-item{display:flex;flex-direction:column;align-items:center;gap:.12rem;padding:.4rem .2rem;
+  border-radius:8px;border:1.5px solid var(--line);background:var(--card);cursor:pointer;
+  transition:background .12s,border-color .12s,transform .1s}
+.cat-pick-item:hover{border-color:rgba(108,92,231,.25);background:rgba(108,92,231,.04)}
+.cat-pick-item:active{transform:scale(.95)}
+.cat-pick-item.selected{border-color:var(--accent);background:rgba(108,92,231,.08)}
+.cat-pick-emoji{font-size:.8rem}
+.cat-pick-label{font-family:"Space Mono",monospace;font-size:.32rem;letter-spacing:.04em;text-transform:uppercase;color:var(--ink)}
+.cat-pick-more{font-family:"Space Mono",monospace;font-size:.36rem;padding:.3rem;border-radius:6px;
+  border:1px dashed var(--line);background:transparent;color:var(--muted);cursor:pointer;width:100%;margin-top:.3rem}
+.cat-pick-more:hover{border-color:var(--accent);color:var(--accent)}
+.cat-pick-hint{font-size:.35rem;color:var(--muted);margin-top:.3rem;text-align:center}
+
+/* create new category */
+.cat-pick-new{display:flex;align-items:center;justify-content:center;gap:.3rem;
+  padding:.4rem .2rem;border-radius:8px;border:1.5px dashed var(--accent);
+  background:rgba(108,92,231,.03);cursor:pointer;transition:background .12s,border-color .12s;
+  grid-column:span 4;margin-top:.15rem}
+.cat-pick-new:hover{background:rgba(108,92,231,.08);border-color:var(--accent)}
+.cat-pick-new:active{transform:scale(.97)}
+.cat-pick-new-icon{font-size:.7rem;color:var(--accent)}
+.cat-pick-new-label{font-family:"Space Mono",monospace;font-size:.38rem;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;color:var(--accent)}
+.cat-create-form{display:none;grid-column:span 4;margin-top:.25rem;
+  background:var(--card);border:1px solid var(--line);border-radius:8px;padding:.5rem}
+.cat-create-form.open{display:block;animation:ddIn .15s ease both}
+.cat-create-row{display:flex;gap:.3rem;align-items:center}
+.cat-create-input{flex:1;font-family:"Space Mono",monospace;font-size:.48rem;
+  padding:.3rem .5rem;border-radius:6px;border:1px solid var(--line);
+  background:var(--bg);color:var(--ink);outline:none}
+.cat-create-input:focus{border-color:var(--accent)}
+.cat-create-emoji{width:32px;height:32px;border-radius:6px;border:1px solid var(--line);
+  background:var(--bg);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:.7rem;flex:none;transition:border-color .12s}
+.cat-create-emoji:hover{border-color:var(--accent)}
+.cat-create-actions{display:flex;gap:.3rem;margin-top:.3rem}
+.cat-create-ok{font-family:"Space Mono",monospace;font-size:.4rem;font-weight:700;
+  padding:.25rem .6rem;border-radius:6px;border:1px solid var(--accent);
+  background:var(--accent);color:#fff;cursor:pointer}
+.cat-create-ok:active{transform:scale(.95)}
+.cat-create-cancel{font-family:"Space Mono",monospace;font-size:.4rem;
+  padding:.25rem .6rem;border-radius:6px;border:1px solid var(--line);
+  background:transparent;color:var(--muted);cursor:pointer}
+.cat-create-cancel:active{transform:scale(.95)}
+
+/* composing state: hide everything except composer */
+.panel-feed.composing .cat-section,
+.panel-feed.composing .circles-bar,
+.panel-feed.composing .circles-grid,
+.panel-feed.composing #posts{display:none}
+.panel-feed.composing .cat-picker{display:block}
+
+/* post */
+.post{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:.7rem .8rem;margin-bottom:.5rem;animation:postIn .3s ease both}
+@keyframes postIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.post-head{display:flex;align-items:center;gap:.4rem;margin-bottom:.3rem}
+.post-icon{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;flex:none}
+.post-icon.note{background:rgba(108,92,231,.1);color:var(--accent)}
+.post-icon.link{background:rgba(2,133,92,.1);color:var(--signal)}
+.post-icon.reward{background:rgba(185,130,10,.1);color:var(--warn)}
+.post-icon.visit{background:rgba(221,59,59,.1);color:var(--danger)}
+.post-meta{flex:1;min-width:0}
+.post-author{font-weight:700;font-size:.5rem}
+.post-time{font-size:.38rem;color:var(--muted)}
+.post-priv{font-size:.36rem;letter-spacing:.06em;text-transform:uppercase;
+  padding:.1rem .35rem;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.post-priv.friends{color:var(--accent);border-color:rgba(108,92,231,.3)}
+.post-priv.private{color:var(--danger);border-color:rgba(221,59,59,.3)}
+.post-priv.other{color:var(--warn);border-color:rgba(185,130,10,.3)}
+.post-body{font-size:.56rem;line-height:1.6;color:var(--ink)}
+.post-actions{display:flex;gap:.6rem;margin-top:.4rem;font-size:.42rem;color:var(--muted)}
+.post-actions span{cursor:pointer}
+.post-actions span:hover{color:var(--accent)}
+
+
+
+/* empty */
+.empty{text-align:center;padding:2rem 1rem;color:var(--muted);font-size:.52rem}
+.empty-icon{font-size:1.8rem;margin-bottom:.4rem;opacity:.4}
+
+/* ── category row (icons only, title expands on click) ── */
+.cat-section{position:relative}
+.cat-row{display:flex;gap:.35rem;overflow-x:auto;padding:.15rem 0 .2rem;-webkit-overflow-scrolling:touch}
+.cat-row-item{display:flex;flex-direction:column;align-items:center;gap:.08rem;padding:.3rem .35rem;border-radius:8px;border:1px solid var(--line);background:var(--card);cursor:pointer;transition:background .12s,border-color .12s,transform .1s;min-width:38px}
+.cat-row-item:hover{border-color:rgba(108,92,231,.2);background:rgba(108,92,231,.04)}
+.cat-row-item:active{transform:scale(.93)}
+.cat-row-item.active{border-color:var(--accent);background:rgba(108,92,231,.06)}
+.cat-row-more{border:1.5px dashed var(--line);background:transparent;min-width:34px}
+.cat-row-more:hover{border-color:var(--accent);background:rgba(108,92,231,.04)}
+.cat-row-emoji{font-size:.75rem;line-height:1}
+.cat-row-label{font-family:"Space Mono",monospace;font-size:.28rem;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);white-space:nowrap;max-width:40px;overflow:hidden;text-overflow:ellipsis}
+.cat-title-area{min-height:1.2rem;margin:.15rem 0 .3rem;text-align:center}
+.cat-expanded{display:none;font-family:"Space Mono",monospace;font-size:.42rem;color:var(--ink);padding:.15rem .5rem;background:rgba(108,92,231,.05);border-radius:6px;animation:ddIn .12s ease both}
+.cat-expanded.show{display:inline-block}
+
+/* ── circles bar ── */
+.circles-bar{display:flex;align-items:center;gap:.5rem;padding:.4rem .55rem;border-radius:10px;border:1px solid var(--line);background:var(--card);margin-bottom:.2rem}
+.circles-label{display:flex;align-items:center;gap:.35rem;font-size:.48rem;font-weight:700;letter-spacing:.04em;color:var(--muted);cursor:pointer;transition:color .15s}
+.circles-label:hover{color:var(--accent)}
+.circles-label .circles-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 5px rgba(108,92,231,.45);flex:none}
+.circles-label .circles-chevron{transition:transform .15s;color:var(--muted)}
+.circles-label.open .circles-chevron{transform:rotate(180deg)}
+.circles-add{margin-left:auto;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;font-size:1rem;line-height:1;transition:border-color .15s,color .15s,background .15s}
+.circles-add:hover{border-color:var(--accent);color:var(--accent);background:rgba(108,92,231,.06)}
+.circles-add:active{transform:scale(.93)}
+
+/* ── circles grid (2 columns, hidden until opened) ── */
+.circles-grid{display:none;grid-template-columns:1fr 1fr;gap:.3rem;margin-bottom:.5rem}
+.circles-grid.open{display:grid;animation:ddIn .15s ease both}
+.circles-grid-item{display:flex;align-items:center;gap:.35rem;padding:.3rem .4rem;border-radius:8px;border:1px solid var(--line);background:var(--card);cursor:pointer;transition:background .12s,border-color .12s}
+.circles-grid-item:hover{border-color:rgba(108,92,231,.2)}
+.circles-grid-item:active{transform:scale(.97)}
+.circles-grid-avatar{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.5rem;font-weight:700;color:#fff;flex:none}
+.circles-grid-info{flex:1;min-width:0}
+.circles-grid-name{font-size:.45rem;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.circles-grid-meta{font-size:.34rem;color:var(--muted)}
+
+/* post category button */
+.post-cat-wrap{position:relative;margin-left:auto}
+.post-cat-btn{width:24px;height:24px;border-radius:6px;border:1px solid var(--line);background:rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.65rem;transition:background .12s,border-color .12s}
+.post-cat-btn:hover{background:rgba(108,92,231,.08);border-color:rgba(108,92,231,.3)}
+.post-cat-btn:active{transform:scale(.93)}
+.post-cat-dd{position:absolute;top:28px;right:0;z-index:50;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:.25rem;box-shadow:0 4px 16px -4px rgba(0,0,0,.15);display:none;min-width:120px}
+.post-cat-dd.open{display:block;animation:ddIn .15s ease both}
+@keyframes ddIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.post-cat-opt{display:flex;align-items:center;gap:.3rem;padding:.28rem .35rem;border-radius:5px;cursor:pointer;font-size:.42rem;color:var(--ink);transition:background .1s}
+.post-cat-opt:hover{background:rgba(108,92,231,.06)}
+.post-cat-opt.active{color:var(--accent);font-weight:600}
+.post-cat-opt-icon{font-size:.6rem;flex:none}
+
+/* post filtered */
+.post.hidden{display:none}
+</style>
+</head>
+<body>
+
+  <!-- ========== FEED ========== -->
+  <div id="panel-feed">
+
+    <!-- composer -->
+    <div class="composer" id="composer">
+      <textarea id="postInput" placeholder="what's in your love?" maxlength="500"></textarea>
+      <div class="cat-picker" id="catPicker">
+        <div class="cat-pick-grid" id="catPickGrid"></div>
+        <button class="cat-pick-more" id="catPickMore" onclick="loadMorePickerCats()">more</button>
+        <div class="cat-pick-new" id="catPickNew" onclick="openCreateCat()"><span class="cat-pick-new-icon">+</span><span class="cat-pick-new-label">new category</span></div>
+        <div class="cat-create-form" id="catCreateForm">
+          <div class="cat-create-row">
+            <div class="cat-create-emoji" id="catCreateEmoji" onclick="pickCreateEmoji()">😀</div>
+            <input class="cat-create-input" id="catCreateName" placeholder="category name" maxlength="12">
+          </div>
+          <div class="cat-create-actions">
+            <button class="cat-create-ok" onclick="confirmCreateCat()">create</button>
+            <button class="cat-create-cancel" onclick="closeCreateCat()">cancel</button>
+          </div>
+        </div>
+        <div class="cat-pick-hint">pick a category · tap outside to dismiss</div>
+      </div>
+      <div class="composer-bar">
+        <button class="pub-btn" id="pubBtn" onclick="publish()" style="margin-left:auto">publish</button>
+        <div class="priv-wrap">
+          <button class="priv-trigger" id="privTrigger" onclick="togglePrivDD()">
+            <span id="privLabel">public</span>
+            <svg viewBox="0 0 24 24" width="12" height="12" style="fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="priv-dd" id="privDD">
+            <button class="priv-opt active" data-priv="public" onclick="selectPriv(this,'public')">public</button>
+            <button class="priv-opt" data-priv="friends" onclick="selectPriv(this,'friends')">friends</button>
+            <button class="priv-opt" data-priv="private" onclick="selectPriv(this,'private')">private</button>
+            <button class="priv-opt" data-priv="other" onclick="selectPriv(this,'other')">other</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- category row (icons only, title expands on click) -->
+    <div class="cat-section">
+      <div class="cat-row" id="catRow"></div>
+      <div class="cat-title-area" id="catTitleArea"></div>
+    </div>
+
+    <!-- circles chip (click to expand 2 columns) -->
+    <div class="circles-bar">
+      <span class="circles-label" onclick="toggleCircles()">
+        <span class="circles-dot"></span>Circles
+        <svg class="circles-chevron" id="circlesChevron" viewBox="0 0 24 24" width="14" height="14" style="fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><path d="M6 9l6 6 6-6"/></svg>
+      </span>
+      <button class="circles-add" aria-label="Create new tab">+</button>
+    </div>
+    <div class="circles-grid" id="circlesGrid"></div>
+
+    <!-- posts -->
+    <div class="sec">posts</div>
+    <div id="posts"></div>
+  </div>
+
+
+
+<script>
+/* state */
+var S = {
+  posts: [],
+  priv: 'public'
+};
+
+/* ── category system ──────────────────────────── */
+var CATS = [
+  { id:'life',   label:'Life',   emoji:'🌱' },
+  { id:'music',  label:'Music',  emoji:'🎵' },
+  { id:'photo',  label:'Photo',  emoji:'📷' },
+  { id:'web',    label:'Web',    emoji:'🌐' },
+  { id:'code',   label:'Code',   emoji:'💻' },
+  { id:'food',   label:'Food',   emoji:'🍕' },
+  { id:'travel', label:'Travel', emoji:'✈️' },
+  { id:'read',   label:'Read',   emoji:'📖' }
+];
+var EXTRA_CATS = [
+  { id:'fitness', label:'Fitness', emoji:'💪' },
+  { id:'gaming',  label:'Gaming',  emoji:'🎮' },
+  { id:'art',     label:'Art',     emoji:'🎨' },
+  { id:'pets',    label:'Pets',    emoji:'🐾' },
+  { id:'film',    label:'Film',    emoji:'🎬' },
+  { id:'garden',  label:'Garden',  emoji:'🌿' },
+  { id:'science', label:'Science', emoji:'🔬' },
+  { id:'fashion', label:'Fashion', emoji:'👗' }
+];
+var activeFilter = null;
+
+/* ── circles (from central mynet) ─────────────── */
+var CIRCLES = [
+  { name:'Close', emoji:'C', gradient:'linear-gradient(135deg, #02855c, #3fc862)', relation:'3 members · friends' },
+  { name:'Public', emoji:'P', gradient:'linear-gradient(135deg, #6c5ce7, #a855f7)', relation:'all flove users' },
+  { name:'Chamberí neighbours', emoji:'🏘', gradient:'linear-gradient(135deg, #b9820a, #ffc41f)', relation:'circle · 12 members' },
+  { name:'Urban gardeners', emoji:'🌿', gradient:'linear-gradient(135deg, #02855c, #3fc862)', relation:'tribe · 48 members' }
+];
+var circlesOpen = false;
+
+function toggleCircles() {
+  circlesOpen = !circlesOpen;
+  document.getElementById('circlesGrid').classList.toggle('open', circlesOpen);
+  document.querySelector('.circles-label').classList.toggle('open', circlesOpen);
+}
+
+function renderCirclesGrid() {
+  var el = document.getElementById('circlesGrid');
+  el.innerHTML = CIRCLES.map(function(c) {
+    return '<div class="circles-grid-item">'
+      + '<div class="circles-grid-avatar" style="background:' + c.gradient + '">' + c.emoji + '</div>'
+      + '<div class="circles-grid-info">'
+      + '<div class="circles-grid-name">' + c.name + '</div>'
+      + '<div class="circles-grid-meta">' + c.relation + '</div>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function renderCatRow() {
+  var grid = document.getElementById('catRow');
+  grid.innerHTML = CATS.map(function(c) {
+    return '<div class="cat-row-item' + (activeFilter === c.id ? ' active' : '') + '" data-cat="' + c.id + '" onclick="selectCatRow(\'' + c.id + '\',this)">'
+      + '<span class="cat-row-emoji">' + c.emoji + '</span>'
+      + '</div>';
+  }).join('') + '<div class="cat-row-item cat-row-more" onclick="showToast(&#39;more categories&#39;)"><span class="cat-row-emoji" style="opacity:.4">+</span></div>';
+}
+
+var catTitleArea = document.getElementById('catTitleArea');
+
+function selectCatRow(id, el) {
+  if (activeFilter === id) {
+    activeFilter = null;
+    catTitleArea.innerHTML = '';
+  } else {
+    activeFilter = id;
+    var cat = CATS.find(function(c) { return c.id === id; });
+    if (cat) catTitleArea.innerHTML = '<span class="cat-expanded show">' + cat.emoji + ' ' + cat.label + '</span>';
+  }
+  document.querySelectorAll('.cat-row-item').forEach(function(i) { i.classList.toggle('active', i.dataset.cat === activeFilter); });
+  filterPosts();
+}
+
+function filterPosts() {
+  document.querySelectorAll('#posts .post').forEach(function(p) {
+    var tag = p.dataset.cat || '';
+    if (activeFilter) { p.classList.toggle('hidden', tag !== activeFilter); }
+    else { p.classList.remove('hidden'); }
+  });
+}
+
+function catAllOpts(postId) {
+  return CATS.concat(EXTRA_CATS).map(function(c) {
+    return '<div class="post-cat-opt" onclick="setPostCat(\'' + postId + '\',\'' + c.id + '\')"><span class="post-cat-opt-icon">' + c.emoji + '</span>' + c.label + '</div>';
+  }).join('');
+}
+
+function togglePostCat(btn) {
+  var dd = btn.parentElement.querySelector('.post-cat-dd');
+  var wasOpen = dd.classList.contains('open');
+  document.querySelectorAll('.post-cat-dd.open').forEach(function(d) { d.classList.remove('open'); });
+  if (!wasOpen) dd.classList.add('open');
+}
+
+function setPostCat(postId, catId) {
+  var post = document.querySelector('[data-id="' + postId + '"]');
+  if (!post) return;
+  post.dataset.cat = catId;
+  var cat = CATS.find(function(c) { return c.id === catId; });
+  if (cat) post.querySelector('.post-cat-btn').textContent = cat.emoji;
+  document.querySelectorAll('.post-cat-dd.open').forEach(function(d) { d.classList.remove('open'); });
+  filterPosts();
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.post-cat-wrap'))
+    document.querySelectorAll('.post-cat-dd.open').forEach(function(d) { d.classList.remove('open'); });
+});
+
+/* ── privacy ──────────────────────────────────── */
+function togglePrivDD() {
+  var dd = document.getElementById('privDD');
+  var t = document.getElementById('privTrigger');
+  dd.classList.toggle('open');
+  t.classList.toggle('open');
+}
+function selectPriv(el, val) {
+  S.priv = val;
+  document.getElementById('privLabel').textContent = val;
+  document.querySelectorAll('.priv-opt').forEach(function(b) { b.classList.remove('active'); });
+  el.classList.add('active');
+  document.getElementById('privDD').classList.remove('open');
+  document.getElementById('privTrigger').classList.remove('open');
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.priv-wrap')) {
+    document.getElementById('privDD').classList.remove('open');
+    document.getElementById('privTrigger').classList.remove('open');
+  }
+});
+
+/* ── publish ──────────────────────────────────── */
+function publish() {
+  var inp = document.getElementById('postInput');
+  var text = inp.value.trim();
+  if (!text) return;
+  var now = new Date();
+  var id = Date.now();
+  var cat = CATS.find(function(c) { return c.id === text.toLowerCase().match(/#(\w+)/); }) || CATS[0];
+  var post = {
+    id: id,
+    text: text,
+    priv: S.priv,
+    icon: 'note',
+    author: '@marc',
+    time: fmtTime(now),
+    ts: now.getTime(),
+    cat: cat.id
+  };
+  S.posts.unshift(post);
+  inp.value = '';
+  renderPosts();
+  filterPosts();
+  save();
+  award(1);
+}
+
+
+
+/* ── posts ────────────────────────────────────── */
+function renderPosts() {
+  var el = document.getElementById('posts');
+  if (!S.posts.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📝</div>No posts yet. Write something above!</div>';
+    return;
+  }
+  el.innerHTML = S.posts.map(function(p) {
+    var cat = CATS.find(function(c) { return c.id === p.cat; }) || CATS[0];
+    return '<div class="post" data-id="' + p.id + '" data-cat="' + (p.cat || 'life') + '">'
+      + '<div class="post-head">'
+      + '<div class="post-icon ' + p.icon + '">' + ({note:'📝',link:'🔗',reward:'⭐',visit:'👋'}[p.icon] || '📝') + '</div>'
+      + '<div class="post-meta"><div class="post-author">' + p.author + '</div><div class="post-time">' + p.time + '</div></div>'
+      + '<span class="post-priv ' + p.priv + '">' + p.priv + '</span>'
+      + '<div class="post-cat-wrap">'
+      + '<button class="post-cat-btn" onclick="togglePostCat(this)">' + cat.emoji + '</button>'
+      + '<div class="post-cat-dd">' + catAllOpts(p.id) + '</div>'
+      + '</div>'
+      + '</div>'
+      + '<div class="post-body">' + esc(p.text) + '</div>'
+      + '<div class="post-actions"><span onclick="likePost(' + p.id + ')">♥ like</span><span onclick="deletePost(' + p.id + ')">✕ delete</span></div>'
+      + '</div>';
+  }).join('');
+}
+
+function likePost(id) { award(1); }
+
+function deletePost(id) {
+  S.posts = S.posts.filter(function(p) { return p.id !== id; });
+  renderPosts();
+  save();
+}
+
+/* ── scoring ──────────────────────────────────── */
+var stars = 0;
+function award(n) { stars += n; }
+
+/* ── util ─────────────────────────────────────── */
+function fmtTime(d) {
+  return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+}
+function esc(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+/* ── persist ──────────────────────────────────── */
+function save() {
+  try { localStorage.setItem('blogy-posts', JSON.stringify(S.posts)); } catch(e) {}
+}
+function load() {
+  try { var p = JSON.parse(localStorage.getItem('blogy-posts')); if (p && p.length) S.posts = p; } catch(e) {}
+}
+
+/* ── collect ──────────────────────────────────── */
+window.flove = window.flove || {
+  distro:'central', tier:'normal', app:'blogy', profile:'users/marc', version:'1.0.0',
+  emit:function(e,d) { window.dispatchEvent(new CustomEvent('flove:'+e,{detail:d})); },
+  on:function(e,fn) { window.addEventListener('flove:'+e,function(ev) { fn(ev.detail); }); }
+};
+window.flove.collect = function() {
+  return {app:'blogy', version:'1.0.0', items:S.posts, metadata:{stars:stars}};
+};
+
+/* ── composing state (focus picker) ───────────── */
+var pickerPage = 0;
+var selectedCat = null;
+var EMOJIS = ['😀','🎵','📷','🌐','💻','🍕','✈️','📖','💪','🎮','🎨','🐾','🎬','🌿','🔬','👗','💡','🔧','🏠','🎯','📚','🎶','🌸','⚡'];
+
+function startComposing() {
+  var panel = document.getElementById('panel-feed');
+  panel.classList.add('composing');
+  renderPicker();
+}
+
+function stopComposing() {
+  var panel = document.getElementById('panel-feed');
+  panel.classList.remove('composing');
+  closeCreateCat();
+}
+
+function renderPicker() {
+  var grid = document.getElementById('catPickGrid');
+  var all = CATS.slice(0, 8 + pickerPage * 4);
+  grid.innerHTML = all.map(function(c) {
+    return '<div class="cat-pick-item' + (selectedCat === c.id ? ' selected' : '') + '" onclick="pickCat(\'' + c.id + '\')"><span class="cat-pick-emoji">' + c.emoji + '</span><span class="cat-pick-label">' + c.label + '</span></div>';
+  }).join('');
+  var moreBtn = document.getElementById('catPickMore');
+  if (8 + pickerPage * 4 >= CATS.length) moreBtn.style.display = 'none';
+  else moreBtn.style.display = '';
+}
+
+function pickCat(id) {
+  selectedCat = (selectedCat === id) ? null : id;
+  renderPicker();
+}
+
+function loadMorePickerCats() {
+  pickerPage++;
+  renderPicker();
+}
+
+/* create new category */
+var createEmojiIdx = 0;
+function openCreateCat() {
+  document.getElementById('catCreateForm').classList.add('open');
+  document.getElementById('catCreateName').focus();
+}
+function closeCreateCat() {
+  document.getElementById('catCreateForm').classList.remove('open');
+  document.getElementById('catCreateName').value = '';
+  createEmojiIdx = 0;
+  document.getElementById('catCreateEmoji').textContent = EMOJIS[0];
+}
+function pickCreateEmoji() {
+  createEmojiIdx = (createEmojiIdx + 1) % EMOJIS.length;
+  document.getElementById('catCreateEmoji').textContent = EMOJIS[createEmojiIdx];
+}
+function confirmCreateCat() {
+  var name = document.getElementById('catCreateName').value.trim();
+  if (!name) return;
+  var id = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (CATS.find(function(c) { return c.id === id; })) { showToast('Category exists'); return; }
+  var emoji = document.getElementById('catCreateEmoji').textContent;
+  CATS.push({ id: id, label: name, emoji: emoji });
+  selectedCat = id;
+  closeCreateCat();
+  renderPicker();
+  renderCatRow();
+  showToast('"' + name + '" created');
+}
+
+/* textarea wiring */
+(function() {
+  var ta = document.getElementById('postInput');
+  ta.addEventListener('focus', startComposing);
+  ta.addEventListener('blur', function() {
+    setTimeout(function() {
+      if (!document.activeElement || document.activeElement.id !== 'catCreateName'
+        && !document.getElementById('catCreateForm').contains(document.activeElement)) {
+        stopComposing();
+      }
+    }, 120);
+  });
+  document.addEventListener('click', function(e) {
+    var panel = document.getElementById('panel-feed');
+    if (!panel.classList.contains('composing')) return;
+    var composer = document.getElementById('composer');
+    if (!composer.contains(e.target)) stopComposing();
+  });
+})();
+
+/* ── theme ─────────────────────────────────────── */
+(function(){
+  var root = document.documentElement;
+  var key = 'flove:theme';
+  var stored;
+  try { stored = localStorage.getItem(key); } catch(e) {}
+  if (stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme:dark)').matches)) {
+    root.dataset.theme = 'dark';
+  } else if (stored === 'light') {
+    root.dataset.theme = 'light';
+  }
+})();
+
+/* ── init ─────────────────────────────────────── */
+load();
+renderCatRow();
+renderCirclesGrid();
+renderPosts();
+</script>
+</body>
+</html>

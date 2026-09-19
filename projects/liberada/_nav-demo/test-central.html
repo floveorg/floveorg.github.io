@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nav-shell × central shared-code · test</title>
+<meta name="description" content="Test del shell de navegación contra los estándares de central/shared/code: i18n, settings, sound, base CSS">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<!-- central stack (direct load; the loader variant is test-loader.html) -->
+<link rel="stylesheet" href="../../../central/shared/code/css/flove-base.css">
+<link rel="stylesheet" href="../../../central/shared/code/css/nav-shell.css">
+<script src="../../../central/shared/code/js/flove-settings.js"></script>
+<script src="../../../central/shared/code/js/flove-i18n.js"></script>
+ <script src="../../../central/shared/code/js/flove-sound.js"></script>
+<script src="../../../central/shared/code/js/nav-shell.js"></script>
+<style>
+  #test-status{
+    position:fixed; left:18px; bottom:18px; z-index:900; max-width:340px;
+    background:#fff; border:2px solid var(--app-accent); border-radius:14px;
+    padding:12px 14px; font-family:'Space Mono',monospace; font-size:.68rem; line-height:1.6;
+    box-shadow:0 10px 26px -8px rgba(0,0,0,.25);
+  }
+  #test-status b{color:var(--app-accent-deep)}
+  #test-status .ok{color:#02855c} #test-status .no{color:#dd3b3b}
+  #test-status .coll{color:#b9820a}
+</style>
+</head>
+<body>
+<div id="shell-root"></div>
+
+<div id="test-status" aria-live="polite">comprobando…</div>
+
+<script src="shell-config.js"></script>
+<script>
+(function(){
+  'use strict';
+  function status(){
+    var L=[];
+    var i18n = !!(window.flove && window.flove.i18n);
+    var snd  = !!window.floveSound;
+    var set  = !!window.floveSettings;
+    var nav  = !!(window.flove && window.flove.nav);
+    var pro  = document.documentElement.getAttribute('data-flove-pro');
+    var rad = document.querySelectorAll('input[name="lang"]').length;
+    var cards = document.querySelectorAll('.fn-card').length;
+    var secs = document.querySelectorAll('.section-btn').length;
+
+    L.push('<b>central/shared/code</b>');
+    L.push('i18n (flove-i18n)   ' + (i18n?'<span class="ok">✔</span>':'<span class="no">✘</span>') + ' radios='+rad);
+    L.push('settings (floveSettings) ' + (set?'<span class="ok">✔</span>':'<span class="no">✘</span>') + ' theme='+ (set?window.floveSettings.get('theme'):'-'));
+    L.push('sound (floveSound)  ' + (snd?'<span class="ok">✔</span>':'<span class="no">✘</span>'));
+    L.push('flove.js (window.flove) ' + (window.flove?'<span class="ok">✔</span>':'<span class="no">✘</span>'));
+    L.push('nav API (window.flove.nav) ' + (nav?'<span class="ok">✔</span>':'<span class="no">✘</span>') + ' current=' + (nav?window.flove.nav.current():'-'));
+    L.push('sections: fn-card='+cards+' · section-btn='+secs);
+    L.push('data-flove-pro=' + (pro||'—'));
+    L.push('<span class="coll">colisiones con flove-base:</span> .wrap/.btn/.card → renombradas a .fn-* (0 colisiones)');
+    L.push('<span class="coll">tokens compartidos:</span> --ink/--muted/--line — nav-shell.css va después y gana (paleta de app)');
+    L.push('<span class="coll">selector dark:</span> :root[data-theme] — flove-settings lo controla');
+    document.getElementById('test-status').innerHTML = L.join('<br>');
+  }
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(status, 350); });
+})();
+FloveShell.init(window.NAV_CONFIG.risa);
+</script>
+</body>
+</html>
