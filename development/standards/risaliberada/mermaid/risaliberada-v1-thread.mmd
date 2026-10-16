@@ -1,0 +1,75 @@
+sequenceDiagram
+    participant A as Person
+    participant B as @RisaLiberadaBot
+    participant C as Cron GitHub Actions
+    participant M as 🔒 Moderator group
+    participant R as Cloudflare R2
+    participant G as risa.json + usernames.json
+    participant CH as 📢 Channel @risaliberada
+    participant W as 🌐 Web risa.liberada.net
+    participant CF as ☁️ Cloudflare Worker
+
+    rect rgb(255, 250, 240)
+    Note over A,W: NORMAL FLOW — publishing a laugh
+    A->>B: 1· Deep link / QR
+    Note over A,B: 2· (1st time) START / Start button
+    B-->>A: 3· CC BY-SA 4.0 licence notice (1st time)
+    A->>B: 4· Voice note / audio
+    B-->>A: 5· Identity: ① Telegram ID ② Public name ③ Anonymous
+    A->>B: 6· chosen option (① · ①+② · ③)
+    B-->>A: 7· Confirm: ID only or ID + Public name?
+    A->>B: 8· confirmed
+    Note over B: ①+② → ② Public name hides ① (hash 🔒) · only ① → ID shown · ③ → nothing stored
+    B-->>A: 9· Tags (optional · default "libre")
+    A->>B: 10· Send (with tags or "libre")
+    B-->>A: 11· Receipt confirmation
+    C->>B: 12· getUpdates (cron 5–10 min)
+    B->>G: 13· queue.json {file_id, name, tags, id 🔒 hash or direct}
+    B->>M: 14· forwards clip + word + tags + ✅/🗑/✏️
+    M-->>B: 15a· ✏️ Edit: moderator sends "Title | Tags | Name"
+    B-->>A: 15b· proposal to author (✅ Accept / ❌ Reject)
+    A-->>B: 15c· author accepts — published only with their OK
+    M-->>B: 15· ✅ Publish
+    B->>R: 16· add mp3 to Cloudflare R2 (ffmpeg → risa/b_*.mp3)
+    B->>G: 17· prepend risa.json + commit + push
+    Note over B,G: 17b· ensureUsername() → auto-claim usernames.json (1st publish)
+    B->>CH: 18· post playable audio
+    B-->>M: 19· edits "✅ Published"
+    B-->>A: 20· ✅ Confirmation + author page + 🌐 subdomain
+    W->>G: 21· fetch risa.json
+    W->>R: 22· get audio from Cloudflare R2 (public URL)
+    W-->>A: 23· playlist + feed + chips + tags + name + author page (tag-url)
+    CH-->>A: 24· listen on the channel
+    end
+
+    rect rgb(240, 248, 255)
+    Note over A,W: REPLY FLOW — reply chain (thread)
+    A->>CH: 30· hears a laugh on the channel
+    A->>B: 31· forwards the channel clip to the bot (forward)
+    Note over B: 32· detects forward_from_chat + forward_from_message_id
+    B->>G: 33· looks up clip by channelMsgId → gets parent
+    B-->>A: 34· "↳ Replying to «title» — now send your laugh"
+    A->>B: 35· voice note / video (the reply)
+    Note over B: 36· draft with parent = original clip.id
+    C->>B: 37· getUpdates
+    B->>M: 38· forwards clip + "↳ replying to [name]" + ✅/🗑/✏️
+    M-->>B: 39· ✅ Publish
+    B->>R: 40· upload mp3 to R2
+    B->>G: 41· prepend risa.json with parent field + channelMsgId
+    B->>CH: 42· post audio + "↳ in reply to [name]"
+    B-->>A: 43· ✅ Confirmation + 🌐 subdomain (if 1st publish)
+    Note over B: 44· notifies original author: "💬 Someone replied to your laugh!"
+    W->>G: 45· fetch risa.json
+    Note over W: 46· threadOrder() → replies below parent (depth-first)
+    W-->>A: 47· feed with indentation + connector lines + "↳ replying to" label
+    end
+
+    rect rgb(245, 255, 245)
+    Note over CF,A: SUBDOMAIN — username.liberada.net
+    Note over G: usernames.json: { "maria": { key, name, claimedAt } }
+    A->>CF: 50· visits maria.liberada.net
+    CF->>G: 51· fetch usernames.json (5 min cache)
+    CF-->>A: 52· 302 → risa.liberada.net/#/u/<key>
+    W->>G: 53· fetch risa.json
+    W-->>A: 54· maria's author page
+    end

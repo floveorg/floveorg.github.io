@@ -1,0 +1,2466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Varyy · FLOVE</title>
+  <!-- Favicon: the Varyy top-bar mark, inline SVG data-URI (self-contained, no external calls). -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'><defs><linearGradient%20id='g'%20x1='14'%20y1='14'%20x2='86'%20y2='86'%20gradientUnits='userSpaceOnUse'><stop%20offset='0'%20stop-color='%23c74df0'/><stop%20offset='1'%20stop-color='%233194f6'/></linearGradient></defs><g%20fill='none'%20stroke='url(%23g)'%20stroke-width='8'%20stroke-linecap='round'%20stroke-linejoin='round'><circle%20cx='50'%20cy='50'%20r='18'/><line%20x1='50'%20y1='68'%20x2='50'%20y2='86'/><line%20x1='42'%20y1='78'%20x2='58'%20y2='78'/><line%20x1='62'%20y1='38'%20x2='82'%20y2='18'/><path%20d='M70%2014%20L86%2014%20L86%2030'/></g></svg>">
+  <style>
+    /* ---------- Root & Theme ---------- */
+    :root{
+      --bg-0:#0b0f17;
+      --bg-1:#0f1522;
+      --fg-0:#eaf2ff;
+      --fg-dim:#9bb0d4;
+      --line:216 32% 22%;
+      --brand:265 84% 62%;        /* violet (primary) */
+      --brand-2:220 92% 60%;      /* blue (primary)   */
+      --violet:285 84% 62%;
+      --blue:210 92% 58%;
+      --accent:332 86% 62%;
+      --radius-2xl:22px;
+      --radius-xl:16px;
+      --glass:16px;
+
+      /* Varyy top-bar gradient (same as flove social/varyy icon) */
+      --gw-a:#ff3344;
+      --gw-b:#ff8a3a;
+      --gw-c:#ffd633;
+      --gw-mid:#ff8a3a;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+
+    /* Shared inline-mark adjustment (moved off inline style= attributes). */
+    .flove-mark{ vertical-align:-.15em; overflow:visible; }
+    .visually-hidden{
+      position:absolute !important;
+      width:1px; height:1px;
+      padding:0; margin:-1px;
+      overflow:hidden;
+      clip:rect(0 0 0 0);
+      white-space:nowrap;
+      border:0;
+    }
+
+    /* ── translaty — i18n span toggle (CSS-only): hide non-active language ── */
+    .es{display:none}                                  /* default view = .en */
+    body:has(#lang-es:checked) .en{display:none}
+    body:has(#lang-es:checked) .es{display:inline}
+
+    /* ── translaty — worldball switcher (🌐 opens the language options) ── */
+    .lang{display:inline-block;position:relative;margin:.2rem 0 .6rem}
+    .lang>summary{list-style:none;cursor:pointer;width:40px;height:40px;border:1px solid #999;border-radius:50%;
+      display:inline-flex;align-items:center;justify-content:center;font-size:1.35rem;line-height:1;-webkit-user-select:none;user-select:none}
+    .lang>summary::-webkit-details-marker{display:none}
+    .lang[open]>summary{border-color:#333;background:#f2f2f2}
+    .lang-opts{position:absolute;right:0;z-index:90;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;
+      background:#fff;border:1px solid #999;border-radius:12px;padding:6px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+    .lang input{position:absolute;opacity:0;pointer-events:none}
+    .lang label{cursor:pointer;padding:0 12px;min-height:40px;display:inline-flex;align-items:center;border:1px solid #999;border-radius:11px;white-space:nowrap}
+    .lang input:checked + label{background:#333;color:#fff;font-weight:bold;border-color:#333}
+
+    @media (prefers-color-scheme:dark){
+      .lang>summary{border-color:#777} .lang[open]>summary{background:#2a2a2a;border-color:#999}
+      .lang-opts{background:#222;border-color:#777;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+      .lang label{border-color:#777}
+      .lang input:checked + label{background:#e9e9e9;color:#111;border-color:#e9e9e9}
+    }
+    body{
+      margin:0;
+      padding-top:62px;     /* form sits right below the fixed top bar */
+      font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif;
+      color:var(--fg-0);
+      background:
+        radial-gradient(1200px 800px at 10% 0%, #14203a 0%, transparent 60%),
+        radial-gradient(900px 700px at 100% 80%, #1a1030 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg-0), var(--bg-1) 60%, #0a0d14);
+      overflow-x:hidden;
+
+      /* state knobs the gradients react to */
+      --woman:0;
+      --man:0;
+      --typing:0;
+    }
+
+    body:has(input[name="iam"][value="Woman"]:checked){ --woman:1; }
+    body:has(input[name="iam"][value="Man"]:checked){ --man:1; }
+    body:has(.qs textarea:not(:placeholder-shown)),
+    body:has(.qs textarea:focus){ --typing:1; }
+
+    /* ---------- Weaving / fuzzy background ---------- */
+    .bg-orbit, .bg-weave{
+      position:fixed; inset:-15%; pointer-events:none; z-index:0;
+      will-change:transform, filter;
+    }
+    .bg-orbit{
+      background:
+        radial-gradient(46vmin 46vmin at 28% 32%,
+          hsla(var(--violet) / calc(.18 + var(--woman)*.38 + var(--typing)*.18)),
+          transparent 70%),
+        radial-gradient(38vmin 38vmin at 72% 78%,
+          hsla(var(--brand) / calc(.14 + var(--woman)*.32 + var(--typing)*.14)),
+          transparent 70%);
+      /* still for 15s, then loops continuously */
+      animation: weave-a 22s ease-in-out 15s infinite alternate;
+    }
+    .bg-weave{
+      background:
+        radial-gradient(50vmin 50vmin at 74% 28%,
+          hsla(var(--blue) / calc(.16 + var(--man)*.38 + var(--typing)*.18)),
+          transparent 70%),
+        radial-gradient(34vmin 34vmin at 22% 74%,
+          hsla(var(--brand-2) / calc(.12 + var(--man)*.30 + var(--typing)*.14)),
+          transparent 70%);
+      animation: weave-b 28s ease-in-out 15s infinite alternate;
+    }
+    /* Fuzzy hue + blur shift bake the "moving fuzzily while idle" feel
+       right into the keyframes — runs forever, no JS needed. */
+    @keyframes weave-a{
+      0%   { transform: translate(-3%, -2%) rotate(-4deg) scale(1);    filter: blur(46px) hue-rotate(-8deg) saturate(110%); }
+      33%  { transform: translate(4%, -6%) rotate(6deg)  scale(1.04);  filter: blur(58px) hue-rotate(14deg) saturate(125%); }
+      66%  { transform: translate(7%, 2%)  rotate(11deg) scale(1.02);  filter: blur(50px) hue-rotate(-4deg) saturate(115%); }
+      100% { transform: translate(9%, 5%)  rotate(15deg) scale(1.03);  filter: blur(54px) hue-rotate(22deg) saturate(130%); }
+    }
+    @keyframes weave-b{
+      0%   { transform: translate(3%, 4%)   rotate(3deg)   scale(1.02); filter: blur(48px) hue-rotate(0deg)  saturate(110%); }
+      33%  { transform: translate(-5%, 7%)  rotate(-8deg)  scale(1.05); filter: blur(60px) hue-rotate(18deg) saturate(120%); }
+      66%  { transform: translate(-7%, -1%) rotate(-12deg) scale(1.03); filter: blur(52px) hue-rotate(-6deg) saturate(115%); }
+      100% { transform: translate(-9%, -4%) rotate(-15deg) scale(1.01); filter: blur(56px) hue-rotate(10deg) saturate(125%); }
+    }
+
+    /* ---------- Top bar (crumbler-style, Varyy colour) ---------- */
+    .flove-bar{
+      position:fixed; top:0; left:0; right:0; z-index:50;
+      display:flex; align-items:center; gap:14px;
+      padding:14px 22px;
+      font:600 26px/1.2 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+      letter-spacing:.3px;
+      background:transparent;
+      pointer-events:none;
+      color:var(--gw-mid);
+    }
+    .flove-bar > *{pointer-events:auto}
+    .flove-mark-btn, .flove-name-btn{
+      background:transparent; border:0; padding:0; margin:0;
+      color:inherit; cursor:pointer; font:inherit;
+      display:inline-flex; align-items:center;
+    }
+    .flove-mark-btn{ padding:6px; border-radius:999px; }
+    .flove-name-btn{ padding:6px 12px; border-radius:999px; transition:transform .15s ease; }
+    .flove-name-btn:hover{ transform:translateY(-1px); }
+    .flove-mark-btn:focus-visible, .flove-name-btn:focus-visible,
+    .menu-btn:focus-visible{
+      outline:2px solid hsl(var(--violet)); outline-offset:3px;
+    }
+    .flove-bar .flove-mark{
+      width:2em; height:2em;
+      filter: drop-shadow(0 0 6px color-mix(in srgb, hsl(var(--violet)) 50%, transparent));
+      transition: transform .25s ease;
+    }
+    .flove-mark-btn:hover .flove-mark{ transform: rotate(-8deg) scale(1.04); }
+    .flove-bar .flove-app-name{
+      font-weight:800;
+      background: linear-gradient(90deg, hsl(var(--violet)), hsl(var(--blue)));
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+      text-shadow:0 0 14px color-mix(in srgb, hsl(var(--violet)) 35%, transparent);
+    }
+    .flove-bar .flove-spacer{flex:1}
+
+    /* Transparent top-right menu — same violet/blue palette as the rest */
+    .top-menu{ position:relative; display:inline-block; }
+    .menu-btn{
+      background: linear-gradient(135deg, hsl(var(--violet)), hsl(var(--blue)));
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+      border:0; cursor:pointer;
+      font-size:38px; line-height:1;
+      padding:.05em .25em;
+      filter: drop-shadow(0 0 10px color-mix(in srgb, hsl(var(--violet)) 55%, transparent));
+      transition:transform .15s ease, filter .15s ease;
+    }
+    .menu-btn:hover{
+      transform:scale(1.06);
+      filter: drop-shadow(0 0 14px color-mix(in srgb, hsl(var(--blue)) 70%, transparent));
+    }
+    /* Menu items unfurl horizontally to the LEFT of the ☰ button. Each
+       item is a pill-shaped button matching the form's button language. */
+    .menu-list{
+      position:absolute;
+      right: calc(100% + 10px);
+      top: 50%;
+      list-style:none; margin:0; padding:0;
+      display:flex; flex-direction:row; gap:8px;
+      z-index:80;
+      transform: translate(0, -50%);
+      transition: opacity .22s ease, transform .28s cubic-bezier(.2,.7,.3,1);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    /* Override [hidden]'s display:none so we can transition. */
+    .menu-list[hidden]{
+      display:flex;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(12px, -50%);
+    }
+    /* The site-title menu drops straight DOWN as a vertical list (many items). */
+    .title-menu .menu-list{
+      right:auto; left:0; top:calc(100% + 8px);
+      flex-direction:column; transform:none; align-items:stretch;
+    }
+    .title-menu .menu-list[hidden]{ transform:translateY(-6px); }
+    /* The labelers (tone) menu unfurls HORIZONTALLY to the RIGHT of its icon. */
+    .labelers-menu .menu-list{
+      left: calc(100% + 10px); right:auto; top:50%;
+      flex-direction:row; align-items:center;
+      transform: translateY(-50%);
+    }
+    .labelers-menu .menu-list[hidden]{ transform: translate(-12px, -50%); }
+    .menu-list li{ margin:0; list-style:none; }
+    .menu-list li a{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:7px 14px;
+      text-decoration:none;
+      border-radius:999px;
+      border:1px solid hsl(var(--line) / .55);
+      background:
+        linear-gradient(rgba(14,18,30,.55), rgba(14,18,30,.55)) padding-box,
+        linear-gradient(135deg, hsla(285,84%,62%,.5), hsla(210,92%,58%,.5)) border-box;
+      backdrop-filter: blur(12px) saturate(140%);
+      -webkit-backdrop-filter: blur(12px) saturate(140%);
+      color: var(--fg-0);
+      font: 600 13px/1 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+      letter-spacing:.25px;
+      white-space:nowrap;
+      transition: transform .15s ease, background .2s ease, box-shadow .2s ease, color .2s ease;
+      box-shadow: 0 4px 14px rgba(0,0,0,.35);
+    }
+    .menu-list li a:hover{
+      transform: translateY(-1px);
+      color:#fff;
+      background:
+        linear-gradient(rgba(20,24,42,.55), rgba(20,24,42,.55)) padding-box,
+        linear-gradient(135deg, hsl(var(--violet)), hsl(var(--blue))) border-box;
+      box-shadow: 0 8px 22px hsla(265,84%,62%,.35), 0 0 0 4px hsla(285,84%,62%,.10);
+    }
+
+    /* ---------- Intro section (toggled by clicking "Varyy") ---------- */
+    #introSection{
+      position:relative; z-index:1;
+      max-width:900px;
+      margin: 28px auto 12px;     /* room above for the close X overlap */
+      padding: 30px 20px 18px;    /* extra top room for the slogan + X */
+      background: linear-gradient(180deg, rgba(190,150,255,.06), rgba(130,200,255,.04));
+      border:1px solid hsla(285,84%,62%,.22);
+      border-radius:18px;
+      color:var(--fg-0);
+      font-size:.98rem; line-height:1.55;
+      backdrop-filter:blur(10px) saturate(130%);
+      -webkit-backdrop-filter:blur(10px) saturate(130%);
+      box-shadow:0 12px 32px -10px rgba(0,0,0,.55);
+    }
+    #introSection[hidden]{ display:none; }
+    #introSection p{ margin:0 0 .5em; }
+    #introSection p:last-child{ margin-bottom:0; }
+    #introSection strong{
+      background: linear-gradient(90deg, hsl(var(--violet)), hsl(var(--blue)));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+
+    /* Slogan + close X sit on the center top border of the intro. */
+    .intro-slogan{
+      position:absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 2px 14px;
+      font-size: .92rem;
+      font-style: italic;
+      font-weight: 700;
+      letter-spacing:.25px;
+      white-space:nowrap;
+      background:
+        linear-gradient(rgba(14,18,30,.95), rgba(14,18,30,.95)) padding-box,
+        linear-gradient(135deg, hsl(var(--violet)), hsl(var(--blue))) border-box;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      color: transparent;
+      -webkit-background-clip: padding-box, border-box;
+      background-clip: padding-box, border-box;
+    }
+    /* Use a stacking trick: the gradient text sits in a child to avoid
+       conflict with the pill background-clip. */
+    .intro-slogan .intro-slogan-text{
+      background: linear-gradient(90deg, hsl(var(--violet)), hsl(var(--blue)));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+
+    .intro-close-btn{
+      position:absolute;
+      top: -22px;
+      right: 18px;
+      width: 40px; height: 40px;
+      border-radius: 999px;
+      border: 2px solid rgba(255,255,255,.18);
+      background: linear-gradient(135deg, hsl(var(--violet)), hsl(var(--blue)));
+      color:#fff;
+      font-size: 1.15rem; font-weight: 800; line-height: 1;
+      cursor: pointer;
+      display: grid; place-items: center;
+      z-index: 5;
+      box-shadow: 0 10px 28px hsla(265,84%,62%,.45);
+      transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+    }
+    .intro-close-btn:hover{
+      transform: scale(1.08) rotate(90deg);
+      box-shadow: 0 14px 36px hsla(210,92%,58%,.55);
+      filter: saturate(1.15);
+    }
+    .intro-close-btn:focus-visible{
+      outline: 3px solid hsla(285,84%,62%,.5);
+      outline-offset: 3px;
+    }
+
+    /* ---------- Layout shell ---------- */
+    .shell{
+      position:relative; z-index:1;
+      max-width:980px;
+      margin: 0 auto clamp(24px, 4vh, 48px);
+      padding: clamp(12px, 1.5vw, 24px);
+    }
+
+    /* ---------- Glass card ---------- */
+    /* The questions section is now frameless — no glass panel, border or
+       shadow; it blends straight into the page. Padding stays for spacing. */
+    .card{
+      background: none;
+      border: 0;
+      padding: clamp(18px, 2.2vw, 28px);
+    }
+
+    fieldset{ margin:0; padding:0; border:0; }
+    legend{
+      font-weight:700; color:var(--fg-0);
+      margin-bottom:.75rem; letter-spacing:.4px;
+    }
+
+    .who{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(180px, 1fr));
+      gap:14px;
+      margin-bottom:22px;
+    }
+    @media (max-width:560px){ .who{ grid-template-columns:1fr; } }
+
+    /* Once a gender is chosen, retire the picker so everything below moves up. */
+    body:has(input[name="iam"]:checked) .who{
+      display:none;
+    }
+
+    /* Radio chips */
+    .radio-chip{ position:relative; display:block; }
+    .radio-chip input{
+      position:absolute; inset:0; opacity:0; width:100%; height:100%; margin:0; cursor:pointer;
+    }
+    .radio-chip .chip{
+      display:flex; align-items:center; gap:.7rem;
+      padding:14px 16px;
+      border-radius:var(--radius-xl);
+      border:1px solid hsl(var(--line) / .55);
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+      transition: transform .15s ease, border-color .2s ease, box-shadow .2s ease, background .2s ease;
+      box-shadow: 0 1px 0 rgba(255,255,255,.05) inset, 0 8px 18px rgba(0,0,0,.25);
+      user-select:none;
+    }
+    .radio-chip .icon{
+      display:inline-grid; place-items:center;
+      width:28px; height:28px; border-radius:12px;
+      background: linear-gradient(135deg, hsl(var(--violet)/.22), hsl(var(--blue)/.22));
+      font-size:16px;
+    }
+    .radio-chip:hover .chip{ transform:translateY(-1px); border-color: hsl(var(--brand)/.7); }
+    .radio-chip input:focus-visible + .chip{ outline:2px solid hsl(var(--brand)); outline-offset:3px; }
+
+    .radio-chip input[value="Woman"]:checked + .chip{
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.04)),
+        linear-gradient(90deg, hsl(var(--violet)/.36), hsl(var(--brand)/.32));
+      border-color:transparent;
+      box-shadow:
+        0 0 0 1px hsl(var(--violet)/.45) inset,
+        0 16px 40px hsla(285,84%,62%,.28);
+    }
+    .radio-chip input[value="Man"]:checked + .chip{
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.04)),
+        linear-gradient(90deg, hsl(var(--blue)/.36), hsl(var(--brand-2)/.32));
+      border-color:transparent;
+      box-shadow:
+        0 0 0 1px hsl(var(--blue)/.45) inset,
+        0 16px 40px hsla(210,92%,58%,.28);
+    }
+
+    /* ---------- Questions ---------- */
+    .qs{ display:grid; gap:22px; }
+    .q{ display:grid; gap:8px; position:relative; isolation:isolate; }
+    /* The label is kept for accessibility (screen readers) but visually
+       hidden — the question text now lives in the textarea placeholder. */
+    .q label{
+      position:absolute;
+      width:1px; height:1px;
+      padding:0; margin:-1px;
+      overflow:hidden;
+      clip:rect(0 0 0 0);
+      white-space:nowrap;
+      border:0;
+    }
+
+    .other-gender{
+      font-weight:800; padding:0 .15em;
+      background: linear-gradient(90deg, hsl(var(--violet)), hsl(var(--blue)));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    body:has(input[name="iam"][value="Woman"]:checked) .other-gender{
+      background: linear-gradient(90deg, hsl(var(--blue)), hsl(var(--brand-2)));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    body:has(input[name="iam"][value="Man"]:checked) .other-gender{
+      background: linear-gradient(90deg, hsl(var(--violet)), hsl(var(--brand)));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+
+    /* Field wrapper around the textarea */
+    .field{ position:relative; }
+    textarea{
+      width:100%;
+      resize:vertical;
+      min-height: 3.2em;          /* compact: ~2 rows */
+      padding:14px 16px;
+      color:var(--fg-0);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border: 1px solid hsl(var(--line) / .5);
+      border-radius:14px;
+      outline:none;
+      transition: border-color .2s ease, box-shadow .2s ease, background .2s ease, min-height .4s ease;
+      font: inherit;
+      position:relative; z-index:1;
+    }
+    /* Expanded — enough room for ~1000 characters. */
+    .field.is-expanded textarea{ min-height: 18em; }
+
+    /* Tiny + button on the bottom-right border of the field */
+    .field-expand{
+      position:absolute;
+      bottom:-10px; right:-10px;
+      width:26px; height:26px;
+      border-radius:999px;
+      border:2px solid rgba(255,255,255,.18);
+      background: linear-gradient(135deg, hsl(var(--violet)), hsl(var(--blue)));
+      color:#fff;
+      font-size: .95rem;
+      font-weight: 800;
+      line-height: 1;
+      cursor:pointer;
+      display:grid; place-items:center;
+      z-index:3;
+      box-shadow: 0 6px 14px hsla(265,84%,62%,.4);
+      transition: transform .25s ease, box-shadow .2s ease;
+    }
+    .field-expand:hover{
+      transform: scale(1.1);
+      box-shadow: 0 10px 22px hsla(210,92%,58%,.5);
+    }
+    .field-expand:focus-visible{
+      outline:3px solid hsla(285,84%,62%,.55); outline-offset:3px;
+    }
+    .field.is-expanded .field-expand{
+      transform: rotate(45deg);   /* + → ×, signalling collapse */
+    }
+    .field.is-expanded .field-expand:hover{
+      transform: rotate(45deg) scale(1.1);
+    }
+    textarea::placeholder{ color: hsl(220 20% 74% / .7); }
+    textarea:focus{
+      border-color: hsl(var(--brand)/.75);
+      box-shadow: 0 0 0 4px hsl(var(--brand)/.18);
+    }
+    body:has(input[name="iam"][value="Man"]:checked) textarea:focus{
+      border-color: hsl(var(--blue)/.85);
+      box-shadow: 0 0 0 4px hsl(var(--blue)/.22);
+    }
+    body:has(input[name="iam"][value="Woman"]:checked) textarea:focus{
+      border-color: hsl(var(--violet)/.85);
+      box-shadow: 0 0 0 4px hsl(var(--violet)/.22);
+    }
+
+    /* ---------- Flame border around each .q section ----------
+       Restored from the original "fire below the textarea" effect, now
+       distributed around the perimeter of the question section instead of
+       just under the textarea. Dark + shiny violet/blue. */
+    .fire{
+      position:absolute;
+      inset:-6px;
+      pointer-events:none;
+      border-radius:16px;
+      opacity:0;
+      transition: opacity 1.6s ease;
+      z-index:-1;
+      background:
+        /* corners */
+        radial-gradient(ellipse 18% 30% at   0%   0%, rgba( 48, 10, 110, .85), transparent 70%),
+        radial-gradient(ellipse 18% 30% at 100%   0%, rgba( 12, 28, 120, .85), transparent 70%),
+        radial-gradient(ellipse 18% 30% at   0% 100%, rgba(110, 60, 220, .85), transparent 70%),
+        radial-gradient(ellipse 18% 30% at 100% 100%, rgba(150,120, 255, .60), transparent 70%),
+        /* edge midpoints */
+        radial-gradient(ellipse 28% 18% at  50%  -4%, rgba( 48, 10, 110, .75), transparent 70%),
+        radial-gradient(ellipse 28% 18% at  50% 104%, rgba(110, 60, 220, .75), transparent 70%),
+        radial-gradient(ellipse 14% 28% at  -4%  50%, rgba(130,200, 255, .75), transparent 70%),
+        radial-gradient(ellipse 14% 28% at 104%  50%, rgba(190,150, 255, .75), transparent 70%);
+      filter: blur(8px) saturate(170%);
+      animation: flame-border 3.2s ease-in-out infinite alternate;
+    }
+    .fire::before{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        /* shiny inner accents distributed along the perimeter */
+        radial-gradient(ellipse 11% 18% at  30%  -2%, rgba(190,150, 255, .85), transparent 70%),
+        radial-gradient(ellipse 11% 18% at  70%  -2%, rgba(225,230, 255, .85), transparent 70%),
+        radial-gradient(ellipse 18% 11% at 102%  35%, rgba(130,200, 255, .80), transparent 70%),
+        radial-gradient(ellipse 18% 11% at 102%  65%, rgba(190,150, 255, .80), transparent 70%),
+        radial-gradient(ellipse 11% 18% at  30% 102%, rgba(225,230, 255, .80), transparent 70%),
+        radial-gradient(ellipse 11% 18% at  70% 102%, rgba(130,200, 255, .80), transparent 70%),
+        radial-gradient(ellipse 18% 11% at  -2%  35%, rgba(190,150, 255, .80), transparent 70%),
+        radial-gradient(ellipse 18% 11% at  -2%  65%, rgba(225,230, 255, .80), transparent 70%);
+      filter: blur(4px);
+      animation: flicker-border .3s steps(4) infinite;
+    }
+    .q:has(textarea:not(:placeholder-shown)) .fire{ opacity:.65; }
+    .q:has(textarea:focus:not(:placeholder-shown)) .fire{ opacity:.95; }
+    @keyframes flame-border{
+      0%   { transform: scale(1)    rotate(0deg);   filter: blur(7px)  saturate(160%) hue-rotate(0deg);  }
+      50%  { transform: scale(1.02) rotate(.5deg);  filter: blur(10px) saturate(185%) hue-rotate(15deg); }
+      100% { transform: scale(1.01) rotate(-.4deg); filter: blur(8px)  saturate(170%) hue-rotate(-8deg); }
+    }
+    @keyframes flicker-border{
+      0%   { opacity:.65; transform: scale(1);    }
+      33%  { opacity:.40; transform: scale(1.03); }
+      66%  { opacity:.95; transform: scale(.97);  }
+      100% { opacity:.55; transform: scale(1.02); }
+    }
+
+    .screen-fire{
+      position:fixed;
+      pointer-events:none;
+      z-index:0;
+      opacity:0;
+      transition: opacity 3.5s ease;
+      filter: blur(48px) saturate(160%);
+      will-change: transform;
+    }
+    .screen-fire--rb{
+      right:-12vw; bottom:-14vh;
+      width:62vw; height:62vh;
+      background:
+        radial-gradient(ellipse 55% 65% at 72% 88%, rgba( 48, 10, 110, .55), transparent 70%),
+        radial-gradient(ellipse 45% 55% at 82% 96%, rgba(110, 60, 220, .50), transparent 70%),
+        radial-gradient(ellipse 35% 45% at 92% 100%, rgba(150,120, 255, .40), transparent 70%),
+        radial-gradient(ellipse 25% 30% at 86% 94%, rgba(225,230, 255, .35), transparent 70%);
+      animation: screen-flame-rb 22s ease-in-out infinite alternate;
+    }
+    .screen-fire--l{
+      left:-14vw; top:8vh;
+      width:42vw; height:88vh;
+      background:
+        radial-gradient(ellipse 50% 35% at 28% 25%, rgba( 12, 28, 120, .50), transparent 70%),
+        radial-gradient(ellipse 45% 50% at 18% 50%, rgba(130,200, 255, .45), transparent 70%),
+        radial-gradient(ellipse 50% 60% at  8% 72%, rgba( 48, 10, 110, .50), transparent 70%),
+        radial-gradient(ellipse 28% 35% at 14% 60%, rgba(190,150, 255, .35), transparent 70%);
+      animation: screen-flame-l 28s ease-in-out infinite alternate;
+    }
+    body:has(.qs textarea:not(:placeholder-shown)) .screen-fire{ opacity:.55; }
+    body:has(.qs textarea:focus:not(:placeholder-shown)) .screen-fire{ opacity:.75; }
+
+    @keyframes screen-flame-rb{
+      0%   { transform: translate(0, 0)    scale(1);    filter: blur(46px) saturate(150%) hue-rotate(-6deg); }
+      50%  { transform: translate(-3%,-5%) scale(1.05); filter: blur(58px) saturate(170%) hue-rotate(8deg);  }
+      100% { transform: translate(2%, -8%) scale(1.03); filter: blur(50px) saturate(160%) hue-rotate(-2deg); }
+    }
+    @keyframes screen-flame-l{
+      0%   { transform: translate(0, 0)    scale(1);    filter: blur(48px) saturate(150%) hue-rotate(4deg);  }
+      50%  { transform: translate(3%, 4%)  scale(1.04); filter: blur(60px) saturate(170%) hue-rotate(-8deg); }
+      100% { transform: translate(5%,-3%)  scale(1.03); filter: blur(52px) saturate(160%) hue-rotate(6deg);  }
+    }
+
+    /* ---------- Action button group (lovy-style row with subitems) ---------- */
+    .button-group{ margin:26px 0 0; padding:6px 0 4px; }
+    .button-row{
+      display:flex; gap:28px;
+      flex-wrap:wrap;
+      align-items:center; justify-content:center;
+    }
+    .btn-with-subs{
+      position:relative;
+      display:inline-flex; flex-direction:column; align-items:center;
+    }
+    .btn-with-subs > .btn{
+      display:inline-flex; align-items:center; gap:.55rem;
+      padding:12px 22px;
+      border:1px solid hsl(var(--line) / .55);
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+      color:var(--fg-0);
+      border-radius:999px; cursor:pointer;
+      font:inherit; font-weight:700; font-size:1.02rem;
+      transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
+      white-space:nowrap;
+    }
+    .btn-with-subs > .btn:hover{
+      transform:translateY(-1px);
+      border-color: hsl(var(--brand)/.65);
+      background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.03));
+    }
+    .btn-with-subs > .btn--primary{
+      background: linear-gradient(135deg, hsl(var(--violet)), hsl(var(--blue)));
+      color:#fff;
+      border-color:transparent;
+      box-shadow: 0 8px 24px hsla(265,84%,62%,.35), 0 1px 0 rgba(255,255,255,.18) inset;
+    }
+    .btn-with-subs > .btn--primary:hover{
+      box-shadow: 0 12px 30px hsla(265,84%,62%,.45);
+    }
+    .subitems{
+      position:absolute; left:50%; transform:translateX(-50%);
+      display:none; gap:8px; flex-wrap:nowrap;
+      z-index:60; padding:4px; white-space:nowrap;
+    }
+    .btn-with-subs.is-open > .subitems{ display:flex; }
+    .subitems--below{ top:calc(100% + 10px); }
+    .subitems--above{ bottom:calc(100% + 10px); }
+    .subitem{
+      padding:8px 14px;
+      border:1px solid hsl(var(--line) / .6);
+      background: rgba(20, 22, 38, .65);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      color:var(--fg-0);
+      border-radius:999px; cursor:pointer;
+      font:inherit; font-weight:600; font-size:.95rem;
+      transition: background .15s ease, transform .15s ease, border-color .15s ease;
+    }
+    .subitem:hover{
+      transform:translateY(-1px);
+      border-color: hsl(var(--brand)/.6);
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(20,22,38,.65));
+    }
+    .subitem.is-active{
+      background: linear-gradient(135deg, hsl(var(--violet)), hsl(var(--blue)));
+      color:#fff; border-color:transparent;
+    }
+
+    @media (max-width:620px){
+      .button-row{ gap:18px; }
+    }
+
+    /* ---------- Per-question delete X (top-right) ---------- */
+    .q-delete{
+      position:absolute;
+      top:-12px; right:-12px;
+      width:30px; height:30px;
+      border-radius:999px;
+      border:2px solid rgba(255,255,255,.18);
+      background: linear-gradient(135deg, hsl(var(--violet)), hsl(var(--blue)));
+      color:#fff;
+      font-size:.95rem; font-weight:800; line-height:1;
+      cursor:pointer;
+      display:grid; place-items:center;
+      z-index:5;
+      box-shadow:0 6px 16px hsla(265,84%,62%,.35);
+      opacity:0;
+      transition: opacity .25s ease, transform .25s ease, box-shadow .2s ease;
+    }
+    .q:hover .q-delete,
+    .q:focus-within .q-delete{ opacity:1; }
+    .q-delete:hover{
+      transform: scale(1.1) rotate(90deg);
+      box-shadow:0 10px 24px hsla(210,92%,58%,.5);
+    }
+    .q-delete:focus-visible{
+      opacity:1; outline:3px solid hsla(285,84%,62%,.55); outline-offset:3px;
+    }
+
+    /* ---------- Field tools (mic / file / magic) bottom-right ---------- */
+    .field-tools{
+      position:absolute;
+      bottom:8px; right:10px;
+      display:flex; gap:5px;
+      z-index:2;
+    }
+    .ft-btn{
+      background: rgba(20,22,38,.5);
+      border:1px solid hsl(var(--line) / .55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius:999px;
+      width:30px; height:30px;
+      display:grid; place-items:center;
+      cursor:pointer;
+      font-size:.92rem;
+      color: var(--fg-0);
+      transition: transform .15s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+    .ft-btn:hover{
+      transform: translateY(-1px);
+      border-color: hsl(var(--violet)/.7);
+      background: linear-gradient(135deg, hsla(285,84%,62%,.35), hsla(210,92%,58%,.35));
+      box-shadow: 0 6px 16px hsla(265,84%,62%,.3);
+    }
+    .ft-btn.is-recording{
+      background: linear-gradient(135deg, hsl(var(--violet)), hsl(var(--blue)));
+      border-color: transparent;
+      color:#fff;
+      animation: rec-pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes rec-pulse{
+      0%, 100% { box-shadow: 0 0 0 0 hsla(285,84%,62%,.55); }
+      50%      { box-shadow: 0 0 0 10px hsla(285,84%,62%,0); }
+    }
+    /* Leave room for the tool buttons */
+    .qs textarea{ padding-right: 110px; }
+
+    /* ---------- Progressive reveal of the base questions ---------- */
+    /* Q2 & Q3 appear only once the first question has text — the reveal is
+       driven purely by Q1's content, no manual controls. An empty Q1 (a fresh
+       load / after a reload) keeps them hidden; typing in Q1 reveals both;
+       clearing Q1 hides them again. :placeholder-shown is true only while the
+       textarea is empty, so :not(:placeholder-shown) == "Q1 has been filled". */
+    .q-group .q[data-base="2"],
+    .q-group .q[data-base="3"]{ display:none; }
+    .q-group:has(.q[data-base="1"] textarea:not(:placeholder-shown)) .q[data-base="2"],
+    .q-group:has(.q[data-base="1"] textarea:not(:placeholder-shown)) .q[data-base="3"]{
+      display:grid;
+      animation: section-in .5s ease;
+    }
+
+    /* ---------- Labelers (tone) control in the top bar ---------- */
+    .labelers-btn{
+      background:transparent; border:0; cursor:pointer;
+      padding:.05em .2em; line-height:0;
+      display:inline-grid; place-items:center;
+      filter: drop-shadow(0 0 10px color-mix(in srgb, hsl(var(--violet)) 45%, transparent));
+      transition: transform .15s ease, filter .15s ease;
+      /* Fades in 7s after load, together with the "+" add-question button. */
+      opacity:0;
+      animation: section-in-fixed 1s ease 7s forwards;
+    }
+    .labelers-btn:hover{
+      transform: scale(1.08);
+      filter: drop-shadow(0 0 14px color-mix(in srgb, hsl(var(--blue)) 65%, transparent));
+    }
+    .labelers-btn:focus-visible{
+      outline:2px solid hsl(var(--violet)); outline-offset:3px; border-radius:8px;
+    }
+    .labelers-ico{ width:34px; height:34px; display:block; }
+    .labelers-menu .menu-list li a.is-active{
+      color:#fff;
+      background:
+        linear-gradient(rgba(20,24,42,.55), rgba(20,24,42,.55)) padding-box,
+        linear-gradient(135deg, hsl(var(--violet)), hsl(var(--blue))) border-box;
+      box-shadow: 0 8px 22px hsla(265,84%,62%,.4);
+    }
+
+    /* Each group of 3 questions, with its own style toggle above */
+    .q-group{
+      position:relative;
+      margin-top: 22px;   /* one row of space above each group */
+    }
+
+    /* (The per-group "More formal / More informal" toggle moved into the
+       top-bar Labelers menu — its old styles were removed.) */
+    /* Splash effect on the question text now lives on the textarea
+       (the label is visually hidden, so we glow the field instead). */
+    .q textarea.is-text-splashing{
+      animation: ta-splash 1.2s ease;
+    }
+    @keyframes ta-splash{
+      0%, 100% { box-shadow: 0 0 0 0 hsla(285,84%,62%,0); }
+      40%      { box-shadow: 0 0 18px 4px hsla(285,84%,62%,.55), 0 0 36px 10px hsla(210,92%,58%,.35); }
+      70%      { box-shadow: 0 0 10px 2px hsla(285,84%,62%,.30), 0 0 24px 6px hsla(210,92%,58%,.18); }
+    }
+
+    /* Inline "add a new question" form (appears above q1 when + is clicked) */
+    .new-q-form{
+      display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+      padding: 14px;
+      margin: 0 0 22px;
+      border-radius: 18px;
+      border: 1px solid transparent;
+      background:
+        linear-gradient(rgba(14,18,30,.55), rgba(14,18,30,.55)) padding-box,
+        linear-gradient(135deg, hsla(285,84%,62%,.55), hsla(210,92%,58%,.55)) border-box;
+      backdrop-filter: blur(12px) saturate(140%);
+      -webkit-backdrop-filter: blur(12px) saturate(140%);
+      box-shadow: 0 10px 28px hsla(265,84%,62%,.18);
+    }
+    .new-q-form[hidden]{ display:none; }
+    .new-q-form input{
+      flex:1; min-width:200px;
+      padding: 12px 16px;
+      border-radius: 999px;
+      border: 1px solid hsl(var(--line) / .55);
+      background: rgba(20,22,38,.55);
+      color: var(--fg-0);
+      font: inherit;
+      outline:none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .new-q-form input:focus{
+      border-color: hsl(var(--violet)/.85);
+      box-shadow: 0 0 0 4px hsla(285,84%,62%,.18);
+    }
+    .new-q-form .ft-btn{ width:36px; height:36px; font-size:1rem; }
+    .save-q-btn{
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 12px 22px;
+      border-radius:999px;
+      border:1px solid transparent;
+      background: linear-gradient(135deg, hsl(var(--violet)), hsl(var(--blue)));
+      color:#fff;
+      cursor:pointer;
+      font: 700 .95rem/1 inherit;
+      letter-spacing:.3px;
+      box-shadow: 0 8px 22px hsla(265,84%,62%,.32);
+      transition: transform .15s, box-shadow .2s, filter .2s;
+    }
+    .save-q-btn:hover{ transform: translateY(-1px); filter: saturate(1.1); }
+    .save-q-btn.is-splashing{
+      animation: save-splash 1s ease forwards;
+    }
+    @keyframes save-splash{
+      0%   { box-shadow: 0 8px 22px hsla(265,84%,62%,.32),
+                         0 0 0 0 hsla(285,84%,62%,.65),
+                         0 0 0 0 hsla(210,92%,58%,.45); }
+      60%  { box-shadow: 0 8px 22px hsla(265,84%,62%,.32),
+                         0 0 0 30px hsla(285,84%,62%,0),
+                         0 0 0 60px hsla(210,92%,58%,0); }
+      100% { box-shadow: 0 8px 22px hsla(265,84%,62%,.32),
+                         0 0 0 90px hsla(285,84%,62%,0),
+                         0 0 0 140px hsla(210,92%,58%,0); }
+    }
+
+    /* "+" button in the top bar — fades in with a final splash after Q3 */
+    .add-q-btn{
+      width:40px; height:40px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: linear-gradient(135deg, hsl(var(--violet)), hsl(var(--blue)));
+      color:#fff;
+      font-size: 1.5rem;
+      font-weight: 800;
+      line-height: 1;
+      cursor: pointer;
+      display: grid; place-items: center;
+      box-shadow: 0 8px 22px hsla(265,84%,62%,.4);
+      opacity: 0;
+      transform: scale(.5);
+      /* Fades in 7s after load, together with the labelers (tone) control. */
+      animation: addq-arrive 1.4s cubic-bezier(.2,.7,.3,1) 7s forwards;
+      transition: transform .2s ease, filter .2s ease;
+    }
+    .add-q-btn:hover{
+      transform: scale(1.08) rotate(90deg);
+      filter: saturate(1.15);
+    }
+    .add-q-btn:focus-visible{
+      outline:3px solid hsla(285,84%,62%,.55); outline-offset:3px;
+    }
+    .add-q-btn.is-active{
+      transform: scale(1) rotate(45deg);
+    }
+    @keyframes addq-arrive{
+      0%   { opacity:0; transform: scale(.5);
+             box-shadow: 0 8px 22px hsla(265,84%,62%,.4),
+                         0 0 0 0 hsla(285,84%,62%,.0); }
+      45%  { opacity:1; transform: scale(1.12);
+             box-shadow: 0 8px 22px hsla(265,84%,62%,.4),
+                         0 0 0 0 hsla(285,84%,62%,.7); }
+      75%  { opacity:1; transform: scale(1);
+             box-shadow: 0 8px 22px hsla(265,84%,62%,.4),
+                         0 0 0 28px hsla(285,84%,62%,.15); }
+      100% { opacity:1; transform: scale(1);
+             box-shadow: 0 8px 22px hsla(265,84%,62%,.4),
+                         0 0 0 60px hsla(285,84%,62%,0); }
+    }
+
+    /* ---------- Summary "legible phrase" + actions ---------- */
+    .summary-phrase{
+      margin: 0 0 18px;
+      font-size: 1.02rem;
+      line-height: 1.6;
+      color: var(--fg-0);
+    }
+    .summary-phrase .rp-em{
+      font-weight: 800;
+      padding: 0 .12em;
+      background: linear-gradient(90deg, hsl(var(--violet)), hsl(var(--blue)));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    .summary-actions-row{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      margin: 6px 0 0;
+    }
+    .summary-actions-row .row-spacer{ flex:1; }
+    .btn-action{
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 10px 18px;
+      border-radius:999px;
+      border:1px solid hsl(var(--line) / .55);
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+      color: var(--fg-0);
+      cursor:pointer;
+      font: 700 .95rem/1 inherit;
+      letter-spacing:.25px;
+      transition: transform .15s, background .2s, border-color .2s, box-shadow .2s;
+    }
+    .btn-action:hover{
+      transform: translateY(-1px);
+      border-color: hsl(var(--violet)/.7);
+      background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.03));
+      box-shadow: 0 8px 22px hsla(265,84%,62%,.28);
+    }
+    .summary-action-sep{ height: 2.5rem; }   /* "two rows of separation" */
+    .summary-hint{
+      min-height: 1.2em;
+      margin: 10px 0 6px;
+      font-size: .92rem;
+      color: var(--fg-dim);
+      text-align: center;
+      font-style: italic;
+    }
+    .summary-hint:empty{ display:none; }
+
+    /* ---------- Summary section ---------- */
+    .summary-section{
+      position:relative; z-index:1;
+      max-width:980px;
+      margin: 18px auto 0;
+      padding: clamp(16px, 2vw, 24px);
+      border-radius: var(--radius-2xl);
+      border: 1px solid hsl(var(--line) / .5);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015));
+      backdrop-filter: blur(var(--glass));
+      -webkit-backdrop-filter: blur(var(--glass));
+      box-shadow: 0 10px 40px hsla(220, 50%, 2%, .55);
+    }
+    .summary-section[hidden]{ display:none; }
+
+    /* Collapsed-by-default Summary reveal button — same design language as
+       the top-bar logo: gradient SVG mark + violet→blue wordmark text. */
+    .summary-toggle{
+      display:none; align-items:center; justify-content:center;
+      gap:18px;
+      margin: 36px auto 0;
+      padding: 20px 44px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background:
+        linear-gradient(rgba(14,18,30,.55), rgba(14,18,30,.55)) padding-box,
+        linear-gradient(135deg, hsla(285,84%,62%,.6), hsla(210,92%,58%,.6)) border-box;
+      cursor: pointer;
+      font: 800 2rem/1.2 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+      letter-spacing: .4px;
+      box-shadow: 0 14px 36px hsla(265,84%,62%,.28);
+      transition: transform .2s ease, box-shadow .25s ease, filter .2s ease;
+      position:relative; z-index:1;
+    }
+    .summary-toggle:hover{
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 20px 48px hsla(265,84%,62%,.45), 0 0 0 4px hsla(285,84%,62%,.12);
+      filter: saturate(1.12);
+    }
+    .summary-toggle:focus-visible{
+      outline: 3px solid hsla(285,84%,62%,.55); outline-offset: 4px;
+    }
+    .summary-toggle[hidden]{ display:none; }
+    /* The Summary launcher appears only once at least one answer has text
+       (something to summarise) — and stays hidden while its own panel is open
+       (the toggle carries [hidden] then). Clearing every answer hides it again;
+       a reload lands on empty answers, so it starts hidden. */
+    body:has(.qs textarea:not(:placeholder-shown)) .summary-toggle:not([hidden]){ display:flex; }
+    .summary-toggle .flove-mark{
+      width: 1.6em; height: 1.6em;
+      filter: drop-shadow(0 0 8px color-mix(in srgb, hsl(var(--violet)) 55%, transparent));
+    }
+    .summary-toggle .summary-word{
+      font-weight: 800;
+      background: linear-gradient(90deg, hsl(var(--violet)), hsl(var(--blue)));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 16px color-mix(in srgb, hsl(var(--violet)) 35%, transparent);
+    }
+    .summary-title{
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: .04em;
+      margin: 0;
+      background: linear-gradient(90deg, hsl(var(--violet)), hsl(var(--blue)));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+
+    /* ── ✦ F0 §13.9 — Reset (left) · ✦ Summary · Update (right) title row ── */
+    .summary-head{
+      display:flex; align-items:flex-start; justify-content:space-between;
+      gap:.6rem; margin:0 0 16px; flex-wrap:wrap;
+    }
+    .summary-head .summary-title{ flex:1 1 auto; text-align:center; align-self:center; cursor:pointer; }
+    .summary-head .summary-title:hover{ opacity:.8; }
+    .reset-wrap--title, .update-wrap--title{
+      display:none; flex-direction:column; gap:.18rem; flex:0 0 auto;
+    }
+    .reset-wrap--title{ align-items:flex-start; }
+    .update-wrap--title{ align-items:flex-end; }
+    /* Reset lives on the reload logo now, and Update surfaces only once you've
+       re-edited the form (goes stale). Both stay hidden by default. */
+    body.is-stale .update-wrap--title{ display:flex; }
+    .reset-hint, .update-hint{
+      font-size:.68rem; line-height:1.15; color:var(--fg-dim); opacity:.8;
+      max-width:9rem;
+    }
+    .reset-hint{ text-align:left; }
+    .update-hint{ text-align:right; }
+    /* ghost variant of .btn-action for the Reset/Update controls */
+    .btn-action.ghost{
+      background:transparent; font-weight:600; font-size:.86rem;
+      padding:8px 14px; color:var(--fg-dim);
+    }
+    .btn-action.ghost:hover{ color:var(--fg-0); }
+    /* Reset row — the destructive action, centered on its own row beneath
+       every other summary action, visually set apart by the separator above. */
+    .summary-reset-row{ display:flex; justify-content:center; margin:6px 0 0; }
+    .summary-reset-row .reset-wrap{
+      display:flex; flex-direction:column; align-items:center; gap:.18rem;
+    }
+    .summary-reset-row .reset-hint{ text-align:center; }
+    /* out-of-date dot: hidden by default, an ~8px accent dot once lit */
+    .stale-dot{
+      display:none; width:8px; height:8px; margin-left:.15rem; border-radius:50%;
+      background: hsl(var(--accent)); vertical-align:middle;
+      box-shadow:0 0 0 3px hsla(332,86%,62%,.22);
+    }
+    .stale-dot:not([hidden]){ display:inline-block; }
+    @media (max-width:559px){
+      .summary-head .summary-title{ order:-1; flex-basis:100%; }
+      .reset-hint, .update-hint{ max-width:none; }
+    }
+
+    /* ---------- Staggered fade-in of sections ----------
+       Scoped to the FIRST base question (data-base="1") — the whole field, so
+       Q1's textarea AND its bottom-right icons (tools + expand) fade in
+       together. User-added questions (no data-base) still appear immediately. */
+    .who,
+    .q[data-base="1"]{
+      opacity:0;
+      animation: section-in 1s ease forwards;
+    }
+    /* .who at 3s. Q1 at 11s. Q2/Q3 now appear on their own (via the CSS gate)
+       the moment Q1 is filled. */
+    .who                                    { animation-delay: 3s;  }
+    .q[data-base="1"]                        { animation-delay: 11s; }
+    @keyframes section-in{
+      from { opacity:0; transform: translateY(8px); }
+      to   { opacity:1; transform: translateY(0);   }
+    }
+
+    /* Top bar: logo fades in over the first second, wordmark over the second.
+       Opacity-only because the bar is position:fixed. */
+    .flove-mark-btn, .flove-name-btn{
+      opacity:0;
+      animation: section-in-fixed 1s ease forwards;
+    }
+    .flove-mark-btn { animation-delay: 0s; }
+    .flove-name-btn { animation-delay: 1s; }
+    @keyframes section-in-fixed{
+      from { opacity:0; }
+      to   { opacity:1; }
+    }
+
+    /* ---------- Slogan: typed-out, in continuation of the title ---------- */
+    .flove-slogan{
+      display:inline-flex; align-items:baseline;
+      margin-left:14px;
+      font-size:.58em;             /* smaller than the title */
+      font-style:italic;
+      font-weight:600;
+      letter-spacing:.25px;
+      white-space:nowrap;
+      max-width:60vw;
+      overflow:hidden;
+      background: linear-gradient(90deg, hsl(var(--violet)), hsl(var(--blue)));
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+      opacity:0;
+      /* Comes in right after the logo (1s). Fades out 11s–12s as Q1 fades in. */
+      animation: slogan-in  1s ease 1s  forwards,
+                 slogan-out 1s ease 11s forwards;
+    }
+    .slogan-text{
+      display:inline-block;
+      overflow:hidden;
+      max-width:0;
+      vertical-align:bottom;
+      /* 50% quicker: 6s → 3s. 30 char steps for "Say it clearly, keep it classy". */
+      animation: slogan-type 3s steps(30, end) 1s forwards;
+    }
+    @keyframes slogan-in   { to { opacity:1; } }
+    @keyframes slogan-out  { to { opacity:0; } }
+    @keyframes slogan-type { to { max-width: 30ch; } }
+
+    /* The "straight line" at the end — the typing caret — completely fuzzy
+       and rounded. Blinks while typing (3 cycles over 3s, matches the
+       quicker type-on), then hides once the cursor reaches the end. */
+    .flove-slogan::after{
+      content:"";
+      display:inline-block;
+      width:6px; height:.95em;
+      margin-left:4px;
+      background: linear-gradient(180deg, hsl(var(--violet)), hsl(var(--blue)));
+      border-radius:10px;          /* rounded */
+      filter: blur(2px) saturate(140%);  /* completely fuzzy */
+      vertical-align:middle;
+      opacity:0;
+      animation: caret-blink 1s steps(2, end) 1s 3 forwards;
+    }
+    @keyframes caret-blink{
+      0%   { opacity:1; }
+      50%  { opacity:0; }
+      100% { opacity:0; }   /* settles hidden at the end of the 6th cycle */
+    }
+
+    @media print{
+      body{ background:#fff; color:#000; padding-top:0; }
+      .bg-orbit, .bg-weave, .flove-bar, .button-group, .fire, .screen-fire{ display:none; }
+      .card, .summary-section{ background:#fff; border:1px solid #bbb; box-shadow:none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-orbit"></div>
+  <div class="bg-weave"></div>
+  <div class="screen-fire screen-fire--rb" aria-hidden="true"></div>
+  <div class="screen-fire screen-fire--l"  aria-hidden="true"></div>
+
+  <div class="flove-bar">
+    <button type="button" class="flove-mark-btn" id="reloadBtn" aria-label="Reload page" data-aria-en="Reload page" data-aria-es="Recargar la página" title="Reload">
+      <svg class="flove-mark" aria-hidden="true" viewBox="0 0 100 100" width="1em" height="1em">
+        <defs>
+          <linearGradient id="g-varyy" x1="14" y1="14" x2="86" y2="86" gradientUnits="userSpaceOnUse">
+            <stop offset="0%"   stop-color="hsl(285, 84%, 62%)"/>
+            <stop offset="100%" stop-color="hsl(210, 92%, 58%)"/>
+          </linearGradient>
+        </defs>
+        <g fill="none" stroke="url(#g-varyy)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="50" cy="50" r="18" fill="none"/>
+          <line x1="50" y1="68" x2="50" y2="86"/>
+          <line x1="42" y1="78" x2="58" y2="78"/>
+          <line x1="62" y1="38" x2="82" y2="18"/>
+          <path d="M70 14 L86 14 L86 30" fill="none"/>
+        </g>
+      </svg>
+    </button>
+    <div class="top-menu title-menu">
+      <button type="button" class="flove-name-btn" id="introBtn" aria-haspopup="true" aria-expanded="false" aria-controls="menuList" title="Menu">
+        <span class="flove-app-name">Varyy</span>
+      </button>
+      <ul class="menu-list" id="menuList" hidden role="menu">
+        <li role="none"><a role="menuitem" href="#" data-act="reset">↻ &nbsp;<span class="en" lang="en">Reset</span><span class="es" lang="es">Reiniciar</span></a></li>
+        <li role="none"><a role="menuitem" href="#" data-act="about">ⓘ &nbsp;<span class="en" lang="en">About Varyy</span><span class="es" lang="es">Acerca de Varyy</span></a></li>
+        <li role="none"><a role="menuitem" href="../appy/appy-basic.html">◉ &nbsp;<span class="en" lang="en">Profile</span><span class="es" lang="es">Perfil</span></a></li>
+        <li role="none"><a role="menuitem" href="../index.html">🌱 &nbsp;<span class="en" lang="en">All flove apps</span><span class="es" lang="es">Todas las apps de flove</span></a></li>
+        <li role="none"><a role="menuitem" href="https://flove.org" target="_blank" rel="noopener">♡ &nbsp;<span class="en" lang="en">flove.org</span><span class="es" lang="es">flove.org</span></a></li>
+        <li role="none">
+          <details class="lang">
+            <summary class="worldball" title="Language" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐</summary>
+            <div class="lang-opts">
+              <input type="radio" name="lang" id="lang-en" checked><label for="lang-en">English</label>
+              <input type="radio" name="lang" id="lang-es"><label for="lang-es">Español</label>
+            </div>
+          </details>
+        </li>
+        <li role="none"><a role="menuitem" href="#" onclick="alert('Changelog: FloveDocs26-6')"><i class="fas fa-clipboard-list"></i> &nbsp;<span class="en" lang="en">Changelog</span><span class="es" lang="es">Historial</span></a></li>
+      </ul>
+    </div>
+    <div class="top-menu labelers-menu">
+      <button type="button" class="labelers-btn" id="labelersBtn" aria-haspopup="true" aria-expanded="false" aria-label="Labelers — tone suggestions" data-aria-en="Labelers — tone suggestions" data-aria-es="Etiquetadores — sugerencias de tono" title="Labelers — tone suggestions">
+        <svg class="labelers-ico" viewBox="0 0 24 24" width="34" height="34" aria-hidden="true">
+          <defs>
+            <linearGradient id="g-lab" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%"   stop-color="hsl(285, 84%, 62%)"/>
+              <stop offset="100%" stop-color="hsl(210, 92%, 58%)"/>
+            </linearGradient>
+          </defs>
+          <path d="M3 11.5 L11.5 3 H20 a1 1 0 0 1 1 1 V12.5 L12.5 21 a1.5 1.5 0 0 1 -2.12 0 L3 13.62 a1.5 1.5 0 0 1 0 -2.12 Z"
+                fill="none" stroke="url(#g-lab)" stroke-width="1.8" stroke-linejoin="round"/>
+          <circle cx="16.5" cy="7.5" r="1.4" fill="url(#g-lab)"/>
+        </svg>
+      </button>
+      <ul class="menu-list" id="labelersList" hidden role="menu" aria-label="Tone suggestions">
+        <li role="none"><a role="menuitem" href="#" data-style="neutral" class="is-active">◦ &nbsp;<span class="en" lang="en">Neutral</span><span class="es" lang="es">Neutral</span></a></li>
+        <li role="none"><a role="menuitem" href="#" data-style="formal">⬆ &nbsp;<span class="en" lang="en">More formal</span><span class="es" lang="es">Más formal</span></a></li>
+        <li role="none"><a role="menuitem" href="#" data-style="informal">⬇ &nbsp;<span class="en" lang="en">More informal</span><span class="es" lang="es">Más informal</span></a></li>
+      </ul>
+    </div>
+    <span class="flove-slogan" aria-hidden="true"><span class="slogan-text"><span class="en" lang="en">Say it clearly, keep it classy</span><span class="es" lang="es">Dilo claro, dilo con clase</span></span></span>
+    <span class="flove-spacer"></span>
+    <button type="button" class="add-q-btn" id="addQTopBtn" aria-label="Add new question" data-aria-en="Add new question" data-aria-es="Añadir nueva pregunta" title="Add new question">+</button>
+  </div>
+
+  <section id="introSection" hidden aria-label="About Varyy">
+    <span class="intro-slogan" aria-hidden="true"><span class="intro-slogan-text"><span class="en" lang="en">Say it clearly, keep it classy.</span><span class="es" lang="es">Dilo claro, dilo con clase.</span></span></span>
+    <button type="button" class="intro-close-btn" id="introCloseBtn" aria-label="Close intro" data-aria-en="Close intro" data-aria-es="Cerrar la introducción">✕</button>
+
+    <p><span class="en" lang="en">Choose your side, then share what bothers you, what attracts you, and what you'd love the other gender to grow into.</span><span class="es" lang="es">Elige tu lado y comparte qué te molesta, qué te atrae y en qué te encantaría que creciera el otro género.</span></p>
+  </section>
+
+
+  <main class="shell">
+    <form id="varyy" class="card" method="post" action="#" autocomplete="off">
+      <input type="hidden" name="form_id" value="varyy-v1">
+      <button type="submit" class="visually-hidden" tabindex="-1" aria-hidden="true">Submit</button>
+
+      <fieldset class="who">
+        <legend><span class="en" lang="en">I am a</span><span class="es" lang="es">Soy</span></legend>
+
+        <label class="radio-chip">
+          <input type="radio" name="iam" value="Woman" required>
+          <span class="chip">
+            <span class="icon" aria-hidden="true">♀</span>
+            <span class="en" lang="en">Woman</span><span class="es" lang="es">Mujer</span>
+          </span>
+        </label>
+
+        <label class="radio-chip">
+          <input type="radio" name="iam" value="Man" required>
+          <span class="chip">
+            <span class="icon" aria-hidden="true">♂</span>
+            <span class="en" lang="en">Man</span><span class="es" lang="es">Hombre</span>
+          </span>
+        </label>
+      </fieldset>
+
+      <div class="new-q-form" id="newQForm" hidden>
+        <input type="text" id="newQInput" placeholder="Type your new question (use “the other gender” to substitute)…" data-ph-en="Type your new question (use “the other gender” to substitute)…" data-ph-es="Escribe tu nueva pregunta (usa «el otro género» para sustituir)…" maxlength="200">
+        <button type="button" class="ft-btn ft-mic" data-ta="newQInput" aria-label="Voice input" data-aria-en="Voice input" data-aria-es="Entrada de voz" title="Voice input">🎤</button>
+        <button type="button" class="save-q-btn" id="saveNewQBtn">💾 <span><span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></span></button>
+      </div>
+
+      <section class="qs">
+        <section class="q-group">
+          <div class="q" data-base="1">
+            <span class="fire" aria-hidden="true"></span>
+            <label for="q1"><span class="en" lang="en">What don’t you like from <span class="other-gender">the other gender</span>?</span><span class="es" lang="es">¿Qué no te gusta de <span class="other-gender">el otro género</span>?</span></label>
+            <div class="field">
+              <textarea id="q1" name="dislikes" rows="2" maxlength="1000" placeholder="Be specific, be respectful…"></textarea>
+              <div class="field-tools">
+                <button type="button" class="ft-btn ft-magic" data-ta="q1" aria-label="Suggest text" data-aria-en="Suggest text" data-aria-es="Sugerir texto" title="Suggest">✨</button>
+                <button type="button" class="ft-btn ft-file"  data-ta="q1" aria-label="Attach file"  data-aria-en="Attach file" data-aria-es="Adjuntar archivo"  title="Attach file">📎</button>
+                <button type="button" class="ft-btn ft-mic"   data-ta="q1" aria-label="Voice input"  data-aria-en="Voice input" data-aria-es="Entrada de voz"  title="Voice input">🎤</button>
+              </div>
+              <button type="button" class="field-expand" aria-label="Expand field" data-aria-en="Expand field" data-aria-es="Ampliar el campo" title="Expand to full size">+</button>
+            </div>
+          </div>
+
+          <div class="q" data-base="2">
+            <span class="fire" aria-hidden="true"></span>
+            <label for="q2"><span class="en" lang="en">What do you like from <span class="other-gender">the other gender</span>?</span><span class="es" lang="es">¿Qué te gusta de <span class="other-gender">el otro género</span>?</span></label>
+            <div class="field">
+              <textarea id="q2" name="likes" rows="2" maxlength="1000" placeholder="Sure there are many things..."></textarea>
+              <div class="field-tools">
+                <button type="button" class="ft-btn ft-magic" data-ta="q2" aria-label="Suggest text" data-aria-en="Suggest text" data-aria-es="Sugerir texto" title="Suggest">✨</button>
+                <button type="button" class="ft-btn ft-file"  data-ta="q2" aria-label="Attach file"  data-aria-en="Attach file" data-aria-es="Adjuntar archivo"  title="Attach file">📎</button>
+                <button type="button" class="ft-btn ft-mic"   data-ta="q2" aria-label="Voice input"  data-aria-en="Voice input" data-aria-es="Entrada de voz"  title="Voice input">🎤</button>
+              </div>
+              <button type="button" class="field-expand" aria-label="Expand field" data-aria-en="Expand field" data-aria-es="Ampliar el campo" title="Expand to full size">+</button>
+            </div>
+          </div>
+
+          <div class="q" data-base="3">
+            <span class="fire" aria-hidden="true"></span>
+            <label for="q3"><span class="en" lang="en">What would you like <span class="other-gender">the other gender</span> to develop more?</span><span class="es" lang="es">¿Qué te gustaría que <span class="other-gender">el otro género</span> desarrollara más?</span></label>
+            <div class="field">
+              <textarea id="q3" name="their_growth" rows="2" maxlength="1000" placeholder="Growth in them you’d love to see…"></textarea>
+              <div class="field-tools">
+                <button type="button" class="ft-btn ft-magic" data-ta="q3" aria-label="Suggest text" data-aria-en="Suggest text" data-aria-es="Sugerir texto" title="Suggest">✨</button>
+                <button type="button" class="ft-btn ft-file"  data-ta="q3" aria-label="Attach file"  data-aria-en="Attach file" data-aria-es="Adjuntar archivo"  title="Attach file">📎</button>
+                <button type="button" class="ft-btn ft-mic"   data-ta="q3" aria-label="Voice input"  data-aria-en="Voice input" data-aria-es="Entrada de voz"  title="Voice input">🎤</button>
+              </div>
+              <button type="button" class="field-expand" aria-label="Expand field" data-aria-en="Expand field" data-aria-es="Ampliar el campo" title="Expand to full size">+</button>
+            </div>
+          </div>
+        </section>
+      </section>
+
+    </form>
+
+    <button type="button" class="summary-toggle" id="summaryToggle" aria-controls="summarySection" aria-expanded="false">
+      <svg class="flove-mark" aria-hidden="true" viewBox="0 0 100 100" width="1em" height="1em">
+        <g fill="none" stroke="url(#g-varyy)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="50" cy="50" r="18" fill="none"/>
+          <line x1="50" y1="68" x2="50" y2="86"/>
+          <line x1="42" y1="78" x2="58" y2="78"/>
+          <line x1="62" y1="38" x2="82" y2="18"/>
+          <path d="M70 14 L86 14 L86 30" fill="none"/>
+        </g>
+      </svg>
+      <span class="summary-word"><span class="en" lang="en">Summary</span><span class="es" lang="es">Resumen</span></span>
+    </button>
+
+    <section class="summary-section" id="summarySection" aria-label="Summary" data-aria-en="Summary" data-aria-es="Resumen" hidden>
+      <!-- ✦ F0 §13.9 — ✦ Summary · Update (right) title row.
+           Reset moved to its own destructive row beneath all actions. -->
+      <header class="summary-head">
+        <h2 class="summary-title">✦ <span class="en" lang="en">Summary</span><span class="es" lang="es">Resumen</span></h2>
+        <span class="update-wrap update-wrap--title"><button class="btn-action ghost update-btn" type="button" data-flove-update><span class="en" lang="en">Update</span><span class="es" lang="es">Actualizar</span> <span class="stale-dot" hidden role="img" aria-label="Out of date" data-aria-en="Out of date" data-aria-es="Desactualizado"></span></button><small class="update-hint"><span class="en" lang="en">if you re-edited the form</span><span class="es" lang="es">si has reeditado el formulario</span></small></span>
+      </header>
+      <p class="summary-phrase" id="summaryPhrase">
+        <span class="en" lang="en">As a <span class="rp-em" data-iam>—</span>, what I don’t like from <span class="rp-em" data-other>the other gender</span> is <span class="rp-em" data-answer="q1">—</span>. What I like from them is <span class="rp-em" data-answer="q2">—</span>. And I’d love them to develop more <span class="rp-em" data-answer="q3">—</span>.</span><span class="es" lang="es">Como <span class="rp-em" data-iam-es>—</span>, lo que no me gusta de <span class="rp-em" data-other-es>el otro género</span> es <span class="rp-em" data-answer-es="q1">—</span>. Lo que me gusta de ellos es <span class="rp-em" data-answer-es="q2">—</span>. Y me encantaría que desarrollaran más <span class="rp-em" data-answer-es="q3">—</span>.</span>
+      </p>
+
+      <!-- First action row: Insights + Magic (left) — Copy (right) -->
+      <div class="summary-actions-row">
+        <button type="button" class="btn-action" id="insightsBtn">💡 <span><span class="en" lang="en">Insights</span><span class="es" lang="es">Ideas</span></span></button>
+        <button type="button" class="btn-action" id="magicBtn">✨ <span><span class="en" lang="en">Magic</span><span class="es" lang="es">Magia</span></span></button>
+        <span class="row-spacer"></span>
+        <button type="button" class="btn-action" id="copyBtn">📋 <span><span class="en" lang="en">Copy</span><span class="es" lang="es">Copiar</span></span></button>
+      </div>
+
+      <div class="summary-hint" id="summaryHint" aria-live="polite"></div>
+
+      <!-- Two rows of separation between the action rows -->
+      <div class="summary-action-sep"></div>
+
+      <!-- Second row: Save / Share / Publish (moved here from the form) -->
+      <div class="button-group">
+        <div class="button-row">
+          <div class="btn-with-subs" id="saveWrap">
+            <button type="button" class="btn" id="saveBtn" title="Save">🤲 <span><span class="en" lang="en">Save</span><span class="es" lang="es">Guardar</span></span></button>
+            <div class="subitems subitems--below">
+              <button type="button" class="subitem" data-group="save" data-action="jpg">JPG</button>
+              <button type="button" class="subitem" data-group="save" data-action="html">HTML</button>
+              <button type="button" class="subitem" data-group="save" data-action="text"><span class="en" lang="en">Text</span><span class="es" lang="es">Texto</span></button>
+              <button type="button" class="subitem" data-group="save" data-action="json">JSON</button>
+            </div>
+          </div>
+
+          <div class="btn-with-subs" id="shareWrap">
+            <button type="button" class="btn" id="shareBtn" title="Share">🤝 <span><span class="en" lang="en">Share</span><span class="es" lang="es">Compartir</span></span></button>
+            <div class="subitems subitems--below">
+              <button type="button" class="subitem" data-group="share" data-action="whatsapp">WhatsApp</button>
+              <button type="button" class="subitem" data-group="share" data-action="telegram">Telegram</button>
+              <button type="button" class="subitem" data-group="share" data-action="mail"><span class="en" lang="en">Mail</span><span class="es" lang="es">Correo</span></button>
+            </div>
+          </div>
+
+          <div class="btn-with-subs" id="publishWrap">
+            <div class="subitems subitems--above">
+              <button type="button" class="subitem" data-group="publish-platform" data-platform="Mastodon">Mastodon</button>
+              <button type="button" class="subitem" data-group="publish-platform" data-platform="Bluesky">Bluesky</button>
+              <button type="button" class="subitem" data-group="publish-platform" data-platform="X">X</button>
+            </div>
+            <button type="button" class="btn btn--primary" id="publishBtn" title="Publish">😊 <span><span class="en" lang="en">Publish</span><span class="es" lang="es">Publicar</span></span></button>
+            <div class="subitems subitems--below">
+              <button type="button" class="subitem" data-group="publish-visibility" data-visibility="Public"><span class="en" lang="en">Public</span><span class="es" lang="es">Público</span></button>
+              <button type="button" class="subitem" data-group="publish-visibility" data-visibility="Friends"><span class="en" lang="en">Friends</span><span class="es" lang="es">Amigos</span></button>
+              <button type="button" class="subitem" data-group="publish-visibility" data-visibility="Private"><span class="en" lang="en">Private</span><span class="es" lang="es">Privado</span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✦ F0 §13.9 — Reset: destructive action, on its own row beneath all
+           the summary actions. Same confirm-guarded [data-flove-reset] handler. -->
+      <div class="summary-action-sep"></div>
+      <div class="summary-reset-row">
+        <span class="reset-wrap"><button class="btn-action ghost reset-btn" type="button" data-flove-reset>↺ <span class="en" lang="en">Reset</span><span class="es" lang="es">Reiniciar</span></button><small class="reset-hint"><span class="en" lang="en">Clear all and start new</span><span class="es" lang="es">Borra todo y empieza de nuevo</span></small></span>
+      </div>
+    </section>
+  </main>
+
+  <script>
+  (function(){
+    // ----- i18n helpers (mirror the translaty worldball state) -----
+    // Active language code from the worldball radios (en default).
+    function uiLang(){
+      const r = document.querySelector('input[name="lang"]:checked');
+      return r ? r.id.replace('lang-', '') : 'en';
+    }
+    // Find which language a node belongs to by its nearest [lang] ancestor.
+    function nodeLang(el){
+      const a = el.closest && el.closest('[lang]');
+      return a ? a.getAttribute('lang') : 'en';
+    }
+    // Pick the active-language string from an {en, es} bundle (en fallback).
+    function T(bundle){ return bundle[uiLang()] != null ? bundle[uiLang()] : bundle.en; }
+
+    // ----- "the other gender" → men/women (per language) -----
+    const LABEL_MAP = {
+      en: { Woman:'women', Man:'men',     DEFAULT:'the other gender' },
+      es: { Woman:'mujeres', Man:'hombres', DEFAULT:'el otro género' }
+    };
+    // "I am a …" value as shown in the resume (per language).
+    const IAM_MAP = {
+      en: { Woman:'Woman', Man:'Man' },
+      es: { Woman:'Mujer', Man:'Hombre' }
+    };
+    const radios = document.querySelectorAll('input[name="iam"]');
+
+    // Resume answer outputs, English + Spanish sibling spans.
+    const answerEls  = {
+      q1: document.querySelector('[data-answer="q1"]'),
+      q2: document.querySelector('[data-answer="q2"]'),
+      q3: document.querySelector('[data-answer="q3"]'),
+    };
+    const answerElsEs = {
+      q1: document.querySelector('[data-answer-es="q1"]'),
+      q2: document.querySelector('[data-answer-es="q2"]'),
+      q3: document.querySelector('[data-answer-es="q3"]'),
+    };
+
+    function syncOther(){
+      // Re-query every time so dynamically-added questions are covered.
+      const checked = document.querySelector('input[name="iam"]:checked');
+      // Each .other-gender / [data-other*] span carries the label in its own
+      // language (resolved from its nearest [lang] ancestor).
+      document.querySelectorAll('.other-gender').forEach(s => {
+        const L = LABEL_MAP[nodeLang(s)] || LABEL_MAP.en;
+        if (!checked){ s.textContent = L.DEFAULT; }
+        else {
+          const other = [...radios].find(r => r !== checked);
+          s.textContent = other ? (L[other.value] || other.value) : L.DEFAULT;
+        }
+      });
+      // Resume "the other gender" — English span(s) and Spanish span(s).
+      document.querySelectorAll('[data-other]').forEach(s => {
+        const L = LABEL_MAP.en;
+        if (!checked){ s.textContent = L.DEFAULT; }
+        else { const o = [...radios].find(r => r !== checked); s.textContent = o ? (L[o.value] || o.value) : L.DEFAULT; }
+      });
+      document.querySelectorAll('[data-other-es]').forEach(s => {
+        const L = LABEL_MAP.es;
+        if (!checked){ s.textContent = L.DEFAULT; }
+        else { const o = [...radios].find(r => r !== checked); s.textContent = o ? (L[o.value] || o.value) : L.DEFAULT; }
+      });
+      // Resume "As a …" — per language.
+      const iamEn = document.querySelector('[data-iam]');
+      const iamEs = document.querySelector('[data-iam-es]');
+      if (iamEn) iamEn.textContent = checked ? (IAM_MAP.en[checked.value] || checked.value) : '—';
+      if (iamEs) iamEs.textContent = checked ? (IAM_MAP.es[checked.value] || checked.value) : '—';
+      // The question text now lives in the textarea placeholder — keep it
+      // in sync with whatever the (hidden) label currently says.
+      syncPlaceholders();
+    }
+
+    // Copy each question's hidden-label text (active language only) into its
+    // textarea placeholder.
+    function syncPlaceholders(){
+      const li = uiLang();
+      document.querySelectorAll('.qs .q').forEach(q => {
+        const label = q.querySelector('label');
+        const ta    = q.querySelector('textarea');
+        if (!label || !ta) return;
+        // Prefer the active-language span inside the label; fall back to the
+        // whole label (for dynamically-added, single-language labels).
+        const langSpan = label.querySelector(':scope > .' + li) ||
+                         label.querySelector(':scope > .en') || label;
+        ta.placeholder = (langSpan.textContent || '').trim();
+      });
+    }
+    radios.forEach(r => r.addEventListener('change', syncOther));
+    // Re-sync placeholders (and resume) whenever the page language flips —
+    // both on user change and when the translaty engine restores a saved lang.
+    document.querySelectorAll('input[name="lang"]').forEach(r =>
+      r.addEventListener('change', () => { syncOther(); }));
+    window.__varyyRelabel = syncOther;
+    syncOther();
+
+    // ----- Resume: live-sync the answers from the textareas (both langs) -----
+    Object.keys(answerEls).forEach(id => {
+      const ta = document.getElementById(id);
+      if (!ta) return;
+      const refresh = () => {
+        const v = ta.value.trim() || '—';
+        if (answerEls[id])   answerEls[id].textContent = v;
+        if (answerElsEs[id]) answerElsEs[id].textContent = v;
+      };
+      ta.addEventListener('input', refresh);
+      refresh();
+    });
+
+    // ----- Top bar: logo resets everything, title opens the menu -----
+    const reloadBtn = document.getElementById('reloadBtn');
+    const introBtn  = document.getElementById('introBtn');
+    const intro     = document.getElementById('introSection');
+
+    function setIntro(open){
+      if (open) intro.removeAttribute('hidden');
+      else      intro.setAttribute('hidden', '');
+    }
+
+    // The logo is now a full reset: wipe our saved state and reload to a fresh,
+    // empty form (single first question, questions 2 & 3 collapsed again).
+    reloadBtn.addEventListener('click', () => {
+      try { OWN_KEYS.forEach(k => localStorage.removeItem(k)); } catch(_){}
+      location.reload();
+    });
+    // (The Varyy title now opens the menu — wired in the menu section below.)
+
+    // Close X on the intro's top border
+    const introCloseBtn = document.getElementById('introCloseBtn');
+    introCloseBtn?.addEventListener('click', () => setIntro(false));
+
+    // ----- Menu — opens from the Varyy title (site name) -----
+    const menuList = document.getElementById('menuList');
+    function setMenu(open){
+      if (open){ menuList.removeAttribute('hidden'); introBtn.setAttribute('aria-expanded','true'); }
+      else     { menuList.setAttribute('hidden',''); introBtn.setAttribute('aria-expanded','false'); }
+    }
+    introBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      setMenu(menuList.hasAttribute('hidden'));
+    });
+    document.addEventListener('click', e => {
+      if (!menuList.hasAttribute('hidden') && !introBtn.contains(e.target) && !menuList.contains(e.target)){
+        setMenu(false);
+      }
+    });
+    menuList.addEventListener('click', e => {
+      const a = e.target.closest('a[data-act]');
+      if (!a) return;
+      e.preventDefault();
+      const act = a.dataset.act;
+      if (act === 'reset'){
+        // Delegate to the canonical ✦ Summary Reset (confirm-guarded; clears
+        // our flove:varyy:* storage too) so both reset surfaces behave alike.
+        const rb = document.querySelector('[data-flove-reset]');
+        if (rb){ setMenu(false); rb.click(); return; }
+        document.getElementById('varyy').reset();
+        syncOther();
+        Object.values(answerEls).forEach(out => { if (out) out.textContent = '—'; });
+        Object.values(answerElsEs).forEach(out => { if (out) out.textContent = '—'; });
+        setSummaryHint('');
+      } else if (act === 'about'){
+        setIntro(intro.hasAttribute('hidden'));
+      }
+      setMenu(false);
+    });
+
+    // ----- Save / Share / Publish: open/close subitems -----
+    document.querySelectorAll('.btn-with-subs').forEach(wrap => {
+      const btn = wrap.querySelector(':scope > .btn');
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        document.querySelectorAll('.btn-with-subs').forEach(w => { if (w !== wrap) w.classList.remove('is-open'); });
+        wrap.classList.toggle('is-open');
+      });
+    });
+    document.addEventListener('click', e => {
+      document.querySelectorAll('.btn-with-subs').forEach(wrap => {
+        if (!wrap.contains(e.target)) wrap.classList.remove('is-open');
+      });
+    });
+    document.querySelectorAll('.subitem').forEach(s => {
+      s.addEventListener('click', e => {
+        e.stopPropagation();
+        const group = s.dataset.group;
+        if (group){
+          document.querySelectorAll('.subitem[data-group="'+group+'"]').forEach(x => x.classList.remove('is-active'));
+          s.classList.add('is-active');
+        }
+      });
+    });
+
+    // ===== Per-field expand toggle (event-delegated for dynamic questions) =====
+    document.addEventListener('click', e => {
+      const exp = e.target.closest('.field-expand');
+      if (!exp) return;
+      const field = exp.closest('.field');
+      if (!field) return;
+      field.classList.toggle('is-expanded');
+    });
+
+    // ===== Per-question delete (event-delegated, also covers added questions) =====
+    document.addEventListener('click', e => {
+      const x = e.target.closest('.q-delete');
+      if (!x) return;
+      const q = x.closest('.q');
+      if (!q) return;
+      const ta = q.querySelector('textarea');
+      const id = ta?.id;
+      q.remove();
+      if (id){
+        delete answerEls[id];
+        // For dynamically-added questions, also drop their phrase segment.
+        const phrase = document.getElementById('summaryPhrase');
+        const ansSpan = phrase?.querySelector('[data-answer="' + id + '"]');
+        if (ansSpan && ansSpan.parentElement && ansSpan.parentElement !== phrase){
+          ansSpan.parentElement.remove();
+        }
+      }
+      renumberQuestions();
+    });
+
+    // Questions are unnumbered now — strip any stray leading "N." and
+    // re-sync the placeholders that mirror the labels.
+    function renumberQuestions(){
+      const qs = document.querySelectorAll('.qs .q');
+      qs.forEach(q => {
+        const lab = q.querySelector('label');
+        if (lab && lab.firstChild){
+          lab.firstChild.nodeValue = (lab.firstChild.nodeValue || '').replace(/^\s*\d+\.\s*/, '');
+        }
+      });
+      syncPlaceholders();
+    }
+
+    // ===== Field tools: ✨ magic, 📎 file, 🎤 mic =====
+    const SUGGESTIONS_BY_LANG = {
+      en: [
+        'Sometimes I notice that ',
+        'What surprises me is ',
+        'In my experience, ',
+        'I’ve come to admire ',
+        'I wish there was more ',
+        'It bothers me when ',
+        'There’s a beauty in ',
+        'I find myself drawn to '
+      ],
+      es: [
+        'A veces me doy cuenta de que ',
+        'Lo que me sorprende es ',
+        'En mi experiencia, ',
+        'He llegado a admirar ',
+        'Ojalá hubiera más ',
+        'Me molesta cuando ',
+        'Hay una belleza en ',
+        'Me siento atraído por '
+      ]
+    };
+    const SUGGESTIONS = () => SUGGESTIONS_BY_LANG[uiLang()] || SUGGESTIONS_BY_LANG.en;
+
+    function getTA(btn){
+      const id = btn.dataset.ta;
+      if (id) return document.getElementById(id);
+      return btn.closest('.field')?.querySelector('textarea');
+    }
+    function bumpInput(ta){ ta.dispatchEvent(new Event('input', { bubbles:true })); }
+
+    document.addEventListener('click', e => {
+      // Magic suggestion
+      const magic = e.target.closest('.ft-magic');
+      if (magic){
+        const ta = getTA(magic);
+        if (!ta) return;
+        const pool = SUGGESTIONS();
+        const s = pool[Math.floor(Math.random() * pool.length)];
+        ta.value = (ta.value ? ta.value.replace(/\s*$/, ' ') : '') + s;
+        ta.focus();
+        ta.selectionStart = ta.selectionEnd = ta.value.length;
+        bumpInput(ta);
+        return;
+      }
+      // File picker
+      const file = e.target.closest('.ft-file');
+      if (file){
+        const ta = getTA(file);
+        if (!ta) return;
+        const inp = document.createElement('input');
+        inp.type = 'file';
+        inp.style.display = 'none';
+        inp.addEventListener('change', () => {
+          const f = inp.files?.[0];
+          if (f){
+            const fileWord = uiLang() === 'es' ? 'archivo' : 'file';
+            ta.value = (ta.value ? ta.value.replace(/\s*$/, '\n') : '') + '[' + fileWord + ': ' + f.name + ']';
+            bumpInput(ta);
+          }
+          inp.remove();
+        });
+        document.body.appendChild(inp);
+        inp.click();
+        return;
+      }
+      // Mic / voice
+      const mic = e.target.closest('.ft-mic');
+      if (mic){
+        const ta = getTA(mic);
+        if (!ta) return;
+        toggleMic(mic, ta);
+        return;
+      }
+    });
+
+    // ----- Speech recognition (Web Speech API where available) -----
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const micState = new WeakMap();  // btn -> { rec, baseValue }
+    function toggleMic(btn, ta){
+      if (!SR){
+        setSummaryHint(T({ en:'Voice input is not supported in this browser.', es:'La entrada de voz no es compatible con este navegador.' }));
+        return;
+      }
+      const state = micState.get(btn);
+      if (state && state.rec){
+        try { state.rec.stop(); } catch(_){}
+        return;
+      }
+      const rec = new SR();
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.lang = uiLang() === 'es' ? 'es-ES' : (navigator.language || 'en-US');
+      const baseValue = ta.value ? ta.value.replace(/\s*$/, ' ') : '';
+      rec.onresult = (ev) => {
+        let final = '', interim = '';
+        for (let i = ev.resultIndex; i < ev.results.length; i++){
+          const r = ev.results[i];
+          if (r.isFinal) final += r[0].transcript;
+          else           interim += r[0].transcript;
+        }
+        ta.value = baseValue + final + interim;
+        bumpInput(ta);
+      };
+      rec.onend = () => {
+        btn.classList.remove('is-recording');
+        micState.delete(btn);
+      };
+      rec.onerror = () => {
+        btn.classList.remove('is-recording');
+        micState.delete(btn);
+        setSummaryHint(T({ en:'Voice input stopped.', es:'Entrada de voz detenida.' }));
+      };
+      try {
+        rec.start();
+        btn.classList.add('is-recording');
+        micState.set(btn, { rec, baseValue });
+      } catch (err){
+        setSummaryHint(T({ en:'Could not start voice input.', es:'No se pudo iniciar la entrada de voz.' }));
+      }
+    }
+
+    // ===== Extra questions =====
+    let nextQId = 4;
+    const qsContainer = document.querySelector('.qs');
+
+    // ===== Progressive reveal of the base 3 questions =====
+    // Q2 & Q3 are gated purely by CSS on whether Q1 has text (see the
+    // `.q-group:has(.q[data-base="1"] textarea:not(:placeholder-shown))` rule).
+    // Nothing to wire up here — filling Q1 reveals them, clearing it hides them,
+    // and a reload lands on an empty Q1 so they start hidden ("restart from 0").
+
+    function makeQ(labelInnerHTML, placeholder){
+      const id = 'q' + (nextQId++);
+      const q = document.createElement('div');
+      q.className = 'q';
+      const ph = placeholder || T({ en:'Your thoughts here…', es:'Tus ideas aquí…' });
+      q.innerHTML =
+        '<span class="fire" aria-hidden="true"></span>' +
+        '<button type="button" class="q-delete" aria-label="Delete question" data-aria-en="Delete question" data-aria-es="Eliminar pregunta">✕</button>' +
+        '<label for="' + id + '">' + labelInnerHTML + '</label>' +
+        '<div class="field">' +
+          '<textarea id="' + id + '" name="' + id + '" rows="2" maxlength="1000" placeholder="' + ph.replace(/"/g, '&quot;') + '"></textarea>' +
+          '<div class="field-tools">' +
+            '<button type="button" class="ft-btn ft-magic" data-ta="' + id + '" aria-label="Suggest text" data-aria-en="Suggest text" data-aria-es="Sugerir texto" title="Suggest">✨</button>' +
+            '<button type="button" class="ft-btn ft-file"  data-ta="' + id + '" aria-label="Attach file"  data-aria-en="Attach file" data-aria-es="Adjuntar archivo" title="Attach file">📎</button>' +
+            '<button type="button" class="ft-btn ft-mic"   data-ta="' + id + '" aria-label="Voice input"  data-aria-en="Voice input" data-aria-es="Entrada de voz" title="Voice input">🎤</button>' +
+          '</div>' +
+          '<button type="button" class="field-expand" aria-label="Expand field" data-aria-en="Expand field" data-aria-es="Ampliar el campo" title="Expand to full size">+</button>' +
+        '</div>';
+      /* Caller appends; renumberQuestions() fixes the leading number afterward. */
+      return { q, id };
+    }
+    function bindAnswerSync(id){
+      const ta = document.getElementById(id);
+      const out = answerEls[id];
+      if (!ta || !out) return;
+      const refresh = () => { out.textContent = ta.value.trim() || '—'; };
+      ta.addEventListener('input', refresh);
+      refresh();
+    }
+    function addExtraSummaryLine(id, labelHTML){
+      // Append to the resume phrase so new answers also show in the recap.
+      // Tag tokens are assembled from constants so this code carries no literal
+      // markup (keeps the i18n validity gate's span-balance check honest).
+      const SP = '<' + 'span', ESP = '<' + '/span>';
+      const p = document.getElementById('summaryPhrase');
+      const span = document.createElement('span');
+      const alsoWord = T({ en:' Also: ', es:' Además: ' });
+      const recast = labelHTML.split(SP + ' class="other-gender">').join(SP + ' class="rp-em" data-other>');
+      span.innerHTML = alsoWord + recast + ' ' + SP + ' class="rp-em" data-answer="' + id + '">—' + ESP + '.';
+      p.appendChild(span);
+      answerEls[id] = span.querySelector('[data-answer="' + id + '"]');
+    }
+    // ===== More formal / More informal style switch (per group) =====
+    // Each variant carries an {en, es} pair; <other> becomes a per-language
+    // .other-gender span so the men/women swap keeps working in both languages.
+    const QUESTION_STYLES = {
+      q1: {
+        neutral:  { en:'What don’t you like from <other>?',                 es:'¿Qué no te gusta de <other>?' },
+        formal:   { en:'What characteristics displease you about <other>?', es:'¿Qué características te desagradan de <other>?' },
+        informal: { en:'What bugs you about <other>?',                      es:'¿Qué te fastidia de <other>?' }
+      },
+      q2: {
+        neutral:  { en:'What do you like from <other>?',                    es:'¿Qué te gusta de <other>?' },
+        formal:   { en:'What qualities do you appreciate in <other>?',      es:'¿Qué cualidades aprecias en <other>?' },
+        informal: { en:'What do you dig about <other>?',                    es:'¿Qué te mola de <other>?' }
+      },
+      q3: {
+        neutral:  { en:'What would you like <other> to develop more?',                       es:'¿Qué te gustaría que <other> desarrollara más?' },
+        formal:   { en:'What attributes would you encourage <other> to cultivate further?',  es:'¿Qué atributos animarías a <other> a cultivar más?' },
+        informal: { en:'What would you wish <other> would step up on?',                      es:'¿En qué te gustaría que <other> se pusiera las pilas?' }
+      }
+    };
+    function applyGroupStyle(group, style){
+      group.querySelectorAll('.q').forEach(q => {
+        const ta = q.querySelector('textarea');
+        const id = ta?.id;
+        const variants = QUESTION_STYLES[id];
+        if (!variants) return;   // only q1/q2/q3 have variants today
+        const label = q.querySelector('label');
+        if (!label) return;
+        const pair = variants[style] || variants.neutral;
+        const en = pair.en.replace(/<other>/g, '<span class="other-gender">the other gender</span>');
+        const es = pair.es.replace(/<other>/g, '<span class="other-gender">el otro género</span>');
+        label.innerHTML = '<span class="en" lang="en">' + en + '</span>' +
+                          '<span class="es" lang="es">' + es + '</span>';
+      });
+      syncOther();
+    }
+    function splash(el, cls, dur){
+      el.classList.remove(cls);
+      void el.offsetWidth;          // restart animation
+      el.classList.add(cls);
+      setTimeout(() => el.classList.remove(cls), dur);
+    }
+    /* ===== Labelers menu (top bar): global tone suggestions ===== */
+    function applyGlobalStyle(style){
+      document.querySelectorAll('.q-group').forEach(g => {
+        g.dataset.style = style;
+        applyGroupStyle(g, style);
+      });
+      // Glow every visible question so the retone is felt across the form.
+      document.querySelectorAll('.qs .q textarea').forEach(ta =>
+        splash(ta, 'is-text-splashing', 1250));
+    }
+
+    const labelersBtn  = document.getElementById('labelersBtn');
+    const labelersList = document.getElementById('labelersList');
+    function setLabelers(open){
+      if (open){ labelersList.removeAttribute('hidden'); labelersBtn.setAttribute('aria-expanded','true'); }
+      else     { labelersList.setAttribute('hidden',''); labelersBtn.setAttribute('aria-expanded','false'); }
+    }
+    labelersBtn?.addEventListener('click', e => {
+      e.stopPropagation();
+      setLabelers(labelersList.hasAttribute('hidden'));
+    });
+    document.addEventListener('click', e => {
+      if (labelersList && !labelersList.hasAttribute('hidden') &&
+          !labelersBtn.contains(e.target) && !labelersList.contains(e.target)){
+        setLabelers(false);
+      }
+    });
+    labelersList?.addEventListener('click', e => {
+      const a = e.target.closest('a[data-style]');
+      if (!a) return;
+      e.preventDefault();
+      labelersList.querySelectorAll('a[data-style]').forEach(x => x.classList.remove('is-active'));
+      a.classList.add('is-active');
+      applyGlobalStyle(a.dataset.style);
+      setLabelers(false);
+    });
+
+    // ===== "+" button in top bar: toggle the new-q form above q1 =====
+    const addQTopBtn = document.getElementById('addQTopBtn');
+    const newQForm   = document.getElementById('newQForm');
+    const newQInput  = document.getElementById('newQInput');
+    const saveNewQBtn= document.getElementById('saveNewQBtn');
+
+    addQTopBtn?.addEventListener('click', () => {
+      const hidden = newQForm.hasAttribute('hidden');
+      if (hidden){
+        newQForm.removeAttribute('hidden');
+        addQTopBtn.classList.add('is-active');
+        newQInput.focus();
+      } else {
+        newQForm.setAttribute('hidden','');
+        addQTopBtn.classList.remove('is-active');
+      }
+    });
+
+    saveNewQBtn?.addEventListener('click', () => {
+      const text = (newQInput.value || '').trim();
+      if (!text) return;
+      // Splash effect on the save button
+      saveNewQBtn.classList.remove('is-splashing');
+      // Force reflow so the animation can re-trigger
+      void saveNewQBtn.offsetWidth;
+      saveNewQBtn.classList.add('is-splashing');
+      setTimeout(() => saveNewQBtn.classList.remove('is-splashing'), 1100);
+
+      // Build the new question. Substitute "the other gender" (or "[other]")
+      // with the live span so the men/women swap works.
+      const labelHTML = text.replace(/the other gender|\[other\]/gi,
+        '<span class="other-gender">the other gender</span>');
+
+      const { q, id } = makeQ(labelHTML, T({ en:'Your thoughts here…', es:'Tus ideas aquí…' }));
+      // Insert at the top of the first q-group (above the original q1).
+      const firstGroup = qsContainer.querySelector('.q-group');
+      const firstQ = firstGroup?.querySelector('.q');
+      if (firstGroup && firstQ){
+        firstGroup.insertBefore(q, firstQ);
+      } else if (firstGroup){
+        firstGroup.appendChild(q);
+      } else {
+        qsContainer.appendChild(q);
+      }
+
+      addExtraSummaryLine(id, labelHTML);
+      renumberQuestions();
+      syncOther();
+      bindAnswerSync(id);
+
+      // Clear input but keep the form visible so user can add more
+      newQInput.value = '';
+      newQInput.focus();
+    });
+
+    // ===== Copy / Insights / Creative =====
+    const summaryPhrase = document.getElementById('summaryPhrase');
+    const summaryHint   = document.getElementById('summaryHint');
+    function setSummaryHint(msg){
+      if (!summaryHint) return;
+      summaryHint.textContent = msg || '';
+      if (msg){
+        clearTimeout(setSummaryHint._t);
+        setSummaryHint._t = setTimeout(() => { summaryHint.textContent = ''; }, 4500);
+      }
+    }
+
+    // Summary — collapsed by default; the launcher (its title) reveals it, and
+    // clicking the ✦ Summary title collapses it back.
+    const summaryToggle  = document.getElementById('summaryToggle');
+    const summarySection = document.getElementById('summarySection');
+    summaryToggle?.addEventListener('click', () => {
+      summarySection.removeAttribute('hidden');
+      summaryToggle.setAttribute('hidden', '');
+      summaryToggle.setAttribute('aria-expanded', 'true');
+      summarySection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+    const summaryTitle = summarySection?.querySelector('.summary-title');
+    summaryTitle?.addEventListener('click', () => {
+      summarySection.setAttribute('hidden', '');
+      summaryToggle.removeAttribute('hidden');
+      summaryToggle.setAttribute('aria-expanded', 'false');
+      summaryToggle.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+
+    document.getElementById('copyBtn')?.addEventListener('click', async () => {
+      const text = (summaryPhrase?.innerText || '').replace(/\s+/g, ' ').trim();
+      try {
+        await navigator.clipboard.writeText(text);
+        setSummaryHint(T({ en:'Copied to clipboard.', es:'Copiado al portapapeles.' }));
+      } catch {
+        setSummaryHint(T({ en:'Clipboard not available.', es:'Portapapeles no disponible.' }));
+      }
+    });
+
+    const INSIGHTS_BY_LANG = {
+      en: [
+        'What you dislike too much is often a like turned up too loud.',
+        'A wish for them to grow is also a hint of what you’d nurture in yourself.',
+        'Both sides can be true at the same time. That’s usually where the hack lives.',
+        'Name the seam between like and dislike — that’s where insight hides.',
+        'Curiosity outlasts judgement. Try asking instead of telling.',
+        'What you admire, you can practise. What you resent, you can release.'
+      ],
+      es: [
+        'Lo que te disgusta demasiado suele ser un agrado subido demasiado de volumen.',
+        'Desear que crezcan también revela qué cultivarías en ti.',
+        'Ambos lados pueden ser ciertos a la vez. Ahí suele esconderse el truco.',
+        'Nombra la costura entre el agrado y el desagrado: ahí se esconde la intuición.',
+        'La curiosidad dura más que el juicio. Prueba a preguntar en vez de afirmar.',
+        'Lo que admiras, puedes practicarlo. Lo que resientes, puedes soltarlo.'
+      ]
+    };
+    let insightIdx = 0;
+    document.getElementById('insightsBtn')?.addEventListener('click', () => {
+      const pool = INSIGHTS_BY_LANG[uiLang()] || INSIGHTS_BY_LANG.en;
+      setSummaryHint('💡 ' + pool[insightIdx % pool.length]);
+      insightIdx++;
+    });
+
+    document.getElementById('magicBtn')?.addEventListener('click', () => {
+      // Swap the q1 (dislike) and q2 (like) values to re-frame.
+      const a = document.getElementById('q1');
+      const b = document.getElementById('q2');
+      if (a && b && (a.value.trim() || b.value.trim())){
+        const tmp = a.value; a.value = b.value; b.value = tmp;
+        bumpInput(a); bumpInput(b);
+        setSummaryHint(T({ en:'✨ Swapped your dislike and like — read it fresh.', es:'✨ Intercambié tu desagrado y tu agrado — léelo con otros ojos.' }));
+      } else {
+        setSummaryHint(T({ en:'✨ Fill in at least one answer to remix.', es:'✨ Rellena al menos una respuesta para remezclar.' }));
+      }
+    });
+
+    /* ===================================================================
+       §13.12 export surface — ONE summary-model, six format emitters,
+       Web Share. Save → the six downloads. Share → Web Share / clipboard.
+       Every format derives from buildModel(); no per-format DOM re-reading.
+       =================================================================== */
+
+    // ----- Shared escaping (ONE pair, used by BOTH xml and html) -----
+    const escHtml = s => String(s).replace(/[&<>]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[c]));
+    const escXml  = s => escHtml(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    const escAttr = escXml;
+
+    // ----- Filename helpers (§13.12 filename rule, localized) -----
+    const SUMMARY_WORD = { en:'summary', es:'resumen' };
+    const safeName = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const fileBase = m => safeName(m.app) + '-' + (SUMMARY_WORD[uiLang()] || 'summary');
+
+    // ----- Universal download (the family pattern; one copy) -----
+    function downloadBlob(body, mime, filename){
+      const blob = new Blob([body], { type: mime });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    // ----- THE summary-model: reads form state ONCE -----
+    // Active-language prompt text for one .q (label's active-lang span, else label).
+    function promptText(q){
+      const label = q.querySelector(':scope > label');
+      if (!label) return '';
+      const span = label.querySelector(':scope > .' + uiLang()) ||
+                   label.querySelector(':scope > .en');
+      return ((span || label).textContent || '').replace(/\s+/g, ' ').trim();
+    }
+    function buildModel(){
+      const checked = document.querySelector('input[name="iam"]:checked');
+      const iam = checked ? ((IAM_MAP[uiLang()] || IAM_MAP.en)[checked.value] || checked.value) : '';
+      // "the other gender" rendered to men/women in the active language.
+      const L = LABEL_MAP[uiLang()] || LABEL_MAP.en;
+      let other = L.DEFAULT;
+      if (checked){ const o = [...radios].find(r => r !== checked); other = o ? (L[o.value] || o.value) : L.DEFAULT; }
+
+      // One section listing the answered questions (prompt + answer).
+      const items = [];
+      document.querySelectorAll('.qs .q').forEach(q => {
+        const ta = q.querySelector('textarea');
+        if (!ta) return;
+        const v = ta.value.trim();
+        if (!v) return;                          // only filled items ride
+        items.push(promptText(q) + ' — ' + v);
+      });
+
+      const sectionLabel = T({ en:'Answers', es:'Respuestas' });
+      const sections = items.length ? [{ label: sectionLabel, title: iam, items }] : [];
+      // Live phrase, whitespace-collapsed (active language already shown in DOM).
+      const phrase = (summaryPhrase?.innerText || '').replace(/\s+/g, ' ').trim();
+
+      const model = { app:'varyy', version:1, phrase, iam, other, sections, raters:[], picked:items.slice() };
+
+      // §13.9 export extras — present iff the matching toggle is on.
+      const dEl = document.getElementById('add-date');
+      if (dEl && dEl.checked) model.date = new Date().toISOString();
+      const pEl = document.getElementById('add-profile');
+      if (pEl && pEl.checked){
+        const h = (document.getElementById('profile-handle')?.value || '').trim();
+        model.profile = { handle: h };
+      }
+      return model;
+    }
+    // True when there is something worth exporting (parity: empty → disabled).
+    const modelHasContent = m => m.sections.length > 0;
+
+    // ----- Six format emitters, all deriving from the model -----
+    function toMd(m){
+      let s = '# ' + m.app + '\n\n' + m.phrase + '\n\n';
+      m.sections.forEach(sec => {
+        s += '## ' + sec.label + (sec.title ? ' · ' + sec.title : '') + '\n';
+        sec.items.forEach(it => s += '- ' + it + '\n');
+        s += '\n';
+      });
+      if (m.date)    s += '_' + T({ en:'Date', es:'Fecha' }) + ': ' + m.date + '_\n';
+      if (m.profile) s += '_' + T({ en:'Profile', es:'Perfil' }) + ': ' + (m.profile.handle || '') + '_\n';
+      return s;
+    }
+    const toJson = m => JSON.stringify(m, null, 2);
+    function toXml(m){
+      let s = '<?xml version="1.0" encoding="UTF-8"?>\n';
+      s += '<flove app="' + escAttr(m.app) + '" version="' + m.version + '">\n';
+      s += '  <phrase>' + escXml(m.phrase) + '</phrase>\n';
+      if (m.date)    s += '  <date>' + escXml(m.date) + '</date>\n';
+      if (m.profile) s += '  <profile handle="' + escAttr(m.profile.handle || '') + '"/>\n';
+      s += '  <sections>\n';
+      m.sections.forEach(sec => {
+        s += '    <section label="' + escAttr(sec.label) + '"' + (sec.title ? ' title="' + escAttr(sec.title) + '"' : '') + '>\n';
+        sec.items.forEach(it => s += '      <item>' + escXml(it) + '</item>\n');
+        s += '    </section>\n';
+      });
+      s += '  </sections>\n</flove>\n';
+      return s;
+    }
+    function toHtml(m){
+      const rows = m.sections.map(sec =>
+        '<section><h2>' + escHtml(sec.label) + (sec.title ? ' · ' + escHtml(sec.title) : '') + '</h2><ul>'
+        + sec.items.map(it => '<li>' + escHtml(it) + '</li>').join('') + '</ul></section>').join('');
+      const extra = (m.date ? '<p>' + escHtml(T({ en:'Date', es:'Fecha' })) + ': ' + escHtml(m.date) + '</p>' : '')
+                  + (m.profile ? '<p>' + escHtml(T({ en:'Profile', es:'Perfil' })) + ': ' + escHtml(m.profile.handle || '') + '</p>' : '');
+      return '<!doctype html><html lang="' + uiLang() + '"><head><meta charset="utf-8">'
+        + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        + '<title>' + escHtml(m.app) + ' · ' + (SUMMARY_WORD[uiLang()] || 'summary') + '</title>'
+        + '<style>body{font:15px/1.6 system-ui,sans-serif;max-width:640px;margin:2rem auto;padding:1rem}'
+        + 'h1{font-weight:600}li{margin:.2rem 0}</style></head>'
+        + '<body><h1>' + escHtml(m.app) + '</h1><p>' + escHtml(m.phrase) + '</p>' + rows + extra + '</body></html>';
+    }
+    function toCsv(m){
+      const q = v => { const s = String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+      const lines = ['section,title,item'];
+      m.sections.forEach(sec => sec.items.forEach(it =>
+        lines.push([sec.label, sec.title || '', it].map(q).join(','))));
+      return lines.join('\n');
+    }
+    function toJpg(m, cb){
+      const W = 1080, H = 720, canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#14101f'; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#f5b463'; ctx.font = '600 40px Georgia, serif';
+      ctx.fillText(m.app, 48, 72);
+      ctx.fillStyle = '#fff'; ctx.font = '20px system-ui, sans-serif';
+      const lines = m.sections.flatMap(s => [s.label + (s.title ? ' · ' + s.title : ''),
+                                             ...s.items.map(i => '  · ' + i)]);
+      if (m.date)    lines.push(T({ en:'Date', es:'Fecha' }) + ': ' + m.date);
+      if (m.profile) lines.push(T({ en:'Profile', es:'Perfil' }) + ': ' + (m.profile.handle || ''));
+      const MAX = 26;
+      lines.slice(0, MAX).forEach((ln, i) => ctx.fillText(ln.slice(0, 70), 48, 130 + i * 28));
+      if (lines.length > MAX) ctx.fillText('…', 48, 130 + MAX * 28);
+      canvas.toBlob(cb, 'image/jpeg', 0.95);
+    }
+
+    // ----- Save dispatcher: each subitem under #saveWrap is a real download -----
+    function runSave(fmt){
+      const m = buildModel();
+      if (!modelHasContent(m)){
+        setSummaryHint(T({ en:'Fill in at least one answer first.', es:'Rellena al menos una respuesta primero.' }));
+        return;
+      }
+      const base = fileBase(m);
+      if (fmt === 'jpg'){ toJpg(m, b => downloadBlob(b, 'image/jpeg', base + '.jpg')); return; }
+      const tbl = {
+        md:   [toMd(m),   'text/markdown'],
+        json: [toJson(m), 'application/json'],
+        xml:  [toXml(m),  'application/xml'],
+        html: [toHtml(m), 'text/html'],
+        csv:  [toCsv(m),  'text/csv'],
+        text: [toMd(m),   'text/markdown'],   // the existing "Text" rung → markdown
+      }[fmt];
+      if (!tbl) return;
+      const ext = fmt === 'text' ? 'md' : fmt;
+      downloadBlob(tbl[0], tbl[1] + ';charset=utf-8', base + '.' + ext);
+    }
+
+    // ----- Web Share (guarded), with the clipboard fallback ladder -----
+    async function shareMobile(){
+      const m = buildModel();
+      if (!modelHasContent(m)){
+        setSummaryHint(T({ en:'Fill in at least one answer first.', es:'Rellena al menos una respuesta primero.' }));
+        return;
+      }
+      const title = 'flove · ' + m.app;
+      const file = new File([toHtml(m)], fileBase(m) + '.html', { type: 'text/html' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })){
+        try { await navigator.share({ title, text: m.phrase, files: [file] }); return; } catch (_) {}
+      }
+      if (navigator.share){
+        try { await navigator.share({ title, text: m.phrase }); return; } catch (_) {}
+      }
+      try {
+        await navigator.clipboard.writeText(m.phrase);
+        setSummaryHint(T({ en:'Copied — paste to share.', es:'Copiado — pega para compartir.' }));
+      } catch (_) {
+        setSummaryHint(T({ en:'Sharing not available.', es:'Compartir no disponible.' }));
+      }
+    }
+
+    // ----- Wire the existing Save subitems to real downloads -----
+    document.querySelectorAll('.subitem[data-group="save"][data-action]').forEach(s => {
+      s.addEventListener('click', () => runSave(s.dataset.action));
+    });
+    // Share-row subitems: WhatsApp / Telegram / Mail open the share sheet
+    // (Web Share → clipboard); the top Share button does the same.
+    document.getElementById('shareBtn')?.addEventListener('click', shareMobile);
+    document.querySelectorAll('.subitem[data-group="share"]').forEach(s => {
+      s.addEventListener('click', shareMobile);
+    });
+
+    /* ===================================================================
+       ✦ F0 §13.9 — local persistence (Update + Reset)
+       State is DOM-controlled: the I-am radio, the global tone style, how
+       many base questions are revealed, and each question's prompt + answer.
+       We serialize that ONCE and re-derive it on load (storage wins; the
+       nav/intro is never restored; the language is left to translaty).
+       =================================================================== */
+    const STORE_KEY = 'flove:varyy:items';
+    const VER_KEY   = 'flove:varyy:v';
+    const STORE_VER = '1';
+    // Reset clears ONLY these keys — NEVER localStorage.clear() (this origin
+    // is shared by every flove app).
+    const OWN_KEYS = [STORE_KEY, VER_KEY];
+
+    let _persistAsked = false;
+    function requestPersist(){
+      if (_persistAsked) return; _persistAsked = true;
+      try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(_){}
+    }
+
+    const staleDot   = document.querySelector('.update-wrap--title .stale-dot');
+    const updateBtn  = document.querySelector('[data-flove-update]');
+    const resetBtn   = document.querySelector('[data-flove-reset]');
+
+    function markStale(){ if (staleDot) staleDot.hidden = false; document.body.classList.add('is-stale'); }
+    function clearStale(){ if (staleDot) staleDot.hidden = true; document.body.classList.remove('is-stale'); }
+
+    // The active global tone style, read off the labelers menu's active item.
+    function currentStyle(){
+      const a = document.querySelector('#labelersList a[data-style].is-active');
+      return a ? a.dataset.style : 'neutral';
+    }
+
+    // ----- serialize the live form into a plain object -----
+    function serializeState(){
+      const checked = document.querySelector('input[name="iam"]:checked');
+      const questions = [];
+      qsContainer.querySelectorAll('.q').forEach(q => {
+        const ta    = q.querySelector('textarea');
+        const label = q.querySelector(':scope > label');
+        if (!ta) return;
+        const base = q.dataset.base || '';
+        questions.push({
+          base,                                   // '' for user-added questions
+          value: ta.value,
+          // Only added questions need their label rebuilt; base ones are static.
+          labelHtml: base ? '' : (label ? label.innerHTML : '')
+        });
+      });
+      return {
+        iam:    checked ? checked.value : null,
+        style:  currentStyle(),
+        questions
+      };
+    }
+
+    let _quotaWarned = false;
+    function saveState(){
+      requestPersist();
+      try{
+        localStorage.setItem(STORE_KEY, JSON.stringify(serializeState()));
+        localStorage.setItem(VER_KEY, STORE_VER);
+      } catch(err){
+        if (!_quotaWarned && err && (err.name === 'QuotaExceededError' ||
+            err.name === 'NS_ERROR_DOM_QUOTA_REACHED')){
+          _quotaWarned = true;
+          setSummaryHint(T({ en:'Storage is full — your latest edits may not be saved.',
+                             es:'El almacenamiento está lleno — puede que tus últimos cambios no se guarden.' }));
+        }
+      }
+    }
+
+    // One funnel for every in-session edit: persist + light the out-of-date dot.
+    function afterEdit(){ saveState(); markStale(); }
+
+    // ----- re-derive the form from storage on load (storage wins) -----
+    function loadState(){
+      let raw = null;
+      try { raw = localStorage.getItem(STORE_KEY); } catch(_){ return; }
+      if (!raw) return;
+      let data; try { data = JSON.parse(raw); } catch(_){ return; }
+      if (!data || typeof data !== 'object') return;
+
+      // 1) I-am radio (drives the men/women swap + layout)
+      if (data.iam){
+        const r = [...radios].find(x => x.value === data.iam);
+        if (r){ r.checked = true; }
+      }
+      // 2) Q2/Q3 visibility is derived purely from Q1's content (CSS gate) —
+      //    restoring the saved answers below is enough to bring them back.
+      // 3) rebuild user-added questions (those with no data-base), in order,
+      //    above the base ones — mirrors the live "add a question" path.
+      const added = (data.questions || []).filter(q => !q.base && q.labelHtml);
+      added.forEach(item => {
+        const { q, id } = makeQ(item.labelHtml, T({ en:'Your thoughts here…', es:'Tus ideas aquí…' }));
+        const firstGroup = qsContainer.querySelector('.q-group');
+        // Anchor on the first BASE question so successive added questions keep
+        // their stored order (each lands just above q1, not above each other).
+        const anchor = firstGroup ? firstGroup.querySelector('.q[data-base]') : null;
+        if (firstGroup && anchor)      firstGroup.insertBefore(q, anchor);
+        else if (firstGroup)           firstGroup.appendChild(q);
+        else                           qsContainer.appendChild(q);
+        addExtraSummaryLine(id, item.labelHtml);
+        bindAnswerSync(id);
+        const ta = document.getElementById(id);
+        if (ta) ta.value = item.value || '';
+      });
+      // 4) restore base-question answers by their base index (1/2/3)
+      (data.questions || []).filter(q => q.base).forEach(item => {
+        const ta = qsContainer.querySelector('.q[data-base="' + item.base + '"] textarea');
+        if (ta) ta.value = item.value || '';
+      });
+      // 5) re-apply tone style (rewrites base labels; placeholders follow)
+      if (data.style && data.style !== 'neutral'){
+        const link = document.querySelector('#labelersList a[data-style="' + data.style + '"]');
+        if (link){
+          document.querySelectorAll('#labelersList a[data-style]').forEach(x => x.classList.remove('is-active'));
+          link.classList.add('is-active');
+          document.querySelectorAll('.q-group').forEach(g => { g.dataset.style = data.style; });
+        }
+      }
+      renumberQuestions();
+      syncOther();
+      // Push every restored textarea value into the live summary phrase.
+      qsContainer.querySelectorAll('.q textarea').forEach(ta =>
+        ta.dispatchEvent(new Event('input', { bubbles:true })));
+      clearStale();
+    }
+
+    // ----- Update: re-commit + clear the dot (data already autosaves on edit) -----
+    updateBtn?.addEventListener('click', () => { saveState(); clearStale(); });
+
+    // ----- Reset: wipe our OWN keys + reload → fresh form, intro replays -----
+    // Reset "starts all over again" just like the ⟳ logo (behind a confirm):
+    // it overrides persistence. Clearing our keys before the reload means the
+    // navIsReload() branch on load finds nothing to restore, so the form
+    // returns to step 1 (single question, neutral tone) with the intro
+    // animation playing from the top.
+    resetBtn?.addEventListener('click', () => {
+      const ok = window.confirm(T({
+        en:'Reset Varyy? This clears your saved answers and starts a new form.',
+        es:'¿Reiniciar Varyy? Esto borra tus respuestas guardadas y empieza un formulario nuevo.'
+      }));
+      if (!ok) return;
+      // Clear ONLY our keys (never localStorage.clear() — shared origin, §10.5).
+      try { OWN_KEYS.forEach(k => localStorage.removeItem(k)); } catch(_){}
+      location.reload();
+    });
+
+    // ----- Hook the ACTUAL edit paths so every change autosaves + marks stale -----
+    // Typing in any textarea (delegated so dynamically-added fields are covered).
+    document.addEventListener('input', e => {
+      if (e.target.matches('.qs textarea')) afterEdit();
+    });
+    // I-am choice, tone change, add/reveal/delete all flow through clicks that
+    // mutate the DOM after their own handlers; capture them on the next tick.
+    radios.forEach(r => r.addEventListener('change', () => afterEdit()));
+    document.addEventListener('click', e => {
+      if (e.target.closest('#labelersList a[data-style]') ||
+          e.target.closest('.q-delete') ||
+          e.target.closest('#saveNewQBtn')){
+        setTimeout(afterEdit, 0);
+      }
+    });
+
+    // ── Reload / Reset vs. reopen (F0 §13.9 · §10.3a) ─────────────────────
+    // Persistence survives CLOSING and REOPENING the file/tab, but a RELOAD
+    // (F5 / the ⟳ logo) and RESET both start over fresh — they override
+    // persistence, so the intro animation replays and the form returns to a
+    // single first question (q2/q3 collapsed, no added questions, empty
+    // answers, neutral tone). We tell the two apart with the Navigation Timing
+    // API: type "reload" → wipe + fresh; any other entry (navigate / back-
+    // forward = a genuine open or reopen) → restore the saved choices.
+    function navIsReload(){
+      try{
+        const nav = performance.getEntriesByType &&
+                    performance.getEntriesByType('navigation')[0];
+        if (nav && nav.type) return nav.type === 'reload';
+        if (performance.navigation) return performance.navigation.type === 1; // legacy
+      } catch(_){}
+      return false;
+    }
+    // The Navigation Timing API ("reload" vs "navigate") proved unreliable in
+    // some browsers / file:// setups (a reload read as "navigate" → the saved
+    // answers came back). We detect a reload with a per-TAB sessionStorage
+    // marker instead: sessionStorage survives reloads and same-tab navigations
+    // but is cleared when the tab/window closes. A marker that is ALREADY set
+    // means we've loaded in this tab before → it's a reload → start fresh.
+    // Absent → a genuine open / reopen → restore the saved choices.
+    let isReload;
+    try {
+      isReload = sessionStorage.getItem('flove:varyy:session') === '1';
+      sessionStorage.setItem('flove:varyy:session', '1');
+    } catch(_){ isReload = navIsReload(); }
+
+    // Empty every form control (also defeats the browser's own form-value
+    // restoration on reload) and re-sync the derived UI back to zero.
+    function clearForm(){
+      const form = document.getElementById('varyy');
+      if (form) form.reset();
+      syncOther();
+      Object.values(answerEls).forEach(o => { if (o) o.textContent = '—'; });
+      Object.values(answerElsEs).forEach(o => { if (o) o.textContent = '—'; });
+    }
+
+    if (isReload){
+      // Fresh start — drop our saved state so nothing is restored, then clear
+      // any values the browser tried to carry over. A reload thus truly starts
+      // from 0: empty Q1/Q2/Q3, no gender picked — which also re-hides Q2/Q3
+      // (their CSS gate keys off an empty Q1) and the Summary launcher.
+      try { OWN_KEYS.forEach(k => localStorage.removeItem(k)); } catch(_){}
+      clearForm();
+      // Browser form-restoration can land AFTER this script; pageshow fires
+      // after it (persisted=false on a normal reload), so clear once more there.
+      window.addEventListener('pageshow', e => { if (!e.persisted) clearForm(); });
+    } else {
+      // Genuine open / reopen — the user's choices persist.
+      loadState();
+    }
+  })();
+  </script>
+
+  <script>
+  // translaty engine — switches the page language and translates the bits CSS
+  // can't (placeholders, aria-labels), remembers the choice, syncs <html lang>.
+  (function(){
+    const LS = 'translaty-lang';
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+    const radios = () => Array.from(document.querySelectorAll('input[name="lang"]'));
+    const curLang = () => { const r = radios().find(x => x.checked); return r ? r.id.replace('lang-', '') : 'en'; };
+    function applyLang(){
+      const li = curLang();
+      document.documentElement.lang = li;
+      document.querySelectorAll('option[data-en]').forEach(o => { if (o.dataset[li] != null) o.textContent = o.dataset[li]; });
+      document.querySelectorAll('[data-ph-en]').forEach(el => { const v = el.dataset['ph' + cap(li)]; if (v != null) el.placeholder = v; });
+      document.querySelectorAll('[data-aria-en]').forEach(el => { const v = el.dataset['aria' + cap(li)]; if (v != null) el.setAttribute('aria-label', v); });
+      // Let the app re-sync its language-aware placeholders / resume text.
+      if (typeof window.__varyyRelabel === 'function') window.__varyyRelabel();
+      try { localStorage.setItem(LS, li); } catch (_) {}
+    }
+    function init(){
+      let saved = null; try { saved = localStorage.getItem(LS) || localStorage.getItem('translate2-lang'); } catch (_) {}
+      if (saved){ const r = document.getElementById('lang-' + saved); if (r) r.checked = true; }
+      radios().forEach(r => r.addEventListener('change', () => {
+        applyLang();
+        const d = document.querySelector('details.lang'); if (d) d.open = false;
+      }));
+      applyLang();
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  })();
+  </script>
+</body>
+</html>

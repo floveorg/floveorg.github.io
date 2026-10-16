@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#6c5ce7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="flove:distro" content="central">
+<meta name="flove:tier" content="normal">
+<meta name="flove:app" content="appy">
+<meta name="description" content="appy normal — Central distro profile hub">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>appy · Central</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#f3f4fb;--ink:#16141f;--muted:#4a4e5a;--line:#e3e5f0;--card:#fff;
+  --accent:#6c5ce7;--signal:#02855c;--warn:#b9820a;--danger:#dd3b3b;
+  --nav-h:56px;--safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px)
+}
+html{scroll-behavior:smooth;overscroll-behavior:none}
+body{font-family:"Space Mono",ui-monospace,monospace;color:var(--ink);background:var(--bg);
+  min-height:100svh;line-height:1.65;overflow-x:hidden;font-size:15px;
+  padding-bottom:calc(var(--nav-h) + var(--safe-b) + 16px)}
+
+/* top bar */
+.top-bar{position:sticky;top:0;z-index:200;background:rgba(255,255,255,.92);
+  backdrop-filter:blur(16px);border-bottom:1px solid var(--line);
+  padding:.5rem clamp(1rem,4vw,2rem);display:flex;align-items:center;gap:.6rem}
+.top-bar-title{font-weight:700;font-size:.85rem;letter-spacing:-.01em}
+.top-bar-title span{background:linear-gradient(92deg,#ff4d4d,#ff9a3a,#ffc41f,#3fc862,#3aa0ff,#b06bff);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.top-bar-right{margin-left:auto;display:flex;align-items:center;gap:.5rem}
+.sync-dot{width:5px;height:5px;border-radius:50%;background:var(--muted)}
+.sync-dot.on{background:var(--signal);box-shadow:0 0 4px var(--signal)}
+
+/* layout */
+.wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;
+  padding:clamp(.5rem,1.5vw,1rem) clamp(1rem,4vw,2rem) 1rem}
+.sec{font-size:.5rem;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);
+  margin:1rem 0 .5rem;display:flex;align-items:center;gap:.6rem}
+.sec::before{content:"";width:12px;height:1px;background:var(--accent);opacity:.5;flex:none}
+
+/* card */
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:1rem;transition:border-color .2s}
+.card:hover{border-color:rgba(141,137,255,.3)}
+
+/* profile */
+.profile{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
+.avatar{width:48px;height:48px;border-radius:50%;flex:none;
+  background:linear-gradient(135deg,var(--accent),var(--signal));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:1.2rem;color:#fff;cursor:pointer}
+.avatar:active{transform:scale(.95)}
+.profile-info{flex:1;min-width:120px}
+.profile-handle{font-weight:700;font-size:1rem;color:var(--signal)}
+.profile-meta{font-size:.5rem;color:var(--muted);margin-top:.1rem}
+.badges{display:flex;gap:.3rem;margin-top:.3rem}
+.badge{font-size:.42rem;letter-spacing:.08em;text-transform:uppercase;
+  padding:.12rem .4rem;border-radius:999px;border:1px solid transparent}
+.badge.live{color:var(--signal);border-color:rgba(0,247,167,.4);background:rgba(0,247,167,.08)}
+.badge.central{color:var(--accent);border-color:rgba(141,137,255,.3);background:rgba(141,137,255,.08)}
+
+/* stat row */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.stat{padding:.5rem .7rem;border-radius:8px;border:1px solid rgba(28,25,42,.05);background:rgba(250,250,253,.5)}
+.stat-label{font-size:.42rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.stat-val{font-weight:700;font-size:.95rem;margin-top:.1rem}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:.3rem;cursor:pointer;
+  font-family:"Space Mono",monospace;font-size:.58rem;padding:.45rem .9rem;
+  min-height:40px;border-radius:8px;border:1px solid var(--accent);
+  background:rgba(141,137,255,.08);color:var(--ink);transition:background .15s}
+.btn:active{transform:scale(.97);background:rgba(141,137,255,.15)}
+.btn.signal{border-color:var(--signal);background:var(--signal);color:#06231a;font-weight:700}
+.btn.ghost{border-color:rgba(28,25,42,.1);background:transparent;color:var(--muted)}
+
+/* panels */
+.nav-panel{display:none}
+.nav-panel.active{display:block}
+
+/* bottom nav */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:500;
+  height:calc(var(--nav-h) + var(--safe-b));padding-bottom:var(--safe-b);
+  background:rgba(255,255,255,.95);backdrop-filter:blur(20px);
+  border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-around}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:.15rem;
+  background:none;border:none;cursor:pointer;padding:.5rem .7rem;min-width:48px;
+  border-radius:8px;color:var(--muted);transition:color .15s}
+.nav-btn:active{background:rgba(108,92,231,.1);transform:scale(.96)}
+.nav-btn.active{color:var(--accent)}
+.nav-icon{width:20px;height:20px}
+.nav-icon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav-label{font-size:.38rem;letter-spacing:.06em;text-transform:uppercase}
+.nav-badge{position:absolute;top:2px;right:4px;min-width:12px;height:12px;
+  border-radius:999px;background:var(--danger);color:#fff;font-size:.34rem;
+  display:flex;align-items:center;justify-content:center;padding:0 2px}
+.nav-btn{position:relative}
+.off-dot{width:5px;height:5px;border-radius:50%;background:var(--line);transition:background .3s}
+.off-dot.on{background:var(--signal);box-shadow:0 0 4px var(--signal)}
+
+/* menu folders */
+.folder{margin-bottom:.1rem}
+.folder-head{display:flex;align-items:center;gap:.35rem;padding:.35rem .5rem;
+  border-radius:6px;cursor:pointer;font-size:.54rem;font-weight:600;color:var(--ink)}
+.folder-head:hover{background:rgba(141,137,255,.06)}
+.folder-chevron{width:8px;height:8px;flex:none;transition:transform .2s;color:var(--muted)}
+.folder-head.open .folder-chevron{transform:rotate(90deg)}
+.folder-name{flex:1}
+.folder-count{font-size:.36rem;color:var(--muted);font-weight:400}
+.folder-body{max-height:0;overflow:hidden;transition:max-height .25s ease,opacity .2s;opacity:0}
+.folder-body.open{max-height:500px;opacity:1}
+.menu-item{display:flex;align-items:center;gap:.3rem;padding:.25rem .5rem .25rem 1.2rem;
+  border-radius:5px;font-size:.48rem;color:var(--muted);text-decoration:none}
+.menu-item:hover{background:rgba(141,137,255,.06);color:var(--ink)}
+.menu-item-here{color:var(--ink);font-weight:600}
+.menu-dot{width:3px;height:3px;border-radius:50%;flex:none}
+
+/* search */
+.search{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.92);
+  backdrop-filter:blur(12px);margin:0 calc(-1 * clamp(1rem,4vw,2rem));
+  padding:.4rem clamp(1rem,4vw,2rem);border-bottom:1px solid rgba(141,137,255,.08)}
+.search input{width:100%;font-family:"Space Mono",monospace;font-size:.6rem;
+  color:var(--ink);background:rgba(250,250,253,.7);border:1px solid rgba(28,25,42,.07);
+  border-radius:8px;padding:.45rem .7rem;outline:none}
+.search input:focus{border-color:rgba(141,137,255,.4)}
+
+/* mynet tabs */
+.tabs{display:flex;border-radius:8px;overflow:hidden;border:1px solid rgba(141,137,255,.12);margin-bottom:.6rem}
+.tab{flex:1;padding:.4rem;font-size:.5rem;letter-spacing:.06em;text-transform:uppercase;
+  text-align:center;cursor:pointer;background:rgba(250,250,253,.4);color:var(--muted);border:none}
+.tab.active{background:var(--accent);color:#fff}
+.tab-section{display:none}
+.tab-section.active{display:block}
+
+/* activity list */
+.activity-list{display:flex;flex-direction:column;gap:.3rem}
+.activity{display:flex;align-items:center;gap:.5rem;padding:.4rem .6rem;
+  border-radius:8px;border:1px solid rgba(28,25,42,.04);background:rgba(250,250,253,.4);font-size:.56rem}
+.dot-g{width:6px;height:6px;border-radius:50%;flex:none;background:var(--signal)}
+.dot-p{width:6px;height:6px;border-radius:50%;flex:none;background:var(--accent)}
+.dot-a{width:6px;height:6px;border-radius:50%;flex:none;background:var(--warn)}
+.activity-text{flex:1}
+.activity-time{font-size:.44rem;color:var(--muted);flex:none}
+
+/* love */
+.love-wrap{display:flex;gap:.25rem;margin-bottom:.6rem}
+.love-input{flex:1;font-family:"Space Mono",monospace;font-size:.56rem;color:#000;
+  background:#fff;border:1px solid rgba(28,25,42,.1);border-radius:6px;
+  padding:.4rem .6rem;outline:none}
+.love-input:focus{border-color:rgba(141,137,255,.4)}
+.love-btn{font-weight:600;font-size:.5rem;padding:.4rem .6rem;border-radius:6px;
+  border:1px solid var(--danger);background:rgba(221,59,59,.06);color:var(--danger);cursor:pointer}
+.love-btn:active{transform:scale(.95)}
+.love-posts{display:flex;flex-direction:column;gap:.3rem}
+.love-post{padding:.4rem .6rem;border-radius:8px;border:1px solid rgba(221,59,59,.1);
+  background:rgba(221,59,59,.02);font-size:.52rem}
+.love-post-meta{font-size:.4rem;color:var(--muted);margin-top:.15rem}
+
+/* auth overlay */
+.auth-overlay{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.35);
+  backdrop-filter:blur(6px);display:none;align-items:flex-end;justify-content:center}
+.auth-overlay.open{display:flex}
+.auth-sheet{width:100%;max-width:440px;max-height:80vh;overflow-y:auto;
+  background:var(--bg);border-radius:16px 16px 0 0;
+  padding:1rem 1rem calc(1rem + var(--safe-b));
+  animation:sheet-up .3s cubic-bezier(.22,1,.36,1) both}
+@keyframes sheet-up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.auth-handle{width:32px;height:3px;border-radius:999px;background:rgba(28,25,42,.12);margin:0 auto .8rem}
+.auth-title{font-weight:700;font-size:.95rem;text-align:center;margin-bottom:.6rem}
+.auth-score{text-align:center;font-size:.75rem;color:var(--muted);margin-bottom:.8rem}
+.auth-score strong{color:var(--signal);font-size:1.1rem}
+.field{display:flex;flex-direction:column;gap:.3rem;margin-bottom:.5rem}
+.field label{font-size:.48rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.field input{font-family:"Space Mono",monospace;font-size:.6rem;padding:.5rem .7rem;
+  border-radius:8px;border:1px solid rgba(28,25,42,.08);background:rgba(255,255,255,.8);outline:none}
+.field input:focus{border-color:rgba(141,137,255,.5);box-shadow:0 0 0 2px rgba(141,137,255,.1)}
+.auth-msg{font-size:.52rem;color:var(--muted);text-align:center;margin-top:.3rem}
+.auth-msg.ok{color:var(--signal)}
+.auth-msg.err{color:var(--danger)}
+
+/* footer */
+.foot{margin-top:1.2rem;padding-top:.8rem;border-top:1px solid rgba(28,25,42,.04);
+  display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;font-size:.5rem;color:rgba(74,78,90,.5)}
+.foot .dot{width:4px;height:4px;border-radius:50%;background:var(--signal);
+  display:inline-block;box-shadow:0 0 6px rgba(0,247,167,.5)}
+
+/* star counter */
+.star-counter{position:fixed;left:12px;bottom:calc(var(--nav-h) + var(--safe-b) + 12px);
+  z-index:400;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.star-counter svg{width:36px;height:36px;fill:#ffd24a;filter:drop-shadow(0 1px 4px rgba(0,0,0,.25))}
+.star-counter span{position:absolute;font-weight:700;font-size:.65rem;color:#5a3d00}
+.star-counter.bump{animation:star-bump .4s cubic-bezier(.2,.8,.25,1)}
+@keyframes star-bump{0%{transform:scale(1)}30%{transform:scale(1.25) translateY(-3px)}100%{transform:scale(1)}}
+
+/* dark mode */
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1a1b26;--ink:#e0e0e0;--muted:#9aa5ce;--line:#2f3347;--card:#24283b;
+  --accent:#7aa2f7;--signal:#9ece6a;--warn:#e0af68;--danger:#f7768e}}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-bar-title"><span>appy</span> · central</div>
+  <div class="top-bar-right">
+    <div class="sync-dot" id="syncDot"></div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- profile -->
+  <div class="card profile">
+    <div class="avatar" onclick="openAuth()" aria-label="Open auth">M</div>
+    <div class="profile-info">
+      <div class="profile-handle">@marc</div>
+      <div class="profile-meta">users/marc · central normal</div>
+      <div class="badges">
+        <span class="badge live">live</span>
+        <span class="badge central">central</span>
+      </div>
+    </div>
+    <button class="btn ghost" onclick="openAuth()">auth</button>
+  </div>
+
+  <!-- stats -->
+  <div class="sec">overview</div>
+  <div class="stats">
+    <div class="stat"><div class="stat-label">trust</div><div class="stat-val" id="trustScore">0</div></div>
+    <div class="stat"><div class="stat-label">connections</div><div class="stat-val">0</div></div>
+  </div>
+
+  <!-- ========== APPS ========== -->
+  <div class="nav-panel active" id="panel-apps">
+    <div class="search">
+      <input type="text" id="appsSearch" placeholder="search apps..." oninput="filterApps(this.value)">
+    </div>
+
+    <div class="folder" data-folder="blogy">
+      <div class="folder-head" onclick="toggleFolder(this)">
+        <svg class="folder-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="folder-name">blogy</span><span class="folder-count">1</span>
+      </div>
+      <div class="folder-body">
+        <a class="menu-item" href="../blogy/blogy-advanced.html" target="_blank"><span class="menu-dot" style="background:var(--accent)"></span>blogy</a>
+      </div>
+    </div>
+
+    <div class="folder" data-folder="economy">
+      <div class="folder-head" onclick="toggleFolder(this)">
+        <svg class="folder-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="folder-name">economy</span><span class="folder-count">4</span>
+      </div>
+      <div class="folder-body">
+        <a class="menu-item" href="../../../solo/apps/economy/dealy/dealy-advanced.html" target="_blank"><span class="menu-dot" style="background:var(--accent)"></span>dealy</a>
+        <a class="menu-item" href="../../../solo/apps/economy/crafty.html" target="_blank"><span class="menu-dot" style="background:var(--warn)"></span>crafty</a>
+        <a class="menu-item" href="../../../solo/apps/economy/lowy.html" target="_blank"><span class="menu-dot" style="background:var(--warn)"></span>lowy</a>
+        <a class="menu-item" href="../../../solo/apps/economy/worthing.html" target="_blank"><span class="menu-dot" style="background:var(--warn)"></span>worthing</a>
+      </div>
+    </div>
+
+    <div class="folder" data-folder="bio">
+      <div class="folder-head" onclick="toggleFolder(this)">
+        <svg class="folder-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="folder-name">bio</span><span class="folder-count">2</span>
+      </div>
+      <div class="folder-body">
+        <a class="menu-item" href="../../../solo/apps/bio/sensy.html" target="_blank"><span class="menu-dot" style="background:var(--signal)"></span>sensy</a>
+        <a class="menu-item" href="../../../solo/apps/bio/pracsys.html" target="_blank"><span class="menu-dot" style="background:var(--signal)"></span>pracsys</a>
+      </div>
+    </div>
+
+    <div class="folder" data-folder="appy">
+      <div class="folder-head" onclick="toggleFolder(this)">
+        <svg class="folder-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="folder-name">appy</span><span class="folder-count">1</span>
+      </div>
+      <div class="folder-body">
+        <a class="menu-item menu-item-here" href="../appy/appy-mini-full.html" target="_blank"><span class="menu-dot" style="background:var(--warn)"></span>appy · you are here</a>
+      </div>
+    </div>
+
+    <div class="folder" data-folder="metas">
+      <div class="folder-head" onclick="toggleFolder(this)">
+        <svg class="folder-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="folder-name">metas</span><span class="folder-count">4</span>
+      </div>
+      <div class="folder-body">
+        <a class="menu-item" href="../../../solo/apps/metas/goddy.html" target="_blank"><span class="menu-dot" style="background:var(--accent)"></span>goddy</a>
+        <a class="menu-item" href="../../../solo/apps/metas/moraly.html" target="_blank"><span class="menu-dot" style="background:var(--accent)"></span>moraly</a>
+        <a class="menu-item" href="../../../solo/apps/metas/souls.html" target="_blank"><span class="menu-dot" style="background:var(--accent)"></span>souls</a>
+        <a class="menu-item" href="../../../solo/apps/metas/willy.html" target="_blank"><span class="menu-dot" style="background:var(--accent)"></span>willy</a>
+      </div>
+    </div>
+
+    <div class="folder" data-folder="psicosocial">
+      <div class="folder-head" onclick="toggleFolder(this)">
+        <svg class="folder-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="folder-name">psicosocial</span><span class="folder-count">4</span>
+      </div>
+      <div class="folder-body">
+        <a class="menu-item" href="../../../solo/apps/psicosocial/astry.html" target="_blank"><span class="menu-dot" style="background:var(--danger)"></span>astry</a>
+        <a class="menu-item" href="../../../solo/apps/psicosocial/socy.html" target="_blank"><span class="menu-dot" style="background:var(--danger)"></span>socy</a>
+        <a class="menu-item" href="../../../solo/apps/psicosocial/hacky.html" target="_blank"><span class="menu-dot" style="background:var(--danger)"></span>hacky</a>
+        <a class="menu-item" href="../../../solo/apps/psicosocial/lovy.html" target="_blank"><span class="menu-dot" style="background:var(--danger)"></span>lovy</a>
+      </div>
+    </div>
+
+    <div class="folder" data-folder="puzzy">
+      <div class="folder-head" onclick="toggleFolder(this)">
+        <svg class="folder-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="folder-name">puzzy</span><span class="folder-count">4</span>
+      </div>
+      <div class="folder-body">
+        <a class="menu-item" href="../../../solo/apps/puzzy/comby.html" target="_blank"><span class="menu-dot" style="background:var(--signal)"></span>comby</a>
+        <a class="menu-item" href="../../../solo/apps/puzzy/confluenty.html" target="_blank"><span class="menu-dot" style="background:var(--signal)"></span>confluenty</a>
+        <a class="menu-item" href="../../../solo/apps/puzzy/fivy.html" target="_blank"><span class="menu-dot" style="background:var(--signal)"></span>fivy</a>
+        <a class="menu-item" href="../../../solo/apps/puzzy/linky.html" target="_blank"><span class="menu-dot" style="background:var(--signal)"></span>linky</a>
+      </div>
+    </div>
+
+    <div class="folder" data-folder="trusty">
+      <div class="folder-head" onclick="toggleFolder(this)">
+        <svg class="folder-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="folder-name">trusty</span><span class="folder-count">4</span>
+      </div>
+      <div class="folder-body">
+        <a class="menu-item" href="../../../solo/apps/trusty/crumbly.html" target="_blank"><span class="menu-dot" style="background:var(--warn)"></span>crumbly</a>
+        <a class="menu-item" href="../../../solo/apps/trusty/daty.html" target="_blank"><span class="menu-dot" style="background:var(--warn)"></span>daty</a>
+        <a class="menu-item" href="../../../solo/apps/trusty/evily.html" target="_blank"><span class="menu-dot" style="background:var(--warn)"></span>evily</a>
+        <a class="menu-item" href="../../../solo/apps/trusty/maty.html" target="_blank"><span class="menu-dot" style="background:var(--warn)"></span>maty</a>
+      </div>
+    </div>
+
+    <div class="folder" data-folder="lowai">
+      <div class="folder-head" onclick="toggleFolder(this)">
+        <svg class="folder-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="folder-name">lowai</span><span class="folder-count">1</span>
+      </div>
+      <div class="folder-body">
+        <a class="menu-item" href="../../../solo/apps/lowai/index.html" target="_blank"><span class="menu-dot" style="background:var(--muted)"></span>lowai</a>
+      </div>
+    </div>
+
+    <div class="sec" style="margin-top:.8rem">blog</div>
+    <div class="love-wrap">
+      <input type="text" class="love-input" id="loveInput" placeholder="share love..." maxlength="280">
+      <button class="love-btn" onclick="postLove()">♥</button>
+    </div>
+    <div class="love-posts" id="lovePosts"></div>
+
+    <footer class="foot">
+      <span><span class="dot"></span> Central</span>
+      <span>appy normal · users/marc</span>
+    </footer>
+  </div>
+
+  <!-- ========== MYNET ========== -->
+  <div class="nav-panel" id="panel-mynet">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('trusts',this)">trusts</button>
+      <button class="tab" onclick="switchTab('scores',this)">scores</button>
+    </div>
+
+    <div class="tab-section active" id="tab-trusts">
+      <div class="sec">trust network</div>
+      <div class="activity-list">
+        <div class="activity"><span class="dot-g"></span><span class="activity-text"><strong>@ana</strong> vouched for you</span><span class="activity-time">2h</span></div>
+        <div class="activity"><span class="dot-p"></span><span class="activity-text"><strong>@luis</strong> played blogy</span><span class="activity-time">5h</span></div>
+        <div class="activity"><span class="dot-g"></span><span class="activity-text"><strong>@maria</strong> joined your circle</span><span class="activity-time">1d</span></div>
+      </div>
+      <button class="btn signal" style="margin-top:.6rem" onclick="alert('Vouch request sent!')">request a vouch</button>
+    </div>
+
+    <div class="tab-section" id="tab-scores">
+      <div class="sec">trust score</div>
+      <div class="card" style="text-align:center;padding:1.5rem">
+        <div style="font-size:2.2rem;font-weight:700;color:var(--signal)" id="bigScore">0</div>
+        <div style="font-size:.5rem;color:var(--muted);margin-top:.3rem">trust score</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.6rem">
+        <div class="stat"><div class="stat-label">personal</div><div class="stat-val" id="facet-personal">0</div></div>
+        <div class="stat"><div class="stat-label">local</div><div class="stat-val" id="facet-local">0</div></div>
+        <div class="stat"><div class="stat-label">social</div><div class="stat-val" id="facet-social">0</div></div>
+        <div class="stat"><div class="stat-label">global</div><div class="stat-val" id="facet-global">0</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== NOTIFS ========== -->
+  <div class="nav-panel" id="panel-notifs">
+    <div class="sec">notifications</div>
+    <div class="activity-list">
+      <div class="activity"><span class="dot-g"></span><span class="activity-text">Central sync completed</span><span class="activity-time">now</span></div>
+      <div class="activity"><span class="dot-p"></span><span class="activity-text">New trust vouch pending</span><span class="activity-time">1h</span></div>
+      <div class="activity"><span class="dot-a"></span><span class="activity-text">browsy extension detected</span><span class="activity-time">3h</span></div>
+    </div>
+  </div>
+
+  <!-- ========== SETTINGS ========== -->
+  <div class="nav-panel" id="panel-settings">
+    <div class="sec">settings</div>
+    <div class="card">
+      <div style="display:flex;flex-direction:column;gap:.5rem">
+        <div style="display:flex;justify-content:space-between;font-size:.6rem"><span>profile backup</span><code style="color:var(--signal);background:rgba(0,247,167,.06);padding:.15rem .4rem;border-radius:4px;font-size:.55rem">users/marc</code></div>
+        <div style="display:flex;justify-content:space-between;font-size:.6rem"><span>distro</span><code style="color:var(--accent);font-size:.55rem">central</code></div>
+        <div style="display:flex;justify-content:space-between;font-size:.6rem"><span>tier</span><code style="color:var(--accent);font-size:.55rem">normal</code></div>
+        <div style="display:flex;justify-content:space-between;font-size:.6rem"><span>storage</span><code style="color:var(--muted);font-size:.55rem">extension</code></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- star counter -->
+<div class="star-counter" id="starCounter" title="Your stars">
+  <svg viewBox="0 0 24 24"><path d="M12 2.6l2.7 5.85 6.3.92-4.56 4.44 1.08 6.27L12 17.27l-5.52 2.9 1.08-6.27L3 9.37l6.3-.92z"/></svg>
+  <span id="starNum">0</span>
+</div>
+
+<!-- bottom nav -->
+<nav class="bottom-nav" aria-label="Main navigation">
+  <button class="nav-btn active" data-panel="panel-apps" onclick="switchPanel('panel-apps')">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+    <span class="nav-label">apps</span>
+  </button>
+  <button class="nav-btn" data-panel="panel-mynet" onclick="switchPanel('panel-mynet')">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="3"/><circle cx="17" cy="7" r="3"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M17 11a4 4 0 0 1 4 4v2"/></svg></span>
+    <span class="nav-label">mynet</span>
+  </button>
+  <button class="nav-btn" data-panel="panel-notifs" onclick="switchPanel('panel-notifs')">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+    <span class="nav-label">notifs</span>
+    <span class="nav-badge">3</span>
+  </button>
+  <button class="nav-btn" data-panel="panel-settings" onclick="switchPanel('panel-settings')">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+    <span class="nav-label">settings</span>
+  </button>
+  <span class="off-dot" id="offDot"></span>
+</nav>
+
+<!-- auth overlay -->
+<div class="auth-overlay" id="authOverlay" onclick="closeAuth(event)">
+  <div class="auth-sheet" onclick="event.stopPropagation()">
+    <div class="auth-handle"></div>
+    <div class="auth-title">authenticate</div>
+    <div class="auth-score">trust score: <strong id="authScore">0</strong></div>
+
+    <div class="field">
+      <label>recovery password</label>
+      <input type="password" id="recoveryPw" placeholder="enter password">
+    </div>
+    <button class="btn signal" style="width:100%" onclick="claimRecovery()">claim recovery</button>
+    <div class="auth-msg" id="authMsg"></div>
+
+    <div id="recoveryReveal" style="display:none;margin-top:.8rem">
+      <div class="sec">recovery trusts</div>
+      <div class="card" style="font-size:.56rem;color:var(--muted);line-height:1.7">
+        <div style="display:flex;justify-content:space-between;margin-bottom:.3rem"><span>@ana</span><span style="color:var(--signal)">signed ✓</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:.3rem"><span>@luis</span><span style="color:var(--signal)">signed ✓</span></div>
+        <div style="display:flex;justify-content:space-between"><span>@maria</span><span style="color:var(--muted)">pending</span></div>
+      </div>
+    </div>
+
+    <button class="btn ghost" onclick="closeAuth()" style="width:100%;margin-top:.6rem">close</button>
+  </div>
+</div>
+
+<script>
+/* state */
+var S = {stars:0, facets:{personal:0,local:0,social:0,global:0}, lovePosts:[]};
+
+/* nav */
+function switchPanel(id) {
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active')});
+  document.querySelectorAll('.nav-panel').forEach(function(p){p.classList.remove('active')});
+  var btn = document.querySelector('[data-panel="'+id+'"]');
+  var panel = document.getElementById(id);
+  if(btn) btn.classList.add('active');
+  if(panel) panel.classList.add('active');
+  window.flove && window.flove.emit('nav', {panel:id});
+}
+
+/* folders */
+function toggleFolder(head) {
+  var body = head.nextElementSibling;
+  body.classList.toggle('open');
+  head.classList.toggle('open');
+}
+
+function filterApps(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('.folder').forEach(function(f){
+    var t = (f.dataset.folder||'') + ' ' + f.textContent;
+    f.style.display = t.toLowerCase().indexOf(q) !== -1 || q === '' ? '' : 'none';
+  });
+}
+
+/* tabs */
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
+  document.querySelectorAll('.tab-section').forEach(function(s){s.classList.remove('active')});
+  btn.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+}
+
+/* love */
+function postLove() {
+  var inp = document.getElementById('loveInput');
+  var text = inp.value.trim();
+  if(!text) return;
+  var now = new Date();
+  S.lovePosts.unshift({text:text, time:now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0')});
+  inp.value = '';
+  renderLove();
+  award(1);
+}
+
+function renderLove() {
+  document.getElementById('lovePosts').innerHTML = S.lovePosts.map(function(p){
+    return '<div class="love-post">'+esc(p.text)+'<div class="love-post-meta">♥ '+p.time+'</div></div>';
+  }).join('');
+}
+
+function esc(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+/* scoring */
+function award(n) {
+  S.stars += n;
+  render();
+}
+
+function render() {
+  document.getElementById('starNum').textContent = S.stars;
+  document.getElementById('trustScore').textContent = S.stars;
+  document.getElementById('bigScore').textContent = S.stars;
+  document.getElementById('authScore').textContent = S.stars;
+  Object.keys(S.facets).forEach(function(k){
+    var el = document.getElementById('facet-'+k);
+    if(el) el.textContent = S.facets[k];
+  });
+  bump();
+}
+
+function bump() {
+  var el = document.getElementById('starCounter');
+  el.classList.remove('bump');
+  void el.offsetWidth;
+  el.classList.add('bump');
+}
+
+/* auth */
+function openAuth() {
+  document.getElementById('authOverlay').classList.add('open');
+}
+
+function closeAuth(e) {
+  if(e && e.target !== document.getElementById('authOverlay')) return;
+  document.getElementById('authOverlay').classList.remove('open');
+}
+
+function claimRecovery() {
+  var pw = document.getElementById('recoveryPw').value;
+  var msg = document.getElementById('authMsg');
+  if(pw === 'flove') {
+    msg.className = 'auth-msg ok';
+    msg.textContent = '✓ Recovery granted.';
+    document.getElementById('recoveryReveal').style.display = 'block';
+    award(10);
+  } else if(pw === '') {
+    msg.className = 'auth-msg';
+    msg.textContent = 'Enter your password.';
+  } else {
+    msg.className = 'auth-msg err';
+    msg.textContent = '✗ Wrong password. Try "flove".';
+  }
+}
+
+/* central sync */
+(function(){
+  var dot = document.getElementById('syncDot');
+  fetch('/api/ping').then(function(r){return r.json()}).then(function(d){
+    if(d.ok) dot.classList.add('on');
+  }).catch(function(){});
+})();
+
+/* flove namespace */
+window.flove = window.flove || {
+  distro:'central', tier:'normal', app:'appy', profile:'users/marc', version:'1.0.0',
+  emit:function(e,d){window.dispatchEvent(new CustomEvent('flove:'+e,{detail:d}))},
+  on:function(e,fn){window.addEventListener('flove:'+e,function(ev){fn(ev.detail)})}
+};
+
+/* collect */
+window.flove.collect = function() {
+  return {app:'appy', version:'1.0.0', items:S.lovePosts, metadata:{stars:S.stars}};
+};
+
+/* back button */
+window.addEventListener('popstate', function(){
+  var auth = document.getElementById('authOverlay');
+  if(auth.classList.contains('open')){auth.classList.remove('open');return}
+  var active = document.querySelector('.nav-panel.active');
+  if(active && active.id !== 'panel-apps'){switchPanel('panel-apps');return}
+});
+history.pushState(null,'',location.href);
+
+/* init */
+render();
+</script>
+</body>
+</html>

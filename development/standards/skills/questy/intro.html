@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>questy — structured project Q&amp;A</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0c0c10;--panel:#15151c;--line:#232330;
+    --text:#d4d4dc;--muted:#6a6a80;--accent:#7c6aef;
+    --signal:#4ade80;--warn:#fbbf24;--danger:#f87171;
+  }
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif}
+
+  /* ── slides ── */
+  .deck{position:relative;width:100%;height:100%}
+  .slide{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:0 2rem 6rem;opacity:0;pointer-events:none;transition:opacity .5s ease,transform .5s ease;transform:translateY(20px)}
+  .slide.active{opacity:1;pointer-events:auto;transform:translateY(0)}
+
+  /* ── typography ── */
+  .stitle{font-size:clamp(1.9rem,4.5vw,2.9rem);font-weight:700;line-height:1.15;text-align:center;max-width:760px;margin-bottom:1.2rem}
+  .stitle em{font-style:normal;color:var(--accent)}
+  .stitle.in{animation:pop 5s ease both}
+  @keyframes pop{0%{opacity:0;transform:translateY(14px) scale(.97)}100%{opacity:1;transform:none}}
+  .subtitle{font-size:clamp(.95rem,2vw,1.15rem);color:var(--muted);text-align:center;max-width:600px;margin-top:1rem;line-height:1.6}
+  .big-icon{font-size:2.4rem;display:inline-block;animation:wave 3s ease-in-out infinite}
+  @keyframes wave{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+
+  /* ── typed lines ── */
+  .lines{display:flex;flex-direction:column;gap:1.2rem;max-width:720px;width:100%;margin-bottom:1.6rem}
+  .type-line{font-size:clamp(1rem,2.1vw,1.25rem);line-height:1.55;color:var(--text);min-height:1.6em;opacity:0;transform:translateX(8px)}
+  .type-line small{display:block;font-size:.68rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.15rem}
+  .type-line.focus{color:var(--text)}
+  .type-line.focus b{color:var(--accent);font-weight:600}
+  .type-line.focus .hot{color:var(--warn);font-weight:600}
+  .type-line.focus .good{color:var(--signal);font-weight:600}
+  .caret{display:inline-block;width:2px;height:1em;background:var(--accent);vertical-align:-.15em;margin-left:2px;animation:blink .8s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  /* ── mini diagrams (funny) ── */
+  .mini{display:flex;align-items:center;justify-content:center;gap:.8rem;flex-wrap:wrap;opacity:0}
+  .mini.in{animation:rise .6s ease .2s both}
+  @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  .unit{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:.6rem .9rem;font-size:.78rem;font-weight:500;position:relative}
+  .unit.b-warn{border-color:var(--warn);color:var(--warn)}
+  .unit.b-danger{border-color:var(--danger)}
+  .unit.b-accent{border-color:var(--accent)}
+  .unit.b-signal{border-color:var(--signal);color:var(--signal)}
+  .unit.b-c-accent{border-color:var(--accent);color:var(--accent)}
+  .arrow{color:var(--muted);font-size:1.1rem;animation:nudge 1.4s ease-in-out infinite}
+  .arrow.rev{animation-direction:reverse}
+  @keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+  .q{font-size:1.1rem;animation:bob 1.6s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+  /* real→questions */
+  .m-real{position:relative}
+  .m-real .q-chip{font-size:1.15rem;font-weight:700;color:var(--warn);animation:bob 1.6s ease-in-out infinite}
+  .m-real .float-q{position:absolute;top:-2.6rem;left:2rem;font-size:1.5rem;font-weight:700;color:var(--accent);
+    display:flex;align-items:center;gap:.3rem;opacity:0;animation:nilq 2.4s ease-in-out infinite}
+  .m-real .float-q.in{opacity:1}
+  @keyframes nilq{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  .arrow.sub{font-size:.9rem;color:var(--accent);animation:subdrop 1.6s ease-in-out infinite}
+  @keyframes subdrop{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+  .m-real .sprout{display:flex;gap:.35rem;margin-left:.3rem}
+  .m-real .sprout span{font-size:1.15rem;font-weight:700;color:var(--warn);animation:bloom 1s ease var(--d,0s) both}
+  @keyframes bloom{from{opacity:0;transform:scale(0) rotate(-90deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+
+  /* planned actions → new questions */
+  .m-planq .pending-q{display:flex;align-items:center;gap:.2rem;font-size:1rem;font-weight:700;color:var(--signal);letter-spacing:.04em}
+  .m-planq .pending-q span{font-size:1.15rem;font-weight:700;color:var(--warn);animation:bloom 1s ease var(--d,0s) both}
+
+  /* one file → can't do it all */
+  .m-file .boom{font-size:1.2rem;font-weight:700;color:var(--danger);animation:shake .5s ease 1.4s both}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}50%{transform:translateX(3px)}75%{transform:translateX(-2px)}}
+  .stack{display:flex;flex-wrap:wrap;gap:.25rem;max-width:180px;justify-content:center}
+  .stack i{font-style:normal;font-size:.6rem;background:var(--line);color:var(--muted);border-radius:4px;padding:.15rem .4rem}
+
+  /* structure → sight → work */
+  .m-sight .eye{font-size:1.5rem;animation:both 2s ease-in-out infinite}
+  @keyframes both{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
+
+  /* invest in plans */
+  .m-plan .meter{display:flex;width:220px;height:26px;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+  .m-plan .meter .pl{background:var(--accent);flex:0 0 90%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.6rem;font-weight:700}
+  .m-plan .meter .po{background:var(--warn);flex:1;display:flex;align-items:center;justify-content:center;color:#000;font-size:.55rem;font-weight:700}
+
+  /* solver: feedback loops from questions back to standards & plans */
+  .m-solver{position:relative;padding-bottom:4.6rem}
+  .m-solver .loop{position:absolute;bottom:.8rem;display:flex;align-items:center;gap:.3rem;
+    font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--signal)}
+  .m-solver .loop svg{width:56px;height:22px;overflow:visible}
+  .m-solver .loop .arr{animation:looppulse 1.6s ease-in-out infinite}
+  @keyframes looppulse{0%,100%{opacity:.5}50%{opacity:1}}
+  .m-solver .loop.l-std{left:calc(50% - 12rem)}
+  .m-solver .loop.l-pla{left:calc(50% - 4.5rem)}
+  .m-solver .new-q-nav{display:flex;flex-direction:column;align-items:center;gap:.1rem}
+  .m-solver .nq-arr{height:32px;display:flex;align-items:center;color:var(--warn)}
+  .m-solver .nq-arr svg{width:36px;height:32px;overflow:visible;animation:nqq 2s ease-in-out infinite}
+  @keyframes nqq{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+  .m-solver .nq-chip{font-size:.7rem;font-weight:700;letter-spacing:.04em;color:var(--warn);
+    border:1px solid var(--warn);background:var(--panel);border-radius:8px;padding:.35rem .6rem}
+
+  /* ask agents to ask us */
+  .m-ask .both{font-size:1.1rem}
+
+  /* ── chips ── */
+  .chips{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-top:1rem;max-width:600px}
+  .chip{padding:.45rem .8rem;border-radius:6px;font-size:.75rem;font-weight:500;border:1px solid var(--line);background:var(--panel);opacity:0}
+  .chip.in{animation:chipin .4s ease var(--d,0s) both}
+  @keyframes chipin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .chip.t{border-color:var(--accent);color:var(--accent)}
+
+  /* ── cta ── */
+  .cta{display:inline-block;margin-top:1rem;padding:.7rem 1.8rem;border-radius:8px;background:var(--accent);color:#fff;font-weight:600;font-size:.9rem;text-decoration:none;transition:opacity .2s}
+  .cta:hover{opacity:.85}
+
+  /* ── intro tab ── */
+  .intro-tab{position:fixed;top:1rem;left:1.5rem;z-index:20;display:flex;align-items:center;gap:.6rem;
+    background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:.4rem .9rem}
+  .intro-logo{width:26px;height:26px;flex-shrink:0}
+  .intro-name{font-size:.85rem;font-weight:700;letter-spacing:-.02em;color:var(--text)}
+
+  /* ── nav ── */
+  .nav{position:fixed;bottom:1.5rem;z-index:10;display:flex;align-items:center}
+  .nav-center{left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:1.4rem;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:.6rem 1.2rem;
+    opacity:0;pointer-events:none;transition:opacity .5s ease}
+  .nav-center.show{opacity:1;pointer-events:auto}
+  .nav button{background:none;border:none;color:var(--muted);font-size:3rem;line-height:1;cursor:pointer;padding:.1rem .35rem;transition:color .2s}
+  .nav button:hover{color:var(--text)}
+  .nav .dots{display:flex;gap:.35rem}
+  .nav .dot{width:6px;height:6px;border-radius:50%;background:var(--line);transition:background .3s}
+  .nav .dot.on{background:var(--accent)}
+
+  @media(max-width:600px){
+    .nav-center{gap:.8rem;padding:.4rem .8rem}
+    .nav button{font-size:2.2rem}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .slide{transition:none}
+    *{animation:none!important}
+    .type-line,.mini,.chip{opacity:1}
+    .caret{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <!-- SLIDE 1 — 0 : FOR HAVING A BETTER LIFE -->
+  <div class="slide active" data-i="0">
+    <div class="big-icon">💭</div>
+    <div class="stitle">For having a <em>better life</em></div>
+    <div class="lines">
+      <p class="type-line focus" data-txt="We project <b>wished futures</b> and work for them becoming real…"></p>
+      <p class="type-line focus" data-txt="We and our projects <b class='good'>more thrive when we more face</b> our inner doubts and the challenges of our future."></p>
+    </div>
+  </div>
+
+  <!-- SLIDE 2 — 1 : FINE TUNE QUESTIONS -->
+  <div class="slide" data-i="1">
+    <div class="big-icon">💭</div>
+    <div class="stitle">We <em>always tune</em> fundamental and <em>projective questions</em>…</div>
+    <div class="lines">
+      <p class="type-line focus" data-txt="…and develop ourselves <b>resolving them with actions</b>."></p>
+      <p class="type-line focus" data-txt="New realities will create <b>further pending questions, deeper ones</b>…"></p>
+      <p class="type-line focus" data-txt="Pending questions are the <b class='good'>source</b> and <b class='good'>edges</b> of every plan, project and action."></p>
+    </div>
+    <div class="mini m-planq">
+      <div class="unit">action 🎯</div>
+      <span class="arrow">→</span>
+      <div class="unit b-c-accent">resolves questions</div>
+      <span class="arrow">→</span>
+      <div class="pending-q"><span style="--d:.1s">?</span><span style="--d:.25s">?</span> new</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3 — 2 : PLANS OPEN UP OUR SIGHTS -->
+  <div class="slide" data-i="2">
+    <div class="big-icon">🫡</div>
+    <div class="stitle">Plans open up our <em>sights</em></div>
+    <div class="lines">
+      <p class="type-line focus" data-txt="We all have <b>big plans</b>…"></p>
+      <p class="type-line focus" data-txt="We can't dump <b>them all in one file</b> and tell an agent to build it all."></p>
+      <p class="type-line focus" data-txt="The more <b>structure</b> we add to our files and plans, the <b>better our sight</b> — and the better agents can work for us."></p>
+      <p class="type-line focus" data-txt="The better the context given, the <b class='good'>better the work provided</b>."></p>
+    </div>
+    <div class="mini m-file">
+      <div class="stack"><i>feature A</i><i>feature B</i><i>feature C</i><i>feature D</i><i>+everything else…</i></div>
+      <span class="arrow">→</span>
+      <div class="unit b-danger">🤖 one file</div>
+      <span class="boom">💥 can't do it all!</span>
+    </div>
+  </div>
+
+  <!-- SLIDE 4 — 3 : SKILLS, PLANS, SUPERPROMPTS -->
+  <div class="slide" data-i="3">
+    <div class="big-icon">🧠</div>
+    <div class="stitle">Prompt by prompt <em>&lt;</em> <em>Skills to plans</em></div>
+    <div class="lines">
+      <p class="type-line focus" data-txt="We can develop <b>prompt by prompt</b> and/or through <b>skills &amp; plans</b>: <b>Superprompts</b>."></p>
+      <p class="type-line focus" data-txt="Developing plans is the more <b>rich, cheap and safe</b> way for working with AI."></p>
+      <p class="type-line focus" data-txt="If you have <b>50 tokens or prompts</b>, invest half… or 45 — for the plans."></p>
+    </div>
+    <div class="mini m-plan">
+      <div class="meter">
+        <div class="pl">45 → the plans</div>
+        <div class="po">5</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5 — 4 : ASK AGENTS TO ASK US -->
+  <div class="slide" data-i="4">
+    <div class="big-icon">🙋</div>
+    <div class="stitle">We ask a lot <em>to agents</em>… why not the reverse?</div>
+    <div class="lines">
+      <p class="type-line focus" data-txt="Sometimes <b>they ask us</b> for clarification. We rarely invite agents to ask us, and we do so mostly through a simple prompt — and honestly, it's <b class='good'>very simple and super productive</b>."></p>
+      <p class="type-line focus" data-txt="For further times, we may write a longer prompt for their <b>interviewing of us</b>."></p>
+      <p class="type-line focus" data-txt="Furthermore, next logical step <b>is creating a skill</b> for more sharp <b>self-interviewing</b> through agents."></p>
+    </div>
+    <div class="mini m-ask">
+      <div class="both">👤 <span class="arrow">→</span> 🤖 <span class="arrow rev">→</span> 👤</div>
+      <div class="unit b-c-accent">You ask them… they ask back!</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6 — 5 : WHAT QUESTY ADDRESSES -->
+  <div class="slide" data-i="5">
+    <div class="big-icon">🎯</div>
+    <div class="stitle">What <em>Questy</em> addresses</div>
+    <div class="lines">
+      <p class="type-line focus" data-txt="A skill for <b>enriching the interviewing of yourself</b> with:"></p>
+      <p class="type-line focus" data-txt="- A minimal default <b>set of rules</b>."></p>
+      <p class="type-line focus" data-txt="- A recommended minimal <b>pack of files</b>…"></p>
+      <p class="type-line focus" data-txt="- Further <b>free customizing powers</b> for the interviewing and for the resulting files update process."></p>
+    </div>
+    <div class="mini m-addr">
+      <div class="unit">rules 📏</div>
+      <div class="unit">pack of files 📂</div>
+      <div class="unit b-c-accent">customizing powers 🧰</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7 — 6 : THE SOLUTION (Q&A) -->
+  <div class="slide" data-i="6">
+    <div class="big-icon">❓</div>
+    <div class="stitle"><em>Questy</em> asks the right <em>questions</em></div>
+    <div class="lines">
+      <p class="type-line focus" data-txt="A structured <b>Q&amp;A skill</b> that reads your project docs."></p>
+      <p class="type-line focus" data-txt="Detects <b>gaps</b> and <b class='good'>conflicts</b>, then generates targeted questions."></p>
+      <p class="type-line focus" data-txt="Delivered in <b>typed batches</b> — ready for your agent to answer."></p>
+    </div>
+    <div class="mini m-solver">
+      <div class="unit u-std">standards/</div>
+      <span class="arrow">→</span>
+      <div class="unit u-pla">plans/</div>
+      <span class="arrow">→</span>
+      <div class="unit b-c-accent u-q">questions</div>
+      <span class="arrow">→</span>
+      <div class="unit">pendings</div>
+      <span class="new-q-nav">
+        <span class="nq-arr">
+          <svg viewBox="0 0 44 40"><defs><marker id="qs-a-nq" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="currentColor"/></marker></defs><path d="M22 4 C 12 12, 34 20, 22 34" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" marker-end="url(#qs-a-nq)"/></svg>
+        </span>
+        <span class="nq-chip">New &lt;better·deeper&gt; questions</span>
+      </span>
+      <span class="loop l-std">
+        <svg viewBox="0 0 70 26"><defs><marker id="qs-a-std" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="currentColor"/></marker></defs><path d="M66 22 C 44 24, 24 8, 12 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" marker-end="url(#qs-a-std)"/></svg>
+        to standards
+        <span class="arr">↺</span>
+      </span>
+      <span class="loop l-pla">
+        <svg viewBox="0 0 70 26"><defs><marker id="qs-a-pla" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="currentColor"/></marker></defs><path d="M66 22 C 52 24, 40 8, 30 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" marker-end="url(#qs-a-pla)"/></svg>
+        to plans
+        <span class="arr">↺</span>
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- INTRO TAB -->
+<div class="intro-tab">
+  <svg class="intro-logo" viewBox="0 0 120 120"><defs><linearGradient id="rh6" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff4d4d"/><stop offset=".2" stop-color="#ff9a3a"/><stop offset=".4" stop-color="#ffc41f"/><stop offset=".6" stop-color="#3fb950"/><stop offset=".8" stop-color="#3aa0ff"/><stop offset="1" stop-color="#b06bff"/></linearGradient></defs><polygon points="60,8 102,30 102,74 60,96 18,74 18,30" fill="none" stroke="url(#rh6)" stroke-width="10"/><text x="60" y="62" text-anchor="middle" font-family="Georgia,serif" font-size="38" font-weight="700" fill="url(#rh6)">?</text></svg>
+  <span class="intro-name">Questy Intro</span>
+</div>
+
+<!-- NAV -->
+<div class="nav nav-center">
+  <button id="prev" type="button" aria-label="Previous slide">←</button>
+  <div class="dots" id="dots"></div>
+  <button id="next" type="button" aria-label="Next slide">→</button>
+</div>
+
+<script>
+(function(){
+  const slides=[...document.querySelectorAll('.slide')];
+  const dots=document.getElementById('dots');
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let cur=0;
+
+  /* ── typing engine ── */
+  let typeTimers=[];
+  function clearTyping(){typeTimers.forEach(t=>clearTimeout(t));typeTimers=[]}
+
+  function typeInto(el,full){
+    return new Promise(res=>{
+      const tokens=[];
+      let buf='',i=0;
+      while(i<full.length){
+        if(full[i]==='<'){
+          const end=full.indexOf('>',i);
+          if(buf){tokens.push(buf);buf=''}
+          tokens.push(full.slice(i,end>=0?end+1:i+1));
+          i=end>=0?end+1:i+1;
+        }else{
+          buf+=full[i++];
+        }
+      }
+      if(buf)tokens.push(buf);
+      const caret=document.createElement('span');caret.className='caret';
+      let ti=0,tc=0;
+      function render(){
+        caret.remove();
+        let html='';
+        for(let j=0;j<ti;j++)html+=tokens[j];
+        if(ti<tokens.length&&!tokens[ti].startsWith('<'))html+=tokens[ti].slice(0,tc);
+        el.innerHTML=html;
+        el.appendChild(caret);
+      }
+      function tick(){
+        if(!el.isConnected){res();return}
+        if(ti<tokens.length){
+          if(tokens[ti].startsWith('<')){ti++;}
+          else{
+            tc++;
+            if(tc>tokens[ti].length){ti++;tc=0;}
+          }
+        }
+        render();
+        if(ti>=tokens.length){caret.remove();res();return;}
+        typeTimers.push(setTimeout(tick,62));
+      }
+      el.innerHTML='';
+      el.appendChild(caret);
+      tick();
+    });
+  }
+
+  async function typeSlide(slide){
+    clearTyping();
+    const title=slide.querySelector('.stitle');
+    if(title)title.classList.add('in');
+    slide.querySelectorAll('.chip').forEach(c=>c.classList.add('in'));
+    if(reduced){
+      slide.querySelectorAll('.type-line').forEach(l=>{l.innerHTML=l.getAttribute('data-txt');l.style.opacity=1});
+      return;
+    }
+    await new Promise(r=>setTimeout(r,5000));
+    for(const ln of [...slide.querySelectorAll('.type-line')]){
+      ln.style.opacity=1;
+      await typeInto(ln,ln.getAttribute('data-txt'));
+    }
+  }
+
+  /* ── deck nav ── */
+  slides.forEach((_,i)=>{const d=document.createElement('span');d.className='dot'+(i===0?' on':'');dots.appendChild(d)});
+
+  const navEl=document.querySelector('.nav-center');
+  let diagTimer,stepTimer,autoTimer;
+  function clearShowTimers(){clearTimeout(diagTimer);clearTimeout(stepTimer);clearTimeout(autoTimer);}
+
+  function go(n){
+    if(n<0||n>=slides.length)return;
+    clearShowTimers();
+    slides[cur].classList.remove('active');
+    dots.children[cur].classList.remove('on');
+    cur=n;
+    slides[cur].classList.add('active');
+    dots.children[cur].classList.add('on');
+    const s=slides[cur];
+    const mini=s.querySelector('.mini');
+    if(mini)mini.classList.remove('in');
+    navEl.classList.remove('show');
+    typeSlide(s);
+    diagTimer=setTimeout(()=>{if(mini)mini.classList.add('in')},20000);
+    stepTimer=setTimeout(()=>{navEl.classList.add('show')},20000);
+    if(cur<slides.length-1){autoTimer=setTimeout(()=>go(cur+1),50000);}
+  }
+
+  document.getElementById('prev').onclick=()=>go(cur-1);
+  document.getElementById('next').onclick=()=>go(cur+1);
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' ')go(cur+1);
+    if(e.key==='ArrowLeft')go(cur-1);
+  });
+
+  /* swipe */
+  let sx=0;
+  document.addEventListener('touchstart',e=>{sx=e.touches[0].clientX});
+  document.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-sx;
+    if(Math.abs(dx)>50){dx<0?go(cur+1):go(cur-1)}
+  });
+
+  /* boot: type the first slide, stagger diagram + stepper */
+  go(0);
+})();
+</script>
+</body>
+</html>

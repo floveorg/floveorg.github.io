@@ -1,0 +1,44 @@
+# ─── Contenido flove ──────────────────────────────────────────────
+# Gitea (origin) = archivo completo del workspace dev: se versiona casi todo.
+# SOLO secretos y directorios de tamaño/compilación quedan fuera (abajo).
+# GitHub (updaty-web) aplica su propia exclusión al publicar (solo/publish-web.sh);
+# este fichero gobierna únicamente lo que Gitea trackea.
+#
+# docs/ y context/ SÍ se versionan (decisión 2026-06-24). En este clon
+# docs/ pesa ~1.9 MB; context/ no existe. Si reaparece la taxonomía
+# pesada de FloveAll (~GB), ignórala con una regla concreta, no docs/ entero.
+
+# ─── Secrets / credenciales (nunca en Gitea) ─────────────────────
+.env.cloudinary
+.cloudinary-progress.json
+cloudinary-urls.json
+upload-to-cloudinary.js
+.agents/
+android.keystore*
+
+# ─── Size / build output (nunca en Gitea) ────────────────────────
+node_modules/
+*.apk
+*.aab
+*.idsig
+# development/addons/ is TRACKED (un-ignored 2026-08-01); only its db noise stays out.
+development/addons/**/*.db-wal
+development/addons/**/*.db-shm
+development/addons/**/__pycache__/
+__pycache__/
+
+# ─── Skills eval scaffolding / legacy (formerly the flove-skills repo's own .gitignore) ──
+# development/standards/skills/ is tracked in flove (no separate repo); its ignore
+# rules live here now. Workspaces are benchmark scaffolding, not the skills themselves.
+development/standards/skills/**/*-workspace/
+development/standards/skills/*.skill
+.DS_Store
+*.swp
+*.kate-swp
+
+# ─── Repos embebidos (con su propio git) ─────────────────────────
+# docs/docs-files/: repo embebido de packs/backups — no versionar.
+docs/docs-files/
+# nety: repo embebido con su propio git (marc/nety + floveorg/nety). flove lo
+# trackea como gitlink; para la web, updaty-web incluye únicamente
+# decentral/nety/index.html (ver solo/publish-web.sh).

@@ -1,0 +1,2265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#6c5ce7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="screen-orientation" content="portrait">
+<meta name="flove:distro" content="central">
+<meta name="flove:tier" content="normal">
+<meta name="flove:app" content="central">
+<meta name="flove:profile-backup" content="users/marc">
+<meta name="description" content="flove central — me, appy, mynet, notifs, sety">
+<meta name="format-detection" content="telephone=no">
+<meta name="msapplication-tap-highlight" content="no">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='14' y1='14' x2='86' y2='86' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0%25' stop-color='%236c5ce7'/%3E%3Cstop offset='100%25' stop-color='%2302855c'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='40' fill='url(%23g)'/%3E%3Ctext x='50' y='62' text-anchor='middle' font-size='36' fill='white'%3E%E2%9C%97%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/code/css/flove.css">
+<style>
+.mesh-bg{ position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; opacity:0; animation:mesh-fade 2s ease .08s both; }
+.mesh-bg::before{ content:""; position:absolute; inset:0; background:radial-gradient(ellipse 1200px 750px at 108% -8%, rgba(0,247,167,.11) 0%, transparent 52%),radial-gradient(ellipse 950px 650px at -14% 8%, rgba(141,137,255,.16) 0%, transparent 50%),radial-gradient(ellipse 700px 500px at 55% 96%, rgba(141,137,255,.09) 0%, transparent 48%),var(--bg); animation:aurora-drift 28s ease-in-out infinite alternate; }
+.mesh-bg::after{ content:""; position:absolute; inset:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='0.032'/%3E%3C/svg%3E"); opacity:.35; mix-blend-mode:multiply; }
+@keyframes aurora-drift{ 0%{ background-position:0% 0%; opacity:1; } 50%{ opacity:.85; } 100%{ background-position:3% 2%; opacity:1; } }
+@keyframes mesh-fade{ from{ opacity:0; } to{ opacity:1; } }
+
+/* profile */
+.profile{ display:flex; align-items:center; gap:.8rem; flex-wrap:wrap; position:relative; }
+.profile-info{ flex:1; min-width:120px; }
+.profile-handle{ font-weight:700; font-size:1rem; color:var(--signal); }
+.profile-meta{ font-size:.5rem; color:var(--muted); margin-top:.1rem; }
+.profile-edit-btn{ position:absolute; top:.5rem; right:.5rem; width:28px; height:28px; border-radius:8px; border:1px solid rgba(28,25,42,.1); background:rgba(255,255,255,.7); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--muted); transition:background .12s, color .12s, border-color .12s; }
+.profile-edit-btn:hover{ background:rgba(141,137,255,.08); color:var(--ink); border-color:rgba(141,137,255,.3); }
+.profile-edit-btn:active{ transform:scale(.93); }
+.badges{ display:flex; gap:.3rem; margin-top:.3rem; }
+.badge{ font-size:.42rem; letter-spacing:.08em; text-transform:uppercase; padding:.12rem .4rem; border-radius:999px; border:1px solid transparent; }
+.badge.live{ color:var(--signal); border-color:rgba(0,247,167,.4); background:rgba(0,247,167,.08); }
+.badge.central{ color:var(--accent); border-color:rgba(141,137,255,.3); background:rgba(141,137,255,.08); }
+
+/* profile social links */
+.profile-social{ display:flex; flex-wrap:wrap; gap:.3rem; margin-top:.4rem; }
+.profile-social-link{ display:inline-flex; align-items:center; gap:.25rem; padding:.18rem .45rem; border-radius:6px; border:1px solid rgba(28,25,42,.08); background:rgba(250,250,253,.5); font-size:.4rem; color:var(--ink); text-decoration:none; font-family:"Space Mono",monospace; transition:background .12s, border-color .12s, transform .1s; }
+.profile-social-link:hover{ background:rgba(141,137,255,.06); border-color:rgba(141,137,255,.2); }
+.profile-social-link:active{ transform:scale(.96); }
+.profile-social-link svg{ width:10px; height:10px; flex:none; color:var(--muted); }
+
+/* edit profile card */
+.profile-edit{ border:1px dashed rgba(141,137,255,.3); background:rgba(141,137,255,.03); }
+.profile-edit-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:.4rem; }
+.profile-edit .field{ margin-bottom:.35rem; }
+.profile-edit .field label{ font-size:.4rem; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-family:"Space Mono",monospace; display:block; margin-bottom:.1rem; }
+.profile-edit .field input{ width:100%; font-family:"Space Mono",monospace; font-size:.5rem; color:var(--ink); background:rgba(255,255,255,.6); border:1px solid rgba(28,25,42,.1); border-radius:6px; padding:.3rem .5rem; outline:none; }
+.profile-edit .field input:focus{ border-color:rgba(141,137,255,.5); }
+
+/* social chips (editable) */
+.social-chips{ display:flex; flex-wrap:wrap; gap:.25rem; min-height:22px; }
+.social-chip{ display:inline-flex; align-items:center; gap:.2rem; padding:.12rem .4rem; border-radius:999px; border:1px solid rgba(28,25,42,.1); background:rgba(255,255,255,.6); font-size:.38rem; color:var(--ink); font-family:"Space Mono",monospace; }
+.social-chip-remove{ cursor:pointer; color:var(--danger); font-size:.42rem; line-height:1; padding:0 .1rem; border-radius:50%; }
+.social-chip-remove:hover{ background:rgba(221,59,59,.12); }
+.social-add{ display:flex; gap:.3rem; margin-top:.3rem; align-items:center; }
+.social-add input{ flex:1; font-family:"Space Mono",monospace; font-size:.44rem; color:var(--ink); background:rgba(255,255,255,.6); border:1px solid rgba(28,25,42,.1); border-radius:6px; padding:.25rem .4rem; outline:none; }
+.social-add input:focus{ border-color:rgba(141,137,255,.5); }
+
+/* profile action buttons (follow/support/sponsor) */
+.profile-actions{ display:flex; gap:.35rem; margin-top:.4rem; }
+.profile-action-btn{ flex:1; display:flex; align-items:center; justify-content:center; gap:.25rem; padding:.4rem .5rem; border-radius:8px; border:1px solid rgba(28,25,42,.08); background:rgba(255,255,255,.6); font-family:"Space Mono",monospace; font-size:.44rem; font-weight:600; color:var(--ink); cursor:pointer; transition:background .12s, border-color .12s, transform .1s; }
+.profile-action-btn:hover{ background:rgba(141,137,255,.06); border-color:rgba(141,137,255,.2); }
+.profile-action-btn:active{ transform:scale(.97); }
+
+/* follow & support */
+.follow-item{ display:flex; align-items:center; gap:.5rem; padding:.4rem .2rem; border-radius:8px; cursor:pointer; transition:background .12s; }
+.follow-item:hover{ background:rgba(141,137,255,.04); }
+.follow-item svg{ width:14px; height:14px; flex:none; color:var(--muted); }
+.follow-label{ flex:1; font-size:.5rem; color:var(--ink); font-family:"Space Mono",monospace; }
+.follow-action{ font-size:.42rem; font-weight:700; color:var(--accent); font-family:"Space Mono",monospace; }
+.follow-expand{ padding-top:.3rem; }
+.follow-expand-btn{ display:flex; align-items:center; gap:.25rem; width:100%; background:none; border:none; cursor:pointer; padding:.3rem 0; font-family:"Space Mono",monospace; font-size:.42rem; color:var(--accent); font-weight:600; transition:color .12s; }
+.follow-expand-btn:hover{ color:var(--ink); }
+.follow-expand-btn svg{ transition:transform .2s; }
+.follow-expand-btn.open svg{ transform:rotate(180deg); }
+.follow-extra{ max-height:0; overflow:hidden; opacity:0; transition:max-height .3s ease, opacity .2s, padding .3s; padding:0; }
+.follow-extra.open{ max-height:500px; opacity:1; padding-top:.3rem; }
+.follow-extra-label{ font-size:.42rem; font-weight:600; color:var(--muted); font-family:"Space Mono",monospace; letter-spacing:.06em; text-transform:uppercase; margin-bottom:.2rem; }
+
+/* stat row */
+.stats{ display:grid; grid-template-columns:1fr 1fr; gap:.6rem; }
+.stat{ padding:.5rem .7rem; border-radius:8px; border:1px solid rgba(28,25,42,.05); background:rgba(250,250,253,.5); }
+.stat-label{ font-size:.42rem; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+.stat-val{ font-weight:700; font-size:.95rem; margin-top:.1rem; }
+
+/* menu folders */
+.folder{ margin-bottom:.1rem; }
+.folder-head{ display:flex; align-items:center; gap:.35rem; padding:.35rem .5rem; border-radius:6px; cursor:pointer; font-size:.54rem; font-weight:600; color:var(--ink); }
+.folder-head:hover{ background:rgba(141,137,255,.06); }
+.folder-chevron{ width:8px; height:8px; flex:none; transition:transform .2s; color:var(--muted); }
+.folder-head.open .folder-chevron{ transform:rotate(90deg); }
+.folder-name{ flex:1; }
+.folder-count{ font-size:.36rem; color:var(--muted); font-weight:400; }
+.folder-body{ max-height:0; overflow:hidden; transition:max-height .25s ease, opacity .2s; opacity:0; }
+.folder-body.open{ max-height:500px; opacity:1; }
+.menu-item{ display:flex; align-items:center; gap:.3rem; padding:.25rem .5rem .25rem 1.2rem; border-radius:5px; font-size:.48rem; color:var(--muted); text-decoration:none; }
+.menu-item:hover{ background:rgba(141,137,255,.06); color:var(--ink); }
+.menu-item-here{ color:var(--ink); font-weight:600; }
+.menu-dot{ width:12px; height:3px; border-radius:1px; flex:none; }
+
+/* authy items (horizontal, private) */
+.authy-item{ display:flex; align-items:center; gap:.4rem; padding:.5rem .7rem; border-radius:0 10px 10px 0; border:1px solid rgba(28,25,42,.06); border-left:3px solid var(--accent); background:rgba(255,255,255,.5); cursor:pointer; transition:border-color .15s, background .12s; flex:1; min-width:0; }
+.authy-item:nth-child(2){ border-left-color:var(--signal); }
+.authy-item:nth-child(3){ border-left-color:var(--danger); }
+.authy-item:hover{ border-color:rgba(141,137,255,.2); background:rgba(141,137,255,.04); }
+.authy-icon{ font-size:.7rem; flex:none; width:24px; height:24px; border-radius:6px; display:flex; align-items:center; justify-content:center; background:rgba(141,137,255,.06); }
+.authy-label{ font-size:.48rem; font-weight:600; color:var(--ink); flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.authy-badge{ font-size:.36rem; font-weight:700; font-family:"Space Mono",monospace; padding:.08rem .3rem; border-radius:999px; flex:none; }
+.authy-badge.on{ color:var(--signal); background:rgba(0,247,167,.1); }
+.authy-badge.off{ color:var(--muted); background:rgba(28,25,42,.05); }
+.authy-detail{ max-height:0; overflow:hidden; transition:max-height .25s ease, opacity .2s; opacity:0; }
+.authy-detail.open{ max-height:500px; opacity:1; }
+.authy-detail-inner{ padding:.35rem 0 0; font-size:.44rem; color:var(--muted); line-height:1.6; }
+.authy-detail-inner label{ display:block; font-size:.38rem; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:.15rem; font-family:"Space Mono",monospace; }
+.authy-detail-inner input,.authy-detail-inner select{ width:100%; font-family:"Space Mono",monospace; font-size:.48rem; color:var(--ink); background:rgba(255,255,255,.6); border:1px solid rgba(28,25,42,.1); border-radius:6px; padding:.3rem .5rem; outline:none; }
+.authy-detail-inner input:focus,.authy-detail-inner select:focus{ border-color:rgba(141,137,255,.5); }
+.trust-slot{ display:flex; align-items:center; gap:.4rem; padding:.3rem 0; }
+.trust-slot-dot{ width:8px; height:8px; border-radius:50%; flex:none; }
+.trust-slot-name{ flex:1; font-size:.48rem; color:var(--ink); }
+.trust-slot-status{ font-size:.36rem; font-weight:700; font-family:"Space Mono",monospace; }
+.trust-slot-status.ok{ color:var(--signal); }
+.trust-slot-status.pending{ color:var(--warn); }
+.trust-slot-status.empty{ color:var(--muted); }
+
+/* export buttons */
+.export-btn{ flex:1; display:flex; align-items:center; justify-content:center; gap:.3rem; padding:.65rem .5rem; border-radius:10px; border:1px solid rgba(28,25,42,.08); background:rgba(255,255,255,.6); font-family:"Space Mono",monospace; font-size:.5rem; font-weight:700; color:var(--ink); cursor:pointer; transition:background .12s, border-color .12s, transform .1s; }
+.export-btn:hover{ background:rgba(141,137,255,.06); border-color:rgba(141,137,255,.2); }
+.export-btn:active{ transform:scale(.97); }
+
+/* generate invite */
+.invite-gen-btn{ width:100%; display:flex; align-items:center; justify-content:center; gap:.3rem; padding:.55rem .5rem; border-radius:10px; border:1px dashed rgba(141,137,255,.3); background:rgba(141,137,255,.04); font-family:"Space Mono",monospace; font-size:.46rem; font-weight:600; color:var(--accent); cursor:pointer; transition:background .12s, border-color .12s, transform .1s; margin-top:.35rem; }
+.invite-gen-btn:hover{ background:rgba(141,137,255,.08); border-color:rgba(141,137,255,.5); }
+.invite-gen-btn:active{ transform:scale(.97); }
+.invite-gen-btn.generated{ border-style:solid; border-color:rgba(0,247,167,.3); background:rgba(0,247,167,.04); color:var(--signal); }
+
+/* copy key */
+.copy-key-btn{ width:32px; height:32px; border-radius:8px; border:1px solid rgba(28,25,42,.1); background:rgba(255,255,255,.6); display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none; transition:background .12s, border-color .12s, transform .1s; color:var(--muted); }
+.copy-key-btn:hover{ background:rgba(141,137,255,.08); border-color:rgba(141,137,255,.3); color:var(--ink); }
+.copy-key-btn:active{ transform:scale(.9); }
+
+/* mynet search */
+.mynet-search{ flex:1; font-family:"Space Mono",monospace; font-size:.48rem; color:var(--ink); background:rgba(255,255,255,.6); border:1px solid rgba(28,25,42,.1); border-radius:8px; padding:.45rem .6rem; outline:none; transition:border-color .15s; }
+.mynet-search:focus{ border-color:rgba(141,137,255,.5); }
+.mynet-search::placeholder{ color:var(--muted); }
+.mynet-search-btn{ width:36px; height:36px; border-radius:8px; border:1px solid rgba(28,25,42,.1); background:rgba(255,255,255,.6); display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none; transition:background .12s, border-color .12s; color:var(--accent); }
+.mynet-search-btn:hover{ background:rgba(141,137,255,.08); border-color:rgba(141,137,255,.3); }
+
+/* played apps — horizontal tabs */
+.played-app{ display:flex; align-items:center; gap:.35rem; padding:.35rem .5rem; border-radius:8px; border:1px solid rgba(28,25,42,.06); background:rgba(255,255,255,.5); cursor:pointer; transition:border-color .15s; flex:none; white-space:nowrap; }
+.played-app:hover{ border-color:rgba(141,137,255,.2); }
+.played-app-icon{ width:24px; height:24px; border-radius:4px; transform:rotate(45deg); display:flex; align-items:center; justify-content:center; font-size:.5rem; flex:none; color:#fff; overflow:hidden; }
+.played-app-icon span{ display:block; transform:rotate(-45deg); }
+.played-app-name{ font-size:.44rem; font-weight:600; color:var(--ink); }
+.played-app-score{ font-size:.55rem; font-weight:700; font-family:"Fredoka",sans-serif; color:var(--accent); flex:none; }
+.played-empty{ font-size:.44rem; color:var(--muted); padding:.2rem 0; white-space:nowrap; }
+
+/* notifs */
+.activity-list{ display:flex; flex-direction:column; gap:.3rem; }
+.activity{ display:flex; align-items:center; gap:.5rem; padding:.4rem .6rem; border-radius:8px; border:1px solid rgba(28,25,42,.04); background:rgba(250,250,253,.4); font-size:.56rem; }
+.dot-g{ width:6px; height:6px; border-radius:50%; flex:none; background:var(--signal); }
+.dot-p{ width:6px; height:6px; border-radius:50%; flex:none; background:var(--accent); }
+.dot-a{ width:6px; height:6px; border-radius:50%; flex:none; background:var(--warn); }
+.activity-text{ flex:1; }
+.activity-time{ font-size:.44rem; color:var(--muted); flex:none; }
+
+/* contract card */
+.contract-card{ background:rgba(255,255,255,.5); border:1px solid rgba(28,25,42,.08); border-radius:10px; padding:.7rem .9rem; margin-bottom:.4rem; }
+.contract-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:.25rem; }
+.contract-name{ font-size:.65rem; font-weight:700; color:var(--ink); }
+.contract-status{ font-size:.38rem; letter-spacing:.06em; text-transform:uppercase; padding:.1rem .3rem; border-radius:999px; font-family:"Space Mono",monospace; }
+.contract-status.active{ color:var(--signal); border:1px solid rgba(0,247,167,.4); background:rgba(0,247,167,.08); }
+.contract-status.demo{ color:var(--muted); border:1px solid rgba(28,25,42,.12); background:rgba(28,25,42,.04); }
+.contract-desc{ font-size:.46rem; color:var(--muted); line-height:1.5; }
+.contract-rules{ display:flex; gap:.3rem; flex-wrap:wrap; margin-top:.3rem; }
+.contract-rule{ font-size:.38rem; padding:.12rem .35rem; border-radius:999px; border:1px solid rgba(141,137,255,.15); background:rgba(141,137,255,.05); color:var(--accent); font-family:"Space Mono",monospace; }
+
+/* appy agent */
+#appyAgent{ margin-bottom:.4rem; }
+#appyAgentCard{ border:1px solid rgba(141,137,255,.2); background:linear-gradient(135deg,rgba(141,137,255,.06),rgba(249,38,114,.04)); }
+.appy-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:.35rem; }
+.appy-tile{ display:flex; flex-direction:column; align-items:center; gap:.25rem; padding:.5rem .3rem; border-radius:10px; border:1px solid rgba(28,25,42,.06); background:rgba(255,255,255,.5); cursor:pointer; transition:border-color .15s, box-shadow .2s; text-decoration:none; color:var(--ink); }
+.appy-tile:hover{ border-color:rgba(141,137,255,.25); box-shadow:0 2px 12px -4px rgba(141,137,255,.15); }
+.appy-tile:active{ transform:scale(.96); }
+.appy-tile-icon{ width:40px; height:40px; border-radius:10px; overflow:hidden; display:flex; align-items:center; justify-content:center; flex:none; }
+.appy-tile-icon img{ width:100%; height:100%; object-fit:cover; }
+.appy-tile-name{ font-size:.42rem; font-weight:600; font-family:'Fredoka',sans-serif; text-align:center; }
+.appy-tile-match{ font-size:.32rem; font-weight:700; font-family:'Space Mono',monospace; padding:.06rem .25rem; border-radius:999px; }
+.appy-tile-match.high{ color:var(--signal); background:rgba(2,168,95,.1); }
+.appy-tile-match.med{ color:var(--accent); background:rgba(141,137,255,.1); }
+.appy-tile-match.low{ color:var(--muted); background:rgba(28,25,42,.04); }
+.appy-more-btn{ width:100%; display:flex; align-items:center; justify-content:center; gap:.3rem; padding:.55rem .5rem; border-radius:10px; border:1px dashed rgba(141,137,255,.3); background:linear-gradient(135deg,rgba(141,137,255,.08),rgba(249,38,114,.06)); font-family:'Fredoka',sans-serif; font-size:.52rem; font-weight:600; background-clip:text; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-image:linear-gradient(135deg,var(--accent),#f2677a); cursor:pointer; transition:background .12s, border-color .12s, transform .1s; margin-top:.35rem; }
+.appy-more-btn:hover{ border-color:rgba(141,137,255,.5); background-color:rgba(141,137,255,.06); }
+.appy-more-btn:active{ transform:scale(.97); }
+.appy-played{ display:flex; align-items:center; gap:.3rem; padding:.5rem 0 .2rem; font-size:.4rem; color:var(--muted); }
+.appy-played-dot{ width:4px; height:4px; border-radius:50%; background:var(--signal); }
+.appy-played-label{ font-family:"Space Mono",monospace; font-weight:600; }
+
+/* score suggestions */
+.score-sug{ display:flex; align-items:center; gap:.5rem; padding:.45rem .6rem; border-radius:8px; border:1px solid rgba(28,25,42,.05); background:rgba(250,250,253,.4); cursor:pointer; transition:background .12s, border-color .12s; }
+.score-sug:hover{ background:rgba(141,137,255,.06); border-color:rgba(141,137,255,.15); }
+.score-sug-icon{ font-size:.7rem; flex:none; }
+.score-sug-text{ flex:1; font-size:.48rem; color:var(--ink); }
+.score-sug-impact{ font-size:.4rem; font-weight:700; color:var(--signal); font-family:"Space Mono",monospace; flex:none; }
+
+/* create circle */
+.create-circle{ border:1px dashed rgba(141,137,255,.3); border-radius:10px; padding:.55rem .7rem; margin-top:.4rem; background:rgba(141,137,255,.03); }
+.create-circle-head{ display:flex; align-items:center; gap:.35rem; cursor:pointer; font-size:.44rem; font-weight:600; color:var(--accent); font-family:"Space Mono",monospace; }
+.create-circle-head:hover{ color:var(--ink); }
+.create-circle-head svg{ opacity:.7; }
+.create-circle-form{ max-height:0; overflow:hidden; transition:max-height .3s ease, opacity .2s; opacity:0; }
+.create-circle-form.open{ max-height:400px; opacity:1; margin-top:.5rem; }
+.create-circle-form .field{ margin-bottom:.4rem; }
+.create-circle-form .field label{ font-size:.42rem; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-family:"Space Mono",monospace; display:block; margin-bottom:.15rem; }
+.create-circle-form .field input,.create-circle-form .field select{ width:100%; font-family:"Space Mono",monospace; font-size:.56rem; color:var(--ink); background:rgba(255,255,255,.6); border:1px solid rgba(28,25,42,.1); border-radius:8px; padding:.4rem .6rem; outline:none; }
+.create-circle-form .field input:focus{ border-color:rgba(141,137,255,.5); }
+.member-list{ display:flex; flex-wrap:wrap; gap:.3rem; margin-top:.3rem; }
+.member-tag{ display:inline-flex; align-items:center; gap:.2rem; padding:.15rem .4rem; border-radius:999px; border:1px solid rgba(28,25,42,.1); background:rgba(255,255,255,.5); font-size:.42rem; color:var(--ink); }
+
+/* heritage chip (diesafe) */
+.heritage-chip{ display:inline-flex; align-items:center; gap:.35rem; padding:.35rem .6rem; border-radius:9px; border:1px solid rgba(2,133,92,.15); background:rgba(2,133,92,.04); cursor:pointer; transition:background .12s, border-color .15s; }
+.heritage-chip:hover{ background:rgba(2,133,92,.08); border-color:rgba(2,133,92,.3); }
+.heritage-chip-icon{ width:18px; height:18px; border-radius:3px; transform:rotate(45deg); background:linear-gradient(135deg,#02855c,#3fc862); display:flex; align-items:center; justify-content:center; font-size:.45rem; flex:none; overflow:hidden; }
+.heritage-chip-icon span{ display:block; transform:rotate(-45deg); }
+.heritage-chip-label{ font-family:"Space Mono",monospace; font-size:.4rem; font-weight:600; color:var(--ink); }
+.heritage-chip-badge{ font-size:.34rem; font-family:"Space Mono",monospace; color:var(--signal); font-weight:700; }
+.member-tag .member-remove{ cursor:pointer; color:var(--danger); font-size:.5rem; line-height:1; padding:0 .1rem; }
+.member-tag .member-remove:hover{ background:rgba(221,59,59,.1); border-radius:50%; }
+.circle-actions{ display:flex; gap:.4rem; margin-top:.5rem; }
+.circle-actions .btn{ font-size:.5rem; padding:.4rem .8rem; min-height:36px; }
+
+/* circle facet scores (per Scores) — expand on click */
+.rcircle-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:.4rem; }
+.rcircle-col{ border-radius:8px; border:1px solid rgba(28,25,42,.08); background:transparent; overflow:hidden; transition:border-color .25s; }
+.rcircle-col.open{ border-color:rgba(141,137,255,.3); }
+.rcircle-top{ display:flex; align-items:center; gap:.3rem; width:100%; background:none; border:none; cursor:pointer; padding:.45rem .5rem; font-family:"Space Mono",monospace; font-size:.42rem; color:var(--ink); text-align:left; }
+.rcircle-top:hover{ background:rgba(141,137,255,.04); }
+.rcircle-dot{ width:8px; height:8px; border-radius:2px; transform:rotate(45deg); flex:none; }
+.rcircle-name{ flex:1; font-weight:600; font-size:.4rem; }
+.rcircle-score{ font-weight:700; font-size:.65rem; font-family:"Fredoka",sans-serif; }
+.rcircle-desc{ padding:0 .5rem .3rem; font-size:.38rem; line-height:1.4; color:var(--muted); display:none; }
+.rcircle-col.open .rcircle-desc{ display:block; }
+.rcircle-increase{ display:none; padding:.2rem .5rem .4rem; flex-direction:column; gap:.3rem; }
+.rcircle-col.open .rcircle-increase{ display:flex; }
+.rcircle-increase-btn{ display:inline-flex; align-items:center; gap:.15rem; padding:.2rem .5rem; border-radius:999px; border:1px solid currentColor; background:transparent; font-family:"Space Mono",monospace; font-size:.38rem; font-weight:700; color:inherit; cursor:pointer; transition:background .12s, transform .1s; }
+.rcircle-increase-btn:hover{ background:rgba(255,255,255,.5); transform:scale(1.05); }
+.rcircle-increase-btn:active{ transform:scale(.97); }
+.rcircle-increase-info{ display:none; font-size:.36rem; line-height:1.45; color:var(--muted); background:rgba(255,255,255,.5); border-radius:6px; padding:.35rem .5rem; border:1px solid rgba(28,25,42,.06); }
+.rcircle-increase-info.open{ display:block; }
+.rcircle-increase-info ul{ margin:.15rem 0 0 .6rem; padding:0; }
+.rcircle-increase-info li{ margin-bottom:.1rem; }
+
+/* promoted apps — compact row style */
+.promoted-apps{ display:flex; flex-direction:column; gap:.3rem; }
+.promoted-app{ display:flex; align-items:center; gap:.5rem; padding:.45rem .6rem; border-radius:10px; border:1px solid rgba(28,25,42,.06); background:rgba(255,255,255,.5); transition:border-color .15s; }
+.promoted-app:hover{ border-color:rgba(141,137,255,.2); }
+.promoted-icon{ width:32px; height:32px; border-radius:8px; overflow:hidden; flex:none; display:flex; align-items:center; justify-content:center; }
+.promoted-icon img{ width:100%; height:100%; object-fit:cover; }
+.promoted-name{ flex:1; font-size:.52rem; font-weight:700; font-family:'Fredoka',sans-serif; color:var(--ink); }
+.promoted-chip{ font-size:.3rem; font-weight:700; font-family:'Space Mono',monospace; padding:.1rem .35rem; border-radius:999px; flex:none; cursor:pointer; transition:background .12s, transform .1s; }
+.promoted-chip.played{ color:var(--signal); background:rgba(2,168,95,.1); }
+.promoted-chip.played:hover{ background:rgba(2,168,95,.18); transform:scale(1.05); }
+
+/* contract actions */
+.contract-actions{ display:flex; flex-direction:column; gap:.3rem; }
+.contract-action{ display:flex; align-items:center; gap:.5rem; padding:.45rem .6rem; border-radius:8px; border:1px solid rgba(28,25,42,.05); background:rgba(250,250,253,.4); cursor:pointer; transition:background .12s, border-color .12s; }
+.contract-action:hover{ background:rgba(141,137,255,.06); border-color:rgba(141,137,255,.15); }
+.contract-action-left{ display:flex; align-items:center; gap:.45rem; flex:1; min-width:0; }
+.contract-action-icon{ font-size:.65rem; flex:none; width:28px; height:28px; border-radius:8px; border:1.5px solid rgba(141,137,255,.2); display:flex; align-items:center; justify-content:center; background:rgba(141,137,255,.04); }
+.contract-action-info{ flex:1; min-width:0; }
+.contract-action-title{ font-size:.5rem; font-weight:600; color:var(--ink); }
+.contract-action-desc{ font-size:.38rem; color:var(--muted); line-height:1.4; }
+.contract-action-arrow{ font-size:.6rem; color:var(--accent); font-weight:700; flex:none; }
+
+/* identity scale (authenticate) — horizontal tabs */
+.id5-scale{ display:flex; gap:0; padding:0; border-radius:8px; overflow:hidden; border:1px solid rgba(28,25,42,.08); background:rgba(250,250,253,.4); }
+.id5-bar{ display:flex; align-items:center; justify-content:center; gap:.25rem; cursor:pointer; flex:1; padding:.35rem .3rem; font-family:"Space Mono",monospace; font-size:.38rem; color:var(--muted); border-right:1px solid rgba(28,25,42,.06); transition:background .15s, color .15s; position:relative; }
+.id5-bar:last-child{ border-right:none; }
+.id5-bar:hover{ background:rgba(141,137,255,.04); }
+.id5-bar.reached{ color:var(--ink); }
+.id5-bar.actual{ color:#fff; font-weight:700; }
+.id5-bar.actual::after{ content:""; position:absolute; inset:0; border-radius:inherit; z-index:-1; }
+.id5-bar.open{ font-weight:700; }
+.id5-bar-badge{ font-size:.5rem; width:20px; height:20px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center; background:rgba(28,25,42,.04); }
+.id5-bar-pts{ font-size:.32rem; font-weight:700; color:inherit; opacity:.7; }
+.id5-bar-label{ font-size:.34rem; letter-spacing:.03em; }
+
+/* identity form */
+.id-form{ padding:.5rem .6rem; border:1px solid rgba(28,25,42,.06); border-radius:10px; background:rgba(250,250,253,.4); margin-top:.4rem; display:flex; align-items:center; gap:.5rem; }
+.id-form-icon{ font-size:1.1rem; flex:none; width:36px; height:36px; border-radius:8px; border:1.5px solid rgba(141,137,255,.15); display:flex; align-items:center; justify-content:center; background:rgba(141,137,255,.04); }
+.id-form .field{ flex:1; margin-bottom:0; }
+.id-form .field input{ width:100%; font-family:"Space Mono",monospace; font-size:.52rem; color:var(--ink); background:rgba(255,255,255,.6); border:1px solid rgba(28,25,42,.1); border-radius:8px; padding:.35rem .5rem; outline:none; }
+.id-form .field input:focus{ border-color:rgba(141,137,255,.5); }
+.id-action{ border:none; border-radius:8px; padding:.35rem .7rem; font-family:"Space Mono",monospace; font-size:.48rem; font-weight:700; color:#fff; cursor:pointer; flex:none; transition:opacity .15s; }
+.id-action:hover{ opacity:.85; }
+.id-form .note{ font-size:.46rem; color:var(--muted); line-height:1.5; }
+
+/* settings */
+.card-row{ display:flex; justify-content:space-between; align-items:center; padding:.55rem 0; border-bottom:1px solid rgba(28,25,42,.05); }
+.card-row:last-child{ border-bottom:none; }
+.card-row-label{ font-size:.6rem; color:var(--ink); }
+.card-row-value{ font-size:.58rem; color:var(--muted); font-family:"Space Mono",monospace; }
+.card-row-value.live{ color:var(--signal); }
+.card-row-value.accent{ color:var(--accent); }
+
+/* key display */
+.key-display{ background:rgba(28,25,42,.03); border:1px dashed rgba(28,25,42,.12); border-radius:10px; padding:.7rem .9rem; margin-top:.5rem; }
+.key-label{ font-size:.42rem; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:.25rem; }
+.key-value{ font-family:"Space Mono",monospace; font-size:.58rem; color:var(--ink); word-break:break-all; line-height:1.6; user-select:all; }
+
+/* recovery */
+.recovery-grid{ display:grid; grid-template-columns:1fr 1fr; gap:.4rem; margin-top:.5rem; }
+.recovery-slot{ background:rgba(255,255,255,.5); border:1px solid rgba(28,25,42,.08); border-radius:8px; padding:.5rem .6rem; text-align:center; }
+.recovery-slot.filled{ border-color:rgba(0,247,167,.3); background:rgba(0,247,167,.04); }
+.recovery-slot.empty{ border-style:dashed; }
+.recovery-name{ font-size:.52rem; font-weight:600; color:var(--ink); }
+.recovery-status{ font-size:.4rem; color:var(--muted); margin-top:.1rem; }
+
+/* star counter */
+.see-more-btn:hover{ background:rgba(141,137,255,.08)!important; color:var(--ink)!important; border-color:rgba(141,137,255,.3)!important; }
+.see-more-btn:active{ transform:scale(.93); }
+.star-counter{ display:flex; align-items:center; gap:.3rem; padding:.3rem .6rem; border-radius:999px; background:rgba(255,255,255,.85); backdrop-filter:blur(12px); border:1px solid rgba(141,137,255,.18); box-shadow:0 2px 12px -4px rgba(0,0,0,.15); font-family:"Fredoka",sans-serif; font-weight:700; font-size:.72rem; color:var(--accent); flex:none; }
+.star-counter svg{ width:14px; height:14px; fill:var(--accent); }
+.star-counter.bump{ animation:star-bump .35s cubic-bezier(.22,1,.36,1); }
+@keyframes star-bump{ 0%{ transform:scale(1) } 40%{ transform:scale(1.2) } 100%{ transform:scale(1) } }
+
+/* category menu */
+.cat-menu{ overflow:hidden; max-height:0; opacity:0; transition:max-height .3s ease, opacity .2s; margin-bottom:0; }
+.cat-menu.open{ max-height:800px; opacity:1; margin-bottom:.8rem; }
+.cat-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(90px, 1fr)); gap:.5rem; }
+.cat-item{ display:flex; flex-direction:column; align-items:center; gap:.2rem; padding:.5rem .3rem; border-radius:10px; border:1px solid rgba(28,25,42,.06); background:rgba(255,255,255,.5); cursor:pointer; transition:background .12s, border-color .12s; text-decoration:none; }
+.cat-item:hover{ background:rgba(141,137,255,.08); border-color:rgba(141,137,255,.2); }
+.cat-item:active{ transform:scale(.96); }
+.cat-icon{ font-size:.9rem; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:rgba(141,137,255,.06); border:1px solid rgba(141,137,255,.1); }
+.cat-label{ font-family:"Space Mono",monospace; font-size:.38rem; letter-spacing:.06em; text-transform:uppercase; color:var(--ink); text-align:center; }
+.cat-count{ font-size:.32rem; color:var(--muted); }
+
+/* feed action icons */
+.feed-action svg{ width:14px; height:14px; }
+
+/* footer */
+.foot{ margin-top:1.4rem; padding-top:1rem; border-top:1px solid rgba(28,25,42,.05); display:flex; flex-wrap:wrap; gap:.5rem 1.4rem; align-items:center; font-size:.56rem; color:rgba(74,78,90,.55); }
+.foot .dot{ width:5px; height:5px; border-radius:50%; background:var(--signal); display:inline-block; box-shadow:0 0 8px 2px rgba(0,247,167,.55); }
+
+/* cube modal (app preview) */
+.cube{ position:fixed; inset:0; z-index:300; display:none; }
+.cube:target{ display:block; }
+.cube-backdrop{ position:absolute; inset:0; background:rgba(20,16,40,.55); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); cursor:pointer; }
+.cube-inner{ position:relative; margin:4vh auto; width:calc(100% - 32px); max-width:640px; max-height:92vh; overflow-y:auto; background:linear-gradient(150deg, var(--grad-1,#6c5ce7), var(--grad-2,#02855c)); color:#fff; border-radius:28px; padding:20px 20px 18px; box-shadow:0 30px 80px rgba(0,0,0,.4), inset 0 0 0 1px rgba(255,255,255,.5); animation:cube-open .35s cubic-bezier(.2,.8,.2,1); transform-origin:center; }
+@keyframes cube-open{ from{ opacity:0; transform:scale(.85) translateY(20px) rotateX(8deg); } to{ opacity:1; transform:none; } }
+.cube.zooming-out .cube-inner{ animation:cube-zoom-out .55s cubic-bezier(.55,0,.25,1) forwards; }
+.cube.zooming-out .cube-backdrop{ background:rgba(20,16,40,.78); transition:background .55s; }
+@keyframes cube-zoom-out{ 0%{ transform:scale(1); opacity:1; filter:blur(0); } 55%{ transform:scale(.42); opacity:.55; filter:blur(2px); } 100%{ transform:scale(.04) translateZ(0); opacity:0; filter:blur(10px); } }
+@media (prefers-reduced-motion:reduce){ .cube.zooming-out .cube-inner{ animation:none; opacity:.15; } }
+.cube-close{ position:absolute; top:10px; right:12px; width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,.6); color:inherit; display:grid; place-items:center; font-size:18px; line-height:1; text-decoration:none; z-index:2; transition:background .15s; }
+.cube-close:hover{ background:rgba(255,255,255,.95); }
+.cube-head{ display:flex; align-items:center; gap:12px; margin-bottom:8px; padding-right:36px; }
+.cube-icon{ flex:0 0 auto; width:40px; height:40px; border-radius:10px; overflow:hidden; flex:none; }
+.cube-icon img{ width:100%; height:100%; object-fit:cover; }
+.cube-head h2{ margin:0; font-family:'Fredoka',sans-serif; font-size:1.2rem; letter-spacing:-.01em; }
+.cube-tag{ margin:1px 0 0; color:rgba(255,255,255,.55); font-size:.7rem; }
+.cube-meta{ display:flex; align-items:center; gap:.5rem; margin-bottom:6px; }
+.cube-match{ margin-left:auto; font-size:.7rem; font-weight:700; font-family:'Space Mono',monospace; background:rgba(255,255,255,.15); padding:.15rem .5rem; border-radius:999px; }
+.cube-desc{ font-size:.7rem; line-height:1.5; margin:0 0 8px; }
+.cube-desc p{ margin:0; }
+.cube-screenshots{ display:flex; gap:5px; overflow-x:auto; padding:0 0 6px; margin-bottom:8px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+.cube-screenshots::-webkit-scrollbar{ display:none; }
+.cube-shot{ flex:0 0 45%; scroll-snap-align:center; aspect-ratio:16/10; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2); border-radius:8px; display:grid; place-items:center; font-size:20px; }
+.cube-actions{ display:flex; gap:.4rem; flex-wrap:wrap; }
+.cube-btn{ display:inline-flex; align-items:center; gap:.3rem; padding:.4rem .8rem; border-radius:10px; border:1px solid rgba(255,255,255,.4); background:rgba(255,255,255,.15); color:#fff; font-family:'Fredoka',sans-serif; font-size:.7rem; font-weight:600; cursor:pointer; text-decoration:none; transition:background .15s, transform .12s; }
+.cube-btn:hover{ background:rgba(255,255,255,.3); transform:translateY(-1px); }
+.cube-btn.primary{ background:#fff; color:#1a1820; border-color:#fff; }
+.cube-btn.primary:hover{ background:rgba(255,255,255,.88); }
+
+/* top bar search (inline) */
+.top-bar-search{ flex:1; font-family:"Space Mono",monospace; font-size:.58rem; color:var(--ink); background:rgba(250,250,253,.7); border:1px solid rgba(28,25,42,.07); border-radius:8px; padding:.4rem .65rem; outline:none; transition:border-color .18s; min-width:0; }
+.top-bar-search:focus{ border-color:rgba(141,137,255,.4); }
+.top-bar-search::placeholder{ color:var(--muted); opacity:.7; }
+.top-bar-search-btn{ width:34px; height:34px; border-radius:8px; border:1px solid rgba(28,25,42,.1); background:rgba(255,255,255,.6); display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none; transition:background .12s, border-color .12s, transform .1s; color:var(--accent); font-family:"Space Mono",monospace; font-size:.48rem; font-weight:700; }
+.top-bar-search-btn:hover{ background:rgba(141,137,255,.08); border-color:rgba(141,137,255,.3); }
+.top-bar-search-btn:active{ transform:scale(.92); }
+.top-bar-search-btn.plus{ background:var(--signal); border-color:var(--signal); color:#fff; }
+.top-bar-search-btn.plus:hover{ background:color-mix(in srgb, var(--signal) 86%, #fff); }
+
+/* see more buttons */
+.see-more-col{ display:flex; gap:.3rem; margin-top:.4rem; justify-content:center; }
+.see-more-col .btn{ font-size:.42rem; padding:.3rem .7rem; min-height:30px; border-radius:8px; }
+
+/* sound level buttons */
+.btn-solevel{ font-family:"Space Mono",monospace; font-size:.38rem; padding:.22rem .5rem; border-radius:999px; border:1px solid rgba(28,25,42,.1); background:rgba(255,255,255,.5); color:var(--muted); cursor:pointer; transition:background .12s, border-color .12s, color .12s; }
+.btn-solevel:hover{ border-color:rgba(141,137,255,.3); background:rgba(141,137,255,.06); }
+.btn-solevel.active{ border-color:var(--accent); background:rgba(108,92,231,.1); color:var(--accent); font-weight:700; }
+.btn-solevel:active{ transform:scale(.95); }
+</style>
+</head>
+<body>
+
+<div class="mesh-bg"></div>
+
+<header class="top-bar">
+  <input type="text" class="top-bar-search" id="topSearchInput" placeholder="search flove..." oninput="topSearchFilter(this.value)">
+  <button class="top-bar-search-btn" onclick="showToast('Showing recent activity')" title="Ago">ago</button>
+  <button class="top-bar-search-btn plus" onclick="switchPanel('appy');document.getElementById('loveInput').focus()" title="New post">+</button>
+  <div class="top-bar-right">
+    <span class="sync-status" id="syncStatus"><span class="dot"></span>off</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ========== ME PANEL ========== -->
+<div class="nav-panel" id="panel-me">
+
+  <!-- profile -->
+  <div class="card profile" id="meProfile">
+    <div class="flex-col flex-center gap-sm" style="flex:none">
+      <div class="avatar" onclick="alert('Open profile')">M</div>
+      <button class="see-more-btn" id="seeMoreAuthyBtn" onclick="toggleSeeMoreAuthy()" title="Authy" style="width:auto;height:auto;padding:.15rem .4rem;font-size:.36rem;font-weight:600;gap:.2rem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+        Authy
+      </button>
+    </div>
+    <div class="profile-info">
+      <div class="profile-handle" id="profileHandle">@marc</div>
+      <div class="profile-meta" id="profileMeta">users/marc · central normal</div>
+      <div class="badges" id="profileBadges">
+        <span class="badge live">live</span>
+        <span class="badge central">central</span>
+      </div>
+      <div class="identity-badge hidden" id="identityBadge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span id="identityBadgeLabel">verified</span>
+      </div>
+      <div class="profile-social" id="profileSocial">
+        <a class="profile-social-link" href="https://github.com/marc" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>marc</a>
+        <a class="profile-social-link" href="https://t.me/marc" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0a12 12 0 00-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 01.171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>marc</a>
+        <a class="profile-social-link" href="mailto:marc@flove.org"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>marc@flove.org</a>
+        <a class="profile-social-link" href="https://flove.org/users/marc" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>flove.org</a>
+      </div>
+    </div>
+    <button class="profile-edit-btn" onclick="toggleProfileEdit()" title="Edit profile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    </button>
+    <button class="see-more-btn" id="plusProfileBtn" onclick="toggleProfileDetails()" title="More profile info" style="position:absolute;top:.5rem;right:.5rem">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </div>
+
+  <!-- profile details (hidden by default) -->
+  <div class="card hidden" id="profileDetailsCard" style="border:1px dashed rgba(141,137,255,.3);background:rgba(141,137,255,.03);margin-top:.4rem">
+    <div class="text-xs font-mono text-muted mb-sm">profile details</div>
+    <div class="field"><label>full name</label><input type="text" id="detailFullName" value="Marc" oninput="updateProfileDetail()"></div>
+    <div class="field"><label>bio</label><input type="text" id="detailBio" value="flove builder · Madrid" oninput="updateProfileDetail()"></div>
+    <div class="field"><label>location</label><input type="text" id="detailLocation" value="Chamberí, Madrid" oninput="updateProfileDetail()"></div>
+    <div class="field"><label>joined</label><input type="text" id="detailJoined" value="2024" disabled class="text-muted"></div>
+  </div>
+
+  <!-- authy quick row (hidden by default) -->
+  <div class="authy-quick-row" id="authyQuickRow">
+    <div class="flex-col gap-sm" style="padding-top:.5rem">
+      <div class="authy-item" onclick="switchPanel('me');selectIdentityStep('self')"><span class="authy-icon">🪪</span><span class="authy-label">Self</span><span class="authy-badge on">+5</span></div>
+      <div class="authy-item" onclick="switchPanel('me');selectIdentityStep('email')"><span class="authy-icon">✉</span><span class="authy-label">Email</span><span class="authy-badge on">+4</span></div>
+      <div class="authy-item" onclick="switchPanel('me');selectIdentityStep('telegram')"><span class="authy-icon">✈</span><span class="authy-label">Telegram</span><span class="authy-badge on">+12</span></div>
+      <div class="authy-item" onclick="switchPanel('me');selectIdentityStep('phone')"><span class="authy-icon">📱</span><span class="authy-label">Phone</span><span class="authy-badge on">+6</span></div>
+      <div class="authy-item" onclick="switchPanel('me');selectIdentityStep('biometrics')"><span class="authy-icon">👁</span><span class="authy-label">Bio</span><span class="authy-badge on">+8</span></div>
+    </div>
+  </div>
+
+  <!-- edit profile (hidden by default) -->
+  <div class="card profile-edit hidden" id="profileEditCard">
+    <div class="profile-edit-head">
+      <span class="text-xs font-mono text-muted">edit profile</span>
+      <button class="btn ghost text-xs" style="padding:.25rem .5rem;min-height:28px" onclick="toggleProfileEdit()">done</button>
+    </div>
+    <div class="field"><label>handle</label><input type="text" id="editHandle" value="@marc" oninput="previewProfile()"></div>
+    <div class="field"><label>location / path</label><input type="text" id="editMeta" value="users/marc · central normal" oninput="previewProfile()"></div>
+    <div class="field"><label>social links</label><div class="social-chips" id="socialChips"></div><div class="social-add"><input type="text" id="socialAddInput" placeholder="https://... or @handle" onkeydown="if(event.key==='Enter')addSocialChip()"><button class="btn ghost text-xs" style="padding:.2rem .5rem;min-height:26px" onclick="addSocialChip()">+ add</button></div></div>
+  </div>
+
+  <div class="profile-actions">
+    <button class="profile-action-btn" onclick="showToast('Following @marc')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>Follow</button>
+    <button class="profile-action-btn" onclick="showToast('Opening support page')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Support</button>
+  </div>
+
+  <button class="invite-gen-btn" onclick="generateInvite()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+    <span id="inviteLabel">Generate invite</span>
+  </button>
+
+  <!-- played apps (public) — horizontal tabs -->
+  <div class="sec">played</div>
+  <div class="card" id="playedAppsCard">
+    <div id="playedAppsList" class="flex-col gap-sm" style="overflow-x:auto;-webkit-overflow-scrolling:touch"><!-- built by renderPlayedApps() --></div>
+  </div>
+
+  <!-- download (private) -->
+  <div class="mt-md">
+    <div class="sec text-xs mb-sm">download</div>
+    <div class="flex-col gap-sm">
+      <button class="export-btn" id="exportAppsBtn" onclick="exportApps()" style="flex:2">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Apps Results
+      </button>
+      <button class="export-btn flex-1" id="exportConfigBtn" onclick="exportConfig()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        All
+      </button>
+    </div>
+  </div>
+
+  <div class="key-display flex-center gap-md">
+    <div class="flex-3" style="min-width:0">
+      <div class="key-label">public key</div>
+      <div class="key-value">a3f8c2e1b9d4...d7b4f6e2</div>
+    </div>
+    <button class="copy-key-btn" onclick="copyPublicKey()" title="Copy public key">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+    </button>
+    <button class="export-btn flex-1" id="syncBtn" onclick="syncPulse(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Sync
+    </button>
+  </div>
+</div>
+
+<!-- ========== APPY PANEL ========== -->
+<div class="nav-panel active" id="panel-appy">
+
+  <!-- category menu (collapsible, top) -->
+  <div class="cat-menu" id="catMenu">
+    <div class="cat-grid">
+      <a class="cat-item" href="../../solo/apps/economy/dealy/dealy-advanced.html" target="_blank"><span class="cat-icon">💰</span><span class="cat-label">economy</span><span class="cat-count">4 apps</span></a>
+      <a class="cat-item" href="../../solo/apps/bio/sensy.html" target="_blank"><span class="cat-icon">🌱</span><span class="cat-label">bio</span><span class="cat-count">2 apps</span></a>
+      <a class="cat-item" href="../../solo/apps/metas/goddy.html" target="_blank"><span class="cat-icon">🧠</span><span class="cat-label">metas</span><span class="cat-count">4 apps</span></a>
+      <a class="cat-item" href="../../solo/apps/psicosocial/astry.html" target="_blank"><span class="cat-icon">💬</span><span class="cat-label">psicosocial</span><span class="cat-count">4 apps</span></a>
+      <a class="cat-item" href="../../solo/apps/puzzy/comby.html" target="_blank"><span class="cat-icon">🧩</span><span class="cat-label">puzzy</span><span class="cat-count">4 apps</span></a>
+      <a class="cat-item" href="../../solo/apps/trusty/crumbly.html" target="_blank"><span class="cat-icon">🛡</span><span class="cat-label">trusty</span><span class="cat-count">4 apps</span></a>
+    </div>
+  </div>
+
+  <!-- inline love composer -->
+  <div class="composer-bar">
+    <input type="text" id="loveInput" placeholder="What's in your love..." class="composer-input" onkeydown="if(event.key==='Enter')publishPost()" aria-label="What's in your love">
+    <button class="composer-btn primary" onclick="publishPost()" title="Publish">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+
+  <div class="sec">your feed</div>
+
+  <div class="feed-tabs" id="feedTabs">
+    <button class="feed-tab active" data-tab="all" onclick="filterFeedTab('all',this)" style="background:var(--ink);color:#fff;border-color:var(--ink)"><span class="tab-dot" style="background:#fff"></span>all</button>
+    <button class="feed-tab" data-tab="garden" onclick="filterFeedTab('garden',this)"><span class="tab-dot" style="background:#02855c"></span>garden</button>
+    <button class="feed-tab" data-tab="trade" onclick="filterFeedTab('trade',this)"><span class="tab-dot" style="background:#b9820a"></span>trade</button>
+    <button class="feed-tab" data-tab="community" onclick="filterFeedTab('community',this)"><span class="tab-dot" style="background:#dd3b3b"></span>community</button>
+    <button class="feed-tab" data-tab="growth" onclick="filterFeedTab('growth',this)"><span class="tab-dot" style="background:#6c5ce7"></span>growth</button>
+    <button class="feed-tab" data-tab="wellness" onclick="filterFeedTab('wellness',this)"><span class="tab-dot" style="background:#0bb5c9"></span>wellness</button>
+    <button class="feed-tab" onclick="switchPanel('mynet')" style="background:rgba(141,137,255,.1);border-color:rgba(141,137,255,.2);color:var(--accent)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="10" height="10"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+  </div>
+
+  <div class="feed" id="feed">
+    <div class="feed-item theme-garden" data-theme="garden">
+      <div class="feed-head">
+        <div class="feed-avatar av-b">M</div>
+        <div class="feed-meta"><div class="feed-name">@maria</div><div class="feed-time">2h ago</div></div>
+      </div>
+      <div class="feed-text">Just finished setting up the garden compost. <strong>Who wants to share kitchen scraps?</strong> I'll trade for herbs 🌿</div>
+      <div class="feed-tags"><span class="feed-tag">garden</span><span class="feed-tag">trade</span><span class="feed-tag">close</span></div>
+      <div class="feed-footer">
+        <span class="feed-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 4</span>
+        <span class="feed-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 2</span>
+        <span class="feed-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
+      </div>
+    </div>
+    <div class="feed-item theme-trade" data-theme="trade">
+      <div class="feed-head">
+        <div class="feed-avatar av-a">A</div>
+        <div class="feed-meta"><div class="feed-name">@ana</div><div class="feed-time">5h ago</div></div>
+      </div>
+      <div class="feed-text">Offering weekend babysitting. I have references from 3 families. <strong>DM me if you need a break!</strong></div>
+      <div class="feed-tags"><span class="feed-tag">childcare</span><span class="feed-tag">weekends</span></div>
+      <div class="feed-footer">
+        <span class="feed-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 7</span>
+        <span class="feed-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 3</span>
+        <span class="feed-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
+      </div>
+    </div>
+    <div class="feed-item theme-community" data-theme="community">
+      <div class="feed-head">
+        <div class="feed-avatar av-c">C</div>
+        <div class="feed-meta"><div class="feed-name">@charlie</div><div class="feed-time">8h ago</div></div>
+      </div>
+      <div class="feed-text">Neighborhood cleanup this Saturday at Plaza Chamberí. <strong>Everyone welcome, bags provided!</strong> 🧹</div>
+      <div class="feed-tags"><span class="feed-tag">cleanup</span><span class="feed-tag">community</span><span class="feed-tag">saturday</span></div>
+      <div class="feed-footer">
+        <span class="feed-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 12</span>
+        <span class="feed-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 5</span>
+        <span class="feed-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
+      </div>
+    </div>
+    <div class="feed-item theme-growth hidden" data-theme="growth">
+      <div class="feed-head">
+        <div class="feed-avatar av-d">E</div>
+        <div class="feed-meta"><div class="feed-name">@erin</div><div class="feed-time">1d ago</div></div>
+      </div>
+      <div class="feed-text">Maths tutoring available for secondary students. <strong>First session free</strong> — let's build confidence together 📐</div>
+      <div class="feed-tags"><span class="feed-tag">teach</span><span class="feed-tag">maths</span><span class="feed-tag">growth</span></div>
+      <div class="feed-footer">
+        <span class="feed-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 3</span>
+        <span class="feed-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 1</span>
+        <span class="feed-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
+      </div>
+    </div>
+    <div class="feed-item theme-wellness hidden" data-theme="wellness">
+      <div class="feed-head">
+        <div class="feed-avatar av-b">O</div>
+        <div class="feed-meta"><div class="feed-name">@olivia</div><div class="feed-time">2d ago</div></div>
+      </div>
+      <div class="feed-text">Yoga in the park Sunday morning at Retiro. <strong>All levels welcome, bring your own mat</strong> 🧘</div>
+      <div class="feed-tags"><span class="feed-tag">yoga</span><span class="feed-tag">park</span><span class="feed-tag">wellness</span></div>
+      <div class="feed-footer">
+        <span class="feed-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 9</span>
+        <span class="feed-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 4</span>
+        <span class="feed-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row" id="feedControls">
+    <button class="btn ghost" onclick="showFilterGroups()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg> Filter</button>
+    <button class="btn signal" onclick="loadMore()">See more</button>
+  </div>
+
+  <div class="sec-appy">Appy</div>
+
+  <!-- appy agent: recommended for you -->
+  <div id="appyAgent">
+    <div class="card" id="appyAgentCard">
+      <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem">
+        <span style="font-family:'Fredoka',sans-serif;font-weight:600;font-size:.6rem;color:var(--ink)">appy for you</span>
+      </div>
+      <div id="appyAgentList"><!-- built by renderAppyAgent() --></div>
+    </div>
+  </div>
+
+  <div id="appsList">
+    <div class="search"><input type="text" id="appsSearch" placeholder="search apps..." oninput="filterApps(this.value)"></div>
+
+    <div class="folder" data-folder="economy">
+      <div class="folder-head" onclick="toggleFolder(this)"><svg class="folder-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span class="folder-name">economy</span><span class="folder-count">4</span></div>
+      <div class="folder-body">
+        <a class="menu-item" href="../../solo/apps/economy/dealy/dealy-advanced.html" target="_blank"><span class="menu-dot bg-accent"></span>dealy</a>
+        <a class="menu-item" href="../../solo/apps/economy/crafty.html" target="_blank"><span class="menu-dot bg-warn"></span>crafty</a>
+        <a class="menu-item" href="../../solo/apps/economy/lowy.html" target="_blank"><span class="menu-dot bg-warn"></span>lowy</a>
+        <a class="menu-item" href="../../solo/apps/economy/worthing.html" target="_blank"><span class="menu-dot bg-warn"></span>worthing</a>
+      </div>
+    </div>
+    <div class="folder" data-folder="bio">
+      <div class="folder-head" onclick="toggleFolder(this)"><svg class="folder-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span class="folder-name">bio</span><span class="folder-count">2</span></div>
+      <div class="folder-body">
+        <a class="menu-item" href="../../solo/apps/bio/sensy.html" target="_blank"><span class="menu-dot bg-signal"></span>sensy</a>
+        <a class="menu-item" href="../../solo/apps/bio/pracsys.html" target="_blank"><span class="menu-dot bg-signal"></span>pracsys</a>
+      </div>
+    </div>
+    <div class="folder" data-folder="metas">
+      <div class="folder-head" onclick="toggleFolder(this)"><svg class="folder-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span class="folder-name">metas</span><span class="folder-count">4</span></div>
+      <div class="folder-body">
+        <a class="menu-item" href="../../solo/apps/metas/goddy.html" target="_blank"><span class="menu-dot bg-accent"></span>goddy</a>
+        <a class="menu-item" href="../../solo/apps/metas/moraly.html" target="_blank"><span class="menu-dot bg-accent"></span>moraly</a>
+        <a class="menu-item" href="../../solo/apps/metas/souls.html" target="_blank"><span class="menu-dot bg-accent"></span>souls</a>
+        <a class="menu-item" href="../../solo/apps/metas/willy.html" target="_blank"><span class="menu-dot bg-accent"></span>willy</a>
+      </div>
+    </div>
+    <div class="folder" data-folder="psicosocial">
+      <div class="folder-head" onclick="toggleFolder(this)"><svg class="folder-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span class="folder-name">psicosocial</span><span class="folder-count">4</span></div>
+      <div class="folder-body">
+        <a class="menu-item" href="../../solo/apps/psicosocial/astry.html" target="_blank"><span class="menu-dot bg-danger"></span>astry</a>
+        <a class="menu-item" href="../../solo/apps/psicosocial/socy.html" target="_blank"><span class="menu-dot bg-danger"></span>socy</a>
+        <a class="menu-item" href="../../solo/apps/psicosocial/hacky.html" target="_blank"><span class="menu-dot bg-danger"></span>hacky</a>
+        <a class="menu-item" href="../../solo/apps/psicosocial/lovy.html" target="_blank"><span class="menu-dot bg-danger"></span>lovy</a>
+      </div>
+    </div>
+    <div class="folder" data-folder="puzzy">
+      <div class="folder-head" onclick="toggleFolder(this)"><svg class="folder-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span class="folder-name">puzzy</span><span class="folder-count">4</span></div>
+      <div class="folder-body">
+        <a class="menu-item" href="../../solo/apps/puzzy/comby.html" target="_blank"><span class="menu-dot bg-signal"></span>comby</a>
+        <a class="menu-item" href="../../solo/apps/puzzy/confluenty.html" target="_blank"><span class="menu-dot bg-signal"></span>confluenty</a>
+        <a class="menu-item" href="../../solo/apps/puzzy/fivy.html" target="_blank"><span class="menu-dot bg-signal"></span>fivy</a>
+        <a class="menu-item" href="../../solo/apps/puzzy/linky.html" target="_blank"><span class="menu-dot bg-signal"></span>linky</a>
+      </div>
+    </div>
+    <div class="folder" data-folder="trusty">
+      <div class="folder-head" onclick="toggleFolder(this)"><svg class="folder-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span class="folder-name">trusty</span><span class="folder-count">4</span></div>
+      <div class="folder-body">
+        <a class="menu-item" href="../../solo/apps/trusty/crumbly.html" target="_blank"><span class="menu-dot bg-warn"></span>crumbly</a>
+        <a class="menu-item" href="../../solo/apps/trusty/daty.html" target="_blank"><span class="menu-dot bg-warn"></span>daty</a>
+        <a class="menu-item" href="../../solo/apps/trusty/evily.html" target="_blank"><span class="menu-dot bg-warn"></span>evily</a>
+        <a class="menu-item" href="../../solo/apps/trusty/maty.html" target="_blank"><span class="menu-dot bg-warn"></span>maty</a>
+      </div>
+    </div>
+    <div class="folder" data-folder="lowai">
+      <div class="folder-head" onclick="toggleFolder(this)"><svg class="folder-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span class="folder-name">lowai</span><span class="folder-count">1</span></div>
+      <div class="folder-body">
+        <a class="menu-item" href="../../solo/apps/lowai/index.html" target="_blank"><span class="menu-dot bg-muted"></span>lowai</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== BLOGY PANEL (embedded feed) ========== -->
+<div class="nav-panel" id="panel-blogy">
+  <iframe src="blogy/index.html" style="width:100%;height:calc(100vh - var(--top-h,48px) - var(--nav-h,56px) - var(--safe-b,0px) - 1rem);border:none;border-radius:12px;background:transparent" title="Blogy feed"></iframe>
+</div>
+
+<!-- ========== QUESTY PANEL (skill builder) ========== -->
+<div class="nav-panel" id="panel-questy">
+  <iframe src="/development/standards/skills/questy/index.html" style="width:100%;height:calc(100vh - var(--top-h,48px) - var(--nav-h,56px) - var(--safe-b,0px) - 1rem);border:none;border-radius:12px;background:transparent" title="Questy skill builder"></iframe>
+</div>
+
+<!-- ========== MYNET PANEL ========== -->
+<div class="nav-panel" id="panel-mynet">
+
+  <!-- per Scores (top tab) -->
+  <div class="sec">per Scores</div>
+  <div class="rcircle-grid" id="rcircleGrid">
+    <div class="rcircle-col" style="color:#02a85f" id="rcol-personal">
+      <button class="rcircle-top" onclick="toggleRcircle('personal')"><span class="rcircle-dot" style="background:#02a85f"></span><span class="rcircle-name">Personal</span><strong class="rcircle-score" id="tr-p">0 ⭐</strong></button>
+      <div class="rcircle-desc" id="rcircle-personal">Prove you're a real, unique human. Verified identity links and social profiles raise it.</div>
+      <div class="rcircle-increase" id="rinc-personal"><button class="rcircle-increase-btn" onclick="toggleRcircleInfo('personal')">↑ increase</button><div class="rcircle-increase-info" id="rinfo-personal">Verify your identity to prove you're a real, unique person.<ul><li>Link your email or phone</li><li>Add a profile photo</li><li>Connect a social account</li></ul></div></div>
+    </div>
+    <div class="rcircle-col" style="color:#0bb5c9" id="rcol-local">
+      <button class="rcircle-top" onclick="toggleRcircle('local')"><span class="rcircle-dot" style="background:#0bb5c9"></span><span class="rcircle-name">Local</span><strong class="rcircle-score" id="tr-l">0 ⭐</strong></button>
+      <div class="rcircle-desc" id="rcircle-local">Trust from people close to you. Grows when nearby peers vouch for you face-to-face.</div>
+      <div class="rcircle-increase" id="rinc-local"><button class="rcircle-increase-btn" onclick="toggleRcircleInfo('local')">↑ increase</button><div class="rcircle-increase-info" id="rinfo-local">Get vouched by people physically near you.<ul><li>Meet neighbours in person</li><li>Attend local flove events</li><li>Join a Chamberí circle</li></ul></div></div>
+    </div>
+    <div class="rcircle-col" style="color:#6c5ce7" id="rcol-social">
+      <button class="rcircle-top" onclick="toggleRcircle('social')"><span class="rcircle-dot" style="background:#6c5ce7"></span><span class="rcircle-name">Social</span><strong class="rcircle-score" id="tr-s">0 ⭐</strong></button>
+      <div class="rcircle-desc" id="rcircle-social">Reach across the wider network. Builds as you receive vouches and publish engaging content.</div>
+      <div class="rcircle-increase" id="rinc-social"><button class="rcircle-increase-btn" onclick="toggleRcircleInfo('social')">↑ increase</button><div class="rcircle-increase-info" id="rinfo-social">Grow your reach through content and connections.<ul><li>Publish posts people love</li><li>Receive vouches from wider peers</li><li>Share to your circles</li></ul></div></div>
+    </div>
+    <div class="rcircle-col" style="color:#3a86ff" id="rcol-global">
+      <button class="rcircle-top" onclick="toggleRcircle('global')"><span class="rcircle-dot" style="background:#3a86ff"></span><span class="rcircle-name">Global</span><strong class="rcircle-score" id="tr-g">0 ⭐</strong></button>
+      <div class="rcircle-desc" id="rcircle-global">Contribution to the whole mesh. Share hardware and publish approved content to raise it.</div>
+      <div class="rcircle-increase" id="rinc-global"><button class="rcircle-increase-btn" onclick="toggleRcircleInfo('global')">↑ increase</button><div class="rcircle-increase-info" id="rinfo-global">Contribute resources to the flove network.<ul><li>Share bandwidth or storage</li><li>Run a flove node</li><li>Publish approved public content</li></ul></div></div>
+    </div>
+  </div>
+
+  <!-- trust network -->
+  <!-- trustnet + actions (side by side) -->
+  <div style="display:flex;gap:.5rem">
+    <div style="flex:1;min-width:0">
+      <div class="sec">trustnet</div>
+      <div class="trust-list" id="trustnetList">
+        <div class="trust-item" onclick="showTrustOverlay({score:94,facets:{personal:9,local:8,social:7,global:6}})" style="cursor:pointer">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #02855c, #3fc862)">A</div>
+          <div class="trust-info"><div class="trust-name">@ana</div><div class="trust-relation">mutual vouch · close</div></div>
+          <div><span class="trust-score">94</span><span class="trust-dir">↔</span></div>
+        </div>
+        <div class="trust-item" onclick="showTrustOverlay({score:88,facets:{personal:7,local:9,social:6,global:5}})" style="cursor:pointer">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #6c5ce7, #a855f7)">L</div>
+          <div class="trust-info"><div class="trust-name">@luis</div><div class="trust-relation">mutual vouch · close</div></div>
+          <div><span class="trust-score">88</span><span class="trust-dir">↔</span></div>
+        </div>
+        <div class="trust-item" onclick="showTrustOverlay({score:82,facets:{personal:6,local:5,social:8,global:7}})" style="cursor:pointer">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #dd3b3b, #ff9a3a)">M</div>
+          <div class="trust-info"><div class="trust-name">@maria</div><div class="trust-relation">outgoing vouch · friends</div></div>
+          <div><span class="trust-score">82</span><span class="trust-dir">→</span></div>
+        </div>
+        <div class="trust-item trust-extra hidden">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #3aa0ff, #6c5ce7)">P</div>
+          <div class="trust-info"><div class="trust-name">@pedro</div><div class="trust-relation">incoming vouch · public</div></div>
+          <div><span class="trust-score">71</span><span class="trust-dir">←</span></div>
+        </div>
+        <div class="trust-item trust-extra hidden">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #0bb5c9, #3a86ff)">R</div>
+          <div class="trust-info"><div class="trust-name">@raul</div><div class="trust-relation">mutual vouch · friends</div></div>
+          <div><span class="trust-score">65</span><span class="trust-dir">↔</span></div>
+        </div>
+        <div class="trust-item trust-extra hidden">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #c44ad0, #ff6b9d)">D</div>
+          <div class="trust-info"><div class="trust-name">@dana</div><div class="trust-relation">outgoing vouch · close</div></div>
+          <div><span class="trust-score">58</span><span class="trust-dir">→</span></div>
+        </div>
+        <div class="trust-item trust-extra hidden">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #b9820a, #ffc41f)">E</div>
+          <div class="trust-info"><div class="trust-name">@erin</div><div class="trust-relation">incoming vouch · public</div></div>
+          <div><span class="trust-score">52</span><span class="trust-dir">←</span></div>
+        </div>
+        <div class="trust-item trust-extra hidden">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #02855c, #0bb5c9)">F</div>
+          <div class="trust-info"><div class="trust-name">@frank</div><div class="trust-relation">mutual vouch · friends</div></div>
+          <div><span class="trust-score">47</span><span class="trust-dir">↔</span></div>
+        </div>
+        <div class="trust-item trust-extra hidden">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #dd3b3b, #6c5ce7)">O</div>
+          <div class="trust-info"><div class="trust-name">@olivia</div><div class="trust-relation">outgoing vouch · public</div></div>
+          <div><span class="trust-score">41</span><span class="trust-dir">→</span></div>
+        </div>
+      </div>
+      <div class="see-more-col" id="trustnetSeeMore">
+        <button class="btn ghost" onclick="showMoreItems('trustnetList','trustExtra',this)">See more</button>
+      </div>
+    </div>
+    <div style="flex:1;min-width:0">
+      <div class="sec">actions</div>
+      <div class="trust-list" id="suggestedUsers">
+        <div class="trust-item action-item">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #b9820a, #ffc41f)">D</div>
+          <div class="trust-info"><div class="trust-name">@dani</div><div class="trust-relation">3 mutual</div></div>
+          <div class="action-buttons">
+            <button class="action-btn invite" onclick="showToast('Invite sent to @dani')" title="Invite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+            <button class="action-btn request" onclick="showToast('Vouch request sent to @dani')" title="Request vouch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+          </div>
+        </div>
+        <div class="trust-item action-item">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #c44ad0, #ff6b9d)">S</div>
+          <div class="trust-info"><div class="trust-name">@sara</div><div class="trust-relation">Chamberí</div></div>
+          <div class="action-buttons">
+            <button class="action-btn invite" onclick="showToast('Invite sent to @sara')" title="Invite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+            <button class="action-btn request" onclick="showToast('Vouch request sent to @sara')" title="Request vouch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+          </div>
+        </div>
+        <div class="trust-item action-item">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #0bb5c9, #3a86ff)">R</div>
+          <div class="trust-info"><div class="trust-name">@raul</div><div class="trust-relation">hacky player</div></div>
+          <div class="action-buttons">
+            <button class="action-btn invite" onclick="showToast('Invite sent to @raul')" title="Invite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+            <button class="action-btn request" onclick="showToast('Vouch request sent to @raul')" title="Request vouch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+          </div>
+        </div>
+        <div class="trust-item action-item action-extra hidden">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #02855c, #3fc862)">E</div>
+          <div class="trust-info"><div class="trust-name">@elena</div><div class="trust-relation">2 mutual</div></div>
+          <div class="action-buttons">
+            <button class="action-btn invite" onclick="showToast('Invite sent to @elena')" title="Invite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+            <button class="action-btn request" onclick="showToast('Vouch request sent to @elena')" title="Request vouch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+          </div>
+        </div>
+        <div class="trust-item action-item action-extra hidden">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #dd3b3b, #ff9a3a)">A</div>
+          <div class="trust-info"><div class="trust-name">@alex</div><div class="trust-relation">web dev</div></div>
+          <div class="action-buttons">
+            <button class="action-btn invite" onclick="showToast('Invite sent to @alex')" title="Invite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+            <button class="action-btn request" onclick="showToast('Vouch request sent to @alex')" title="Request vouch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+          </div>
+        </div>
+        <div class="trust-item action-item action-extra hidden">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #6c5ce7, #a855f7)">L</div>
+          <div class="trust-info"><div class="trust-name">@luna</div><div class="trust-relation">design · Chamberí</div></div>
+          <div class="action-buttons">
+            <button class="action-btn invite" onclick="showToast('Invite sent to @luna')" title="Invite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+            <button class="action-btn request" onclick="showToast('Vouch request sent to @luna')" title="Request vouch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+          </div>
+        </div>
+        <div class="trust-item action-item action-extra hidden">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #b9820a, #02855c)">Z</div>
+          <div class="trust-info"><div class="trust-name">@zara</div><div class="trust-relation">music lessons</div></div>
+          <div class="action-buttons">
+            <button class="action-btn invite" onclick="showToast('Invite sent to @zara')" title="Invite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+            <button class="action-btn request" onclick="showToast('Vouch request sent to @zara')" title="Request vouch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+          </div>
+        </div>
+        <div class="trust-item action-item action-extra hidden">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #3aa0ff, #0bb5c9)">S</div>
+          <div class="trust-info"><div class="trust-name">@sam</div><div class="trust-relation">dog walker</div></div>
+          <div class="action-buttons">
+            <button class="action-btn invite" onclick="showToast('Invite sent to @sam')" title="Invite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+            <button class="action-btn request" onclick="showToast('Vouch request sent to @sam')" title="Request vouch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+          </div>
+        </div>
+      </div>
+      <div class="see-more-col" id="suggestedSeeMore">
+        <button class="btn ghost" onclick="showMoreItems('suggestedUsers','action-extra',this)">See more</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:.5rem">
+    <div style="flex:1;min-width:0">
+      <div class="sec">Apps</div>
+      <div class="promoted-apps">
+        <div class="promoted-app" onclick="location.href='#launch-maty'" class="cursor-pointer">
+          <div class="promoted-icon"><img src="../shared/media/images/apps/captions/maty.png" alt="maty"></div>
+          <div class="promoted-name">maty</div>
+          <span class="promoted-chip played" onclick="event.stopPropagation();showToast('Opening maty results for @marc')">played</span>
+        </div>
+        <div class="promoted-app" onclick="location.href='#launch-myfamily'" class="cursor-pointer">
+          <div class="promoted-icon"><img src="../shared/media/images/apps/captions/myfamily.png" alt="myfamily"></div>
+          <div class="promoted-name">myfamily</div>
+          <span class="promoted-chip played" onclick="event.stopPropagation();showToast('Opening myfamily results for @marc')">played</span>
+        </div>
+        <div class="promoted-app" onclick="location.href='#launch-trusty'" class="cursor-pointer">
+          <div class="promoted-icon"><img src="../shared/media/images/apps/captions/trusty.png" alt="trusty"></div>
+          <div class="promoted-name">trusty</div>
+          <span class="promoted-chip played" onclick="event.stopPropagation();showToast('Opening trusty results for @marc')">played</span>
+        </div>
+        <div class="promoted-app" onclick="location.href='#launch-souls'" class="cursor-pointer">
+          <div class="promoted-icon" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:.9rem">🪬</div>
+          <div class="promoted-name">souls</div>
+          <span class="promoted-chip played" onclick="event.stopPropagation();showToast('Opening souls results for @marc')">played</span>
+        </div>
+      </div>
+    </div>
+    <div style="flex:1;min-width:0">
+      <div class="sec">actions</div>
+  <div class="contract-actions" id="contractActions">
+    <div class="contract-action" onclick="switchPanel('mynet')">
+      <div class="contract-action-left">
+        <span class="contract-action-icon">🤝</span>
+        <div class="contract-action-info"><div class="contract-action-title">vouch @maria</div><div class="contract-action-desc">maty requires social≥0.6 for mutual vouch</div></div>
+      </div>
+      <span class="contract-action-arrow">→</span>
+    </div>
+    <div class="contract-action" onclick="switchPanel('me')">
+      <div class="contract-action-left">
+        <span class="contract-action-icon">🔗</span>
+        <div class="contract-action-info"><div class="contract-action-title">request vouch from @luis</div><div class="contract-action-desc">boosts your social facet for maty activation</div></div>
+      </div>
+      <span class="contract-action-arrow">→</span>
+    </div>
+    <div class="contract-action" onclick="showToast('Opening identity settings')">
+      <div class="contract-action-left">
+        <span class="contract-action-icon">🪪</span>
+        <div class="contract-action-info"><div class="contract-action-title">link Telegram in authy</div><div class="contract-action-desc">unlocks publishing — required by myfamily</div></div>
+      </div>
+      <span class="contract-action-arrow">→</span>
+    </div>
+    <div class="contract-action" onclick="showToast('Opening neighbourhood circle')">
+      <div class="contract-action-left">
+        <span class="contract-action-icon">🏘</span>
+        <div class="contract-action-info"><div class="contract-action-title">join Chamberí neighbours</div><div class="contract-action-desc">raises local facet for maty recovery rules</div></div>
+      </div>
+      <span class="contract-action-arrow">→</span>
+    </div>
+    <div class="contract-action" onclick="showToast('Opening maty settings')">
+      <div class="contract-action-left">
+        <span class="contract-action-icon">🛡</span>
+        <div class="contract-action-info"><div class="contract-action-title">activate maty contract</div><div class="contract-action-desc">2/3 conditions met — vouch @maria to finish</div></div>
+      </div>
+      <span class="contract-action-arrow">→</span>
+    </div>
+  </div>
+    </div>
+  </div>
+
+  <!-- categories + circles side by side -->
+  <div style="display:flex;gap:.5rem">
+    <div style="flex:1;min-width:0">
+      <div class="sec">categories</div>
+      <div class="trust-list" id="categoriesList">
+        <div class="trust-item" onclick="filterFeedTab('garden',document.querySelector('[data-tab=garden]'));switchPanel('appy')" class="cursor-pointer">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #02855c, #3fc862)">🌿</div>
+          <div class="trust-info"><div class="trust-name">Garden</div><div class="trust-relation">3 posts</div></div>
+          <div style="width:7px;height:7px;border-radius:50%;background:#02855c"></div>
+        </div>
+        <div class="trust-item" onclick="filterFeedTab('trade',document.querySelector('[data-tab=trade]'));switchPanel('appy')" class="cursor-pointer">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #b9820a, #ffc41f)">🔄</div>
+          <div class="trust-info"><div class="trust-name">Trade</div><div class="trust-relation">4 posts</div></div>
+          <div style="width:7px;height:7px;border-radius:50%;background:#b9820a"></div>
+        </div>
+        <div class="trust-item" onclick="filterFeedTab('community',document.querySelector('[data-tab=community]'));switchPanel('appy')" class="cursor-pointer">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #dd3b3b, #ff9a3a)">🤝</div>
+          <div class="trust-info"><div class="trust-name">Community</div><div class="trust-relation">5 posts</div></div>
+          <div style="width:7px;height:7px;border-radius:50%;background:#dd3b3b"></div>
+        </div>
+        <div class="trust-item" onclick="filterFeedTab('growth',document.querySelector('[data-tab=growth]'));switchPanel('appy')" class="cursor-pointer">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #6c5ce7, #a855f7)">📐</div>
+          <div class="trust-info"><div class="trust-name">Growth</div><div class="trust-relation">2 posts</div></div>
+          <div style="width:7px;height:7px;border-radius:50%;background:#6c5ce7"></div>
+        </div>
+        <div class="trust-item" onclick="filterFeedTab('wellness',document.querySelector('[data-tab=wellness]'));switchPanel('appy')" class="cursor-pointer">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #0bb5c9, #3a86ff)">🧘</div>
+          <div class="trust-info"><div class="trust-name">Wellness</div><div class="trust-relation">2 posts</div></div>
+          <div style="width:7px;height:7px;border-radius:50%;background:#0bb5c9"></div>
+        </div>
+      </div>
+      <button class="mgmt-btn" onclick="showToast('Opening category manager')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>manage</button>
+    </div>
+    <div style="flex:1;min-width:0">
+      <div class="sec">circles</div>
+      <div class="trust-list" id="circlesList">
+        <div class="trust-item">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #02855c, #3fc862)">C</div>
+          <div class="trust-info"><div class="trust-name">Close</div><div class="trust-relation">3 members · friends</div></div>
+          <div class="trust-score" style="color:var(--signal)">active</div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #6c5ce7, #a855f7)">P</div>
+          <div class="trust-info"><div class="trust-name">Public</div><div class="trust-relation">all flove users</div></div>
+          <div class="trust-score" style="color:var(--accent)">open</div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #b9820a, #ffc41f)">🏘</div>
+          <div class="trust-info"><div class="trust-name">Chamberí neighbours</div><div class="trust-relation">circle · 12 members</div></div>
+          <div class="trust-score" style="color:var(--signal)">local</div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-avatar" style="background:linear-gradient(135deg, #02855c, #3fc862)">🌿</div>
+          <div class="trust-info"><div class="trust-name">Urban gardeners</div><div class="trust-relation">tribe · 48 members</div></div>
+          <div class="trust-score" style="color:var(--accent)">social</div>
+        </div>
+      </div>
+      <!-- create new -->
+      <div class="create-circle">
+        <div class="create-circle-head" onclick="toggleCreateCircle()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          create new
+        </div>
+        <div class="create-circle-form" id="createCircleForm">
+          <div class="field"><label>circle name</label><input type="text" id="newCircleName" placeholder="e.g. Book club"></div>
+          <div class="field"><label>type</label><select id="newCircleType"><option value="circle">circle</option><option value="tribe">tribe</option><option value="group">group</option></select></div>
+          <div class="field"><label>add members (comma separated)</label><input type="text" id="newCircleMembers" placeholder="@ana, @luis, @maria"></div>
+          <div class="member-list" id="newCircleMemberTags"></div>
+          <div class="circle-actions">
+            <button class="btn signal" onclick="createCircle()">create</button>
+            <button class="btn ghost" onclick="toggleCreateCircle()">cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ========== SETY PANEL ========== -->
+<div class="nav-panel" id="panel-sety">
+
+  <div class="sec sec-collapse" onclick="toggleSecBody(this)"><span>configurations</span><span class="sec-info">ℹ</span></div>
+  <div class="sec-body">
+  <div class="card">
+    <div class="card-row"><span class="card-row-label">distro</span><span class="card-row-value accent">central</span></div>
+    <div class="card-row"><span class="card-row-label">tier</span><span class="card-row-value accent">normal</span></div>
+    <div class="card-row"><span class="card-row-label">storage</span><span class="card-row-value">extension</span></div>
+    <div class="card-row"><span class="card-row-label">sync</span><span class="card-row-value live" id="syncVal">checking...</span></div>
+  </div>
+  <div class="card" style="margin-top:.5rem">
+    <div class="toggle-row">
+      <div class="toggle-info"><div class="toggle-label">dark mode</div><div class="toggle-desc">Light or dark theme</div></div>
+      <label class="toggle"><input type="checkbox" id="toggleTheme"><span class="toggle-track"></span></label>
+      <span class="toggle-state" style="font-size:.42rem;font-family:'Space Mono',monospace;color:var(--muted)">off</span>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-info"><div class="toggle-label">audio</div><div class="toggle-desc">Sound effects and tones</div></div>
+      <label class="toggle"><input type="checkbox" id="toggleSound"><span class="toggle-track"></span></label>
+      <span class="toggle-state" style="font-size:.42rem;font-family:'Space Mono',monospace;color:var(--muted)">off</span>
+    </div>
+    <div id="soundLevelRow" style="display:none;padding:.3rem 0 .4rem">
+      <div style="font-size:.4rem;color:var(--muted);font-family:'Space Mono',monospace;letter-spacing:.06em;text-transform:uppercase;margin-bottom:.3rem">sound depth</div>
+      <div style="display:flex;gap:.25rem;flex-wrap:wrap" id="soundLevelBar">
+        <button class="btn-solevel" data-level="mini" onclick="setSoundLevel('mini')">mini</button>
+        <button class="btn-solevel" data-level="basic" onclick="setSoundLevel('basic')">basic</button>
+        <button class="btn-solevel" data-level="normal" onclick="setSoundLevel('normal')">normal</button>
+        <button class="btn-solevel" data-level="advanced" onclick="setSoundLevel('advanced')">advanced</button>
+        <button class="btn-solevel" data-level="super" onclick="setSoundLevel('super')">super</button>
+      </div>
+      <div style="font-size:.36rem;color:var(--muted);margin-top:.25rem" id="soundLevelDesc">click sounds only</div>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-info"><div class="toggle-label">notifications</div><div class="toggle-desc">Push alerts for trust events</div></div>
+      <label class="toggle"><input type="checkbox" id="toggleNotifs"><span class="toggle-track"></span></label>
+      <span class="toggle-state" style="font-size:.42rem;font-family:'Space Mono',monospace;color:var(--muted)">off</span>
+    </div>
+    <div class="field" style="margin-top:.5rem">
+      <label>language</label>
+      <select id="selectLanguage"><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option></select>
+    </div>
+  </div>
+  </div>
+
+  <!-- security & recovery (private) -->
+  <div class="sec">security</div>
+  <div class="card" id="securityCard">
+    <div style="display:flex;gap:.4rem">
+      <div class="authy-item" onclick="toggleSecurityTab('recovery')">
+        <span class="authy-icon">🔑</span>
+        <span class="authy-label">Recovery</span>
+        <span class="authy-badge on">3/4</span>
+      </div>
+      <div class="authy-item" onclick="toggleSecurityTab('locks')">
+        <span class="authy-icon">🔒</span>
+        <span class="authy-label">Auto-lock</span>
+        <span class="authy-badge on">15m</span>
+      </div>
+      <div class="authy-item" onclick="toggleSecurityTab('export')">
+        <span class="authy-icon">📦</span>
+        <span class="authy-label">Export</span>
+        <span class="authy-badge">…</span>
+      </div>
+    </div>
+    <div style="margin-top:.4rem">
+      <div class="heritage-chip" onclick="showToast('Opening Diesafe heritage')">
+        <div class="heritage-chip-icon"><span>🛡</span></div>
+        <span class="heritage-chip-label">Heritage</span>
+        <span class="heritage-chip-badge">Diesafe</span>
+      </div>
+    </div>
+    <div id="securityDetail" style="margin-top:.35rem"></div>
+  </div>
+
+  <div class="sec" style="color:var(--danger)">danger zone</div>
+  <div class="card" style="border-color:rgba(221,59,59,.2)">
+    <div class="card-row"><span class="card-row-label">export all data</span><button class="btn ghost" style="min-height:36px;padding:.4rem .8rem;font-size:.55rem" onclick="showToast('Export started')">export</button></div>
+    <div class="card-row"><span class="card-row-label">delete account</span><button class="btn danger" style="min-height:36px;padding:.4rem .8rem;font-size:.55rem" onclick="showToast('Requires confirmation')">delete</button></div>
+  </div>
+
+  <div style="display:flex;gap:.3rem;margin-top:.8rem;flex-wrap:wrap">
+    <button class="mgmt-btn" style="flex:1;min-width:80px" onclick="showToast('Opening About')">About</button>
+    <button class="mgmt-btn" style="flex:1;min-width:80px" onclick="showToast('Opening About flove')">About flove</button>
+    <button class="mgmt-btn" style="flex:1;min-width:80px" onclick="showToast('Opening Privacy policy')">Privacy</button>
+    <button class="mgmt-btn" style="flex:1;min-width:80px" onclick="showToast('Opening Terms')">Terms</button>
+  </div>
+
+</div>
+
+</main>
+
+<!-- CUBE MODALS — app previews -->
+<div class="cube" id="launch-maty">
+  <a class="cube-backdrop" href="#"></a>
+  <div class="cube-inner">
+    <a class="cube-close" href="#">✕</a>
+    <div class="cube-head">
+      <div class="cube-icon"><img src="../shared/media/images/apps/captions/maty.png" alt="maty"></div>
+      <div><h2>maty</h2><div class="cube-tag">trusty · personal circle contracts</div></div>
+      <span class="cube-match">★ 94% match</span>
+    </div>
+    <div class="cube-desc"><p>Personal circle contracts — define trust rules, set conditions, and manage who's in your inner circle.</p></div>
+    <div class="cube-screenshots"><div class="cube-shot">🛡</div><div class="cube-shot">👥</div><div class="cube-shot">📋</div></div>
+    <div class="cube-actions"><a class="cube-btn primary" href="../../solo/apps/trusty/maty.html" target="_blank">Open maty</a><a class="cube-btn" href="#">★ 94%</a></div>
+  </div>
+</div>
+
+<div class="cube" id="launch-myfamily">
+  <a class="cube-backdrop" href="#"></a>
+  <div class="cube-inner" style="--grad-1:#6c5ce7;--grad-2:#a855f7">
+    <a class="cube-close" href="#">✕</a>
+    <div class="cube-head">
+      <div class="cube-icon"><img src="../shared/media/images/apps/captions/myfamily.png" alt="myfamily"></div>
+      <div><h2>myfamily</h2><div class="cube-tag">trusty · family circle contracts</div></div>
+      <span class="cube-match">★ 88% match</span>
+    </div>
+    <div class="cube-desc"><p>Family circle contracts — coordinate shared responsibilities, set household rules, and track commitments.</p></div>
+    <div class="cube-screenshots"><div class="cube-shot">👨‍👩‍👧‍👦</div><div class="cube-shot">🏠</div><div class="cube-shot">💚</div></div>
+    <div class="cube-actions"><a class="cube-btn primary" href="../../solo/apps/trusty/myfamily.html" target="_blank">Open myfamily</a><a class="cube-btn" href="#">★ 88%</a></div>
+  </div>
+</div>
+
+<div class="cube" id="launch-trusty">
+  <a class="cube-backdrop" href="#"></a>
+  <div class="cube-inner" style="--grad-1:#02855c;--grad-2:#3fc862">
+    <a class="cube-close" href="#">✕</a>
+    <div class="cube-head">
+      <div class="cube-icon"><img src="../shared/media/images/apps/captions/trusty.png" alt="trusty"></div>
+      <div><h2>trusty</h2><div class="cube-tag">trusty · trust network core</div></div>
+      <span class="cube-match">★ 96% match</span>
+    </div>
+    <div class="cube-desc"><p>Trust network core — manage your trust relationships, vouch for others, and build your reputation.</p></div>
+    <div class="cube-screenshots"><div class="cube-shot">🤝</div><div class="cube-shot">🌐</div><div class="cube-shot">📊</div></div>
+    <div class="cube-actions"><a class="cube-btn primary" href="../../solo/apps/trusty/trusty.html" target="_blank">Open trusty</a><a class="cube-btn" href="#">★ 96%</a></div>
+  </div>
+</div>
+
+<div class="cube" id="launch-souls">
+  <a class="cube-backdrop" href="#"></a>
+  <div class="cube-inner" style="--grad-1:#7c3aed;--grad-2:#a78bfa">
+    <a class="cube-close" href="#">✕</a>
+    <div class="cube-head">
+      <div class="cube-icon" style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#7c3aed,#a78bfa);font-size:28px">🪬</div>
+      <div><h2>souls</h2><div class="cube-tag">metas · spiritual identity layer</div></div>
+      <span class="cube-match">★ 92% match</span>
+    </div>
+    <div class="cube-desc"><p>Spiritual identity layer — explore your inner self, connect with others on a deeper level.</p></div>
+    <div class="cube-screenshots"><div class="cube-shot">🪬</div><div class="cube-shot">✨</div><div class="cube-shot">🔮</div></div>
+    <div class="cube-actions"><a class="cube-btn primary" href="../../solo/apps/metas/souls.html" target="_blank">Open souls</a><a class="cube-btn" href="#">★ 92%</a></div>
+  </div>
+</div>
+
+<div class="cube" id="launch-dealy">
+  <a class="cube-backdrop" href="#"></a>
+  <div class="cube-inner" style="--grad-1:#6c5ce7;--grad-2:#3aa0ff">
+    <a class="cube-close" href="#">✕</a>
+    <div class="cube-head">
+      <div class="cube-icon"><img src="../shared/media/images/apps/captions/dealy.png" alt="dealy"></div>
+      <div><h2>dealy</h2><div class="cube-tag">economy · compare trust & value</div></div>
+      <span class="cube-match">★ 78% match</span>
+    </div>
+    <div class="cube-desc"><p>Compare trust and value across your network. Find the best deals based on real trust scores.</p></div>
+    <div class="cube-screenshots"><div class="cube-shot">💎</div><div class="cube-shot">📊</div><div class="cube-shot">🤝</div></div>
+    <div class="cube-actions"><a class="cube-btn primary" href="../../solo/apps/economy/dealy/dealy-advanced.html" target="_blank">Open dealy</a><a class="cube-btn" href="#">★ 78%</a></div>
+  </div>
+</div>
+
+<div class="cube" id="launch-sensy">
+  <a class="cube-backdrop" href="#"></a>
+  <div class="cube-inner" style="--grad-1:#02855c;--grad-2:#3fc862">
+    <a class="cube-close" href="#">✕</a>
+    <div class="cube-head">
+      <div class="cube-icon"><img src="../shared/media/images/apps/captions/sensy.png" alt="sensy"></div>
+      <div><h2>sensy</h2><div class="cube-tag">bio · body-aware insights</div></div>
+      <span class="cube-match">★ 85% match</span>
+    </div>
+    <div class="cube-desc"><p>Body-aware insights — track your physical and emotional state, understand patterns.</p></div>
+    <div class="cube-screenshots"><div class="cube-shot">🌡</div><div class="cube-shot">💓</div><div class="cube-shot">🧘</div></div>
+    <div class="cube-actions"><a class="cube-btn primary" href="../../solo/apps/bio/sensy.html" target="_blank">Open sensy</a><a class="cube-btn" href="#">★ 85%</a></div>
+  </div>
+</div>
+
+<div class="cube" id="launch-goddy">
+  <a class="cube-backdrop" href="#"></a>
+  <div class="cube-inner" style="--grad-1:#3a86ff;--grad-2:#6c5ce7">
+    <a class="cube-close" href="#">✕</a>
+    <div class="cube-head">
+      <div class="cube-icon"><img src="../shared/media/images/apps/captions/goddy.png" alt="goddy"></div>
+      <div><h2>goddy</h2><div class="cube-tag">metas · global resource view</div></div>
+      <span class="cube-match">★ 80% match</span>
+    </div>
+    <div class="cube-desc"><p>Global resource view — see the big picture of shared resources and impact across the mesh.</p></div>
+    <div class="cube-screenshots"><div class="cube-shot">☁</div><div class="cube-shot">🌍</div><div class="cube-shot">📡</div></div>
+    <div class="cube-actions"><a class="cube-btn primary" href="../../solo/apps/metas/goddy.html" target="_blank">Open goddy</a><a class="cube-btn" href="#">★ 80%</a></div>
+  </div>
+</div>
+
+<div class="cube" id="launch-astry">
+  <a class="cube-backdrop" href="#"></a>
+  <div class="cube-inner" style="--grad-1:#dd3b3b;--grad-2:#ff9a3a">
+    <a class="cube-close" href="#">✕</a>
+    <div class="cube-head">
+      <div class="cube-icon"><img src="../shared/media/images/apps/captions/astry.png" alt="astry"></div>
+      <div><h2>astry</h2><div class="cube-tag">psicosocial · mood & reflection</div></div>
+      <span class="cube-match">★ 76% match</span>
+    </div>
+    <div class="cube-desc"><p>Mood and reflection — journal your thoughts, track emotional patterns, gain insights.</p></div>
+    <div class="cube-screenshots"><div class="cube-shot">⭐</div><div class="cube-shot">🌙</div><div class="cube-shot">💭</div></div>
+    <div class="cube-actions"><a class="cube-btn primary" href="../../solo/apps/psicosocial/astry.html" target="_blank">Open astry</a><a class="cube-btn" href="#">★ 76%</a></div>
+  </div>
+</div>
+
+<div class="cube" id="launch-fivy">
+  <a class="cube-backdrop" href="#"></a>
+  <div class="cube-inner" style="--grad-1:#02855c;--grad-2:#0bb5c9">
+    <a class="cube-close" href="#">✕</a>
+    <div class="cube-head">
+      <div class="cube-icon"><img src="../shared/media/images/apps/captions/fivy.png" alt="fivy"></div>
+      <div><h2>fivy</h2><div class="cube-tag">puzzy · five-card matches</div></div>
+      <span class="cube-match">★ 82% match</span>
+    </div>
+    <div class="cube-desc"><p>Five-card matches — find connections between people, ideas, and resources.</p></div>
+    <div class="cube-screenshots"><div class="cube-shot">🔗</div><div class="cube-shot">🎯</div><div class="cube-shot">🃏</div></div>
+    <div class="cube-actions"><a class="cube-btn primary" href="../../solo/apps/puzzy/fivy.html" target="_blank">Open fivy</a><a class="cube-btn" href="#">★ 82%</a></div>
+  </div>
+</div>
+
+<div class="cube" id="launch-crafty">
+  <a class="cube-backdrop" href="#"></a>
+  <div class="cube-inner" style="--grad-1:#b9820a;--grad-2:#ffc41f">
+    <a class="cube-close" href="#">✕</a>
+    <div class="cube-head">
+      <div class="cube-icon"><img src="../shared/media/images/apps/captions/crafty.png" alt="crafty"></div>
+      <div><h2>crafty</h2><div class="cube-tag">economy · craft & trade skills</div></div>
+      <span class="cube-match">★ 71% match</span>
+    </div>
+    <div class="cube-desc"><p>Craft and trade skills — showcase creations, trade skills with neighbors.</p></div>
+    <div class="cube-screenshots"><div class="cube-shot">🧶</div><div class="cube-shot">✂️</div><div class="cube-shot">🎨</div></div>
+    <div class="cube-actions"><a class="cube-btn primary" href="../../solo/apps/economy/crafty.html" target="_blank">Open crafty</a><a class="cube-btn" href="#">★ 71%</a></div>
+  </div>
+</div>
+
+<div class="cube" id="launch-worthing">
+  <a class="cube-backdrop" href="#"></a>
+  <div class="cube-inner" style="--grad-1:#b9820a;--grad-2:#ff9a3a">
+    <a class="cube-close" href="#">✕</a>
+    <div class="cube-head">
+      <div class="cube-icon"><img src="../shared/media/images/apps/captions/worthing.png" alt="worthing"></div>
+      <div><h2>worthing</h2><div class="cube-tag">economy · time-based currency</div></div>
+      <span class="cube-match">★ 74% match</span>
+    </div>
+    <div class="cube-desc"><p>Time-based currency — earn and spend hours, value everyone's time equally.</p></div>
+    <div class="cube-screenshots"><div class="cube-shot">💰</div><div class="cube-shot">⏱</div><div class="cube-shot">🔄</div></div>
+    <div class="cube-actions"><a class="cube-btn primary" href="../../solo/apps/economy/worthing.html" target="_blank">Open worthing</a><a class="cube-btn" href="#">★ 74%</a></div>
+  </div>
+</div>
+
+<div class="cube" id="launch-pracsys">
+  <a class="cube-backdrop" href="#"></a>
+  <div class="cube-inner" style="--grad-1:#02855c;--grad-2:#3fc862">
+    <a class="cube-close" href="#">✕</a>
+    <div class="cube-head">
+      <div class="cube-icon"><img src="../shared/media/images/apps/captions/pracsys.png" alt="pracsys"></div>
+      <div><h2>pracsys</h2><div class="cube-tag">bio · practice & habits</div></div>
+      <span class="cube-match">★ 83% match</span>
+    </div>
+    <div class="cube-desc"><p>Practice and habits — build consistent routines, track progress, develop lasting positive habits.</p></div>
+    <div class="cube-screenshots"><div class="cube-shot">📋</div><div class="cube-shot">✅</div><div class="cube-shot">📈</div></div>
+    <div class="cube-actions"><a class="cube-btn primary" href="../../solo/apps/bio/pracsys.html" target="_blank">Open pracsys</a><a class="cube-btn" href="#">★ 83%</a></div>
+  </div>
+</div>
+
+<div class="cube" id="launch-lovy">
+  <a class="cube-backdrop" href="#"></a>
+  <div class="cube-inner" style="--grad-1:#dd3b3b;--grad-2:#ff6b9d">
+    <a class="cube-close" href="#">✕</a>
+    <div class="cube-head">
+      <div class="cube-icon"><img src="../shared/media/images/apps/captions/lovy.png" alt="lovy"></div>
+      <div><h2>lovy</h2><div class="cube-tag">psicosocial · relationships & trust</div></div>
+      <span class="cube-match">★ 89% match</span>
+    </div>
+    <div class="cube-desc"><p>Relationships and trust — deepen connections, understand relationship dynamics.</p></div>
+    <div class="cube-screenshots"><div class="cube-shot">❤</div><div class="cube-shot">💕</div><div class="cube-shot">🌹</div></div>
+    <div class="cube-actions"><a class="cube-btn primary" href="../../solo/apps/psicosocial/lovy.html" target="_blank">Open lovy</a><a class="cube-btn" href="#">★ 89%</a></div>
+  </div>
+</div>
+
+<div class="cube" id="launch-hacky">
+  <a class="cube-backdrop" href="#"></a>
+  <div class="cube-inner" style="--grad-1:#dd3b3b;--grad-2:#6c5ce7">
+    <a class="cube-close" href="#">✕</a>
+    <div class="cube-head">
+      <div class="cube-icon"><img src="../shared/media/images/apps/captions/hacky.png" alt="hacky"></div>
+      <div><h2>hacky</h2><div class="cube-tag">psicosocial · hack & learn together</div></div>
+      <span class="cube-match">★ 77% match</span>
+    </div>
+    <div class="cube-desc"><p>Hack and learn together — collaborate on projects, share knowledge, grow skills.</p></div>
+    <div class="cube-screenshots"><div class="cube-shot">💻</div><div class="cube-shot">🛠</div><div class="cube-shot">📚</div></div>
+    <div class="cube-actions"><a class="cube-btn primary" href="../../solo/apps/psicosocial/hacky.html" target="_blank">Open hacky</a><a class="cube-btn" href="#">★ 77%</a></div>
+  </div>
+</div>
+
+<div class="cube" id="launch-linky">
+  <a class="cube-backdrop" href="#"></a>
+  <div class="cube-inner" style="--grad-1:#02855c;--grad-2:#6c5ce7">
+    <a class="cube-close" href="#">✕</a>
+    <div class="cube-head">
+      <div class="cube-icon"><img src="../shared/media/images/apps/captions/linky.png" alt="linky"></div>
+      <div><h2>linky</h2><div class="cube-tag">puzzy · connection chains</div></div>
+      <span class="cube-match">★ 79% match</span>
+    </div>
+    <div class="cube-desc"><p>Connection chains — discover how people and ideas connect through trust and shared interests.</p></div>
+    <div class="cube-screenshots"><div class="cube-shot">🪢</div><div class="cube-shot">🔗</div><div class="cube-shot">⛓</div></div>
+    <div class="cube-actions"><a class="cube-btn primary" href="../../solo/apps/puzzy/linky.html" target="_blank">Open linky</a><a class="cube-btn" href="#">★ 79%</a></div>
+  </div>
+</div>
+
+<div class="cube" id="launch-crumbly">
+  <a class="cube-backdrop" href="#"></a>
+  <div class="cube-inner" style="--grad-1:#b9820a;--grad-2:#02855c">
+    <a class="cube-close" href="#">✕</a>
+    <div class="cube-head">
+      <div class="cube-icon"><img src="../shared/media/images/apps/captions/crumbly.png" alt="crumbly"></div>
+      <div><h2>crumbly</h2><div class="cube-tag">trusty · vouch breadcrumbs</div></div>
+      <span class="cube-match">★ 81% match</span>
+    </div>
+    <div class="cube-desc"><p>Vouch breadcrumbs — leave trails of trust, discover who vouches for whom.</p></div>
+    <div class="cube-screenshots"><div class="cube-shot">🔍</div><div class="cube-shot">🍞</div><div class="cube-shot">📍</div></div>
+    <div class="cube-actions"><a class="cube-btn primary" href="../../solo/apps/trusty/crumbly.html" target="_blank">Open crumbly</a><a class="cube-btn" href="#">★ 81%</a></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- rainbow gradient for appy bee mark -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="rainbow" x1="8" y1="56" x2="56" y2="8" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#ff4d4d"/><stop offset=".2" stop-color="#ff9a3a"/><stop offset=".4" stop-color="#ffe14d"/>
+    <stop offset=".6" stop-color="#5ee06a"/><stop offset=".8" stop-color="#3aa0ff"/><stop offset="1" stop-color="#b06bff"/>
+  </linearGradient>
+</defs></svg>
+
+<!-- BOTTOM NAV — Me · Appy · MyNet · Notifs · Sety -->
+<nav class="bottom-nav" aria-label="Main navigation">
+  <button class="nav-btn" data-panel="me" aria-label="Me" onclick="switchPanel('me')" style="position:relative">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+    <span class="nav-label">me</span>
+    <span class="star-counter" id="starCounter" role="img" title="Your stars" style="position:absolute;top:17px;right:48px;margin:0;padding:.1rem .3rem;font-size:.5rem;min-width:auto;min-height:auto;gap:.15rem">
+      <svg viewBox="0 0 24 24" width="10" height="10"><path d="M12 2.6l2.7 5.85 6.3.92-4.56 4.44 1.08 6.27L12 17.27l-5.52 2.9 1.08-6.27L3 9.37l6.3-.92z"/></svg>
+      <span id="starNum">0</span>
+    </span>
+  </button>
+  <button class="nav-btn active" data-panel="appy" aria-label="Appy" onclick="switchPanel('appy');toggleCatMenu()">
+    <svg class="nav-icon" viewBox="0 0 64 64" fill="none" style="width:24px;height:24px">
+      <ellipse cx="22" cy="25" rx="11" ry="6.5" transform="rotate(-22 22 25)" fill="rgba(255,255,255,.5)" stroke="url(#rainbow)" stroke-width="1.4"/>
+      <ellipse cx="42" cy="25" rx="11" ry="6.5" transform="rotate(22 42 25)" fill="rgba(255,255,255,.5)" stroke="url(#rainbow)" stroke-width="1.4"/>
+      <rect x="23.5" y="29" width="17" height="25" rx="8.5" fill="#ffffff" stroke="url(#rainbow)" stroke-width="1.6"/>
+      <line x1="25" y1="37" x2="39" y2="37" stroke="url(#rainbow)" stroke-width="2.4" stroke-linecap="round"/>
+      <line x1="25" y1="44" x2="39" y2="44" stroke="url(#rainbow)" stroke-width="2.4" stroke-linecap="round"/>
+      <line x1="27" y1="50.5" x2="37" y2="50.5" stroke="url(#rainbow)" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="32" cy="27" r="5" fill="#ffffff" stroke="url(#rainbow)" stroke-width="1.4"/>
+      <path d="M29 23.5 L25 16" stroke="url(#rainbow)" stroke-width="1.3" stroke-linecap="round"/>
+      <circle cx="25" cy="16" r="2.4" fill="url(#rainbow)"/>
+      <path d="M35 23.5 L39 16" stroke="url(#rainbow)" stroke-width="1.3" stroke-linecap="round"/>
+      <circle cx="39" cy="16" r="2.4" fill="url(#rainbow)"/>
+    </svg>
+    <span class="nav-label" style="font-size:.55rem;font-weight:700;letter-spacing:-.01em;text-transform:none;background:linear-gradient(92deg,#ff4d4d,#ff9a3a,#ffc41f,#3fc862,#3aa0ff,#b06bff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Appy</span>
+  </button>
+  <button class="nav-btn" data-panel="blogy" aria-label="Blogy" onclick="switchPanel('blogy')">
+    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg></span>
+    <span class="nav-label">blogy</span>
+  </button>
+  <button class="nav-btn" data-panel="questy" aria-label="Questy" onclick="switchPanel('questy')">
+    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+    <span class="nav-label">questy</span>
+  </button>
+  <button class="nav-btn" data-panel="mynet" aria-label="MyNet" onclick="switchPanel('mynet')">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
+    <span class="nav-label">mynet</span>
+  </button>
+  <button class="nav-btn" data-panel="notifs" aria-label="Notifs" onclick="switchPanel('notifs')">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+    <span class="nav-label">notifs</span>
+    <span class="nav-badge">3</span>
+  </button>
+  <button class="nav-btn" data-panel="sety" aria-label="Sety" onclick="switchPanel('sety')">
+    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.3"/><path d="M12 2.4v3M12 18.6v3M21.6 12h-3M5.4 12h-3M18.8 5.2l-2.1 2.1M7.3 16.7l-2.1 2.1M18.8 18.8l-2.1-2.1M7.3 7.3 5.2 5.2"/></svg></span>
+    <span class="nav-label">sety</span>
+  </button>
+</nav>
+
+<script src="../shared/code/js/flove-settings.js"></script>
+<script src="../shared/code/js/flove-sound.js"></script>
+<script>
+/* state */
+var state = { stars:0, facets:{personal:0,local:0,social:0,global:0}, lovePosts:[] };
+
+/* trust & identity bridge (browsy) — for OTHER profiles only */
+function loadTrustScore(pubkey) {
+  if(!window.floveBridge) return;
+  window.floveBridge('getTrustScore', { pubkey: pubkey }, function(resp) {
+    if(!resp || !resp.ok) return;
+    showTrustOverlay(resp);
+  });
+}
+function showTrustOverlay(data) {
+  var existing = document.getElementById('trustOverlay');
+  if(existing) existing.remove();
+  var score = data.score || 0;
+  var facets = data.facets || {};
+  var overlay = document.createElement('div');
+  overlay.id = 'trustOverlay';
+  overlay.className = 'trust-overlay';
+  overlay.innerHTML = '<div class="trust-overlay-inner">'
+    + '<div class="trust-score-number">' + (score > 0 ? score.toFixed(1) : '--') + '</div>'
+    + '<div class="trust-score-label">trust score</div>'
+    + '<div class="facets-grid">'
+    + '<div class="facet-item"><div class="facet-value">' + (facets.personal||'--') + '</div><div class="facet-label">personal</div></div>'
+    + '<div class="facet-item"><div class="facet-value">' + (facets.local||'--') + '</div><div class="facet-label">local</div></div>'
+    + '<div class="facet-item"><div class="facet-value">' + (facets.social||'--') + '</div><div class="facet-label">social</div></div>'
+    + '<div class="facet-item"><div class="facet-value">' + (facets.global||'--') + '</div><div class="facet-label">global</div></div>'
+    + '</div>'
+    + '<button class="btn ghost" onclick="this.closest(\'.trust-overlay\').remove()" style="margin-top:.4rem;font-size:.4rem">close</button>'
+    + '</div>';
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', function(e) { if(e.target === overlay) overlay.remove(); });
+}
+function loadIdentityBadge() {
+  if(!window.floveBridge) return;
+  window.floveBridge('getIdentity', {}, function(resp) {
+    if(!resp || !resp.ok) return;
+    var badge = document.getElementById('identityBadge');
+    var label = document.getElementById('identityBadgeLabel');
+    if(resp.verified) {
+      badge.style.display = '';
+      label.textContent = resp.method ? resp.method + ' verified' : 'verified';
+    }
+  });
+}
+function initBridge() {
+  loadIdentityBadge();
+}
+document.addEventListener('DOMContentLoaded', initBridge);
+
+/* nav */
+function switchPanel(id) {
+  document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.nav-panel').forEach(function(p){ p.classList.remove('active'); });
+  var btn = document.querySelector('[data-panel="'+id+'"]');
+  var panel = document.getElementById('panel-'+id);
+  if(btn) btn.classList.add('active');
+  if(panel) panel.classList.add('active');
+  window.flove && window.flove.emit('nav', { panel:id });
+}
+
+function toggleSecBody(secEl) {
+  var body = secEl.nextElementSibling;
+  if(body && body.classList.contains('sec-body')) body.classList.toggle('open');
+}
+
+/* security tabs */
+var openSecurityTab = null;
+function toggleSecurityTab(tab) {
+  openSecurityTab = openSecurityTab === tab ? null : tab;
+  renderSecurityDetail();
+}
+function renderSecurityDetail() {
+  var el = document.getElementById('securityDetail');
+  if(!el) return;
+  if(!openSecurityTab) { el.innerHTML = ''; return; }
+  var html = '';
+  if(openSecurityTab === 'recovery') {
+    html = '<div class="authy-detail-inner">'
+      + '<label>recovery password</label>'
+      + '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.3rem"><span style="font-size:.5rem">🔑</span><span style="font-size:.48rem;color:var(--signal);font-weight:600">active</span></div>'
+      + '<input type="password" value="••••••••" placeholder="Set password">'
+      + '<label style="margin-top:.3rem">hint</label>'
+      + '<input type="text" placeholder="Optional hint">'
+      + '<label style="margin-top:.4rem">recovery trusts</label>'
+      + '<div class="trust-slot"><span class="trust-slot-dot bg-signal"></span><span class="trust-slot-name">@ana</span><span class="trust-slot-status ok">signed ✓</span></div>'
+      + '<div class="trust-slot"><span class="trust-slot-dot bg-signal"></span><span class="trust-slot-name">@luis</span><span class="trust-slot-status ok">signed ✓</span></div>'
+      + '<div class="trust-slot"><span class="trust-slot-dot bg-warn"></span><span class="trust-slot-name">@maria</span><span class="trust-slot-status pending">pending</span></div>'
+      + '<div class="trust-slot"><span class="trust-slot-dot bg-muted"></span><span class="trust-slot-name" style="color:var(--muted)">+ add slot</span><span class="trust-slot-status empty">empty</span></div>'
+      + '</div>';
+  } else if(openSecurityTab === 'locks') {
+    html = '<div class="authy-detail-inner">'
+      + '<label>auto-lock timeout</label>'
+      + '<select><option>5 minutes</option><option selected>15 minutes</option><option>30 minutes</option><option>1 hour</option><option>never</option></select>'
+      + '</div>';
+  } else if(openSecurityTab === 'export') {
+    html = '<div class="authy-detail-inner" style="font-size:.44rem;color:var(--muted)">'
+      + 'Export your data or sync across devices using the buttons below.'
+      + '</div>';
+  }
+  el.innerHTML = html;
+  el.classList.toggle('open', !!openSecurityTab);
+}
+
+/* played apps */
+function renderPlayedApps() {
+  var el = document.getElementById('playedAppsList');
+  if(!el) return;
+  if(!appyPlayed.length) {
+    el.innerHTML = '<div class="played-empty">No apps played yet — open Appy to explore.</div>';
+    return;
+  }
+  el.innerHTML = appyPlayed.map(function(id){
+    var app = APPY_CATALOG.find(function(a){ return a.id === id; });
+    if(!app) return '';
+    var match = 0;
+    app.facets.forEach(function(f){ match += state.facets[f] || 0; });
+    var pct = Math.min(match * 10, 99);
+    return '<div class="played-app" onclick="window.open(\''+app.href+'\',\'_blank\')"><div class="played-app-icon" style="background:linear-gradient(135deg,'+app.grad[0]+','+app.grad[1]+')"><span>'+app.icon+'</span></div><span class="played-app-name">'+app.name+'</span><span class="played-app-score">'+pct+'%</span></div>';
+  }).join('');
+}
+
+/* export / config / sync */
+function exportApps() {
+  var data = {
+    handle: document.getElementById('editHandle')?.value || '@marc',
+    meta: document.getElementById('editMeta')?.value || 'users/marc · central normal',
+    facets: state.facets,
+    stars: state.stars,
+    played: appyPlayed.map(function(id){
+      var app = APPY_CATALOG.find(function(a){ return a.id === id; });
+      if(!app) return null;
+      var match = 0;
+      app.facets.forEach(function(f){ match += state.facets[f] || 0; });
+      return { id:app.id, name:app.name, desc:app.desc, match:Math.min(match*10,99), facets:app.facets };
+    }).filter(Boolean),
+    exportedAt: new Date().toISOString()
+  };
+  download('flove-profile-apps.json', JSON.stringify(data, null, 2));
+  showToast('Apps profile exported');
+}
+function exportConfig() {
+  var data = {
+    handle: document.getElementById('editHandle')?.value || '@marc',
+    meta: document.getElementById('editMeta')?.value || 'users/marc · central normal',
+    social: socialLinks,
+    facets: state.facets,
+    stars: state.stars,
+    linkedIdentities: linkedIdentities,
+    autoLock: '15min',
+    exportedAt: new Date().toISOString()
+  };
+  download('flove-profile-config.json', JSON.stringify(data, null, 2));
+  showToast('Config exported');
+}
+function syncPulse(btn) {
+  btn.style.transition = 'transform .15s,box-shadow .15s';
+  btn.style.transform = 'scale(1.08)';
+  btn.style.boxShadow = '0 0 18px -2px rgba(0,247,167,.5)';
+  showToast('Syncing across devices…');
+  setTimeout(function(){
+    btn.style.transform = '';
+    btn.style.boxShadow = '';
+    showToast('Profile synced ✓');
+  }, 1200);
+}
+var seeMoreAuthyOpen = false;
+function toggleSeeMoreAuthy() {
+  seeMoreAuthyOpen = !seeMoreAuthyOpen;
+  var row = document.getElementById('authyQuickRow');
+  row.classList.toggle('open', seeMoreAuthyOpen);
+}
+var profileDetailsOpen = false;
+function toggleProfileDetails() {
+  profileDetailsOpen = !profileDetailsOpen;
+  var card = document.getElementById('profileDetailsCard');
+  card.classList.toggle('hidden', !profileDetailsOpen);
+  if(profileDetailsOpen) card.style.animation = 'reveal-up .3s cubic-bezier(.22,1,.36,1) both';
+}
+function updateProfileDetail() {
+  var name = document.getElementById('detailFullName')?.value || '';
+  var bio = document.getElementById('detailBio')?.value || '';
+  var loc = document.getElementById('detailLocation')?.value || '';
+  if(name) document.getElementById('profileHandle').textContent = '@' + name.toLowerCase().replace(/\s+/g,'');
+  var meta = [loc, 'central normal'].filter(Boolean).join(' · ');
+  if(bio) meta = bio + ' · ' + meta;
+  document.getElementById('profileMeta').textContent = meta;
+}
+function download(name, content) {
+  var blob = new Blob([content], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* invite code generation */
+function generateInvite() {
+  var handle = document.getElementById('editHandle')?.value || '@marc';
+  var code = 'flove-' + btoa(handle + ':' + Date.now().toString(36)).replace(/=/g,'').substring(0,12);
+  document.getElementById('inviteLabel').textContent = code;
+  var btn = document.querySelector('.invite-gen-btn');
+  btn.classList.add('generated');
+  navigator.clipboard.writeText(code).catch(function(){});
+  showToast('Invite code copied: ' + code);
+}
+function copyPublicKey() {
+  var key = 'a3f8c2e1b9d4f6e2c8a1b5d7f4e2c8a1b5d7f4e2c8a1b5d7f4e2c8a1b5d7f4e2';
+  navigator.clipboard.writeText(key).catch(function(){});
+  showToast('Public key copied');
+}
+function addInviteCode() {
+  var input = document.getElementById('mynetSearch');
+  var code = input.value.trim();
+  if(!code) { showToast('Paste an invite code or @handle'); return; }
+  showToast('Looking up ' + code + '…');
+  input.value = '';
+  setTimeout(function(){ showToast('Profile found — request sent ✓'); }, 800);
+}
+
+/* circle facet scores */
+var openRcircle = null;
+function toggleRcircle(key) {
+  var wasOpen = openRcircle === key;
+  openRcircle = wasOpen ? null : key;
+  document.querySelectorAll('.rcircle-col').forEach(function(c){ c.classList.remove('open'); });
+  if(openRcircle) {
+    var col = document.getElementById('rcol-' + openRcircle);
+    if(col) col.classList.add('open');
+  }
+}
+
+function toggleRcircleInfo(key) {
+  var info = document.getElementById('rinfo-' + key);
+  if(info) info.classList.toggle('open');
+}
+
+/* identity scale (authenticate) */
+var IDENTITY_STEPS = [
+  { key:'self', label:'Self', badge:'🪪', pts:5, color:'#02a85f' },
+  { key:'email', label:'Email', badge:'✉', pts:4, color:'#0bb5c9' },
+  { key:'telegram', label:'Telegram', badge:'✈', pts:12, color:'#3a86ff' },
+  { key:'phone', label:'Phone', badge:'📱', pts:6, color:'#6c5ce7' },
+  { key:'biometrics', label:'Bio', badge:'👁', pts:8, color:'#c44ad0' }
+];
+var linkedIdentities = [];
+var openIdentityStep = null;
+function renderIdentityScale() {
+  var wrap = document.getElementById('id5-scale');
+  if(!wrap) return;
+  var actualKey = 'self';
+  IDENTITY_STEPS.forEach(function(s){
+    if(s.key === 'self' || linkedIdentities.indexOf(s.key) > -1) actualKey = s.key;
+  });
+  wrap.innerHTML = IDENTITY_STEPS.map(function(s){
+    var reached = s.key === 'self' || linkedIdentities.indexOf(s.key) > -1;
+    var isActual = s.key === actualKey;
+    var isOpen = openIdentityStep === s.key;
+    var cls = 'id5-bar';
+    if(reached) cls += ' reached';
+    if(isActual) cls += ' actual';
+    if(isOpen) cls += ' open';
+    return '<div class="' + cls + '" style="background:' + (isActual ? s.color : 'transparent') + ';color:' + (isActual ? '#fff' : reached ? s.color : 'var(--muted)') + '" onclick="selectIdentityStep(\'' + s.key + '\')"><span class="id5-bar-badge">' + s.badge + '</span><span class="id5-bar-label">' + s.label + '</span><span class="id5-bar-pts">+' + s.pts + '</span></div>';
+  }).join('');
+}
+function selectIdentityStep(key) {
+  openIdentityStep = (openIdentityStep === key) ? null : key;
+  renderIdentityScale();
+  renderIdentityForm();
+}
+function renderIdentityForm() {
+  var wrap = document.getElementById('id-form');
+  if(!wrap) return;
+  var key = openIdentityStep;
+  if(!key) { wrap.innerHTML = ''; return; }
+  var s = IDENTITY_STEPS.find(function(x){ return x.key === key; });
+  var icon = '<div class="id-form-icon" style="color:' + s.color + '">' + s.badge + '</div>';
+  if(key === 'self') {
+    wrap.innerHTML = icon + '<div class="note">Edit your profile card above — name, handle, badges.</div>';
+    return;
+  }
+  if(linkedIdentities.indexOf(key) > -1) {
+    wrap.innerHTML = icon + '<div class="note">' + s.label + ' linked ✓ — +' + s.pts + ' to your Personal facet.</div>';
+    return;
+  }
+  var ph = key === 'telegram' ? '@handle' : key === 'phone' ? '+34 600 …' : key === 'email' ? 'you@mail.org' : '';
+  var inputHtml = key === 'biometrics' ? '' : '<div class="field"><input type="text" placeholder="' + ph + '" id="id-input-' + key + '"></div>';
+  var btnLabel = key === 'biometrics' ? 'Scan biometrics' : 'Link ' + s.label;
+  wrap.innerHTML = icon + inputHtml + '<button class="id-action" style="background:' + s.color + '" onclick="linkIdentity(\'' + key + '\')">' + btnLabel + '</button>';
+}
+function linkIdentity(key) {
+  if(linkedIdentities.indexOf(key) === -1) linkedIdentities.push(key);
+  openIdentityStep = null;
+  renderIdentityScale();
+  renderIdentityForm();
+  awardPoints(IDENTITY_STEPS.find(function(s){ return s.key === key; }).pts);
+  showToast('Linked ✓ +' + IDENTITY_STEPS.find(function(s){ return s.key === key; }).pts + ' pts');
+}
+
+/* appy folders & category menu */
+function toggleCatMenu() {
+  var menu = document.getElementById('catMenu');
+  menu.classList.toggle('open');
+}
+function toggleFolder(head) {
+  var body = head.nextElementSibling;
+  body.classList.toggle('open');
+  head.classList.toggle('open');
+}
+function filterApps(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('#appsList .folder').forEach(function(f){
+    var t = (f.dataset.folder||'') + ' ' + f.textContent;
+    f.style.display = t.toLowerCase().indexOf(q) !== -1 || q === '' ? '' : 'none';
+  });
+}
+
+/* outside click to close category menu */
+document.addEventListener('click', function(e) {
+  var menu = document.getElementById('catMenu');
+  var navBtn = document.querySelector('[data-panel="appy"]');
+  if(menu && menu.classList.contains('open') && !menu.contains(e.target) && !(navBtn && navBtn.contains(e.target))) {
+    menu.classList.remove('open');
+  }
+});
+
+/* circle management */
+var circleMembers = [];
+function toggleCreateCircle() {
+  var form = document.getElementById('createCircleForm');
+  form.classList.toggle('open');
+}
+function addCircleMember() {
+  var input = document.getElementById('newCircleMembers');
+  var val = input.value.trim();
+  if(!val) return;
+  var names = val.split(',').map(function(n){ return n.trim(); }).filter(function(n){ return n && n[0] === '@'; });
+  names.forEach(function(name){
+    if(circleMembers.indexOf(name) === -1) circleMembers.push(name);
+  });
+  input.value = '';
+  renderCircleMembers();
+}
+function removeCircleMember(name) {
+  circleMembers = circleMembers.filter(function(m){ return m !== name; });
+  renderCircleMembers();
+}
+function renderCircleMembers() {
+  var container = document.getElementById('newCircleMemberTags');
+  container.innerHTML = circleMembers.map(function(m){
+    return '<span class="member-tag">' + m + '<span class="member-remove" onclick="removeCircleMember(\'' + m + '\')">×</span></span>';
+  }).join('');
+}
+function createCircle() {
+  var name = document.getElementById('newCircleName').value.trim();
+  var type = document.getElementById('newCircleType').value;
+  if(!name) { showToast('Enter a circle name'); return; }
+  var colors = [['#02855c','#3fc862'],['#6c5ce7','#a855f7'],['#dd3b3b','#ff9a3a'],['#b9820a','#ffc41f'],['#3aa0ff','#6c5ce7']];
+  var color = colors[Math.floor(Math.random() * colors.length)];
+  var letter = name.charAt(0).toUpperCase();
+  var count = circleMembers.length || 0;
+  var relation = type + (count ? ' · ' + count + ' members' : '');
+  var html = '<div class="trust-item" style="animation:reveal-up .3s cubic-bezier(.22,1,.36,1) both"><div class="trust-avatar" style="background:linear-gradient(135deg, ' + color[0] + ', ' + color[1] + ')">' + letter + '</div><div class="trust-info"><div class="trust-name">' + escapeHtml(name) + '</div><div class="trust-relation">' + relation + '</div></div><div class="trust-score" style="color:var(--accent);cursor:pointer" onclick="deleteCircle(this)">delete</div></div>';
+  document.getElementById('circlesList').insertAdjacentHTML('beforeend', html);
+  document.getElementById('newCircleName').value = '';
+  document.getElementById('newCircleMembers').value = '';
+  circleMembers = [];
+  renderCircleMembers();
+  toggleCreateCircle();
+  showToast('Circle "' + name + '" created');
+}
+function deleteCircle(el) {
+  var item = el.closest('.trust-item');
+  item.style.opacity = '0';
+  item.style.transform = 'translateX(20px)';
+  item.style.transition = 'opacity .2s, transform .2s';
+  setTimeout(function(){ item.remove(); }, 200);
+  showToast('Circle deleted');
+}
+document.getElementById('newCircleMembers').addEventListener('keydown', function(e){
+  if(e.key === ',' || e.key === 'Enter') { e.preventDefault(); addCircleMember(); }
+});
+
+/* load more posts */
+var loadMoreState = 0;
+var morePosts = [
+  { name:'@charlie', time:'8h ago', text:'Anyone have a spare bike pump? Mine just died. <strong>Will trade for coffee!</strong>', tags:['bike','trade'], avatar:'av-c', letter:'C' },
+  { name:'@frank', time:'12h ago', text:'Offering delivery runs on Saturdays. Chamberí to Malasaña. <strong>5 h/wk available</strong>', tags:['delivery','saturday'], avatar:'av-d', letter:'F' },
+  { name:'@olivia', time:'1d ago', text:'Home cooking tonight: paella for 6. <strong>Extra plates if you bring dessert</strong>', tags:['cooking','community'], avatar:'av-a', letter:'O' },
+  { name:'@dana', time:'1d ago', text:'Garden seedlings ready: tomatoes, peppers, basil. <strong>Free to good homes</strong>', tags:['garden','free'], avatar:'av-b', letter:'D' },
+  { name:'@erin', time:'2d ago', text:'Maths tutoring available for secondary students. <strong>First session free</strong>', tags:['teach','maths'], avatar:'av-c', letter:'E' },
+  { name:'@luis', time:'2d ago', text:'Looking for running partners in Retiro. <strong>Morning group, 5K-10K</strong>', tags:['running','retiro'], avatar:'av-d', letter:'L' },
+  { name:'@maria', time:'3d ago', text:'Clothes swap this weekend. Bring what you don\'t wear, take what you love', tags:['swap','clothes'], avatar:'av-b', letter:'M' },
+  { name:'@pedro', time:'3d ago', text:'Need help moving Saturday. <strong>Pizza and beer provided</strong>', tags:['help','saturday'], avatar:'av-a', letter:'P' },
+  { name:'@ana', time:'4d ago', text:'Book club meets Thursday. Currently reading Klara and the Sun', tags:['books','thursday'], avatar:'av-a', letter:'A' },
+  { name:'@charlie', time:'4d ago', text:'Woodworking workshop available. Make a cutting board in 2 hours', tags:['craft','workshop'], avatar:'av-c', letter:'C' },
+  { name:'@frank', time:'5d ago', text:'Language exchange: Spanish for English, Wednesdays at 7', tags:['language','exchange'], avatar:'av-d', letter:'F' },
+  { name:'@olivia', time:'5d ago', text:'Yoga in the park Sunday morning. All levels welcome', tags:['yoga','park'], avatar:'av-a', letter:'O' },
+  { name:'@dana', time:'6d ago', text:'Fermentation workshop: make your own kombucha. <strong>Sunday 11am</strong>', tags:['ferment','workshop'], avatar:'av-b', letter:'D' },
+  { name:'@erin', time:'6d ago', text:'Study group for data science certification. <strong>Join us!</strong>', tags:['study','data'], avatar:'av-c', letter:'E' },
+  { name:'@luis', time:'1w ago', text:'Neighborhood cleanup this Saturday. Meet at Plaza Chamberí at 10', tags:['cleanup','community'], avatar:'av-d', letter:'L' }
+];
+function loadMore() {
+  var feed = document.getElementById('feed');
+  var count = loadMoreState === 0 ? 5 : 10;
+  var start = loadMoreState === 0 ? 0 : 5;
+  var slice = morePosts.slice(start, start + count);
+  if(!slice.length) { showToast('No more posts'); return; }
+  slice.forEach(function(p) {
+    var tags = p.tags.map(function(t){ return '<span class="feed-tag">' + t + '</span>'; }).join('');
+    var html = '<div class="feed-item" style="animation:reveal-up .3s cubic-bezier(.22,1,.36,1) both"><div class="feed-head"><div class="feed-avatar ' + p.avatar + '">' + p.letter + '</div><div class="feed-meta"><div class="feed-name">' + p.name + '</div><div class="feed-time">' + p.time + '</div></div></div><div class="feed-text">' + p.text + '</div><div class="feed-tags">' + tags + '</div><div class="feed-footer"><span class="feed-action">' + svgHeart + ' ' + Math.floor(Math.random()*10+1) + '</span><span class="feed-action">' + svgComment + ' ' + Math.floor(Math.random()*5) + '</span><span class="feed-action">' + svgShare + '</span></div></div>';
+    feed.insertAdjacentHTML('beforeend', html);
+  });
+  loadMoreState++;
+  if(loadMoreState >= 2) { document.getElementById('feedControls').style.display = 'none'; }
+  awardPoints(1);
+}
+/* show filter groups */
+function showFilterGroups() {
+  showToast('Filter: Close · Public · Chamberí · Gardeners');
+}
+
+/* publish */
+var svgHeart='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+var svgComment='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+var svgShare='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>';
+function publishPost() {
+  var input = document.getElementById('loveInput');
+  var text = input.value.trim();
+  if(!text) return;
+  var tags = extractTags(text);
+  var html = '<div class="feed-item" style="animation:reveal-up .3s cubic-bezier(.22,1,.36,1) both"><div class="feed-head"><div class="feed-avatar av-d">Y</div><div class="feed-meta"><div class="feed-name">@you</div><div class="feed-time">just now</div></div></div><div class="feed-text">' + escapeHtml(text) + '</div>' + (tags.length ? '<div class="feed-tags">' + tags.map(function(t){ return '<span class="feed-tag">' + escapeHtml(t) + '</span>'; }).join('') + '</div>' : '') + '<div class="feed-footer"><span class="feed-action">' + svgHeart + ' 0</span><span class="feed-action">' + svgComment + ' 0</span><span class="feed-action">' + svgShare + '</span></div></div>';
+  document.getElementById('feed').insertAdjacentHTML('afterbegin', html);
+  input.value = '';
+  awardPoints(1);
+}
+function extractTags(text) {
+  var tags = [];
+  text.split(/\s+/).forEach(function(w){ if(w.indexOf('#')===0 && w.length>1) tags.push(w.slice(1)); });
+  return tags.slice(0,4);
+}
+function escapeHtml(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+/* browsy suggestion API */
+var BROWSY_OFFERS = [
+  { icon:'🌿', text:'@dana offers garden care — 4 H/wk, 1 h$', facets:{local:3,personal:1}, tags:['garden','plant','care'] },
+  { icon:'🤝', text:'@maria trades kitchen scraps for herbs', facets:{local:2,personal:1}, tags:['garden','plant','trade'] },
+  { icon:'🚲', text:'@frank does delivery runs — 5 H/wk, 0.5 h$', facets:{local:2,social:1}, tags:['bike','delivery','errand'] },
+  { icon:'🧸', text:'@marina offers childcare — 3 H/wk, 1 h$', facets:{local:3,personal:2}, tags:['child','baby','care'] },
+  { icon:'📚', text:'@erin tutors maths — 2 H/wk, 1.5 h$', facets:{social:2,personal:1}, tags:['teach','tutor','math','learn'] },
+  { icon:'🔧', text:'@charlie does fix & errands — 2 H/wk, 0.5 h$', facets:{local:2,personal:1}, tags:['fix','repair','errand'] },
+  { icon:'🍳', text:'@olivia offers home cooking — 2 H/wk, 1.5 h$', facets:{local:3,personal:1}, tags:['cook','food','meal'] },
+  { icon:'💻', text:'@alex does web dev — 3 H/wk, 2 h$', facets:{social:2,global:1}, tags:['code','web','hack','dev'] },
+  { icon:'🎨', text:'@luna does design — 4 H/wk, 1.5 h$', facets:{social:2,personal:1}, tags:['design','art','draw'] },
+  { icon:'📐', text:'@omar does architecture — 5 H/wk, 2 h$', facets:{social:2,global:1}, tags:['build','plan','architect'] },
+  { icon:'🎵', text:'@zara gives music lessons — 2 H/wk, 1 h$', facets:{local:2,personal:1}, tags:['music','teach','song'] },
+  { icon:'🧹', text:'@elena does cleaning — 3 H/wk, 0.5 h$', facets:{local:2,personal:1}, tags:['clean','tidy','home'] },
+  { icon:'🐾', text:'@sam walks dogs — 4 H/wk, 0.5 h$', facets:{local:2,personal:1}, tags:['dog','pet','walk','animal'] }
+];
+function browsyMatch(offer, text) {
+  var lower = text.toLowerCase();
+  var tagHit = offer.tags.some(function(t){ return lower.indexOf(t) > -1; });
+  if(!tagHit) return 0;
+  var trust = 0;
+  Object.keys(offer.facets).forEach(function(f){ trust += (state.facets[f] || 0) * offer.facets[f]; });
+  return Math.min(Math.round(trust * 5 + 60), 99);
+}
+
+/* appy agent */
+var APPY_CATALOG = [
+  { id:'dealy', name:'dealy', icon:'💎', cat:'economy', facets:['social','global'], desc:'compare trust & value', pts:3, href:'../economy/dealy/dealy-advanced.html' },
+  { id:'crafty', name:'crafty', icon:'🧶', cat:'economy', facets:['local','social'], desc:'craft & trade skills', pts:2, href:'../economy/crafty.html' },
+  { id:'worthing', name:'worthing', icon:'💰', cat:'economy', facets:['global'], desc:'time-based currency', pts:3, href:'../economy/worthing.html' },
+  { id:'sensy', name:'sensy', icon:'🌡', cat:'bio', facets:['personal','local'], desc:'body-aware insights', pts:2, href:'../bio/sensy.html' },
+  { id:'pracsys', name:'pracsys', icon:'📋', cat:'bio', facets:['personal'], desc:'practice & habits', pts:2, href:'../bio/pracsys.html' },
+  { id:'goddy', name:'goddy', icon:'☁', cat:'metas', facets:['global'], desc:'global resource view', pts:3, href:'../metas/goddy.html' },
+  { id:'souls', name:'souls', icon:'👥', cat:'metas', facets:['social','global'], desc:'identity & connection', pts:3, href:'../metas/souls.html' },
+  { id:'astry', name:'astry', icon:'⭐', cat:'psicosocial', facets:['personal','social'], desc:'mood & reflection', pts:2, href:'../psicosocial/astry.html' },
+  { id:'lovy', name:'lovy', icon:'❤', cat:'psicosocial', facets:['personal','local'], desc:'relationships & trust', pts:3, href:'../psicosocial/lovy.html' },
+  { id:'hacky', name:'hacky', icon:'💻', cat:'psicosocial', facets:['social','global'], desc:'hack & learn together', pts:2, href:'../psicosocial/hacky.html' },
+  { id:'fivy', name:'fivy', icon:'🔗', cat:'puzzy', facets:['local','social'], desc:'five-card matches', pts:2, href:'../puzzy/fivy.html' },
+  { id:'linky', name:'linky', icon:'🪢', cat:'puzzy', facets:['personal','local'], desc:'connection chains', pts:2, href:'../puzzy/linky.html' },
+  { id:'maty', name:'maty', icon:'🛡', cat:'trusty', facets:['personal','local','social'], desc:'trust contracts', pts:4, href:'../trusty/maty.html' },
+  { id:'crumbly', name:'crumbly', icon:'🔍', cat:'trusty', facets:['local','social'], desc:'vouch breadcrumbs', pts:3, href:'../trusty/crumbly.html' }
+];
+var appyPlayed = JSON.parse(localStorage.getItem('flove:appyPlayed')||'[]');
+function renderAppyAgent() {
+  var list = document.getElementById('appyAgentList');
+  if(!list) return;
+  var scored = APPY_CATALOG.map(function(app){
+    var match = 0;
+    app.facets.forEach(function(f){ match += state.facets[f] || 0; });
+    var played = appyPlayed.indexOf(app.id) > -1;
+    return { app:app, match:match, played:played };
+  });
+  scored.sort(function(a,b){ return b.match - a.match; });
+  var recs = scored.slice(0,6);
+  var hasMore = scored.length > 6;
+  var html = '<div class="appy-grid">';
+  html += recs.map(function(r){
+    var cls = r.match >= 6 ? 'high' : r.match >= 3 ? 'med' : 'low';
+    var pct = Math.min(r.match * 10, 99);
+    var hasImg = ['dealy','sensy','goddy','astry','fivy','maty','crafty','worthing','pracsys','souls','lovy','hacky','linky','crumbly'].indexOf(r.app.id) > -1;
+    var iconHtml = hasImg ? '<img src="../shared/media/images/apps/captions/'+r.app.id+'.png" alt="'+r.app.name+'">' : '<span style="font-size:1.2rem">'+r.app.icon+'</span>';
+    return '<div class="appy-tile" onclick="location.href=\'#launch-'+r.app.id+'\'"><div class="appy-tile-icon">'+iconHtml+'</div><div class="appy-tile-name">'+r.app.name+'</div><span class="appy-tile-match '+cls+'">'+pct+'%</span></div>';
+  }).join('');
+  html += '</div>';
+  if(hasMore) {
+    html += '<button class="appy-more-btn" onclick="showToast(\'Loading more apps…\')">Sow More Appy ↗</button>';
+  }
+  if(appyPlayed.length) {
+    html += '<div class="appy-played"><span class="appy-played-dot"></span><span class="appy-played-label">played: '+appyPlayed.map(function(id){ var a=APPY_CATALOG.find(function(x){return x.id===id}); return a?a.name:''; }).join(', ')+'</span></div>';
+  }
+  list.innerHTML = html || '<div style="font-size:.44rem;color:var(--muted);padding:.3rem 0">open an app from the list below to start</div>';
+}
+function markAppPlayed(id) {
+  if(appyPlayed.indexOf(id) === -1) { appyPlayed.push(id); localStorage.setItem('flove:appyPlayed', JSON.stringify(appyPlayed)); }
+  var app = APPY_CATALOG.find(function(a){ return a.id === id; });
+  if(app) { awardPoints(app.pts); showToast('+' + app.pts + ' ⭐ from ' + app.name); }
+  renderAppyAgent();
+}
+
+/* scoring */
+function awardPoints(n) { state.stars += n; render(); }
+function render() {
+  var sn = document.getElementById('starNum'); if(sn) sn.textContent = state.stars;
+  var bs = document.getElementById('bigScore'); if(bs) bs.textContent = state.stars;
+  var ts = document.getElementById('trustScore'); if(ts) ts.textContent = state.stars;
+  Object.keys(state.facets).forEach(function(k){ var el = document.getElementById('facet-'+k); if(el) el.textContent = state.facets[k]; });
+  var trMap = { personal:'tr-p', local:'tr-l', social:'tr-s', global:'tr-g' };
+  Object.keys(trMap).forEach(function(k){
+    var el = document.getElementById(trMap[k]); if(el) el.textContent = state.facets[k] + ' ⭐';
+  });
+  bumpStar();
+  renderIdentityScale();
+  renderPlayedApps();
+}
+function bumpStar() { var el = document.getElementById('starCounter'); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+
+/* toast */
+function showToast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._timer); t._timer = setTimeout(function(){ t.classList.remove('show'); }, 2200); }
+
+/* follow & support */
+var followOpen = false;
+function toggleFollowMore() {
+  followOpen = !followOpen;
+  var extra = document.getElementById('followExtra');
+  var btn = document.querySelector('.follow-expand-btn');
+  var label = document.getElementById('followExpandLabel');
+  if(followOpen) { extra.classList.add('open'); btn.classList.add('open'); label.textContent = 'see less'; }
+  else { extra.classList.remove('open'); btn.classList.remove('open'); label.textContent = 'see more'; }
+}
+
+/* profile editing */
+var profileEditing = false;
+var socialLinks = [
+  { url:'https://github.com/marc', label:'GitHub' },
+  { url:'https://t.me/marc', label:'Telegram' },
+  { url:'mailto:marc@flove.org', label:'Email' },
+  { url:'https://flove.org/users/marc', label:'Flove' }
+];
+function toggleProfileEdit() {
+  profileEditing = !profileEditing;
+  var profile = document.getElementById('meProfile');
+  var editCard = document.getElementById('profileEditCard');
+  if(profileEditing) {
+    profile.classList.add('hidden');
+    editCard.classList.remove('hidden');
+    document.getElementById('editHandle').value = document.getElementById('profileHandle').textContent;
+    document.getElementById('editMeta').value = document.getElementById('profileMeta').textContent;
+    renderSocialChips();
+  } else {
+    profile.classList.remove('hidden');
+    editCard.classList.add('hidden');
+    previewProfile();
+  }
+}
+function previewProfile() {
+  var h = document.getElementById('editHandle').value.trim();
+  var m = document.getElementById('editMeta').value.trim();
+  if(h) document.getElementById('profileHandle').textContent = h;
+  if(m) document.getElementById('profileMeta').textContent = m;
+  var socialEl = document.getElementById('profileSocial');
+  socialEl.innerHTML = socialLinks.map(function(s){
+    var icon = getSocialIcon(s.url);
+    var label = s.label || s.url.replace(/https?:\/\//,'').split('/')[0];
+    return '<a class="profile-social-link" href="' + escapeHtml(s.url) + '" target="_blank" rel="noopener">' + icon + escapeHtml(label) + '</a>';
+  }).join('');
+}
+function getSocialIcon(url) {
+  if(url.indexOf('github.com')>-1) return '<svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>';
+  if(url.indexOf('t.me')>-1||url.indexOf('telegram')>-1) return '<svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10"><path d="M11.944 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0a12 12 0 00-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 01.171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>';
+  if(url.indexOf('mailto:')>-1) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>';
+  if(url.indexOf('flove.org')>-1) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg>';
+}
+function renderSocialChips() {
+  var el = document.getElementById('socialChips');
+  if(!el) return;
+  el.innerHTML = socialLinks.map(function(s,i){
+    var label = s.label || s.url.replace(/https?:\/\//,'').split('/')[0];
+    return '<span class="social-chip">' + escapeHtml(label) + '<span class="social-chip-remove" onclick="removeSocialChip(' + i + ')">×</span></span>';
+  }).join('');
+}
+function addSocialChip() {
+  var input = document.getElementById('socialAddInput');
+  var val = input.value.trim();
+  if(!val) return;
+  var label = val.indexOf('@')===0 ? val.slice(1) : val.replace(/https?:\/\//,'').split('/')[0];
+  socialLinks.push({ url:val, label:label });
+  input.value = '';
+  renderSocialChips();
+}
+function removeSocialChip(i) {
+  socialLinks.splice(i,1);
+  renderSocialChips();
+}
+
+/* see more items (trustnet & actions) */
+function showMoreItems(listId, extraClass, btn) {
+  var list = document.getElementById(listId);
+  var extras = list.querySelectorAll('.' + extraClass);
+  var hidden = Array.prototype.filter.call(extras, function(el){ return el.style.display === 'none'; });
+  if(hidden.length) {
+    var toShow = hidden.slice(0, 3);
+    toShow.forEach(function(el, i){
+      el.style.display = '';
+      el.style.animation = 'reveal-up .3s cubic-bezier(.22,1,.36,1) ' + (i * 0.08) + 's both';
+    });
+    if(hidden.length <= 3) {
+      btn.textContent = 'See all';
+      btn.onclick = function(){
+        var remaining = Array.prototype.filter.call(extras, function(el){ return el.style.display === 'none'; });
+        remaining.forEach(function(el, i){
+          el.style.display = '';
+          el.style.animation = 'reveal-up .3s cubic-bezier(.22,1,.36,1) ' + (i * 0.06) + 's both';
+        });
+        btn.parentElement.style.display = 'none';
+      };
+    }
+  } else {
+    var allExtras = list.querySelectorAll('.' + extraClass);
+    allExtras.forEach(function(el){ el.style.display = 'none'; });
+    btn.textContent = 'See more';
+    btn.onclick = function(){ showMoreItems(listId, extraClass, btn); };
+  }
+}
+
+/* feed tab filtering */
+function filterFeedTab(tab, btn) {
+  document.querySelectorAll('.feed-tab').forEach(function(t){
+    t.classList.remove('active');
+    t.style.background = '';
+    t.style.color = '';
+    t.style.borderColor = '';
+  });
+  btn.classList.add('active');
+  var colors = { all:'var(--ink)', garden:'#02855c', trade:'#b9820a', community:'#dd3b3b', growth:'#6c5ce7', wellness:'#0bb5c9' };
+  btn.style.background = colors[tab] || 'var(--ink)';
+  btn.style.color = '#fff';
+  btn.style.borderColor = 'transparent';
+
+  var feed = document.getElementById('feed');
+  var items = feed.querySelectorAll('.feed-item');
+  items.forEach(function(item){
+    if(tab === 'all') {
+      item.style.display = '';
+    } else {
+      item.style.display = (item.dataset.theme === tab) ? '' : 'none';
+    }
+  });
+}
+
+/* top search filter */
+function topSearchFilter(q) {
+  q = q.toLowerCase();
+  if(!q) return;
+  showToast('Searching: ' + q);
+}
+
+/* notif suggestions */
+function renderNotifSuggestions() {  var el = document.getElementById('notifSuggestionsList');
+  if(!el) return;
+  var offers = BROWSY_OFFERS.slice(0,3);
+  el.innerHTML = offers.map(function(o){
+    return '<div class="follow-item" onclick="showToast(\''+escapeHtml(o.text)+'\')"><span style="font-size:.65rem;flex:none">'+o.icon+'</span><span class="follow-label">'+escapeHtml(o.text.split('—')[0].trim())+'</span><span class="follow-action">connect</span></div>';
+  }).join('');
+}
+
+/* central sync */
+(function(){ var el = document.getElementById('syncStatus'); var sv = document.getElementById('syncVal'); fetch('/api/ping').then(function(r){return r.json()}).then(function(d){ if(d.ok){ el.className='sync-status online'; el.innerHTML='<span class="dot"></span>on'; if(sv){sv.textContent='connected';sv.className='card-row-value live';} } }).catch(function(){ el.className='sync-status'; el.innerHTML='<span class="dot"></span>off'; if(sv){sv.textContent='offline';sv.className='card-row-value';} }); })();
+
+/* flove namespace */
+window.flove = window.flove || { distro:'central', tier:'normal', app:'central', profile:'users/marc', version:'1.0.0', emit:function(e,d){ window.dispatchEvent(new CustomEvent('flove:'+e,{detail:d})); }, on:function(e,fn){ window.addEventListener('flove:'+e,function(ev){ fn(ev.detail); }); } };
+
+/* haptic */
+document.querySelectorAll('.nav-btn,.btn').forEach(function(el){ el.addEventListener('touchstart',function(){ if(window.Android && window.Android.vibrate) window.Android.vibrate(10); },{passive:true}); });
+
+/* back button */
+window.addEventListener('popstate',function(){});
+history.pushState(null,'',location.href);
+
+/* init */
+render();
+renderIdentityScale();
+renderAppyAgent();
+renderNotifSuggestions();
+
+/* settings bindings — prefer browsy bridge, fallback to localStorage */
+var activeSettings = (window.flove && window.flove.browsy && window.flove.browsy.settings)
+  ? window.flove.browsy.settings
+  : window.floveSettings;
+
+if (activeSettings) {
+  var fs = activeSettings;
+
+  /* theme: checkbox cycles light ↔ dark */
+  var themeEl = document.getElementById('toggleTheme');
+  if (themeEl) {
+    themeEl.checked = fs.get('theme') === 'dark';
+    updateToggleState(themeEl);
+    themeEl.addEventListener('change', function () {
+      fs.set('theme', themeEl.checked ? 'dark' : 'light');
+      updateToggleState(themeEl);
+    });
+    /* listen for external changes (e.g. from browsy popup) */
+    fs.on('theme', function (e) {
+      themeEl.checked = e.value === 'dark';
+      updateToggleState(themeEl);
+    });
+  }
+
+  /* sound toggle */
+  var soundEl = document.getElementById('toggleSound');
+  if (soundEl) {
+    soundEl.checked = !!fs.get('sound');
+    updateToggleState(soundEl);
+    soundEl.addEventListener('change', function () {
+      fs.set('sound', soundEl.checked);
+      updateToggleState(soundEl);
+    });
+    fs.on('sound', function (e) {
+      soundEl.checked = !!e.value;
+      updateToggleState(soundEl);
+    });
+  }
+
+  /* notifications */
+  var notifEl = document.getElementById('toggleNotifs');
+  if (notifEl) {
+    notifEl.checked = fs.get('notifications') !== false;
+    updateToggleState(notifEl);
+    notifEl.addEventListener('change', function () {
+      fs.set('notifications', notifEl.checked);
+      updateToggleState(notifEl);
+    });
+  }
+
+  /* language */
+  var langEl = document.getElementById('selectLanguage');
+  if (langEl) {
+    langEl.value = fs.get('language') || 'en';
+    langEl.addEventListener('change', function () {
+      fs.set('language', langEl.value);
+      showToast('Language: ' + langEl.options[langEl.selectedIndex].text);
+    });
+    fs.on('language', function (e) {
+      langEl.value = e.value;
+    });
+  }
+
+  /* sound: show/hide level bar */
+  var soundRow = document.getElementById('soundLevelRow');
+  if (soundEl && soundRow) {
+    soundRow.style.display = soundEl.checked ? 'block' : 'none';
+    soundEl.addEventListener('change', function () {
+      soundRow.style.display = soundEl.checked ? 'block' : 'none';
+      if (soundEl.checked && window.floveSound && window.floveSound.getLevel() === 'off') {
+        window.floveSound.setLevel('basic');
+        renderSoundLevel('basic');
+      }
+    });
+    var initLvl = window.floveSound ? window.floveSound.getLevel() : 'basic';
+    renderSoundLevel(initLvl);
+  }
+
+  /* toasts */
+  fs.on('theme', function (e) {
+    var label = e.value === 'system' ? 'following system' : e.value;
+    showToast('Theme: ' + label);
+  });
+  fs.on('sound', function (e) {
+    showToast(e.value ? 'Sound on' : 'Sound off');
+  });
+
+  /* if browsy nav is present, hide central's own nav */
+  if (window.flove && window.flove.browsy) {
+    var ownNav = document.querySelector('.bottom-nav');
+    if (ownNav) ownNav.style.display = 'none';
+  }
+}
+
+/* sound level selector */
+function setSoundLevel(level) {
+  if (window.floveSound) window.floveSound.setLevel(level);
+  renderSoundLevel(level);
+  if (window.floveSound) window.floveSound.preview('ui:click');
+  showToast('Sound: ' + level);
+}
+function renderSoundLevel(level) {
+  var descs = {
+    off: 'no sounds',
+    mini: 'click sounds only',
+    basic: 'click sounds + customizable tones',
+    normal: 'sounds + reads section titles aloud',
+    advanced: 'sounds + reads field contents on blur',
+    super: 'sounds + reads all dynamic content'
+  };
+  document.querySelectorAll('.btn-solevel').forEach(function (b) {
+    b.classList.toggle('active', b.getAttribute('data-level') === level);
+  });
+  var desc = document.getElementById('soundLevelDesc');
+  if (desc) desc.textContent = descs[level] || '';
+}
+
+function updateToggleState(el) {
+  var row = el.closest('.toggle-row');
+  if (!row) return;
+  var s = row.querySelector('.toggle-state');
+  if (!s) return;
+  var dark = el.checked;
+  s.textContent = dark ? 'dark' : 'auto';
+  s.style.color = dark ? 'var(--accent)' : 'var(--muted)';
+}
+</script>
+</body>
+</html>

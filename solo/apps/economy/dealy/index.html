@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dealy · FLOVE</title>
+<meta name="description" content="Dealy launcher — a mini→super pyramid: MiniDealy at the apex widening down to Rewardy at the base, each tier entering into place. Help sits apart as its own node. Pure CSS, no JavaScript.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23dc2626' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M4 9.5h6'/><path d='M8.2 7.4 10.5 9.5 8.2 11.6'/><path d='M20 14.5h-6'/><path d='M15.8 12.4 13.5 14.5 15.8 16.6'/><circle cx='12' cy='12' r='2' fill='%23dc2626' stroke='none'/></svg>">
+<style>
+/* ============================================================
+   dealy/index.html — the Dealy launcher.
+
+   Displays the family as a mini→super PYRAMID: the smallest tier
+   (MiniDealy) is the narrow apex, widening down to the biggest
+   (Rewardy) at the base. Each rung LAUNCHES its own page (each
+   page stays the single source of truth for itself).
+
+   Fully self-contained: no external CSS/JS, no JavaScript at all.
+   Entrance is a pure-CSS staggered "rise" — apex first, base last,
+   every tier settling into place. Help lives OUTSIDE the pyramid
+   as its own detached node.
+   ============================================================ */
+
+:root{
+  --accent:  #dc2626;              /* dealy red */
+  --ink:     #241413;
+  --ink-soft:#6b4a47;
+  --muted:   #9a7a77;
+  --line:    rgba(120, 40, 36, .14);
+  --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display:'Georgia', 'Times New Roman', serif;
+  --ease:    cubic-bezier(.2,.8,.2,1);
+}
+
+*{ box-sizing: border-box; }
+html,body{ min-height: 100%; }
+body{
+  margin: 0;
+  font-family: var(--font-ui);
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 82% 4%,  rgba(220,38,38,.10), transparent 40%),
+    radial-gradient(circle at 6% 98%,  rgba(124,58,237,.08), transparent 46%),
+    linear-gradient(180deg, #fdfbfa, #f2ece9);
+  background-attachment: fixed;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── the pyramid ───────────────────────────────────────────── */
+main{
+  flex: 1 1 auto; width: 100%; max-width: 500px; margin: 0 auto;
+  padding: 22px 18px 30px;
+  display: flex; flex-direction: column; justify-content: flex-start;
+}
+.pyramid{ list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+
+/* staircase — each bigger tier starts a bit further right than the
+   smaller one above it. mini sits at the far left. */
+.rung--basic   { margin-left: 34px;  }
+.rung--normal  { margin-left: 74px;  }
+.rung--advanced{ margin-left: 122px; }
+
+/* each card: only logo + name show; clicking the head toggles a panel
+   with the card's details + a Go button. Pure-CSS checkbox toggle, one
+   per card, so any number can stay open at once (multi-expand). */
+.rung{
+  position: relative;
+  display: flex; flex-direction: column; align-items: flex-start;
+  animation: fade-right 1.6s var(--ease) both;
+}
+.card-ctl{ position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+.card-head{
+  display: inline-flex; align-items: center; gap: 11px;
+  padding: 4px 6px; cursor: pointer; color: var(--ink);
+  transition: transform .22s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.card-head:hover{ transform: translateX(2px); }
+.card-head:hover .rung-name{ color: var(--a); }
+.card-ctl:focus-visible + .card-head{ outline: 2px solid var(--a); outline-offset: 3px; border-radius: 12px; }
+
+.rung-disc{
+  flex: 0 0 auto;
+  width: 30px; height: 30px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--a);
+  transition: transform .22s var(--ease);
+}
+.card-head:hover .rung-disc{ transform: scale(1.1); }
+.rung-disc svg{ width: 26px; height: 26px; }
+
+.rung-name{ font-family: var(--font-display); font-weight: 600; line-height: 1.1; transition: color .22s var(--ease); }
+
+/* collapsible info panel — details + Go (animated open via grid rows) */
+.card-info{
+  display: grid; grid-template-rows: 0fr; opacity: 0;
+  margin-left: 41px;
+  transition: grid-template-rows .32s var(--ease), opacity .32s var(--ease);
+}
+.card-ctl:checked ~ .card-info{ grid-template-rows: 1fr; opacity: 1; }
+.card-info-inner{ overflow: hidden; min-height: 0;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 5px; padding-top: 6px; }
+.rung-tier{ font-size: 9.5px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; color: var(--a); opacity: .85; }
+.rung-slogan{ font-size: .82rem; color: var(--ink-soft); }
+.go-btn{
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 2px; padding: 6px 14px; border-radius: 999px;
+  background: var(--a); color: #fff; text-decoration: none;
+  font-size: .8rem; font-weight: 600; letter-spacing: .3px;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--a) 32%, transparent);
+  transition: transform .18s var(--ease), filter .18s var(--ease);
+}
+.go-btn:hover, .go-btn:focus-visible{ transform: translateX(3px); filter: brightness(1.06); outline: none; }
+.go-btn svg{ width: 15px; height: 15px; }
+
+/* size lives in the TITLES ONLY — small apex (mini) → big base (super) */
+.rung--mini     .rung-name{ font-size: 1.05rem; }
+.rung--basic    .rung-name{ font-size: 1.35rem; }
+.rung--normal   .rung-name{ font-size: 1.7rem;  }
+.rung--advanced .rung-name{ font-size: 2.05rem; }
+.rung--super    .rung-name{ font-size: 2.45rem; }
+
+/* intro — each card fades in rightwards, one every 4s */
+.rung--mini    { animation-delay: 0s;  }
+.rung--basic   { animation-delay: 4s;  }
+.rung--normal  { animation-delay: 8s;  }
+.rung--advanced{ animation-delay: 12s; }
+.rung--super   { animation-delay: 16s; }
+.rung--shary{ animation-delay: 20s; }
+.rung--freed   { animation-delay: 24s; }
+@keyframes fade-right{ from{ opacity: 0; transform: translateX(-34px); } to{ opacity: 1; transform: none; } }
+
+/* ── the base row — Rewardy (super) with Freed & Shary to its left.
+   Freed a third of Rewardy's size, Shary a half. Bottoms aligned. ── */
+/* base step: Rewardy sits at its staircase indent; Freed & Shary hang
+   to its left (absolute) so they never push Rewardy off the step. */
+.base-row{ position: relative; margin-left: 195px; display: flex; align-items: flex-end; }
+.base-super{ position: relative; }
+.base-sats{ position: absolute; right: calc(100% + 14px); bottom: 4px; display: flex; align-items: flex-end; gap: 13px; }
+.rung--freed .card-head, .rung--shary .card-head{ padding: 2px 3px; gap: 6px; }
+.rung--shary .rung-name{ font-size: 1.22rem; }   /* half of Rewardy's 2.45rem */
+.rung--shary .rung-disc{ width: 20px; height: 20px; }
+.rung--shary .rung-disc svg{ width: 16px; height: 16px; }
+.rung--freed    .rung-name{ font-size: .82rem; }     /* a third of Rewardy's 2.45rem */
+.rung--freed    .rung-disc{ width: 14px; height: 14px; }
+.rung--freed    .rung-disc svg{ width: 12px; height: 12px; }
+
+/* base-step cards drop their info panel below themselves (absolute), so
+   opening one never disturbs the row; reserve space beneath when open. */
+.base-row .card-info{ position: absolute; top: calc(100% + 2px); left: 0; margin-left: 0; z-index: 6; min-width: max-content; }
+.pyramid:has(.base-row .card-ctl:checked){ padding-bottom: 108px; }
+
+/* ── the two poles — Lowy (top) & Help (bottom): a polarity.
+   Same pill, opposite palette (dark/light) and opposite entrance. ── */
+.pole-div{ width: 62px; height: 1px; margin: 18px auto; background: var(--line); }
+.pole-wrap{ display: flex; justify-content: center; }
+/* poles collapse to disc + name; clicking reveals slogan + Go. Their
+   fade-in is stretched across the whole ~13s card intro. */
+.pole{
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column;
+  padding: 9px 20px 9px 12px;
+  border-radius: 22px;
+  transition: transform .3s var(--ease), box-shadow .3s var(--ease);
+}
+.pole::after{                       /* elegant light-sweep on hover */
+  content: ""; position: absolute; top: 0; left: -70%; width: 45%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.42), transparent);
+  transform: skewX(-16deg); pointer-events: none;
+}
+.pole:hover, .pole:focus-within{ transform: translateY(-4px); }
+.pole:hover::after, .pole:focus-within::after{ animation: sheen 2s var(--ease); }
+@keyframes sheen{ from{ left: -70%; } to{ left: 130%; } }
+
+.pole-ctl{ position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.pole-head{ display: flex; align-items: center; gap: 11px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pole-ctl:focus-visible + .pole-head{ outline: 2px solid currentColor; outline-offset: 3px; border-radius: 999px; }
+.pole-disc{ width: 40px; height: 40px; border-radius: 50%; flex: 0 0 auto;
+  display: inline-flex; align-items: center; justify-content: center; }
+.pole-disc svg{ width: 22px; height: 22px; }
+.pole-name{ font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; line-height: 1.1; }
+
+.pole-info{ display: grid; grid-template-rows: 0fr; opacity: 0; margin-left: 51px;
+  transition: grid-template-rows .32s var(--ease), opacity .32s var(--ease); }
+.pole-ctl:checked ~ .pole-info{ grid-template-rows: 1fr; opacity: 1; }
+.pole-info-inner{ overflow: hidden; min-height: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding-top: 7px; }
+.pole-slogan{ font-size: .8rem; opacity: .78; }
+.pole-go{ display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 999px;
+  text-decoration: none; font-size: .78rem; font-weight: 600; letter-spacing: .3px;
+  transition: transform .18s var(--ease), filter .18s var(--ease); }
+.pole-go:hover, .pole-go:focus-visible{ transform: translateX(3px); filter: brightness(1.05); outline: none; }
+.pole-go svg{ width: 14px; height: 14px; }
+
+/* Lowy — the dark, editorial pole (fades in from above, slowly) */
+.pole--lowy{
+  background: linear-gradient(155deg, #2a2723, #16130f);
+  color: #f2ebda;
+  box-shadow: 0 14px 32px rgba(20,15,10,.30);
+  animation: pole-lowy 26s linear both;
+}
+.pole--lowy .pole-disc{ background: rgba(220,184,119,.16); color: #dcb877; }
+.pole--lowy .pole-go{ background: #dcb877; color: #221c12; }
+.pole--lowy:hover, .pole--lowy:focus-within{ box-shadow: 0 20px 44px rgba(20,15,10,.40); }
+
+/* Help — the light, warm pole (mirror; fades in from below, slowly) */
+.pole--help{
+  background: linear-gradient(155deg, #ffffff, #d3f4ec);
+  color: #123b36;
+  box-shadow: 0 14px 32px rgba(13,148,136,.18);
+  animation: pole-help 26s linear both;
+}
+.pole--help .pole-disc{ background: #0d9488; color: #fff; animation: float 4.5s ease-in-out infinite; }
+.pole--help .pole-go{ background: #0d9488; color: #fff; }
+.pole--help:hover, .pole--help:focus-within{ box-shadow: 0 20px 44px rgba(13,148,136,.28); }
+
+@keyframes pole-lowy{ from{ opacity: 0; transform: translateY(-16px); } to{ opacity: 1; transform: none; } }
+@keyframes pole-help{ from{ opacity: 0; transform: translateY(16px); } to{ opacity: 1; transform: none; } }
+@keyframes float{ 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-4px); } }
+
+/* ── reduced motion — hold everything still, keep it usable ── */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{ animation: none !important; }
+  .rung, .pole, .pole-disc{ opacity: 1; transform: none; }
+  *{ transition-duration: .01ms !important; }
+}
+
+@media (max-width: 480px){
+  .card-head{ gap: 9px; }
+  .rung--advanced .rung-name{ font-size: 1.85rem; }
+  .rung--super    .rung-name{ font-size: 2.15rem; }
+  /* gentler stair + satellites back in flow so nothing runs off-screen */
+  .rung--basic   { margin-left: 22px; }
+  .rung--normal  { margin-left: 50px; }
+  .rung--advanced{ margin-left: 86px; }
+  .base-row{ margin-left: 12px; }
+  .base-sats{ position: static; margin-right: 8px; }
+}
+</style>
+</head>
+<body>
+
+<main>
+  <!-- Lowy — the top pole. Its opposite is Help at the very bottom. -->
+  <div class="pole-wrap">
+    <div class="pole pole--lowy">
+      <input type="checkbox" id="p-lowy" class="pole-ctl">
+      <label class="pole-head" for="p-lowy">
+        <span class="pole-disc" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4C9.2 4 4 9.4 4 15.9A4.6 4.6 0 0 0 8.6 20.5C15.4 20.5 20 15 20 4z"/><path d="M4.6 20.4 12.6 12"/></svg>
+        </span>
+        <span class="pole-name">Lowy</span>
+      </label>
+      <div class="pole-info"><div class="pole-info-inner">
+        <span class="pole-slogan">Living lighter.</span>
+        <a class="pole-go" href="../lowy.html">Go <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div></div>
+    </div>
+  </div>
+  <div class="pole-div" aria-hidden="true"></div>
+
+  <!-- The staircase — each card shows only logo + name; click to expand
+       its details + Go. Independent, so several can stay open at once. -->
+  <ol class="pyramid">
+    <li>
+      <div class="rung rung--mini" style="--a:#059669;">
+        <input type="checkbox" id="c-mini" class="card-ctl">
+        <label class="card-head" for="c-mini">
+          <span class="rung-disc" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h10l-2.4-2.4M17 16H7l2.4 2.4"/><path d="M12 12.4a1.6 1.6 0 0 0 1.6-1.6c0-1.1-1.6-2.4-1.6-2.4s-1.6 1.3-1.6 2.4A1.6 1.6 0 0 0 12 12.4z"/></svg>
+          </span>
+          <span class="rung-name">MiniDealy</span>        </label>
+        <div class="card-info"><div class="card-info-inner">
+          <span class="rung-tier">Mini</span>
+          <span class="rung-slogan">A small kind swap.</span>
+          <a class="go-btn" href="dealy-mini.html">Go <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div></div>
+      </div>
+    </li>
+    <li>
+      <div class="rung rung--basic" style="--a:#1e4a6b;">
+        <input type="checkbox" id="c-basic" class="card-ctl">
+        <label class="card-head" for="c-basic">
+          <span class="rung-disc" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5h17v11h-17zM3.5 8.5 6 4.5h12l2.5 4M12 4.5v15"/></svg>
+          </span>
+          <span class="rung-name">Inventary</span>        </label>
+        <div class="card-info"><div class="card-info-inner">
+          <span class="rung-tier">Basic</span>
+          <span class="rung-slogan">All of yours.</span>
+          <a class="go-btn" href="inventary.html">Go <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div></div>
+      </div>
+    </li>
+    <li>
+      <div class="rung rung--normal" style="--a:#1f6390;">
+        <input type="checkbox" id="c-normal" class="card-ctl">
+        <label class="card-head" for="c-normal">
+          <span class="rung-disc" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6l2.6 5.5 6 .9-4.3 4.2 1 6-5.3-2.8L6.7 20.2l1-6L3.4 10l6-.9z"/></svg>
+          </span>
+          <span class="rung-name">Wanty</span>        </label>
+        <div class="card-info"><div class="card-info-inner">
+          <span class="rung-tier">Normal</span>
+          <span class="rung-slogan">Start thriving.</span>
+          <a class="go-btn" href="wanty.html">Go <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div></div>
+      </div>
+    </li>
+    <li>
+      <div class="rung rung--advanced" style="--a:#dc2626;">
+        <input type="checkbox" id="c-advanced" class="card-ctl">
+        <label class="card-head" for="c-advanced">
+          <span class="rung-disc" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.2 12.6 12.6 20.2a1.9 1.9 0 0 1-2.7 0l-6.1-6.1a1.9 1.9 0 0 1-.6-1.4V5a1.9 1.9 0 0 1 1.9-1.9h7.7c.5 0 1 .2 1.4.6l6 6a1.9 1.9 0 0 1 0 2.9z"/><circle cx="7.6" cy="7.6" r="1.3"/></svg>
+          </span>
+          <span class="rung-name">Dealy</span>        </label>
+        <div class="card-info"><div class="card-info-inner">
+          <span class="rung-tier">Advanced</span>
+          <span class="rung-slogan">Gift, lend, swap&hellip;</span>
+          <a class="go-btn" href="dealy-advanced.html">Go <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div></div>
+      </div>
+    </li>
+    <li>
+      <!-- base step: Freed & Shary hang to the left of Rewardy -->
+      <div class="base-row">
+        <div class="base-sats">
+          <div class="rung rung--freed" style="--a:#10b981;">
+            <input type="checkbox" id="c-freed" class="card-ctl">
+            <label class="card-head" for="c-freed">
+              <span class="rung-disc" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 9.5h17v10h-17zM2.5 6.5h19v3h-19zM12 6.5v13"/><circle cx="9.4" cy="4.6" r="1.9"/><circle cx="14.6" cy="4.6" r="1.9"/></svg>
+              </span>
+              <span class="rung-name">Freed</span>            </label>
+            <div class="card-info"><div class="card-info-inner">
+              <span class="rung-slogan">Waive for all.</span>
+              <a class="go-btn" href="freed.html">Go <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            </div></div>
+          </div>
+          <div class="rung rung--shary" style="--a:#8b5cf6;">
+            <input type="checkbox" id="c-shary" class="card-ctl">
+            <label class="card-head" for="c-shary">
+              <span class="rung-disc" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v4.2h-4.2"/></svg>
+              </span>
+              <span class="rung-name">Shary</span>            </label>
+            <div class="card-info"><div class="card-info-inner">
+              <span class="rung-slogan">Lend on clear terms.</span>
+              <a class="go-btn" href="shary.html">Go <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            </div></div>
+          </div>
+        </div>
+        <div class="base-super">
+          <div class="rung rung--super" style="--a:#7c3aed;">
+            <input type="checkbox" id="c-super" class="card-ctl">
+            <label class="card-head" for="c-super">
+              <span class="rung-disc" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.8" r="5.3"/><path d="M8.6 13.2 6.6 21l5.4-2.9 5.4 2.9-2-7.8"/></svg>
+              </span>
+              <span class="rung-name">Rewardy</span>            </label>
+            <div class="card-info"><div class="card-info-inner">
+              <span class="rung-tier">Super</span>
+              <span class="rung-slogan">Earn direct.</span>
+              <a class="go-btn" href="rewardy.html">Go <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            </div></div>
+          </div>
+        </div>
+      </div>
+    </li>
+  </ol>
+
+  <!-- Help — the bottom pole. Mirror & opposite of Lowy at the top. -->
+  <div class="pole-div" aria-hidden="true"></div>
+  <div class="pole-wrap">
+    <div class="pole pole--help">
+      <input type="checkbox" id="p-help" class="pole-ctl">
+      <label class="pole-head" for="p-help">
+        <span class="pole-disc" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l1.6-4.5A8.4 8.4 0 1 1 21 11.5z"/><path d="M9.2 9.4a2.8 2.8 0 0 1 5.5.8c0 1.9-2.8 2.5-2.8 2.5"/><path d="M12 16.2h.01"/></svg>
+        </span>
+        <span class="pole-name">Help</span>
+      </label>
+      <div class="pole-info"><div class="pole-info-inner">
+        <span class="pole-slogan">Chat &amp; guides.</span>
+        <a class="pole-go" href="help.html">Go <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div></div>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>

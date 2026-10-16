@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6c5ce7">
+<title>Questy FLOVE</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff4d4d'/%3E%3Cstop offset='.2' stop-color='%23ff9a3a'/%3E%3Cstop offset='.4' stop-color='%23ffc41f'/%3E%3Cstop offset='.6' stop-color='%233fb950'/%3E%3Cstop offset='.8' stop-color='%233aa0ff'/%3E%3Cstop offset='1' stop-color='%23b06bff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points='60,8 102,30 102,74 60,96 18,74 18,30' fill='none' stroke='url(%23g)' stroke-width='10' stroke-linejoin='round'/%3E%3Ctext x='60' y='66' text-anchor='middle' font-family='Georgia,serif' font-size='42' font-weight='700' fill='url(%23g)'%3E%3F%3C/text%3E%3C/svg%3E">
+<script>
+(function(){try{var t=JSON.parse(localStorage.getItem('flove:theme'))||'light';
+if(t==='dark')document.documentElement.setAttribute('data-theme','dark');else document.documentElement.removeAttribute('data-theme');}catch(e){}})();
+</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f3f4fb;--ink:#16141f;--muted:#4a4e5a;--line:#e3e5f0;
+  --card:#ffffff;--panel:#edeef7;--accent:#6c5ce7;--signal:#02855c;
+  --cat-inside:#ff9b5e;--cat-mating:#ffd84d;--cat-ling:#6ed089;
+  --cat-social:#5ea4e6;--cat-economy:#6b6bd9;
+}
+[data-theme="dark"]{
+  --bg:#0b0b0f;--ink:#e9eaf2;--muted:#a3a7b4;--line:#1e2133;
+  --card:#11131a;--panel:#11131a;--accent:#8d89ff;--signal:#00f7a7;
+}
+body{font-family:ui-monospace,monospace;color:var(--ink);background:var(--bg);line-height:1.7;padding:3rem 1.2rem 5rem;transition:background .25s,color .25s}
+main{max-width:640px;margin:0 auto}
+.mark{width:64px;height:64px;display:block;margin-bottom:1.2rem}
+h1{font-family:Georgia,serif;font-size:1.7rem;letter-spacing:-.02em}
+h1 em{font-style:normal;color:var(--signal)}
+.under-construction{display:inline-block;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--signal);border:1px solid var(--signal);border-radius:999px;padding:.18rem .6rem;vertical-align:middle;margin-left:.6rem}
+.sub{color:var(--muted);font-size:.85rem;margin:.6rem 0 1.6rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1.1rem 1.2rem;margin-bottom:1rem}
+.card h2{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--signal);margin-bottom:.7rem}
+ul{list-style:none}
+li{padding:.3rem 0;font-size:.82rem}
+li b{color:var(--ink)}
+.gauge{display:flex;gap:.4rem;margin-top:.4rem}
+.gauge button{flex:1;padding:.7rem 0;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--muted);font-family:inherit;font-weight:700;font-size:.9rem;cursor:pointer;transition:.2s}
+.gauge button:hover{border-color:var(--accent);color:var(--accent)}
+.gauge button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.links{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.4rem}
+.links a{font-size:.75rem;color:var(--accent);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:.4rem .8rem;transition:.2s}
+.links a:hover{border-color:var(--accent);background:rgba(108,92,231,.08)}
+
+.cat-group{margin-bottom:.8rem}
+.cat-label{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:.35rem;display:flex;align-items:center;gap:.4rem}
+.cat-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.cat-label.cat-inside{color:var(--cat-inside)}
+.cat-label.cat-mating{color:var(--cat-mating)}
+.cat-label.cat-ling{color:var(--cat-ling)}
+.cat-label.cat-social{color:var(--cat-social)}
+.cat-label.cat-economy{color:var(--cat-economy)}
+.cat-dot.cat-inside{background:var(--cat-inside)}
+.cat-dot.cat-mating{background:var(--cat-mating)}
+.cat-dot.cat-ling{background:var(--cat-ling)}
+.cat-dot.cat-social{background:var(--cat-social)}
+.cat-dot.cat-economy{background:var(--cat-economy)}
+.app-chips{display:flex;flex-wrap:wrap;gap:.35rem}
+.app-chip{font-size:.72rem;padding:.3rem .65rem;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;font-family:inherit;transition:.2s}
+.app-chip:hover{opacity:.85}
+.app-chip.sel{color:#fff;border-color:transparent}
+.app-chip.sel[data-cat="inside"]{background:var(--cat-inside)}
+.app-chip.sel[data-cat="mating"]{background:var(--cat-mating)}
+.app-chip.sel[data-cat="ling"]{background:var(--cat-ling)}
+.app-chip.sel[data-cat="social"]{background:var(--cat-social)}
+.app-chip.sel[data-cat="economy"]{background:var(--cat-economy)}
+
+.q-batch{margin-bottom:.6rem}
+.q-item{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:.8rem 1rem;margin-bottom:.5rem}
+.q-item.flove-src{border-left:3px solid var(--accent)}
+.q-num{font-size:.68rem;color:var(--muted);font-weight:700;margin-bottom:.25rem}
+.q-text{font-size:.85rem;margin-bottom:.5rem}
+.q-opts{display:flex;flex-wrap:wrap;gap:.3rem}
+.q-opt{font-size:.72rem;padding:.35rem .7rem;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--muted);cursor:pointer;font-family:inherit;transition:.2s}
+.q-opt:hover{border-color:var(--accent);color:var(--accent)}
+.q-opt.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.q-opt.rec{position:relative}
+.q-opt.rec::after{content:"★";font-size:.5rem;position:absolute;top:-.25rem;right:-.15rem;color:var(--signal)}
+.q-note{width:100%;margin-top:.4rem;padding:.4rem .6rem;font-size:.72rem;font-family:inherit;background:var(--card);border:1px solid var(--line);border-radius:6px;color:var(--ink);resize:vertical;min-height:1.6rem}
+.q-field{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;margin-bottom:.25rem;font-size:.72rem}
+.q-field b{color:var(--ink)}
+.q-dot{width:9px;height:9px;border-radius:50%;flex:none}
+.q-tag{font-size:.56rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;padding:.08rem .5rem;border:1px solid var(--line);border-radius:999px}
+.q-hint{font-size:.66rem;color:var(--muted);font-style:italic;margin:-.15rem 0 .5rem}
+.hat-chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.55rem}
+.hat-chip{font-size:.66rem;font-weight:700;padding:.25rem .65rem;border-radius:999px;color:#fff}
+.hat-note{font-size:.66rem;color:var(--muted);margin-top:.55rem;line-height:1.6}
+
+.batch-nav{display:flex;align-items:center;justify-content:space-between;margin:1rem 0}
+.batch-nav button{padding:.4rem .9rem;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--muted);font-family:inherit;font-size:.75rem;cursor:pointer;transition:.2s}
+.batch-nav button:hover{border-color:var(--accent);color:var(--accent)}
+.batch-nav button:disabled{opacity:.3;cursor:default}
+.batch-info{font-size:.72rem;color:var(--muted)}
+
+.export-card{margin-top:1rem}
+.export-btns{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.6rem}
+.export-btns button{padding:.5rem 1rem;border:1px solid var(--line);border-radius:999px;background:var(--accent);color:#fff;font-family:inherit;font-size:.75rem;font-weight:700;cursor:pointer;transition:.2s}
+.export-btns button:hover{opacity:.85}
+.export-btns button.sec{background:transparent;color:var(--accent)}
+.json-preview{font-size:.68rem;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:.8rem;margin-top:.6rem;max-height:300px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace;color:var(--muted);display:none}
+.json-preview.show{display:block}
+
+.cat-line{display:flex;align-items:center;gap:.6rem;font-size:.72rem;color:var(--muted);flex-wrap:wrap}
+.cat-status{font-weight:700;color:var(--signal)}
+.cat-line button{padding:.3rem .7rem;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--accent);font-family:inherit;font-size:.7rem;font-weight:700;cursor:pointer;transition:.2s}
+.cat-line button:hover{border-color:var(--accent);background:rgba(108,92,231,.08)}
+.cat-line button:disabled{opacity:.4;cursor:default}
+.cat-note{font-size:.68rem;color:var(--muted);margin-top:.4rem}
+.empty{font-size:.78rem;color:var(--muted);text-align:center;padding:2rem 0}
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--signal);color:#fff;padding:.5rem 1.2rem;border-radius:999px;font-size:.75rem;font-weight:700;opacity:0;transition:.3s;pointer-events:none;z-index:99}
+.toast.show{opacity:1}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <svg class="mark" viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff4d4d"/><stop offset=".2" stop-color="#ff9a3a"/><stop offset=".4" stop-color="#ffc41f"/><stop offset=".6" stop-color="#3fb950"/><stop offset=".8" stop-color="#3aa0ff"/><stop offset="1" stop-color="#b06bff"/></linearGradient></defs><polygon points="60,8 102,30 102,74 60,96 18,74 18,30" fill="none" stroke="url(#g2)" stroke-width="10" stroke-linejoin="round"/><text x="60" y="66" text-anchor="middle" font-family="Georgia,serif" font-size="42" font-weight="700" fill="url(#g2)">?</text></svg>
+  <h1>Questy <em>FLOVE</em> <span class="under-construction">Under construction</span></h1>
+  <p class="sub">A session interviews <b>you</b> — never the app's maker — about what you think and feel inside each app. Goddy asks: is there a goddess? who sees whom? Your answers land in your appy-basic profile.</p>
+
+  <div class="card" id="cat-card">
+    <h2>Catalog</h2>
+    <p class="cat-line"><span class="cat-status" id="cat-status">embedded catalog</span><button type="button" id="sync-cat-btn">⟳ sync from flove.org</button></p>
+    <p class="cat-note">Syncs the canonical fields per app and caches them on this device — the session then runs fully offline.</p>
+  </div>
+
+  <div class="card" id="pick-card">
+    <h2>Pick apps</h2>
+    <div id="app-picker"></div>
+  </div>
+
+  <div class="card" id="influence-card">
+    <h2>Flove influence</h2>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:.4rem" id="influence-desc">How deep should this pass go?</p>
+    <div class="gauge" id="gauge" role="radiogroup" aria-label="Flove level 1-5">
+      <button type="button" data-v="1">1</button>
+      <button type="button" data-v="2">2</button>
+      <button type="button" data-v="3">3</button>
+      <button type="button" data-v="4">4</button>
+      <button type="button" data-v="5">5</button>
+    </div>
+  </div>
+
+  <div class="card" id="hat-card">
+    <h2>Hat colours</h2>
+    <p class="cat-note">Each question carries its blended colour: the app's hat (~40%) mixed into its category colour (~60% — the parent wins). A question without a slot hat inherits the app's signature hat, an app without one its category's.</p>
+    <div class="hat-chips" id="hat-chips"></div>
+    <p class="hat-note">Categories: Inside=heart · Mating=optimism · Ling/Words=creative · Social=make · Economy=facts. Questions never show a pure hat colour — the parent always weighs 50% more (~60/40).</p>
+  </div>
+
+  <div class="card" id="questions-card" style="display:none">
+    <h2>Questions</h2>
+    <div id="q-batch-area"></div>
+    <div class="batch-nav">
+      <button id="prev-btn" disabled>‹ prev</button>
+      <span class="batch-info" id="batch-info"></span>
+      <button id="next-btn">next ›</button>
+    </div>
+  </div>
+
+  <div class="card export-card" id="export-card" style="display:none">
+    <h2>Export</h2>
+    <p style="font-size:.78rem;color:var(--muted)">Your answers as appy-basic profile JSON.</p>
+    <div class="export-btns">
+      <button id="dl-btn">⬇ JSON</button>
+      <button id="copy-btn" class="sec">📋 Copy</button>
+      <button id="preview-toggle" class="sec">👁 Preview</button>
+    </div>
+    <pre class="json-preview" id="json-preview"></pre>
+  </div>
+
+  <div class="links">
+    <a href="../questy/SKILL.md">Questy</a>
+    <a href="../questy1/SKILL.md">Questy1</a>
+    <a href="questy-flove.md">Questy FLOVE · md</a>
+    <a href="../questy/index.html">Survey</a>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+// ===== DATA =====
+// >>> catalog data (generated by build-questy-flove-data.py — hand edits lost)
+const CATEGORIES=[
+  {id:'inside',label:'Inside',colour:'#ff9b5e',apps:['Goddy','Astry','Hacky','DieSafe','Souls','Profily','Sensy','Pracsys','Willy','MoralY','Lovy']},
+  {id:'mating',label:'Mating',colour:'#ffd84d',apps:['Daty','MyFamily','Maty','Varyy','Evily','Trusty','Crumbly','Parenty']},
+  {id:'ling',label:'Ling / Words',colour:'#6ed089',apps:['Fity','Keys','Fivy','Puzzy','Loly','Wisy']},
+  {id:'social',label:'Social',colour:'#5ea4e6',apps:['Questy','Realy','Nety','Socy','Blogy','Wizy','Browsy']},
+  {id:'economy',label:'Economy',colour:'#6b6bd9',apps:['Crafty','Worthing','Lowy','Dealy','Freed','Inventary','Minioffer','Offer','Rewardy','Shareful','Wanty']},
+];
+const CAT_COLOURS={"mating": "#ffd84d", "inside": "#ff9b5e", "ling": "#6ed089", "social": "#5ea4e6", "economy": "#6b6bd9"};
+
+// Per-app input fields (from fields-colours.json catalog, schema flove-hats/1)
+const INPUT_FIELDS={
+  Goddy:["Cell levels", "Matrix axes"],
+  Astry:["Birth anchor", "Focus", "Traditions", "What else"],
+  Hacky:["Bridge", "Dislikes", "Likes", "Reveal"],
+  DieSafe:["Companions", "Environment", "Farewell Message", "Formal information", "Heritage", "Other things to do", "Post mortem actions scheduling", "Scenario"],
+  Souls:["Certify play", "Play with", "Privacy mode", "Senses", "Species tree", "Stage 1 · You", "Stage 2 · Species + sense", "Stage 3 · Biological system", "Stage 4 · Matter", "Stage 5 · Immune subsystem", "Stage 5 · Particle"],
+  Profily:["Avatar tools", "Contact", "Message wizards", "Offers", "Wanty"],
+  Sensy:["Annex", "Disclaimer", "HELLO!", "Incentives", "Let me adore your", "Other senses", "with-by my"],
+  Pracsys:["Immune subsystems", "Nervous subsystems", "Reason field", "Stages", "Systems", "Verb field"],
+  Willy:["Commandments", "Sins", "Wills (formal)"],
+  MoralY:[],
+  Fity:[],
+  Questy:[],
+  Daty:["About-me", "Children", "Desired relationship", "Gender", "Media", "Profiles", "Projects · current", "Projects · desired", "Projects · imaginary", "Publish targets", "Relationship style", "Visibility"],
+  MyFamily:["Attention", "Contact", "Feedback", "Gifting", "Influence", "Money", "Sharing", "Your friend is…"],
+  Maty:["Boundaries", "Invitation", "Notes", "Others", "Want", "Who"],
+  Varyy:["I am a", "Labelers (tone)", "Question placeholders", "Questions"],
+  Evily:["Compensation", "I also allow to", "Terms", "Visibility"],
+  Trusty:["Additional Protection", "Declaration", "Scope", "Trustful signals", "Who"],
+  Crumbly:["Boycot", "Crumble", "Notifying", "Only if"],
+  Parenty:["Economy", "Education", "Environment", "Growth", "Parents"],
+  Lovy:["Circles", "Filters", "Love languages", "Media", "Reward"],
+  Keys:["Extra decks", "Fivy decks", "Journalism", "Philosophy", "Play with", "Privacy mode", "Service", "Triads", "Ways to start"],
+  Fivy:["Certify play", "Decks", "Elements", "Fields (simplex)", "Flavors", "Play with", "Privacy mode", "Senses", "Social"],
+  Puzzy:["Categories", "Rate apps", "Redefine apps", "Relate apps"],
+  Loly:[],
+  Wisy:["Explainers", "Field", "Formalise", "Mode", "Prism", "Teleology", "Time span", "Tone"],
+  Realy:["Fictional column", "More", "Real column", "Realm subtitles", "Realms"],
+  Nety:[],
+  Socy:["Core categories", "New category form", "Standard form"],
+  Blogy:["Categories", "Circles", "Posts", "Privacy"],
+  Wizy:[],
+  Browsy:[],
+  Crafty:["Contribution type", "Payout", "Project", "Promisory contributions", "Review", "Stage", "Wanted profits"],
+  Worthing:["Friendly", "Meaningful", "Moods", "Powerful", "Useful"],
+  Lowy:[],
+  Dealy:[],
+  Freed:["Beware", "Farewell", "Reasons", "Thing", "When", "Wishes"],
+  Inventary:["Categories", "Columns", "Have options", "Item note", "Selected things", "Suggestion bots", "Want/Need options", "Wish options", "Worth it bars"],
+  Minioffer:["Condition", "Description", "Preference", "Type", "Willingness"],
+  Offer:["Contribution", "Disputes", "Modes", "More details", "People", "Sectors", "Time", "Use type", "Worth it", "Zones"],
+  Rewardy:["Message modal", "Providers", "Rating axes", "Roles", "Sub-offers"],
+  Shareful:["Because", "For", "Invitation", "Preferences", "Sections", "Sectors", "Tags", "Time / Space", "Who", "Worth bars", "Zones"],
+  Wanty:["Interest", "Like", "Project", "Purpose", "Want", "Wish"],
+};
+
+// Hat metadata (secondary — the parent colour wins the blend ~60/40)
+const HAT_COLOURS={"optimism": "#ffd84d", "heart": "#ff9b5e", "creative": "#6ed089", "make": "#5ea4e6", "facts": "#6b6bd9", "risk": "#50474e"};
+const APP_HATS={"Goddy": "facts", "Astry": "creative", "Hacky": "risk", "DieSafe": "risk", "Souls": "creative", "Profily": "make", "Sensy": "heart", "Pracsys": "facts", "Willy": "heart", "MoralY": "risk", "Fity": "make", "Questy": "facts", "Daty": "heart", "MyFamily": "creative", "Maty": "creative", "Varyy": "facts", "Evily": "risk", "Trusty": "optimism", "Crumbly": "risk", "Parenty": "make", "Lovy": "heart", "Keys": "creative", "Fivy": "facts", "Puzzy": "make", "Loly": "heart", "Wisy": "make", "Realy": "creative", "Nety": "facts", "Socy": "facts", "Blogy": "make", "Wizy": "creative", "Browsy": "make", "Crafty": "creative", "Worthing": "heart", "Lowy": "facts", "Dealy": "make", "Freed": "optimism", "Inventary": "facts", "Minioffer": "heart", "Offer": "optimism", "Rewardy": "make", "Shareful": "optimism", "Wanty": "risk"};
+const SLOT_HATS={"Goddy": {"Matrix axes": "creative", "Cell levels": "creative"}, "Astry": {"Birth anchor": "facts", "Traditions": "heart", "Focus": "facts", "What else": "creative"}, "Hacky": {"Dislikes": "risk", "Likes": "heart", "Bridge": "creative", "Reveal": "risk"}, "DieSafe": {"Scenario": "risk", "Environment": "risk", "Companions": "heart", "Heritage": "heart", "Farewell Message": "heart", "Post mortem actions scheduling": "risk", "Other things to do": "make", "Formal information": "facts"}, "Souls": {"Stage 1 · You": "heart", "Stage 2 · Species + sense": "creative", "Senses": "creative", "Species tree": "facts", "Stage 3 · Biological system": "facts", "Stage 4 · Matter": "facts", "Stage 5 · Particle": "facts", "Stage 5 · Immune subsystem": "facts", "Privacy mode": "make", "Play with": "creative", "Certify play": "make"}, "Profily": {"Wanty": "optimism", "Offers": "make", "Contact": "make", "Message wizards": "creative", "Avatar tools": "make"}, "Sensy": {"HELLO!": "heart", "Let me adore your": "heart", "with-by my": "heart", "Other senses": "heart", "Incentives": "optimism", "Annex": "creative", "Disclaimer": "risk"}, "Pracsys": {"Systems": "facts", "Nervous subsystems": "facts", "Immune subsystems": "facts", "Stages": "facts", "Reason field": "facts", "Verb field": "facts"}, "Willy": {"Wills (formal)": "heart", "Commandments": "risk", "Sins": "risk"}, "Daty": {"Gender": "facts", "Desired relationship": "heart", "Relationship style": "heart", "Children": "heart", "About-me": "heart", "Media": "facts", "Profiles": "facts", "Projects · current": "creative", "Projects · desired": "optimism", "Projects · imaginary": "creative", "Publish targets": "make", "Visibility": "make"}, "MyFamily": {"Attention": "heart", "Contact": "creative", "Influence": "heart", "Feedback": "heart", "Gifting": "heart", "Sharing": "creative", "Money": "facts", "Your friend is…": "facts"}, "Maty": {"Who": "heart", "Want": "heart", "Others": "heart", "Boundaries": "risk", "Notes": "facts", "Invitation": "heart"}, "Varyy": {"I am a": "facts", "Questions": "creative", "Question placeholders": "creative", "Labelers (tone)": "creative"}, "Evily": {"Terms": "risk", "Visibility": "make", "Compensation": "heart", "I also allow to": "risk"}, "Trusty": {"Who": "heart", "Scope": "risk", "Additional Protection": "risk", "Trustful signals": "heart", "Declaration": "heart"}, "Crumbly": {"Crumble": "risk", "Boycot": "risk", "Notifying": "make", "Only if": "risk"}, "Parenty": {"Parents": "heart", "Environment": "facts", "Education": "creative", "Growth": "creative", "Economy": "facts"}, "Lovy": {"Love languages": "heart", "Circles": "heart", "Filters": "heart", "Media": "facts", "Reward": "heart"}, "Keys": {"Ways to start": "creative", "Triads": "creative", "Philosophy": "creative", "Service": "make", "Journalism": "creative", "Fivy decks": "creative", "Extra decks": "creative", "Privacy mode": "make", "Play with": "creative"}, "Fivy": {"Decks": "creative", "Senses": "creative", "Flavors": "creative", "Social": "make", "Elements": "creative", "Fields (simplex)": "creative", "Privacy mode": "make", "Play with": "creative", "Certify play": "make"}, "Puzzy": {"Categories": "creative", "Rate apps": "make", "Relate apps": "creative", "Redefine apps": "creative"}, "Wisy": {"Mode": "creative", "Prism": "facts", "Tone": "creative", "Teleology": "creative", "Field": "facts", "Time span": "facts", "Explainers": "creative", "Formalise": "creative"}, "Realy": {"Realms": "facts", "Realm subtitles": "creative", "Real column": "facts", "Fictional column": "creative", "More": "creative"}, "Socy": {"Core categories": "creative", "Standard form": "make", "New category form": "creative"}, "Blogy": {"Posts": "creative", "Categories": "creative", "Privacy": "risk", "Circles": "make"}, "Crafty": {"Project": "creative", "Stage": "make", "Contribution type": "creative", "Promisory contributions": "optimism", "Wanted profits": "optimism", "Payout": "facts", "Review": "facts"}, "Worthing": {"Meaningful": "heart", "Powerful": "heart", "Useful": "heart", "Friendly": "heart", "Moods": "heart"}, "Freed": {"Reasons": "heart", "Thing": "facts", "When": "facts", "Farewell": "heart", "Wishes": "optimism", "Beware": "risk"}, "Inventary": {"Columns": "make", "Categories": "facts", "Selected things": "facts", "Have options": "facts", "Want/Need options": "facts", "Wish options": "facts", "Item note": "facts", "Worth it bars": "heart", "Suggestion bots": "creative"}, "Minioffer": {"Type": "facts", "Description": "facts", "Condition": "risk", "Willingness": "heart", "Preference": "heart"}, "Offer": {"Modes": "creative", "Sectors": "facts", "Zones": "facts", "Worth it": "heart", "More details": "creative", "Time": "facts", "Use type": "facts", "People": "facts", "Contribution": "heart", "Disputes": "risk"}, "Rewardy": {"Providers": "heart", "Roles": "facts", "Rating axes": "heart", "Sub-offers": "creative", "Message modal": "creative"}, "Shareful": {"Sections": "creative", "Sectors": "facts", "Tags": "facts", "Worth bars": "heart", "Because": "heart", "For": "heart", "Who": "heart", "Zones": "facts", "Time / Space": "facts", "Preferences": "make", "Invitation": "heart"}, "Wanty": {"Like": "heart", "Wish": "optimism", "Interest": "heart", "Purpose": "optimism", "Project": "creative", "Want": "heart"}};
+// <<< catalog data
+
+// Authored reflective question sets — the app's OWN questions, asked of the USER
+// (what they think/feel inside the app), never of the maker. Each entry: key
+// (profile slot it lands on), text (the reflection), opts (candidate answers).
+const APP_QUESTIONS={
+  Goddy:[
+    {key:"Goddess exists",text:"Do you think there is a goddess?",opts:["Yes","No","Not sure","It depends"]},
+    {key:"God exists",text:"Do you think there is a god?",opts:["Yes","No","Not sure","It depends"]},
+    {key:"Goddess sees us",text:"Do you think the goddess sees us?",opts:["Yes","No","Not sure","It depends"]},
+    {key:"We see the goddess",text:"Do you think we can see the goddess?",opts:["Yes","No","Not sure","It depends"]},
+    {key:"God sees us",text:"Do you think god sees us?",opts:["Yes","No","Not sure","It depends"]},
+    {key:"We see god",text:"Do you think we can see god?",opts:["Yes","No","Not sure","It depends"]},
+    {key:"Goddess and God see each other",text:"Do the goddess and god see each other?",opts:["Yes","No","Not sure","It depends"]},
+    {key:"We see ourselves",text:"Do you think we truly see ourselves?",opts:["Yes","No","Not sure","It depends"]},
+    {key:"How far our seeing goes",text:"How fully do we see — a glimpse, a fuller look, or the whole?",opts:["A glimpse","A fuller look","The whole","I don't know"]}
+  ]
+};
+
+const FIELD_HINTS={
+  "Gender":"your gender identity","Desired relationship":"the kind of relationship you seek","Relationship style":"your style in relationships","Children":"whether you have or want children","About-me":"a short self-description","Media":"photos or media you share","Profiles":"other profiles you link","Projects · current":"projects you're working on now","Projects · desired":"projects you'd like to start","Projects · imaginary":"dream projects with no limits","Publish targets":"where you share publicly","Visibility":"who can see your profile",
+  "Matrix axes":"the dimensions of your value matrix","Cell levels":"the levels within each cell",
+  "Birth anchor":"your birth date or anchor","Traditions":"traditions you follow","Focus":"what you focus on","What else":"anything else about you",
+  "Dislikes":"things you avoid","Likes":"things you enjoy","Bridge":"how you bridge differences","Reveal":"what you reveal about yourself",
+  "Scenario":"the scenario you prepare for","Environment":"your preferred environment","Companions":"who you'd be with","Heritage":"what you leave behind","Farewell Message":"your farewell words","Post mortem actions scheduling":"arrangements after you're gone","Other things to do":"other preparations","Formal information":"formal details",
+  "Stage 1 · You":"who you are at the core","Stage 2 · Species + sense":"your species and senses","Senses":"how you sense the world","Species tree":"your lineage","Stage 3 · Biological system":"your biological makeup","Stage 4 · Matter":"what you're made of","Stage 5 · Particle":"your fundamental particles","Stage 5 · Immune subsystem":"your immune defences","Privacy mode":"how you stay private","Play with":"who you play with","Certify play":"how you certify play",
+  "Sections":"the sections of your profile","Wanty":"your wants","Offers":"what you offer","Contact":"how to reach you","Message wizards":"message assistants","Avatar tools":"avatar helpers",
+  "HELLO!":"your greeting","Let me adore your":"what you want adored","with-by my":"accompaniments","Other senses":"other senses you engage","Incentives":"what motivates you","Annex":"extra details","Disclaimer":"your disclaimer",
+  "Systems":"the systems you work with","Nervous subsystems":"nervous system layers","Immune subsystems":"immune layers","Stages":"your stages","Reason field":"your reasons","Verb field":"your actions",
+  "Wills (formal)":"your formal wills","Commandments":"your commandments","Sins":"your sins",
+  "I am a":"how you identify","Questions":"the questions you ask","Question placeholders":"question templates","Labelers (tone)":"tone labels you use",
+  "Terms":"your terms","Visibility":"who sees you","Compensation":"what you accept as compensation","I also allow to":"additional permissions",
+  "Who":"who you trust","Scope":"the scope of trust","Additional Protection":"extra protections","Trustful signals":"signals of trust","Declaration":"your declaration",
+  "Crumble":"what you crumble","Boycot":"what you boycott","Notifying":"how you notify","Only if":"conditions",
+  "Ways to start":"entry points","Triads":"three-part structures","Philosophy":"your philosophy","Service":"what you serve","Journalism":"your reporting","Fivy decks":"fivy card decks","Extra decks":"additional decks",
+  "Decks":"your card decks","Senses":"senses you engage","Flavors":"flavors you offer","Social":"social features","Elements":"elements you use","Fields (simplex)":"simplex fields",
+  "Categories":"your categories","Posts":"the posts you publish","Privacy":"who can read them","Rate apps":"how you rate apps","Relate apps":"how you relate apps","Redefine apps":"how you redefine apps",
+  "Realms":"the realms you visit","Realm subtitles":"realm subtitles","Real column":"real-world column","Fictional column":"fictional column","More":"more about your realms",
+  "Core categories":"your core categories","Standard form":"standard form fields","New category form":"new category fields",
+  "Project":"your project","Stage":"current stage","Contribution type":"type of contribution","Promisory contributions":"promised contributions","Wanted profits":"desired profits","Payout":"payout terms","Review":"review criteria",
+  "Meaningful":"what you find meaningful","Powerful":"what feels powerful","Useful":"what's useful to you","Friendly":"what feels friendly","Moods":"your moods",
+  "Love languages":"your love languages","Circles":"your social circles","Filters":"your filters","Media":"media you share","Reward":"rewards you value",
+  "Like":"what you like","Wish":"what you wish for","Interest":"your interests","Purpose":"your purpose",
+  "Project name":"the project name","Question count":"how many questions","Batch size":"questions per batch","Grouping":"how questions group","Thinking hats":"the hats you run","Addons":"which addons you run",
+  "Clip name":"the laugh's title","Tags":"its tags","Text":"the clip's text","Source":"where it came from","When":"when it happened",
+  "Parents":"your co-parenting arrangement","Education":"how you raise","Growth":"the growth stages you cover","Economy":"your household economy",
+  "Mode":"how you define","Prism":"the angle you view from","Teleology":"how the end aims","Formalise":"how you formalise the argument","Field":"the wisdom field","Time span":"the timespan you consider","Explainers":"the explainers you give","Tone":"the tone you set",
+  "Attention":"the attention you give","Influence":"how you influence each other","Feedback":"the feedback you give","Gifting":"how you gift","Sharing":"what you share","Money":"how money flows","Your friend is…":"how you describe your friend",
+  "Want":"what you want","Others":"how others are involved","Boundaries":"your boundaries","Notes":"your notes","Invitation":"the invitation you extend",
+  "Modes":"modes you use","Sectors":"sectors you cover","Zones":"zones you operate in","Worth it":"what's worth it","More details":"additional details","Time":"time preferences","Use type":"how you use it","People":"people involved","Contribution":"your contribution","Disputes":"dispute terms"
+};
+
+const INFLUENCE_NAMES=['','None','Touch','Blend','Soak','All-in'];
+const INFLUENCE_DESCS=['','Purely about the app, no flove vocabulary','Light flove accent, minimal ceremony','Flove conventions where they help (default)','Flove standards throughout','Full flove workflow, every standard'];
+
+const LS_APPS='questy-flove-apps';
+const LS_INFLUENCE='questy-flove-influence';
+const LS_ANSWERS='questy-flove-answers';
+const LS_BATCH='questy-flove-batch';
+const LS_CATALOG='questy-flove-catalog';
+const LS_CATALOG_AT='questy-flove-catalog-at';
+const CATALOG_URL='https://flove.org/development/standards/vocabulary/fields-colours.json';
+let liveCat=null;
+let liveCatAt=0;
+try{
+  const raw=localStorage.getItem(LS_CATALOG);
+  if(raw){liveCat=JSON.parse(raw);liveCatAt=parseInt(localStorage.getItem(LS_CATALOG_AT)||'0',10);}
+}catch(e){}
+
+let selectedApps=new Set(JSON.parse(localStorage.getItem(LS_APPS)||'[]'));
+let influence=parseInt(localStorage.getItem(LS_INFLUENCE)||'3',10);
+let answers=JSON.parse(localStorage.getItem(LS_ANSWERS)||'{}');
+let currentBatch=parseInt(localStorage.getItem(LS_BATCH)||'0',10);
+let allQuestions=[];
+
+// ===== HELPERS =====
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)}
+function saveApps(){localStorage.setItem(LS_APPS,JSON.stringify([...selectedApps]))}
+function saveInfluence(){localStorage.setItem(LS_INFLUENCE,String(influence))}
+function saveAnswers(){localStorage.setItem(LS_ANSWERS,JSON.stringify(answers))}
+function saveBatch(){localStorage.setItem(LS_BATCH,String(currentBatch))}
+
+function appCat(app){for(const c of CATEGORIES)if(c.apps.includes(app))return c.id;return''}
+function appColour(app){return CAT_COLOURS[appCat(app)]||'#6c5ce7'}
+function mixHex(a,b,t){
+  const pa=[1,3,5].map(i=>parseInt(a.slice(i,i+2),16));
+  const pb=[1,3,5].map(i=>parseInt(b.slice(i,i+2),16));
+  const m=pa.map((v,i)=>Math.round(v+(pb[i]-v)*t));
+  return '#'+m.map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+function slotHat(app,field){return (SLOT_HATS[app]&&SLOT_HATS[app][field])||null}
+function appHat(app){return APP_HATS[app]||null}
+function questionColour(app,field){
+  const parent=appColour(app);
+  const hat=slotHat(app,field)||appHat(app);
+  const hc=hat?HAT_COLOURS[hat]:null;
+  if(!hc||hc===parent)return parent;
+  return mixHex(parent,hc,.4);
+}
+function inputFieldsFor(app){
+  // Live synced catalog first (offline-cached), else the embedded snapshot
+  if(liveCat && liveCat.apps){
+    const id=(app==='MoralY'?'cathy':app==='Crumbly'?'crumbly':app.toLowerCase());
+    const hit=liveCat.apps.find(a=>a.id===id);
+    if(hit && hit.slots)return Object.keys(hit.slots).sort();
+  }
+  return INPUT_FIELDS[app]||[];
+}
+
+function catalogStatusText(){
+  if(liveCat){
+    return liveCatAt
+      ? 'cached · synced '+new Date(liveCatAt).toLocaleDateString()
+      : 'synced · this session';
+  }
+  return 'embedded catalog';
+}
+function renderCatalogStatus(){
+  const el=document.getElementById('cat-status');if(el)el.textContent=catalogStatusText();
+}
+function renderHatLegend(){
+  const el=document.getElementById('hat-chips');if(!el)return;
+  el.innerHTML=Object.entries(HAT_COLOURS).map(([hat,c])=>`<span class="hat-chip" style="background:${c}">${hat}</span>`).join('');
+}
+function syncCatalog(){
+  const btn=document.getElementById('sync-cat-btn');if(btn)btn.disabled=true;
+  toast('syncing catalog…');
+  fetch(CATALOG_URL)
+    .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json()})
+    .then(j=>{
+      liveCat=j;liveCatAt=Date.now();
+      try{
+        localStorage.setItem(LS_CATALOG,JSON.stringify(j));
+        localStorage.setItem(LS_CATALOG_AT,String(liveCatAt));
+      }catch(e){}
+      generateQuestions();renderQuestions();showExport();
+      renderCatalogStatus();
+      toast('catalog synced ✓');
+    })
+    .catch(()=>toast('offline — using the catalog on this device'))
+    .finally(()=>{if(btn)btn.disabled=false;});
+}
+
+// ===== RENDER APP PICKER =====
+function renderPicker(){
+  const el=document.getElementById('app-picker');
+  let html='';
+  for(const cat of CATEGORIES){
+    html+=`<div class="cat-group"><div class="cat-label cat-${cat.id}"><span class="cat-dot cat-${cat.id}"></span>${cat.label}</div><div class="app-chips">`;
+    for(const app of cat.apps){
+      const on=selectedApps.has(app)?'sel':'';
+      html+=`<button class="app-chip ${on}" data-app="${app}" data-cat="${cat.id}">${app}</button>`;
+    }
+    html+=`</div></div>`;
+  }
+  el.innerHTML=html;
+  el.addEventListener('click',e=>{
+    const btn=e.target.closest('.app-chip');if(!btn)return;
+    const app=btn.dataset.app;
+    if(selectedApps.has(app))selectedApps.delete(app);else selectedApps.add(app);
+    btn.classList.toggle('sel');
+    saveApps();
+    generateQuestions();
+    renderQuestions();
+  });
+}
+
+// ===== GAUGE =====
+function renderGauge(){
+  document.querySelectorAll('#gauge button').forEach(b=>{
+    b.classList.toggle('on',parseInt(b.dataset.v)===influence);
+  });
+  document.getElementById('influence-desc').textContent=INFLUENCE_DESCS[influence]||'';
+}
+
+// ===== QUESTION GENERATION =====
+function generateQuestions(){
+  allQuestions=[];
+  if(selectedApps.size===0)return;
+  let qId=0;
+  for(const app of selectedApps){
+    const cat=appCat(app);
+    const authored=APP_QUESTIONS[app];
+    if(authored){
+      // The app's own reflective questions, asked of the USER about what they
+      // think and feel inside the app (never about building or developing it).
+      for(const aq of authored){
+        qId++;
+        allQuestions.push({
+          id:'q'+qId,app,cat,colour:questionColour(app,null),type:'flove',hat:appHat(app)||'',field:aq.key,tag:'belief',
+          text:aq.text,options:aq.opts,rec:0
+        });
+      }
+      continue;
+    }
+    // Fallback until each app authors its reflective set: one reflection per
+    // input field, still addressed to the user's own view.
+    const fields=inputFieldsFor(app);
+    for(const field of fields){
+      const hint=FIELD_HINTS[field]||field.toLowerCase();
+      const hat=slotHat(app,field)||appHat(app)||'';
+      qId++;
+      allQuestions.push({
+        id:'q'+qId,app,cat,colour:questionColour(app,field),type:'flove',hat,field,hint,
+        text:`What do you think about ${field} in ${app}?`,
+        options:fieldOptions(field,app),
+        rec:0
+      });
+    }
+  }
+  // Shuffle within each app group to interleave flove/own
+  const byApp={};
+  for(const q of allQuestions){(byApp[q.app]=byApp[q.app]||[]).push(q)}
+  allQuestions=[];
+  // Round-robin through apps to mix categories
+  const appKeys=Object.keys(byApp);
+  let maxLen=0;
+  for(const k of appKeys)if(byApp[k].length>maxLen)maxLen=byApp[k].length;
+  for(let i=0;i<maxLen;i++){
+    for(const k of appKeys){
+      if(byApp[k][i])allQuestions.push(byApp[k][i]);
+    }
+  }
+  currentBatch=0;
+  saveBatch();
+}
+
+function fieldOptions(field,app){
+  // Candidate answers for the fallback "what do you think" questions.
+  const lower=field.toLowerCase();
+  if(lower.includes('gender'))return['Woman','Man','Non-binary','Prefer not to say'];
+  if(lower.includes('children'))return['Yes','No','Someday','Prefer not to say'];
+  if(lower.includes('visibility'))return['Public','Friends','Private','Custom'];
+  if(lower.includes('privacy'))return['Open','Selective','Locked','Custom'];
+  if(lower.includes('relationship'))return['Open','Partnered','Exploring','Friendship-first'];
+  if(lower.includes('style'))return['Formal','Casual','Playful','Deep'];
+  return['My view',"I don't have one yet",'Not sure'];
+}
+
+// ===== RENDER QUESTIONS =====
+function renderQuestions(){
+  const card=document.getElementById('questions-card');
+  const area=document.getElementById('q-batch-area');
+  if(allQuestions.length===0){
+    card.style.display='none';
+    document.getElementById('export-card').style.display='none';
+    return;
+  }
+  card.style.display='';
+  const BATCH=5;
+  const totalBatches=Math.ceil(allQuestions.length/BATCH);
+  if(currentBatch>=totalBatches)currentBatch=totalBatches-1;
+  if(currentBatch<0)currentBatch=0;
+  const start=currentBatch*BATCH;
+  const batch=allQuestions.slice(start,start+BATCH);
+  let html='';
+  for(let i=0;i<batch.length;i++){
+    const q=batch[i];
+    const col=q.colour||appColour(q.app);
+    const title=`${q.field} — ${q.cat} colour ${appColour(q.app)} · hat ${q.hat||'app'}`;
+    const cls='q-item flove-src';
+    const border=` style="border-left-color:${col}"`;
+    const answered=answers[q.id];
+    const tagTxt=[q.tag,q.hat].filter(Boolean).join(' · ');
+    const hatTag=tagTxt?`<span class="q-tag" style="color:${col};border-color:${col}" title="${title}">${tagTxt}</span>`:'';
+    html+=`<div class="${cls}"${border}>`;
+    html+=`<div class="q-field"><span class="q-dot" style="background:${col}"></span><b>${q.app}</b>${hatTag}</div>`;
+    html+=`<div class="q-num">${start+i+1} of ${allQuestions.length}</div>`;
+    html+=`<div class="q-text">${q.text}</div>`;
+    if(q.hint)html+=`<div class="q-hint">${q.hint}</div>`;
+    html+=`<div class="q-opts" data-qid="${q.id}">`;
+    for(let j=0;j<q.options.length;j++){
+      const on=answered===j?'on':'';
+      const rec=j===q.rec?' rec':'';
+      html+=`<button class="q-opt ${on}${rec}" data-idx="${j}">${q.options[j]}</button>`;
+    }
+    html+=`</div>`;
+    html+=`<textarea class="q-note" data-qid="${q.id}" placeholder="note…">${answers[q.id+':txt']||''}</textarea>`;
+    html+=`</div>`;
+  }
+  area.innerHTML=html;
+  // Wire option clicks
+  area.querySelectorAll('.q-opts').forEach(grp=>{
+    grp.addEventListener('click',e=>{
+      const btn=e.target.closest('.q-opt');if(!btn)return;
+      const qid=grp.dataset.qid;
+      grp.querySelectorAll('.q-opt').forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+      answers[qid]=parseInt(btn.dataset.idx);
+      saveAnswers();
+      showExport();
+    });
+  });
+  // Wire note textareas
+  area.querySelectorAll('.q-note').forEach(ta=>{
+    ta.addEventListener('input',()=>{
+      answers[ta.dataset.qid+':txt']=ta.value;
+      saveAnswers();
+    });
+  });
+  // Batch nav
+  document.getElementById('batch-info').textContent=`batch ${currentBatch+1} / ${totalBatches}`;
+  document.getElementById('prev-btn').disabled=currentBatch<=0;
+  document.getElementById('next-btn').disabled=currentBatch>=totalBatches-1;
+}
+
+// ===== EXPORT =====
+function showExport(){
+  const answeredCount=Object.keys(answers).filter(k=>!k.includes(':txt')).length;
+  if(answeredCount===0){document.getElementById('export-card').style.display='none';return}
+  document.getElementById('export-card').style.display='';
+}
+
+function buildJSON(){
+  const appsPlayed=[];
+  for(const app of selectedApps){
+    const colour=appColour(app);
+    const fields=inputFieldsFor(app);
+    const answered={};
+    // Match answers to input fields by question text
+    for(const q of allQuestions){
+      if(q.app!==app)continue;
+      if(q.field && answers[q.id]!==undefined){
+        answered[q.field]=q.options[answers[q.id]];
+      }
+    }
+    if(Object.keys(answered).length>0){
+      appsPlayed.push({app,colour,answered});
+    }
+  }
+  return{
+    kind:'flove-profile',
+    version:1,
+    exported:new Date().toISOString(),
+    handle:'@you',
+    presence:'LIVE',
+    stage:{name:'newbie',index:0,stars:0},
+    facets:{personal:0,local:0,social:0,global:0},
+    appsPlayed,
+    influence,
+    visibility:{content:'mynet',resources:'mynet',profile:'private',scores:'private'}
+  };
+}
+
+function renderPreview(){
+  const json=buildJSON();
+  const el=document.getElementById('json-preview');
+  el.textContent=JSON.stringify(json,null,2);
+  el.classList.toggle('show');
+}
+
+function downloadJSON(){
+  const json=buildJSON();
+  const blob=new Blob([JSON.stringify(json,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='flove-profile.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('downloaded ✓');
+}
+
+function copyJSON(){
+  const json=buildJSON();
+  navigator.clipboard.writeText(JSON.stringify(json,null,2)).then(()=>toast('copied ✓'));
+}
+
+// ===== INIT =====
+renderCatalogStatus();
+renderHatLegend();
+renderPicker();
+renderGauge();
+generateQuestions();
+renderQuestions();
+showExport();
+
+document.getElementById('sync-cat-btn').addEventListener('click',syncCatalog);
+
+document.getElementById('gauge').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  influence=parseInt(b.dataset.v);
+  renderGauge();
+  saveInfluence();
+  generateQuestions();
+  renderQuestions();
+});
+
+document.getElementById('prev-btn').addEventListener('click',()=>{currentBatch--;saveBatch();renderQuestions()});
+document.getElementById('next-btn').addEventListener('click',()=>{currentBatch++;saveBatch();renderQuestions()});
+document.getElementById('dl-btn').addEventListener('click',downloadJSON);
+document.getElementById('copy-btn').addEventListener('click',copyJSON);
+document.getElementById('preview-toggle').addEventListener('click',renderPreview);
+</script>
+</body>
+</html>
