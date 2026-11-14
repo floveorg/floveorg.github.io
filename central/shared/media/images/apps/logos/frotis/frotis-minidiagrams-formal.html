@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="author" content="Marc (marcflove)">
+<meta name="description" content="frotis formal diagrams — a clean, explanatory mini-diagram per section: exactly what each frotis concept says, drawn as a schematic figure.">
+<title>📐 frotis · formal diagrams</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f0f16; --ink:#eceeff; --dim:#9898ab; --line:rgba(255,255,255,.09);
+    --amber:#ff9a4d; --rose:#ff5c7a; --violet:#a06bff; --green:#2fd6a8;
+  }
+  html.theme--light{
+    --bg:#f6f5f2; --ink:#1c1a26; --dim:#6e6b7c; --line:rgba(20,16,45,.12);
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ background:var(--bg); color:var(--ink); font-family:"Fredoka","system-ui",sans-serif;
+    -webkit-font-smoothing:antialiased; min-height:100vh; padding:clamp(1.2rem,4vw,2.4rem); }
+  .wrap{ max-width:1140px; margin:0 auto; }
+  .top{ display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:clamp(1.4rem,4vw,2.2rem); }
+  .top .crumb{ color:var(--dim); font-size:.74rem; letter-spacing:.14em; text-transform:uppercase; }
+  .top .crumb b{ color:var(--green); font-weight:600; }
+  .toggle{ cursor:pointer; border:1px solid var(--line); background:rgba(255,255,255,.05); color:var(--ink);
+    font:600 .76rem "Inter",system-ui,sans-serif; padding:.52rem .95rem; border-radius:999px; transition:.18s; }
+  .toggle:hover{ border-color:var(--green); }
+  .head{ margin-bottom:clamp(1.2rem,3vw,1.8rem); }
+  h1{ font-size:clamp(2rem,6vw,3.4rem); font-weight:700; letter-spacing:-.02em; line-height:.95; margin-bottom:.6rem; }
+  h1 em{ font-style:normal; color:var(--green); }
+  .intr{ color:var(--dim); font:500 .92rem/1.65 "Inter",system-ui,sans-serif; max-width:78ch; }
+  .intr b{ color:var(--amber); font-weight:600; }
+  .sec{ display:flex; align-items:center; gap:.7rem; margin:clamp(2rem,5vw,2.6rem) 0 .9rem;
+    font-size:.66rem; font-weight:600; letter-spacing:.3em; text-transform:uppercase; color:var(--dim); }
+  .sec::after{ content:""; flex:1; height:1px; background:var(--line); }
+  .board{ background:var(--panel,#15151f); border:1px solid var(--line); border-radius:24px;
+    padding:clamp(1.2rem,3vw,1.8rem);
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(258px,1fr)); gap:clamp(1rem,2vw,1.4rem); }
+  html.theme--light .board{ background:#fff; }
+  .card{ border:1px solid var(--line); border-radius:18px; padding:1.15rem 1.05rem 1rem;
+    background:linear-gradient(180deg,var(--card-a,#13131e),var(--card-b,#111118));
+    display:flex; flex-direction:column; gap:.9rem; }
+  html.theme--light .card{ background:linear-gradient(180deg,#ffffff,#faf9f6); }
+  .card svg{ width:100%; height:auto; overflow:visible; display:block; }
+  .card svg text{ font-family:"Inter","system-ui",sans-serif; font-weight:500; letter-spacing:.14em; }
+  .card .cap b{ display:block; font-size:1.02rem; font-weight:600; letter-spacing:-.01em; margin-bottom:.15rem; }
+  .card .cap span{ display:block; font:500 .72rem/1.5 "Inter",system-ui,sans-serif; color:var(--dim);
+    text-transform:uppercase; letter-spacing:.1em; }
+  .card .cap .note{ text-transform:none; letter-spacing:0; margin-top:.3rem; }
+  .foot{ color:var(--dim); font:500 .74rem/1.7 "Inter",system-ui,sans-serif; margin-top:2.4rem;
+    border-top:1px solid var(--line); padding-top:1rem; }
+  .foot b{ color:var(--green); font-weight:600; }
+  .foot a{ color:var(--amber); text-decoration:none; }
+  .foot a:hover{ text-decoration:underline; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <span class="crumb">flove · <b>frotis</b> identity · formal set</span>
+    <button class="toggle" id="tg" aria-pressed="false">🌙 night</button>
+  </div>
+  <div class="head">
+    <h1>frot<em>is</em> · formal diagrams</h1>
+    <p class="intr">The same twelve cards, drawn <b>clean and schematic</b> — each figure states exactly what the section says. Accent colour marks the one idea; tight labels act as the figure caption.</p>
+  </div>
+
+  <h2 class="sec">the twelve concepts, formally</h2>
+  <div class="board" id="board"></div>
+
+  <h2 class="sec">reading</h2>
+  <p class="intr">These are analytical figures — measure, signal, balance, ledger — so each card reads at a glance as a <b>claim</b> about its concept, not just a picture of it.</p>
+
+  <p class="foot"><b>formal, not the icons.</b> The study's monoline <a href="frotis-logos.html">logo icons</a> remain the system; this set is the explanatory layer. Its hand-drawn study companion: <a href="frotis-minidiagrams.html">minidiagrams</a>.</p>
+</div>
+
+<script>
+const COL = { amber:"#ff9a4d", rose:"#ff5c7a", violet:"#a06bff", green:"#2fd6a8" };
+const DIM = "#8b87a0";
+const W = "stroke-linecap:round;stroke-linejoin:round;fill:none";
+const stroke = (d,c,w) => `<path d="${d}" stroke="${c}" stroke-width="${w}" style="${W}"/>`;
+const dash = (d,c,w,da) => `<path d="${d}" stroke="${c}" stroke-width="${w}" stroke-dasharray="${da}" style="${W}"/>`;
+const dot = (x,y,r,c="currentColor") => `<circle cx="${x}" cy="${y}" r="${r}" fill="${c}" style="stroke:none"/>`;
+const ink = (d,w) => stroke(d, "currentColor", w);
+const ring = (cx,cy,r) => {
+  const k = 0.5523 * r;
+  return `M${cx} ${cy-r} C ${cx+k} ${cy-r} ${cx+r} ${cy-k} ${cx+r} ${cy} C ${cx+r} ${cy+k} ${cx+k} ${cy+r} ${cx} ${cy+r} C ${cx-k} ${cy+r} ${cx-r} ${cy+k} ${cx-r} ${cy} C ${cx-r} ${cy-k} ${cx-k} ${cy-r} ${cx} ${cy-r} Z`;
+};
+const txt = (x,y,t,a="middle",c="currentColor",s=5.5) =>
+  `<text x="${x}" y="${y}" text-anchor="${a}" fill="${c}" font-size="${s}">${t}</text>`;
+
+const CARDS = [
+  { num:1, es:"sentir", en:"Feel it first", accent:COL.amber,
+    note:"warm the contact before you seek the sound",
+    svg:`<g>
+      ${ink("M12 12 L28 42",1.4)}
+      ${ink("M28 42 l-4 -2 M28 42 l-2 -4",1.2)}
+      ${dash(ring(30,44,8),"currentColor","1 2",1.3)}
+      ${dot(30,44,2.2,COL.amber)}
+      ${ink("M16 44 H84",1.6)}
+      ${stroke("M48 44 q6 -11 12 0 q6 11 12 0 q6 -11 10 0",COL.green,1.8)}
+      ${txt(30,10,"touch first","middle",COL.amber,5)}
+      ${txt(74,30,"pulse","middle",COL.green,5)}
+    </g>` },
+
+  { num:2, es:"nuevo / experto", en:"Easy for new, Hard for experts", accent:COL.amber,
+    note:"the same move: effortless when new, frictional at the top",
+    svg:`<g>
+      ${stroke("M16 42 H80",COL.amber,2)}
+      ${ink("M76 39 l4 3 l-4 3",1.2)}
+      ${ink("M16 62 H88",1.5)}
+      ${ink("M46 62 V52 M56 62 V52 M66 62 V52 M76 62 V52",1.3)}
+      ${dot(20,40,2,COL.green)}
+      ${dot(78,44,2,COL.rose)}
+      ${txt(20,12,"new · glides","middle",COL.green,4.5)}
+      ${txt(76,12,"master · bites","middle",COL.rose,4.5)}
+    </g>` },
+
+  { num:3, es:"hacia dentro", en:"More inwards", accent:COL.violet,
+    note:"towards the centre point",
+    svg:`<g>
+      ${dot(48,74,2.6,COL.violet)}
+      ${ink("M16 40 L44 72",1.4)}
+      ${ink("M80 40 L52 72",1.4)}
+      ${ink("M25 50 H71",1)}
+      ${ink("M31 60 H65",1)}
+      ${ink("M37 68 H59",1)}
+      ${stroke("M48 16 V60",COL.amber,1.8)}
+      ${ink("M48 62 l-4 -6 M48 62 l4 -6",1.2)}
+      ${txt(48,10,"in","middle",COL.amber,5)}
+    </g>` },
+
+  { num:4, es:"grabar", en:"It loves a recording", accent:COL.green,
+    note:"equalise first, then play → record reveals its colours",
+    svg:`<g>
+      ${dash("M8 16 h22 v14 h-22 Z","currentColor",1.4,"3 3")}
+      ${txt(19,25,"EQ","middle","currentColor",5)}
+      ${ink("M30 23 h5",1.4)}
+      ${ink("M32 20 l4 3 l-4 3",1.2)}
+      ${ink("M38 16 h22 v14 h-22 Z",1.5)}
+      ${txt(49,25,"PLAY","middle","currentColor",5)}
+      ${ink("M60 23 h5",1.4)}
+      ${ink("M62 20 l4 3 l-4 3",1.2)}
+      ${ink("M68 16 h22 v14 h-22 Z",1.5)}
+      ${txt(79,25,"REC","middle","currentColor",5)}
+      ${ink("M10 50 H88",1)}
+      ${stroke("M16 50 q7 -14 14 0 q7 14 14 0 q7 -14 14 0 q7 14 14 0 q6 -11 8 -2",COL.green,1.9)}
+      ${txt(48,82,"equalised colour","middle",DIM,4.5)}
+    </g>` },
+
+  { num:5, es:"más allá", en:"Beyond the guitar", accent:COL.violet,
+    note:"frotis leaves the instrument: vocal and tactual",
+    svg:`<g>
+      ${ink("M24 14 V38",1.5)}
+      ${dot(20,15,1.2)}
+      ${dot(28,15,1.2)}
+      ${ink(ring(24,53,13),1.7)}
+      ${dot(24,53,1.8,COL.amber)}
+      ${ink("M40 44 L72 20",1.7)}
+      ${ink("M68 24 L72 20 L70 15",1.2)}
+      ${ink("M40 58 L72 62",1.7)}
+      ${ink("M68 58 L72 62 L70 67",1.2)}
+      ${dash("M38 53 H78","currentColor","3 4",1.3)}
+      ${dash("M78 10 V86","currentColor","3 4",1.3)}
+      ${txt(76,16,"vocal","end",COL.violet,5)}
+      ${txt(76,72,"tactual","end",COL.violet,5)}
+    </g>` },
+
+  { num:6, es:"plasma", en:"Plasma", accent:COL.green,
+    note:"rubbing what is full against what is empty",
+    svg:`<g>
+      ${ink("M14 24 h50 v9 h-50 Z",1.7)}
+      ${stroke("M34 29 H20 M24 26 L20 29 L24 32",COL.amber,1.2)}
+      ${txt(58,32,"noise","end","currentColor",5)}
+      ${ink("M14 51 h50 v9 h-50 Z",1.7)}
+      ${stroke("M48 55 H62 M54 52 L58 55 L54 58",COL.amber,1.2)}
+      ${txt(20,58,"silence","start","currentColor",5)}
+      ${stroke("M22 44 l8 -5 l8 5 l8 -5 l8 5",COL.green,1.8)}
+      ${txt(28,44,"friction","end",DIM,4.5)}
+      ${txt(78,44,"plasma","end",COL.green,5)}
+    </g>` },
+
+{ num:7, es:"sonido", en:"Sound", accent:COL.green,
+    note:"what the observer can measure of resonance",
+    svg:`<g>
+      ${dash("M8 62 H88","currentColor","4 4",1)}
+      ${stroke("M12 62 q7 -15 14 0 q7 15 14 0 q7 -15 14 0 q7 15 14 0 q5 -7 8 -2",COL.green,1.9)}
+      ${ink("M19 62 V50",1.1)}
+      ${ink("M16 54 l3 -2 l3 2",1.2)}
+      ${txt(13,56,"A","middle","currentColor",5.5)}
+    </g>` },
+
+  { num:8, es:"oído interno", en:"Inner ear", accent:COL.rose,
+    note:"the outer ear keeps the sound; the inner ear keeps everything",
+    svg:`<g>
+      ${ink("M8 40 H88",1.4)}
+      ${ink("M8 72 H88",1.4)}
+      ${dash("M27 50 h8 v8 h-8 Z","currentColor",1.2,"2 3")}
+      ${dot(31,54,2.2,COL.amber)}
+      ${txt(31,16,"outer · a sound","middle",COL.amber,4.5)}
+      <path d="M14 46 H82 V66 H14 Z" fill="${COL.rose}" opacity=".14" style="stroke:none"/>
+      ${dash("M14 46 H82 V66 H14 Z",COL.rose,1.3,"4 3")}
+      ${txt(48,88,"inner · everything","middle",COL.rose,4.5)}
+    </g>` },
+
+  { num:9, es:"orígenes", en:"Origins", accent:COL.green,
+    note:"inner admits more origins, closer to genesis",
+    svg:`<g>
+      ${ink("M12 78 H84",1.5)}
+      ${ink("M82 75 l4 3 l-4 3",1.2)}
+      ${dot(24,68,2,COL.green)}
+      ${dot(30,68,2,COL.green)}
+      ${dot(36,68,2,COL.green)}
+      ${dot(44,68,2,COL.green)}
+      ${dot(50,68,2,COL.green)}
+      ${dot(56,68,2,COL.green)}
+      ${dot(62,68,2,COL.green)}
+      ${dot(68,68,2,COL.green)}
+      ${dot(74,68,2,COL.green)}
+      ${dash("M20 60 H40","currentColor","2 3",1.2)}
+      ${dash("M20 60 V56 M40 60 V56","currentColor","2 3",1.2)}
+      ${txt(30,50,"outer","middle",COL.amber,4.5)}
+      ${dash("M14 42 H78","currentColor","2 3",1.2)}
+      ${dash("M14 42 V38 M78 42 V38","currentColor","2 3",1.2)}
+      ${txt(46,32,"inner · genesis","middle",COL.rose,4.5)}
+    </g>` },
+
+  { num:10, es:"arte", en:"Art", accent:COL.amber,
+    note:"art holds subjectivity and objectivity level",
+    svg:`<g>
+      ${ink("M16 44 H80",1.9)}
+      ${ink("M48 44 L42 62 L54 62 Z",1.4)}
+      ${ink("M28 44 V53 M68 44 V53",1.1)}
+      ${ink("M22 53 q6 8 12 0 M62 53 q6 8 12 0",1.5)}
+      ${ink("M42 38 H54",1.2)}
+      ${dot(48,38,1.3,COL.amber)}
+      ${ink("M44 35 v3 M52 35 v3",1)}
+      ${txt(27,74,"subjective","middle","currentColor",4.5)}
+      ${txt(69,74,"objective","middle","currentColor",4.5)}
+      ${txt(48,88,"art","middle",COL.amber,7)}
+    </g>` },
+
+  { num:11, es:"sorpresa", en:"Surprise", accent:COL.rose,
+    note:"novelty appears; it occupies part of the previous",
+    svg:`<g>
+      ${ink("M12 44 h16 v16 h-16 Z",1.3)}
+      ${ink("M30 44 h16 v16 h-16 Z",1.3)}
+      ${ink("M48 44 h16 v16 h-16 Z",1.3)}
+      ${dash("M66 44 h16 v16 h-16 Z",COL.rose,1.3,"2 3")}
+      ${stroke("M16 52 q3 -7 6 0 q3 7 6 0",COL.green,1.4)}
+      ${stroke("M34 52 q3 -7 6 0 q3 7 6 0",COL.green,1.4)}
+      ${stroke("M52 52 q3 -7 6 0 q3 7 6 0",COL.green,1.4)}
+      ${stroke("M74 46 L79 52 L74 58 L69 52 Z",COL.rose,1.3)}
+      ${stroke("M74 52 l6 -6 M74 52 l6 6 M74 52 l-6 6 M74 52 l-6 -6",COL.rose,1.1)}
+      ${txt(38,34,"previous","middle",DIM,4.5)}
+      ${txt(74,34,"novelty","middle",COL.rose,5)}
+      ${txt(74,78,"occupies its slot","middle",DIM,4.5)}
+    </g>` },
+
+  { num:12, es:"notación ausente", en:"Missing notation", accent:COL.violet,
+    note:"speed, up-down and the hand's variables go unrecorded",
+    svg:`<g>
+      ${ink("M10 22 H88 M10 30 H88 M10 38 H88 M10 46 H88",1.2)}
+      <ellipse cx="17" cy="30" rx="4" ry="2.9" fill="currentColor" transform="rotate(-15 17 30)" style="stroke:none"/>
+      ${ink("M20 29 V18",1.5)}
+      ${ink("M36 22 V46",1.5)}
+      ${ink("M64 22 V46",1.4)}
+      ${ink("M61 26 l3 -4 l3 4 M61 42 l3 4 l3 -4",1.2)}
+      ${txt(64,14,"speed · up/down","middle",DIM,4.5)}
+      ${txt(14,68,"finger","start","currentColor",5)}
+      ${dash("M46 66 H82","currentColor","3 3",1.1)}
+      ${txt(86,68,"?","end",COL.violet,5.5)}
+      ${txt(14,80,"hard / tip","start","currentColor",5)}
+      ${dash("M46 78 H82","currentColor","3 3",1.1)}
+      ${txt(86,80,"?","end",COL.violet,5.5)}
+      ${txt(14,92,"string height","start","currentColor",5)}
+      ${dash("M46 90 H82","currentColor","3 3",1.1)}
+      ${txt(86,92,"?","end",COL.violet,5.5)}
+    </g>` },
+];
+
+const board = document.getElementById("board");
+if (board){
+  board.innerHTML = CARDS.map(c => `
+    <div class="card">
+      <svg viewBox="0 0 96 96" aria-hidden="true">${c.svg}</svg>
+      <div class="cap"><b>${String(c.num).padStart(2,"0")} · ${c.es}</b><span>${c.en}</span>
+        <span class="note" style="color:${c.accent}">${c.note}</span></div>
+    </div>`).join("");
+}
+
+const tg = document.getElementById("tg");
+const setTheme = (light) => {
+  document.documentElement.classList.toggle("theme--light", light);
+  tg.textContent = light ? "☀️ day" : "🌙 night";
+  tg.setAttribute("aria-pressed", String(light));
+};
+tg.onclick = () => setTheme(!document.documentElement.classList.contains("theme--light"));
+if (new URLSearchParams(location.search).get("theme") === "light") setTheme(true);
+</script>
+</body>
+</html>

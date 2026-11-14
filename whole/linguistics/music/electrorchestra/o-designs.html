@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>electrOrchestra · the O — white O, animated</title>
+<style>
+  @font-face{ font-family:"Orbitron"; src:url("fonts/Orbitron.ttf") format("truetype"); font-weight:100 900; font-display:swap; }
+  :root{
+    --ink:#121019; --ink-2:#0d0c12; --card:#181321; --card-2:#1b1726;
+    --line:rgba(179,240,74,.14); --volt:#b3f04a; --mark:#e9e4ff;
+    --indigo:#7d5cff; --tir:#c9c2d8; --mut:#59506b;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; }
+  body{
+    background:radial-gradient(1200px 700px at 80% -10%, rgba(125,92,255,.14), transparent 60%),
+               radial-gradient(900px 600px at 0% 10%, rgba(179,240,74,.07), transparent 55%),
+               var(--ink);
+    color:var(--tir);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    padding:2.4rem clamp(1rem,4vw,3rem) 7rem;
+  }
+  .env{ max-width:1180px; margin:0 auto; }
+
+  header h1{
+    font-family:"Orbitron",sans-serif; font-weight:900; color:var(--mark);
+    font-size:clamp(1.3rem,3.2vw,2rem); letter-spacing:.04em; margin:0 0 .4rem;
+  }
+  header p{ margin:0; max-width:66ch; color:var(--tir); font-size:.86rem; line-height:1.5; }
+  header .tag{
+    display:inline-block; font-family:"Orbitron",sans-serif; font-size:.56rem; letter-spacing:.28em;
+    text-transform:uppercase; color:var(--volt); margin-bottom:.9rem;
+    border:1px solid var(--line); border-radius:99px; padding:.35rem .8rem; background:var(--card);
+  }
+  h2.grp{
+    font-family:"Orbitron",sans-serif; font-weight:700; color:var(--mark);
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase;
+    margin:2.2rem 0 0; display:flex; align-items:center; gap:.8rem;
+  }
+  h2.grp::after{ content:""; flex:1; height:1px; background:var(--line); }
+
+  .grid{
+    margin-top:1.1rem;
+    display:grid; gap:1.1rem;
+    grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+  }
+
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:16px;
+    padding:1rem 1rem 1.1rem; cursor:pointer; position:relative;
+    display:flex; flex-direction:column; gap:.7rem;
+    transition:border-color .15s, transform .15s, background .15s;
+  }
+  .card:hover{ transform:translateY(-2px); border-color:rgba(179,240,74,.4); }
+  .card.chosen{ border-color:var(--volt); background:var(--card-2); box-shadow:0 0 0 3px rgba(179,240,74,.14); }
+
+  .num{
+    position:absolute; top:.7rem; right:.85rem; font-family:"Orbitron",sans-serif;
+    font-size:.62rem; letter-spacing:.16em; color:var(--mut);
+  }
+
+  .spec{
+    height:176px; display:flex; align-items:center; justify-content:center;
+    background:var(--ink-2); border:1px solid rgba(255,255,255,.04); border-radius:12px; overflow:hidden;
+  }
+
+  .mark{
+    font-family:"Orbitron",sans-serif; font-weight:900; font-size:1.45rem;
+    letter-spacing:.02em; line-height:1; color:var(--volt); text-align:center;
+    white-space:nowrap; padding:1.5rem 0 .3rem;
+  }
+  .mark .a{ color:var(--volt); font-size:1.45rem; display:inline-block; }
+
+  .meta h3{
+    margin:0; font-family:"Orbitron",sans-serif; font-weight:700; color:var(--mark);
+    font-size:.72rem; letter-spacing:.1em; text-transform:uppercase;
+  }
+  .meta p{ margin:.3rem 0 0; font-size:.76rem; color:var(--mut); line-height:1.45; }
+
+  .css{
+    margin:0; background:var(--ink-2); border:1px solid var(--line); border-radius:10px;
+    padding:.55rem .65rem; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:.63rem; color:var(--tir); white-space:pre-wrap; word-break:break-word;
+    max-height:10rem; overflow:auto;
+  }
+
+  .pick{
+    margin-top:auto; font-family:"Orbitron",sans-serif; font-size:.58rem; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--volt); background:none; border:1px solid var(--line);
+    border-radius:99px; padding:.45rem .9rem; cursor:pointer; align-self:flex-start;
+    transition:background .15s,color .15s,border-color .15s;
+  }
+  .pick:hover{ border-color:var(--volt); background:rgba(179,240,74,.1); }
+  .card.chosen .pick{ background:var(--volt); color:var(--ink); border-color:var(--volt); }
+
+  /* ── the mark ── */
+  .oo{ display:inline-block; vertical-align:-.04em; color:var(--mark);
+       width:.63em; height:.95em; transform-origin:center; }
+  .spec .oo{ font-size:6.8rem; }
+  .mark .oo{ font-size:3.4rem; vertical-align:-.34em; }
+
+  .oo .rim{ fill:none; stroke:currentColor; stroke-width:5; }
+  .oo .c1,.oo .c2{ fill:none; stroke:currentColor; stroke-width:3; }
+  .oo .lens{ fill:transparent; }
+  .oo .rim,.oo .c1,.oo .c2{ transform-box:fill-box; transform-origin:center; }
+  .oo .ves{ transform-box:fill-box; transform-origin:center; }
+
+  /* ── white O · slow green fade · the white-O animations ── */
+  .wo .c1,.wo .c2{ stroke:var(--volt); }
+  .wo .lens{ fill:rgba(179,240,74,.22); }
+  .wo .ves{ animation:vgfade 5.6s ease-out infinite; }
+
+  .rim-glow   .rim{ animation:woglo 5.6s ease-in-out infinite; }
+  .rim-draw   .rim{ stroke-dasharray:216; animation:wodraw 5.6s ease-in-out infinite; }
+  .rim-wobble .rim{ animation:wowobble 5.6s ease-in-out infinite; }
+  .rim-flicker .rim{ animation:woflicker 5.6s steps(1,end) infinite; }
+  .rim-heart  .rim{ animation:woheart 5.6s ease-in-out infinite; }
+  .rim-pulse  .rim{ animation:wopulse 5.6s ease-in-out infinite; }
+
+  /* ── the five that also animate the title's letters ── */
+  .d1 .mark .a{ animation:lfade 5.6s ease-out infinite; }
+  .d2 .mark .a:first-of-type{ animation:lslideL8 5.6s ease-in-out infinite, lglow8 5.6s ease-in-out infinite; }
+  .d2 .mark .a:last-of-type{ animation:lslideR8 5.6s ease-in-out infinite, lglow8 5.6s ease-in-out infinite; }
+  .d2 .ves{ animation:vgfade8 5.6s ease-out infinite; }
+  .rim-draw8 .rim{ stroke-dasharray:216; animation:wodraw8 5.6s ease-in-out infinite; }
+  .d3 .mark .a{ animation:lreveal 5.6s ease-out infinite; }
+  .d4 .mark .a{ animation:lglow 5.6s ease-in-out infinite; }
+  .d5 .mark .a{ animation:lfollow 5.6s ease-out infinite; }
+  .d5 .mark .a:last-of-type{ animation-delay:.22s; }
+
+  /* ── ten kin of #8: white O draws + undraws, green glows peak together ── */
+  .k1 .ves,.k2 .ves,.k3 .ves,.k4 .ves,.k5 .ves,.k6 .ves,.k7 .ves,.k8 .ves{ animation:vgfade8 5.6s ease-out infinite; }
+  .k1 .mark .a{ animation:kRise 5.6s ease-in-out infinite, lglow8 5.6s ease-in-out infinite; }
+  .k2 .mark .a{ animation:kFall 5.6s ease-in-out infinite, lglow8 5.6s ease-in-out infinite; }
+  .k3 .mark .a{ animation:kFadeIn 5.6s ease-in-out infinite; }
+  .k3 .lens{ animation:kLensGlow 5.6s ease-in-out infinite; }
+  .k4 .mark .a{ animation:kZoom 5.6s ease-in-out infinite, lglow8 5.6s ease-in-out infinite; }
+  .k5 .mark .a{ animation:kWipeL 5.6s ease-in-out infinite, lglow8 5.6s ease-in-out infinite; }
+  .k6 .mark .a{ animation:kWipeR 5.6s ease-in-out infinite, lglow8 5.6s ease-in-out infinite; }
+  .k7 .mark .a{ animation:kFlipY 5.6s ease-in-out infinite, lglow8 5.6s ease-in-out infinite; }
+  .k8 .mark .a{ animation:kBlur 5.6s ease-in-out infinite, lglow8 5.6s ease-in-out infinite; }
+  .k9 .rim{ animation:wodraw8 4s ease-in-out infinite; }
+  .k9 .ves{ animation:vgfade8 4s ease-out infinite; }
+  .k9 .mark .a:first-of-type{ animation:lslideL8 4s ease-in-out infinite, lglow8 4s ease-in-out infinite; }
+  .k9 .mark .a:last-of-type{ animation:lslideR8 4s ease-in-out infinite, lglow8 4s ease-in-out infinite; }
+  .k10 .rim{ animation:wodraw8 8.4s ease-in-out infinite; }
+  .k10 .ves{ animation:vgfade8 8.4s ease-out infinite; }
+  .k10 .mark .a:first-of-type{ animation:lslideL8 8.4s ease-in-out infinite, lglow8 8.4s ease-in-out infinite; }
+  .k10 .mark .a:last-of-type{ animation:lslideR8 8.4s ease-in-out infinite, lglow8 8.4s ease-in-out infinite; }
+
+  /* ── five more of #11: white draws + crossing glow · m4/m5 without the white ── */
+  .m1 .ves,.m2 .ves,.m3 .ves,.m4 .ves,.m5 .ves{ animation:vgfade8 5.6s ease-out infinite; }
+  .m1 .lens,.m2 .lens,.m4 .lens,.m5 .lens{ animation:kLensGlow 5.6s ease-in-out infinite; }
+  .m3 .lens{ animation:kLensHeart 5.6s ease-in-out infinite; }
+  .m1 .mark .a{ animation:kRise 5.6s ease-in-out infinite; }
+  .m2 .mark .a{ animation:kZoom 5.6s ease-in-out infinite; }
+  .m3 .mark .a{ animation:kFadeIn 5.6s ease-in-out infinite; }
+  .m4 .mark .a{ animation:kFadeIn 5.6s ease-in-out infinite; }
+  .m5 .mark .a{ animation:kRise 5.6s ease-in-out infinite; }
+  .m4 .rim,.m5 .rim{ display:none; }
+
+  /* ── keyframes ── */
+  @keyframes vgfade{
+    0%{ opacity:0; filter:drop-shadow(0 0 .12em var(--volt)) }
+    18%{ opacity:1; filter:drop-shadow(0 0 .16em var(--volt)) }
+    100%{ opacity:0; filter:none }
+  }
+  @keyframes woglo{ 0%,100%{ filter:none } 50%{ filter:drop-shadow(0 0 .14em var(--mark)) } }
+  @keyframes wodraw{ 0%{ stroke-dashoffset:216 } 60%,100%{ stroke-dashoffset:0 } }
+  @keyframes wowobble{ 0%,100%{ transform:rotate(-5deg) } 50%{ transform:rotate(5deg) } }
+  @keyframes woflicker{ 0%,44%{ opacity:1 } 46%,52%{ opacity:.25 } 54%,100%{ opacity:1 } }
+  @keyframes woheart{ 0%{ transform:scale(1) } 12%{ transform:scale(1.07) } 24%{ transform:scale(1) } 36%{ transform:scale(1.05) } 48%,100%{ transform:scale(1) } }
+  @keyframes wopulse{ 0%,100%{ transform:scale(1); opacity:1 } 50%{ transform:scale(1.03); opacity:.5 } }
+
+  @keyframes lfade{ 0%,42%{ opacity:0 } 64%,90%{ opacity:1 } 100%{ opacity:0 } }
+  @keyframes lslideL{ 0%,42%{ opacity:0; transform:translateX(-10px) } 64%,90%{ opacity:1; transform:translateX(0) } 100%{ opacity:0; transform:translateX(-10px) } }
+  @keyframes lslideR{ 0%,42%{ opacity:0; transform:translateX(10px) } 64%,90%{ opacity:1; transform:translateX(0) } 100%{ opacity:0; transform:translateX(10px) } }
+  @keyframes lreveal{ 0%,42%{ clip-path:inset(0 100% 0 0) } 64%,90%{ clip-path:inset(0 0 0 0) } 100%{ clip-path:inset(0 100% 0 0) } }
+  @keyframes lglow{ 0%,42%{ opacity:.35; text-shadow:none } 56%,70%{ opacity:1; text-shadow:0 0 .5em var(--volt) } 82%,100%{ opacity:.35; text-shadow:none } }
+  @keyframes lfollow{ 0%,42%{ opacity:0; transform:translateY(6px) } 60%{ opacity:1; transform:translateY(0) } 90%{ opacity:1 } 100%{ opacity:0; transform:translateY(6px) } }
+
+  /* card 8: white O draws on and undraws; green glows peak together (50%) */
+  @keyframes wodraw8{
+    0%{ stroke-dashoffset:216 }
+    40%,60%{ stroke-dashoffset:0 }
+    100%{ stroke-dashoffset:216 }
+  }
+  @keyframes vgfade8{
+    0%{ opacity:0; filter:drop-shadow(0 0 .1em var(--volt)) }
+    38%{ opacity:.85; filter:drop-shadow(0 0 .14em var(--volt)) }
+    50%{ opacity:1; filter:drop-shadow(0 0 .22em var(--volt)) }
+    66%{ opacity:.7; filter:drop-shadow(0 0 .12em var(--volt)) }
+    100%{ opacity:0; filter:none }
+  }
+  @keyframes lglow8{
+    0%,40%{ text-shadow:none; color:var(--volt) }
+    50%{ text-shadow:0 0 .55em var(--volt), 0 0 1em rgba(179,240,74,.6); color:#eaffc0 }
+    100%{ text-shadow:none; color:var(--volt) }
+  }
+  @keyframes lslideL8{ 0%{ opacity:0; transform:translateX(-10px) } 38%{ opacity:1; transform:translateX(0) } 62%{ opacity:1; transform:translateX(0) } 100%{ opacity:0; transform:translateX(-10px) } }
+  @keyframes lslideR8{ 0%{ opacity:0; transform:translateX(10px) } 38%{ opacity:1; transform:translateX(0) } 62%{ opacity:1; transform:translateX(0) } 100%{ opacity:0; transform:translateX(10px) } }
+
+  @keyframes kRise{ 0%{ opacity:0; transform:translateY(10px) } 38%,62%{ opacity:1; transform:translateY(0) } 100%{ opacity:0; transform:translateY(10px) } }
+  @keyframes kFall{ 0%{ opacity:0; transform:translateY(-10px) } 38%,62%{ opacity:1; transform:translateY(0) } 100%{ opacity:0; transform:translateY(-10px) } }
+  @keyframes kFadeIn{ 0%{ opacity:0 } 38%,62%{ opacity:1 } 100%{ opacity:0 } }
+  @keyframes kZoom{ 0%{ opacity:0; transform:scale(.6) } 38%,62%{ opacity:1; transform:scale(1) } 100%{ opacity:0; transform:scale(.6) } }
+  @keyframes kWipeL{ 0%{ opacity:0; clip-path:inset(0 100% 0 0) } 38%,62%{ opacity:1; clip-path:inset(0 0 0 0) } 100%{ opacity:0; clip-path:inset(0 100% 0 0) } }
+  @keyframes kWipeR{ 0%{ opacity:0; clip-path:inset(0 0 0 100%) } 38%,62%{ opacity:1; clip-path:inset(0 0 0 0) } 100%{ opacity:0; clip-path:inset(0 0 0 100%) } }
+  @keyframes kFlipY{ 0%{ opacity:0; transform:rotateY(90deg) } 38%,62%{ opacity:1; transform:rotateY(0) } 100%{ opacity:0; transform:rotateY(90deg) } }
+  @keyframes kBlur{ 0%{ opacity:0; filter:blur(6px) } 38%,62%{ opacity:1; filter:blur(0) } 100%{ opacity:0; filter:blur(6px) } }
+  @keyframes kLensGlow{ 0%,40%{ filter:none } 50%{ filter:drop-shadow(0 0 .45em var(--volt)) drop-shadow(0 0 .9em rgba(179,240,74,.6)) } 100%{ filter:none } }
+  @keyframes kLensHeart{ 0%,40%{ filter:none } 46%{ filter:drop-shadow(0 0 .5em var(--volt)) } 50%{ filter:none } 56%{ filter:drop-shadow(0 0 .5em var(--volt)) drop-shadow(0 0 .9em rgba(179,240,74,.6)) } 100%{ filter:none } }
+
+  @media (prefers-reduced-motion: reduce){
+    .oo,.oo *,.mark,.mark *{ animation:none !important; }
+  }
+
+  .done{
+    position:fixed; left:0; right:0; bottom:0; z-index:20;
+    background:rgba(13,12,18,.92); backdrop-filter:blur(8px);
+    border-top:1px solid var(--line);
+  }
+  .done-inner{
+    max-width:1180px; margin:0 auto; padding:.7rem clamp(1rem,4vw,3rem);
+    display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+  }
+  .done .lbl{ font-family:"Orbitron",sans-serif; font-size:.58rem; letter-spacing:.22em; text-transform:uppercase; color:var(--mut); }
+  .done .val{ font-family:"Orbitron",sans-serif; font-weight:700; color:var(--mark); font-size:.8rem; letter-spacing:.08em; }
+  .done .prev{ margin-left:auto; display:flex; align-items:center; gap:.4rem; }
+  .done code{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.7rem; color:var(--volt);
+    background:var(--card); border:1px solid var(--line); border-radius:8px; padding:.3rem .5rem; }
+  .done button{ font-family:"Orbitron",sans-serif; font-size:.56rem; letter-spacing:.16em; text-transform:uppercase;
+    background:var(--volt); color:var(--ink); border:0; border-radius:99px; padding:.5rem .9rem; cursor:pointer; font-weight:800; }
+</style>
+</head>
+<body>
+<div class="env">
+  <header>
+    <span class="tag">Title study · the O · white O, animated</span>
+    <h1>The white O, animated</h1>
+    <p>Moved to the logos page — see <a href="logos.html" style="color:var(--volt)">logos.html</a>.</p>
+  </header>
+
+  <h2 class="grp">White O</h2>
+  <div class="grid" id="grid-wo"></div>
+
+  <h2 class="grp">White O + the title's letters</h2>
+  <div class="grid" id="grid-draw"></div>
+</div>
+
+<div class="done">
+  <span class="lbl">Chosen</span>
+  <span class="val" id="doneVal">— none yet —</span>
+  <span class="prev">
+    <code id="doneCss">— animation —</code>
+    <button type="button" id="copyBtn">Copy CSS</button>
+  </span>
+</div>
+
+<script>
+(function(){
+  var SVG = function(cls){
+    return '<svg class="oo '+cls+'" viewBox="0 0 60 90" role="img" aria-label="O">'+
+             '<ellipse class="rim" cx="30" cy="45" rx="26" ry="42"/>'+
+             '<g class="ves">'+
+               '<circle class="c1" cx="22.5" cy="45" r="15"/>'+
+               '<circle class="c2" cx="37.5" cy="45" r="15"/>'+
+               '<ellipse class="lens" cx="30" cy="45" rx="7.5" ry="13"/>'+
+             '</g>'+
+           '</svg>';
+  };
+
+  var BASE='.wo .c1,.wo .c2{ stroke:var(--volt); }\n.wo .lens{ fill:rgba(179,240,74,.22); }\n.wo .ves{ animation:vgfade 5.6s ease-out infinite; }';
+  var KBASE=BASE+'\n.rim-draw8 .rim{ stroke-dasharray:216; animation:wodraw8 5.6s ease-in-out infinite; }';
+
+  var WO = [];
+
+  var DRAW = [];
+
+  var MARK = function(cls){
+    return '<div class="mark"><span class="a">electr</span>'+cls+'<span class="a">rchestra</span></div>';
+  };
+
+  function build(containerId, items){
+    var container=document.getElementById(containerId);
+    container.innerHTML=items.map(function(it){
+      var svg=SVG('');
+      return ''+
+        '<article class="card '+it.cls+'" data-n="'+it.n+'">'+
+          '<span class="num">'+String(it.n).padStart(2,'0')+'</span>'+
+          '<div class="spec">'+svg+'</div>'+
+          MARK(svg)+
+          '<div class="meta"><h3>'+it.name+'</h3><p>'+it.desc+'</p></div>'+
+          '<pre class="css"></pre>'+
+          '<button class="pick" type="button">Choose '+String(it.n).padStart(2,'0')+'</button>'+
+        '</article>';
+    }).join('');
+    var cards=[].slice.call(container.querySelectorAll('.card'));
+    cards.forEach(function(card,i){
+      card.dataset.name=items[i].name;
+      card.dataset.css=items[i].css;
+      card.querySelector('.css').textContent=items[i].css;
+    });
+    return cards;
+  }
+
+  var cards=build('grid-wo', WO).concat(build('grid-draw', DRAW));
+
+  var val=document.getElementById('doneVal');
+  var cssOut=document.getElementById('doneCss');
+  var copyBtn=document.getElementById('copyBtn');
+  var chosen=null;
+
+  function pick(card){
+    cards.forEach(function(c){ c.classList.remove('chosen'); });
+    card.classList.add('chosen');
+    chosen=card;
+    val.textContent=String(card.dataset.n).padStart(2,'0')+' · '+card.dataset.name;
+    cssOut.textContent=card.dataset.name.toLowerCase();
+  }
+
+  cards.forEach(function(card){
+    card.addEventListener('click', function(){ pick(card); });
+    card.querySelector('.pick').addEventListener('click', function(e){ e.stopPropagation(); pick(card); });
+  });
+
+  copyBtn.addEventListener('click', function(){
+    if(!chosen) return;
+    var text=String(chosen.dataset.n).padStart(2,'0')+' · '+chosen.dataset.name+'\n\n'+chosen.dataset.css;
+    function done(){ copyBtn.textContent='Copied!'; setTimeout(function(){ copyBtn.textContent='Copy CSS'; }, 1600); }
+    function fallback(t, cb){
+      var ta=document.createElement('textarea'); ta.value=t; ta.setAttribute('readonly','');
+      ta.style.position='absolute'; ta.style.left='-9999px'; document.body.appendChild(ta);
+      ta.select(); try{ document.execCommand('copy'); cb(); }catch(_){}
+      ta.remove();
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done, function(){ fallback(text, done); });
+    } else { fallback(text, done); }
+  });
+})();
+</script>
+</body>
+</html>

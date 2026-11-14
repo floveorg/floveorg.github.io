@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="author" content="Marc (marcflove)" />
+<title>✺ flove · Bubbles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* tokens — shared with flove/index.html & docs/index.html */
+:root {
+  --bg-1:#fff8f1; --bg-2:#f4f1ff; --bg-3:#effdf7;
+  --ink:#1a1820; --mut:#6a6478;
+  --dream-1:#ff8aae; --dream-2:#8ab4ff; --dream-3:#b48aff; --dream-4:#8affd0; --dream-5:#ffd28a;
+}
+* { box-sizing:border-box; }
+html, body { height:100%; margin:0; }
+body {
+  font-family:'Inter',system-ui,sans-serif; color:var(--ink);
+  /* the flove background effect (radial gradients) */
+  background:
+    radial-gradient(1100px 700px at 110% -10%, var(--bg-3) 0, transparent 55%),
+    radial-gradient(900px 600px at -10% 110%, var(--bg-2) 0, transparent 55%),
+    var(--bg-1);
+  min-height:100svh; overflow:hidden; -webkit-font-smoothing:antialiased;
+}
+
+/* ── dreamy drifting blobs (the flove/index.html background ballet) ── */
+.dream-veil { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+.dream-blob {
+  position:absolute; width:80vmax; height:80vmax; border-radius:50%;
+  filter:blur(80px); mix-blend-mode:multiply; opacity:.5; will-change:transform;
+}
+.dream-blob.b1 { background:radial-gradient(circle, var(--dream-1) 0, transparent 65%); top:-30%; left:-25%;  animation:drift1 26s ease-in-out infinite; }
+.dream-blob.b2 { background:radial-gradient(circle, var(--dream-2) 0, transparent 65%); top: 10%; right:-30%; animation:drift2 32s ease-in-out infinite; }
+.dream-blob.b3 { background:radial-gradient(circle, var(--dream-3) 0, transparent 65%); bottom:-30%; left:5%; animation:drift3 28s ease-in-out infinite; }
+.dream-blob.b4 { background:radial-gradient(circle, var(--dream-4) 0, transparent 65%); top: 45%; left:35%;   animation:drift4 24s ease-in-out infinite; }
+.dream-blob.b5 { background:radial-gradient(circle, var(--dream-5) 0, transparent 65%); bottom:10%; right:10%;animation:drift5 36s ease-in-out infinite; }
+@keyframes drift1 { 0%,100%{transform:translate(0,0) scale(1)}    50%{transform:translate(18vw,12vh) scale(1.25)} }
+@keyframes drift2 { 0%,100%{transform:translate(0,0) scale(1.05)} 50%{transform:translate(-14vw,16vh) scale(.85)} }
+@keyframes drift3 { 0%,100%{transform:translate(0,0) scale(1)}    50%{transform:translate(12vw,-14vh) scale(1.18)} }
+@keyframes drift4 { 0%,100%{transform:translate(-6vw,6vh) scale(.95)} 50%{transform:translate(10vw,-10vh) scale(1.2)} }
+@keyframes drift5 { 0%,100%{transform:translate(0,0) scale(1)}    50%{transform:translate(-16vw,-12vh) scale(1.1)} }
+
+/* ── floating bubbles (physics cloud, ported from wanty.html) ── */
+.bubble-cloud { position:fixed; inset:0; z-index:2; }
+.bubble {
+  position:absolute; left:0; top:0; will-change:left,top;
+  display:flex; align-items:center; justify-content:center; text-align:center;
+  border-radius:50%; color:var(--ink);
+  background:radial-gradient(circle at 32% 26%,
+    rgba(255,255,255,.92), rgba(255,255,255,.28) 40%, var(--bub,#8ab4ff) 80%);
+  border:1px solid rgba(255,255,255,.6);
+  box-shadow: inset 0 0 18px rgba(255,255,255,.55), 0 8px 22px rgba(80,40,120,.14);
+  cursor:pointer; user-select:none; overflow:hidden;
+  animation: bubble-pop .5s cubic-bezier(.22,.9,.35,1.05) backwards;
+  transition: transform .15s ease;
+}
+.bubble:hover { transform: scale(1.07); }
+.bubble:active { transform: scale(.92); }
+.bubble svg { width:62%; height:62%; display:block; pointer-events:none; }
+@keyframes bubble-pop { from{opacity:0; transform:scale(.4)} to{opacity:1; transform:scale(1)} }
+
+/* chrome: home link + caption */
+.home-link {
+  position:fixed; top:1rem; left:1.1rem; z-index:5;
+  font-family:'JetBrains Mono', ui-monospace, monospace; font-size:.82rem; font-weight:500;
+  color:var(--mut); text-decoration:none; padding:.4rem .7rem; border-radius:999px;
+  background:rgba(255,255,255,.6); border:1px solid rgba(20,16,32,.10);
+  backdrop-filter:blur(8px) saturate(140%); transition:background .15s, color .15s;
+}
+.home-link:hover { color:var(--ink); background:rgba(255,255,255,.9); }
+
+/* ── splash — a burst of rings + droplets in the tapped app's colour ── */
+.splash { position:fixed; z-index:9998; pointer-events:none; }
+.splash .sring {
+  position:absolute; left:0; top:0; width:var(--s); height:var(--s); border-radius:50%;
+  border:5px solid var(--c); transform:translate(-50%,-50%) scale(.15); opacity:.95;
+  animation:sringOut .7s cubic-bezier(.15,.7,.35,1) forwards;
+}
+@keyframes sringOut { to { transform:translate(-50%,-50%) scale(1.15); opacity:0; } }
+.splash .sring.r2 { border-width:2px; animation-delay:.06s; }
+.splash i {
+  position:absolute; left:0; top:0; width:12px; height:12px; border-radius:50%;
+  background:var(--c); transform:translate(-50%,-50%);
+  animation:dropFly var(--d) cubic-bezier(.2,.7,.4,1) forwards;
+}
+@keyframes dropFly {
+  0% { opacity:1; }
+  18% { opacity:1; }
+  100% { opacity:0; transform:translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))); }
+}
+
+/* ── leaving bubbles: whole interface fades to white over 5s, then to the app ── */
+body.exit { pointer-events:none; }
+.exit-veil { position:fixed; inset:0; z-index:99999; pointer-events:none; opacity:0; background:#fffdf8; transition:opacity 5s linear; }
+.exit-veil.on { opacity:1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bubble { animation:none; }
+  .dream-blob { animation:none; }
+}
+</style>
+</head>
+<body>
+
+<a class="home-link" href="./index.html">← flove</a>
+
+<div class="dream-veil" aria-hidden="true">
+  <div class="dream-blob b1"></div>
+  <div class="dream-blob b2"></div>
+  <div class="dream-blob b3"></div>
+  <div class="dream-blob b4"></div>
+  <div class="dream-blob b5"></div>
+</div>
+
+<div class="bubble-cloud" id="cloud" aria-label="floating app bubbles"></div>
+
+<script>
+(function(){
+  const cloud = document.getElementById('cloud');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // flove app family — each bubble floats a DIFFERENT app's logo and, when tapped,
+  // splashes + fades out over 5s and goes straight to that app.
+  const APPS = [
+    { t:'flove',      href:'../index.html',                    c:'#ff8a3a', m:floveSVG() },
+    { t:'appy',       href:'appy/appy-basic.html',            c:'#ff9d6b', m:houseSVG() },
+    { t:'comby',      href:'puzzy/comby.html',                 c:'#25c39e', m:combySVG() },
+    { t:'confluenty', href:'puzzy/confluenty.html',            c:'#25c39e', m:confluentySVG() },
+    { t:'fivy',       href:'puzzy/fivy.html',                  c:'#8d89ff', m:fivySVG() },
+    { t:'linky',      href:'puzzy/linky.html',                 c:'#25c39e', m:linkySVG() },
+    { t:'poly',       href:'puzzy/poly.html',                  c:'#8d89ff', m:polySVG() },
+    { t:'raty',       href:'puzzy/raty.html',                  c:'#8d89ff', m:ratySVG() },
+    { t:'wisy',       href:'puzzy/wisy.html',                  c:'#f5a623', m:wisySVG() },
+    { t:'trusty',     href:'trusty/trusty.html',               c:'#4fd6cc', m:trustySVG() },
+    { t:'sensy',      href:'bio/sensy.html',                   c:'#ff5fd1', m:sensySVG() },
+    { t:'souls',      href:'metas/souls.html',                 c:'#b48aff', m:soulsSVG() },
+    { t:'socy',       href:'psicosocial/socy.html',            c:'#5ea4e6', m:socySVG() },
+    { t:'lovy',       href:'psicosocial/lovy.html',            c:'#ff8aae', m:lovySVG() },
+    { t:'lowai',      href:'lowai/index.html',                 c:'#6c5ce7', m:lowaiSVG() },
+    { t:'pracsys',    href:'bio/pracsys.html',                 c:'#33d97a', m:pracsysSVG() },
+    { t:'willy',      href:'metas/willy.html',                 c:'#ffce3a', m:willySVG() },
+    { t:'varyy',      href:'bio/varyy.html',                   c:'#4fd6cc', m:varyySVG() },
+    { t:'crafty',     href:'economy/crafty.html',              c:'#ff9648', m:craftySVG() },
+    { t:'worthing',   href:'economy/worthing.html',            c:'#ffce3a', m:worthingSVG() },
+  ];
+
+  const rnd = (a,b) => a + Math.random()*(b-a);
+  const vel = () => (Math.random()<.5?-1:1) * rnd(.05,.16);
+  const physics = new Map();
+
+  // ── route to an app: splash at the click, then fade the interface to white
+  //    over 5s, then navigate straight to the app. ──
+  function splash(x, y, c){
+    const wrap = document.createElement('div');
+    wrap.className = 'splash';
+    wrap.style.left = x + 'px'; wrap.style.top = y + 'px';
+    wrap.style.setProperty('--c', c);
+    for (let r = 0; r < 2; r++){
+      const ring = document.createElement('span');
+      ring.className = 'sring' + (r ? ' r2' : '');
+      ring.style.setProperty('--s', (120 + r*210) + 'px');
+      wrap.appendChild(ring);
+    }
+    const n = 26;
+    for (let i = 0; i < n; i++){
+      const a = Math.random() * Math.PI * 2;
+      const d = 70 + Math.random() * 190;
+      const p = document.createElement('i');
+      p.style.setProperty('--tx', Math.cos(a)*d + 'px');
+      p.style.setProperty('--ty', Math.sin(a)*d + 'px');
+      p.style.setProperty('--d', (0.5 + Math.random()*0.5) + 's');
+      wrap.appendChild(p);
+    }
+    (document.body||document.documentElement).appendChild(wrap);
+    setTimeout(() => wrap.remove(), 1100);
+  }
+  function goTo(href){
+    const veil = document.createElement('div');
+    veil.className = 'exit-veil';
+    document.body.appendChild(veil);
+    document.body.classList.add('exit');
+    requestAnimationFrame(() => requestAnimationFrame(() => veil.classList.add('on')));
+    setTimeout(() => { window.location.href = href; }, 5000);   // 5s fade, then the app
+  }
+  function leave(w, el){
+    const b = el.getBoundingClientRect();
+    splash(b.left + b.width/2, b.top + b.height/2, w.c);
+    goTo(w.href);
+  }
+
+  const cloudRect = () => cloud.getBoundingClientRect();
+  function measure(el, r) {
+    const b = el.getBoundingClientRect();
+    return { w: b.width/r.width*100 || 10, h: b.height/r.height*100 || 10 };
+  }
+  let raf = null;
+
+  // ── constant flow: a fixed, limited number of bubbles float up at once ──
+  const CAP = 6;                       // max bubbles on screen at any one time
+  const active = [];                   // the live bubbles rising now
+  const bank = APPS.slice();           // shuffled pool — new bubbles are drawn from it
+  for (let i = bank.length - 1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); [bank[i], bank[j]] = [bank[j], bank[i]]; }
+  let bankIndex = 0;
+  function takeNext(){ const w = bank[bankIndex % bank.length]; bankIndex++; return w; }
+
+  function seedOne(el) {
+    const r = cloudRect();
+    const m = measure(el, r);
+    const x = +(Math.random()*Math.max(1,100-m.w)).toFixed(2);
+    const y = reduce ? +(Math.random()*Math.max(1,100-m.h)).toFixed(2)
+                     : +(100-m.h).toFixed(2);              // start at the bottom
+    el.style.left = x+'%'; el.style.top = y+'%';
+    physics.set(el, { x, y, w:m.w, h:m.h, vx: vel(), vy: reduce ? 0 : (-Math.abs(vel())-0.06) });
+  }
+  function makeBubble(w, fromBelow) {
+    const el = document.createElement('div');
+    el.className = 'bubble';
+    el.setAttribute('role', 'button');
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('aria-label', 'Open ' + w.t);
+    el.title = w.t;
+    el.style.setProperty('--bub', w.c);
+    const size = Math.round(rnd(76, 138));
+    el.style.width = size+'px'; el.style.height = size+'px';
+    el.style.animationDelay = (fromBelow ? Math.random()*0.2 : Math.random()*0.5).toFixed(2)+'s';
+    el._w = w;                                            // current app identity (re-rollable)
+    el.innerHTML = w.m;
+    el.addEventListener('click', (e) => { e.stopPropagation(); leave(el._w, el); });
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); leave(el._w, el); }
+    });
+    cloud.appendChild(el);
+    seedOne(el);
+    active.push(el);
+    if (!reduce && !raf) raf = requestAnimationFrame(step);
+  }
+  // spill fresh bubbles from the bottom until the cap is full (constant flow)
+  function replenish() {
+    while (active.length < CAP) makeBubble(takeNext());
+  }
+  // a background click re-rolls up to n existing bubbles — each swaps app (logo,
+  // colour, link) to a different one.
+  function rollSome(n) {
+    const count = Math.min(n, active.length);
+    for (let k = 0; k < count; k++){
+      const el = active[Math.floor(Math.random()*active.length)];
+      let w;
+      do { w = APPS[Math.floor(Math.random()*APPS.length)]; } while (APPS.length > 1 && w === el._w);
+      el._w = w;
+      el.style.setProperty('--bub', w.c);
+      el.setAttribute('aria-label', 'Open ' + w.t);
+      el.title = w.t;
+      el.innerHTML = w.m;
+    }
+  }
+  function step() {
+    const r = cloudRect();
+    if (!r.width || !r.height) { raf = requestAnimationFrame(step); return; }
+    const items = [];
+    active.forEach(el => { const it = physics.get(el); const m = measure(el, r); it.w = m.w; it.h = m.h; items.push({el, it}); });
+    const sx = 440/r.width, sy = 300/r.height;
+    for (const {it} of items) {
+      it.x += it.vx*sx; it.y += it.vy*sy;
+      if (it.x < 0)          { it.x = 0;          it.vx =  Math.abs(it.vx); }
+      if (it.x + it.w > 100) { it.x = 100 - it.w; it.vx = -Math.abs(it.vx); }
+      if (it.y + it.h > 100) { it.y = 100 - it.h; it.vy = -Math.abs(it.vy); }
+    }
+    for (let i=0; i<items.length; i++) {
+      const a = items[i].it;
+      for (let j=i+1; j<items.length; j++) {
+        const b = items[j].it;
+        if (a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y) {
+          const dx = Math.min(a.x+a.w-b.x, b.x+b.w-a.x);
+          const dy = Math.min(a.y+a.h-b.y, b.y+b.h-a.y);
+          if (dx < dy) { const p = dx/2; if (a.x<b.x){a.x-=p;b.x+=p;}else{a.x+=p;b.x-=p;} const t=a.vx; a.vx=b.vx; b.vx=t; }
+          else         { const p = dy/2; if (a.y<b.y){a.y-=p;b.y+=p;}else{a.y+=p;b.y-=p;} const t=a.vy; a.vy=b.vy; b.vy=t; }
+        }
+      }
+    }
+    // bubbles rise off the top and disappear; a fresh one enters from below to keep the flow
+    for (let i = active.length - 1; i >= 0; i--){
+      const el = active[i]; const it = physics.get(el);
+      if (it.y + it.h < -8){                    // fully gone off the top
+        el.remove(); physics.delete(el); active.splice(i, 1);
+      }
+    }
+    replenish();
+    for (const {el, it} of items) { el.style.left = it.x.toFixed(2)+'%'; el.style.top = it.y.toFixed(2)+'%'; }
+    raf = requestAnimationFrame(step);
+  }
+  // start the constant flow — only CAP bubbles on screen at once
+  replenish();
+
+  // click the blank background: change the links + logos on 3 bubbles, and
+  // brim a fresh wave up from below
+  document.addEventListener('click', function(e){
+    if (e.target.closest('.bubble')) return;
+    rollSome(3);
+    makeBubble(takeNext(), true);      // one more rises from the bottom
+  });
+
+  // ── app logo marks (compact, self-contained inline SVG) ──
+  function floveSVG(){
+    return '<svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="fbg" x1="12" y1="0" x2="88" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff3344"/><stop offset=".5" stop-color="#ff8a3a"/><stop offset="1" stop-color="#ffd633"/></linearGradient></defs><path d="M50 62 C 24 62 13 42 17 21 C 39 25 55 41 50 62 Z" fill="url(#fbg)"/><path d="M50 62 C 76 62 87 42 83 21 C 61 25 45 41 50 62 Z" fill="url(#fbg)"/><path d="M50 60 C 50 74 50 85 50 92" stroke="url(#fbg)" stroke-width="6" stroke-linecap="round" fill="none"/></svg>';
+  }
+  function houseSVG(){
+    return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M22 48 H78 V84 H22 Z" fill="#ffd9a8" stroke="#241f36" stroke-width="5" stroke-linejoin="round"/><path d="M50 15 L88 50 H12 Z" fill="#ff9d6b" stroke="#241f36" stroke-width="5" stroke-linejoin="round"/><rect x="43" y="61" width="15" height="23" rx="2" fill="#241f36"/></svg>';
+  }
+  function combySVG(){
+    return '<svg viewBox="0 0 32 32" aria-hidden="true"><g fill="none" stroke="#25c39e" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="11" r="4.6"/><circle cx="16" cy="21" r="4.6"/><circle cx="23" cy="11" r="4.6"/></g></svg>';
+  }
+  function confluentySVG(){
+    return '<svg viewBox="0 0 32 32" aria-hidden="true"><g fill="none" stroke="#25c39e" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h8"/><path d="M9 10 13 14 9 18"/><path d="M28 14h-8"/><path d="M23 10l-4 4 4 4"/><circle fill="#25c39e" stroke="none" cx="16" cy="14" r="1.2"/></g></svg>';
+  }
+  function fivySVG(){
+    return '<svg viewBox="0 0 32 32" aria-hidden="true"><g fill="none" stroke="#8d89ff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M16 22V7"/><path d="M16 22 9 10M16 22 23 10M16 22 6.5 15M16 22 25.5 15"/><circle fill="#8d89ff" stroke="none" cx="16" cy="22" r="2"/></g></svg>';
+  }
+  function linkySVG(){
+    return '<svg viewBox="0 0 32 32" aria-hidden="true"><g fill="none" stroke="#25c39e" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="3.6"/><circle cx="22" cy="22" r="3.6"/><path d="M13 13l6 6"/></g></svg>';
+  }
+  function polySVG(){
+    return '<svg viewBox="0 0 32 32" aria-hidden="true"><g fill="none" stroke="#8d89ff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="16" r="8.5"/><path d="M16 7.5a4.2 4.2 0 0 0 0 8.5 4.2 4.2 0 0 1 0 8.5"/><circle fill="#8d89ff" stroke="none" cx="16" cy="11.7" r="1.6"/><circle fill="#8d89ff" stroke="none" cx="16" cy="21.6" r="1.6"/></g></svg>';
+  }
+  function ratySVG(){
+    return '<svg viewBox="0 0 32 32" aria-hidden="true"><g fill="none" stroke="#8d89ff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20a8 8 0 0 1 22 0"/><path d="M9.5 20a6.5 6.5 0 0 1 13 0"/><path d="M13 20a3 3 0 0 1 6 0"/><circle fill="#8d89ff" stroke="none" cx="16" cy="20" r="1.6"/></g></svg>';
+  }
+  function wisySVG(){
+    return '<svg viewBox="0 0 32 32" aria-hidden="true"><g fill="none" stroke="#f5a623" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l5 3.6L17 7"/><path d="M9 13 13 16l4.4-3"/><path d="M11 19l3 2 2.6-1.6"/><circle fill="#f5a623" stroke="none" cx="16" cy="24" r="1.5"/></g></svg>';
+  }
+  function trustySVG(){
+    return '<svg viewBox="0 0 100 100" aria-hidden="true"><rect x="28" y="46" width="44" height="34" rx="8" fill="#4fd6cc" stroke="#241f36" stroke-width="5"/><path d="M36 46 v-8 a14 14 0 0 1 28 0 v8" fill="none" stroke="#241f36" stroke-width="5"/><circle cx="50" cy="63" r="4" fill="#241f36"/></svg>';
+  }
+  function sensySVG(){
+    return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 38 c-9-12-24-11-27 2 -3 15 8 22 27 32 19-10 30-17 27-32 -3-13-18-14-27-2 Z" fill="#ff5fd1" stroke="#241f36" stroke-width="4" stroke-linejoin="round"/><circle cx="50" cy="50" r="6" fill="#fff"/></svg>';
+  }
+  function soulsSVG(){
+    return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 22 C 30 22 20 34 28 46 C 36 58 50 56 50 72 C 50 56 64 58 72 46 C 80 34 70 22 50 22 Z" fill="none" stroke="#b48aff" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+  }
+  function socySVG(){
+    return '<svg viewBox="0 0 100 100" aria-hidden="true"><g stroke="#5ea4e6" stroke-width="5" stroke-linecap="round"><path d="M50 26l26 16M50 26L24 42M50 74l26-16M50 74L24 58M50 50l0-24M50 74V50"/></g><circle cx="50" cy="26" r="9" fill="#8d89ff"/><circle cx="76" cy="58" r="9" fill="#4fd6cc"/><circle cx="24" cy="58" r="9" fill="#ff8a3a"/><circle cx="50" cy="74" r="9" fill="#b48aff"/></svg>';
+  }
+  function lovySVG(){
+    return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 78 C 22 60 10 42 18 28 C 26 14 44 15 50 24 C 56 15 74 14 82 28 C 90 42 78 60 50 78 Z" fill="#ff8aae" stroke="#241f36" stroke-width="4" stroke-linejoin="round"/></svg>';
+  }
+  function lowaiSVG(){
+    return '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#6c5ce7"/><text x="52" y="70" text-anchor="middle" font-family="system-ui" font-size="46" font-weight="800" fill="#fff">LA</text></svg>';
+  }
+  function pracsysSVG(){
+    return '<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="32" fill="none" stroke="#33d97a" stroke-width="7"/><path d="M38 50 l9 9 16-16" fill="none" stroke="#33d97a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="50" r="6" fill="#241f36"/></svg>';
+  }
+  function willySVG(){
+    return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 18 l9 19 21 3 -15 15 4 21 -19 -10 -19 10 4 -21 -15 -15 21 -3 Z" fill="#ffce3a" stroke="#241f36" stroke-width="4" stroke-linejoin="round"/></svg>';
+  }
+  function varyySVG(){
+    return '<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="#4fd6cc" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M24 30h30a18 18 0 0 1 0 36H52"/><path d="M30 42l-6-6 6-6"/><path d="M72 24l6 6-6 6"/><path d="M72 64l6 6-6 6"/></g></svg>';
+  }
+  function craftySVG(){
+    return '<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="38" cy="42" r="22" fill="#ff9648" stroke="#241f36" stroke-width="5"/><circle cx="61" cy="58" r="22" fill="#ffd28a" stroke="#241f36" stroke-width="5"/><circle cx="38" cy="42" r="8" fill="#241f36" opacity=".8"/><circle cx="61" cy="58" r="8" fill="#241f36" opacity=".8"/></svg>';
+  }
+  function worthingSVG(){
+    return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M34 26 L18 50 34 26 66 26 L82 50 L66 74 L34 50 Z" fill="none" stroke="#ffce3a" stroke-width="6" stroke-linejoin="round"/><path d="M50 26 V74" stroke="#ffce3a" stroke-width="4"/></svg>';
+  }
+})();
+</script>
+
+</body>
+</html>

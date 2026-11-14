@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#6c5ce7">
+<meta name="description" content="Wizy — the contextual suggestion engine that powers flove apps.">
+<meta name="flove:distro" content="central">
+<meta name="flove:tier" content="normal">
+<meta name="flove:app" content="wizy">
+<title>Wizy · Central</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#f3f4fb;--ink:#16141f;--muted:#4a4e5a;--line:#e3e5f0;--card:#fff;
+  --accent:#6c5ce7;--signal:#02855c;--warn:#b9820a;--danger:#dd3b3b
+}
+html{scroll-behavior:smooth}
+body{font-family:"Space Mono",ui-monospace,monospace;color:var(--ink);background:var(--bg);
+  min-height:100svh;line-height:1.7;font-size:15px}
+.wrap{max-width:880px;margin:0 auto;padding:2rem clamp(1rem,4vw,2rem) 4rem}
+a{color:var(--accent)}
+.top{display:flex;align-items:center;gap:.7rem;margin-bottom:1.5rem}
+.mark{width:44px;height:44px;border-radius:12px;flex:none;
+  background:linear-gradient(135deg,var(--accent),#8b7cf7);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1rem}
+.brand{font-weight:700;letter-spacing:-.01em}
+.brand small{display:block;font-weight:400;font-size:.55rem;color:var(--muted);letter-spacing:.2em;text-transform:uppercase}
+h1{font-size:1.6rem;line-height:1.2;margin:1.2rem 0 .4rem;letter-spacing:-.02em}
+.lede{color:var(--muted);font-size:.95rem;max-width:60ch}
+.sec{font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);
+  margin:2rem 0 .7rem;display:flex;align-items:center;gap:.6rem}
+.sec::before{content:"";width:14px;height:1px;background:var(--accent);opacity:.5;flex:none}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1rem;margin-bottom:.7rem}
+.card h3{font-size:.8rem;margin-bottom:.3rem}
+.card p{font-size:.6rem;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem}
+.chip{font-size:.5rem;padding:.3rem .6rem;border-radius:999px;border:1px solid var(--line);
+  background:rgba(108,92,231,.06);color:var(--ink)}
+.code{font-family:"Space Mono",monospace;font-size:.58rem;background:rgba(28,25,42,.05);
+  padding:.15rem .4rem;border-radius:4px;color:var(--accent)}
+.list{list-style:none}
+.list li{font-size:.6rem;color:var(--ink);padding:.35rem 0;border-bottom:1px dashed var(--line)}
+.list li:last-child{border-bottom:none}
+.list .m{color:var(--muted)}
+.foot{margin-top:2rem;padding-top:.8rem;border-top:1px solid rgba(28,25,42,.06);
+  display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;font-size:.5rem;color:rgba(74,78,90,.6)}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1a1b26;--ink:#e0e0e0;--muted:#9aa5ce;--line:#2f3347;--card:#24283b;
+  --accent:#7aa2f7;--signal:#9ece6a;--warn:#e0af68;--danger:#f7768e}
+  .code{background:rgba(255,255,255,.06)}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* ── Wisy labeler collection — feeds the "wise" perspective · anchors #love #joy #wise #random ── */
+.wisy{margin-top:1.8rem}
+.wisy-intro{font-size:.6rem;color:var(--muted);max-width:72ch;margin:.2rem 0 1rem}
+.wisy-family{scroll-margin-top:1rem}
+.fam{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1rem;margin-bottom:.8rem}
+.fam h3{display:flex;align-items:center;gap:.5rem;font-size:.8rem;margin-bottom:.3rem}
+.fam .tag{font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;opacity:.7;font-weight:400}
+.fam p{font-size:.6rem;color:var(--muted);margin:.1rem 0 .6rem}
+.live{display:flex;gap:.4rem;flex-wrap:wrap;margin:.2rem 0 .6rem}
+.live .pill{font-size:.55rem;padding:.35rem .75rem;border-radius:999px;border:1px solid var(--line);
+  background:rgba(108,92,231,.06);cursor:pointer;color:var(--ink);font-family:inherit}
+.live .pill:hover{border-color:var(--accent)}
+.live .pill.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.live .pill.on.ph-love{background:#e5484d;border-color:#e5484d}
+.live .pill.on.ph-joy{background:#f5a623;border-color:#f5a623;color:#3a2c05}
+.live .pill.on.ph-wise{background:#1f5d9e;border-color:#1f5d9e}
+.live .pill.on.ph-random{background:#555;border-color:#555}
+.sample{font-size:.72rem;background:rgba(28,25,42,.05);border-radius:10px;padding:.7rem .9rem;border:1px dashed var(--line)}
+.sample .shead{font-size:.52rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+.sample .cells{display:flex;flex-direction:column;gap:.35rem}
+.sample .cellrow{display:flex;gap:.6rem;align-items:baseline;flex-wrap:wrap}
+.sample .lb{min-width:5.5ch;font-size:.55rem;color:var(--accent);font-weight:700}
+.sample .v{font-size:.68rem}
+.hats{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.7rem;font-size:.55rem;color:var(--muted)}
+.hats b{color:var(--ink)}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top">
+    <div class="mark">W</div>
+    <div class="brand">Wizy<small>suggestion engine · central</small></div>
+  </div>
+
+  <h1>Wizy — the engine that whispers &ldquo;what next?&rdquo;</h1>
+  <p class="lede">
+    Wizy takes an app&rsquo;s summary-model and generates contextual suggestions:
+    what this could become, what is worth exploring next, what is notable or
+    missing. Every suggestion is a gentle prompt &mdash; never an instruction.
+  </p>
+
+  <div class="sec">how it works</div>
+  <div class="card">
+    <h3>summary in &rarr; suggestions out</h3>
+    <p>Small, dependency-free, client-side. Feed it the app&rsquo;s state and it returns weighted suggestion chips.</p>
+  </div>
+  <div class="chips">
+    <span class="chip">what could this become?</span>
+    <span class="chip">explore next</span>
+    <span class="chip">notable</span>
+    <span class="chip">missing</span>
+    <span class="chip">gentle prompt</span>
+  </div>
+
+  <div class="sec">use it</div>
+  <div class="card">
+    <h3>drop-in for any single-file app</h3>
+    <p>Include the script, expose the summary, generate suggestions:</p>
+    <pre class="code" style="margin-top:.5rem;white-space:pre-wrap">wizy.render(document.getElementById('wizy-box'), window.floveSummary())</pre>
+  </div>
+
+  <div class="sec">API</div>
+  <ul class="list">
+    <li><span class="code">wizy.suggest(summary)</span> <span class="m">&mdash; weighted suggestion objects</span></li>
+    <li><span class="code">wizy.agent(summary)</span> <span class="m">&mdash; full agent block for the appy wizy mode</span></li>
+    <li><span class="code">wizy.render(el, summary)</span> <span class="m">&mdash; fill a container with suggestion chips</span></li>
+    <li><span class="code">wizy.packs</span> <span class="m">&mdash; per-app override packs</span></li>
+    <li><span class="code">wizy.register(app, fn)</span> <span class="m">&mdash; register a custom pack function</span></li>
+  </ul>
+
+  <div class="sec" id="wisy">Wisy · the labeler collection</div>
+  <p class="wisy-intro">
+    <strong>Wisy</strong> is the puzzy-family engine that authors how flove words things. It owns the
+    <strong>labeler families</strong> &mdash; <strong>Love</strong> (Lovely &#183; Hotter),
+    <strong>Joy</strong> (Lucky), <strong>Wisdom</strong> (Formal &#183; Casual &#183; Fatal) and the
+    <strong>Random</strong> wild card &mdash; each grouping the <span class="code">labeler-*</span> voices from
+    the vocabulary matrix. The <strong>wise</strong> label-perspective of this wizy app is fed by that engine:
+    pick the same slot and watch it re-letters across the family you choose. <em>Default</em> adopts whichever
+    family is active; <em>Random</em> draws any labeler, or a whole new voice.
+  </p>
+  <div class="live">
+    <button class="pill on ph-love" data-fam="love" type="button">❤ Love</button>
+    <button class="pill" data-fam="joy" type="button">😂 Joy</button>
+    <button class="pill" data-fam="wise" type="button">🫠 Wisdom</button>
+    <button class="pill" data-fam="random" type="button">🎲 Random</button>
+  </div>
+  <div class="sample" id="wisy-sample" aria-live="polite"></div>
+
+  <div class="wisy-family fam" id="love">
+    <h3>❤ Love <span class="tag">Lovely &#183; Hotter</span></h3>
+    <p>Warm, affectionate, generous wording. Maps to the 🟥 red / 🟩 green hats: feelings, care, the human side.</p>
+    <div class="hats"><b>hats:</b> heart 🟥 &#183; (hotter adds spark)</div>
+  </div>
+  <div class="wisy-family fam" id="joy">
+    <h3>😂 Joy <span class="tag">Lucky</span></h3>
+    <p>Playful, fortunate, light wording. Maps to the 🟨 yellow hat: optimism, chance, delight.</p>
+    <div class="hats"><b>hats:</b> optimism 🟨</div>
+  </div>
+  <div class="wisy-family fam" id="wise">
+    <h3>🫠 Wisdom <span class="tag">Formal &#183; Casual &#183; Fatal</span></h3>
+    <p>Measured, precise, considered &mdash; from formal to down-to-earth to end-time. Maps to the ⬛ / ⚪ / 🟦 hats: facts, risk, make.</p>
+    <div class="hats"><b>hats:</b> facts ⚪ &#183; risk ⬛ &#183; make 🟦</div>
+  </div>
+  <div class="wisy-family fam" id="random">
+    <h3>🎲 Random <span class="tag">wild card</span></h3>
+    <p>Any family &mdash; or a brand-new voice. The setter for surprise and exploration; also how new labelers get born.</p>
+    <div class="hats"><b>hats:</b> creative 🟩</div>
+  </div>
+
+  <footer class="foot">
+    <span>Wizy · Central</span>
+    <span>phase 0 · client-side PoC</span>
+    <a href="https://flove.org/development">development</a>
+  </footer>
+</main>
+<script>
+(function(){
+  var fams = {
+    love:   { label: '❤ Love',    labelers: [['Lovely','write it with love ♥'],['Hotter','say it like you mean it 🔥']] },
+    joy:    { label: '😂 Joy',     labelers: [['Lucky','today feels lucky — write it 🍀']] },
+    wise:   { label: '🫠 Wisdom',  labelers: [['Formal','—'],['Casual','jot stuff, tag it your way'],['Fatal','everything ends — write it anyway']] },
+    random: { label: '🎲 Random',  labelers: [['Random','throw a thought, see what sticks 🎲']] }
+  };
+  var sample = document.getElementById('wisy-sample');
+  var pills = Array.prototype.slice.call(document.querySelectorAll('.live .pill'));
+  function render(fam){
+    var f = fams[fam], h = '';
+    h += '<div class="shead">same slot &#183; blogy &#183; tagline &#183; re-lettered by ' + f.label + '</div><div class="cells">';
+    f.labelers.forEach(function(c){
+      h += '<div class="cellrow"><span class="lb">' + c[0] + '</span><span class="v">' + c[1] + '</span></div>';
+    });
+    h += '</div>';
+    sample.innerHTML = h;
+    pills.forEach(function(p){
+      p.classList.toggle('on', p.dataset.fam === fam);
+      p.classList.toggle('ph-' + p.dataset.fam, p.dataset.fam === fam);
+    });
+  }
+  pills.forEach(function(p){ p.addEventListener('click', function(){ render(p.dataset.fam); }); });
+  render('love');
+})();
+</script>
+</body>
+</html>

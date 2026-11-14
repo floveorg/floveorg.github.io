@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nav-shell × flove-loader · test</title>
+<meta name="description" content="Test del shell de navegación cargado a través de flove-loader.js (markers + gift) con el resto del código compartido central">
+<meta name="flove:lib-base" content="../../../central/shared">
+<meta name="flove:gift-min" content="40">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- gift simulado (el loader resuelve aquí: localStorage.flove:gift) -->
+<script>
+  try {
+    localStorage.setItem('flove:gift', JSON.stringify({ score: 60, source: 'test' }));
+    localStorage.removeItem('flove:enriched');
+  } catch (e) {}
+</script>
+
+<!-- flove-loader.js: inyecta los markers siguientes cuando el gift concede -->
+<script src="../../../central/shared/code/js/flove-loader.js" defer></script>
+
+<!-- markers inertes — el loader los activa apuntando a code/css y code/js -->
+<link data-flove-css href="nav-shell.css">
+<link data-flove-css href="flove-base.css">
+<script data-flove-js src="flove-i18n.js"></script>
+<script data-flove-js src="flove-settings.js"></script>
+<script data-flove-js src="flove-sound.js"></script>
+<script data-flove-js src="nav-shell.js"></script>
+
+<style>
+  #test-status{
+    position:fixed; left:18px; bottom:18px; z-index:900; max-width:340px;
+    background:#fff; border:2px solid var(--app-accent); border-radius:14px;
+    padding:12px 14px; font-family:'Space Mono',monospace; font-size:.68rem; line-height:1.6;
+    box-shadow:0 10px 26px -8px rgba(0,0,0,.25);
+  }
+  #test-status b{color:var(--app-accent-deep)}
+  #test-status .ok{color:#02855c} #test-status .no{color:#dd3b3b}
+  #test-status .coll{color:#b9820a}
+</style>
+</head>
+<body>
+<div id="shell-root"></div>
+<div id="test-status" aria-live="polite">esperando al gift del loader…</div>
+
+<script src="shell-config.js"></script>
+<script>
+(function(){
+  'use strict';
+  var attempts = 0;
+  function boot(){
+    if (window.FloveShell) {
+      FloveShell.init(window.NAV_CONFIG.risa);
+      setTimeout(status, 400);
+    } else if (attempts++ < 40) {
+      setTimeout(boot, 150);   // el nav-shell.js inyectado carga async
+    } else {
+      status();                // sin gift → la app queda en tier base
+    }
+  }
+  function status(){
+    var pro = document.documentElement.getAttribute('data-flove-pro');
+    var nav  = !!(window.flove && window.flove.nav);
+    var i18n = !!(window.flove && window.flove.i18n);
+    var set  = !!window.floveSettings;
+    var snd  = !!window.floveSound;
+    var fl   = !!window.flove;
+    var cards = document.querySelectorAll('.fn-card').length;
+    var L = [];
+    L.push('<b>flove-loader.js · markers + gift</b>');
+    L.push('data-flove-pro = <b>' + (pro || '—') + '</b>');
+    L.push('nav-shell inyectado (FloveShell) ' + (window.FloveShell ? '<span class="ok">✔</span>' : '<span class="no">✘</span>'));
+    L.push('fn-card renderizadas: ' + cards);
+    L.push('flove.js (window.flove) ' + (fl ? '<span class="ok">✔</span>' : '<span class="no">✘</span>'));
+    L.push('i18n ' + (i18n ? '<span class="ok">✔</span>' : '<span class="no">✘</span>'));
+    L.push('settings ' + (set ? '<span class="ok">✔</span>' : '<span class="no">✘</span>') + ' theme=' + (set ? window.floveSettings.get('theme') : '-'));
+    L.push('sound ' + (snd ? '<span class="ok">✔</span>' : '<span class="no">✘</span>'));
+    L.push('nav API ' + (nav ? '<span class="ok">✔</span> current=' + window.flove.nav.current() : '<span class="no">✘</span>'));
+    if (pro !== 'on') L.push('<span class="coll">sin gift → la app queda en su tier base (Solo); el shell no se inyecta.</span>');
+    document.getElementById('test-status').innerHTML = L.join('<br>');
+  }
+  if (window.FloveShell) boot();
+  else {
+    document.addEventListener('flove:enriched', function(){ boot(); });
+    setTimeout(function(){ if (!window.FloveShell) status(); }, 900);
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="author" content="Marc (marcflove)">
+  <meta name="description" content="Questy's mark — the rainbow question-hex — across its full size gamut (16, 24, 44, 80 px + live cell), three animations, and every format it ships as (SVG, PNG, favicon).">
+  <title>🌱 flove · Questy — rainbow question-hex / gama</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cdefs%3E%3ClinearGradient id='qf' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff4d4d'/%3E%3Cstop offset='.2' stop-color='%23ff9a3a'/%3E%3Cstop offset='.4' stop-color='%23ffc41f'/%3E%3Cstop offset='.6' stop-color='%233fb950'/%3E%3Cstop offset='.8' stop-color='%233aa0ff'/%3E%3Cstop offset='1' stop-color='%23b06bff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points='60,8 102,30 102,74 60,96 18,74 18,30' fill='none' stroke='url(%23qf)' stroke-width='4'/%3E%3Ctext x='60' y='69' text-anchor='middle' font-family='Georgia,serif' font-size='50' font-weight='700' fill='url(%23qf)'%3E?%3C/text%3E%3C/svg%3E">
+  <style>
+    :root{
+      --bg:#0b0b10; --ink:#e9eaf2; --muted:#9aa0b0; --line:#22242e; --card:#13131a;
+      --rate:#ffc41f; --relate:#6c5ce7;
+    }
+    html.theme--light{
+      --bg:#f6f5f2; --ink:#17161f; --muted:#6a6a78; --line:#e4e2dc; --card:#ffffff;
+      --rate:#d0a014; --rel:#5b4bd6;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--ink);
+      background:
+        radial-gradient(1000px 700px at 110% -10%, rgba(108,92,231,.12), transparent 60%),
+        radial-gradient(800px 600px at -10% 120%, rgba(255,196,31,.08), transparent 50%),
+        var(--bg);
+      background-attachment:fixed; font:15px/1.5 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; letter-spacing:.2px;
+      transition:background .3s ease, color .3s ease;
+    }
+    header{ max-width:1080px; margin:0 auto; padding:1.4rem 1rem .2rem }
+    .crumb{ font-size:.8rem; color:var(--muted) } .crumb a{ color:var(--rel); text-decoration:none }
+    h1{ margin:.3rem 0 .15rem; font-size:clamp(1.3rem,3.4vw,1.85rem); font-weight:800; display:flex; align-items:center; gap:.6rem }
+    h1 .mark{ width:34px; height:34px; flex-shrink:0 }
+    .lede{ margin:0; color:var(--muted); font-size:.9rem; max-width:64ch }
+    .lede b{ color:var(--ink); font-weight:600 }
+
+    .day{ margin:.2rem 0 0 auto; background:var(--card); border:1px solid var(--line); color:var(--ink);
+      border-radius:999px; padding:.45rem .9rem; cursor:pointer; font:inherit; font-size:.85rem; display:block }
+
+    main{ max-width:1080px; margin:1.2rem auto 3rem; padding:0 1rem; display:flex; flex-direction:column; gap:1.6rem }
+    .block{ border:1px solid var(--line); border-radius:18px; padding:1.1rem 1.1rem 1.3rem;
+      background:linear-gradient(180deg, rgba(255,255,255,.03), transparent 60%) }
+    .block > h2{ margin:0 0 .15rem; font-size:1.02rem; font-weight:800; letter-spacing:.4px }
+    .block > h2 .fam{ font-size:.68rem; font-weight:700; letter-spacing:.6px; text-transform:uppercase;
+      color:var(--muted); margin-left:.5rem }
+    .block > .note{ margin:0 0 .9rem; color:var(--muted); font-size:.82rem }
+
+    .lockup{ display:flex; align-items:center; gap:.9rem }
+    .lockup .hero-mk{ width:72px; height:72px; flex-shrink:0 }
+    .wm{ font-family:Fredoka,'Baloo 2',system-ui,sans-serif; font-size:2.6rem; font-weight:600;
+      letter-spacing:-.02em; color:var(--ink) }
+    .wm em{ font-style:normal; color:var(--rate) }
+
+    .gama{ display:flex; flex-wrap:wrap; gap:.9rem; align-items:flex-end; justify-content:center }
+    .cell{ display:flex; flex-direction:column; align-items:center; gap:.55rem; padding:1.3rem .95rem 1.1rem;
+      border:1px solid var(--line); border-radius:14px; background:var(--card); min-width:88px;
+      transition:border-color .18s ease, transform .18s ease }
+    .cell:hover{ border-color:color-mix(in srgb, var(--rate) 45%, transparent); transform:translateY(-2px) }
+    .cell .mk{ display:block }
+    .cell .lb{ font-size:.7rem; letter-spacing:.5px; text-transform:uppercase; color:var(--muted) }
+    .cell .sz{ font-size:.76rem; color:var(--muted) }
+    .cell.live{ border-color:color-mix(in srgb, var(--rate) 35%, transparent) }
+    .cell.live .lb{ color:var(--rate) }
+
+    .live{ stroke-width:1; }
+    .anim{ display:grid; gap:.9rem; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)) }
+    .anim .cell{ min-width:150px }
+    .anim .cell .nm{ font-size:.82rem; font-weight:700 }
+    g,text,path,polygon,line{ transform-box:fill-box }
+    .live-beat .t{ transform-origin:center; animation:rbbeat 2.6s ease-in-out infinite }
+    .live-beat .p{ animation:rbcnod 2.6s ease-in-out infinite }
+    .live-glow .g{ filter:drop-shadow(0 0 7px rgba(255,196,31,.55)); animation:rbglow 3.2s ease-in-out infinite }
+    .live-roll .r{ transform-origin:center; animation:rbspin 9s linear infinite }
+    .live-roll .s{ animation:rbglow 3.2s ease-in-out infinite }
+    @keyframes rbbeat{ 0%,100%{ transform:scale(1) } 46%{ transform:scale(.92) } 54%{ transform:scale(1.05) } 62%{ transform:scale(1) } }
+    @keyframes rbnod{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-5px) } }
+    @keyframes rbglow{ 0%,100%{ opacity:1 } 50%{ opacity:.45 } }
+    @keyframes rbspin{ 0%{ transform:rotate(0) } 100%{ transform:rotate(360deg) } }
+
+    .frm{ display:grid; gap:1.4rem; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)) }
+    .frm h3{ margin:0 0 .5rem; font-size:.86rem; font-weight:800; letter-spacing:.4px; text-transform:uppercase; color:var(--muted) }
+    .frm pre{ background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:.8rem; overflow:auto;
+      font-size:.7rem; color:var(--ink); max-height:180px }
+    .payins{ display:flex; gap:.6rem; flex-wrap:wrap; margin-top:.5rem }
+    .payins button, .pngcell button{ background:var(--card); border:1px solid var(--line); color:var(--ink); border-radius:8px;
+      padding:.45rem .7rem; font:inherit; font-size:.82rem; cursor:pointer }
+    .payins button:hover, .pngcell button:hover{ border-color:var(--rate) }
+    .pncells{ display:flex; flex-direction:row; gap:.7rem; flex-wrap:wrap; align-items:flex-end }
+    .pngcell{ display:flex; flex-direction:column; align-items:center; gap:.4rem; padding:.8rem; border:1px solid var(--line);
+      border-radius:12px; background:var(--card) }
+    .pngcell canvas{ background:repeating-conic-gradient(#2e2e38 0 25%, #23232b 0 50%) 0 0 / 16px 16px; border-radius:6px }
+    .pngcell .lb{ font-size:.66rem; letter-spacing:.5px; text-transform:uppercase; color:var(--muted) }
+    svg.mark-src{ display:none }
+
+    footer{ max-width:1080px; margin:0 auto 3rem; padding:1rem; color:var(--muted); font-size:.8rem;
+      text-align:center; border-top:1px solid var(--line) }
+    footer a{ color:var(--rel) }
+    @media (prefers-reduced-motion:reduce){ .live-beat .t,.live-beat .p,.live-glow .g,.live-roll .r,.live-roll .s{ animation:none } }
+  </style>
+</head>
+<body>
+  <svg class="mark-src">
+    <defs>
+      <linearGradient id="rainbow" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#ff4d4d"/>
+        <stop offset=".2" stop-color="#ff9a3a"/>
+        <stop offset=".4" stop-color="#ffc41f"/>
+        <stop offset=".6" stop-color="#3fb950"/>
+        <stop offset=".8" stop-color="#3aa0ff"/>
+        <stop offset="1" stop-color="#b06bff"/>
+      </linearGradient>
+    </defs>
+    <symbol id="mark-questy" viewBox="0 0 120 120">
+      <polygon points="60,8 102,30 102,74 60,96 18,74 18,30" fill="none" stroke="url(#rainbow)" stroke-width="3.5"/>
+      <text x="60" y="62" text-anchor="middle" font-family="Georgia,serif" font-size="38" font-weight="700" fill="url(#rainbow)">?</text>
+      <line x1="60" y1="96" x2="60" y2="114" stroke="url(#rainbow)" stroke-width="3" stroke-linecap="round"/>
+      <polygon points="53,109 60,118 67,109" fill="url(#rainbow)"/>
+    </symbol>
+  </svg>
+
+  <header>
+    <p class="crumb"><a href="../../../../development/standards/skills/questy/">← Questy</a></p>
+    <h1><svg class="mark" viewBox="0 0 120 120" aria-hidden="true"><use href="#mark-questy"/></svg> Questy — rainbow question-hex / gama</h1>
+    <p class="lede"><b>The rainbow question-hex.</b> A question mark inside a hex — curiosity with a plan. Here it is at every size it ships as, in three motions, and in every format it ships as.</p>
+    <button class="day" id="dayToggle" type="button">☀️ day</button>
+  </header>
+
+  <main>
+
+    <section class="block">
+      <h2>Lockup <span class="fam">mark + wordmark</span></h2>
+      <p class="note">The living mark beside the wordmark.</p>
+      <div class="lockup">
+        <svg class="hero-mk" viewBox="0 0 120 120" aria-label="Questy mark"><use href="#mark-questy"/></svg>
+        <span class="wm">quest<em>y</em></span>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Full size gamut <span class="fam">16 · 24 · 44 · 80 px + live</span></h2>
+      <p class="note">The same mark, from favicon to hero. One source symbol, <code>#mark-questy</code>.</p>
+      <div class="gama">
+        <div class="cell"><svg class="mk" width="16" height="16" viewBox="0 0 120 120"><use href="#mark-questy"/></svg><span class="lb">favicon</span><span class="sz">16 px</span></div>
+        <div class="cell"><svg class="mk" width="24" height="24" viewBox="0 0 120 120"><use href="#mark-questy"/></svg><span class="lb">list</span><span class="sz">24 px</span></div>
+        <div class="cell"><svg class="mk" width="44" height="44" viewBox="0 0 120 120"><use href="#mark-questy"/></svg><span class="lb">app bar</span><span class="sz">44 px</span></div>
+        <div class="cell"><svg class="mk" width="80" height="80" viewBox="0 0 120 120"><use href="#mark-questy"/></svg><span class="lb">hero</span><span class="sz">80 px</span></div>
+        <div class="cell live">
+          <svg class="mk" width="80" height="80" viewBox="0 0 120 120" aria-label="Questy, live"><use href="#mark-questy"/></svg>
+          <span class="lb">live</span><span class="sz">80 px</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Three animations <span class="fam">beat · glow · spin</span></h2>
+      <p class="note">Each cell runs ONE distinct motion; reduced-motion switches them all off.</p>
+      <div class="anim">
+        <div class="cell live-beat">
+          <svg width="80" height="80" viewBox="0 0 120 120">
+            <g class="p"><polygon points="60,7 102,30 102,74 60,96 18,74 18,30" fill="none" stroke="url(#rainbow)" stroke-width="3.5"/></g>
+            <g class="t"><text x="60" y="62" text-anchor="middle" font-family="Georgia,serif" font-size="38" font-weight="700" fill="url(#rainbow)">?</text></g>
+          </svg>
+          <span class="nm">beat</span>
+          <span class="sz">the ? pulses, the hex nods</span>
+        </div>
+        <div class="cell live-glow">
+          <svg width="80" height="80" viewBox="0 0 120 120">
+            <g class="g"><use href="#mark-questy"/></g>
+          </svg>
+          <span class="nm">glow</span>
+          <span class="sz">a warm breathing halo</span>
+        </div>
+        <div class="cell live-roll">
+          <svg width="80" height="80" viewBox="0 0 120 120">
+            <g class="r"><polygon points="60,7 102,30 102,74 60,96 18,74 18,30" fill="none" stroke="url(#rainbow)" stroke-width="3.5"/></g>
+            <g class="s">
+              <text x="60" y="62" text-anchor="middle" font-family="Georgia,serif" font-size="38" font-weight="700" fill="url(#rainbow)">?</text>
+              <line x1="60" y1="96" x2="60" y2="114" stroke="url(#rainbow)" stroke-width="3" stroke-linecap="round"/>
+              <polygon points="53,109 60,118 67,109" fill="url(#rainbow)"/>
+            </g>
+          </svg>
+          <span class="nm">spin</span>
+          <span class="sz">the hex turns, the ? stays put</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Formats <span class="fam">svg · png · favicon</span></h2>
+      <p class="note">SVG is the single source; PNG and favicon are derived from it.</p>
+      <div class="frm">
+        <div>
+          <h3>SVG — master (standalone)</h3>
+          <pre id="svgSrc"></pre>
+          <div class="payins"><button type="button" id="dlSvg">download questy.svg</button><button type="button" id="cpSvg">copy</button></div>
+        </div>
+        <div>
+          <h3>PNG exports</h3>
+          <div class="pncells" id="pngRow"></div>
+        </div>
+        <div>
+          <h3>Favicon</h3>
+          <p class="note" style="margin-bottom:.4rem">The data-URI line used in the app's <code>&lt;head&gt;</code> — reads at 16/32 px.</p>
+          <pre id="favSrc"></pre>
+          <div class="payins"><button type="button" id="cpFav">copy favicon link</button></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>The rainbow question-hex — kept inside <a href="../../../../development/standards/skills/questy/">questy</a>.</footer>
+
+  <script>
+    var STANDALONE = '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="rainbow" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff4d4d"/><stop offset=".2" stop-color="#ff9a3a"/><stop offset=".4" stop-color="#ffc41f"/><stop offset=".6" stop-color="#3fb950"/><stop offset=".8" stop-color="#3aa0ff"/><stop offset="1" stop-color="#b06bff"/></linearGradient></defs><polygon points="60,8 102,30 102,74 60,96 18,74 18,30" fill="none" stroke="url(#rainbow)" stroke-width="3.5"/><text x="60" y="62" text-anchor="middle" font-family="Georgia,serif" font-size="38" font-weight="700" fill="url(#rainbow)">?</text><line x1="60" y1="96" x2="60" y2="114" stroke="url(#rainbow)" stroke-width="3" stroke-linecap="round"/><polygon points="53,109 60,118 67,109" fill="url(#rainbow)"/></svg>';
+    var favIconLine = '<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 120 120\'%3E%3Cdefs%3E%3ClinearGradient id=\'qf\' x1=\'0\' y1=\'0\' x2=\'1\' y2=\'1\'%3E%3Cstop offset=\'0\' stop-color=\'%23ff4d4d\'/%3E%3Cstop offset=\'.2\' stop-color=\'%23ff9a3a\'/%3E%3Cstop offset=\'.4\' stop-color=\'%23ffc41f\'/%3E%3Cstop offset=\'.6\' stop-color=\'%233fb950\'/%3E%3Cstop offset=\'.8\' stop-color=\'%233aa0ff\'/%3E%3Cstop offset=\'1\' stop-color=\'%23b06bff\'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points=\'60,8 102,30 102,74 60,96 18,74 18,30\' fill=\'none\' stroke=\'url(%23qf)\' stroke-width=\'4\'/%3E%3Ctext x=\'60\' y=\'69\' text-anchor=\'middle\' font-family=\'Georgia,serif\' font-size=\'50\' font-weight=\'700\' fill=\'url(%23qf)\'%3E?%3C/text%3E%3C/svg%3E">';
+    document.getElementById('svgSrc').textContent = STANDALONE;
+    document.getElementById('favSrc').textContent = favIconLine;
+
+    var rootEl = document.documentElement;
+    var dayBtn = document.getElementById('dayToggle');
+    function applyTheme(light){ rootEl.classList.toggle('theme--light', !!light); dayBtn.textContent = light ? '🌙 night' : '☀️ day'; localStorage.setItem('questy-theme', light ? 'light' : 'dark'); }
+    dayBtn.addEventListener('click', function(){ applyTheme(!rootEl.classList.contains('theme--light')); });
+    if (new URLSearchParams(location.search).get('theme') === 'light') applyTheme(true);
+    else if (localStorage.getItem('questy-theme') === 'light') applyTheme(true);
+
+    function drawMark(canvas, size) {
+      var ctx = canvas.getContext('2d');
+      var s = size / 120;
+      ctx.clearRect(0, 0, size, size);
+      ctx.lineJoin = 'round';
+      var g = ctx.createLinearGradient(0, 0, size, size);
+      ['#ff4d4d', '#ff9a3a', '#ffc41f', '#3fb950', '#3aa0ff', '#b06bff'].forEach(function(c, i){ g.addColorStop(i / 5, c); });
+      ctx.strokeStyle = g; ctx.lineWidth = 3.5 * s;
+      ctx.beginPath();
+      ctx.moveTo(60*s, 8*s); ctx.lineTo(102*s, 30*s); ctx.lineTo(102*s, 74*s); ctx.lineTo(60*s, 96*s); ctx.lineTo(18*s, 74*s); ctx.lineTo(18*s, 30*s);
+      ctx.closePath(); ctx.stroke();
+      ctx.fillStyle = g; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = '700 ' + (40*s) + 'px Georgia,serif';
+      ctx.fillText('?', 60*s, 58*s);
+      ctx.lineWidth = 3 * s;
+      ctx.beginPath(); ctx.moveTo(60*s, 96*s); ctx.lineTo(60*s, 114*s); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(53*s, 109*s); ctx.lineTo(60*s, 118*s); ctx.lineTo(67*s, 109*s); ctx.closePath(); ctx.fill();
+    }
+
+    var sizes = [16, 32, 48, 64, 128, 256, 512];
+    var row = document.getElementById('pngRow');
+    sizes.forEach(function(s){
+      var wrap = document.createElement('div'); wrap.className = 'pngcell';
+      var c = document.createElement('canvas'); c.width = s; c.height = s; c.style.width = Math.min(s, 84) + 'px';
+      var lb = document.createElement('span'); lb.className = 'lb'; lb.textContent = s + ' px';
+      var btn = document.createElement('button'); btn.textContent = '↓'; btn.title = 'download questy-' + s + '.png';
+      btn.addEventListener('click', function(){
+        var a = document.createElement('a');
+        a.href = c.toDataURL('image/png'); a.download = 'questy-' + s + '.png'; a.click();
+      });
+      drawMark(c, s);
+      wrap.appendChild(c); wrap.appendChild(lb); wrap.appendChild(btn);
+      row.appendChild(wrap);
+    });
+
+    function copyText(t){ if (navigator.clipboard) navigator.clipboard.writeText(t); }
+    document.getElementById('dlSvg').addEventListener('click', function(){
+      var a = document.createElement('a');
+      a.href = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(STANDALONE);
+      a.download = 'questy.svg'; a.click();
+    });
+    document.getElementById('cpSvg').addEventListener('click', function(){ copyText(STANDALONE); });
+    document.getElementById('cpFav').addEventListener('click', function(){ copyText(favIconLine); });
+  </script>
+</body>
+</html>

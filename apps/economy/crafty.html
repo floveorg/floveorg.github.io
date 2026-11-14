@@ -1,0 +1,2233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Crafty · FLOVE</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Cpath%20d='M50%2017%20L77%2041%20L50%2083%20L23%2041%20Z'%20fill='%23c2620a'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <style data-flove-inlined="flove.css">
+/* inlined from apps/flove.css */
+/* ============================================================
+   🌱 flove.css · shared identity layer for all FLOVE demos
+   --------------------------------------------------------------
+   Design intent
+   - One cohesive frame around 13 very different apps.
+   - Each app keeps its own palette by overriding `--app-*` tokens
+     in its local `:root`. This file only paints the common skin.
+   - Two visual primitives identify the family everywhere:
+       1. The 🌱 sprout mark (brand)
+       2. The flove-bar at the very top (back to launcher + app name)
+   - A common motion vocabulary (gentle lift, soft fade, wiggle).
+   ============================================================ */
+
+:root {
+  /* The sprout — flove brand mark. Used as logo glyph everywhere. */
+  --flove-mark: "🌱";
+
+  /* Per-app overridable accent. Apps redeclare these. */
+  --app-accent:        #6ee7b7;
+  --app-accent-soft:   #a7f3d0;
+  --app-ink-on-accent: #042418;
+
+  /* Family geometry & motion (constant across apps) */
+  --flove-radius-sm: 12px;
+  --flove-radius:    20px;
+  --flove-radius-lg: 28px;
+  --flove-radius-pill: 999px;
+  --flove-ease:    cubic-bezier(.2,.8,.2,1);
+  --flove-fast:    .15s var(--flove-ease);
+  --flove-medium:  .25s var(--flove-ease);
+  --flove-slow:    .4s  var(--flove-ease);
+
+  /* Family typography. Apps may override font-family but should keep these scales. */
+  --flove-font-ui: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --flove-font-display: 'Georgia', 'Times New Roman', serif;
+}
+
+/* ============================================================
+   THE FLOVE BAR — a thin sticky strip at the very top of every
+   app. Holds the back-to-launcher link, the sprout brand,
+   and the app name. Lives ABOVE every app's own header.
+   ============================================================ */
+.flove-bar {
+  position: sticky;
+  top: 0;
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  font-family: var(--flove-font-ui);
+  font-size: 13px;
+  letter-spacing: .3px;
+  background: rgba(255,255,255,.55);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  color: #1a1a1a;
+}
+
+/* Auto dark variant when app body is dark */
+@media (prefers-color-scheme: dark) {
+  .flove-bar.flove-bar--auto {
+    background: rgba(10,12,18,.55);
+    border-bottom-color: rgba(255,255,255,.08);
+    color: #e9ecf3;
+  }
+}
+.flove-bar--dark {
+  background: rgba(10,12,18,.6);
+  border-bottom-color: rgba(255,255,255,.08);
+  color: #e9ecf3;
+}
+
+.flove-bar a.flove-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: inherit;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--flove-radius-pill);
+  transition: background var(--flove-fast), transform var(--flove-fast);
+}
+.flove-bar a.flove-home:hover {
+  background: var(--app-accent-soft);
+  color: var(--app-ink-on-accent);
+  transform: translateX(-2px);
+}
+.flove-bar .flove-mark {
+  font-size: 26px;
+  color: var(--app-accent);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--app-accent) 35%, transparent));
+}
+.flove-bar .flove-app-name {
+  font-weight: 500;
+  opacity: .85;
+}
+.flove-bar .flove-spacer { flex: 1; }
+.flove-bar .flove-tag {
+  font-size: 11px;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  opacity: .55;
+}
+
+/* ============================================================
+   SPROUT ANIMATION — used wherever a `.flove-sprout` lives
+   (launcher hero, footer badges, splash). Subtle slow rotation.
+   ============================================================ */
+.flove-sprout {
+  display: inline-block;
+  font-style: normal;
+  animation: flove-spin 12s linear infinite;
+  transform-origin: center;
+  color: var(--app-accent);
+}
+.flove-sprout.flove-sprout--still { animation: none; }
+@keyframes flove-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   FLOVE FOOTER BADGE — small "back to launcher" pill that any
+   app can drop in at the bottom of the page.
+   ============================================================ */
+.flove-footer-badge {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-family: var(--flove-font-ui);
+  font-size: 12px;
+  letter-spacing: .4px;
+  color: #1a1a1a;
+  text-decoration: none;
+  background: rgba(255,255,255,.7);
+  border: 1px solid rgba(0,0,0,.06);
+  border-radius: var(--flove-radius-pill);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 20px rgba(0,0,0,.08);
+  transition: transform var(--flove-fast), box-shadow var(--flove-fast);
+}
+.flove-footer-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0,0,0,.12);
+}
+.flove-footer-badge--dark {
+  background: rgba(20,24,32,.7);
+  color: #e9ecf3;
+  border-color: rgba(255,255,255,.08);
+}
+
+/* ============================================================
+   COMMON UTILITIES — kept tiny on purpose so that each app's
+   own bespoke styles still rule. These are opt-in classes.
+   ============================================================ */
+
+/* Soft glass card */
+.flove-card {
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+  border: 1px solid rgba(127,127,127,.18);
+  border-radius: var(--flove-radius-lg);
+  padding: 18px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.08);
+}
+
+/* Pill shape for tags / chips / nav items */
+.flove-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.22);
+  background: rgba(255,255,255,.04);
+  cursor: pointer;
+  transition: transform var(--flove-fast), background var(--flove-fast), border-color var(--flove-fast);
+}
+.flove-pill:hover { transform: translateY(-1px); border-color: var(--app-accent); }
+.flove-pill[aria-pressed="true"], .flove-pill.is-active {
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  border-color: var(--app-accent);
+}
+
+/* A primary action button — shared shape, app paints color */
+.flove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid var(--app-accent);
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  font-weight: 600;
+  font-family: var(--flove-font-ui);
+  cursor: pointer;
+  transition: transform var(--flove-fast), box-shadow var(--flove-fast), filter var(--flove-fast);
+}
+.flove-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px color-mix(in srgb, var(--app-accent) 40%, transparent); }
+.flove-btn:active { transform: translateY(0); filter: brightness(.95); }
+.flove-btn--ghost {
+  background: transparent;
+  color: inherit;
+  border-color: rgba(127,127,127,.3);
+}
+.flove-btn--ghost:hover { border-color: var(--app-accent); color: var(--app-accent); }
+
+/* Tiny floating toast feedback (optional, used by some apps) */
+.flove-toast {
+  position: fixed;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(20,22,30,.92);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: var(--flove-radius-pill);
+  font-size: 13px;
+  font-family: var(--flove-font-ui);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--flove-medium), transform var(--flove-medium);
+  z-index: 999;
+  box-shadow: 0 12px 30px rgba(0,0,0,.25);
+}
+.flove-toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Wiggle on tap, used by playful elements (launcher tiles, brand mark, …) */
+@keyframes flove-wiggle {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-3deg); }
+  40% { transform: rotate(3deg); }
+  60% { transform: rotate(-2deg); }
+  80% { transform: rotate(2deg); }
+}
+.flove-wiggle { animation: flove-wiggle .4s ease-out; }
+
+/* Soft float used in the launcher tiles and avatars */
+@keyframes flove-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Reduced motion: disable all flove animations */
+@media (prefers-reduced-motion: reduce) {
+  .flove-sprout, .flove-wiggle { animation: none !important; }
+  *, *::before, *::after { transition-duration: .01ms !important; }
+}
+
+/* Mobile: hide the bottom badge so it doesn't compete with app UI */
+@media (max-width: 480px) {
+  .flove-footer-badge { display: none; }
+  .flove-bar { font-size: 12px; padding: 6px 10px; }
+}
+
+/* ============================================================
+   FLOVE-IO ACTION BAR — emitted by flove-io.js (F0).
+   Sits inside a form, gives the user Copy / Save / Share / Publish
+   over the form's current FloveElement payload.
+   ============================================================ */
+.flove-action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  margin-top: 14px;
+  border-radius: var(--flove-radius);
+  background: rgba(127,127,127,.06);
+  border: 1px solid rgba(127,127,127,.18);
+  font-family: var(--flove-font-ui);
+}
+.flove-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid rgba(127,127,127,.3);
+  background: rgba(255,255,255,.04);
+  color: inherit;
+  font-family: inherit;
+  font-size: 13px;
+  border-radius: var(--flove-radius-pill);
+  cursor: pointer;
+  transition: transform var(--flove-fast),
+              border-color var(--flove-fast),
+              background var(--flove-fast);
+}
+.flove-action-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--app-accent);
+}
+.flove-action-btn:active { transform: translateY(0); }
+.flove-action-btn--primary {
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  border-color: var(--app-accent);
+  font-weight: 600;
+}
+.flove-action-btn--primary:hover { filter: brightness(1.05); }
+.flove-action-btn[hidden] { display: none; }
+
+/* Toast variant used by flove-io (slightly tighter, top of footer) */
+.flove-toast--io { bottom: 80px; }
+
+/* ============================================================
+   FLOVE SHELL — feature-driven UI rendered by flove-shell.js.
+   Per-textarea voice + add-another · phrase card · 6-button bar ·
+   insight result · publish modal · format popover.
+   ============================================================ */
+
+/* per-textarea / per-input controls ────────────────────────── */
+.flove-field-wrap {
+  position: relative;
+  display: block;
+}
+.flove-field-wrap > textarea,
+.flove-field-wrap > input {
+  width: 100%;
+  padding-right: 88px;     /* room for the two field buttons */
+}
+.flove-field-tools {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 4px;
+  z-index: 1;
+}
+.flove-field-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.25);
+  background: rgba(255,255,255,.7);
+  color: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--flove-fast), border-color var(--flove-fast),
+              background var(--flove-fast);
+  padding: 0;
+  line-height: 1;
+}
+.flove-field-btn:hover {
+  border-color: var(--app-accent);
+  transform: translateY(-1px);
+}
+.flove-field-btn--voice.is-recording {
+  background: #fb7185;
+  color: #fff;
+  border-color: #fb7185;
+  animation: flove-pulse 1.4s infinite;
+}
+@keyframes flove-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251,113,133,.45); }
+  50%      { box-shadow: 0 0 0 8px rgba(251,113,133,0); }
+}
+
+/* phrase card (phrase + 6-button bar + result panel) ────────── */
+.flove-phrase-card {
+  margin: 18px 0;
+  padding: 16px;
+  background: linear-gradient(180deg, var(--app-accent-soft) 0%,
+                                      color-mix(in srgb, var(--app-accent-soft) 30%, transparent) 100%);
+  border: 1px solid color-mix(in srgb, var(--app-accent) 35%, transparent);
+  border-radius: var(--flove-radius-lg);
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+  font-family: var(--flove-font-ui);
+}
+.flove-phrase {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  font-family: ui-monospace, 'JetBrains Mono', Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--app-ink-on-accent);
+  background: rgba(255,255,255,.6);
+  border-radius: var(--flove-radius);
+  word-break: break-word;
+  min-height: 1.55em;
+}
+.flove-phrase.is-magic {
+  background: linear-gradient(110deg, rgba(255,255,255,.55), rgba(255,255,255,.85));
+  font-style: italic;
+}
+
+/* six-button action bar (overrides the 4-button defaults) ──── */
+.flove-action-bar--six {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  padding: 6px;
+  background: rgba(255,255,255,.5);
+  border-radius: var(--flove-radius);
+  border: 1px solid rgba(127,127,127,.18);
+  margin-top: 0;
+}
+.flove-action-bar--six .flove-action-btn {
+  justify-content: center;
+  padding: 10px 6px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+@media (max-width: 540px) {
+  .flove-action-bar--six .flove-action-btn span:nth-child(2) { display: none; }
+}
+
+/* result panel (insight, publish progress) ─────────────────── */
+.flove-result {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,.7);
+  border: 1px solid rgba(127,127,127,.22);
+  border-radius: var(--flove-radius);
+}
+.flove-result[hidden] { display: none; }
+.flove-result__title {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-ink-on-accent);
+}
+.flove-result__lede {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(0,0,0,.6);
+}
+.flove-result__body {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+.flove-result__list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.flove-result__error {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 13px;
+}
+.flove-result__row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* modal (insight config, publish multi-select) ─────────────── */
+.flove-modal {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  font-family: var(--flove-font-ui);
+}
+.flove-modal__backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.flove-modal__panel {
+  position: relative;
+  width: min(540px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: #fff;
+  color: #1a1a1a;
+  border-radius: var(--flove-radius-lg);
+  padding: 22px;
+  box-shadow: 0 30px 60px rgba(0,0,0,.3);
+  display: grid;
+  gap: 12px;
+}
+.flove-modal__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.flove-modal__lede {
+  margin: 0;
+  color: #52606d;
+  font-size: .9rem;
+}
+.flove-modal label {
+  display: grid;
+  gap: 4px;
+  font-size: .85rem;
+  color: #52606d;
+}
+.flove-modal input,
+.flove-modal textarea,
+.flove-modal select {
+  padding: 10px 12px;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: var(--flove-radius);
+  font: inherit;
+  background: #fff;
+  color: #1a1a1a;
+}
+.flove-modal__row {
+  display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;
+  padding-top: 6px;
+  border-top: 1px solid rgba(0,0,0,.06);
+}
+
+/* publish multi-select list ────────────────────────────────── */
+.flove-publish-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.flove-publish-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: var(--flove-radius);
+  background: rgba(0,0,0,.02);
+}
+.flove-publish-row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-direction: row;
+  font-size: .92rem;
+}
+.flove-publish-kind {
+  font-size: .72rem;
+  letter-spacing: .3px;
+  color: #6b7280;
+  text-transform: uppercase;
+  background: rgba(0,0,0,.04);
+  border-radius: var(--flove-radius-pill);
+  padding: 2px 8px;
+}
+.flove-publish-add {
+  border: 1px dashed rgba(0,0,0,.15);
+  border-radius: var(--flove-radius);
+  padding: 10px 12px;
+}
+.flove-publish-add summary {
+  cursor: pointer;
+  font-size: .85rem;
+  color: #4b5563;
+}
+.flove-publish-add[open] summary { margin-bottom: 8px; }
+.flove-publish-add label { margin-bottom: 6px; }
+
+/* enhanced flove-bar — center categories + right menu ───────── */
+.flove-bar--enhanced .flove-mark,
+.flove-bar--enhanced .flove-sprout {
+  user-select: none;
+  transition: transform var(--flove-fast);
+}
+.flove-bar--enhanced .flove-mark:hover,
+.flove-bar--enhanced .flove-sprout:hover { transform: rotate(20deg) scale(1.08); }
+
+.flove-categories {
+  flex: 1 1 auto;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0 6px;
+  scroll-snap-type: x proximity;
+  justify-content: center;
+}
+.flove-categories::-webkit-scrollbar { display: none; }
+.flove-cat-chip {
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+  padding: 4px 12px;
+  font-size: 12px;
+  letter-spacing: .2px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.25);
+  background: rgba(255,255,255,.5);
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform var(--flove-fast),
+              background var(--flove-fast),
+              border-color var(--flove-fast);
+}
+.flove-cat-chip:hover { border-color: var(--app-accent); transform: translateY(-1px); }
+.flove-cat-chip.is-active {
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  border-color: var(--app-accent);
+}
+
+.flove-menu-btn {
+  width: 36px; height: 36px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.22);
+  background: rgba(255,255,255,.5);
+  color: inherit;
+  font-size: 18px;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--flove-fast), border-color var(--flove-fast);
+}
+.flove-menu-btn:hover { background: var(--app-accent-soft); border-color: var(--app-accent); }
+.flove-menu-btn[aria-expanded="true"] { background: var(--app-accent); color: var(--app-ink-on-accent); }
+
+.flove-menu {
+  width: min(280px, calc(100vw - 24px));
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: var(--flove-radius);
+  box-shadow: 0 18px 40px rgba(0,0,0,.18);
+  padding: 6px;
+  z-index: 200;
+  font-family: var(--flove-font-ui);
+}
+.flove-menu[hidden] { display: none; }
+.flove-menu__section {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.flove-menu__section:last-child { border-bottom: 0; }
+.flove-menu__title {
+  margin: 0 8px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: #6b7280;
+}
+.flove-menu__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 9px 10px;
+  font: inherit;
+  font-size: .9rem;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: var(--flove-radius);
+  cursor: pointer;
+  text-decoration: none;
+}
+.flove-menu__item:hover {
+  background: var(--app-accent-soft);
+  color: var(--app-ink-on-accent);
+}
+
+@media (max-width: 540px) {
+  .flove-categories { gap: 4px; padding: 0 2px; }
+  .flove-cat-chip { padding: 3px 10px; font-size: 11px; }
+}
+
+/* format popover ────────────────────────────────────────────── */
+.flove-popover {
+  z-index: 999;
+  width: 220px;
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: var(--flove-radius);
+  box-shadow: 0 14px 30px rgba(0,0,0,.18);
+  padding: 4px;
+  font-family: var(--flove-font-ui);
+}
+.flove-popover__item {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: var(--flove-radius);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.flove-popover__item:hover {
+  background: var(--app-accent-soft);
+  color: var(--app-ink-on-accent);
+}
+
+</style>
+  <style>
+    /* ============================================================
+       crafty — collaborative craft / contribution / fair-share tool
+       (merged & redesigned from the old CrowdCrafting demo)
+       ============================================================ */
+    :root {
+      /* flove identity overrides — warm artisan amber */
+      --app-accent:        #b45309;
+      --app-accent-soft:   #fde68a;
+      --app-ink-on-accent: #2a1503;
+
+      /* Local palette */
+      --paper:        #fdfbf5;
+      --paper-warm:   #f6efe1;
+      --ink:          #1a120a;
+      --ink-soft:     #4b3a28;
+      --muted:        #8a7558;
+      --line:         rgba(60,40,20,.08);
+      --line-strong:  rgba(60,40,20,.16);
+      --line-dashed:  rgba(60,40,20,.22);
+
+      --accent:       #b45309;
+      --accent-deep:  #7c2d12;
+      --accent-soft:  #fde68a;
+      --accent-glow:  rgba(180,83,9,.22);
+
+      --ok:           #15803d;
+      --warn:         #b45309;
+      --bad:          #b91c1c;
+
+      --radius-sm:    12px;
+      --radius:       18px;
+      --radius-lg:    24px;
+      --radius-pill:  999px;
+
+      --shadow-xs:    0 1px 2px rgba(60,40,20,.05);
+      --shadow-sm:    0 4px 12px -4px rgba(60,40,20,.10);
+      --shadow:       0 18px 40px -16px rgba(60,40,20,.18);
+
+      --fast:         .15s cubic-bezier(.2,.8,.2,1);
+      --medium:       .25s cubic-bezier(.2,.8,.2,1);
+
+      --font-ui:      'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+
+      /* Stage hue tokens — used by [data-stage] coloring */
+      --stage-design:        #8b5cf6;
+      --stage-sourcing:      #0ea5e9;
+      --stage-manufacturing: #f97316;
+      --stage-assembly:      #16a34a;
+      --stage-qa:            #ec4899;
+      --stage-packaging:     #a16207;
+      --stage-logistics:     #06b6d4;
+      --stage-marketing:     #eab308;
+      --stage-sales:         #ef4444;
+      --stage-support:       #64748b;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: var(--font-ui);
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--ink);
+      background:
+        radial-gradient(900px 600px at 90% -10%, #fde68a33 0%, transparent 60%),
+        radial-gradient(700px 500px at -10% 110%, #f6efe1 0%, transparent 55%),
+        var(--paper);
+      min-height: 100vh;
+      padding-bottom: 96px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ============ flove-bar tweaks (matches goddy/socy) ============ */
+    .flove-bar {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(253,251,245,.78);
+      backdrop-filter: blur(14px) saturate(160%);
+      -webkit-backdrop-filter: blur(14px) saturate(160%);
+      border-bottom: 1px solid var(--line-strong);
+      color: var(--ink);
+    }
+    .flove-bar .flove-sprout { animation-play-state: paused; }
+    body:hover .flove-bar .flove-sprout,
+    body:focus-within .flove-bar .flove-sprout { animation-play-state: running; }
+    .flove-bar .flove-mark { font-size: 26px; color: var(--accent); filter: drop-shadow(0 0 6px var(--accent-glow)); }
+    .flove-bar .flove-app-name { font-family: var(--font-display); font-weight: 600; font-size: 15px; opacity: .95; }
+    .flove-bar .flove-tag { color: var(--muted); }
+
+    /* ============ Layout ============ */
+    .container { max-width: 1040px; margin: 0 auto; padding: 24px 18px 0; }
+
+    /* Hero / title block */
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: end;
+      padding: 8px 4px 18px;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(1.8rem, 3vw, 2.4rem);
+      margin: 0;
+      letter-spacing: -.01em;
+      color: var(--ink);
+    }
+    .hero h1 em {
+      font-style: italic;
+      color: var(--accent-deep);
+      background: linear-gradient(90deg, var(--accent), #d97706);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .hero p { margin: 6px 0 0; color: var(--muted); font-size: .98rem; }
+    .hero .hero-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* Step rail — pill row + filling progress underline */
+    .rail {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px; margin: 4px 0 18px;
+      background: rgba(255,255,255,.6);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-pill);
+      box-shadow: var(--shadow-xs);
+    }
+    .rail .step {
+      flex: 1;
+      appearance: none; border: 0; background: transparent;
+      padding: 10px 14px;
+      border-radius: var(--radius-pill);
+      font: 600 13px/1 var(--font-ui);
+      color: var(--ink-soft);
+      cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      transition: background var(--fast), color var(--fast), transform var(--fast);
+      white-space: nowrap;
+    }
+    .rail .step .num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--paper-warm);
+      color: var(--ink-soft);
+      font-size: 11px; font-weight: 700;
+    }
+    .rail .step:hover { background: var(--paper-warm); }
+    .rail .step.current {
+      background: linear-gradient(180deg, var(--accent) 0%, var(--accent-deep) 100%);
+      color: #fff;
+      box-shadow: 0 6px 16px -6px var(--accent-glow);
+    }
+    .rail .step.current .num { background: rgba(255,255,255,.22); color: #fff; }
+    .rail .step.is-done .num { background: var(--ok); color: #fff; }
+    .rail .step.is-done .num::after { content: "✓"; }
+    .rail .step.is-done .num > .digit { display: none; }
+    @media (max-width: 640px) {
+      .rail .step .label { display: none; }
+      .rail .step { padding: 10px; }
+    }
+
+    /* Onboarding hint (first-use, dismissible per memory: "onboarding paso-a-paso visible al primer uso") */
+    .onb {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 12px 14px;
+      margin: 0 0 18px;
+      background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
+      border: 1px solid #fde68a;
+      border-radius: var(--radius);
+      color: var(--accent-deep);
+      font-size: .92rem;
+      box-shadow: var(--shadow-xs);
+      animation: lift .35s var(--fast) both;
+    }
+    .onb[hidden] { display: none; }
+    .onb .icon { font-size: 1.1rem; line-height: 1; margin-top: 1px; }
+    .onb .body { flex: 1; }
+    .onb .body strong { display: block; margin-bottom: 2px; font-weight: 700; color: var(--ink); }
+    .onb .close {
+      appearance: none; border: 0; background: transparent;
+      color: var(--accent-deep); cursor: pointer;
+      font-size: 18px; line-height: 1; padding: 2px 6px; border-radius: 8px;
+    }
+    .onb .close:hover { background: rgba(180,83,9,.10); }
+
+    /* Panel cards */
+    .panel {
+      display: none;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      margin: 0 0 18px;
+      box-shadow: var(--shadow-sm);
+      animation: lift .35s var(--fast) both;
+    }
+    .panel.active { display: block; }
+    @keyframes lift { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .panel h2 {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 1.35rem;
+      margin: 0 0 4px;
+      letter-spacing: -.01em;
+    }
+    .panel .lede {
+      color: var(--muted);
+      margin: 0 0 16px;
+      font-size: .95rem;
+    }
+
+    .grid { display: grid; gap: 12px; }
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    @media (max-width: 760px) { .grid-3 { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 540px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+    /* Form fields */
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field--full { grid-column: 1 / -1; }
+    .field > span {
+      font-size: 12px; font-weight: 600;
+      letter-spacing: .02em;
+      color: var(--ink-soft);
+      text-transform: uppercase;
+    }
+    .field > .hint { font-size: 11px; color: var(--muted); font-weight: 500; text-transform: none; letter-spacing: 0; }
+
+    input[type=text], input[type=number], select, textarea {
+      width: 100%;
+      background: var(--paper);
+      color: var(--ink);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-sm);
+      padding: 11px 13px;
+      font: 15px/1.4 var(--font-ui);
+      transition: border-color var(--fast), box-shadow var(--fast), background var(--fast);
+    }
+    textarea { resize: vertical; min-height: 96px; }
+    input:hover, select:hover, textarea:hover { border-color: var(--line-dashed); }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: #fff;
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .with-unit { display: grid; grid-template-columns: 1fr 96px; gap: 8px; }
+
+    /* Contributions */
+    .contrib-list { display: grid; gap: 14px; margin: 0 0 14px; }
+    .contrib {
+      background: linear-gradient(180deg, #fff 0%, var(--paper) 100%);
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--stage-color, var(--accent));
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-xs);
+      transition: transform var(--fast), box-shadow var(--fast);
+    }
+    .contrib:hover { box-shadow: var(--shadow-sm); }
+    .contrib > header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,.5);
+      border-bottom: 1px solid var(--line);
+    }
+    .contrib > header .stage-wrap {
+      flex: 1; max-width: 240px;
+      position: relative;
+    }
+    .contrib > header .stage {
+      width: 100%;
+      padding-left: 30px;
+      background: #fff;
+      border-color: var(--line-strong);
+    }
+    .contrib > header .stage-dot {
+      position: absolute;
+      left: 11px; top: 50%;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--stage-color, var(--accent));
+      transform: translateY(-50%);
+      pointer-events: none;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--stage-color, var(--accent)) 18%, transparent);
+    }
+    .contrib > header .row-tools {
+      display: inline-flex; gap: 4px; margin-left: auto;
+    }
+    .contrib > .grid { padding: 14px; }
+    .contrib-foot {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px;
+      padding: 10px 14px;
+      border-top: 1px dashed var(--line-strong);
+      background: rgba(255,255,255,.5);
+      color: var(--muted); font-size: .9rem;
+    }
+    .contrib-foot .wval-wrap { display: inline-flex; align-items: baseline; gap: 6px; }
+    .contrib-foot strong { color: var(--ink); font-size: 1.05rem; font-weight: 700; }
+
+    .icon-btn {
+      appearance: none; border: 1px solid var(--line);
+      background: #fff; color: var(--ink-soft);
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px; line-height: 1;
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: all var(--fast);
+    }
+    .icon-btn:hover { color: var(--accent-deep); border-color: var(--accent); transform: translateY(-1px); }
+    .icon-btn.danger:hover { color: var(--bad); border-color: var(--bad); }
+    .icon-btn:disabled { opacity: .3; cursor: not-allowed; transform: none; }
+
+    /* Profits step */
+    .pool-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 540px) { .pool-grid { grid-template-columns: 1fr; } }
+    .pool-card {
+      padding: 14px;
+      background: var(--paper);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      position: relative;
+      overflow: hidden;
+    }
+    .pool-card::before {
+      content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+      height: 4px; background: var(--pool-color, var(--accent));
+      opacity: .8;
+    }
+    .pool-card .field > span { color: var(--ink); }
+    .pool-card[data-pool="wages"]    { --pool-color: #15803d; }
+    .pool-card[data-pool="ops"]      { --pool-color: #0ea5e9; }
+    .pool-card[data-pool="dev"]      { --pool-color: #b45309; }
+    .pct-unit { display: flex; align-items: center; justify-content: center; color: var(--muted); font-weight: 700; }
+
+    .pool-status {
+      margin: 12px 0 0;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: .9rem;
+      display: flex; align-items: center; gap: 10px;
+      transition: background var(--fast), color var(--fast);
+    }
+    .pool-status.is-ok   { background: #dcfce7; color: #14532d; }
+    .pool-status.is-warn { background: #fef3c7; color: #78350f; }
+    .pool-status .auto-fix {
+      margin-left: auto;
+      appearance: none; border: 1px solid currentColor;
+      background: transparent; color: inherit;
+      padding: 4px 10px; border-radius: var(--radius-pill);
+      font: 600 12px/1 var(--font-ui);
+      cursor: pointer;
+    }
+    .pool-status .auto-fix:hover { background: rgba(0,0,0,.05); }
+    .pool-status .auto-fix[hidden] { display: none; }
+
+    /* Payout table */
+    .board {
+      margin-top: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: #fff;
+    }
+    .table-responsive { overflow: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+    th, td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+    }
+    thead th {
+      background: var(--paper-warm);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: var(--ink-soft);
+    }
+    tbody tr:hover { background: rgba(180,83,9,.04); }
+    tfoot td {
+      background: var(--paper);
+      font-weight: 700;
+      color: var(--ink);
+      border-bottom: 0;
+    }
+    td.right { text-align: right; }
+    td.strong { font-weight: 800; color: var(--accent-deep); }
+    .stage-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: .8rem; font-weight: 600;
+      padding: 3px 9px; border-radius: var(--radius-pill);
+      background: color-mix(in srgb, var(--stage-color, var(--muted)) 14%, transparent);
+      color: color-mix(in srgb, var(--stage-color, var(--muted)) 80%, var(--ink));
+    }
+    .stage-chip::before {
+      content: ""; width: 7px; height: 7px; border-radius: 50%;
+      background: var(--stage-color, var(--muted));
+    }
+
+    /* Share visualization (horizontal bars) */
+    .shares {
+      margin-top: 16px;
+      padding: 14px 16px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+    .shares h3 {
+      font: 600 .82rem/1 var(--font-ui);
+      text-transform: uppercase; letter-spacing: .06em;
+      color: var(--ink-soft);
+      margin: 0 0 12px;
+    }
+    .share-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 64px;
+      gap: 10px; align-items: center;
+      padding: 4px 0;
+    }
+    .share-row .who { font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .share-row .pct { font-variant-numeric: tabular-nums; color: var(--ink-soft); font-weight: 600; text-align: right; }
+    .share-bar {
+      position: relative;
+      height: 10px;
+      background: rgba(60,40,20,.06);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .share-bar > span {
+      display: block; height: 100%;
+      background: linear-gradient(90deg, var(--stage-color, var(--accent)), color-mix(in srgb, var(--stage-color, var(--accent)) 60%, #fff));
+      border-radius: var(--radius-pill);
+      width: var(--w, 0%);
+      transition: width var(--medium);
+    }
+    .shares-empty { color: var(--muted); font-size: .9rem; text-align: center; padding: 8px 0; }
+
+    /* Review summary */
+    .summary {
+      background: linear-gradient(180deg, var(--paper-warm), #fff);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--ink);
+    }
+    .summary .summary-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin: 14px 0 0;
+    }
+    .summary .stat-box {
+      padding: 10px 12px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+    }
+    .summary .stat-box small { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+    .summary .stat-box strong { display: block; font-size: 1.05rem; font-weight: 700; color: var(--accent-deep); margin-top: 2px; font-variant-numeric: tabular-nums; }
+
+    .agree {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 12px 14px;
+      margin-top: 14px;
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius);
+      color: var(--ink-soft);
+      font-size: .95rem;
+      cursor: pointer;
+      transition: all var(--fast);
+    }
+    .agree:hover { background: var(--paper-warm); }
+    .agree input[type=checkbox] {
+      appearance: none;
+      width: 22px; height: 22px;
+      border: 2px solid var(--line-strong);
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-top: 1px;
+      position: relative;
+      transition: all var(--fast);
+    }
+    .agree input[type=checkbox]:checked {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .agree input[type=checkbox]:checked::after {
+      content: "✓"; color: #fff;
+      position: absolute; inset: 0;
+      display: grid; place-items: center;
+      font-size: 14px; font-weight: 700;
+    }
+
+    /* Actions row */
+    .actions {
+      display: flex; gap: 10px; justify-content: flex-end;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+    .actions.left { justify-content: flex-start; }
+    .actions.between { justify-content: space-between; }
+    .btn {
+      appearance: none;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 11px 18px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--line-strong);
+      background: #fff;
+      color: var(--ink);
+      font: 600 .92rem/1 var(--font-ui);
+      cursor: pointer;
+      transition: all var(--fast);
+      box-shadow: var(--shadow-xs);
+    }
+    .btn:hover { border-color: var(--accent); color: var(--accent-deep); transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn.primary {
+      background: linear-gradient(180deg, var(--accent) 0%, var(--accent-deep) 100%);
+      color: #fff; border-color: transparent;
+      box-shadow: 0 8px 20px -6px var(--accent-glow);
+    }
+    .btn.primary:hover { color: #fff; filter: brightness(1.06); box-shadow: 0 12px 28px -8px var(--accent-glow); }
+    .btn.ghost { background: transparent; box-shadow: none; }
+    .btn.small { padding: 8px 14px; font-size: .85rem; }
+
+    /* Statusbar (bottom) */
+    .statusbar {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+      display: flex; justify-content: center; gap: 8px;
+      padding: 10px 12px;
+      background: rgba(253,251,245,.85);
+      backdrop-filter: blur(14px) saturate(160%);
+      -webkit-backdrop-filter: blur(14px) saturate(160%);
+      border-top: 1px solid var(--line-strong);
+      flex-wrap: wrap;
+    }
+    .stat {
+      display: inline-flex; align-items: baseline; gap: 6px;
+      background: #fff;
+      border: 1px solid var(--line);
+      padding: 7px 13px;
+      border-radius: var(--radius-pill);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      box-shadow: var(--shadow-xs);
+    }
+    .stat strong { color: var(--ink); font-size: 13px; font-variant-numeric: tabular-nums; }
+    .stat.is-accent strong { color: var(--accent-deep); }
+
+    /* Toast */
+    .toast {
+      position: fixed; left: 50%; bottom: 80px;
+      transform: translateX(-50%) translateY(12px);
+      background: var(--ink); color: #fff;
+      padding: 10px 18px;
+      border-radius: var(--radius-pill);
+      font-size: 13px; font-weight: 600;
+      box-shadow: 0 16px 36px -10px rgba(0,0,0,.3);
+      opacity: 0; pointer-events: none;
+      transition: opacity var(--medium), transform var(--medium);
+      z-index: 100;
+    }
+    .toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Print */
+    @media print {
+      .flove-bar, .rail, .onb, .actions, .statusbar, .hero-actions, .icon-btn { display: none !important; }
+      body { background: #fff; padding: 0; }
+      .panel { display: block !important; box-shadow: none; border: 1px solid #ccc; page-break-after: always; }
+      .panel:last-child { page-break-after: auto; }
+      .container { max-width: none; }
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+
+    /* ── translaty i18n span toggle (CSS-only) ── */
+    .es{display:none}
+    body:has(#lang-es:checked) .en{display:none}
+    body:has(#lang-es:checked) .es{display:inline}
+
+    /* ── worldball switcher ── */
+    .lang{display:inline-block;position:relative;margin:0}
+    .lang>summary{list-style:none;cursor:pointer;width:34px;height:34px;border:1px solid var(--line-strong);border-radius:50%;
+      display:inline-flex;align-items:center;justify-content:center;font-size:1.15rem;line-height:1;-webkit-user-select:none;user-select:none;background:#fff}
+    .lang>summary::-webkit-details-marker{display:none}
+    .lang[open]>summary{border-color:var(--accent);background:var(--paper-warm)}
+    .lang-opts{position:absolute;right:0;z-index:60;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;
+      background:#fff;border:1px solid var(--line-strong);border-radius:12px;padding:6px;box-shadow:var(--shadow)}
+    .lang input{position:absolute;opacity:0;pointer-events:none}
+    .lang label{cursor:pointer;padding:0 12px;min-height:36px;display:inline-flex;align-items:center;border:1px solid var(--line-strong);border-radius:11px;white-space:nowrap;font-size:.85rem}
+    .lang input:checked + label{background:var(--accent);color:#fff;font-weight:bold;border-color:var(--accent)}
+  </style>
+</head>
+<body>
+
+  <div class="flove-bar">
+    <a class="flove-home" href="index.html" aria-label="Back to flove launcher">←</a>
+    <svg class="flove-mark" aria-hidden="true" viewBox="0 0 100 100" width="1em" height="1em">
+      <defs><linearGradient id="g-crafty" x1="14" y1="14" x2="86" y2="86" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#b45309"/></linearGradient></defs>
+      <path d="M50 17 L77 41 L50 83 L23 41 Z" fill="url(#g-crafty)"/>
+      <g fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="2.5" stroke-linejoin="round"><path d="M23 41 H77"/><path d="M50 17 L37 41 L50 83"/><path d="M50 17 L63 41 L50 83"/></g>
+    </svg>
+    <span class="flove-app-name">Crafty</span>
+    <span class="flove-tag"><span class="en" lang="en">crafted contribution</span><span class="es" lang="es">contribución artesana</span></span>
+    <span class="flove-spacer"></span>
+    <details class="lang">
+      <summary class="worldball" title="Language" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐</summary>
+      <div class="lang-opts">
+        <input type="radio" name="lang" id="lang-en" checked><label for="lang-en">English</label>
+        <input type="radio" name="lang" id="lang-es"><label for="lang-es">Español</label>
+      </div>
+    </details>
+  </div>
+
+  <main class="container">
+
+    <header class="hero">
+      <div>
+        <h1><span class="en" lang="en">Let's <em>craft</em> something — and split the fruit fairly.</span><span class="es" lang="es">Vamos a <em>crear</em> algo — y repartir el fruto con justicia.</span></h1>
+        <p><span class="en" lang="en">A four-step wizard for collaborative makers: declare the product, pledge contributions, set profit splits, and review.</span><span class="es" lang="es">Un asistente de cuatro pasos para creadores en común: declara el producto, comprométete con aportaciones, fija el reparto de beneficios y revisa.</span></p>
+      </div>
+      <div class="hero-actions">
+        <button type="button" class="btn ghost small" data-flove-save="md" title="Download summary as Markdown" data-aria-en="Download summary as Markdown" data-aria-es="Descargar resumen en Markdown" aria-label="Download summary as Markdown">⬇ MD</button>
+        <button type="button" class="btn ghost small" data-flove-save="json" title="Download summary as JSON" data-aria-en="Download summary as JSON" data-aria-es="Descargar resumen en JSON" aria-label="Download summary as JSON">⬇ JSON</button>
+        <button type="button" class="btn ghost small" data-flove-save="xml" title="Download summary as XML" data-aria-en="Download summary as XML" data-aria-es="Descargar resumen en XML" aria-label="Download summary as XML">⬇ XML</button>
+        <button type="button" class="btn ghost small" data-flove-save="html" title="Download summary as standalone HTML" data-aria-en="Download summary as standalone HTML" data-aria-es="Descargar resumen como HTML independiente" aria-label="Download summary as standalone HTML">⬇ HTML</button>
+        <button type="button" class="btn ghost small" data-flove-save="jpg" title="Download summary as JPG image" data-aria-en="Download summary as JPG image" data-aria-es="Descargar resumen como imagen JPG" aria-label="Download summary as JPG image">⬇ JPG</button>
+        <button type="button" class="btn ghost small" data-flove-save="csv" title="Download contributions as CSV" data-aria-en="Download contributions as CSV" data-aria-es="Descargar aportaciones en CSV" aria-label="Download contributions as CSV">⬇ CSV</button>
+        <button type="button" class="btn ghost small" id="shareBtn" data-flove-share="mobile" title="Share to mobile" data-aria-en="Share to mobile" data-aria-es="Compartir al móvil" aria-label="Share to mobile">🔗 <span class="en" lang="en">Share</span><span class="es" lang="es">Compartir</span></button>
+        <button type="button" class="btn ghost small" id="printBtn" title="Print or save as PDF" data-aria-en="Print or save as PDF" data-aria-es="Imprimir o guardar como PDF" aria-label="Print or save as PDF">🖨 <span class="en" lang="en">Print</span><span class="es" lang="es">Imprimir</span></button>
+        <button type="button" class="btn ghost small" id="resetBtn" title="Clear everything" data-aria-en="Clear everything" data-aria-es="Borrar todo" aria-label="Clear everything">↺ <span class="en" lang="en">Reset</span><span class="es" lang="es">Reiniciar</span></button>
+      </div>
+    </header>
+
+    <nav class="rail" aria-label="Wizard steps">
+      <button type="button" class="step current" data-go="1">
+        <span class="num"><span class="digit">1</span></span><span class="label"><span class="en" lang="en">Project</span><span class="es" lang="es">Proyecto</span></span>
+      </button>
+      <button type="button" class="step" data-go="2">
+        <span class="num"><span class="digit">2</span></span><span class="label"><span class="en" lang="en">Contributions</span><span class="es" lang="es">Aportaciones</span></span>
+      </button>
+      <button type="button" class="step" data-go="3">
+        <span class="num"><span class="digit">3</span></span><span class="label"><span class="en" lang="en">Profits</span><span class="es" lang="es">Beneficios</span></span>
+      </button>
+      <button type="button" class="step" data-go="4">
+        <span class="num"><span class="digit">4</span></span><span class="label"><span class="en" lang="en">Review</span><span class="es" lang="es">Revisión</span></span>
+      </button>
+    </nav>
+
+    <aside class="onb" id="onboarding" role="note">
+      <span class="icon">💡</span>
+      <div class="body">
+        <strong id="onbTitle">Tip — Project</strong>
+        <span id="onbText">Name your thing and set a target sale price. Everything else flows from here.</span>
+      </div>
+      <button type="button" class="close" id="onbClose" aria-label="Dismiss tip" data-aria-en="Dismiss tip" data-aria-es="Descartar consejo">✕</button>
+    </aside>
+
+    <!-- STEP 1 — PROJECT -->
+    <section class="panel active" data-step="1">
+      <h2><span class="en" lang="en">Project</span><span class="es" lang="es">Proyecto</span></h2>
+      <p class="lede"><span class="en" lang="en">The thing you and others will make and sell together.</span><span class="es" lang="es">Aquello que tú y otras personas haréis y venderéis en común.</span></p>
+      <div class="grid grid-2">
+        <label class="field">
+          <span><span class="en" lang="en">Product name</span><span class="es" lang="es">Nombre del producto</span></span>
+          <input id="prodName" type="text" placeholder="Solar Lamp v2.1" required autocomplete="off">
+        </label>
+        <div class="field">
+          <span><span class="en" lang="en">Target price (per unit)</span><span class="es" lang="es">Precio objetivo (por unidad)</span></span>
+          <div class="with-unit">
+            <input id="salePrice" type="number" step="0.01" min="0" placeholder="100.00" aria-label="Target price per unit" data-aria-en="Target price per unit" data-aria-es="Precio objetivo por unidad">
+            <select id="currency" aria-label="Currency" data-aria-en="Currency" data-aria-es="Moneda">
+              <option>EUR</option><option>USD</option><option>GBP</option><option>JPY</option><option>BRL</option><option>MXN</option>
+            </select>
+          </div>
+        </div>
+        <label class="field field--full">
+          <span><span class="en" lang="en">Short description</span><span class="es" lang="es">Descripción breve</span></span>
+          <textarea id="desc" rows="3" placeholder="What it is and why it matters…" data-ph-en="What it is and why it matters…" data-ph-es="Qué es y por qué importa…"></textarea>
+        </label>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn primary" data-go="2"><span class="en" lang="en">Continue →</span><span class="es" lang="es">Continuar →</span></button>
+      </div>
+    </section>
+
+    <!-- STEP 2 — CONTRIBUTIONS -->
+    <section class="panel" data-step="2">
+      <h2><span class="en" lang="en">Promisory contributions</span><span class="es" lang="es">Aportaciones comprometidas</span></h2>
+      <p class="lede"><span class="en" lang="en">Describe the tasks each person commits. Shares are computed automatically once the project sells.</span><span class="es" lang="es">Describe las tareas que cada persona se compromete a hacer. Los porcentajes se calculan automáticamente cuando el proyecto se vende.</span></p>
+
+      <div id="contribList" class="contrib-list" aria-live="polite"></div>
+
+      <template id="contribTpl">
+        <article class="contrib" data-stage="Design">
+          <header>
+            <div class="stage-wrap">
+              <span class="stage-dot" aria-hidden="true"></span>
+              <select class="stage" aria-label="Stage" data-aria-en="Stage" data-aria-es="Etapa">
+                <option value="Design" data-en="Design" data-es="Diseño">Design</option>
+                <option value="Sourcing" data-en="Sourcing" data-es="Abastecimiento">Sourcing</option>
+                <option value="Manufacturing" data-en="Manufacturing" data-es="Fabricación">Manufacturing</option>
+                <option value="Assembly" data-en="Assembly" data-es="Montaje">Assembly</option>
+                <option value="QA" data-en="QA" data-es="Control de calidad">QA</option>
+                <option value="Packaging" data-en="Packaging" data-es="Embalaje">Packaging</option>
+                <option value="Logistics" data-en="Logistics" data-es="Logística">Logistics</option>
+                <option value="Marketing" data-en="Marketing" data-es="Marketing">Marketing</option>
+                <option value="Sales" data-en="Sales" data-es="Ventas">Sales</option>
+                <option value="Support" data-en="Support" data-es="Soporte">Support</option>
+              </select>
+            </div>
+            <div class="row-tools">
+              <button type="button" class="icon-btn move-up" title="Move up" aria-label="Move up" data-aria-en="Move up" data-aria-es="Subir">↑</button>
+              <button type="button" class="icon-btn move-down" title="Move down" aria-label="Move down" data-aria-en="Move down" data-aria-es="Bajar">↓</button>
+              <button type="button" class="icon-btn duplicate" title="Duplicate" aria-label="Duplicate" data-aria-en="Duplicate" data-aria-es="Duplicar">⎘</button>
+              <button type="button" class="icon-btn danger remove" title="Remove" aria-label="Remove" data-aria-en="Remove" data-aria-es="Eliminar">✕</button>
+            </div>
+          </header>
+          <div class="grid grid-3">
+            <label class="field">
+              <span><span class="en" lang="en">Contributor</span><span class="es" lang="es">Aportante</span></span>
+              <input class="who" type="text" placeholder="@ana-maker" required autocomplete="off">
+            </label>
+            <label class="field">
+              <span><span class="en" lang="en">Type</span><span class="es" lang="es">Tipo</span></span>
+              <select class="ctype">
+                <option value="Labor (hours)" data-en="Labor (hours)" data-es="Trabajo (horas)">Labor (hours)</option>
+                <option value="Materials" data-en="Materials" data-es="Materiales">Materials</option>
+                <option value="Equipment" data-en="Equipment" data-es="Equipamiento">Equipment</option>
+                <option value="Capital" data-en="Capital" data-es="Capital">Capital</option>
+                <option value="IP / License" data-en="IP / License" data-es="PI / Licencia">IP / License</option>
+                <option value="Other" data-en="Other" data-es="Otro">Other</option>
+              </select>
+            </label>
+            <label class="field">
+              <span><span class="en" lang="en">Quantity</span><span class="es" lang="es">Cantidad</span></span>
+              <input class="qty" type="number" step="0.01" min="0" placeholder="12">
+            </label>
+            <label class="field">
+              <span><span class="en" lang="en">Unit value</span><span class="es" lang="es">Valor unitario</span> (<span class="currency-tag">EUR</span>)</span>
+              <input class="uval" type="number" step="0.01" min="0" placeholder="25.00">
+            </label>
+            <label class="field field--full">
+              <span><span class="en" lang="en">Notes</span><span class="es" lang="es">Notas</span> <span class="hint"><span class="en" lang="en">optional</span><span class="es" lang="es">opcional</span></span></span>
+              <input class="notes" type="text" placeholder="Link or short note" data-ph-en="Link or short note" data-ph-es="Enlace o nota breve" autocomplete="off">
+            </label>
+          </div>
+          <footer class="contrib-foot">
+            <span><span class="en" lang="en">Total value of this contribution</span><span class="es" lang="es">Valor total de esta aportación</span></span>
+            <span class="wval-wrap">
+              <strong class="wval">0.00</strong>
+              <span class="currency-tag">EUR</span>
+            </span>
+          </footer>
+        </article>
+      </template>
+
+      <div class="actions left">
+        <button type="button" id="addContrib" class="btn">＋ <span class="en" lang="en">Add contribution</span><span class="es" lang="es">Añadir aportación</span></button>
+      </div>
+
+      <div class="actions between">
+        <button type="button" class="btn ghost" data-go="1"><span class="en" lang="en">← Back</span><span class="es" lang="es">← Atrás</span></button>
+        <button type="button" class="btn primary" data-go="3"><span class="en" lang="en">Continue →</span><span class="es" lang="es">Continuar →</span></button>
+      </div>
+    </section>
+
+    <!-- STEP 3 — PROFITS -->
+    <section class="panel" data-step="3">
+      <h2><span class="en" lang="en">Wanted profits</span><span class="es" lang="es">Beneficios deseados</span></h2>
+      <p class="lede"><span class="en" lang="en">How will each unit's revenue be split? The three slices should add up to 100%.</span><span class="es" lang="es">¿Cómo se repartirá el ingreso de cada unidad? Las tres partes deben sumar 100%.</span></p>
+
+      <div class="pool-grid">
+        <div class="pool-card" data-pool="wages">
+          <div class="field">
+            <span><span class="en" lang="en">Wages</span><span class="es" lang="es">Salarios</span></span>
+            <div class="with-unit">
+              <input id="poolPct" type="number" min="0" max="100" step="1" value="70" aria-label="Wages percentage" data-aria-en="Wages percentage" data-aria-es="Porcentaje de salarios">
+              <span class="pct-unit" aria-hidden="true">%</span>
+            </div>
+            <span class="hint"><span class="en" lang="en">Paid out to contributors, proportional to value pledged.</span><span class="es" lang="es">Se reparte entre los aportantes, en proporción al valor comprometido.</span></span>
+          </div>
+        </div>
+        <div class="pool-card" data-pool="ops">
+          <div class="field">
+            <span><span class="en" lang="en">Maintenance</span><span class="es" lang="es">Mantenimiento</span></span>
+            <div class="with-unit">
+              <input id="opsPct" type="number" min="0" max="100" step="1" value="20" aria-label="Maintenance percentage" data-aria-en="Maintenance percentage" data-aria-es="Porcentaje de mantenimiento">
+              <span class="pct-unit" aria-hidden="true">%</span>
+            </div>
+            <span class="hint"><span class="en" lang="en">Tooling, replacements, ongoing care.</span><span class="es" lang="es">Herramientas, repuestos y cuidado continuo.</span></span>
+          </div>
+        </div>
+        <div class="pool-card" data-pool="dev">
+          <div class="field">
+            <span><span class="en" lang="en">Development</span><span class="es" lang="es">Desarrollo</span></span>
+            <div class="with-unit">
+              <input id="treasuryPct" type="number" min="0" max="100" step="1" value="10" aria-label="Development percentage" data-aria-en="Development percentage" data-aria-es="Porcentaje de desarrollo">
+              <span class="pct-unit" aria-hidden="true">%</span>
+            </div>
+            <span class="hint"><span class="en" lang="en">R&amp;D, next iteration, shared treasury.</span><span class="es" lang="es">I+D, la siguiente versión y el fondo común.</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div id="poolStatus" class="pool-status is-ok" role="status">
+        <span id="poolStatusText"><span class="en" lang="en">Slices add up to 100%. Looking good.</span><span class="es" lang="es">Las partes suman 100%. Todo correcto.</span></span>
+        <button type="button" class="auto-fix" id="autoFix" hidden><span class="en" lang="en">Auto-balance</span><span class="es" lang="es">Auto-equilibrar</span></button>
+      </div>
+
+      <div class="board">
+        <div class="table-responsive">
+          <table id="payoutTable">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col"><span class="en" lang="en">Contributor</span><span class="es" lang="es">Aportante</span></th>
+                <th scope="col"><span class="en" lang="en">Stage</span><span class="es" lang="es">Etapa</span></th>
+                <th scope="col" class="right"><span class="en" lang="en">Value</span><span class="es" lang="es">Valor</span></th>
+                <th scope="col" class="right"><span class="en" lang="en">Share %</span><span class="es" lang="es">% Parte</span></th>
+                <th scope="col" class="right"><span class="en" lang="en">Payout</span><span class="es" lang="es">Pago</span> (<span class="currency-tag">EUR</span>)</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3" class="right"><span class="en" lang="en">Totals</span><span class="es" lang="es">Totales</span></td>
+                <td id="totWVal" class="right">0.00</td>
+                <td class="right">100%</td>
+                <td id="totPayout" class="right strong">0.00</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <section class="shares">
+        <h3><span class="en" lang="en">Visual share split</span><span class="es" lang="es">Reparto visual</span></h3>
+        <div id="sharesBars"></div>
+      </section>
+
+      <div class="actions between">
+        <button type="button" class="btn ghost" data-go="2"><span class="en" lang="en">← Back</span><span class="es" lang="es">← Atrás</span></button>
+        <button type="button" class="btn primary" data-go="4"><span class="en" lang="en">Continue →</span><span class="es" lang="es">Continuar →</span></button>
+      </div>
+    </section>
+
+    <!-- STEP 4 — REVIEW -->
+    <section class="panel" data-step="4">
+      <h2><span class="en" lang="en">Review</span><span class="es" lang="es">Revisión</span></h2>
+      <p class="lede"><span class="en" lang="en">A summary you can read aloud before everyone signs.</span><span class="es" lang="es">Un resumen que podéis leer en voz alta antes de firmar.</span></p>
+
+      <div class="summary">
+        <p id="execSummary"><span class="en" lang="en">— Fill the form to see a summary here —</span><span class="es" lang="es">— Rellena el formulario para ver aquí un resumen —</span></p>
+        <div class="summary-stats">
+          <div class="stat-box"><small><span class="en" lang="en">Contributors</span><span class="es" lang="es">Aportantes</span></small><strong id="sumContrib">0</strong></div>
+          <div class="stat-box"><small><span class="en" lang="en">Total value</span><span class="es" lang="es">Valor total</span></small><strong id="sumValue">0.00</strong></div>
+          <div class="stat-box"><small><span class="en" lang="en">Wages pool / unit</span><span class="es" lang="es">Fondo salarial / unidad</span></small><strong id="sumPool">0.00</strong></div>
+          <div class="stat-box"><small><span class="en" lang="en">Sale price</span><span class="es" lang="es">Precio de venta</span></small><strong id="sumPrice">0.00</strong></div>
+        </div>
+      </div>
+
+      <label class="agree">
+        <input id="consent" type="checkbox">
+        <span><strong><span class="en" lang="en">I confirm</span><span class="es" lang="es">Confirmo</span></strong> <span class="en" lang="en">the information above is correct and that all contributors have been notified.</span><span class="es" lang="es">que la información anterior es correcta y que se ha avisado a todos los aportantes.</span></span>
+      </label>
+
+      <div class="actions between">
+        <button type="button" class="btn ghost" data-go="3"><span class="en" lang="en">← Back</span><span class="es" lang="es">← Atrás</span></button>
+        <button type="button" class="btn primary" id="submitBtn"><span class="en" lang="en">Submit ✓</span><span class="es" lang="es">Enviar ✓</span></button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="statusbar" aria-label="Live project totals">
+    <div class="stat"><span><span class="en" lang="en">Contribs</span><span class="es" lang="es">Aport.</span></span><strong id="statContrib">0</strong></div>
+    <div class="stat"><span><span class="en" lang="en">Wages pool</span><span class="es" lang="es">Fondo salarial</span></span><strong id="statPool">70%</strong></div>
+    <div class="stat is-accent"><span><span class="en" lang="en">Price</span><span class="es" lang="es">Precio</span></span><strong id="statPrice">0.00 <span class="currency-tag">EUR</span></strong></div>
+    <div class="stat is-accent"><span><span class="en" lang="en">Projected payout</span><span class="es" lang="es">Pago previsto</span></span><strong id="statProjected">0.00</strong></div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// translaty engine — language switch + data-* swap + persistence + <html lang> sync.
+(function(){
+  const LS = 'flove:lang', LS_OLD = 'translaty-lang';
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const radios = () => Array.from(document.querySelectorAll('input[name="lang"]'));
+  const curLang = () => { const r = radios().find(x => x.checked); return r ? r.id.replace('lang-', '') : 'en'; };
+  const stored = () => { try { return localStorage.getItem(LS) || localStorage.getItem(LS_OLD) || localStorage.getItem('translate2-lang'); } catch (_) { return null; } };
+  const urlLang = () => { try { return new URLSearchParams(location.search).get('lang'); } catch (_) { return null; } };
+  function applyLang(){
+    const li = curLang();
+    document.documentElement.lang = li;
+    document.querySelectorAll('option[data-en]').forEach(o => { if (o.dataset[li] != null) o.textContent = o.dataset[li]; });
+    document.querySelectorAll('[data-ph-en]').forEach(el => { const v = el.dataset['ph' + cap(li)]; if (v != null) el.placeholder = v; });
+    document.querySelectorAll('[data-aria-en]').forEach(el => { const v = el.dataset['aria' + cap(li)]; if (v != null) el.setAttribute('aria-label', v); });
+    try { localStorage.setItem(LS, li); } catch (_) {}
+  }
+  window.__floveApplyLang = applyLang;   // let JS-cloned rows re-localize their <option>s
+  function init(){
+    const want = urlLang() || stored();
+    if (want){ const r = document.getElementById('lang-' + want); if (r) r.checked = true; }
+    radios().forEach(r => r.addEventListener('change', () => {
+      applyLang();
+      const d = document.querySelector('details.lang'); if (d) d.open = false;
+    }));
+    applyLang();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<script>
+(function(){
+  "use strict";
+
+  const $  = (s, r=document) => r.querySelector(s);
+  const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+  const STORAGE_KEY = "flove:crafty:v1";
+  const ONB_KEY     = "flove:crafty:onb-seen";
+
+  /* ===================== Toast ===================== */
+  let toastTimer;
+  function toast(msg){
+    const el = $("#toast");
+    el.textContent = msg;
+    el.classList.add("is-visible");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove("is-visible"), 1800);
+  }
+
+  /* ===================== Onboarding hints ===================== */
+  const ONB_HINTS = {
+    1: { title: "Tip — Project",       text: "Name your thing and set a target sale price. Everything else flows from here." },
+    2: { title: "Tip — Contributions", text: "List each pledge. Total value (quantity × unit) feeds the fair-share math automatically." },
+    3: { title: "Tip — Profits",       text: "Three slices, summing to 100%. Use Auto-balance if you go over or under." },
+    4: { title: "Tip — Review",        text: "Read the summary aloud. Tick the confirm box only if everyone agrees." }
+  };
+  const onbSeen = new Set(JSON.parse(localStorage.getItem(ONB_KEY) || "[]"));
+  $("#onbClose").addEventListener("click", () => {
+    onbSeen.add(currentStep);
+    localStorage.setItem(ONB_KEY, JSON.stringify([...onbSeen]));
+    $("#onboarding").hidden = true;
+  });
+  function updateOnboarding(step){
+    const hint = ONB_HINTS[step];
+    if (!hint) return;
+    $("#onbTitle").textContent = hint.title;
+    $("#onbText").textContent  = hint.text;
+    $("#onboarding").hidden = onbSeen.has(step);
+  }
+
+  /* ===================== Navigation ===================== */
+  let currentStep = 1;
+  function go(step){
+    const s = String(step);
+    currentStep = Number(step);
+    $$("[data-step]").forEach(p => p.classList.toggle("active", p.dataset.step === s));
+    $$(".rail .step").forEach(b => {
+      const target = b.dataset.go;
+      b.classList.toggle("current", target === s);
+      b.classList.toggle("is-done", Number(target) < Number(s));
+    });
+    updateOnboarding(step);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  $$("[data-go]").forEach(btn => btn.addEventListener("click", e => go(e.currentTarget.dataset.go)));
+
+  /* ===================== Stage coloring ===================== */
+  const STAGE_VAR = {
+    Design: "--stage-design", Sourcing: "--stage-sourcing",
+    Manufacturing: "--stage-manufacturing", Assembly: "--stage-assembly",
+    QA: "--stage-qa", Packaging: "--stage-packaging",
+    Logistics: "--stage-logistics", Marketing: "--stage-marketing",
+    Sales: "--stage-sales", Support: "--stage-support"
+  };
+  function stageColor(stage){
+    const v = STAGE_VAR[stage] || "--accent";
+    return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || "#b45309";
+  }
+  function paintStage(node, stage){
+    node.style.setProperty("--stage-color", stageColor(stage));
+    node.dataset.stage = stage;
+  }
+
+  /* ===================== Currency sync ===================== */
+  function updateCurrencyTags(){
+    const cur = $("#currency").value;
+    $$(".currency-tag").forEach(el => el.textContent = cur);
+  }
+
+  /* ===================== Contributions ===================== */
+  const list = $("#contribList");
+  const tpl  = $("#contribTpl");
+
+  function addContrib(data){
+    data = data || {};
+    const node = tpl.content.firstElementChild.cloneNode(true);
+    const stage = $(".stage", node);
+    const who   = $(".who", node);
+    const ctype = $(".ctype", node);
+    const qty   = $(".qty", node);
+    const uval  = $(".uval", node);
+    const notes = $(".notes", node);
+    const wval  = $(".wval", node);
+
+    if (data.stage) stage.value = data.stage;
+    if (data.who)   who.value   = data.who;
+    if (data.ctype) ctype.value = data.ctype;
+    if (data.qty != null)  qty.value  = data.qty;
+    if (data.uval != null) uval.value = data.uval;
+    if (data.notes)        notes.value = data.notes;
+
+    paintStage(node, stage.value);
+
+    const recalc = () => {
+      const q  = Number(qty.value || 0);
+      const uv = Number(uval.value || 0);
+      wval.textContent = (q * uv).toFixed(2);
+      refresh();
+    };
+
+    stage.addEventListener("change", () => { paintStage(node, stage.value); refresh(); });
+    [who, ctype, qty, uval, notes].forEach(el => {
+      ["input","change"].forEach(ev => el.addEventListener(ev, recalc));
+    });
+
+    $(".remove",    node).addEventListener("click", () => { node.remove(); refresh(); toast("Removed"); });
+    $(".duplicate", node).addEventListener("click", () => {
+      const copy = collectContrib(node);
+      copy.who = copy.who ? copy.who + " (copy)" : "";
+      addContrib(copy);
+      toast("Duplicated");
+    });
+    $(".move-up",   node).addEventListener("click", () => {
+      const prev = node.previousElementSibling;
+      if (prev) { list.insertBefore(node, prev); refresh(); }
+    });
+    $(".move-down", node).addEventListener("click", () => {
+      const next = node.nextElementSibling;
+      if (next) { list.insertBefore(next, node); refresh(); }
+    });
+
+    list.appendChild(node);
+    if (window.__floveApplyLang) window.__floveApplyLang();   // localize this row's <option>s
+    recalc();
+    return node;
+  }
+
+  function collectContrib(node){
+    return {
+      stage: $(".stage", node).value,
+      who:   $(".who",   node).value,
+      ctype: $(".ctype", node).value,
+      qty:   $(".qty",   node).value,
+      uval:  $(".uval",  node).value,
+      notes: $(".notes", node).value
+    };
+  }
+
+  $("#addContrib").addEventListener("click", () => addContrib());
+
+  /* ===================== Pool % balance check ===================== */
+  function checkPool(){
+    const p = Number($("#poolPct").value || 0);
+    const o = Number($("#opsPct").value || 0);
+    const t = Number($("#treasuryPct").value || 0);
+    const sum = p + o + t;
+    const status = $("#poolStatus");
+    const text   = $("#poolStatusText");
+    const fix    = $("#autoFix");
+    if (sum === 100) {
+      status.classList.add("is-ok"); status.classList.remove("is-warn");
+      text.textContent = "Slices add up to 100%. Looking good.";
+      fix.hidden = true;
+    } else {
+      status.classList.remove("is-ok"); status.classList.add("is-warn");
+      text.textContent = `Slices add up to ${sum}% (need 100%).`;
+      fix.hidden = false;
+    }
+    return sum;
+  }
+  $("#autoFix").addEventListener("click", () => {
+    const p = Number($("#poolPct").value || 0);
+    const o = Number($("#opsPct").value || 0);
+    const sum = checkPool();
+    if (sum === 0) { $("#poolPct").value = 100; refresh(); return; }
+    const k = 100 / sum;
+    $("#poolPct").value     = Math.round(p * k);
+    $("#opsPct").value      = Math.round(o * k);
+    $("#treasuryPct").value = Math.max(0, 100 - Number($("#poolPct").value) - Number($("#opsPct").value));
+    refresh();
+    toast("Balanced to 100%");
+  });
+
+  /* ===================== Refresh (recompute & paint everything) ===================== */
+  function refresh(){
+    const price    = Number($("#salePrice").value || 0);
+    const currency = $("#currency").value;
+    updateCurrencyTags();
+
+    const poolPct = Number($("#poolPct").value || 0);
+    const opsPct  = Number($("#opsPct").value  || 0);
+    const trePct  = Number($("#treasuryPct").value || 0);
+    checkPool();
+    const poolAmount = price * (poolPct / 100);
+
+    const rows = $$(".contrib", list).map((row, i) => {
+      const stage = $(".stage", row).value;
+      return {
+        i: i + 1,
+        who:   $(".who",   row).value.trim() || "—",
+        stage,
+        color: stageColor(stage),
+        wval:  Number($(".wval", row).textContent || 0)
+      };
+    });
+
+    const tot = rows.reduce((a, b) => a + b.wval, 0);
+
+    /* Payout table */
+    const tbody = $("#payoutTable tbody");
+    tbody.innerHTML = "";
+    let totPayout = 0;
+    rows.forEach(r => {
+      const share  = tot > 0 ? (r.wval / tot) : 0;
+      const payout = poolAmount * share;
+      totPayout += payout;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${r.i}</td>
+        <td>${escapeHtml(r.who)}</td>
+        <td><span class="stage-chip" style="--stage-color:${r.color}">${r.stage}</span></td>
+        <td class="right">${r.wval.toFixed(2)}</td>
+        <td class="right">${(share * 100).toFixed(1)}%</td>
+        <td class="right">${payout.toFixed(2)}</td>`;
+      tbody.appendChild(tr);
+    });
+    $("#totWVal").textContent   = tot.toFixed(2);
+    $("#totPayout").textContent = totPayout.toFixed(2);
+
+    /* Share bars visualization */
+    const bars = $("#sharesBars");
+    bars.innerHTML = "";
+    if (!rows.length) {
+      bars.innerHTML = `<div class="shares-empty">No contributions yet — add some on step 2.</div>`;
+    } else {
+      rows.forEach(r => {
+        const share = tot > 0 ? (r.wval / tot) : 0;
+        const div = document.createElement("div");
+        div.className = "share-row";
+        div.style.setProperty("--stage-color", r.color);
+        div.innerHTML = `
+          <span class="who" title="${escapeHtml(r.who)} · ${r.stage}">${escapeHtml(r.who)}</span>
+          <div class="share-bar"><span style="--w:${(share*100).toFixed(1)}%"></span></div>
+          <span class="pct">${(share*100).toFixed(1)}%</span>`;
+        bars.appendChild(div);
+      });
+    }
+
+    /* Statusbar */
+    $("#statContrib").textContent  = rows.length;
+    $("#statPool").textContent     = poolPct + "%";
+    $("#statPrice").innerHTML      = `${price.toFixed(2)} <span class="currency-tag">${currency}</span>`;
+    $("#statProjected").textContent = totPayout.toFixed(2);
+
+    /* Review summary */
+    const name = $("#prodName").value || "Unnamed thing";
+    const desc = $("#desc").value || "";
+    const summary = `${name} targets ${price.toFixed(2)} ${currency}/unit. Contributors receive ${poolPct}%, maintenance ${opsPct}%, development ${trePct}%. ${rows.length} contribution${rows.length===1?"":"s"}; wages pool ${poolAmount.toFixed(2)} ${currency}/unit.`;
+    $("#execSummary").textContent = desc ? summary + " " + desc : summary;
+    $("#sumContrib").textContent  = rows.length;
+    $("#sumValue").textContent    = tot.toFixed(2);
+    $("#sumPool").textContent     = poolAmount.toFixed(2);
+    $("#sumPrice").textContent    = `${price.toFixed(2)} ${currency}`;
+
+    /* Persist + keep export controls gated on exportable content */
+    save();
+    syncExportEnabled();
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+
+  /* ===================== Persistence ===================== */
+  function snapshot(){
+    return {
+      prodName:    $("#prodName").value,
+      salePrice:   $("#salePrice").value,
+      currency:    $("#currency").value,
+      desc:        $("#desc").value,
+      poolPct:     $("#poolPct").value,
+      opsPct:      $("#opsPct").value,
+      treasuryPct: $("#treasuryPct").value,
+      contribs:    $$(".contrib", list).map(collectContrib)
+    };
+  }
+  let saveTimer;
+  function save(){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot())); }
+      catch(e) { /* quota or private-mode — silent */ }
+    }, 200);
+  }
+  function restore(){
+    let raw;
+    try { raw = localStorage.getItem(STORAGE_KEY); } catch(e) { return false; }
+    if (!raw) return false;
+    let data;
+    try { data = JSON.parse(raw); } catch(e) { return false; }
+    if (!data || typeof data !== "object") return false;
+    ["prodName","salePrice","currency","desc","poolPct","opsPct","treasuryPct"].forEach(k => {
+      const el = $("#"+k);
+      if (el && data[k] != null) el.value = data[k];
+    });
+    list.innerHTML = "";
+    (Array.isArray(data.contribs) ? data.contribs : []).forEach(c => addContrib(c));
+    return true;
+  }
+
+  /* ===================== Export / Share (§13.12) ===================== */
+
+  /* ── Shared helpers — one copy, reused by every format ── */
+  // ONE escaping pair, used by BOTH xml and html. (escapeHtml() above stays for live DOM.)
+  const esc      = s => String(s).replace(/[&<>]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;" }[c]));
+  const escAttr  = s => esc(s).replace(/"/g, "&quot;");
+  const safeName = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  // Crafty is English-only (excluded from translaty): the summary word stays English.
+  const fileBase = () => `${safeName($("#prodName").value || "crafty")}-summary`;
+
+  function downloadBlob(content, mime, filename){
+    const blob = new Blob([content], { type: mime + ";charset=utf-8" });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  /* ── THE summary-model — single source for the phrase, JSON, and every format ── */
+  function buildModel(){
+    const currency = $("#currency").value;
+    const price    = Number($("#salePrice").value || 0);
+    const wages    = Number($("#poolPct").value || 0);
+    const maint    = Number($("#opsPct").value  || 0);
+    const dev      = Number($("#treasuryPct").value || 0);
+
+    // Only filled contributions ride into the export (empty rows omitted).
+    const contributions = $$(".contrib", list).map(node => {
+      const c = collectContrib(node);
+      const qty  = Number(c.qty  || 0);
+      const uval = Number(c.uval || 0);
+      return {
+        stage: c.stage,
+        who:   (c.who   || "").trim(),
+        ctype: c.ctype,
+        qty, uval,
+        value: +(qty * uval).toFixed(2),
+        notes: (c.notes || "").trim()
+      };
+    }).filter(c => c.who || c.value || c.notes);
+
+    const totalValue   = +contributions.reduce((a, b) => a + b.value, 0).toFixed(2);
+    const wagesPerUnit = +(price * (wages / 100)).toFixed(2);
+    const name         = $("#prodName").value.trim() || "Unnamed thing";
+    const desc         = $("#desc").value.trim();
+
+    const phrase = `${name} targets ${price.toFixed(2)} ${currency}/unit. `
+      + `Contributors receive ${wages}%, maintenance ${maint}%, development ${dev}%. `
+      + `${contributions.length} contribution${contributions.length === 1 ? "" : "s"}; `
+      + `wages pool ${wagesPerUnit.toFixed(2)} ${currency}/unit.`;
+
+    return {
+      app: "crafty", version: 1, phrase,
+      project: { name, salePrice: price, currency, desc },
+      profits: { wages, maintenance: maint, development: dev },   // FROZEN 3 slices
+      contributions,                                              // FROZEN stage/type taxonomies
+      stats: {
+        contributors: contributions.length,
+        totalValue,
+        wagesPoolPerUnit: wagesPerUnit,
+        salePrice: price
+      }
+    };
+  }
+
+  // Export controls are disabled when the model carries nothing exportable.
+  function hasExportable(m){
+    return !!(m.project.name && m.project.name !== "Unnamed thing")
+      || m.contributions.length > 0
+      || m.project.salePrice > 0
+      || !!m.project.desc;
+  }
+  const saveBtns = $$("[data-flove-save]");
+  function syncExportEnabled(){
+    const ok = hasExportable(buildModel());
+    saveBtns.forEach(b => { b.disabled = !ok; });
+    const sb = $("#shareBtn"); if (sb) sb.disabled = !ok;
+  }
+
+  /* ── Serializers — every one reads buildModel(), parity guaranteed ── */
+  const toJson = m => JSON.stringify(m, null, 2);
+
+  function toMd(m){
+    const oneLine = x => String(x).replace(/\r?\n+/g, " ");
+    const cell    = x => oneLine(x).replace(/\|/g, "\\|");
+    let s = `# ${m.app}\n\n${oneLine(m.phrase)}\n\n`;
+    s += `## Project\n- Name: ${oneLine(m.project.name)}\n`
+       + `- Target price: ${m.project.salePrice.toFixed(2)} ${m.project.currency}/unit\n`;
+    if (m.project.desc) s += `- Description: ${oneLine(m.project.desc)}\n`;
+    s += `\n## Profit split\n`
+       + `- Wages: ${m.profits.wages}%\n- Maintenance: ${m.profits.maintenance}%\n- Development: ${m.profits.development}%\n\n`;
+    s += `## Contributions\n`;
+    if (m.contributions.length){
+      s += `| Contributor | Stage | Type | Qty | Unit value | Value | Notes |\n|---|---|---|---|---|---|---|\n`;
+      m.contributions.forEach(c => {
+        s += `| ${cell(c.who || "—")} | ${cell(c.stage)} | ${cell(c.ctype)} | ${c.qty} | ${c.uval} | ${c.value.toFixed(2)} | ${cell(c.notes || "")} |\n`;
+      });
+    } else {
+      s += `_No contributions yet._\n`;
+    }
+    s += `\n## Totals\n- Contributors: ${m.stats.contributors}\n`
+       + `- Total value: ${m.stats.totalValue.toFixed(2)} ${m.project.currency}\n`
+       + `- Wages pool / unit: ${m.stats.wagesPoolPerUnit.toFixed(2)} ${m.project.currency}\n`;
+    return s;
+  }
+
+  function toXml(m){
+    let s = `<?xml version="1.0" encoding="UTF-8"?>\n`
+      + `<crafty app="${escAttr(m.app)}" version="${m.version}">\n`;
+    s += `  <phrase>${esc(m.phrase)}</phrase>\n`;
+    s += `  <project name="${escAttr(m.project.name)}" salePrice="${m.project.salePrice}" currency="${escAttr(m.project.currency)}">`
+       + `${esc(m.project.desc || "")}</project>\n`;
+    s += `  <profits wages="${m.profits.wages}" maintenance="${m.profits.maintenance}" development="${m.profits.development}"/>\n`;
+    s += `  <contributions>\n`;
+    m.contributions.forEach(c => {
+      s += `    <contribution stage="${escAttr(c.stage)}" type="${escAttr(c.ctype)}" qty="${c.qty}" uval="${c.uval}" value="${c.value}">\n`
+         + `      <who>${esc(c.who || "")}</who>\n`
+         + `      <notes>${esc(c.notes || "")}</notes>\n`
+         + `    </contribution>\n`;
+    });
+    s += `  </contributions>\n`;
+    s += `  <stats contributors="${m.stats.contributors}" totalValue="${m.stats.totalValue}" wagesPoolPerUnit="${m.stats.wagesPoolPerUnit}" salePrice="${m.stats.salePrice}"/>\n`;
+    s += `</crafty>\n`;
+    return s;
+  }
+
+  function toCsv(m){
+    const q = v => { const s = String(v == null ? "" : v); return /[",\n\r]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s; };
+    const lines = ["contributor,stage,type,qty,unit_value,value,notes"];
+    m.contributions.forEach(c =>
+      lines.push([c.who, c.stage, c.ctype, c.qty, c.uval, c.value.toFixed(2), c.notes].map(q).join(",")));
+    return lines.join("\r\n");
+  }
+
+  function toHtml(m){
+    const rows = m.contributions.map(c =>
+      `<tr><td>${esc(c.who || "—")}</td><td>${esc(c.stage)}</td><td>${esc(c.ctype)}</td>`
+      + `<td>${c.qty}</td><td>${c.uval}</td><td>${c.value.toFixed(2)}</td><td>${esc(c.notes || "")}</td></tr>`).join("");
+    const body = m.contributions.length
+      ? `<table><thead><tr><th scope="col">Contributor</th><th scope="col">Stage</th><th scope="col">Type</th><th scope="col">Qty</th><th scope="col">Unit value</th><th scope="col">Value</th><th scope="col">Notes</th></tr></thead><tbody>${rows}</tbody></table>`
+      : `<p><em>No contributions yet.</em></p>`;
+    return `<!doctype html><html lang="en"><head><meta charset="utf-8">`
+      + `<meta name="viewport" content="width=device-width,initial-scale=1">`
+      + `<title>${esc(m.app)} · summary</title>`
+      + `<style>body{font:15px/1.6 system-ui,sans-serif;max-width:680px;margin:2rem auto;padding:1rem}`
+      + `h1{font-weight:600}table{border-collapse:collapse;width:100%;margin-top:1rem}`
+      + `td,th{border:1px solid #ccc;padding:.4rem .6rem;text-align:left}`
+      + `dl{display:grid;grid-template-columns:auto 1fr;gap:.2rem .8rem}dt{font-weight:600}</style></head>`
+      + `<body><h1>${esc(m.app)}</h1><p>${esc(m.phrase)}</p>`
+      + `<dl><dt>Project</dt><dd>${esc(m.project.name)}</dd>`
+      + `<dt>Target price</dt><dd>${m.project.salePrice.toFixed(2)} ${esc(m.project.currency)}/unit</dd>`
+      + (m.project.desc ? `<dt>Description</dt><dd>${esc(m.project.desc)}</dd>` : "")
+      + `<dt>Profit split</dt><dd>Wages ${m.profits.wages}% · Maintenance ${m.profits.maintenance}% · Development ${m.profits.development}%</dd>`
+      + `<dt>Total value</dt><dd>${m.stats.totalValue.toFixed(2)} ${esc(m.project.currency)}</dd></dl>`
+      + body + `</body></html>`;
+  }
+
+  function toJpg(m, cb){
+    const W = 1080, H = 720, canvas = document.createElement("canvas");
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#fdfbf5"; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "#b45309"; ctx.font = "600 44px Georgia, serif";
+    ctx.fillText(("crafty — " + m.project.name).slice(0, 40), 48, 76);
+    ctx.fillStyle = "#1a120a"; ctx.font = "20px system-ui, sans-serif";
+    const clip = (s, n) => { s = String(s); return s.length > n ? s.slice(0, n - 1) + "…" : s; };
+    const lines = [
+      `${m.project.salePrice.toFixed(2)} ${m.project.currency}/unit · wages ${m.profits.wages}% · maint ${m.profits.maintenance}% · dev ${m.profits.development}%`,
+      `Contributors: ${m.stats.contributors} · Total value: ${m.stats.totalValue.toFixed(2)} ${m.project.currency}`,
+      ""
+    ];
+    m.contributions.forEach(c =>
+      lines.push(`· ${c.who || "—"} — ${c.stage} (${c.ctype}): ${c.value.toFixed(2)}${c.notes ? "  — " + c.notes : ""}`));
+    const MAX = 18;
+    lines.slice(0, MAX).forEach((ln, i) => ctx.fillText(clip(ln, 80), 48, 140 + i * 30));
+    if (lines.length > MAX) ctx.fillText("…", 48, 140 + MAX * 30);   // never drop in silence
+    canvas.toBlob(cb, "image/jpeg", 0.92);
+  }
+
+  /* ── Download dispatcher — one hook vocabulary ── */
+  $$("[data-flove-save]").forEach(btn => btn.addEventListener("click", () => {
+    if (btn.disabled) return;
+    const m = buildModel(), fmt = btn.dataset.floveSave, base = fileBase();
+    if (fmt === "jpg"){
+      toJpg(m, b => {
+        if (!b) { toast("JPG failed"); return; }
+        downloadBlob(b, "image/jpeg", base + ".jpg");
+        toast("Exported JPG");
+      });
+      return;
+    }
+    const table = {
+      md:   [toMd(m),   "text/markdown"],
+      json: [toJson(m), "application/json"],
+      xml:  [toXml(m),  "application/xml"],
+      html: [toHtml(m), "text/html"],
+      csv:  [toCsv(m),  "text/csv"]
+    }[fmt];
+    if (!table) return;
+    downloadBlob(table[0], table[1], `${base}.${fmt}`);
+    toast("Exported " + fmt.toUpperCase());
+  }));
+
+  /* ── Share to mobile — Web Share + standalone HTML, guarded, with fallback ladder ── */
+  const shareBtn = $("#shareBtn");
+  shareBtn.addEventListener("click", async () => {
+    if (shareBtn.disabled) return;
+    const m = buildModel();
+    const title = "flove · crafty";
+    try {
+      const file = new File([toHtml(m)], fileBase() + ".html", { type: "text/html" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })){
+        await navigator.share({ title, text: m.phrase, files: [file] }); return;
+      }
+      if (navigator.share){ await navigator.share({ title, text: m.phrase }); return; }
+      await navigator.clipboard.writeText(m.phrase); toast("Copied — paste to share");
+    } catch(_){
+      try { await navigator.clipboard.writeText(m.phrase); toast("Copied — paste to share"); }
+      catch(__){ toast("Sharing not available"); }
+    }
+  });
+
+  $("#printBtn").addEventListener("click", () => window.print());
+  $("#resetBtn").addEventListener("click", () => {
+    if (!confirm("Clear all fields and contributions? This can't be undone.")) return;
+    try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+    ["prodName","salePrice","desc"].forEach(id => $("#"+id).value = "");
+    $("#currency").value = "EUR";
+    $("#poolPct").value = 70; $("#opsPct").value = 20; $("#treasuryPct").value = 10;
+    list.innerHTML = "";
+    addContrib({ who: "@you" });
+    go(1);
+    refresh();
+    toast("Reset done");
+  });
+
+  /* ===================== Submit ===================== */
+  $("#submitBtn").addEventListener("click", () => {
+    refresh();
+    if (!$("#consent").checked) {
+      toast("Please confirm the information is correct.");
+      $("#consent").focus();
+      return;
+    }
+    if (checkPool() !== 100) {
+      toast("Profit slices must add up to 100%.");
+      go(3);
+      return;
+    }
+    toast("✓ Submitted (demo)");
+  });
+
+  /* ===================== Wire up field changes for live refresh ===================== */
+  ["salePrice","currency","poolPct","opsPct","treasuryPct","prodName","desc","consent"].forEach(id => {
+    const el = $("#"+id);
+    if (!el) return;
+    ["input","change"].forEach(ev => el.addEventListener(ev, refresh));
+  });
+
+  /* ===================== Initial state ===================== */
+  if (!restore()) addContrib({ who: "@you" });
+  updateOnboarding(currentStep);
+  refresh();
+})();
+</script>
+</body>
+</html>

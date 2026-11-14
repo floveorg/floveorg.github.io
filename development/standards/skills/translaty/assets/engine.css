@@ -1,0 +1,32 @@
+/* translaty — page-translation engine + worldball switcher.
+   Inline this into the target app's <style>. Languages: en (default) + es.
+   Add a language X by appending its 3-line toggle block below and an option
+   to the worldball (see SKILL.md). */
+
+/* ── i18n span toggle (CSS-only): hide every non-active language ── */
+.es{display:none}                                  /* default view = .en */
+body:has(#lang-es:checked) .en{display:none}
+body:has(#lang-es:checked) .es{display:inline}
+/* per extra language X (code = the part after lang- in the radio id):
+.X{display:none}
+body:has(#lang-X:checked) .en{display:none}
+body:has(#lang-X:checked) .X{display:inline} */
+
+/* ── worldball switcher (🌐 opens the language options) ── */
+.lang{display:inline-block;position:relative;margin:.2rem 0 .6rem}
+.lang>summary{list-style:none;cursor:pointer;width:40px;height:40px;border:1px solid #999;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;font-size:1.35rem;line-height:1;-webkit-user-select:none;user-select:none}
+.lang>summary::-webkit-details-marker{display:none}
+.lang[open]>summary{border-color:#333;background:#f2f2f2}
+.lang-opts{position:absolute;right:0;z-index:10;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;
+  background:#fff;border:1px solid #999;border-radius:12px;padding:6px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+.lang input{position:absolute;opacity:0;pointer-events:none}
+.lang label{cursor:pointer;padding:0 12px;min-height:40px;display:inline-flex;align-items:center;border:1px solid #999;border-radius:11px;white-space:nowrap}
+.lang input:checked + label{background:#333;color:#fff;font-weight:bold;border-color:#333}
+
+@media (prefers-color-scheme:dark){
+  .lang>summary{border-color:#777} .lang[open]>summary{background:#2a2a2a;border-color:#999}
+  .lang-opts{background:#222;border-color:#777;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+  .lang label{border-color:#777}
+  .lang input:checked + label{background:#e9e9e9;color:#111;border-color:#e9e9e9}
+}

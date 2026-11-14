@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="theme-color" content="#fff8f1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="author" content="Marc (marcflove)">
+<meta name="description" content="Metaphysics · field page. Short and informal introductions, the full formal presentation, and each part playable on its own.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='12' y1='0' x2='88' y2='0' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='%23ff3344'/><stop offset='.5' stop-color='%23ff8a3a'/><stop offset='1' stop-color='%23ffd633'/></linearGradient></defs><path d='M50 60 C 22 60, 12 38, 16 18 C 38 22, 54 38, 50 60 Z' fill='url(%23g)'/><path d='M50 60 C 78 60, 88 38, 84 18 C 62 22, 46 38, 50 60 Z' fill='url(%23g)'/><path d='M50 58 C 50 72, 50 84, 50 92' stroke='url(%23g)' stroke-width='5' stroke-linecap='round' fill='none'/></svg>">
+<title>Metaphysics</title>
+<style>
+  :root{
+    --paper:#fff8f1;
+    --paper-2:#fff3e6;
+    --card:#fffdfa;
+    --ink:#211a24;
+    --muted:#6f6474;
+    --line:rgba(33,26,36,.13);
+    --line-soft:rgba(33,26,36,.08);
+    --accent:#ff5a3c;
+    --accent-2:#ffb03a;
+    --accent-3:#ffd633;
+    --tab-grey:#e8e2dd;
+    --shadow:0 18px 50px -28px rgba(64,35,20,.42);
+    --radius:22px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    color:var(--ink);
+    background:
+      radial-gradient(900px 520px at 88% -6%, rgba(255,214,51,.18), transparent 62%),
+      radial-gradient(820px 480px at 2% 24%, rgba(255,90,60,.10), transparent 60%),
+      var(--paper);
+    font:400 16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:rgba(255,176,58,.35)}
+  a{color:inherit}
+  img,svg,video{display:block}
+  .wrap{width:min(1040px,calc(100% - 2.4rem));margin-inline:auto}
+  .sr-only{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+    overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+  }
+
+  /* ── top bar ─────────────────────────────────────────────── */
+  .topbar{
+    display:flex;align-items:center;
+    padding:1.1rem 0 .2rem;
+  }
+  .brand{
+    display:inline-flex;align-items:center;gap:.58rem;
+    text-decoration:none;font-weight:750;letter-spacing:.015em;
+  }
+  .brand svg{width:30px;height:30px;flex:0 0 auto}
+  .brand .rest{color:var(--ink)}
+
+  .title-lockup{position:relative;display:inline-flex;align-items:center;gap:.55rem}
+  .search-btn{
+    display:inline-grid;place-items:center;width:2.25rem;height:2.25rem;
+    padding:0;border:1px solid var(--line);border-radius:10px;
+    background:var(--card);color:var(--ink);cursor:pointer;
+    transition:background .16s ease,color .16s ease,border-color .16s ease;
+  }
+  .search-btn:hover,.search-btn:focus-visible,.search-btn[aria-expanded="true"]{
+    background:var(--accent);border-color:var(--accent);color:#2a1300;
+  }
+  .search-btn svg{width:1.05rem;height:1.05rem}
+  .title-menu{
+    position:absolute;top:calc(100% + .55rem);left:0;z-index:30;
+    width:min(17rem,calc(100vw - 2rem));padding:.75rem;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow);
+  }
+  .title-menu[hidden]{display:none}
+  .menu-group + .menu-group{margin-top:.7rem;padding-top:.7rem;border-top:1px solid var(--line-soft)}
+  .menu-label{
+    margin:0 0 .3rem;padding:0 .35rem;color:var(--muted);
+    font-size:.68rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  }
+  .menu-link{
+    display:flex;align-items:center;justify-content:space-between;gap:.7rem;
+    width:100%;padding:.5rem .55rem;border:0;border-radius:8px;background:none;
+    color:inherit;text-align:left;text-decoration:none;cursor:pointer;
+    font:inherit;font-size:.9rem;font-weight:650;
+    transition:background .16s ease,color .16s ease;
+  }
+  .menu-link:hover,.menu-link:focus-visible{background:var(--paper-2);color:var(--accent)}
+
+  /* ── about modal ─────────────────────────────────────────── */
+  dialog.about{
+    width:min(620px,calc(100vw - 2.2rem));max-height:min(88svh,760px);
+    padding:0;border:1px solid var(--line);border-radius:26px;
+    background:var(--card);color:var(--ink);overflow:auto;
+    box-shadow:0 40px 110px -40px rgba(44,22,10,.72);
+  }
+  dialog.about::backdrop{background:rgba(34,20,12,.54);backdrop-filter:blur(3px)}
+  dialog.about[open]{animation:about-pop .24s ease-out}
+  @keyframes about-pop{
+    from{opacity:0;transform:translateY(12px) scale(.985)}
+    to{opacity:1;transform:none}
+  }
+  .about-inner{padding:clamp(1.3rem,4.2vw,2.1rem)}
+  .about-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
+  .about-kicker{
+    margin:0;color:var(--muted);font-size:.68rem;font-weight:800;
+    letter-spacing:.15em;text-transform:uppercase;
+  }
+  .about-top h2{margin:.3rem 0 0;font-size:clamp(1.3rem,3.4vw,1.62rem);letter-spacing:-.03em}
+  .about-close{
+    flex:0 0 auto;display:grid;place-items:center;width:2.3rem;height:2.3rem;
+    padding:0;border:1px solid var(--line);border-radius:50%;
+    background:var(--paper-2);color:var(--ink);font-size:1.15rem;line-height:1;cursor:pointer;
+    transition:background .16s ease,border-color .16s ease,color .16s ease;
+  }
+  .about-close:hover,.about-close:focus-visible{background:var(--accent);border-color:var(--accent);color:#2a1300}
+  .about-lead{margin:1rem 0 1.15rem;color:#493c4c;font-size:.94rem;line-height:1.6}
+  .about-list{display:grid;gap:.45rem;margin:0 0 1.2rem;padding:0;list-style:none}
+  .about-list li{
+    display:grid;grid-template-columns:auto minmax(0,1fr);gap:.75rem;align-items:start;
+    padding:.68rem .8rem;border:1px solid var(--line-soft);border-radius:14px;background:var(--paper-2);
+  }
+  .about-list .n{
+    display:inline-grid;place-items:center;min-width:1.55rem;height:1.55rem;
+    border-radius:999px;background:linear-gradient(120deg,#ffe1cd,#ffe9a8);
+    border:1px solid rgba(255,90,60,.18);color:#3a1b07;
+    font-size:.66rem;font-weight:800;letter-spacing:.06em;
+  }
+  .about-list strong{display:block;font-size:.9rem;line-height:1.3}
+  .about-list span{display:block;margin-top:.1rem;color:var(--muted);font-size:.82rem;line-height:1.45}
+  .about-links{display:flex;flex-wrap:wrap;gap:.4rem}
+  .about-links a{
+    display:inline-flex;align-items:center;gap:.3rem;padding:.42rem .72rem;
+    border:1px solid var(--line);border-radius:999px;background:var(--card);
+    color:var(--ink);font-size:.8rem;font-weight:700;text-decoration:none;
+    transition:background .16s ease,border-color .16s ease,color .16s ease;
+  }
+  .about-links a:hover,.about-links a:focus-visible{background:var(--accent);border-color:var(--accent);color:#2a1300}
+
+  /* ── sections ────────────────────────────────────────────── */
+  main{padding-bottom:4rem}
+  .section{
+    padding:clamp(2rem,4.5vw,3.2rem) 0;
+    border-top:1px solid var(--line-soft);
+    scroll-margin-top:1.2rem;
+  }
+  .section-head{margin-bottom:1rem}
+  h2{margin:0;font-size:clamp(1.08rem,2vw,1.32rem);line-height:1.15;letter-spacing:-.02em}
+  .title-link{
+    color:inherit;text-decoration:none;
+    transition:color .16s ease;
+  }
+  .title-link:hover,.title-link:focus-visible{color:var(--accent)}
+
+  /* ── video frame + tabs on its border ───────────────────── */
+  .video-block{margin:0;min-width:0}
+  .video-frame{
+    position:relative;overflow:hidden;border-radius:var(--radius) var(--radius) 0 0;
+    border:1px solid var(--line);background:#0c090e;
+    box-shadow:var(--shadow);
+  }
+  .video-frame::after{
+    content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+  }
+  .video-frame video{width:100%;aspect-ratio:16/9;height:auto;background:#0c090e}
+  .video-thumb{display:block;position:relative;aspect-ratio:16/9;background:#0c090e}
+  .video-thumb img{display:block;width:100%;height:100%;object-fit:cover}
+  .video-play{position:absolute;inset:0;display:grid;place-items:center}
+  .video-play::before{
+    content:"▶";display:grid;place-items:center;width:3.1rem;height:3.1rem;
+    padding-left:.18rem;border-radius:999px;border:1px solid rgba(255,255,255,.55);
+    background:rgba(18,10,14,.6);color:#fff;font-size:.9rem;
+    backdrop-filter:blur(2px);transition:background .16s ease,transform .16s ease;
+  }
+  .video-thumb:hover .video-play::before,
+  .video-thumb:focus-visible .video-play::before{background:var(--accent);color:#2a1300;transform:scale(1.06)}
+  .video-thumb:focus-visible{outline:3px solid rgba(255,90,60,.55);outline-offset:3px}
+
+  .frame-tabs{
+    display:flex;flex-wrap:wrap;gap:.32rem;
+    margin:0;padding:0 .55rem .55rem;
+    background:var(--card);
+    border:1px solid var(--line);border-top:0;
+    border-radius:0 0 var(--radius) var(--radius);
+  }
+  .frame-tabs .tab{
+    appearance:none;-webkit-appearance:none;
+    display:inline-flex;align-items:center;gap:.4rem;
+    padding:.46rem .9rem;border:1px solid var(--line);border-top:0;border-radius:0;
+    background:var(--tab-grey);color:var(--ink);
+    font:inherit;font-size:.82rem;font-weight:700;text-decoration:none;cursor:pointer;
+    transition:background .16s ease,color .16s ease,border-color .16s ease;
+  }
+  .frame-tabs .tab:hover,
+  .frame-tabs .tab:focus-visible,
+  .frame-tabs .tab:active,
+  .frame-tabs .tab[aria-expanded="true"]{
+    background:var(--accent);border-color:var(--accent);color:#2a1300;
+  }
+  .frame-tabs .tab .play{font-size:.72rem}
+  .chev{font-size:.72rem;transition:transform .16s ease}
+  .frame-tabs .tab[aria-expanded="true"] .chev{transform:rotate(180deg)}
+
+  .expand-panel{margin-top:1rem}
+  .expand-panel[hidden]{display:none}
+  .frame-tabs .tab:focus-visible,.title-link:focus-visible,
+  .media-link:focus-visible,.link-item:focus-visible{
+    outline:3px solid rgba(255,90,60,.55);outline-offset:3px;
+  }
+
+  /* ── songs / know more lists ─────────────────────────────── */
+  .media-list{display:grid;gap:.6rem;margin:0;padding:0;list-style:none}
+  .media-item{
+    display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;
+    gap:.55rem .8rem;padding:.82rem .95rem;border:1px solid var(--line-soft);
+    border-radius:16px;background:var(--card);min-width:0;
+  }
+  .media-ico{
+    width:2.35rem;height:2.35rem;border-radius:12px;display:grid;place-items:center;
+    background:linear-gradient(145deg,#fff0e2,#ffe6a9);font-size:1.02rem;
+    border:1px solid rgba(255,176,58,.22);
+  }
+  .media-body{min-width:0}
+  .media-name{display:block;font-weight:700;line-height:1.25;overflow-wrap:anywhere}
+  .media-kind{display:block;color:var(--muted);font-size:.78rem;margin-top:.1rem}
+  .media-item audio{grid-column:1/-1;width:100%;max-width:100%;height:2.1rem}
+  .media-link{
+    grid-column:1/-1;justify-content:center;
+    display:inline-flex;align-items:center;gap:.35rem;padding:.42rem .8rem;
+    border-radius:0;border:1px solid var(--line);background:var(--tab-grey);
+    color:var(--ink);font-size:.8rem;font-weight:700;text-decoration:none;white-space:nowrap;
+    transition:background .16s ease,color .16s ease,border-color .16s ease;
+  }
+  .media-link:hover,.media-link:active{
+    background:var(--accent);border-color:var(--accent);color:#2a1300;
+  }
+
+  .link-list{margin:0;padding:0;list-style:none;display:grid;gap:.55rem}
+  .link-item{
+    display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;
+    gap:.75rem 1rem;padding:.85rem .95rem;border:1px solid var(--line-soft);
+    border-radius:16px;background:var(--card);text-decoration:none;min-width:0;
+    transition:border-color .18s ease,background .18s ease,transform .18s ease;
+  }
+  .link-item:hover{border-color:rgba(255,90,60,.35);background:var(--paper-2);transform:translateY(-1px)}
+  .link-body{min-width:0}
+  .link-name{display:block;font-weight:750;line-height:1.25;overflow-wrap:anywhere}
+  .link-desc{display:block;color:var(--muted);font-size:.8rem;margin-top:.12rem}
+  .link-item .arrow{color:var(--muted);font-weight:800}
+  .link-item:hover .arrow{color:var(--accent)}
+
+  /* ── field sections ──────────────────────────────────────── */
+  .field-sec:first-of-type{border-top:0;padding-top:clamp(1.2rem,3vw,2rem)}
+  .field-sec + .field-sec{margin-top:clamp(3.5rem,7vw,4.8rem)}
+  .field-sec .section-head{margin-bottom:1.2rem}
+  .field-sec .section-head h2{
+    font-size:clamp(1.35rem,2.8vw,1.78rem);
+    text-transform:uppercase;letter-spacing:.05em;
+  }
+  .section-note{margin:.4rem 0 0;color:var(--muted);font-size:.9rem;max-width:58ch}
+  .field-row{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:clamp(1rem,2.6vw,2rem);align-items:start;
+    padding:0 0 clamp(1.3rem,3vw,1.9rem);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .field-row > .subsection{padding:0;min-width:0}
+  .subhead{margin:0 0 .8rem;font-size:clamp(1rem,1.9vw,1.16rem);letter-spacing:-.015em;line-height:1.2}
+
+  /* ── paradigm row (second row of each field) ─────────────── */
+  .paradigms-title{
+    margin:clamp(1.3rem,3vw,1.8rem) 0 1rem;
+    font-size:clamp(1rem,1.9vw,1.16rem);font-weight:800;
+    text-align:center;text-transform:uppercase;letter-spacing:.12em;
+  }
+  .paradigm-row{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:clamp(.9rem,2vw,1.2rem);margin-top:0;
+    align-items:stretch;
+  }
+  .paradigm-card{
+    display:grid;grid-template-columns:minmax(0,1fr);
+    gap:clamp(.9rem,2vw,1.2rem);align-content:start;align-items:center;
+    padding:clamp(1rem,2.4vw,1.35rem);text-align:center;
+    border:1px solid var(--line);border-radius:26px;background:var(--card);
+    box-shadow:0 14px 40px -34px rgba(64,35,20,.55);
+    min-width:0;scroll-margin-top:1.2rem;
+  }
+  .paradigm-body{min-width:0}
+  .paradigm-card h4{
+    margin:0;font-size:clamp(1.15rem,2.2vw,1.42rem);
+    letter-spacing:-.01em;line-height:1.15;
+  }
+  .paradigm-card .video-frame{box-shadow:0 14px 38px -30px rgba(64,35,20,.65)}
+  .part-desc{margin:.5rem auto 0;max-width:44ch;color:#4a3d4d;font-size:.88rem;line-height:1.55}
+
+  /* ── footer ──────────────────────────────────────────────── */
+  footer{
+    border-top:1px solid var(--line-soft);padding:2rem 0 3rem;
+    color:var(--muted);font-size:.84rem;
+  }
+  .footer-row{display:flex;align-items:center;justify-content:space-between;gap:1rem 1.6rem;flex-wrap:wrap}
+  .footer-brand{display:inline-flex;align-items:center;gap:.55rem;font-weight:750;color:var(--ink);text-decoration:none}
+  .footer-brand svg{width:26px;height:26px}
+  .footer-links{display:flex;flex-wrap:wrap;gap:.35rem .95rem}
+  .footer-links a{text-decoration:none;font-weight:600}
+  .footer-links a:hover{color:var(--accent)}
+
+  /* ── motion ──────────────────────────────────────────────── */
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    *{animation:none !important;transition:none !important}
+  }
+
+  /* ── responsive ──────────────────────────────────────────── */
+  @media (max-width:860px){
+    .field-row,.paradigm-row{grid-template-columns:minmax(0,1fr)}
+  }
+  @media (max-width:720px){
+    .wrap{width:min(100% - 1.6rem,1040px)}
+    .topbar{padding-top:.85rem}
+    .link-item{grid-template-columns:auto minmax(0,1fr) auto;gap:.55rem .7rem}
+    .paradigm-card{padding:1rem}
+  }
+  @media (max-width:460px){
+    .frame-tabs .tab{flex:1 1 auto;justify-content:center}
+  }
+
+</style>
+<link rel="stylesheet" href="../whole.css">
+<script>try{var t=localStorage.getItem("flove:theme");if(t==="light"||t==="dark"){document.documentElement.dataset.theme=t}else if(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.dataset.theme="dark"}}catch(e){}</script>
+</head>
+<body>
+<header class="whole-top"><div class="whole-wrap whole-top__in"><div class="whole-brand-wrap"><button class="whole-brand" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="whole-menu" title="Menu"><span class="whole-logo" aria-hidden="true"><svg class="whole-sprout" viewBox="0 0 100 100" width="27" height="27" aria-hidden="true"><defs><linearGradient id="wholeSproutGrad" x1="12" y1="0" x2="88" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff3344"/><stop offset=".5" stop-color="#ff8a3a"/><stop offset="1" stop-color="#ffd633"/></linearGradient></defs><path d="M50 60C22 60 12 38 16 18C38 22 54 38 50 60Z" fill="url(#wholeSproutGrad)"/><path d="M50 60C78 60 88 38 84 18C62 22 46 38 50 60Z" fill="url(#wholeSproutGrad)"/><path d="M50 58C50 72 50 84 50 92" stroke="url(#wholeSproutGrad)" stroke-width="5" stroke-linecap="round" fill="none"/></svg></span><span class="whole-title">whole</span></button><div class="whole-menu" id="whole-menu" hidden><a href="https://github.com/floveorg/floveorg.github.io/blob/main/whole/README.md" target="_blank" rel="noopener">About <small>wiki ↗</small></a><a href="https://github.com/floveorg/floveorg.github.io/tree/main/whole" target="_blank" rel="noopener">Download <small>GitHub ↗</small></a><a href="https://github.com/floveorg/floveorg.github.io/commits/main/whole" target="_blank" rel="noopener">Updates <small>recent changes ↗</small></a><span class="whole-menu__last">Last updated <time data-whole-updated>recently</time></span><div class="whole-menu__sep"></div><p class="whole-menu__k">Flove</p><a href="https://flove.org/docs/index.html">Docs</a><a href="https://flove.org/development/">Development</a><a href="https://flove.org/development/blog/">News</a><a href="https://flove.org/">Home</a></div></div><nav class="whole-pages" aria-label="Wiki pages"><a href="../">Whole</a><a href="../metaphysics/" aria-current="page">Metaphysics</a><a href="../science/">Science</a><a href="../biology/">Biology</a><span class="whole-parent"><a class="whole-parent-link" href="../linguistics/">Language</a><div class="whole-child-menu" id="whole-sub-linguistics" hidden><a href="../linguistics/music/">Music</a></div></span><span class="whole-parent"><a class="whole-parent-link" href="../psychosocial/">Psychosocial</a><div class="whole-child-menu" id="whole-sub-psychosocial" hidden><a href="../economy/">Economy</a></div></span></nav></div></header>
+
+<div class="wrap">
+
+  <h1 class="sr-only">Metaphysics</h1>
+
+  <main>
+
+    <!-- ═══════════ 1 · METAPHYSICS ═══════════ -->
+    <section class="section field-sec" id="metaphysics" aria-labelledby="metaphysics-h">
+      <div class="section-head"><div class="whole-title-row"><h2 id="metaphysics-h"><span class="whole-substance">X</span><a class="title-link" href="#metaphysics">Metaphysics</a></h2><button class="whole-theme-toggle" type="button" aria-label="Toggle theme" aria-pressed="false" title="Toggle theme" data-whole-theme-toggle><span aria-hidden="true">◐</span></button></div></div>
+
+      <div class="field-row">
+        <div class="subsection">
+          <h3 class="subhead" id="short"><a class="title-link" href="#short">Short &amp; Informal</a></h3>
+          <div class="video-block">
+            <div class="video-frame">
+              <a class="video-thumb" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/MetasIntro.mp4" data-video-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/MetasIntro.mp4" data-video-label="Metaphysics — short and informal introduction" aria-label="Play: Metaphysics — short and informal introduction">
+                <img src="thumbs/MetasIntro.jpg" alt="" width="640" height="360" loading="lazy">
+                <span class="video-play" aria-hidden="true"></span>
+              </a>
+            </div>
+
+            <div class="tabs-wrap">
+              <div class="frame-tabs" role="group" aria-label="Short and Informal extras">
+                <button class="tab" id="tab-songs" type="button" data-expand aria-expanded="false" aria-controls="panel-songs">
+                  Songs <span class="chev" aria-hidden="true">▾</span>
+                </button>
+                <a class="tab" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/3111ElectrOrchestra/FloveIntroElectrOrchestra.mp4" target="_blank" rel="noopener">Longer (13 min.) <span aria-hidden="true">↗</span></a>
+                <a class="tab" href="https://flove.org/marc" target="_blank" rel="noopener">Author <span aria-hidden="true">→</span></a>
+              </div>
+
+              <div id="panel-songs" class="expand-panel" hidden>
+                <ul class="media-list">
+                  <li class="media-item">
+                    <span class="media-ico" aria-hidden="true">🎵</span>
+                    <span class="media-body">
+                      <span class="media-name">Simplex</span>
+                      <span class="media-kind">Song · 2:32</span>
+                    </span>
+                    <audio controls preload="none" src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/Songs/Simplex.mp3" aria-label="Play Simplex"></audio>
+                  </li>
+                  <li class="media-item">
+                    <span class="media-ico" aria-hidden="true">🎵</span>
+                    <span class="media-body">
+                      <span class="media-name">Tantas</span>
+                      <span class="media-kind">Song · 3:20</span>
+                    </span>
+                    <audio controls preload="none" src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/Songs/Tantas.mp3" aria-label="Play Tantas"></audio>
+                  </li>
+                  <li class="media-item">
+                    <span class="media-ico" aria-hidden="true">🎵</span>
+                    <span class="media-body">
+                      <span class="media-name">More</span>
+                      <span class="media-kind">Song · 1:32</span>
+                    </span>
+                    <audio controls preload="none" src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/Songs/More.mp3" aria-label="Play More"></audio>
+                  </li>
+                  <li class="media-item">
+                    <span class="media-ico" aria-hidden="true">🎵</span>
+                    <span class="media-body">
+                      <span class="media-name">Docs</span>
+                      <span class="media-kind">Song · 3:59</span>
+                    </span>
+                    <audio controls preload="none" src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/Songs/Docs.mp3" aria-label="Play Docs"></audio>
+                  </li>
+                  <li class="media-item">
+                    <span class="media-ico" aria-hidden="true">🎬</span>
+                    <span class="media-body">
+                      <span class="media-name">Holis</span>
+                      <span class="media-kind">Videoclip · 64.2 MB</span>
+                    </span>
+                    <a class="media-link" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/Songs/Holis.mp4" target="_blank" rel="noopener">Watch <span aria-hidden="true">↗</span></a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="subsection">
+          <h3 class="subhead" id="full"><a class="title-link" href="#full">Full &amp; Formal</a></h3>
+          <div class="video-block">
+            <div class="video-frame">
+              <a class="video-thumb" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/MetaPhysics-Intro-Full.mp4" data-video-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/MetaPhysics-Intro-Full.mp4" data-video-label="Metaphysics — full formal presentation" aria-label="Play: Metaphysics — full formal presentation">
+                <img src="thumbs/MetaPhysics-Intro-Full.jpg" alt="" width="640" height="360" loading="lazy">
+                <span class="video-play" aria-hidden="true"></span>
+              </a>
+            </div>
+
+            <div class="tabs-wrap">
+              <div class="frame-tabs" role="group" aria-label="Full and Formal extras">
+                <button class="tab" id="tab-more" type="button" data-expand aria-expanded="false" aria-controls="panel-more">
+                  Know more <span class="chev" aria-hidden="true">▾</span>
+                </button>
+              </div>
+
+              <div id="panel-more" class="expand-panel" hidden>
+                <ul class="link-list">
+                  <li>
+                    <a class="link-item" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/Metaphysics26-2.pdf" target="_blank" rel="noopener">
+                      <span class="media-ico" aria-hidden="true">📄</span>
+                      <span class="link-body"><span class="link-name">Metaphysics26-2.pdf</span><span class="link-desc">The presentation index · 1.2 MB</span></span>
+                      <span class="arrow" aria-hidden="true">↗</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a class="link-item" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/Confluentisms25.10.pdf" target="_blank" rel="noopener">
+                      <span class="media-ico" aria-hidden="true">📄</span>
+                      <span class="link-body"><span class="link-name">Confluentisms25.10.pdf</span><span class="link-desc">The confluentist paper · 7.3 MB</span></span>
+                      <span class="arrow" aria-hidden="true">↗</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a class="link-item" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/Confluentism25.10.odt" target="_blank" rel="noopener">
+                      <span class="media-ico" aria-hidden="true">📝</span>
+                      <span class="link-body"><span class="link-name">Confluentism25.10.odt</span><span class="link-desc">Editable source · 53 KB</span></span>
+                      <span class="arrow" aria-hidden="true">↗</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a class="link-item" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/Metaphysics-IntroAI-Full.mp3" target="_blank" rel="noopener">
+                      <span class="media-ico" aria-hidden="true">🔊</span>
+                      <span class="link-body"><span class="link-name">Metaphysics-IntroAI-Full.mp3</span><span class="link-desc">Full spoken introduction · 28.6 MB</span></span>
+                      <span class="arrow" aria-hidden="true">↗</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a class="link-item" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/MEtaphysics-IntroAI-Short.mp3" target="_blank" rel="noopener">
+                      <span class="media-ico" aria-hidden="true">🔊</span>
+                      <span class="link-body"><span class="link-name">MEtaphysics-IntroAI-Short.mp3</span><span class="link-desc">Short spoken introduction · 7.0 MB</span></span>
+                      <span class="arrow" aria-hidden="true">↗</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a class="link-item" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/CosmoSystems25.mp4" target="_blank" rel="noopener">
+                      <span class="media-ico" aria-hidden="true">🎬</span>
+                      <span class="link-body"><span class="link-name">CosmoSystems25.mp4</span><span class="link-desc">Nested-systems animation · 829 KB</span></span>
+                      <span class="arrow" aria-hidden="true">↗</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a class="link-item" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/Songs/HolisPics.pdf" target="_blank" rel="noopener">
+                      <span class="media-ico" aria-hidden="true">🖼️</span>
+                      <span class="link-body"><span class="link-name">HolisPics.pdf</span><span class="link-desc">The holis image set · 3.1 MB</span></span>
+                      <span class="arrow" aria-hidden="true">↗</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="paradigms-title">Paradigms</h3>
+
+      <div class="paradigm-row">
+        <article class="paradigm-card" id="simplex" aria-labelledby="simplex-h">
+          <div class="paradigm-body">
+            <h4 id="simplex-h"><a class="title-link" href="#simplex">Simplex</a></h4>
+            <p class="part-desc">Simplicity as the final step of sophistication.</p>
+          </div>
+          <div class="video-block">
+            <div class="video-frame">
+              <a class="video-thumb" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/MetaPhysics-Intro-Short.mp4" data-video-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/MetaPhysics-Intro-Short.mp4" data-video-label="Simplex — simplicity as the final step of sophistication" aria-label="Play: Simplex — simplicity as the final step of sophistication">
+                <img src="thumbs/MetaPhysics-Intro-Short.jpg" alt="" width="640" height="360" loading="lazy">
+                <span class="video-play" aria-hidden="true"></span>
+              </a>
+            </div>
+            <div class="frame-tabs" role="group" aria-label="Simplex extras">
+              <a class="tab" href="/apps/puzzy/keys/keys-advanced.html" target="_blank" rel="noopener">
+                <span class="play" aria-hidden="true">▶</span> Keys
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <article class="paradigm-card paradigm-card--related" id="panbitheism" aria-labelledby="panbitheism-h">
+          <div class="paradigm-body">
+            <h4 id="panbitheism-h"><a class="title-link" href="#panbitheism">PanBitheism</a></h4>
+            <p class="part-desc">A genesic couple in everything.</p>
+          </div>
+          <div class="video-block">
+            <!-- TODO: replace with the PanBitheism video. -->
+            <div class="video-frame">
+              <a class="video-thumb" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/MetaPhysics-Intro-Full.mp4" data-video-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/MetaPhysics-Intro-Full.mp4" data-video-label="PanBitheism — related paradigm presentation" aria-label="Play: PanBitheism — related paradigm presentation">
+                <img src="thumbs/MetaPhysics-Intro-Full.jpg" alt="" width="640" height="360" loading="lazy">
+                <span class="video-play" aria-hidden="true"></span>
+              </a>
+            </div>
+          </div>
+        </article>
+      </div>
+    <div class="whole-subapps"><p class="whole-subapps__label">Apps</p><div class="whole-subapps__grid"><a class="whole-appcard" id="app-keys" href="../../apps/puzzy/keys/keys-advanced.html" data-context="X" data-tag="Flove keywords" data-cat="Inside" data-long="The visual keys of the flove language: symbols, glyphs and shortcuts." data-vals="keys|symbols|glyphs|alphabet|shortcuts|language"><span class="whole-appcard__shot"><img src="../../central/shared/media/images/apps/captions/keys.png" alt="" loading="lazy" width="96" height="60"></span><span class="whole-appcard__body"><span class="whole-appcard__name">Keys</span><span class="whole-appcard__desc">The visual keys of the flove language: symbols, glyphs and shortcuts.</span></span><span class="whole-appcard__go">Preview →</span></a><a class="whole-appcard" id="app-goddy" href="../../apps/metas/goddy.html" data-context="X" data-tag="archetype &amp; matrix" data-cat="Inside" data-long="The archetype of the mother-goddess as creative matrix." data-vals="goddess|matrix|archetype|cosmos|origin|meditation"><span class="whole-appcard__shot"><img src="../../central/shared/media/images/apps/captions/goddy.png" alt="" loading="lazy" width="96" height="60"></span><span class="whole-appcard__body"><span class="whole-appcard__name">Goddy</span><span class="whole-appcard__desc">The archetype of the mother-goddess as creative matrix.</span></span><span class="whole-appcard__go">Preview →</span></a></div></div></section>
+  <!-- ════════════ ALBUM · Metaphysics ════════════ -->
+  <section class="album album--metaphysics" id="album-metaphysics" aria-labelledby="album-title-metaphysics">
+    <div class="album-shell">
+      <div class="album-cover">
+        <span class="album-disc" aria-hidden="true"></span>
+        <div class="album-cover-top">
+          <span class="album-label">flove</span>
+          <span class="album-cat">LP · 2026</span>
+        </div>
+        <div class="album-cover-mid">
+          <p class="album-kicker">the informal side</p>
+          <h2 class="album-title" id="album-title-metaphysics"><span>Meta</span><span>physics</span></h2>
+          <p class="album-sub">songs &amp; clips</p>
+        </div>
+        <div class="album-cover-bot">
+          <span class="album-side">SIDE A · 6 TRACKS</span>
+          <svg class="album-barcode" viewBox="0 0 160 30" aria-hidden="true" focusable="false">
+            <g fill="currentColor"><rect x="2" y="0" width="2" height="30"/><rect x="7" y="0" width="4" height="30"/><rect x="14" y="0" width="2" height="30"/><rect x="19" y="0" width="5" height="30"/><rect x="27" y="0" width="2" height="30"/><rect x="32" y="0" width="3" height="30"/><rect x="38" y="0" width="5" height="30"/><rect x="46" y="0" width="2" height="30"/><rect x="51" y="0" width="2" height="30"/><rect x="56" y="0" width="4" height="30"/><rect x="63" y="0" width="3" height="30"/><rect x="69" y="0" width="2" height="30"/><rect x="74" y="0" width="5" height="30"/><rect x="82" y="0" width="2" height="30"/><rect x="87" y="0" width="3" height="30"/><rect x="93" y="0" width="2" height="30"/><rect x="98" y="0" width="5" height="30"/><rect x="106" y="0" width="2" height="30"/><rect x="111" y="0" width="4" height="30"/><rect x="118" y="0" width="2" height="30"/><rect x="123" y="0" width="3" height="30"/><rect x="129" y="0" width="5" height="30"/><rect x="137" y="0" width="2" height="30"/><rect x="142" y="0" width="4" height="30"/><rect x="149" y="0" width="2" height="30"/><rect x="154" y="0" width="3" height="30"/></g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="album-side-col">
+        <div class="album-head">
+          <p class="album-eyebrow">tracklist</p>
+          <p class="album-meta">4 songs, 2 clips — press play to stream</p>
+        </div>
+        <div class="album-list album-list--songs">
+          <p class="album-list-title album-list-title--songs"><span class="album-list-n">04</span>Songs</p>
+          <ol class="album-tracks">
+            <li class="track track--song" data-kind="song" data-title="Docs" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/Songs/Docs.mp3">
+            <button class="track-btn" type="button" aria-label="Play Docs">
+              <span class="track-num">01</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">Docs</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+            <li class="track track--song" data-kind="song" data-title="More" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/Songs/More.mp3">
+            <button class="track-btn" type="button" aria-label="Play More">
+              <span class="track-num">02</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">More</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+            <li class="track track--song" data-kind="song" data-title="Simplex" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/Songs/Simplex.mp3">
+            <button class="track-btn" type="button" aria-label="Play Simplex">
+              <span class="track-num">03</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">Simplex</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+            <li class="track track--song" data-kind="song" data-title="Tantas" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/Songs/Tantas.mp3">
+            <button class="track-btn" type="button" aria-label="Play Tantas">
+              <span class="track-num">04</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">Tantas</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+          </ol>
+        </div>
+        <div class="album-list album-list--videos">
+          <p class="album-list-title album-list-title--videos"><span class="album-list-n">02</span>Videos</p>
+          <ol class="album-tracks">
+            <li class="track track--video" data-kind="video" data-title="Holis" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/Songs/Holis.mp4">
+            <button class="track-btn" type="button" aria-label="Watch Holis (opens in a new tab)">
+              <span class="track-num">01</span>
+              <span class="track-icon" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg></span>
+              <span class="track-name">Holis <span aria-hidden="true">↗</span></span>
+              <span class="track-type">clip</span>
+            </button>
+          </li>
+            <li class="track track--video" data-kind="video" data-title="CosmoSystems" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/Songs/CosmoSystems25.mp4">
+            <button class="track-btn" type="button" aria-label="Watch CosmoSystems (opens in a new tab)">
+              <span class="track-num">02</span>
+              <span class="track-icon" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg></span>
+              <span class="track-name">CosmoSystems <span aria-hidden="true">↗</span></span>
+              <span class="track-type">clip</span>
+            </button>
+          </li>
+          </ol>
+        </div>
+        <p class="album-note">
+          <span><b>Songs</b> mostly in Spanish</span>
+          <span><b>Clips</b> open in a new tab</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+
+    <!-- ═══════════ 2 · TELEOLOGY ═══════════ -->
+    <section class="section field-sec" id="teleology" aria-labelledby="teleology-h">
+      <div class="section-head">
+        <h2 id="teleology-h"><span class="whole-substance">WHY</span><a class="title-link" href="#teleology">Tele(axi)ology</a></h2>
+        <p class="section-note">WHY · The first intention: why is there anything?</p>
+      </div>
+
+      <div class="field-row">
+        <div class="subsection">
+          <h3 class="subhead" id="teleology-short"><a class="title-link" href="#teleology-short">Short &amp; Informal</a></h3>
+          <div class="video-block">
+            <div class="video-frame">
+              <a class="video-thumb" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/Songs/TeleoSnakes.mp4" data-video-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/Songs/TeleoSnakes.mp4" data-video-label="Teleology — short and informal introduction" aria-label="Play: Teleology — short and informal introduction">
+                <img src="thumbs/TeleoSnakes.jpg" alt="" width="640" height="360" loading="lazy">
+                <span class="video-play" aria-hidden="true"></span>
+              </a>
+            </div>
+            <div class="frame-tabs" role="group" aria-label="Teleology short extras">
+              <a class="tab" href="/apps/metas/willy.html" target="_blank" rel="noopener">
+                <span class="play" aria-hidden="true">▶</span> Play it
+              </a>
+              <a class="tab" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/VirtueSins-Intro.m4a" target="_blank" rel="noopener">Audio intro <span aria-hidden="true">↗</span></a>
+            </div>
+          </div>
+        </div>
+
+        <div class="subsection">
+          <h3 class="subhead" id="teleology-full"><a class="title-link" href="#teleology-full">Full &amp; Formal</a></h3>
+          <div class="video-block">
+            <!-- TODO: replace with the full Teleology video. -->
+            <div class="video-frame">
+              <a class="video-thumb" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/MetaPhysics-Intro-Full.mp4" data-video-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/MetaPhysics-Intro-Full.mp4" data-video-label="Teleology — full and formal presentation" aria-label="Play: Teleology — full and formal presentation">
+                <img src="thumbs/MetaPhysics-Intro-Full.jpg" alt="" width="640" height="360" loading="lazy">
+                <span class="video-play" aria-hidden="true"></span>
+              </a>
+            </div>
+            <div class="tabs-wrap">
+              <div class="frame-tabs" role="group" aria-label="Teleology formal extras">
+                <button class="tab" id="tab-teleology-more" type="button" data-expand aria-expanded="false" aria-controls="panel-teleology-more">
+                  Know more <span class="chev" aria-hidden="true">▾</span>
+                </button>
+              </div>
+              <div id="panel-teleology-more" class="expand-panel" hidden>
+                <ul class="link-list">
+                  <li>
+                    <a class="link-item" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/Compatibilism25.10.odt" target="_blank" rel="noopener">
+                      <span class="media-ico" aria-hidden="true">📝</span>
+                      <span class="link-body"><span class="link-name">Compatibilism25.10.odt</span><span class="link-desc">Teleology paper · 201 KB</span></span>
+                      <span class="arrow" aria-hidden="true">↗</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a class="link-item" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/VirtueSins-Intro.m4a" target="_blank" rel="noopener">
+                      <span class="media-ico" aria-hidden="true">🔊</span>
+                      <span class="link-body"><span class="link-name">VirtueSins-Intro.m4a</span><span class="link-desc">Spoken introduction · 1.1 MB</span></span>
+                      <span class="arrow" aria-hidden="true">↗</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a class="link-item" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/Compatibilism-IntroAI.m4a" target="_blank" rel="noopener">
+                      <span class="media-ico" aria-hidden="true">🔊</span>
+                      <span class="link-body"><span class="link-name">Compatibilism-IntroAI.m4a</span><span class="link-desc">Spoken introduction · 4.8 MB</span></span>
+                      <span class="arrow" aria-hidden="true">↗</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="paradigms-title">Paradigms</h3>
+
+      <div class="paradigm-row">
+        <article class="paradigm-card" id="compatibilism" aria-labelledby="compatibilism-h">
+          <div class="paradigm-body">
+            <h4 id="compatibilism-h"><a class="title-link" href="#compatibilism">Compatibilism</a></h4>
+            <p class="part-desc">Superdeterminism and free will coexist.</p>
+          </div>
+          <div class="video-block">
+            <div class="video-frame">
+              <a class="video-thumb" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/Songs/Human-Limbo.mp4" data-video-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/Songs/Human-Limbo.mp4" data-video-label="Compatibilism — superdeterminism and free will coexist" aria-label="Play: Compatibilism — superdeterminism and free will coexist">
+                <img src="thumbs/Human-Limbo.jpg" alt="" width="640" height="360" loading="lazy">
+                <span class="video-play" aria-hidden="true"></span>
+              </a>
+            </div>
+            <div class="frame-tabs" role="group" aria-label="Compatibilism extras">
+              <a class="tab" href="/apps/metas/willy.html" target="_blank" rel="noopener">
+                <span class="play" aria-hidden="true">▶</span> Willy
+              </a>
+              <a class="tab" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/Compatibilism-IntroAI.m4a" target="_blank" rel="noopener">Audio intro <span aria-hidden="true">↗</span></a>
+            </div>
+          </div>
+        </article>
+
+        <article class="paradigm-card paradigm-card--related" id="doctrine" aria-labelledby="doctrine-h">
+          <div class="paradigm-body">
+            <h4 id="doctrine-h"><a class="title-link" href="#doctrine">Cathy</a></h4>
+            <p class="part-desc">Final moral positions.</p>
+          </div>
+          <div class="video-block">
+            <!-- TODO: replace with the Cathy video. -->
+            <div class="video-frame">
+              <a class="video-thumb" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/MetaPhysics-Intro-Full.mp4" data-video-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/MetaPhysics-Intro-Full.mp4" data-video-label="Cathy — related paradigm presentation" aria-label="Play: Cathy — related paradigm presentation">
+                <img src="thumbs/MetaPhysics-Intro-Full.jpg" alt="" width="640" height="360" loading="lazy">
+                <span class="video-play" aria-hidden="true"></span>
+              </a>
+            </div>
+          </div>
+        </article>
+      </div>
+    <div class="whole-subapps"><p class="whole-subapps__label">Apps</p><div class="whole-subapps__grid"><a class="whole-appcard" id="app-willy" href="../../apps/metas/willy.html" data-context="WHY" data-tag="teleological wills" data-cat="Inside" data-long="Drag the four wills onto the axis arms — where each will sits is your stance." data-vals="wills|teleology|stance|axis"><span class="whole-appcard__shot"><img src="../../central/shared/media/images/apps/captions/willy.png" alt="" loading="lazy" width="96" height="60"></span><span class="whole-appcard__body"><span class="whole-appcard__name">Willy</span><span class="whole-appcard__desc">Drag the four wills onto the axis arms — where each will sits is your stance.</span></span><span class="whole-appcard__go">Preview →</span></a><a class="whole-appcard" id="app-moraly" href="../../apps/metas/moraly.html" data-context="WHY" data-tag="commandments · sins" data-cat="Inside" data-long="Drag commandments and sins across the diagonal square — where each one sits is your moral stance." data-vals="commandments|sins|virtues|morals|stance|axis"><span class="whole-appcard__shot"><img src="../../central/shared/media/images/apps/captions/moraly.png" alt="" loading="lazy" width="96" height="60"></span><span class="whole-appcard__body"><span class="whole-appcard__name">Cathy</span><span class="whole-appcard__desc">Drag commandments and sins across the diagonal square — where each one sits is your moral stance.</span></span><span class="whole-appcard__go">Preview →</span></a></div></div></section>
+  <!-- ════════════ ALBUM · Teleology ════════════ -->
+  <section class="album album--teleology" id="album-teleology" aria-labelledby="album-title-teleology">
+    <div class="album-shell">
+      <div class="album-cover">
+        <span class="album-disc" aria-hidden="true"></span>
+        <div class="album-cover-top">
+          <span class="album-label">flove</span>
+          <span class="album-cat">LP · 2026</span>
+        </div>
+        <div class="album-cover-mid">
+          <p class="album-kicker">the informal side</p>
+          <h2 class="album-title" id="album-title-teleology"><span>Tele</span><span>ology</span></h2>
+          <p class="album-sub">songs &amp; clips</p>
+        </div>
+        <div class="album-cover-bot">
+          <span class="album-side">SIDE A · 14 TRACKS</span>
+          <svg class="album-barcode" viewBox="0 0 160 30" aria-hidden="true" focusable="false">
+            <g fill="currentColor"><rect x="2" y="0" width="2" height="30"/><rect x="7" y="0" width="4" height="30"/><rect x="14" y="0" width="2" height="30"/><rect x="19" y="0" width="5" height="30"/><rect x="27" y="0" width="2" height="30"/><rect x="32" y="0" width="3" height="30"/><rect x="38" y="0" width="5" height="30"/><rect x="46" y="0" width="2" height="30"/><rect x="51" y="0" width="2" height="30"/><rect x="56" y="0" width="4" height="30"/><rect x="63" y="0" width="3" height="30"/><rect x="69" y="0" width="2" height="30"/><rect x="74" y="0" width="5" height="30"/><rect x="82" y="0" width="2" height="30"/><rect x="87" y="0" width="3" height="30"/><rect x="93" y="0" width="2" height="30"/><rect x="98" y="0" width="5" height="30"/><rect x="106" y="0" width="2" height="30"/><rect x="111" y="0" width="4" height="30"/><rect x="118" y="0" width="2" height="30"/><rect x="123" y="0" width="3" height="30"/><rect x="129" y="0" width="5" height="30"/><rect x="137" y="0" width="2" height="30"/><rect x="142" y="0" width="4" height="30"/><rect x="149" y="0" width="2" height="30"/><rect x="154" y="0" width="3" height="30"/></g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="album-side-col">
+        <div class="album-head">
+          <p class="album-eyebrow">tracklist</p>
+          <p class="album-meta">9 songs, 5 clips — press play to stream</p>
+        </div>
+        <div class="album-list album-list--songs">
+          <p class="album-list-title album-list-title--songs"><span class="album-list-n">09</span>Songs</p>
+          <ol class="album-tracks">
+            <li class="track track--song" data-kind="song" data-title="Aparece" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/Songs/Aparece.mp3">
+            <button class="track-btn" type="button" aria-label="Play Aparece">
+              <span class="track-num">01</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">Aparece</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+            <li class="track track--song" data-kind="song" data-title="Cabra" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/Songs/Cabra.mp3">
+            <button class="track-btn" type="button" aria-label="Play Cabra">
+              <span class="track-num">02</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">Cabra</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+            <li class="track track--song" data-kind="song" data-title="Cometa" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/Songs/Cometa.mp3">
+            <button class="track-btn" type="button" aria-label="Play Cometa">
+              <span class="track-num">03</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">Cometa</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+            <li class="track track--song" data-kind="song" data-title="Herido" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/Songs/Herido.m4a">
+            <button class="track-btn" type="button" aria-label="Play Herido">
+              <span class="track-num">04</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">Herido</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+            <li class="track track--song" data-kind="song" data-title="Multiverso" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/Songs/Multiverso.mp3">
+            <button class="track-btn" type="button" aria-label="Play Multiverso">
+              <span class="track-num">05</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">Multiverso</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+            <li class="track track--song" data-kind="song" data-title="Originalidad" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/Songs/Originalidad.mp3">
+            <button class="track-btn" type="button" aria-label="Play Originalidad">
+              <span class="track-num">06</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">Originalidad</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+            <li class="track track--song" data-kind="song" data-title="Simplex" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/Songs/Simplex.mp3">
+            <button class="track-btn" type="button" aria-label="Play Simplex">
+              <span class="track-num">07</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">Simplex</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+            <li class="track track--song" data-kind="song" data-title="Tensos" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/Songs/Tensos.mp3">
+            <button class="track-btn" type="button" aria-label="Play Tensos">
+              <span class="track-num">08</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">Tensos</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+            <li class="track track--song" data-kind="song" data-title="Vinculatividad" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/Songs/Vinculatividad.mp3">
+            <button class="track-btn" type="button" aria-label="Play Vinculatividad">
+              <span class="track-num">09</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">Vinculatividad</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+          </ol>
+        </div>
+        <div class="album-list album-list--videos">
+          <p class="album-list-title album-list-title--videos"><span class="album-list-n">05</span>Videos</p>
+          <ol class="album-tracks">
+            <li class="track track--video" data-kind="video" data-title="Gorileo" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/Songs/Gorileo.mp4">
+            <button class="track-btn" type="button" aria-label="Watch Gorileo (opens in a new tab)">
+              <span class="track-num">01</span>
+              <span class="track-icon" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg></span>
+              <span class="track-name">Gorileo <span aria-hidden="true">↗</span></span>
+              <span class="track-type">clip</span>
+            </button>
+          </li>
+            <li class="track track--video" data-kind="video" data-title="Human-Limbo" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/Songs/Human-Limbo.mp4">
+            <button class="track-btn" type="button" aria-label="Watch Human-Limbo (opens in a new tab)">
+              <span class="track-num">02</span>
+              <span class="track-icon" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg></span>
+              <span class="track-name">Human-Limbo <span aria-hidden="true">↗</span></span>
+              <span class="track-type">clip</span>
+            </button>
+          </li>
+            <li class="track track--video" data-kind="video" data-title="MandamientosPecados" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/Songs/MandamientosPecados.mp4">
+            <button class="track-btn" type="button" aria-label="Watch MandamientosPecados (opens in a new tab)">
+              <span class="track-num">03</span>
+              <span class="track-icon" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg></span>
+              <span class="track-name">Mandamientos<wbr>Pecados <span aria-hidden="true">↗</span></span>
+              <span class="track-type">clip</span>
+            </button>
+          </li>
+            <li class="track track--video" data-kind="video" data-title="SnakesPecados" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/Songs/SnakesPecados.mp4">
+            <button class="track-btn" type="button" aria-label="Watch SnakesPecados (opens in a new tab)">
+              <span class="track-num">04</span>
+              <span class="track-icon" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg></span>
+              <span class="track-name">Snakes<wbr>Pecados <span aria-hidden="true">↗</span></span>
+              <span class="track-type">clip</span>
+            </button>
+          </li>
+            <li class="track track--video" data-kind="video" data-title="TeleoSnakes" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/01TELEOLOGY/Songs/TeleoSnakes.mp4">
+            <button class="track-btn" type="button" aria-label="Watch TeleoSnakes (opens in a new tab)">
+              <span class="track-num">05</span>
+              <span class="track-icon" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg></span>
+              <span class="track-name">TeleoSnakes <span aria-hidden="true">↗</span></span>
+              <span class="track-type">clip</span>
+            </button>
+          </li>
+          </ol>
+        </div>
+        <p class="album-note">
+          <span><b>Songs</b> mostly in Spanish</span>
+          <span><b>Clips</b> open in a new tab</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+
+    <!-- ═══════════ 3 · ONTOLOGY ═══════════ -->
+    <section class="section field-sec" id="ontology" aria-labelledby="ontology-h">
+      <div class="section-head">
+        <h2 id="ontology-h"><span class="whole-substance">WHAT</span><a class="title-link" href="#ontology">Theo(onto)logy</a></h2>
+        <p class="section-note">WHAT · What exists as such: ontology.</p>
+      </div>
+
+      <div class="field-row">
+        <div class="subsection">
+          <h3 class="subhead" id="ontology-short"><a class="title-link" href="#ontology-short">Short &amp; Informal</a></h3>
+          <div class="video-block">
+            <div class="video-frame">
+              <a class="video-thumb" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/02ONTOLOGY/CosmoSystems-Intro-Short.mp4" data-video-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/02ONTOLOGY/CosmoSystems-Intro-Short.mp4" data-video-label="Ontology — short and informal introduction" aria-label="Play: Ontology — short and informal introduction">
+                <img src="thumbs/CosmoSystems-Intro-Short.jpg" alt="" width="640" height="360" loading="lazy">
+                <span class="video-play" aria-hidden="true"></span>
+              </a>
+            </div>
+            <div class="frame-tabs" role="group" aria-label="Ontology short extras">
+              <a class="tab" href="/apps/metas/souls.html" target="_blank" rel="noopener">
+                <span class="play" aria-hidden="true">▶</span> Play it
+              </a>
+              <a class="tab" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/02ONTOLOGY/Taxonomy-IntroAI.mp3" target="_blank" rel="noopener">Audio intro <span aria-hidden="true">↗</span></a>
+            </div>
+          </div>
+        </div>
+
+        <div class="subsection">
+          <h3 class="subhead" id="ontology-full"><a class="title-link" href="#ontology-full">Full &amp; Formal</a></h3>
+          <div class="video-block">
+            <!-- TODO: replace with the full Ontology video. -->
+            <div class="video-frame">
+              <a class="video-thumb" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/MetaPhysics-Intro-Full.mp4" data-video-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/MetaPhysics-Intro-Full.mp4" data-video-label="Ontology — full and formal presentation" aria-label="Play: Ontology — full and formal presentation">
+                <img src="thumbs/MetaPhysics-Intro-Full.jpg" alt="" width="640" height="360" loading="lazy">
+                <span class="video-play" aria-hidden="true"></span>
+              </a>
+            </div>
+            <div class="tabs-wrap">
+              <div class="frame-tabs" role="group" aria-label="Ontology formal extras">
+                <button class="tab" id="tab-ontology-more" type="button" data-expand aria-expanded="false" aria-controls="panel-ontology-more">
+                  Know more <span class="chev" aria-hidden="true">▾</span>
+                </button>
+              </div>
+              <div id="panel-ontology-more" class="expand-panel" hidden>
+                <ul class="link-list">
+                  <li>
+                    <a class="link-item" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/02ONTOLOGY/Ontologia25.10.odt" target="_blank" rel="noopener">
+                      <span class="media-ico" aria-hidden="true">📝</span>
+                      <span class="link-body"><span class="link-name">Ontologia25.10.odt</span><span class="link-desc">Ontology paper · 64 KB</span></span>
+                      <span class="arrow" aria-hidden="true">↗</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a class="link-item" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/02ONTOLOGY/Floves25.4.odt" target="_blank" rel="noopener">
+                      <span class="media-ico" aria-hidden="true">📝</span>
+                      <span class="link-body"><span class="link-name">Floves25.4.odt</span><span class="link-desc">The floves source · 79 KB</span></span>
+                      <span class="arrow" aria-hidden="true">↗</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a class="link-item" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/02ONTOLOGY/FloveTables25.12.ods" target="_blank" rel="noopener">
+                      <span class="media-ico" aria-hidden="true">📊</span>
+                      <span class="link-body"><span class="link-name">FloveTables25.12.ods</span><span class="link-desc">The ontology tables · 203 KB</span></span>
+                      <span class="arrow" aria-hidden="true">↗</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a class="link-item" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/02ONTOLOGY/Taxonomy-IntroAI.mp3" target="_blank" rel="noopener">
+                      <span class="media-ico" aria-hidden="true">🔊</span>
+                      <span class="link-body"><span class="link-name">Taxonomy-IntroAI.mp3</span><span class="link-desc">Spoken taxonomy · 4.3 MB</span></span>
+                      <span class="arrow" aria-hidden="true">↗</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a class="link-item" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/02ONTOLOGY/TaxoSouls-IntroAI.mp3" target="_blank" rel="noopener">
+                      <span class="media-ico" aria-hidden="true">🔊</span>
+                      <span class="link-body"><span class="link-name">TaxoSouls-IntroAI.mp3</span><span class="link-desc">Spoken taxonomy of souls · 5.6 MB</span></span>
+                      <span class="arrow" aria-hidden="true">↗</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="paradigms-title">Paradigms</h3>
+
+      <div class="paradigm-row">
+        <article class="paradigm-card" id="confluentism" aria-labelledby="confluentism-h">
+          <div class="paradigm-body">
+            <h4 id="confluentism-h"><a class="title-link" href="#confluentism">Confluentism</a></h4>
+            <p class="part-desc">Reality is processes that converge.</p>
+          </div>
+          <div class="video-block">
+            <div class="video-frame">
+              <a class="video-thumb" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/02ONTOLOGY/1-2.mp4" data-video-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/02ONTOLOGY/1-2.mp4" data-video-label="Confluentism — reality is processes that converge" aria-label="Play: Confluentism — reality is processes that converge">
+                <img src="thumbs/1-2.jpg" alt="" width="640" height="360" loading="lazy">
+                <span class="video-play" aria-hidden="true"></span>
+              </a>
+            </div>
+            <div class="frame-tabs" role="group" aria-label="Confluentism extras">
+              <a class="tab" href="/apps/metas/souls.html" target="_blank" rel="noopener">
+                <span class="play" aria-hidden="true">▶</span> Souls
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <article class="paradigm-card paradigm-card--related" id="cyclon" aria-labelledby="cyclon-h">
+          <div class="paradigm-body">
+            <h4 id="cyclon-h"><a class="title-link" href="#cyclon">Cyclon</a></h4>
+            <p class="part-desc">A fundamental cycle of 2, 3, 4, 5&hellip;</p>
+          </div>
+          <div class="video-block">
+            <!-- TODO: replace with the Cyclon video. -->
+            <div class="video-frame">
+              <a class="video-thumb" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/MetaPhysics-Intro-Full.mp4" data-video-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/MetaPhysics-Intro-Full.mp4" data-video-label="Cyclon — related paradigm presentation" aria-label="Play: Cyclon — related paradigm presentation">
+                <img src="thumbs/MetaPhysics-Intro-Full.jpg" alt="" width="640" height="360" loading="lazy">
+                <span class="video-play" aria-hidden="true"></span>
+              </a>
+            </div>
+          </div>
+        </article>
+      </div>
+    <div class="whole-subapps"><p class="whole-subapps__label">Apps</p><div class="whole-subapps__grid"><a class="whole-appcard" id="app-5loves" href="../../apps/metas/souls.html" data-context="WHAT" data-tag="lovely actions" data-cat="Inside" data-long="Five loves : concrete acts of love." data-vals="loves|acts|five|gestures|concrete|souls"><span class="whole-appcard__shot"><img src="../../central/shared/media/images/apps/captions/5loves.png" alt="" loading="lazy" width="96" height="60"></span><span class="whole-appcard__body"><span class="whole-appcard__name">Souls</span><span class="whole-appcard__desc">To be defined.</span></span><span class="whole-appcard__go">Preview →</span></a><a class="whole-appcard" id="app-fivy" href="../../apps/puzzy/fivy.html" data-context="WHAT" data-tag="a fivefold view" data-cat="Inside" data-long="A compact fivefold lens — five facets at a glance, held together." data-vals="fivefold|facets|lens|five|compact|at a glance"><span class="whole-appcard__shot"><img src="../../central/shared/media/images/apps/captions/fivy.png" alt="" loading="lazy" width="96" height="60"></span><span class="whole-appcard__body"><span class="whole-appcard__name">Fivy</span><span class="whole-appcard__desc">A compact fivefold lens — five facets at a glance, held together.</span></span><span class="whole-appcard__go">Preview →</span></a></div></div></section>
+  <!-- ════════════ ALBUM · Ontology ════════════ -->
+  <section class="album album--ontology" id="album-ontology" aria-labelledby="album-title-ontology">
+    <div class="album-shell">
+      <div class="album-cover">
+        <span class="album-disc" aria-hidden="true"></span>
+        <div class="album-cover-top">
+          <span class="album-label">flove</span>
+          <span class="album-cat">LP · 2026</span>
+        </div>
+        <div class="album-cover-mid">
+          <p class="album-kicker">the informal side</p>
+          <h2 class="album-title" id="album-title-ontology"><span>Onto</span><span>logy</span></h2>
+          <p class="album-sub">songs &amp; clips</p>
+        </div>
+        <div class="album-cover-bot">
+          <span class="album-side">SIDE A · 9 TRACKS</span>
+          <svg class="album-barcode" viewBox="0 0 160 30" aria-hidden="true" focusable="false">
+            <g fill="currentColor"><rect x="2" y="0" width="2" height="30"/><rect x="7" y="0" width="4" height="30"/><rect x="14" y="0" width="2" height="30"/><rect x="19" y="0" width="5" height="30"/><rect x="27" y="0" width="2" height="30"/><rect x="32" y="0" width="3" height="30"/><rect x="38" y="0" width="5" height="30"/><rect x="46" y="0" width="2" height="30"/><rect x="51" y="0" width="2" height="30"/><rect x="56" y="0" width="4" height="30"/><rect x="63" y="0" width="3" height="30"/><rect x="69" y="0" width="2" height="30"/><rect x="74" y="0" width="5" height="30"/><rect x="82" y="0" width="2" height="30"/><rect x="87" y="0" width="3" height="30"/><rect x="93" y="0" width="2" height="30"/><rect x="98" y="0" width="5" height="30"/><rect x="106" y="0" width="2" height="30"/><rect x="111" y="0" width="4" height="30"/><rect x="118" y="0" width="2" height="30"/><rect x="123" y="0" width="3" height="30"/><rect x="129" y="0" width="5" height="30"/><rect x="137" y="0" width="2" height="30"/><rect x="142" y="0" width="4" height="30"/><rect x="149" y="0" width="2" height="30"/><rect x="154" y="0" width="3" height="30"/></g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="album-side-col">
+        <div class="album-head">
+          <p class="album-eyebrow">tracklist</p>
+          <p class="album-meta">4 songs, 5 clips — press play to stream</p>
+        </div>
+        <div class="album-list album-list--songs">
+          <p class="album-list-title album-list-title--songs"><span class="album-list-n">04</span>Songs</p>
+          <ol class="album-tracks">
+            <li class="track track--song" data-kind="song" data-title="Bitheism" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/02ONTOLOGY/Songs/Bitheism.mp3">
+            <button class="track-btn" type="button" aria-label="Play Bitheism">
+              <span class="track-num">01</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">Bitheism</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+            <li class="track track--song" data-kind="song" data-title="DiosaMix" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/02ONTOLOGY/Songs/DiosaMix.mp3">
+            <button class="track-btn" type="button" aria-label="Play DiosaMix">
+              <span class="track-num">02</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">Diosa<wbr>Mix</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+            <li class="track track--song" data-kind="song" data-title="Permanacer" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/02ONTOLOGY/Songs/Permanacer.mp3">
+            <button class="track-btn" type="button" aria-label="Play Permanacer">
+              <span class="track-num">03</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">Permanacer</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+            <li class="track track--song" data-kind="song" data-title="SustanciaSocial" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/02ONTOLOGY/Songs/SustanciaSocial.mp3">
+            <button class="track-btn" type="button" aria-label="Play SustanciaSocial">
+              <span class="track-num">04</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">Sustancia<wbr>Social</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+          </ol>
+        </div>
+        <div class="album-list album-list--videos">
+          <p class="album-list-title album-list-title--videos"><span class="album-list-n">05</span>Videos</p>
+          <ol class="album-tracks">
+            <li class="track track--video" data-kind="video" data-title="1-2" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/02ONTOLOGY/Songs/1-2.mp4">
+            <button class="track-btn" type="button" aria-label="Watch 1-2 (opens in a new tab)">
+              <span class="track-num">01</span>
+              <span class="track-icon" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg></span>
+              <span class="track-name">1-2 <span aria-hidden="true">↗</span></span>
+              <span class="track-type">clip</span>
+            </button>
+          </li>
+            <li class="track track--video" data-kind="video" data-title="ciencias" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/02ONTOLOGY/Songs/ciencias.mp4">
+            <button class="track-btn" type="button" aria-label="Watch ciencias (opens in a new tab)">
+              <span class="track-num">02</span>
+              <span class="track-icon" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg></span>
+              <span class="track-name">ciencias <span aria-hidden="true">↗</span></span>
+              <span class="track-type">clip</span>
+            </button>
+          </li>
+            <li class="track track--video" data-kind="video" data-title="Destina ire" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/02ONTOLOGY/Songs/Destina%20ire.mp4">
+            <button class="track-btn" type="button" aria-label="Watch Destina ire (opens in a new tab)">
+              <span class="track-num">03</span>
+              <span class="track-icon" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg></span>
+              <span class="track-name">Destina ire <span aria-hidden="true">↗</span></span>
+              <span class="track-type">clip</span>
+            </button>
+          </li>
+            <li class="track track--video" data-kind="video" data-title="Permanacer" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/02ONTOLOGY/Songs/Permanacer.mp4">
+            <button class="track-btn" type="button" aria-label="Watch Permanacer (opens in a new tab)">
+              <span class="track-num">04</span>
+              <span class="track-icon" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg></span>
+              <span class="track-name">Permanacer <span aria-hidden="true">↗</span></span>
+              <span class="track-type">clip</span>
+            </button>
+          </li>
+            <li class="track track--video" data-kind="video" data-title="Sostancial" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/02ONTOLOGY/Songs/Sostancial.mp4">
+            <button class="track-btn" type="button" aria-label="Watch Sostancial (opens in a new tab)">
+              <span class="track-num">05</span>
+              <span class="track-icon" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg></span>
+              <span class="track-name">Sostancial <span aria-hidden="true">↗</span></span>
+              <span class="track-type">clip</span>
+            </button>
+          </li>
+          </ol>
+        </div>
+        <p class="album-note">
+          <span><b>Songs</b> mostly in Spanish</span>
+          <span><b>Clips</b> open in a new tab</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+
+    <!-- ═══════════ 4 · MATHYLOGIC ═══════════ -->
+    <section class="section field-sec" id="mathylogic" aria-labelledby="mathylogic-h">
+      <div class="section-head">
+        <h2 id="mathylogic-h"><span class="whole-substance">HOW</span><a class="title-link" href="#mathylogic">(Meta) MathyLogic</a></h2>
+        <p class="section-note">HOW · How it relates: the logic of the bond.</p>
+      </div>
+
+      <div class="field-row">
+        <div class="subsection">
+          <h3 class="subhead" id="mathylogic-short"><a class="title-link" href="#mathylogic-short">Short &amp; Informal</a></h3>
+          <div class="video-block">
+            <div class="video-frame">
+              <a class="video-thumb" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/03MATHYLOGIC/MathyLogic-Intro-Short.mp4" data-video-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/03MATHYLOGIC/MathyLogic-Intro-Short.mp4" data-video-label="MathyLogic — short and informal introduction" aria-label="Play: MathyLogic — short and informal introduction">
+                <img src="thumbs/MathyLogic-Intro-Short.jpg" alt="" width="640" height="360" loading="lazy">
+                <span class="video-play" aria-hidden="true"></span>
+              </a>
+            </div>
+            <div class="frame-tabs" role="group" aria-label="MathyLogic short extras">
+              <a class="tab" href="/apps/puzzy/index.html" target="_blank" rel="noopener">
+                <span class="play" aria-hidden="true">▶</span> Play it
+              </a>
+              <a class="tab" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/03MATHYLOGIC/Intuitionism-IntroAI.m4a" target="_blank" rel="noopener">Audio intro <span aria-hidden="true">↗</span></a>
+            </div>
+          </div>
+        </div>
+
+        <div class="subsection">
+          <h3 class="subhead" id="mathylogic-full"><a class="title-link" href="#mathylogic-full">Full &amp; Formal</a></h3>
+          <div class="video-block">
+            <!-- TODO: replace with the full MathyLogic video. -->
+            <div class="video-frame">
+              <a class="video-thumb" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/MetaPhysics-Intro-Full.mp4" data-video-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/MetaPhysics-Intro-Full.mp4" data-video-label="MathyLogic — full and formal presentation" aria-label="Play: MathyLogic — full and formal presentation">
+                <img src="thumbs/MetaPhysics-Intro-Full.jpg" alt="" width="640" height="360" loading="lazy">
+                <span class="video-play" aria-hidden="true"></span>
+              </a>
+            </div>
+            <div class="tabs-wrap">
+              <div class="frame-tabs" role="group" aria-label="MathyLogic formal extras">
+                <button class="tab" id="tab-mathylogic-more" type="button" data-expand aria-expanded="false" aria-controls="panel-mathylogic-more">
+                  Know more <span class="chev" aria-hidden="true">▾</span>
+                </button>
+              </div>
+              <div id="panel-mathylogic-more" class="expand-panel" hidden>
+                <ul class="link-list">
+                  <li>
+                    <a class="link-item" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/03MATHYLOGIC/Intuitionism25.10.odt" target="_blank" rel="noopener">
+                      <span class="media-ico" aria-hidden="true">📝</span>
+                      <span class="link-body"><span class="link-name">Intuitionism25.10.odt</span><span class="link-desc">MathyLogic paper · 3.3 MB</span></span>
+                      <span class="arrow" aria-hidden="true">↗</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a class="link-item" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/03MATHYLOGIC/Intuitionism-IntroAI.m4a" target="_blank" rel="noopener">
+                      <span class="media-ico" aria-hidden="true">🔊</span>
+                      <span class="link-body"><span class="link-name">Intuitionism-IntroAI.m4a</span><span class="link-desc">Spoken introduction · 7.7 MB</span></span>
+                      <span class="arrow" aria-hidden="true">↗</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="paradigms-title">Paradigms</h3>
+
+      <div class="paradigm-row">
+        <article class="paradigm-card" id="intuitionism" aria-labelledby="intuitionism-h">
+          <div class="paradigm-body">
+            <h4 id="intuitionism-h"><a class="title-link" href="#intuitionism">Intuitionism</a></h4>
+            <p class="part-desc">Between math and logic; truth as construction.</p>
+          </div>
+          <div class="video-block">
+            <div class="video-frame">
+              <a class="video-thumb" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/03MATHYLOGIC/1-Intro-Short.mp4" data-video-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/03MATHYLOGIC/1-Intro-Short.mp4" data-video-label="Intuitionism — between math and logic, truth as construction" aria-label="Play: Intuitionism — between math and logic, truth as construction">
+                <img src="thumbs/1-Intro-Short.jpg" alt="" width="640" height="360" loading="lazy">
+                <span class="video-play" aria-hidden="true"></span>
+              </a>
+            </div>
+            <div class="frame-tabs" role="group" aria-label="Intuitionism extras">
+              <a class="tab" href="/apps/puzzy/index.html" target="_blank" rel="noopener">
+                <span class="play" aria-hidden="true">▶</span> Puzzy
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <article class="paradigm-card paradigm-card--related" id="zygoton" aria-labelledby="zygoton-h">
+          <div class="paradigm-body">
+            <h4 id="zygoton-h"><a class="title-link" href="#zygoton">Zygoton</a></h4>
+            <p class="part-desc">The ultimate analogical and referential utopia.</p>
+          </div>
+          <div class="video-block">
+            <!-- TODO: replace with the Zygoton video. -->
+            <div class="video-frame">
+              <a class="video-thumb" href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/MetaPhysics-Intro-Full.mp4" data-video-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/0METAPHYSICS/MetaPhysics-Intro-Full.mp4" data-video-label="Zygoton — related paradigm presentation" aria-label="Play: Zygoton — related paradigm presentation">
+                <img src="thumbs/MetaPhysics-Intro-Full.jpg" alt="" width="640" height="360" loading="lazy">
+                <span class="video-play" aria-hidden="true"></span>
+              </a>
+            </div>
+          </div>
+        </article>
+      </div>
+    <div class="whole-subapps"><p class="whole-subapps__label">Apps</p><div class="whole-subapps__grid"><a class="whole-appcard" href="../../apps/puzzy/index.html" data-context="HOW"><span class="whole-appcard__shot whole-appcard__shot--empty" aria-hidden="true">P</span><span class="whole-appcard__body"><span class="whole-appcard__name">Puzzy</span><span class="whole-appcard__desc"></span></span><span class="whole-appcard__go">Preview →</span></a></div></div></section>
+  <!-- ════════════ ALBUM · Mathylogic ════════════ -->
+  <section class="album album--mathylogic" id="album-mathylogic" aria-labelledby="album-title-mathylogic">
+    <div class="album-shell">
+      <div class="album-cover">
+        <span class="album-disc" aria-hidden="true"></span>
+        <div class="album-cover-top">
+          <span class="album-label">flove</span>
+          <span class="album-cat">LP · 2026</span>
+        </div>
+        <div class="album-cover-mid">
+          <p class="album-kicker">the informal side</p>
+          <h2 class="album-title" id="album-title-mathylogic"><span>Mathy</span><span>logic</span></h2>
+          <p class="album-sub">songs &amp; clips</p>
+        </div>
+        <div class="album-cover-bot">
+          <span class="album-side">SIDE A · 13 TRACKS</span>
+          <svg class="album-barcode" viewBox="0 0 160 30" aria-hidden="true" focusable="false">
+            <g fill="currentColor"><rect x="2" y="0" width="2" height="30"/><rect x="7" y="0" width="4" height="30"/><rect x="14" y="0" width="2" height="30"/><rect x="19" y="0" width="5" height="30"/><rect x="27" y="0" width="2" height="30"/><rect x="32" y="0" width="3" height="30"/><rect x="38" y="0" width="5" height="30"/><rect x="46" y="0" width="2" height="30"/><rect x="51" y="0" width="2" height="30"/><rect x="56" y="0" width="4" height="30"/><rect x="63" y="0" width="3" height="30"/><rect x="69" y="0" width="2" height="30"/><rect x="74" y="0" width="5" height="30"/><rect x="82" y="0" width="2" height="30"/><rect x="87" y="0" width="3" height="30"/><rect x="93" y="0" width="2" height="30"/><rect x="98" y="0" width="5" height="30"/><rect x="106" y="0" width="2" height="30"/><rect x="111" y="0" width="4" height="30"/><rect x="118" y="0" width="2" height="30"/><rect x="123" y="0" width="3" height="30"/><rect x="129" y="0" width="5" height="30"/><rect x="137" y="0" width="2" height="30"/><rect x="142" y="0" width="4" height="30"/><rect x="149" y="0" width="2" height="30"/><rect x="154" y="0" width="3" height="30"/></g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="album-side-col">
+        <div class="album-head">
+          <p class="album-eyebrow">tracklist</p>
+          <p class="album-meta">6 songs, 7 clips — press play to stream</p>
+        </div>
+        <div class="album-list album-list--songs">
+          <p class="album-list-title album-list-title--songs"><span class="album-list-n">06</span>Songs</p>
+          <ol class="album-tracks">
+            <li class="track track--song" data-kind="song" data-title="Analogizar" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/03MATHYLOGIC/Songs/Analogizar.mp3">
+            <button class="track-btn" type="button" aria-label="Play Analogizar">
+              <span class="track-num">01</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">Analogizar</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+            <li class="track track--song" data-kind="song" data-title="Cosmoginy" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/03MATHYLOGIC/Songs/Cosmoginy.m4a">
+            <button class="track-btn" type="button" aria-label="Play Cosmoginy">
+              <span class="track-num">02</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">Cosmoginy</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+            <li class="track track--song" data-kind="song" data-title="Labels" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/03MATHYLOGIC/Songs/Labels.mp3">
+            <button class="track-btn" type="button" aria-label="Play Labels">
+              <span class="track-num">03</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">Labels</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+            <li class="track track--song" data-kind="song" data-title="Line" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/03MATHYLOGIC/Songs/Line.mp3">
+            <button class="track-btn" type="button" aria-label="Play Line">
+              <span class="track-num">04</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">Line</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+            <li class="track track--song" data-kind="song" data-title="Uno" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/03MATHYLOGIC/Songs/Uno.mp3">
+            <button class="track-btn" type="button" aria-label="Play Uno">
+              <span class="track-num">05</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">Uno</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+            <li class="track track--song" data-kind="song" data-title="VerMedir" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/03MATHYLOGIC/Songs/VerMedir.mp3">
+            <button class="track-btn" type="button" aria-label="Play VerMedir">
+              <span class="track-num">06</span>
+              <span class="track-icon" aria-hidden="true"><svg class="ico-play" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg><svg class="ico-pause" viewBox="0 0 12 12"><rect x="2.6" y="1.8" width="2.4" height="8.4" fill="currentColor"/><rect x="7" y="1.8" width="2.4" height="8.4" fill="currentColor"/></svg></span>
+              <span class="track-name">VerMedir</span>
+              <span class="track-type">song</span>
+            </button>
+            <span class="track-bar" aria-hidden="true"><i></i></span>
+          </li>
+          </ol>
+        </div>
+        <div class="album-list album-list--videos">
+          <p class="album-list-title album-list-title--videos"><span class="album-list-n">07</span>Videos</p>
+          <ol class="album-tracks">
+            <li class="track track--video" data-kind="video" data-title="01" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/03MATHYLOGIC/Songs/01.mp4">
+            <button class="track-btn" type="button" aria-label="Watch 01 (opens in a new tab)">
+              <span class="track-num">01</span>
+              <span class="track-icon" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg></span>
+              <span class="track-name">01 <span aria-hidden="true">↗</span></span>
+              <span class="track-type">clip</span>
+            </button>
+          </li>
+            <li class="track track--video" data-kind="video" data-title="Analogizar" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/03MATHYLOGIC/Songs/Analogizar.mp4">
+            <button class="track-btn" type="button" aria-label="Watch Analogizar (opens in a new tab)">
+              <span class="track-num">02</span>
+              <span class="track-icon" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg></span>
+              <span class="track-name">Analogizar <span aria-hidden="true">↗</span></span>
+              <span class="track-type">clip</span>
+            </button>
+          </li>
+            <li class="track track--video" data-kind="video" data-title="Line" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/03MATHYLOGIC/Songs/Line.mp4">
+            <button class="track-btn" type="button" aria-label="Watch Line (opens in a new tab)">
+              <span class="track-num">03</span>
+              <span class="track-icon" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg></span>
+              <span class="track-name">Line <span aria-hidden="true">↗</span></span>
+              <span class="track-type">clip</span>
+            </button>
+          </li>
+            <li class="track track--video" data-kind="video" data-title="SeSuda" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/03MATHYLOGIC/Songs/SeSuda.mp4">
+            <button class="track-btn" type="button" aria-label="Watch SeSuda (opens in a new tab)">
+              <span class="track-num">04</span>
+              <span class="track-icon" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg></span>
+              <span class="track-name">SeSuda <span aria-hidden="true">↗</span></span>
+              <span class="track-type">clip</span>
+            </button>
+          </li>
+            <li class="track track--video" data-kind="video" data-title="SeSudaBlindfold Queen" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/03MATHYLOGIC/Songs/SeSudaBlindfold%20Queen.mp4">
+            <button class="track-btn" type="button" aria-label="Watch SeSudaBlindfold Queen (opens in a new tab)">
+              <span class="track-num">05</span>
+              <span class="track-icon" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg></span>
+              <span class="track-name">SeSuda<wbr>Blindfold Queen <span aria-hidden="true">↗</span></span>
+              <span class="track-type">clip</span>
+            </button>
+          </li>
+            <li class="track track--video" data-kind="video" data-title="SeSudaSahel" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/03MATHYLOGIC/Songs/SeSudaSahel.mp4">
+            <button class="track-btn" type="button" aria-label="Watch SeSudaSahel (opens in a new tab)">
+              <span class="track-num">06</span>
+              <span class="track-icon" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg></span>
+              <span class="track-name">SeSudaSahel <span aria-hidden="true">↗</span></span>
+              <span class="track-type">clip</span>
+            </button>
+          </li>
+            <li class="track track--video" data-kind="video" data-title="VerMedir" data-src="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/03MATHYLOGIC/Songs/VerMedir.mp4">
+            <button class="track-btn" type="button" aria-label="Watch VerMedir (opens in a new tab)">
+              <span class="track-num">07</span>
+              <span class="track-icon" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6Z" fill="currentColor"/></svg></span>
+              <span class="track-name">VerMedir <span aria-hidden="true">↗</span></span>
+              <span class="track-type">clip</span>
+            </button>
+          </li>
+          </ol>
+        </div>
+        <p class="album-note">
+          <span><b>Songs</b> mostly in Spanish</span>
+          <span><b>Clips</b> open in a new tab</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+
+  </main>
+
+  <footer>
+    <div class="footer-row">
+      <a class="footer-brand" href="../metaphysics/">
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <defs>
+            <linearGradient id="sproutGradFoot" x1="12" y1="0" x2="88" y2="0" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#ff3344"/><stop offset="50%" stop-color="#ff8a3a"/><stop offset="100%" stop-color="#ffd633"/>
+            </linearGradient>
+          </defs>
+          <path d="M50 60 C 22 60, 12 38, 16 18 C 38 22, 54 38, 50 60 Z" fill="url(#sproutGradFoot)"/>
+          <path d="M50 60 C 78 60, 88 38, 84 18 C 62 22, 46 38, 50 60 Z" fill="url(#sproutGradFoot)"/>
+          <path d="M50 58 C 50 72, 50 84, 50 92" stroke="url(#sproutGradFoot)" stroke-width="5" stroke-linecap="round" fill="none"/>
+        </svg>
+        Metaphysics
+      </a>
+      <nav class="footer-links" aria-label="More Metaphysics">
+        <a href="https://flove.org/marc" target="_blank" rel="noopener">Author</a>
+        <a href="../index.html">whole</a>
+        
+        <a href="https://github.com/floveorg/floveorg.github.io/tree/main/whole" target="_blank" rel="noopener">GitHub</a>
+        <a href="/apps/index.html">Demos</a>
+        <a href="/docs/index.html#metaphysics">Docs</a>
+        <a href="/">Home</a>
+      </nav>
+    </div>
+  </footer>
+
+  <dialog class="about" id="about-modal" aria-labelledby="about-title">
+    <div class="about-inner">
+      <div class="about-top">
+        <div>
+          <p class="about-kicker">About this page</p>
+          <h2 id="about-title">Metaphysics, in every length</h2>
+        </div>
+        <form method="dialog">
+          <button class="about-close" type="submit" value="close" aria-label="Close about">&times;</button>
+        </form>
+      </div>
+
+      <p class="about-lead">
+        Metaphysics asks the most basic questions about reality: what exists, why anything exists,
+        what it is made of, and how its parts hold together. This page gathers flove&rsquo;s take on
+        that field in every length and format — from a short clip to the full formal presentation.
+      </p>
+
+      <ul class="about-list">
+        <li>
+          <span class="n" aria-hidden="true">01</span>
+          <span><strong>Short &amp; Informal</strong>A brief video introduction, plus the songs and a longer 13-minute take.</span>
+        </li>
+        <li>
+          <span class="n" aria-hidden="true">02</span>
+          <span><strong>Full &amp; Formal</strong>The complete presentation, the papers and the spoken introductions.</span>
+        </li>
+        <li>
+          <span class="n" aria-hidden="true">03</span>
+          <span><strong>Four fields</strong>Metaphysics (X), Teleology (WHY), Ontology (WHAT) and MathyLogic (HOW) — each with its own short and full row.</span>
+        </li>
+        <li>
+          <span class="n" aria-hidden="true">04</span>
+          <span><strong>Paradigms</strong>Two per field, in a second row: Simplex &amp; PanBitheism, Compatibilism &amp; Cathy, Confluentism &amp; Cyclon, Intuitionism &amp; Zygoton.</span>
+        </li>
+      </ul>
+
+      <nav class="about-links" aria-label="About this page links">
+        <a href="https://en.wikipedia.org/wiki/Metaphysics" target="_blank" rel="noopener">Wikipedia <span aria-hidden="true">↗</span></a>
+        <a href="../index.html">whole <span aria-hidden="true">→</span></a>
+        <a href="/docs/index.html#metaphysics">Docs <span aria-hidden="true">→</span></a>
+        <a href="/apps/index.html">All apps <span aria-hidden="true">→</span></a>
+        <a href="https://flove.org/marc" target="_blank" rel="noopener">Author <span aria-hidden="true">→</span></a>
+      </nav>
+    </div>
+  </dialog>
+
+</div>
+
+<script>
+  (function () {
+    "use strict";
+
+    /* Page title menu */
+    var menuToggle = document.getElementById("search-toggle");
+    var titleMenu = document.getElementById("title-menu");
+    if (menuToggle && titleMenu) {
+      function setMenu(open) {
+        menuToggle.setAttribute("aria-expanded", open ? "true" : "false");
+        menuToggle.setAttribute("aria-label", open ? "Close page menu" : "Open page menu");
+        titleMenu.hidden = !open;
+      }
+      menuToggle.addEventListener("click", function (e) {
+        e.stopPropagation();
+        setMenu(titleMenu.hidden);
+      });
+      document.addEventListener("click", function (e) {
+        if (!titleMenu.hidden && !titleMenu.contains(e.target) && e.target !== menuToggle) {
+          setMenu(false);
+        }
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && !titleMenu.hidden) {
+          setMenu(false);
+          menuToggle.focus();
+        }
+      });
+      titleMenu.addEventListener("click", function (e) {
+        if (e.target.closest("a")) setMenu(false);
+      });
+
+      /* About modal, opened from the menu */
+      var aboutModal = document.getElementById("about-modal");
+      var aboutTrigger = titleMenu.querySelector("[data-about]");
+      if (aboutModal && aboutTrigger) {
+        aboutTrigger.addEventListener("click", function () {
+          setMenu(false);
+          if (typeof aboutModal.showModal === "function") aboutModal.showModal();
+          else aboutModal.setAttribute("open", "");
+        });
+        aboutModal.addEventListener("click", function (e) {
+          if (e.target !== aboutModal) return;
+          if (typeof aboutModal.close === "function") aboutModal.close();
+          else aboutModal.removeAttribute("open");
+        });
+        aboutModal.addEventListener("close", function () {
+          menuToggle.focus();
+        });
+      }
+    }
+
+    /* Expand / collapse: Songs and Know more */
+    Array.prototype.forEach.call(document.querySelectorAll("[data-expand]"), function (btn) {
+      var panel = document.getElementById(btn.getAttribute("aria-controls"));
+      if (!panel) return;
+      btn.addEventListener("click", function () {
+        var open = btn.getAttribute("aria-expanded") === "true";
+        btn.setAttribute("aria-expanded", open ? "false" : "true");
+        panel.hidden = open;
+      });
+    });
+
+    /* Only one piece of media at a time */
+    var media = Array.prototype.slice.call(document.querySelectorAll("video, audio"));
+    function pauseOthers(current) {
+      media.forEach(function (other) {
+        if (other !== current && !other.paused) other.pause();
+      });
+    }
+    media.forEach(function (m) {
+      m.addEventListener("play", function () { pauseOthers(m); });
+    });
+
+    /* Video captures: insert the player only on request */
+    Array.prototype.forEach.call(document.querySelectorAll("[data-video-src]"), function (thumb) {
+      thumb.addEventListener("click", function (e) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+        e.preventDefault();
+        var src = thumb.getAttribute("data-video-src");
+        var label = thumb.getAttribute("data-video-label") || "";
+        var video = document.createElement("video");
+        video.controls = true;
+        video.preload = "metadata";
+        video.playsInline = true;
+        video.src = src;
+        if (label) video.setAttribute("aria-label", label);
+        video.addEventListener("play", function () { pauseOthers(video); });
+        media.push(video);
+        pauseOthers(video);
+        thumb.parentNode.replaceChild(video, thumb);
+        video.focus();
+      });
+    });
+  })();
+</script>
+
+
+
+<audio id="album-player" preload="none" aria-hidden="true"></audio>
+
+<script src="../whole.js" defer></script>
+</body>
+</html>

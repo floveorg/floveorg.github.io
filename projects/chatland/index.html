@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chatland — chat 3D nativo para Android</title>
+<meta name="description" content="Chatland es un recinto 3D nativo para Android: quince lands, siete residentes y 19 animaciones cada uno. 60 FPS medidos, sin Unity, sin Godot y sin WebView.">
+<meta name="theme-color" content="#0E1512">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20120%20120'%3E%3Cdefs%3E%3CclipPath%20id='c'%3E%3Cpath%20d='M42%2014%20H78%20A24%2024%200%200%201%20102%2038%20V62%20A24%2024%200%200%201%2078%2086%20H52%20L26%20106%20L31%2086%20H42%20A24%2024%200%200%201%2018%2062%20V38%20A24%2024%200%200%201%2042%2014%20Z'/%3E%3C/clipPath%3E%3C/defs%3E%3Cpath%20d='M42%2014%20H78%20A24%2024%200%200%201%20102%2038%20V62%20A24%2024%200%200%201%2078%2086%20H52%20L26%20106%20L31%2086%20H42%20A24%2024%200%200%201%2018%2062%20V38%20A24%2024%200%200%201%2042%2014%20Z'%20fill='%23FFFFFF'/%3E%3Cg%20clip-path='url(%23c)'%3E%3Ccircle%20cx='79'%20cy='41'%20r='9'%20fill='%23F0B03C'/%3E%3Cpath%20d='M14%2078%20C28%2058%2048%2066%2066%2068%20C84%2070%2096%2058%20106%2064%20V92%20H14%20Z'%20fill='%23BFE06A'/%3E%3Cpath%20d='M14%2086%20C34%2070%2050%2078%2068%2080%20C84%2082%2096%2072%20106%2078%20V92%20H14%20Z'%20fill='%232E9E6B'/%3E%3C/g%3E%3Cpath%20d='M42%2014%20H78%20A24%2024%200%200%201%20102%2038%20V62%20A24%2024%200%200%201%2078%2086%20H52%20L26%20106%20L31%2086%20H42%20A24%2024%200%200%201%2018%2062%20V38%20A24%2024%200%200%201%2042%2014%20Z'%20fill='none'%20stroke='%2314211C'%20stroke-width='3.4'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/css/site.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+
+<!-- ══════════ sprite de la marca 01 Horizon ══════════ -->
+<svg class="svg-sprite" width="0" height="0" aria-hidden="true" focusable="false">
+  <defs>
+    <clipPath id="cl-horizon">
+      <path d="M42 14 H78 A24 24 0 0 1 102 38 V62 A24 24 0 0 1 78 86 H52 L26 106 L31 86 H42 A24 24 0 0 1 18 62 V38 A24 24 0 0 1 42 14 Z"/>
+    </clipPath>
+  </defs>
+</svg>
+
+<a class="skip" href="#paso-1">Saltar al contenido</a>
+
+<div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
+
+<!-- ══════════ NAV ══════════ -->
+<nav class="nav" aria-label="Principal">
+  <a class="brand" href="#paso-0" aria-label="Chatland, inicio">
+    <svg class="mark" viewBox="0 0 120 120" aria-hidden="true">
+      <path class="m-body" d="M42 14 H78 A24 24 0 0 1 102 38 V62 A24 24 0 0 1 78 86 H52 L26 106 L31 86 H42 A24 24 0 0 1 18 62 V38 A24 24 0 0 1 42 14 Z"/>
+      <g clip-path="url(#cl-horizon)">
+        <circle class="m-sun" cx="79" cy="41" r="9"/>
+        <path class="m-hill1" d="M14 78 C28 58 48 66 66 68 C84 70 96 58 106 64 V92 H14 Z"/>
+        <path class="m-hill2" d="M14 86 C34 70 50 78 68 80 C84 82 96 72 106 78 V92 H14 Z"/>
+      </g>
+      <path class="m-line" d="M42 14 H78 A24 24 0 0 1 102 38 V62 A24 24 0 0 1 78 86 H52 L26 106 L31 86 H42 A24 24 0 0 1 18 62 V38 A24 24 0 0 1 42 14 Z"/>
+    </svg>
+    <span class="word">Chatland</span>
+  </a>
+  <div class="nav-links">
+    <a href="#paso-1">Motivos</a>
+    <a href="#paso-2">El recinto</a>
+    <a href="#paso-3">Residentes</a>
+    <a href="#paso-4">La luz</a>
+  </div>
+  <a class="nav-cta" href="#paso-8">Quiero</a>
+</nav>
+
+<!-- ══════════ BARRA DE PASO ══════════ -->
+<div class="stepbar" id="stepbar" role="group" aria-label="Navegación por pasos">
+  <span class="now" id="stepNow">01 / 08</span>
+  <span class="name" id="stepName">Motivos</span>
+  <span class="arrows">
+    <button type="button" id="stepPrev" aria-label="Paso anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <button type="button" id="stepNext" aria-label="Paso siguiente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+  </span>
+</div>
+
+<!-- ══════════ HERO ══════════ -->
+<header class="hero" id="paso-0">
+  <div class="corridor" id="corridor" aria-hidden="true">
+    <div class="world">
+      <div class="arch" style="--i:1"></div>
+      <div class="arch" style="--i:2"></div>
+      <div class="arch" style="--i:3"></div>
+      <div class="arch" style="--i:4"></div>
+      <div class="arch" style="--i:5"></div>
+      <div class="arch" style="--i:6"></div>
+      <div class="arch" style="--i:7"></div>
+      <div class="arch" style="--i:8"></div>
+      <div class="floorline"></div>
+      <div class="fog"></div>
+    </div>
+  </div>
+  <canvas class="dust" id="dust" aria-hidden="true"></canvas>
+
+  <div class="hero-inner">
+    <h1>Mensajería <br><em>enriquecida</em></h1>
+    <p class="hero-sub">Lo mejor de la vida, las conversaciones del día a día</p>
+
+    <div class="hero-mark" id="heroRise">
+      <span class="halo" aria-hidden="true"></span>
+      <svg class="mark" viewBox="0 0 120 120" role="img" aria-label="Chatland: una burbuja de conversación que guarda un paisaje — el sol, una loma verde y el cielo">
+        <path class="m-body" d="M42 14 H78 A24 24 0 0 1 102 38 V62 A24 24 0 0 1 78 86 H52 L26 106 L31 86 H42 A24 24 0 0 1 18 62 V38 A24 24 0 0 1 42 14 Z"/>
+        <g clip-path="url(#cl-horizon)">
+          <circle class="m-sun" cx="79" cy="41" r="9"/>
+          <path class="m-hill1" d="M14 78 C28 58 48 66 66 68 C84 70 96 58 106 64 V92 H14 Z"/>
+          <path class="m-hill2" d="M14 86 C34 70 50 78 68 80 C84 82 96 72 106 78 V92 H14 Z"/>
+        </g>
+        <path class="m-line" d="M42 14 H78 A24 24 0 0 1 102 38 V62 A24 24 0 0 1 78 86 H52 L26 106 L31 86 H42 A24 24 0 0 1 18 62 V38 A24 24 0 0 1 42 14 Z"/>
+      </svg>
+      <span class="hero-horizon" aria-hidden="true"></span>
+    </div>
+
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#paso-8">Quiero Chatland <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></a>
+    </div>
+
+    <p class="hero-facts">
+      <span><b>19</b> mensajes</span>
+      <span><b>13</b> zonas</span>
+      <span><b>7</b> avatares</span>
+      <span><b>5</b> sentidos</span>
+      <span><b>3, 2, 1...</b> entrada</span>
+    </p>
+  </div>
+
+  <div class="scroll-hint" aria-hidden="true"><i></i>Motivos y maneras</div>
+</header>
+
+<main>
+
+<!-- ══════════ 01 · EL TOUR ══════════ -->
+<section class="section tour" id="paso-1" data-step="01" data-step-name="Motivos">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-side">
+        <img class="sec-mark" src="logos/10-horizon-senal.svg" alt="" aria-hidden="true">
+      </div>
+      <div>
+        <p class="sec-kicker">Ver para leer</p>
+        <h2>Palabras y gestos <br><em>espacio y tiempo</em></h2>
+        <p class="lede">Cada conversación es singular. Más sitio, menos ruido. Un lugar, no otra pestaña.</p>
+      </div>
+    </div>
+
+    <div class="tour-stage reveal" id="tourStage">
+      <div class="tour-track" id="tourTrack"></div>
+      <div class="tour-arrows">
+        <button class="tour-arrow prev" type="button" id="tourPrev" aria-label="Diapositiva anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <button class="tour-arrow next" type="button" id="tourNext" aria-label="Diapositiva siguiente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+      </div>
+    </div>
+
+    <div class="surprise reveal d1">
+      <span><b>19</b> mensajes</span>
+      <span><b>13</b> zonas</span>
+      <span><b>7</b> avatares</span>
+      <span><b>5</b> sentidos</span>
+      <span><b>3, 2, 1...</b> entrada</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 02 · EL RECINTO ══════════ -->
+<section class="section" id="paso-2" data-step="02" data-step-name="El recinto">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-side">
+        <img class="sec-mark" src="logos/01-horizon-basico.svg" alt="" aria-hidden="true">
+      </div>
+      <div>
+        <p class="sec-kicker">Qué es</p>
+        <h2>Más que una app. <br><em>Es un sitio.</em></h2>
+        <p class="lede">Abres Chatland y ya estás dentro de una sala. Puedes mirar alrededor, acercarte, sentarte o quedarte callado. La sala sigue ahí cuando te vas, y cuando vuelves está como la dejaste.</p>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="reveal">
+        <p class="quote">La luz no se calcula. <br><em>Está dibujada en la geometría.</em></p>
+        <div class="plates">
+          <div class="plate"><b>15</b><span>lands con nombre</span></div>
+          <div class="plate"><b>20</b><span>plazas por land</span></div>
+          <div class="plate"><b>19</b><span>animaciones por residente</span></div>
+        </div>
+      </div>
+      <div class="copy reveal d1">
+        <p><b>Una land es una sala del recinto.</b> Quince en total, cada una con su luz, su carácter y su aforo. Puedes quedarte en una o recorrerlas todas.</p>
+        <p>No hay pantallas de carga ni mundos que se desmontan al salir. El recinto <b>va dentro del móvil</b>: por eso ocupa 145 MB y por eso funciona aunque no haya cobertura.</p>
+        <p>Y no es una web disfrazada. Chatland habla directamente con la tarjeta gráfica del teléfono, <b>sin Unity, sin Godot y sin navegador</b> en medio.</p>
+      </div>
+    </div>
+
+    <div class="entryflow reveal d2">
+      <div class="ef">
+        <b>Paso uno</b>
+        <h3>Descarga</h3>
+        <p>El recinto entero viene dentro: quince lands y siete residentes, listos para usarse sin conexión.</p>
+      </div>
+      <div class="ef">
+        <b>Paso dos</b>
+        <h3>Elige land</h3>
+        <p>Quince salas con nombre. Cada una tiene su luz, su temperatura y su forma de estar.</p>
+      </div>
+      <div class="ef">
+        <b>Paso tres</b>
+        <h3>Entra</h3>
+        <p>Eliges un residente y apareces dentro. Hay veinte plazas por sala: ni multitud, ni vacío.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 03 · RESIDENTES ══════════ -->
+<section class="section" id="paso-3" data-step="03" data-step-name="Los residentes">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-side">
+        <img class="sec-mark" src="logos/03-horizon-latido.svg" alt="" aria-hidden="true">
+      </div>
+      <div>
+        <p class="sec-kicker">Quién está</p>
+        <h2>Siete residentes. <br><em>Diecinueve formas de moverse.</em></h2>
+        <p class="lede">Cada residente es un personaje con diecinueve animaciones: saludar, sentarse, bailar, esperar. Elige un gesto y míralos a los siete a la vez.</p>
+      </div>
+    </div>
+
+    <div class="res-tools reveal" role="group" aria-label="Elige una animación">
+      <button class="chip" type="button" data-anim="idle" aria-pressed="true">Reposo</button>
+      <button class="chip" type="button" data-anim="saludo" aria-pressed="false">Saludo</button>
+      <button class="chip" type="button" data-anim="baile" aria-pressed="false">Baile</button>
+      <button class="chip" type="button" data-anim="sentarse" aria-pressed="false">Sentarse</button>
+    </div>
+
+    <div class="residents reveal d1" id="residents" data-anim="idle"></div>
+  </div>
+</section>
+
+<!-- ══════════ 04 · LA LUZ ══════════ -->
+<section class="section" id="paso-4" data-step="04" data-step-name="La luz">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-side">
+        <img class="sec-mark" src="logos/13-horizon-luz.svg" alt="" aria-hidden="true">
+      </div>
+      <div>
+        <p class="sec-kicker">El truco</p>
+        <h2>La luz está <br><em>en la geometría.</em></h2>
+        <p class="lede">En la mayoría de los juegos la luz se calcula sesenta veces por segundo. Aquí está pintada <b>una sola vez, dentro de la propia forma</b>. Por eso el recinto es cálido y aun así va a 60 fotogramas por segundo en un móvil de 2020.</p>
+      </div>
+    </div>
+
+    <div class="light-grid">
+      <div class="light-demo reveal" id="lightDemo">
+        <div class="room" style="--wall:#1E3A2C;--wall2:#12211A;--floor1:#2B4A38;--floor2:#0F1A14;--sky1:#8FD9A8;--sky2:#2E6B4A;--sunC:#F0B03C;--hill1:#1E6B49;--hill2:#2E9E6B;--glow:rgba(240,176,60,.20);--lamp:#F7C86A;--table:#2E4A38;--sunx:60%;--suny:60%">
+          <div class="r-sky"></div>
+          <div class="r-beam"></div>
+          <div class="r-arch"><div class="r-sun"></div><div class="r-hills"></div><div class="r-horizon"></div></div>
+          <div class="r-side l"></div><div class="r-side r"></div>
+          <div class="r-floor"></div>
+          <div class="r-table"></div>
+          <div class="r-vig"></div>
+        </div>
+        <div class="mesh" aria-hidden="true"></div>
+        <button class="light-toggle" type="button" id="lightToggle" aria-pressed="false"><i></i><span>Ver malla</span><b>+</b></button>
+      </div>
+
+      <div class="reveal d1">
+        <p class="quote">Sin sombras calculadas. <br><em>Sin coste por fotograma.</em></p>
+        <div class="metrics">
+          <div><b>0</b><span>shadow maps en el recinto</span></div>
+          <div><b>60</b><span>fotogramas por segundo</span></div>
+          <div><b>16,7</b><span>milisegundos por fotograma</span></div>
+        </div>
+        <p class="note"><b>Con honestidad:</b> los residentes sí reciben luz en tiempo real, así que a veces se desacoplan un poco del horneado de la sala. Acercarlos está en la hoja de ruta — no vamos a decir que todo está horneado cuando no lo está.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 05 · EL MOTOR ══════════ -->
+<section class="section" id="paso-5" data-step="05" data-step-name="El motor">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-side">
+        <img class="sec-mark" src="logos/04-horizon-respiro.svg" alt="" aria-hidden="true">
+      </div>
+      <div>
+        <p class="sec-kicker">Por dentro</p>
+        <h2>Un motor propio. <br><em>Sin capas de más.</em></h2>
+        <p class="lede">Lo puedes entender sin saber nada de gráficos. Y si quieres el detalle, aquí está entero.</p>
+      </div>
+    </div>
+
+    <div class="switch" role="group" aria-label="Nivel de detalle">
+      <button type="button" id="viewPlain" aria-pressed="true">En claro</button>
+      <button type="button" id="viewTech" aria-pressed="false">Ficha técnica</button>
+    </div>
+
+    <div class="plain-wrap" id="plainGrid">
+      <div class="plain-grid reveal">
+        <div class="plain">
+          <span class="pn">01</span>
+          <h3>No es una web</h3>
+          <p>No hay navegador dentro de la app. Chatland es una aplicación nativa de Android que dibuja directamente en la GPU del teléfono.</p>
+        </div>
+        <div class="plain">
+          <span class="pn">02</span>
+          <h3>Motor propio sobre Filament</h3>
+          <p>Usa Filament 1.77.3 para renderizar y glTF para las escenas, con cámara y avatares propios. Nada de Unity ni Godot.</p>
+        </div>
+        <div class="plain">
+          <span class="pn">03</span>
+          <h3>Medido, no prometido</h3>
+          <p>Entre 55,8 y 59,9 fotogramas por segundo sostenidos en un Redmi Note 9S, un móvil de 2020. En las últimas pruebas: 60 FPS y 16,7 ms por fotograma.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="spec" id="specTable">
+      <table>
+        <caption>Ficha técnica · datos del análisis de 2026-11-12</caption>
+        <tbody>
+          <tr><th scope="row">Render</th><td>Filament 1.77.3 (filament-android)</td></tr>
+          <tr><th scope="row">Carga glTF</th><td>gltfio-android 1.77.3 + filament-utils-android 1.77.3</td></tr>
+          <tr><th scope="row">Interfaz</th><td>Jetpack Compose sobre TextureView</td></tr>
+          <tr><th scope="row">Lenguaje</th><td>Kotlin · JNI para el multijugador (Colyseus)</td></tr>
+          <tr><th scope="row">Android</th><td>minSdk 26 · target 37</td></tr>
+          <tr><th scope="row">ABI</th><td>arm64-v8a, armeabi-v7a, x86, x86_64</td></tr>
+          <tr><th scope="row">Lands</th><td>15 escenas GLB empaquetadas · 20 plazas por land</td></tr>
+          <tr><th scope="row">Residentes</th><td>7 variantes × 19 animaciones · LOD por distancia y calidad</td></tr>
+          <tr><th scope="row">Iluminación</th><td>Vertex colors + <span class="accent">KHR_materials_unlit</span> en el recinto · PBR en los residentes</td></tr>
+          <tr><th scope="row">Generación</th><td>Blender 5.0.1 + Python, determinista · validación con hashes GLB y <span class="accent">collisionHash</span></td></tr>
+          <tr><th scope="row">Dispositivo de referencia</th><td>Redmi Note 9S · 55,8–59,9 FPS</td></tr>
+          <tr><th scope="row">APK</th><td>145 MB · incluye las 15 lands y funciona sin conexión</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 06 · CONSTRUCCIÓN ══════════ -->
+<section class="section" id="paso-6" data-step="06" data-step-name="Cómo se construye">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-side">
+        <img class="sec-mark" src="logos/14-horizon-obra.svg" alt="" aria-hidden="true">
+      </div>
+      <div>
+        <p class="sec-kicker">El método</p>
+        <h2>Quince lands que se pueden <br><em>regenerar y verificar.</em></h2>
+        <p class="lede">Ninguna land es un archivo que nadie sabe cómo se hizo. Todas salen de un proceso que se repite igual cada vez y que se puede comprobar.</p>
+      </div>
+    </div>
+
+    <div class="build reveal">
+      <div class="build-step"><span class="bn">01</span><h3>Guion de la land</h3><p>Se definen sus partes, sus colisiones y su presupuesto de memoria antes de construir nada.</p></div>
+      <div class="build-step"><span class="bn">02</span><h3>Generación determinista</h3><p>Blender 5.0.1 y Python construyen la sala. El mismo guion da siempre la misma geometría.</p></div>
+      <div class="build-step"><span class="bn">03</span><h3>Horneado de la luz</h3><p>La iluminación se pinta en los vértices y el material se declara unlit. Cero sombras en tiempo real.</p></div>
+      <div class="build-step"><span class="bn">04</span><h3>Validación</h3><p>Un script comprueba cada escena: hashes GLB coherentes, colisiones correctas y 20 plazas disponibles.</p></div>
+      <div class="build-step"><span class="bn">05</span><h3>Empaquetado</h3><p>La land se versiona y se mete en el recinto. Quince, listas para viajar dentro del APK.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 07 · TEMPORADAS ══════════ -->
+<section class="section" id="paso-7" data-step="07" data-step-name="Temporadas">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-side">
+        <img class="sec-mark" src="logos/15-horizon-estacion.svg" alt="" aria-hidden="true">
+      </div>
+      <div>
+        <p class="sec-kicker">Temporadas</p>
+        <h2>Lo que falta, <br><em>dicho antes de que lo preguntes.</em></h2>
+        <p class="lede">Un recinto crece. Estas son las obras previstas, con su estado real: en diseño, en pruebas o simplemente previstas.</p>
+      </div>
+    </div>
+
+    <div class="roadmap reveal">
+      <div class="road">
+        <span class="rs">T2</span>
+        <div><h3>Texturas comprimidas</h3><p>KTX2/BasisU y ASTC para que el recinto pese menos sin perder calidad a la vista.</p><span class="state">Previsto</span></div>
+      </div>
+      <div class="road">
+        <span class="rs">T2</span>
+        <div><h3>Entrar antes</h3><p>Sacar la carga de escena del hilo principal y quitar la copia doble del archivo: primer fotograma más rápido y menos pico de memoria.</p><span class="state">En diseño</span></div>
+      </div>
+      <div class="road">
+        <span class="rs">T3</span>
+        <div><h3>Menos llamadas al motor</h3><p>Presupuestar por llamada real de dibujo y no por pieza: hoy una land puede llegar a 106 materiales distintos.</p><span class="state">En diseño</span></div>
+      </div>
+      <div class="road">
+        <span class="rs">T3</span>
+        <div><h3>Medir la GPU</h3><p>Ver llamadas de dibujo, memoria y tiempos por fase directamente en modo depuración.</p><span class="state">Previsto</span></div>
+      </div>
+    </div>
+
+    <p class="honest reveal d1">Preferimos publicar lo que falta <em>antes de que lo preguntes.</em></p>
+  </div>
+</section>
+
+<!-- ══════════ 08 · ENTRADA ══════════ -->
+<section class="entrance" id="paso-8" data-step="08" data-step-name="Entrada">
+  <div class="wrap">
+    <div class="emark reveal" aria-hidden="true">
+      <svg class="emark-rings" viewBox="0 0 120 120">
+        <circle class="ring2" cx="60" cy="60" r="57"/>
+        <circle class="ring" cx="60" cy="60" r="51"/>
+      </svg>
+      <img class="emark-logo" src="logos/02-horizon-amanecer.svg" alt="">
+    </div>
+    <h2 class="reveal">La verja está abierta.</h2>
+    <p class="lede reveal d1">Entrada libre. Descarga, elige un residente y entra en la primera land. El resto del recinto está a un toque.</p>
+    <div class="hero-actions reveal d2">
+      <a class="btn btn-primary" href="#paso-0">Descargar para Android <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></a>
+      <a class="btn btn-ghost" href="logos/index.html">Ver el sistema de marca <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></a>
+    </div>
+    <p class="reqs reveal d2">
+      <span>Android 8.0+</span>
+      <span>145 MB</span>
+      <span>15 lands incluidas</span>
+      <span>Sin registro para mirar</span>
+    </p>
+    <div class="stamp reveal d3" aria-hidden="true">Entrada<br>Chatland<br>· 01 ·</div>
+  </div>
+</section>
+
+</main>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="frow">
+      <a class="fbrand" href="#paso-0">
+        <svg class="mark" viewBox="0 0 120 120" aria-hidden="true">
+          <path class="m-body" d="M42 14 H78 A24 24 0 0 1 102 38 V62 A24 24 0 0 1 78 86 H52 L26 106 L31 86 H42 A24 24 0 0 1 18 62 V38 A24 24 0 0 1 42 14 Z"/>
+          <g clip-path="url(#cl-horizon)"><circle class="m-sun" cx="79" cy="41" r="9"/><path class="m-hill1" d="M14 78 C28 58 48 66 66 68 C84 70 96 58 106 64 V92 H14 Z"/><path class="m-hill2" d="M14 86 C34 70 50 78 68 80 C84 82 96 72 106 78 V92 H14 Z"/></g>
+          <path class="m-line" d="M42 14 H78 A24 24 0 0 1 102 38 V62 A24 24 0 0 1 78 86 H52 L26 106 L31 86 H42 A24 24 0 0 1 18 62 V38 A24 24 0 0 1 42 14 Z"/>
+        </svg>
+        <span>Chatland</span>
+      </a>
+      <nav aria-label="Enlaces del pie">
+        <a href="#paso-1">Motivos</a>
+        <a href="#paso-3">Residentes</a>
+        <a href="#paso-5">Ficha técnica</a>
+        <a href="logos/index.html">Sistema de marca</a>
+      </nav>
+    </div>
+    <p class="fine"><b>Nota de prototipo.</b> Esta página es una presentación de diseño. Las cifras de rendimiento, el número de lands, residentes, animaciones y plazas provienen del análisis técnico del producto (2026-11-12) y se muestran con su condición. Los nombres de las lands y de los residentes son de trabajo y pueden cambiar. Los entornos 3D que ves aquí son una <b>reconstrucción ligera</b> hecha con geometría y luz horneada en CSS, no capturas del motor; sirven para mostrar la idea, no para sustituir una captura real.</p>
+    <p class="fine">Chatland · Sistema de marca <b>01 Horizon</b> · <a href="logos/index.html">10 variantes, 2 tamaños cada una</a>.</p>
+  </div>
+</footer>
+
+<!-- ══════════ MODAL DE DIAPOSITIVA ══════════ -->
+<div class="tmodal" id="tmodal" hidden>
+  <div class="tmodal-backdrop" data-close="1"></div>
+  <div class="tmodal-panel" role="dialog" aria-modal="true" aria-labelledby="tmodalTitle">
+    <button class="tmodal-close" type="button" id="tmodalClose" aria-label="Cerrar">×</button>
+    <div class="tmodal-scene" id="tmodalScene" aria-hidden="true"></div>
+    <div class="tmodal-body">
+      <span class="face tmodal-face" id="tmodalFace" aria-hidden="true"></span>
+      <p class="tmodal-k" id="tmodalK"></p>
+      <h3 id="tmodalTitle">Detalle de la diapositiva</h3>
+      <p id="tmodalDesc"></p>
+      <span class="tmodal-tag" id="tmodalTag"></span>
+      <span class="tmodal-index" id="tmodalIndex"></span>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/site.js" defer></script>
+</body>
+</html>
