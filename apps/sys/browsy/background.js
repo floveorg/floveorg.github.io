@@ -7,7 +7,7 @@
 chrome.runtime.onInstalled.addListener(function() {
   chrome.contextMenus.create({
     id: 'browsy-save',
-    title: 'Save to flove',
+    title: 'Share with other related Networks',
     contexts: ['selection', 'link', 'image']
   });
   chrome.contextMenus.create({

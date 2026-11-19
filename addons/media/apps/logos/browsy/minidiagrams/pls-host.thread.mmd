@@ -1,0 +1,33 @@
+sequenceDiagram
+    autonumber
+    actor P as Person
+    participant A as Authy
+    box rgb(244,241,255) Browsy · host
+    participant B as Browsy
+    participant W as Wizy · inside
+    end
+    participant ID as P · Personal
+    participant TR as L · Local
+    participant SH as S · Social
+
+    Note over P,SH: P · L · S facets — browsy hosts, Wizy merges
+    P->>A: link identity factors
+    A-->>B: device · Telegram · email proofs
+    B->>ID: derive identity key and profile
+    ID-->>B: Personal keypair · recovery ready
+    P->>B: open browsy on flove.org
+    B->>W: read the vault on demand
+    W->>TR: compute Local trust on click
+    TR-->>W: vouches · 3-hop chain score
+    W-->>B: merged P + L + S view
+    B-->>P: show Local trust result
+    P->>B: choose to share outward
+    B->>SH: prepare related-network share
+    SH-->>P: Share with other related Networks
+    Note over B,W: Wizy stays inside browsy — no second client
+    alt missing auth factor
+        A-->>P: prompt to add factor in Authy
+    else factors linked
+        B-->>P: P · Personal confirmed
+    end
+    Note over B,TR: Local trust computed locally, Central displays

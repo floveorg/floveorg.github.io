@@ -68,7 +68,7 @@
 - **Publish security**: status quo kept (deny-list + gitignore, no new guard) (Q015)
 - **sw.js**: regenerate + bump cache version in the same commit as the split (Q017)
 - **Split checks**: automated checks before commit — grep old-path refs, verify internal links, local serve test (Q020)
-- **Questy making-of**: Exported survey HTML → rename to `decisions.html` (Q002)
+- **Questy decisions**: Exported survey HTML → `decisions.html` (Q002)
 - **central/ sync**: Auto-push to Gitea + GitHub on every commit (Q006)
 - **Browsy fallback**: localStorage stub mode when extension not installed (Q007)
 - **Decentral repo**: Create `decentral/` now with nety sub-folder, Rust stubs (Q008)

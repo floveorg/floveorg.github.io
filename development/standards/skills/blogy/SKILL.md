@@ -30,7 +30,7 @@ schedule.
 - **Spotlight the standards.** Changes to the design contract, frontend
   standards, backend plan or skills get their own section.
 - **Real links only.** Direct, resolvable URLs (HTTP 200) to the apps catalogue,
-  specific apps, the standards page, the making-of, theory pages. Never the short
+  specific apps, the standards page, the Work panel, theory pages. Never the short
   "motes" (e.g. `/blogy`) — they 404 without JavaScript.
 - **Stats on a first or milestone post.** A "By the numbers" block — commits,
   app count, timespan, pairing sessions. Measure or omit; never invent a number.
@@ -44,8 +44,7 @@ schedule.
 1. **Find the window.** Read the newest `tech` post's date, then gather the real
    work: `git -C ~/Documents/flove log --oneline --since=<date>` (plus other
    repos when relevant: `~/flovenet`, `~/.agents/skills`), the session logs in
-   `~/.agents/projects/-home-kdeneon/*.jsonl`, `docs/making-of/` and the
-   standards page for framing. For a milestone or first post also gather stats:
+   `~/.agents/projects/-home-kdeneon/*.jsonl` and the standards page for framing. For a milestone or first post also gather stats:
    `git rev-list --count HEAD`, first/last commit dates, app count from the
    catalogue, session count
    (`ls ~/.agents/projects/-home-kdeneon/*.jsonl | wc -l`).

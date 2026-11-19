@@ -1,0 +1,28 @@
+sequenceDiagram
+    autonumber
+    actor P as Person
+    participant MF as MyFamily
+    box rgb(244,241,255) Browsy · host
+    participant B as Browsy
+    participant W as Wizy · inside
+    end
+    participant R as Peer · MyNet
+
+    Note over P,R: MyNet — browsy ↔ peer, peer → MyFamily
+    P->>MF: reflect and add relation
+    MF-->>B: save record class L
+    B->>W: build signed L projection
+    W-->>B: grant · paths · expiry
+    B->>R: offer L projection (Local grant)
+    Note over B,R: browsy → peer
+    R->>B: request permitted deltas
+    B-->>R: encrypted projection · partial pull from peer
+    Note over B,R: peer allows user partial pull from him
+    R->>MF: consult selected MyFamily data
+    MF-->>R: derived answer · never a raw P copy
+    R->>W: merge with their P/L context
+    W-->>R: local recommendation D0/D1
+    Note over W: explanation · local only
+    P->>B: revoke or shorten expiry
+    B-->>R: version++ next pull
+    Note over R: copies remain · forward-only

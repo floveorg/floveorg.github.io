@@ -3,7 +3,7 @@
 > Implementation plans derived from interview decisions and pending questions.
 > Each plan documents decisions, architecture, tasks, and cross-plan conflicts.
 > Updated 2026-07-23 with CA01-CA44 + CB01-CB40 + C01-C76 + D01-D23 + E01-E25 + G01-G55 (Central backend, Turso, serverless Railway, anonymous identity, libSQL everywhere, strategic architecture, Central nav, Nety-Central bridge, profile mirror, error responses, CORS staging, rate limiting post-PoC, schema migration, first 6 apps, rating widget, bottom nav visual spec).
-> 2026-08-16: absorbed `making-of/superpowers/plans/` (all dated implementation plans moved here).
+> 2026-08-16: absorbed the dated implementation plans (all moved here).
 > 2026-11-17: consolidated the export/share/summary/conformance plans into the frontend standards and `../pendings.md`; moved the Browsy spec/rationale to `../browsy/`; removed completed and retired plans.
 
 ## Active plans
@@ -56,10 +56,9 @@ cross-links.
 > fetches shared code; the only external files are the frozen vendor
 > fonts/icons and Freed's local `vendor/leaflet/leaflet.js`.
 
-## App build plans (moved from `making-of/superpowers/plans/`)
+## App build plans (absorbed 2026-08-16)
 
-Dated implementation plans absorbed here 2026-08-16 (their design specs stay in
-[`making-of/superpowers/specs/`](../making-of/superpowers/specs/)):
+Dated implementation plans absorbed here 2026-08-16; their design specs were archived 2026-11-19:
 
 | Plan | Scope | Status |
 |------|-------|--------|

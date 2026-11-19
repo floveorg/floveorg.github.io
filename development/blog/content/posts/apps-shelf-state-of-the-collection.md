@@ -28,7 +28,7 @@ each other:
 - **puzzy** — interfaces and things that need fiddly care, a whole lab of its
   own: [puzzy/](https://flove.org/apps/puzzy/).
 - **blogy** — the writing corner: [blogy/](https://flove.org/apps/blogy/),
-  the making-of for this very blog.
+  the story behind this very blog.
 - **economy, metas, lowai, psychosocial, bio, liberada** — money, goals, the
   local AI, the mind, and books. Every cluster is a drawer, and each drawer is
   the seed of a longer story.

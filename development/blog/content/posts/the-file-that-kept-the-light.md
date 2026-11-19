@@ -247,7 +247,7 @@ about is now the thing that guards the door.
 
 Come poke around: [the catalogue](https://flove.org/apps/), the
 [standards](https://flove.org/development/standards/), or the
-[making-of](https://flove.org/development/). If you find a
+[workshop](https://flove.org/development/). If you find a
 drawer that opens onto another drawer, that is probably the point — or a bug we
 would love to hear about. Either way, it was one determined human and one
 alarmingly patient robot today, and the robot has finally learned to check its

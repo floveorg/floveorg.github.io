@@ -2,13 +2,110 @@
 
 Punteros desde los docs: `↗ pendings:#N` (donde N es el ID).
 
-**Interview de decisiones:** en `decisions.html` → entrada "Various — Design Decisions".
+**Interview de decisiones:** entrada "Various — Design Decisions", reciclada abajo como `VARIOUS_Q01`–`VARIOUS_Q50`; el registro completo está en `archive/making-of/making-of.html`.
 
 **Implementation plans & conflicts:** [`plans/index.md`](plans/index.md) · [`plans/conflicts.md`](plans/conflicts.md)
 
 ---
 
 ## Pending Items
+
+### Making-of open decisions (recycled 2026-11-19)
+
+> Open questions recovered from the archived decision interviews. IDs are stable and feed the Work tracker (`source=standards`). Decided questions were already absorbed into standards/plans; the full record stays in `archive/`. No retired routes remain.
+
+- **VARIOUS_Q01** What is the nety 'super' tier for? · nety, direction — ◇ Hybrid
+- **VARIOUS_Q02** What shape does the real nety frontend take? · nety, frontend — ◇ Hybrid
+- **VARIOUS_Q03** When are identity masks (multiple personae per user) needed? · nety, identity — ◇ F5 (late)
+- **VARIOUS_Q04** What engagement ranking and anti-gaming mechanics does nety need? · nety, ranking — ◇ Defer
+- **VARIOUS_Q05** How should nety curators be selected and held accountable? · nety, curators — ◇ Defer
+- **VARIOUS_Q06** How should abuse adjudication work in nety? · nety, moderation — ◇ Defer
+- **VARIOUS_Q07** Is the social app standalone or integrated into MyNet? · social, architecture — ◇ Profily-integrated MyNet
+- **VARIOUS_Q08** Should vizy recover its XR/VR direction? · vizy, direction — ◇ Abandon VR
+- **VARIOUS_Q09** Should trusty implement crumbly granular mode? · trusty, features — ◇ Defer
+- **VARIOUS_Q10** What theming/branding approach for docs? · docs, theme — ◇ Always dark
+- **VARIOUS_Q11** How should docs search work? · docs, search — ◇ None (just nav)
+- **VARIOUS_Q12** Should docs include code examples? · docs, content — ◇ Copy-paste snippets
+- **VARIOUS_Q13** What theming/branding approach for docs? · docs, theme — ◇ Always dark
+  - options: • Dark theme (manual toggle) — Default dark, user can switch to light. Standard approach, moderate code. · • Auto-detect system theme — Follow OS dark/light setting. No toggle needed, less user control. · • Both (toggle + auto) — Auto-detect with manual override. Most flexible, most code. · • Always light — No theming — always light. Simplest, but mismatches flove's dark aesthetic. · • Always dark — No theming — always dark. Matches flove, simplest, no toggle.
+- **VARIOUS_Q14** How should docs search work? · docs, search — ◇ None (just nav)
+  - options: • Client-side full-text (lunr.js) — Self-contained search, works offline, adds ~50KB JS. Flove-first approach. · • Algolia DocSearch — Fast, hosted, free for OSS. External service dependency. · • Google site search — Easy to set up, external, requires internet. Simple but not flove-first. · • None (just nav) — No search — rely on good navigation and cross-links. Simplest.
+- **VARIOUS_Q15** Should docs have cross-links between pages? · docs, navigation — ◇ Inline links in text
+  - options: • Inline links in text — Natural hyperlinks within content. Best UX, organic discovery. · • Related-docs section — Explicit 'Related' block at the bottom of each page. Structured but rigid. · • Both — Inline + related section. Maximum discoverability, maximum maintenance. · • None — No cross-links — each page is standalone. Simplest.
+- **VARIOUS_Q16** What navigation pattern for docs? · docs, navigation — ◇ Sidebar
+  - options: • Sidebar — Persistent left sidebar with section links. Standard docs pattern, always visible. · • Top nav bar — Horizontal nav at the top. Cleaner, less space, but limited depth. · • Breadcrumbs — Path-based breadcrumbs at the top. Good for deep hierarchies, less for flat ones. · • None needed — No dedicated nav — just links in content. Simplest.
+- **VARIOUS_Q17** Should docs include code examples? · docs, content — ◇ Copy-paste snippets
+  - options: • Copy-paste snippets — Short, focused code blocks. Easy to scan, easy to copy. · • Full file examples — Complete HTML files users can download. More complete, heavier. · • None — No code examples — just prose. Simplest.
+- **VARIOUS_Q18** Should docs have a contribution guide? · docs, contributing — ◇ No, Marc-only
+  - options: • Yes, contribution guide — Explain how to contribute — structure, style, PR process. Encourages community. · • No, Marc-only — Keep docs editing to Marc only. Simpler, more control.
+- **VARIOUS_Q19** How should users get help or contact support? · docs, support — ◇ None
+  - options: • Email link — Simple contact form or mailto link. Direct, personal. · • GitHub issues — Public issue tracker. Transparent, searchable, but requires GitHub account. · • Both — Email for private, GitHub for public. Most flexible. · • None — No explicit support channel — users find Marc through the community.
+- **VARIOUS_Q20** How should docs be maintained over time? · docs, maintenance — ◇ On-demand only
+  - options: • Scheduled reviews — Regular audits (quarterly). Proactive, catches drift early. · • On-demand only — Update when something breaks or changes. Reactive, less work. · • Both — Scheduled audits + on-demand fixes. Most thorough.
+- **VARIOUS_Q21** Should docs support extensibility (plugins)? · docs, extensibility — ◇ Just standards
+  - options: • Plugin system — Document how to build plugins/modules. Useful for developers, adds scope. · • Just standards — Document the standards only — no extensibility docs. Focused. · • Both — Standards + extensibility. Comprehensive but more work.
+- **VARIOUS_Q22** How should routing.json be authored? · backend, routing — ◇ Marc-only
+  - options: • Community wiki — Anyone can edit. Democratic, fast updates, risk of vandalism. · • Curator-only — Only curators can edit. Safe, slow, controlled. · • Automated (AI) — AI generates/maintains routing. Fast, unpredictable, hard to audit. · • Marc-only — Only Marc edits. Simplest, most control.
+- **VARIOUS_Q23** Should cross-links be typed or untyped? · backend, cross-links — ◇ Untyped
+  - options: • Typed — Defined relationship types (responds_to, derived_from). Richer querying, more schema. · • Untyped — Simple hyperlinks. Simpler, less metadata, still useful. · • Hybrid — Untyped by default, optional type annotation. Flexible.
+- **VARIOUS_Q24** Should flove have per-app cube downloads? · backend, cubes — ◇ Defer
+  - options: • Yes, per-app cubes — Each app gets its own zip. Users download what they need. Needs builder script. · • No, flove-localhost.zip only — One big bundle. Simpler, but larger download. · • Defer — Don't build yet — revisit when more apps exist.
+- **VARIOUS_Q25** What AI fine-tuning approach for module 42? · backend, ai — ◇ Defer
+  - options: • Full fine-tuning — Train entire model. Best quality, highest cost. · • LoRA — Low-rank adaptation. Cheaper, nearly as good, less control. · • No fine-tuning — Use base model as-is. Free, least customized. · • Defer — Don't decide yet — wait until module 42 is closer to shipping.
+- **VARIOUS_Q26** What granularity for visibility controls? · backend, visibility — ◇ Hybrid
+  - options: • Per-element — Each element has its own visibility. Maximum control, maximum complexity. · • 0asis defaults — Global defaults, no per-element override. Simple, less flexible. · • Hybrid — Default from 0asis, with per-element override option. Balanced.
+- **VARIOUS_Q27** How should puzzy aggregate ratings from multiple people? · puzzy, aggregation — ◇ Defer
+  - options: • Juxtaposition — Show all raters side by side. Transparent, but cluttered with many raters. · • Mean + dispersion — Statistical summary — average + spread. Clean, hides individual nuance. · • Toggle — User switches between juxtaposition and summary. Most flexible, more UI. · • Defer — Don't decide yet — wait until F3/F5 when puzzy ships.
+- **VARIOUS_Q28** Where does the puzzy compute live? · puzzy, compute — ◇ Defer
+  - options: • Client-only — All compute in the browser. Privacy-first, limited by device power. · • Module-42-only — Server-side compute. Powerful, centralized, requires trust. · • Hybrid with offline cache — Client-first, server fallback, offline cache. Balanced, complex. · • Defer — Don't decide yet — wait until F5.
+- **VARIOUS_Q29** Should flove have an installable PWA button? · pwa, install — ◇ Defer
+  - options: • Yes, in-app button — Custom 'Install flove' button using beforeinstallprompt. More discoverable, more code. · • No, browser-only — Rely on browser's install prompt. Simpler, less discoverable. · • Defer — Don't implement yet — revisit after core apps ship.
+- **VARIOUS_Q30** How should the multiuser-pack work? · multiuser, pack — ◇ Defer
+  - options: • 2 copies default — Default 2 packs — personal + work. Simple, covers most use cases. · • Unlimited — No limit — user creates as many as needed. More flexible, more complexity. · • Defer — Don't design yet — wait until the encryption layer is closer to shipping.
+- **VARIOUS_Q31** What is the primary audience for flove docs? · docs, audience — ◇ Developers
+  - options: • Developers — Technical docs — API references, code examples, architecture. Detailed, code-heavy. · • Users — End-user docs — how to use flove apps. Practical, less technical. · • Contributors — How to contribute to flove — standards, workflows, PR process. Community-focused. · • All equally — No primary audience — serve everyone equally. Broad, less focused.
+- **VARIOUS_Q32** How should docs handle versioning? · docs, versioning — ◇ Single 'latest'
+  - options: • Single 'latest' — One set of docs, always current. Simplest, no version sprawl. · • Version per release — Snapshot docs per version. Accurate, but maintenance heavy. · • Inline version markers — Tag sections with 'available since FloveX26-3'. Lightweight, informative.
+- **VARIOUS_Q33** Should flove apps have a standardized footer? · apps, design — ◇ Minimal footer
+  - options: • Standardized footer — All apps share the same footer component. Consistent, less individuality. · • App-specific footer — Each app designs its own footer. More creative, less consistent. · • Minimal footer — Just version + license, no links. Clean, unobtrusive.
+- **VARIOUS_Q34** What is the release cadence for flove? · workflow, releases — ◇ When ready
+  - options: • Weekly — Release every week. Fast iteration, potentially rushed. · • Monthly — Release every month. Balanced pace, predictable. · • Quarterly — Release every quarter. Slower, more polished. · • When ready — No fixed cadence — ship when the release is good. Flexible, unpredictable.
+- **VARIOUS_Q35** How should flove handle breaking changes? · workflow, versioning — ◇ Deprecation warnings
+  - options: • Deprecation warnings — Warn users/developers, give time to migrate. Gentle, requires tooling. · • Automatic migration — Script migrates old apps to new standard. Convenient, risky if wrong. · • Manual updates — Each app updates itself. Simple, potentially slow.
+- **VARIOUS_Q36** Should flove adopt a formal RFC process? · workflow, process — ◇ No, keep informal
+  - options: • Yes, formal RFC — Structured proposal process — draft, review, decide. More process, clearer decisions. · • No, keep informal — Decisions happen in specs and conversations. Flexible, less structured. · • Lightweight RFC — Template-based proposals, no formal voting. Balanced.
+- **VARIOUS_Q37** Should flove have automated testing for apps? · workflow, testing — ◇ Light tests only
+  - options: • Yes, full test suite — Unit + integration + visual regression. Catches bugs, adds complexity. · • Light tests only — Just HTML validation + basic smoke tests. Catches obvious issues. · • No tests — Keep manual verification. Simplest, relies on Marc's attention.
+- **VARIOUS_Q38** How should flove handle app dependencies? · workflow, dependencies — ◇ Just documented
+  - options: • Documented + versioned — Each dependency pinned to a version, documented. Reproducible builds. · • Just documented — List dependencies but don't pin versions. Informal but useful. · • No documentation — Keep dependencies implicit. Simplest, least reproducible.
+- **VARIOUS_Q39** Should flove apps have performance budgets? · workflow, performance — ◇ Soft guidelines
+  - options: • Yes, strict budgets — E.g., <50KB HTML, <10KB JS, <20KB CSS. Keeps apps lean, adds constraints. · • Soft guidelines — Suggested limits, not enforced. Informal, less pressure. · • No budgets — No size limits — each app is as big as it needs to be. Free-form.
+- **VARIOUS_Q40** What is the flove approach to mobile-first design? · standards, mobile — ◇ Strict mobile-first
+  - options: • Strict mobile-first — Design for mobile first, enhance for desktop. CSS media queries follow this pattern. · • Desktop-first with mobile — Design for desktop, adapt for mobile. More common, less future-proof. · • Equal targets — Design for both simultaneously. Balanced, more work.
+- **VARIOUS_Q41** Should flove adopt a monorepo or multi-repo strategy? · workflow, repo — ◇ Monorepo
+  - options: • Monorepo — Everything in one repo. Simple, atomic commits, but grows large. · • Multi-repo — Separate repos per project. Cleaner boundaries, harder cross-project changes. · • Hybrid — Core in monorepo, major projects in separate repos. Balanced.
+- **VARIOUS_Q42** How should flove handle design system tokens? · standards, tokens — ◇ Hybrid
+  - options: • Centralized tokens — Shared CSS variables across all apps. Consistent, less individual expression. · • Per-app tokens — Each app defines its own variables. Flexible, less consistent. · • Hybrid — Core tokens shared, apps can extend/override. Balanced.
+- **VARIOUS_Q43** Should flove apps have analytics? · standards, privacy — ◇ No analytics
+  - options: • No analytics — Keep it private. No tracking, no data. Matches §3.10.7. · • Self-hosted (Matomo) — Full control, privacy-respecting, but requires hosting. · • Privacy-first (Plausible) — Lightweight, GDPR-compliant, cloud-hosted. Easy but external. · • Basic counters only — Simple hit counters per page. Minimal, self-contained.
+- **VARIOUS_Q44** What is the flove approach to error handling? · standards, ux — ◇ Graceful degradation
+  - options: • Graceful degradation — App continues working with reduced functionality. Best UX. · • Error page — Show a friendly error message. Clear, but interrupts flow. · • Silent failure — Fail silently, log to console. Minimal user impact, hard to debug. · • Inline error states — Show error within the relevant UI component. Contextual, non-disruptive.
+- **VARIOUS_Q45** Should flove apps support offline mode? · pwa, offline — ◇ Shell + cached content
+  - options: • Full offline — All features work offline. Best UX, heaviest caching, most complexity. · • Shell + cached content — App shell loads offline, content may be stale. Balanced, simpler. · • Online only — No offline support — require internet. Simplest, least resilient.
+- **VARIOUS_Q46** How should flove handle internationalization beyond en/es? · i18n, languages — ◇ en/es only
+  - options: • Community translations — Users contribute translations via PRs. Slow, high quality. · • AI translation — Auto-translate with AI. Fast, variable quality, needs review. · • en/es only — Keep it bilingual. Simplest, matches current capacity. · • Framework ready — en/es now, but build the i18n framework so adding languages is easy later.
+- **VARIOUS_Q47** Should flove have a formal deprecation policy? · workflow, deprecation — ◇ Informal notice
+  - options: • Yes, formal policy — E.g., 6 months notice, migration guide, version marker. Professional, more process. · • Informal notice — Announce deprecation in changelog, no fixed timeline. Flexible. · • No policy — Just remove/replace when ready. Simplest, potentially abrupt.
+- **VARIOUS_Q48** What is the flove approach to accessibility testing? · standards, a11y — ◇ AAA by design
+  - options: • Automated + manual — Run axe/Lighthouse + manual screen reader testing. Most thorough. · • Automated only — Just axe/Lighthouse. Catches obvious issues, misses nuance. · • Manual only — Just manual testing. Thorough but slow, easy to skip. · • AAA by design — Follow AAA patterns in development, test periodically. Proactive.
+- **VARIOUS_Q49** Should flove apps have a consistent onboarding flow? · standards, onboarding — ◇ Contextual hints
+  - options: • Standardized onboarding — All apps share a welcome/tour component. Consistent, more code. · • Per-app onboarding — Each app designs its own. Flexible, potentially inconsistent. · • No onboarding — Apps are self-explanatory. Simplest, assumes user familiarity. · • Contextual hints — First-use tooltips and hints within the app. Non-disruptive, lightweight.
+- **VARIOUS_Q50** How should flove handle app state persistence? · standards, persistence — ◇ Preferences only
+  - options: • Full session restore — All state persists — user returns exactly where they left off. Heavy, private. · • Preferences only — Just settings and preferences persist. Light, useful. · • Nothing (ephemeral) — No persistence — fresh start each time. Most private, least convenient. · • User choice — Let user decide what persists per app. Flexible, more UI.
+
+### Questy demo (replacement, 2026-11-19)
+
+- **QUESTYDEMO01** Build a clean `questy-html-flove` demo with no legacy sources (replaces the retired `browsy`/`nety-spec` packs and their generator). Not started.
 
 ### Banco Risa
 - **BR03** Verificar `/setprivacy` → Disable en BotFather → unanswered (defer to Marc)
@@ -30,7 +127,8 @@ Punteros desde los docs: `↗ pendings:#N` (donde N es el ID).
 ### Validación & Pulido
 - **V03** ~~Workflow de mantenimiento por tiers~~ → ⏹ Obsoleto (2026-11-15): los tiers no entran en este trunk (decisión en `plans/2026-11-14-app-tier-planned.md`); el *future wish* queda como nota de diseño en `standards/debates/proposals/frontend-tiers.md` §13.1.
 
-- **A11Y02** axe-core pass — lo estático sigue en `tools/check-a11y.py`; la pasada real usa **`tools/check-a11y-axe.py`** (Chrome headless + axe 4.10.2 vía `development/standards/scripts/a11y-harness.html`), por app, con `--md`/`--json`. Informe: [`a11y-report.md`](a11y-report.md) — 49 apps, 911 nodos, 13 reglas. **Hecho 2026-11-18:** `meta-viewport` eliminado en 8 apps (sety, inventary, goddy, socy, astry, lovy, diesafe, myfamily). **También 2026-11-18:** H1 oculto en souls, keys, shareful y freed; nombre en el progreso de realy, el corazón de lovy y los selects de export de lowy; `intro-track` enfocable en fivy/keys; enlace de browsy subrayado. **blogy 2026-11-18:** 486 → **0** nodos (`aria-label` en los 283 `input.ctl` + el bloque de estado en `role=region`). Pendiente: `region` en el resto, `color-contrast` (72 / 9), `aria-allowed-role` (34 / 9), `nested-interactive` (19 / 4). Timeout ignorado por decisión del owner: nety, sety, vizy2.
+- **A11Y02** axe-core pass — lo estático sigue en `tools/check-a11y.py`; la pasada real usa **`tools/check-a11y-axe.py`** (Chrome headless + axe 4.10.2 vía `development/standards/scripts/a11y-harness.html`), por app, con `--md`/`--json`; el teclado lo cubre **`tools/check-keyboard.py`** (`development/standards/scripts/keyboard-harness.html`). Informe: [`a11y-report.md`](a11y-report.md) — **49 apps, 0 nodos, 0 páginas saltadas** (2026-11-19). **Hecho 2026-11-19:** las 46 apps con nodos bajaron a **0**; nety, sety y vizy2 ya se auditan (copia con recursos remotos neutralizados y espera de 120 s); nety y sety inlinean Fredoka + Space Mono; teclado **49 apps · 72 controles · 0 fallos**; estático **54 archivos · 0**. Sin timeouts ignorados.
+- **UX01** Niveles 4–5 de §13.18 — la norma está en [`frontend.md` §13.18](../frontend/frontend.md) y la tabla de estado vive en `development/index.html` (Data → UX levels). 2026-11-19: **6/18 filas de nivel 4** y **1/18 de nivel 5** con ✓; el resto lleva `+`. **Pendiente:** pasada `optimizy` app por app para confirmar el nivel 4 de cada sección que la app tenga y anotar su hueco de nivel 5 — la foto actual es una encuesta estática de las 49 apps, no una pasada por app. Una app sin esa sección queda exenta (§13.18) y no entra en la cola.
 - **VOCAB02** ~~Deriva de la matriz de vocabulario~~ → ✅ Hecho (2026-11-19): `scripts/check-drift.py` da **ALIGNED** con **54/54 apps** y **0 notas**. Las 19 apps que faltaban están en la matriz: 12 con `slotKinds` (media importación), browsy/fity/wizy y chacrikun/electrorchestra/frotis/loly sin campos (`displayOnly`), todas con los 4 slots compartidos. La columna Spanish está poblada para las 19.
 
 ### Worldview
@@ -101,7 +199,7 @@ Punteros desde los docs: `↗ pendings:#N` (donde N es el ID).
 ### Designs Pendientes
 - **DS01** ~~`flove-pwa-installable-design.md` — pendiente plan de implementación~~ → ✅ Simple install prompt
 - **DS02** ~~`flove-private-addon-login-encryption-design.md` — pendiente plan de implementación~~ → ✅ OAuth integration
-- **DS03** `appy-advanced-athenea-desk.md` — Tasks 6 (wizy.html), 7 (sety.html), 8 (making-of.html)
+- **DS03** `appy-advanced-athenea-desk.md` — Tasks 6 (wizy.html), 7 (sety.html); task 8 retired 2026-11-19
 - **DS04** `appy-intros-rainbow-roadmap-design.md` — features-intro stubbed, nav location TBD
 
 ### Android / APK

@@ -14,13 +14,12 @@ keeps a local fallback because apps are single-file and offline.
 
 | Area | Where it lives | Status |
 |---|---|---|
-| **Custom magic insights** | A **floating bottom layer over app navigation**; opened from Magic → Custom | Pending |
-| **Field influence** | Duplicated at key fields inside apps (starter data, prompts, gentle suggestions while filling) | Pending |
-| **Agent prompt influence** | Shapes the prompt handed to the user’s agent (`floveAgentBlock` / Wizy agent block) | Partly live |
+| **Custom magic insights** | Reads your flove and other portraits you want to add, offering lovely suggestions and rewards | Pending |
+| **Key fields** | Apps' key fields, exported prompts, the interview flow's influence degree / question suggestions; questy colours related to the full flove ontology at degrees 1–5 | Pending |
+| **Exported prompts** | Shapes the prompt handed to the user’s agent (`floveAgentBlock` / Wizy agent block) | Partly live |
 | **External embeds** | Embedded in external apps / pages | Pending |
-| **Questy-flove** | The interview flow’s influence degree / question suggestions | Pending |
-| **Federated sharing** | Its own data-sharing network inside Browsy’s web of trust | Pending |
-| **P2P permissions** | A permissions variant for NetyBrowsy | Pending |
+| **(G)Local Browsy** | Its own data-sharing network: local pulls and local derivation, social only with consent | Pending |
+| **Appy Magic** | The Magic button below Upload played app here: Myself / With others (three wizards) | Live |
 | **Wizy Labelers** | Advanced space: re-voices an app’s labels in a chosen perspective — blogy is the demo (8 labelers) | Live demo |
 | **Wizy Raty** | The wide wizard list from Raty’s 28 rater scales + the add-a-wizard form | Live demo |
 | **Wizy Helpers** | A help page as a Wizy space — dealy’s help / new-bot pages are the demo | Live demo |
@@ -31,8 +30,10 @@ as a network participant.
 
 **Index surface.** The Wizy page mirrors this table at
 `apps/sys/wizy/index.html#areas`; update both when an area changes status.
+Questy-flove is described inside Key fields rather than as a separate row.
 The Browsy field test (`apps/sys/browsy/2026-11-18-browsy-extension-demo.html`)
-shows the federated-sharing area in context.
+shows the (G)Local Browsy area in context. P2P permissions are tracked in
+`debates/plans/`, not listed as a Wizy area.
 
 ## Custom magic contract (proposal)
 

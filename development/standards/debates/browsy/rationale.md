@@ -752,7 +752,7 @@ measured goals. Privacy gates are binary: no gate, no next milestone.
 | `development/standards/debates/browsy/README.md` | On-demand rule, central vs extension split, data structures, implemented/stubbed list |
 | `.../browsy/port-nety.md` | Permission levels, URL obfuscation, groups, auto-decrypt, key rotation; the port plan |
 | `.../browsy/browsy-questions.md` | 244 decisions: privacy all-local+encrypted, auth flows, storage, badges, tiers |
-| `.../making-of/superpowers/specs/2026-06-18-nety-access-ecosystem-design.md` | Three access axes (invites, trust, permissions), private-first, field-level visibility, key recovery |
+| archived `2026-06-18-nety-access-ecosystem-design.md` | Three access axes (invites, trust, permissions), private-first, field-level visibility, key recovery |
 | old Nety plans (removed 2026-11-17) | Browsy base + Nety extension split; local vs central trust; masks |
 | `.../plans/central-backend.md` | Central persistence, progressive identity, browsy sync, CRDT trust |
 | old appy-normal plan (removed 2026-11-17) | Wizy mini at normal; MyNet managed by Browsy |

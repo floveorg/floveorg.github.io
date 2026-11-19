@@ -226,6 +226,9 @@ h1,h2,h3,.brand b{font-family:var(--sans)}
 .brand-mark svg{width:22px;height:22px}
 .brand b{display:block;font-family:var(--sans);font-size:1.12rem;font-weight:700;
   letter-spacing:-.02em;line-height:1.1}
+.brand-txt{display:flex;flex-direction:column;align-items:flex-start}
+.site-slogan{display:block;margin:.16rem 0 0;font-family:var(--mono);font-size:.52rem;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--muted);line-height:1.2}
 .brand-wrap{position:relative;margin-right:auto}
 .brand{display:inline-flex;align-items:center;gap:.65rem;text-decoration:none;color:var(--ink);border-radius:12px;
   border:0;background:none;font:inherit;cursor:pointer;padding:.25rem .35rem;margin:-.25rem -.35rem;transition:background .18s}
@@ -234,11 +237,12 @@ h1,h2,h3,.brand b{font-family:var(--sans)}
   padding:.45rem;background:var(--card-solid);border:1px solid var(--line-2);border-radius:16px;
   box-shadow:var(--shadow-2)}
 .brand-menu[hidden]{display:none}
-.brand-links{display:flex;flex-direction:column;gap:.06rem}
-.brand-links a{display:flex;align-items:center;min-height:40px;padding:.5rem .7rem;border-radius:10px;
+.brand-menu-group{display:flex;flex-direction:column;gap:.06rem;padding-bottom:.2rem}
+.brand-menu-group a,.brand-menu-group button{display:flex;align-items:center;min-height:40px;padding:.5rem .7rem;
+  border:0;border-radius:10px;background:none;width:100%;text-align:left;cursor:pointer;
   font-family:var(--mono);font-size:.6rem;letter-spacing:.03em;color:var(--muted);text-decoration:none}
-.brand-links a:hover{background:var(--panel);color:var(--ink)}
-.brand-links a.brand-link-standards{color:var(--accent);font-weight:700}
+.brand-menu-group a:hover,.brand-menu-group button:hover{background:var(--panel);color:var(--ink)}
+.brand-menu-group button small{margin-left:auto;color:var(--accent);font-size:.52rem}
 .brand-menu-sep{height:1px;background:var(--line);margin:.4rem .2rem}
 .brand-menu-row{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.35rem .7rem}
 .brand-menu-k{font-family:var(--mono);font-size:.48rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
@@ -646,8 +650,6 @@ details.wfull pre{font-size:.54rem;line-height:1.55;background:rgba(20,18,32,.04
   padding:.85rem .8rem;border:1px dashed var(--line-2);border-radius:14px;background:var(--panel)}
 .entrance-depth-title{display:flex;flex-direction:column;align-items:center;gap:.22rem;text-align:center;
   font-size:1.05rem;font-weight:800;letter-spacing:-.02em;line-height:1.2}
-.entrance-depth-title .influence-word{display:block}
-.entrance-depth-title .influence-word[hidden]{display:none}
 .entrance-depth-title .influence-now{font-family:var(--mono);font-size:1.06rem;font-weight:400;letter-spacing:0;
   line-height:1.45;color:var(--ink-2);max-width:52ch;min-height:1.5em}
 .entrance-depth .gauge{grid-template-columns:repeat(6,1fr);margin:0}
@@ -1046,31 +1048,121 @@ h4.sub{font-size:.82rem;letter-spacing:-.01em;margin:1.15rem 0 .1rem}
 }
 
 /* ── operating areas ────────────────────────────────────────── */
-.areas{margin:2.4rem 0 0;padding:1.25rem 0 0;border-top:1px solid var(--line);scroll-margin-top:5.6rem}
-.areas-head{display:flex;flex-direction:column;gap:.35rem;margin-bottom:1rem;max-width:76ch}
+.areas{margin:2.4rem 0 0;padding:1.25rem 0 0;border-top:1px solid var(--line);scroll-margin-top:5.6rem;text-align:center}
+.areas-head{display:flex;justify-content:center;margin:0 0 1.2rem}
+.areas:not([data-stage="0"]) .areas-head{display:none}
 .areas-head h2{font-size:clamp(1.22rem,2.4vw,1.6rem);letter-spacing:-.03em;line-height:1.18}
-.areas-lead{font-size:.84rem;line-height:1.6;color:var(--muted)}
-.areas-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.65rem}
+.areas-title-btn{font:inherit;letter-spacing:inherit;line-height:inherit;color:inherit;
+  border:0;background:none;padding:0;cursor:pointer}
+.areas-title-btn:hover{color:var(--accent)}
+.areas-grid{display:none}
+.areas[data-stage="1"] .areas-grid,.areas[data-stage="2"] .areas-grid,.areas[data-stage="3"] .areas-grid{display:grid}
+.areas[data-stage="1"] .area-card:not(.open):not(.area-card-intro){background:transparent;border-color:transparent;box-shadow:none}
+.areas[data-stage="1"] .area-card:not(.open):not(.area-card-intro) .area-card-top,
+.areas[data-stage="1"] .area-card:not(.open):not(.area-card-intro) .area-card-toggle,
+.areas[data-stage="1"] .area-card:not(.open):not(.area-card-intro) .area-card-detail,
+.areas[data-stage="1"] .area-card:not(.open):not(.area-card-intro) > p{display:none}
+.areas-intro{width:min(432px,100%);height:auto;aspect-ratio:168/76;flex:none;display:block}
+.areas-expand{flex:1 0 100%;display:flex;align-items:center;justify-content:center;
+  padding:0;border:0;background:none;color:inherit;cursor:pointer;
+  transition:transform .35s var(--ease);animation:areaGlow 4.2s ease-in-out infinite}
+.areas-expand:hover{filter:drop-shadow(0 0 14px color-mix(in srgb,var(--accent) 55%,transparent))}
+.areas[data-stage="3"] .areas-expand{transform:scale(1.12)}
+@keyframes areaGlow{0%,100%{filter:drop-shadow(0 0 4px color-mix(in srgb,var(--accent) 25%,transparent))}
+  50%{filter:drop-shadow(0 0 18px color-mix(in srgb,var(--accent) 65%,transparent))}}
+.areas-intro svg{width:100%;height:100%;overflow:visible}
+.areas-intro .l{stroke:var(--line-2);fill:none;stroke-width:1.6;stroke-linecap:round}
+.areas-intro .a{stroke:var(--accent);fill:color-mix(in srgb,var(--accent) 12%,transparent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.areas-intro .f{fill:var(--accent);stroke:none}
+.areas-intro .lab{fill:var(--muted);font-family:var(--mono)}
+.areas-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:1.6rem 1.4rem;align-items:start}
 .area-card{position:relative;display:flex;flex-direction:column;gap:.4rem;padding:.85rem .9rem .9rem;
   border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:13px;
-  background:var(--card);box-shadow:var(--shadow-1);min-width:0}
+  background:var(--card);box-shadow:var(--shadow-1);min-width:0;cursor:pointer}
 .area-card-top{display:flex;align-items:baseline;justify-content:space-between;gap:.4rem}
 .area-num{font-family:var(--mono);font-size:.48rem;letter-spacing:.14em;color:var(--muted)}
 .area-status{font-family:var(--mono);font-size:.44rem;letter-spacing:.09em;text-transform:uppercase;
   padding:.2rem .42rem;border-radius:999px;border:1px solid var(--line-2);color:var(--muted);white-space:nowrap}
 .area-status.live{color:var(--teal-ink);border-color:color-mix(in srgb,var(--teal) 45%,var(--line));
   background:color-mix(in srgb,var(--teal) 9%,transparent)}
-.area-card h3{font-size:.86rem;letter-spacing:-.015em;line-height:1.25}
-.area-card p{font-size:.71rem;line-height:1.55;color:var(--muted);margin:0}
+.area-card h3{display:flex;align-items:center;gap:.45rem;font-size:1.26rem;letter-spacing:-.015em;line-height:1.25}
+.area-logo{width:35px;height:35px;flex:none;display:grid;place-items:center;color:var(--accent)}
+.area-logo svg{width:23px;height:23px;display:block;transform-origin:center}
+.area-card.open .area-logo svg{animation:iconPop .55s var(--ease) both}
+.area-card.open .area-logo[data-anim="respira"] .star{animation:plBreathe 2.4s ease-in-out infinite;transform-origin:center}
+.area-card.open .area-logo[data-anim="respira"] .sp1,.area-card.open .area-logo[data-anim="respira"] .sp2{animation:alTwinkle 1.6s ease-in-out infinite}
+.area-card.open .area-logo[data-anim="respira"] .sp2{animation-delay:.4s}
+.area-card.open .area-logo[data-anim="gira"] .r2{animation:fieldSlide .9s var(--ease) .05s both}
+.area-card.open .area-logo[data-anim="gira"] .r3{animation:fieldSlide .9s var(--ease) .12s both}
+.area-card.open .area-logo[data-anim="traza"] .p2{stroke-dasharray:12;animation:plTrace .8s ease-out both}
+.area-card.open .area-logo[data-anim="traza"] .cur{animation:alTwinkle .8s steps(2) 3}
+.area-card.open .area-logo[data-anim="late"] .e1{animation:bracketL .5s var(--ease) both}
+.area-card.open .area-logo[data-anim="late"] .e2{animation:bracketR .5s var(--ease) both}
+.area-card.open .area-logo[data-anim="despliega"] .n1,.area-card.open .area-logo[data-anim="despliega"] .l1{animation:netPulse 1.2s ease-out .0s both}
+.area-card.open .area-logo[data-anim="despliega"] .n2,.area-card.open .area-logo[data-anim="despliega"] .l2{animation:netPulse 1.2s ease-out .08s both}
+.area-card.open .area-logo[data-anim="despliega"] .n3,.area-card.open .area-logo[data-anim="despliega"] .l3{animation:netPulse 1.2s ease-out .16s both}
+.area-card.open .area-logo[data-anim="flota"] .wand{animation:plBreathe 2.2s ease-in-out infinite;transform-origin:center}
+.area-card.open .area-logo[data-anim="flota"] .ring{animation:alGlow 2s ease-in-out infinite}
+.area-card.open .area-logo[data-anim="deriva"] .tag{animation:tagSwing .6s var(--ease) both;transform-origin:6px 6px}
+.area-card.open .area-logo[data-anim="titila"] .b1{animation:barUp .45s var(--ease) .0s both;transform-origin:bottom}
+.area-card.open .area-logo[data-anim="titila"] .b2{animation:barUp .45s var(--ease) .08s both;transform-origin:bottom}
+.area-card.open .area-logo[data-anim="titila"] .b3{animation:barUp .45s var(--ease) .16s both;transform-origin:bottom}
+.area-card.open .area-logo[data-anim="latece"] .h0{animation:alGlow 2.4s ease-in-out infinite}
+.area-card.open .area-logo[data-anim="latece"] .h1,.area-card.open .area-logo[data-anim="latece"] .h2{animation:helpPop .5s var(--ease) .05s both}
+@keyframes iconPop{0%{transform:scale(.7);opacity:.4}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+@keyframes fieldSlide{0%{transform:translateX(-4px);opacity:0}100%{transform:none;opacity:1}}
+@keyframes bracketL{0%{transform:translateX(3px)}100%{transform:none}}
+@keyframes bracketR{0%{transform:translateX(-3px)}100%{transform:none}}
+@keyframes netPulse{0%{opacity:0;transform:scale(.6)}100%{opacity:1;transform:scale(1)}}
+@keyframes tagSwing{0%{transform:rotate(-12deg)}60%{transform:rotate(4deg)}100%{transform:none}}
+@keyframes barUp{0%{transform:scaleY(.2);opacity:.3}100%{transform:scaleY(1);opacity:1}}
+@keyframes helpPop{0%{transform:translateY(2px);opacity:0}100%{transform:none;opacity:1}}
+.area-card > p{display:none;font-size:.71rem;line-height:1.55;color:var(--muted);margin:0}
+.area-card.open > p{display:block}
+.area-card-intro{grid-column:1/-1;text-align:center;background:transparent;border:0;box-shadow:none;padding:.4rem 0 1rem}
+.area-card-intro h3{justify-content:center;font-size:1.9rem}
+.area-card-intro > p{display:block;max-width:760px;margin:0 auto;font-size:1.35rem;line-height:1.6;color:var(--ink-2)}
+.area-card-intro .intro-toggle{margin:.9rem auto 0;font-size:.6rem}
+.area-card-intro .intro-detail{border-top:0;align-items:center;margin-top:.7rem}
+.area-card-intro .intro-detail > p{max-width:640px;margin:0 auto;text-align:center;font-size:.95rem;color:var(--muted)}
+.intro-diagram{display:block;width:min(100%,460px);height:auto;margin:.4rem auto}
+.intro-diagram rect{fill:color-mix(in srgb,var(--accent) 8%,transparent);stroke:var(--line-2);stroke-width:1.5}
+.intro-diagram .id-core rect{fill:color-mix(in srgb,var(--accent) 14%,transparent);stroke:var(--accent);stroke-width:2}
+.intro-diagram text{fill:var(--ink-2);font-family:var(--mono);font-size:11px;text-anchor:middle}
+.intro-diagram .id-line{stroke:var(--accent);stroke-width:1.6;fill:none}
+.intro-diagram .id-many circle{fill:var(--accent);opacity:.75}
+.tour-cta{display:inline-flex;align-items:center;justify-content:center;margin:.5rem auto 0;
+  padding:.9rem 1.8rem;border:0;border-radius:999px;background:var(--grad);color:#fff;
+  font-family:var(--mono);font-size:.82rem;font-weight:700;letter-spacing:.07em;cursor:pointer;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent),0 8px 26px color-mix(in srgb,var(--accent) 40%,transparent);
+  animation:tourPulse 2.4s ease-in-out infinite}
+.tour-cta:hover{transform:translateY(-2px)}
+@keyframes tourPulse{0%,100%{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent),0 8px 26px color-mix(in srgb,var(--accent) 40%,transparent)}
+  50%{box-shadow:0 0 0 7px color-mix(in srgb,var(--accent) 10%,transparent),0 10px 34px color-mix(in srgb,var(--accent) 60%,transparent)}}
+.areas[data-stage="1"] .area-card:not(.open):not(.area-card-intro){padding:.6rem .75rem}
 .area-card code{font-family:var(--mono);font-size:.62em;color:var(--ink-2);
   background:var(--panel);padding:.08rem .24rem;border-radius:4px}
 .area-card.live{border-left-color:var(--teal)}
+.area-card[data-expand]{cursor:pointer;transition:border-color .18s ease,box-shadow .18s ease}
+.area-card[data-expand]:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.area-card.open{border-color:color-mix(in srgb,var(--accent) 60%,var(--line))}
+.area-card-toggle{margin-top:auto;align-self:flex-start;display:inline-flex;align-items:center;gap:.35rem;
+  padding:.26rem .5rem;border:1px solid var(--line-2);border-radius:999px;
+  background:var(--card-solid);color:var(--ink-2);font-family:var(--mono);font-size:.48rem;
+  letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.area-caret{display:inline-block;transition:transform .18s ease}
+.area-card.open .area-caret{transform:rotate(180deg)}
+.area-card-detail{border-top:1px solid var(--line);padding-top:.5rem;margin-top:.1rem;
+  display:flex;flex-direction:column;gap:.35rem}
+.area-card-detail[hidden]{display:none}
+.area-card-detail p{font-size:.68rem;line-height:1.55;color:var(--ink-2)}
+.area-card-detail ul{margin:0;padding-left:1rem;font-size:.68rem;line-height:1.55;color:var(--muted)}
+.area-card-detail li+li{margin-top:.2rem}
+.area-card-detail a{color:var(--accent-ink);font-weight:600}
 .areas-note{font-size:.7rem;line-height:1.55;color:var(--muted);margin:.5rem 0 0}
 .areas-note a{color:var(--accent-ink);font-weight:600}
 .areas-foot{display:flex;align-items:center;gap:.5rem 1rem;flex-wrap:wrap;margin-top:.8rem;
   font-size:.64rem;line-height:1.5;color:var(--muted)}
-.areas-foot a{color:var(--accent-ink);text-decoration:none;font-weight:600}
-.areas-foot a:hover{text-decoration:underline}
 .wizy-chips{display:flex;flex-wrap:wrap;gap:.32rem;margin:.2rem 0 .6rem}
 .wizy-chips span{font-family:var(--mono);font-size:.54rem;letter-spacing:.08em;padding:.28rem .55rem;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink-2)}
 @media(max-width:820px){.areas-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -1145,15 +1237,26 @@ h4.sub{font-size:.82rem;letter-spacing:-.01em;margin:1.15rem 0 .1rem}
               <circle cx="12" cy="19.8" r="1.2" fill="currentColor" stroke="none"/>
             </svg>
           </span>
-          <span class="brand-txt"><b>Wizy</b></span>
+          <span class="brand-txt"><b>Wizy</b><small class="site-slogan">In the middle</small></span>
         </button>
         <div class="brand-menu" id="brandMenu" hidden>
-          <nav class="brand-links" aria-label="Sections">
-            <a href="#wizards">Wizards</a>
-            <a href="#influence">Influence</a>
-            <a href="#areas">Areas</a>
-            <a class="brand-link-standards" href="../../../development/standards/index.html">Standards ↗</a>
-          </nav>
+          <div class="brand-menu-group" aria-label="Main">
+            <a href="../../../index.html">Home</a>
+            <button class="deck-open" type="button">About <small>tour ↗</small></button>
+          </div>
+          <div class="brand-menu-sep" aria-hidden="true"></div>
+          <div class="brand-menu-group" aria-label="Planned work tracker">
+            <span class="brand-menu-k">Work · planned tracker</span>
+            <a href="../../../development/standards/debates/pendings.md#pending-items">Work · standards</a>
+            <a href="../../../development/standards/debates/pendings.md#browsy-pre-build-2026-11-18">Plans</a>
+            <a href="../../../development/standards/debates/pendings.md#wizy">Debates</a>
+          </div>
+          <div class="brand-menu-sep" aria-hidden="true"></div>
+          <div class="brand-menu-group" aria-label="Flove">
+            <span class="brand-menu-k">Flove</span>
+            <a href="../../../docs/index.html">Docs</a>
+            <a href="https://flove.org/" target="_blank" rel="noopener">Flove ↗</a>
+          </div>
           <div class="brand-menu-sep" aria-hidden="true"></div>
           <div class="brand-menu-row">
             <span class="brand-menu-k" data-i18n="theme">Theme</span>
@@ -1173,7 +1276,7 @@ h4.sub{font-size:.82rem;letter-spacing:-.01em;margin:1.15rem 0 .1rem}
   </header>
 
   <section class="entrance-depth" id="influence" aria-labelledby="influenceTitle">
-    <h2 class="entrance-depth-title" id="influenceTitle"><span class="influence-word" id="influenceWord">Influence</span><span class="influence-now" id="influenceNow" aria-live="polite">Pick a depth to set the influence.</span></h2>
+    <h2 class="entrance-depth-title" id="influenceTitle"><span class="influence-now" id="influenceNow" aria-live="polite">Pick a depth to set the influence</span></h2>
     <div class="gauge gauge-6" id="wizy-gauge" role="radiogroup" aria-label="Flove influence 0-5">
       <button type="button" data-v="0" role="radio" aria-checked="false"><span>0</span><em>None</em></button>
       <button type="button" data-v="1" role="radio" aria-checked="false"><span>1</span><em>Little</em></button>
@@ -1320,134 +1423,140 @@ h4.sub{font-size:.82rem;letter-spacing:-.01em;margin:1.15rem 0 .1rem}
   </section>
 
   <!-- Operating areas · the draft standard, made visible on the page -->
-  <section class="areas" id="areas" aria-labelledby="areasTitle">
+  <section class="areas" id="areas" data-stage="0" aria-labelledby="areasTitle">
     <div class="areas-head">
-      <span class="sections-label">operating areas · standard draft</span>
-      <h2 id="areasTitle">Where Wizy is present</h2>
-      <p class="areas-lead">Wizy is not only this page. The engine is designed to appear as a floating layer, as field hints, as agent context, as an embed and as a network participant. These are the areas the standard names — broader than a page section, and each with its own home.</p>
+      <h2 id="areasTitle"><button class="areas-title-btn" type="button" aria-expanded="false" aria-controls="areasGrid">Where is Wizy?</button></h2>
     </div>
-    <div class="areas-grid">
-      <article class="area-card">
-        <div class="area-card-top"><span class="area-num">01</span><span class="area-status pending">Pending</span></div>
-        <h3>Custom magic insights</h3>
-        <p>A floating bottom layer over app navigation, opened from Magic &rarr; Custom.</p>
+    <div class="areas-grid" id="areasGrid">
+      <article class="area-card area-card-intro" data-expand>
+        <h3><span class="area-logo" data-anim="respira" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="star" d="M12 3l1.6 4.4 4.4 1.6-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/><path class="sp1" d="M5.5 15.5l.6 1.6 1.6.6-1.6.6-.6 1.6-.6-1.6-1.6-.6 1.6-.6z"/><path class="sp2" d="M18 13.5l.45 1.2 1.2.45-1.2.45-.45 1.2-.45-1.2-1.2-.45 1.2-.45z"/></svg></span>Custom magic insights</h3>
+        <p>Wizy is one quiet custom layer that reads your flove and other portraits you want to add, offering you lovely suggestions and rewards.</p>
+        <button class="area-card-toggle intro-toggle" type="button" aria-expanded="false" aria-controls="area-detail-01">Explore the idea <span class="area-caret" aria-hidden="true">▾</span></button>
+        <div class="area-card-detail intro-detail" id="area-detail-01" hidden>
+          <p>Every shape below begins the same way: a portrait the app already holds, a quiet reading, and a few words offered at the right moment. The idea is always one; only the surface changes.</p>
+          <svg class="intro-diagram" viewBox="0 0 460 92" role="img" aria-labelledby="introDiagTitle">
+            <title id="introDiagTitle">One portrait, one quiet layer, one thought, many surfaces</title>
+            <g class="id-node"><rect x="2" y="22" width="94" height="48" rx="14"/><text x="49" y="51">portrait</text></g>
+            <path class="id-line" d="M100 46h30"/>
+            <g class="id-core"><rect x="134" y="12" width="116" height="68" rx="20"/><text x="192" y="52">Wizy</text></g>
+            <path class="id-line" d="M254 46h30"/>
+            <g class="id-node"><rect x="288" y="22" width="96" height="48" rx="14"/><text x="336" y="51">a thought</text></g>
+            <path class="id-line" d="M388 46h18"/>
+            <g class="id-many"><circle cx="418" cy="32" r="7"/><circle cx="440" cy="45" r="5"/><circle cx="418" cy="58" r="6"/><circle cx="440" cy="20" r="4"/></g>
+          </svg>
+          <button class="tour-cta deck-open" type="button">Take the tour &rarr;</button>
+        </div>
       </article>
-      <article class="area-card">
+      <article class="area-card" data-expand>
         <div class="area-card-top"><span class="area-num">02</span><span class="area-status pending">Pending</span></div>
-        <h3>Field influence</h3>
-        <p>Duplicated at key fields inside apps: starter data, prompts and gentle suggestions while filling.</p>
+        <h3><span class="area-logo" data-anim="gira" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect class="r1" x="4" y="5" width="16" height="4" rx="1.6"/><rect class="r2" x="4" y="10.5" width="16" height="4" rx="1.6"/><rect class="r3" x="4" y="16" width="10" height="3.5" rx="1.6"/><circle cx="7" cy="7" r=".9" fill="currentColor" stroke="none"/><circle cx="7" cy="12.5" r=".9" fill="currentColor" stroke="none"/></svg></span>Key fields</h3>
+        <p>Apps' key fields, exported prompts and the interview flow's influence degree &mdash; questy colours tied to the full ontology at 1&ndash;5.</p>
+        <button class="area-card-toggle" type="button" aria-expanded="false" aria-controls="area-detail-02">Details <span class="area-caret" aria-hidden="true">▾</span></button>
+        <div class="area-card-detail" id="area-detail-02" hidden>
+          <ul>
+            <li>Key fields: starter data, prompts and gentle suggestions while filling.</li>
+            <li>Exported prompts: the system prompt and embed snippets copied from Prompt &amp; embed.</li>
+            <li>Interview: influence 0&ndash;5 and question suggestions; five questy colours map to the ontology, degree 5 plays the whole model.</li>
+          </ul>
+        </div>
       </article>
-      <article class="area-card live">
+      <article class="area-card live" data-expand>
         <div class="area-card-top"><span class="area-num">03</span><span class="area-status live">Partly live</span></div>
-        <h3>Agent prompt influence</h3>
-        <p>Shapes the prompt handed to the user&rsquo;s agent through <code>floveAgentBlock</code> and the Wizy agent block.</p>
+        <h3><span class="area-logo" data-anim="traza" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="p1" d="M5.5 7l4 5-4 5"/><path class="p2" d="M11 17h7.5"/><rect class="cur" x="18.2" y="14.8" width="1.6" height="4.4" rx=".4" fill="currentColor" stroke="none"/></svg></span>Exported prompts</h3>
+        <p>Shapes the prompt handed to the user&rsquo;s agent through floveAgentBlock and the Wizy agent block.</p>
+        <button class="area-card-toggle" type="button" aria-expanded="false" aria-controls="area-detail-03">Details <span class="area-caret" aria-hidden="true">▾</span></button>
+        <div class="area-card-detail" id="area-detail-03" hidden>
+          <ul>
+            <li>Already carrying the block: Goddy, Souls, PracSys, Inventary, Realy, MyFamily and Keys.</li>
+            <li>The block travels with the portrait, so an agent reads the same state the app shows.</li>
+            <li>wizy.custom(portrait) reads a flove-portrait/1 envelope and returns one or a few gentle reflections.</li>
+            <li>Status is partly live: the block is written, the reading is still being standardised.</li>
+          </ul>
+        </div>
       </article>
-      <article class="area-card">
+      <article class="area-card" data-expand>
         <div class="area-card-top"><span class="area-num">04</span><span class="area-status pending">Pending</span></div>
-        <h3>External embeds</h3>
-        <p>Embedded in external apps and pages.</p>
+        <h3><span class="area-logo" data-anim="late" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="e1" d="M8.5 7l-4 5 4 5"/><path class="e2" d="M15.5 7l4 5-4 5"/><path class="e3" d="M13.5 5.5l-3 13"/></svg></span>External embeds</h3>
+        <p>Embedded in external apps and pages, from a micro chip to a full profile.</p>
+        <button class="area-card-toggle" type="button" aria-expanded="false" aria-controls="area-detail-04">Details <span class="area-caret" aria-hidden="true">▾</span></button>
+        <div class="area-card-detail" id="area-detail-04" hidden>
+          <ul>
+            <li>Four surfaces share one portrait: micro, minimal, compact and full.</li>
+            <li>Micro suits footers and mobile; minimal serves inline cards and compact fits sidebars.</li>
+            <li>Full is for onboarding, where the whole state can be shown without a second click.</li>
+          </ul>
+        </div>
       </article>
-      <article class="area-card">
+      <article class="area-card" data-expand>
         <div class="area-card-top"><span class="area-num">05</span><span class="area-status pending">Pending</span></div>
-        <h3>Questy-flove</h3>
-        <p>The interview flow&rsquo;s influence degree and question suggestions.</p>
+        <h3><span class="area-logo" data-anim="despliega" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="n0" cx="12" cy="12" r="2.2"/><circle class="n1" cx="12" cy="4.8" r="1.7"/><circle class="n2" cx="18.4" cy="15.4" r="1.7"/><circle class="n3" cx="5.6" cy="15.4" r="1.7"/><path class="l1" d="M12 9.8V6.5"/><path class="l2" d="M13.9 13.2l3 1.8"/><path class="l3" d="M10.1 13.2l-3 1.8"/></svg></span>(G)Local Browsy</h3>
+        <p>Local pulls and local derivation between Browsy peers; a social card reaches Nety only with consent.</p>
+        <button class="area-card-toggle" type="button" aria-expanded="false" aria-controls="area-detail-05">Details <span class="area-caret" aria-hidden="true">▾</span></button>
+        <div class="area-card-detail" id="area-detail-05" hidden>
+          <ul>
+            <li>(G)Local Browsy signs a scoped grant before any peer reads the encrypted projection.</li>
+            <li>MyFamily saves locally and Wizy derives locally: the portrait never leaves the device on its own.</li>
+            <li>No backend and no network: a summary renders the chosen text, not the app&rsquo;s own rows.</li>
+            <li>The public card publishes only on the owner&rsquo;s consent; the field test lives in Browsy.</li>
+          </ul>
+        </div>
       </article>
-      <article class="area-card">
-        <div class="area-card-top"><span class="area-num">06</span><span class="area-status pending">Pending</span></div>
-        <h3>Federated sharing</h3>
-        <p>Its own data-sharing network inside Browsy&rsquo;s web of trust.</p>
+            <article class="area-card live" id="wizy-appy" data-expand>
+        <div class="area-card-top"><span class="area-num">06</span><span class="area-status live">Live</span></div>
+        <h3><span class="area-logo" data-anim="flota" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="ring" cx="12" cy="12" r="8"/><path class="wand" d="M12 7.5l1.1 3.1 3.1 1.1-3.1 1.1L12 16l-1.1-3.2-3.1-1.1 3.1-1.1z"/></svg></span>Appy Magic</h3>
+        <p>Magic button in Appy: Myself joins two of your played apps; With others brings in a MyFamily person and category.</p>
+        <button class="area-card-toggle" type="button" aria-expanded="false" aria-controls="area-detail-06">Details <span class="area-caret" aria-hidden="true">▾</span></button>
+        <div class="area-card-detail" id="area-detail-06" hidden>
+          <ul>
+            <li>Three wizards &mdash; Love, Joy and Wisdom &mdash; with one active at a time.</li>
+            <li>Myself builds three links, each joining two plays with a different preposition; 3 more appends three.</li>
+            <li>With others writes one sentence from two plays plus the MyFamily friend and their strongest category.</li>
+            <li>The surface is a floating bottom layer over app navigation, opened from Magic &rarr; Custom; the app underneath keeps its own controls.</li>
+          </ul>
+        </div>
       </article>
-      <article class="area-card">
-        <div class="area-card-top"><span class="area-num">07</span><span class="area-status pending">Pending</span></div>
-        <h3>P2P permissions</h3>
-        <p>A permissions variant for NetyBrowsy.</p>
+      <article class="area-card live" id="wizy-labelers" data-expand>
+        <div class="area-card-top"><span class="area-num">07</span><span class="area-status live">Live</span></div>
+        <h3><span class="area-logo" data-anim="deriva" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="tag" d="M4.5 6.8A2.3 2.3 0 0 1 6.8 4.5H11l7.5 7.5-6.5 6.5-7.5-7.5V6.8z"/><circle class="dot" cx="8.2" cy="8.2" r="1.2" fill="currentColor" stroke="none"/></svg></span>Wizy Labelers</h3>
+        <p>A labeler re-voices what is already there: headings, buttons and field names speak in a chosen voice.</p>
+        <button class="area-card-toggle" type="button" aria-expanded="false" aria-controls="area-detail-07">Details <span class="area-caret" aria-hidden="true">▾</span></button>
+        <div class="area-card-detail" id="area-detail-07" hidden>
+          <ul>
+            <li>Only the words change; structure, ids and saved answers stay exactly as they were.</li>
+            <li>Eight voices &mdash; dramatic, nerdy, cheeky, whimsy, mythic, queer, magical and cool &mdash; in one switch.</li>
+            <li>A strip inside the app holds one active labeler at a time, remembered per session.</li>
+          </ul>
+        </div>
       </article>
-    </div>
-    <p class="areas-note">Already carrying the Wizy agent block: Goddy · Souls · PracSys · Inventary · Realy · MyFamily · Keys. <a href="../../../development/standards/adoption.md">adoption.md</a></p>
-    <div class="areas-foot">
-      <span>Source: <a href="../../../development/standards/debates/proposals/frontend-wizy.md">frontend/wizy.md</a> · status is a draft, updated there first.</span>
-      <a href="../../../apps/sys/browsy/2026-11-18-browsy-extension-demo.html">See Federated sharing in the Browsy field test ↗</a>
-    </div>
-  </section>
-
-  <section class="areas" id="wizy-labelers" aria-labelledby="wizyLabelersTitle">
-    <div class="areas-head">
-      <h2 id="wizyLabelersTitle">Wizy Labelers</h2>
-      <p class="areas-lead">A labeler does not suggest content; it re-voices what is already there. Pick a perspective and an app's own labels — headings, buttons, field names — speak in that voice, while the data underneath stays untouched. Blogy is the live demo: eight labelers, one switch.</p>
-    </div>
-    <div class="areas-grid">
-      <article class="area-card live">
-        <div class="area-card-top"><span class="area-num">01</span><span class="area-status live">Copy + labels</span></div>
-        <h3>What it changes</h3>
-        <p>Only the words. Structure, ids and saved answers stay exactly as they were.</p>
+      <article class="area-card live" id="wizy-raty" data-expand>
+        <div class="area-card-top"><span class="area-num">08</span><span class="area-status live">Live</span></div>
+        <h3><span class="area-logo" data-anim="titila" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="b1" d="M6 18v-5"/><path class="b2" d="M12 18V7"/><path class="b3" d="M18 18v-9"/><path class="base" d="M4 18h16"/></svg></span>Wizy Raty</h3>
+        <p>One rater per scale: a single question asked in one specific way, with 28 scales in the catalogue.</p>
+        <button class="area-card-toggle" type="button" aria-expanded="false" aria-controls="area-detail-08">Details <span class="area-caret" aria-hidden="true">▾</span></button>
+        <div class="area-card-detail" id="area-detail-08" hidden>
+          <ul>
+            <li>Truthy, switchy, hearty and 25 more: the widest list of wizards in the network.</li>
+            <li>Each answer lands in the portrait cell for its own scale, so a rater stays independent.</li>
+            <li>The wizard form beside Raty writes a new scale into the same catalogue.</li>
+          </ul>
+        </div>
       </article>
-      <article class="area-card live">
-        <div class="area-card-top"><span class="area-num">02</span><span class="area-status live">Eight voices</span></div>
-        <h3>One app, many voices</h3>
-        <p>Dramatic, nerdy, cheeky, whimsy, mythic, queer, magical and cool.</p>
+      <article class="area-card live" id="wizy-helpers" data-expand>
+        <div class="area-card-top"><span class="area-num">09</span><span class="area-status live">Live</span></div>
+        <h3><span class="area-logo" data-anim="latece" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="h0" cx="12" cy="12" r="8"/><path class="h1" d="M9.6 9.6a2.6 2.6 0 1 1 3.8 2.2c-.8.5-1.4 1.1-1.4 2v.4"/><circle class="h2" cx="12" cy="17.2" r=".95" fill="currentColor" stroke="none"/></svg></span>Wizy Helpers</h3>
+        <p>A help page is a Wizy space too: it explains the interface where the interface lives.</p>
+        <button class="area-card-toggle" type="button" aria-expanded="false" aria-controls="area-detail-09">Details <span class="area-caret" aria-hidden="true">▾</span></button>
+        <div class="area-card-detail" id="area-detail-09" hidden>
+          <ul>
+            <li>Help is not an appendix: it uses the same engine to point at what the reader is looking at.</li>
+            <li>Words match the app's own labels, so the hero, chips and prompts agree with the interface.</li>
+            <li>Dealy carries the pattern in two pages: help and new-bot help.</li>
+          </ul>
+        </div>
       </article>
-      <article class="area-card live">
-        <div class="area-card-top"><span class="area-num">03</span><span class="area-status live">In the app</span></div>
-        <h3>How you meet it</h3>
-        <p>A strip of labelers inside the app; one active at a time, remembered per session.</p>
-      </article>
-    </div>
-    <div class="areas-foot">
-      <a href="../../../apps/blogy/blogy-advanced.html" target="_blank" rel="noopener">Open the blogy advanced demo ↗</a>
-      <a href="../../../apps/blogy/new/labeler/index.html" target="_blank" rel="noopener">Add a labeler form ↗</a>
-      <span>Standard: <a href="../../../development/standards/debates/proposals/frontend-wizy.md">frontend/wizy.md</a></span>
-    </div>
-  </section>
-
-  <section class="areas" id="wizy-raty" aria-labelledby="wizyRatyTitle">
-    <div class="areas-head">
-      <h2 id="wizyRatyTitle">Wizy Raty</h2>
-      <p class="areas-lead">Raty ships one rater per scale: each is a Wizy that asks a single question in a specific way. Together they are the widest list of wizards in the network.</p>
-    </div>
-    <div class="wizy-chips">
-        <span>TRUTHY</span>
-        <span>SWITCHY</span>
-        <span>HEATY</span>
-        <span>MOODY</span>
-        <span>GRADEY</span>
-        <span>SEASONY</span>
-        <span>LIKERTY</span>
-        <span>STARRY</span>
-        <span>SIZY</span>
-        <span>POSY</span>
-        <span>JOINY</span>
-        <span>TASTY</span>
-        <span>SURPRISY</span>
-        <span>DEARY</span>
-        <span>STATY</span>
-        <span>LIGHTY</span>
-        <span>NEGATY</span>
-        <span>ZERY</span>
-        <span>FORMALY</span>
-        <span>FUTURY</span>
-        <span>DIGGY</span>
-        <span>SHOWY</span>
-        <span>AGEY</span>
-        <span>PRICEY</span>
-        <span>SPEEDY</span>
-        <span>TRUSTY</span>
-        <span>HARDY</span>
-        <span>RAREY</span>
     </div>
     <div class="areas-foot">
-      <a href="../../../apps/puzzy/raty.html" target="_blank" rel="noopener">Open Raty — the rater wizards ↗</a>
-      <a href="../../../apps/blogy/new/wizard/index.html" target="_blank" rel="noopener">Add a wizard form ↗</a>
-    </div>
-  </section>
-
-  <section class="areas" id="wizy-helpers" aria-labelledby="wizyHelpersTitle">
-    <div class="areas-head">
-      <h2 id="wizyHelpersTitle">Wizy Helpers</h2>
-      <p class="areas-lead">A help page is a Wizy space too: it explains the interface where the interface lives, in the same voice and the same vocabulary. Dealy's help and new-bot pages are the demo.</p>
-    </div>
-    <div class="areas-foot">
-      <a href="../../../apps/economy/dealy/help.html" target="_blank" rel="noopener">Open the dealy help page ↗</a>
-      <a href="../../../apps/economy/dealy/new-wizard-help.html" target="_blank" rel="noopener">Open the new-bot help ↗</a>
+      <button class="areas-expand" type="button" aria-expanded="false" aria-controls="areasGrid" aria-label="Expand or collapse all area cards"><span class="areas-intro" aria-hidden="true"><svg viewBox="0 0 168 76" aria-hidden="true"><rect class="l" x="28" y="8" width="64" height="12" rx="4"/><rect class="l" x="35" y="18" width="64" height="12" rx="4"/><rect class="l" x="42" y="28" width="64" height="12" rx="4"/><rect class="l" x="49" y="38" width="64" height="12" rx="4"/><rect class="a" x="56" y="48" width="64" height="12" rx="4"/></svg></span></button>
     </div>
   </section>
 
@@ -1717,7 +1826,6 @@ h4.sub{font-size:.82rem;letter-spacing:-.01em;margin:1.15rem 0 .1rem}
 
           <figure class="section-mini">
             <svg class="mini-svg" viewBox="0 0 168 76" aria-hidden="true"><rect class="l" x="28" y="8" width="64" height="12" rx="4"/><rect class="l" x="35" y="18" width="64" height="12" rx="4"/><rect class="l" x="42" y="28" width="64" height="12" rx="4"/><rect class="l" x="49" y="38" width="64" height="12" rx="4"/><rect class="a" x="56" y="48" width="64" height="12" rx="4"/></svg>
-            <figcaption>five layers · one reading</figcaption>
           </figure>
     </div>
   </div>
@@ -2166,10 +2274,8 @@ h4.sub{font-size:.82rem;letter-spacing:-.01em;margin:1.15rem 0 .1rem}
     if (depthDesc){
       depthDesc.textContent = state.picked
         ? tr(DEPTH_DESCS[state.depth], DEPTH_DESCS_ES[state.depth])
-        : tr('Pick a depth to set the influence.', 'Elige una profundidad para fijar la influencia.');
+        : tr('Pick a depth to set the influence', 'Elige una profundidad para fijar la influencia');
     }
-    var word = document.getElementById('influenceWord');
-    if (word) word.hidden = state.picked;
     focusChips();
     renderCardHints();
     renderCode();
@@ -2221,8 +2327,8 @@ h4.sub{font-size:.82rem;letter-spacing:-.01em;margin:1.15rem 0 .1rem}
     'Theme': 'Tema',
     'Wizy — the contextual suggestion engine': 'Wizy — el motor de sugerencias contextuales',
     'Areas': 'Áreas',
+    'Where is Wizy?': '¿Dónde está Wizy?',
     'operating areas · standard draft': 'áreas operativas · borrador del estándar',
-    'Where Wizy is present': 'Dónde está presente Wizy',
     'Wizy Labelers': 'Wizy Labelers',
     "A labeler does not suggest content; it re-voices what is already there. Pick a perspective and an app's own labels — headings, buttons, field names — speak in that voice, while the data underneath stays untouched. Blogy is the live demo: eight labelers, one switch.": 'Un labeler no sugiere contenido: reviste lo que ya está ahí. Eliges una perspectiva y las etiquetas de la app — títulos, botones, nombres de campos — hablan con esa voz, sin tocar los datos. Blogy es la demo: ocho labelers, un interruptor.',
     'Copy + labels': 'Copia + etiquetas',
@@ -2239,43 +2345,80 @@ h4.sub{font-size:.82rem;letter-spacing:-.01em;margin:1.15rem 0 .1rem}
     'Wizy Raty': 'Wizy Raty',
     'Raty ships one rater per scale: each is a Wizy that asks a single question in a specific way. Together they are the widest list of wizards in the network.': 'Raty trae un rater por escala: cada uno es un Wizy que pregunta una sola cosa a su manera. Juntos son la lista más ancha de wizards de la red.',
     'Open Raty — the rater wizards ↗': 'Abrir Raty — los wizards rater ↗',
-    'Add a wizard form ↗': 'Formulario para añadir un wizard ↗',
     'Wizy Helpers': 'Wizy Helpers',
     "A help page is a Wizy space too: it explains the interface where the interface lives, in the same voice and the same vocabulary. Dealy's help and new-bot pages are the demo.": 'Una página de ayuda también es un espacio Wizy: explica la interfaz donde vive la interfaz, con la misma voz y el mismo vocabulario. La ayuda de Dealy y la de nuevo bot son la demo.',
     'Open the dealy help page ↗': 'Abrir la ayuda de dealy ↗',
     'Open the new-bot help ↗': 'Abrir la ayuda del nuevo bot ↗',
-    'Wizy is not only this page. The engine is designed to appear as a floating layer, as field hints, as agent context, as an embed and as a network participant. These are the areas the standard names — broader than a page section, and each with its own home.': 'Wizy no es solo esta página. El motor está pensado para aparecer como capa flotante, como pistas en los campos, como contexto del agente, como embed y como participante de la red. Estas son las áreas que nombra el estándar: más amplias que una sección de página, y cada una con su propio hogar.',
     'Pending': 'Pendiente',
     'Partly live': 'Parcialmente activo',
     'Custom magic insights': 'Ideas de magia personalizada',
-    'A floating bottom layer over app navigation, opened from Magic → Custom.': 'Una capa flotante inferior sobre la navegación de la app, abierta desde Magia → Personalizado.',
-    'Field influence': 'Influencia en campos',
-    'Duplicated at key fields inside apps: starter data, prompts and gentle suggestions while filling.': 'Duplicada en campos clave dentro de las apps: datos iniciales, prompts y sugerencias suaves mientras se rellena.',
-    'Agent prompt influence': 'Influencia en el prompt del agente',
+    'Wizy is one quiet custom layer that reads your flove and other portraits you want to add, offering you lovely suggestions and rewards.': 'Wizy es una capa personalizada y discreta que lee tu flove y otros retratos que quieras añadir, para ofrecerte sugerencias y recompensas preciosas.',
+    'Explore the idea': 'Explorar la idea',
+    'Every shape below begins the same way: a portrait the app already holds, a quiet reading, and a few words offered at the right moment. The idea is always one; only the surface changes.': 'Todas las formas de abajo empiezan igual: un retrato que la app ya tiene, una lectura discreta y unas palabras ofrecidas en el momento justo. La idea es siempre una; solo cambia la superficie.',
+    'One portrait, one quiet layer, one thought, many surfaces': 'Un retrato, una capa discreta, un pensamiento, muchas superficies',
+    'Take the tour →': 'Hacer el recorrido →',
+    'Key fields': 'Campos clave',
+    'Exported prompts': 'Prompts exportados',
     'Shapes the prompt handed to the user’s agent through': 'Da forma al prompt que recibe el agente de la persona mediante',
     'and the Wizy agent block.': 'y el bloque de agente de Wizy.',
     'External embeds': 'Embeds externos',
     'Embedded in external apps and pages.': 'Integrada en apps y páginas externas.',
-    'The interview flow’s influence degree and question suggestions.': 'El grado de influencia y las sugerencias de preguntas del flujo de entrevista.',
-    'Federated sharing': 'Compartición federada',
-    'Its own data-sharing network inside Browsy’s web of trust.': 'Su propia red de intercambio de datos dentro de la red de confianza de Browsy.',
-    'P2P permissions': 'Permisos P2P',
+    '(G)Local Browsy': 'Browsy (G)Local',
     'A permissions variant for NetyBrowsy.': 'Una variante de permisos para NetyBrowsy.',
     'Already carrying the Wizy agent block: Goddy · Souls · PracSys · Inventary · Realy · MyFamily · Keys.': 'Ya llevan el bloque de agente de Wizy: Goddy · Souls · PracSys · Inventary · Realy · MyFamily · Keys.',
     'Source:': 'Fuente:',
     '· status is a draft, updated there first.': '· el estado es un borrador, se actualiza allí primero.',
-    'See Federated sharing in the Browsy field test ↗': 'Ver la compartición federada en la prueba de campo de Browsy ↗',
+    'Details': 'Detalles',
+    'Key fields · key fields, prompts & interview': 'Campos clave · campos clave, prompts y entrevista',
+    "Apps key fields, exported prompts, the interview flow’s influence degree and question suggestions — questy colours related to the full flove ontology at a 1–5 degree.": 'Campos clave de las apps, prompts exportados, el grado de influencia del flujo de entrevista y sus sugerencias de preguntas — colores de questy relacionados con la ontología completa de flove en un grado 1–5.',
+    'Key fields: starter data, prompts and gentle suggestions while filling.': 'Campos clave: datos iniciales, prompts y sugerencias suaves mientras se rellena.',
+    'Exported prompts: the system prompt and embed snippets copied from Prompt & embed.': 'Prompts exportados: el prompt del sistema y los fragmentos de embed copiados desde Prompt & embed.',
+    'Interview flow: influence 0–5 and question suggestions from': 'Flujo de entrevista: influencia 0–5 y sugerencias de preguntas de',
+    'Questy colours map to the full ontology: Inside orange · Mating yellow · Linguistics green · Social blue · Economy indigo; degree 5 plays the whole model.': 'Los colores de questy se corresponden con la ontología completa: Inside naranja · Mating amarillo · Linguistics verde · Social azul · Economy índigo; el grado 5 despliega el modelo entero.',
+    'The four surfaces from Prompt & embed: micro · minimal · compact · full, all from the same portrait.': 'Las cuatro superficies de Prompt & embed: micro · minimal · compact · full, todas desde el mismo retrato.',
+    '(G)Local Browsy · local pulls': 'Browsy (G)Local · lecturas locales',
+    'Local pulls and local derivation between Browsy peers; a social card reaches Nety only with consent.': 'Tiradas y derivación locales entre pares de Browsy; una tarjeta social llega a Nety solo con consentimiento.',
+    "MyFamily saves locally → Browsy signs a scoped grant → a peer pulls the encrypted projection → Wizy derives locally → the public card publishes only on the owner's consent. Nothing leaves the local mesh without that grant.": 'MyFamily guarda en local → Browsy firma un permiso acotado → un par baja la proyección cifrada → Wizy deriva en local → la tarjeta pública se publica solo con el consentimiento de quien la posee. Nada sale de la malla local sin ese permiso.',
+    'The same consent model as federated sharing, expressed as peer-to-peer permissions instead of a local mesh.': 'El mismo modelo de consentimiento que la compartición federada, expresado como permisos entre pares en lugar de una malla local.',
+    'Appy · Magic': 'Appy · Magia',
+    'Magic button in Appy: Myself joins two of your played apps; With others brings in a MyFamily person and category.': 'Botón Magic en Appy: Myself une dos de tus apps jugadas; With others incorpora a una persona de MyFamily y su categoría.',
+    'Three wizards: Love · Joy · Wisdom, one active at a time.': 'Tres wizards: Love · Joy · Wisdom, uno activo a la vez.',
+    'Myself: three links, each joining two plays from different apps with a different preposition;': 'Myself: tres enlaces, cada uno une dos partidas de apps distintas con una preposición distinta;',
+    'appends three.': 'añade tres más.',
+    'With others: one sentence from two play links plus the MyFamily friend and their strongest category.': 'With others: una frase con dos enlaces de partidas más la persona de MyFamily y su categoría más fuerte.',
+    'Headings, buttons and field names take the chosen voice; the data underneath is untouched, so an export stays the same.': 'Los títulos, botones y nombres de campos adoptan la voz elegida; los datos de debajo no se tocan, así que la exportación sigue igual.',
+    'Blogy carries all eight in one switch; a labeler is a perspective, not a new app.': 'Blogy lleva las ocho en un solo interruptor; un labeler es una perspectiva, no una app nueva.',
+    'A rater is a Wizy': 'Un rater es un Wizy',
+    'One question, asked in one specific way, per scale.': 'Una pregunta, hecha de una forma concreta, por escala.',
+    'Every scale ships its own wizard: the rater asks a single question and the answer lands in the portrait cell for that scale.': 'Cada escala trae su wizard: el rater hace una sola pregunta y la respuesta cae en la celda del retrato de esa escala.',
+    'The widest wizard list': 'La lista más ancha de wizards',
+    'Truthy, switchy, hearty — the full set lives in Raty.': 'Truthy, switchy, hearty — el conjunto completo vive en Raty.',
+    'Make another scale': 'Crear otra escala',
+    'The wizard form beside Raty adds a new rater to the list.': 'El formulario de wizard junto a Raty añade un rater nuevo a la lista.',
+    'Where it lives': 'Dónde vive',
+    'The help page explains the interface where the interface lives.': 'La página de ayuda explica la interfaz donde vive la interfaz.',
+    'Help is not an appendix: it uses the same Wizy engine to point at what the reader is looking at.': 'La ayuda no es un apéndice: usa el mismo motor Wizy para señalar lo que quien lee está mirando.',
+    'One voice': 'Una sola voz',
+    "The words match the app's own labels, so help and interface agree.": 'Las palabras coinciden con las etiquetas propias de la app, así que ayuda e interfaz concuerdan.',
+    'Headings, buttons and field names keep their app names; the hero, chips and prompts stay in step with them.': 'Los títulos, botones y nombres de campos conservan sus nombres de app; el hero, los chips y los prompts van al mismo paso.',
+    'Two help pages': 'Dos páginas de ayuda',
+    'Dealy shows the pattern in help and in new-bot help.': 'Dealy muestra el patrón en la ayuda y en la ayuda de nuevo bot.',
     'Influence': 'Influencia',
     'Affinities': 'Afinidades',
     'More': 'Más',
     'Standards ↗': 'Estándares ↗',
+    'Home': 'Inicio',
+    'About': 'Acerca de',
+    'tour ↗': 'recorrido ↗',
+    'Docs': 'Docs',
+    'Flove ↗': 'Flove ↗',
     'None': 'Ninguna',
     'Little': 'Poco',
     'Some': 'Algo',
     'Blend': 'Mezcla',
     'Much': 'Mucho',
     'Full': 'Total',
-    'Pick a depth to set the influence.': 'Elige una profundidad para fijar la influencia.',
+    'Pick a depth to set the influence': 'Elige una profundidad para fijar la influencia',
     'lovely · hotter': 'encantador · más cálido',
     'lucky': 'afortunado',
     'best in': 'mejor en',
@@ -2336,7 +2479,44 @@ h4.sub{font-size:.82rem;letter-spacing:-.01em;margin:1.15rem 0 .1rem}
     'apps in the model': 'apps en el modelo',
     'field nodes': 'nodos de campo',
     'cross-field links': 'enlaces entre campos',
-    'phase 0 · client-side PoC': 'fase 0 · PoC en el cliente'
+    'phase 0 · client-side PoC': 'fase 0 · PoC en el cliente',
+    'wizy.custom(portrait) reads a flove-portrait/1 envelope and returns one or a few gentle reflections.': 'wizy.custom(portrait) lee un sobre flove-portrait/1 y devuelve una o unas pocas reflexiones suaves.',
+    'No backend and no network: a summary renders the chosen text, not the app’s own rows.': 'Sin backend ni red: un summary muestra el texto elegido, no las filas de la app.',
+    'The surface is a floating bottom layer over app navigation, opened from Magic → Custom; the app underneath keeps its own controls.': 'La superficie es una capa flotante inferior sobre la navegación de la app, abierta desde Magia → Personalizado; la app de debajo conserva sus controles.',
+    "Apps' key fields, exported prompts and the interview flow's influence degree — questy colours tied to the full ontology at 1–5.": 'Campos clave de las apps, prompts exportados y el grado de influencia de la entrevista — colores de questy ligados a la ontología completa en 1–5.',
+    'Interview: influence 0–5 and question suggestions; five questy colours map to the ontology, degree 5 plays the whole model.': 'Entrevista: influencia 0–5 y sugerencias de preguntas; cinco colores de questy se corresponden con la ontología, el grado 5 despliega el modelo entero.',
+    'Shapes the prompt handed to the user’s agent through floveAgentBlock and the Wizy agent block.': 'Da forma al prompt que recibe el agente de la persona mediante floveAgentBlock y el bloque de agente de Wizy.',
+    'Already carrying the block: Goddy, Souls, PracSys, Inventary, Realy, MyFamily and Keys.': 'Ya llevan el bloque: Goddy, Souls, PracSys, Inventary, Realy, MyFamily y Keys.',
+    'The block travels with the portrait, so an agent reads the same state the app shows.': 'El bloque viaja con el retrato, así que un agente lee el mismo estado que muestra la app.',
+    'Status is partly live: the block is written, the reading is still being standardised.': 'Estado parcialmente activo: el bloque se escribe, la lectura aún se está estandarizando.',
+    'Embedded in external apps and pages, from a micro chip to a full profile.': 'Integrado en apps y páginas externas, desde un chip micro hasta un perfil completo.',
+    'Four surfaces share one portrait: micro, minimal, compact and full.': 'Cuatro superficies comparten un retrato: micro, minimal, compact y full.',
+    'Micro suits footers and mobile; minimal serves inline cards and compact fits sidebars.': 'Micro conviene en pies y móvil; minimal sirve en tarjetas en línea y compact en barras laterales.',
+    'Full is for onboarding, where the whole state can be shown without a second click.': 'Full es para el inicio, donde todo el estado se muestra sin un segundo clic.',
+    '(G)Local Browsy signs a scoped grant before any peer reads the encrypted projection.': 'Browsy (G)Local firma un permiso acotado antes de que cualquier par lea la proyección cifrada.',
+    'MyFamily saves locally and Wizy derives locally: the portrait never leaves the device on its own.': 'MyFamily guarda en local y Wizy deriva en local: el retrato nunca sale del dispositivo por su cuenta.',
+    'The public card publishes only on the owner’s consent; the field test lives in Browsy.': 'La tarjeta pública se publica solo con el consentimiento de quien la posee; la prueba de campo vive en Browsy.',
+    'A permissions variant for NetyBrowsy, built on the same consent model.': 'Una variante de permisos para NetyBrowsy, construida sobre el mismo modelo de consentimiento.',
+    'Each peer holds a grant scoped to one portrait, one field and one purpose.': 'Cada par tiene un permiso acotado a un retrato, un campo y una finalidad.',
+    'Permissions replace the local mesh: the same boundaries, expressed peer to peer.': 'Los permisos sustituyen a la malla local: los mismos límites, expresados entre pares.',
+    'A grant can be withdrawn, and every derivation keeps its own audit trail.': 'Un permiso puede retirarse y cada derivación conserva su propio registro.',
+    'Appy Magic': 'Magia de Appy',
+    'Three wizards — Love, Joy and Wisdom — with one active at a time.': 'Tres wizards — Love, Joy y Wisdom — con uno activo a la vez.',
+    'Myself builds three links, each joining two plays with a different preposition; 3 more appends three.': 'Myself crea tres enlaces, cada uno une dos partidas con una preposición distinta; 3 more añade tres.',
+    'With others writes one sentence from two plays plus the MyFamily friend and their strongest category.': 'With others escribe una frase con dos partidas más la persona de MyFamily y su categoría más fuerte.',
+    'A labeler re-voices what is already there: headings, buttons and field names speak in a chosen voice.': 'Un labeler reviste lo que ya está: títulos, botones y nombres de campos hablan con la voz elegida.',
+    'Only the words change; structure, ids and saved answers stay exactly as they were.': 'Solo cambian las palabras; la estructura, los ids y las respuestas guardadas quedan igual.',
+    'Eight voices — dramatic, nerdy, cheeky, whimsy, mythic, queer, magical and cool — in one switch.': 'Ocho voces — dramática, friki, descarada, caprichosa, mítica, queer, mágica y guay — en un interruptor.',
+    'A strip inside the app holds one active labeler at a time, remembered per session.': 'Una tira dentro de la app mantiene un labeler activo a la vez, recordado por sesión.',
+    'One rater per scale: a single question asked in one specific way, with 28 scales in the catalogue.': 'Un rater por escala: una sola pregunta hecha de una forma concreta, con 28 escalas en el catálogo.',
+    'Truthy, switchy, hearty and 25 more: the widest list of wizards in the network.': 'Truthy, switchy, hearty y 25 más: la lista más ancha de wizards de la red.',
+    'Each answer lands in the portrait cell for its own scale, so a rater stays independent.': 'Cada respuesta cae en la celda del retrato de su escala, así que el rater sigue siendo independiente.',
+    'The wizard form beside Raty writes a new scale into the same catalogue.': 'El formulario de wizard junto a Raty escribe una escala nueva en el mismo catálogo.',
+    'A help page is a Wizy space too: it explains the interface where the interface lives.': 'Una página de ayuda también es un espacio Wizy: explica la interfaz donde vive la interfaz.',
+    'Help is not an appendix: it uses the same engine to point at what the reader is looking at.': 'La ayuda no es un apéndice: usa el mismo motor para señalar lo que quien lee está mirando.',
+    "Words match the app's own labels, so the hero, chips and prompts agree with the interface.": 'Las palabras coinciden con las etiquetas propias de la app, así que el hero, los chips y los prompts concuerdan con la interfaz.',
+    'Dealy carries the pattern in two pages: help and new-bot help.': 'Dealy lleva el patrón en dos páginas: ayuda y ayuda de nuevo bot.',
+    'In the middle': 'En el medio',
   };
   var TEXT_EN = new WeakMap();
 
@@ -2375,8 +2555,8 @@ h4.sub{font-size:.82rem;letter-spacing:-.01em;margin:1.15rem 0 .1rem}
       e.stopPropagation();
       setBrandMenu(brandMenu.hidden);
     });
-    Array.prototype.slice.call(brandMenu.querySelectorAll('a')).forEach(function(a){
-      a.addEventListener('click', function(){ setBrandMenu(false); });
+    Array.prototype.slice.call(brandMenu.querySelectorAll('.brand-menu-group a, .brand-menu-group button')).forEach(function(el){
+      el.addEventListener('click', function(){ setBrandMenu(false); });
     });
     document.addEventListener('click', function(e){
       if (!brandMenu.hidden && !brandMenu.contains(e.target) && e.target !== brandBtn) setBrandMenu(false);
@@ -2441,6 +2621,45 @@ h4.sub{font-size:.82rem;letter-spacing:-.01em;margin:1.15rem 0 .1rem}
     b.classList.toggle('on', on);
     b.setAttribute('aria-pressed', on ? 'true' : 'false');
   });
+
+  /* Four stages: 0 hidden cards, 1 headers, 2 minimal content (lead), 3 full
+     content (details). Title and footer icon both step 0→1→2→3→0 together. */
+  var areas = document.querySelector('.areas');
+  var areasTitleBtn = areas && areas.querySelector('.areas-title-btn');
+  var areasExpand = areas && areas.querySelector('.areas-expand');
+  var cards = areas ? Array.prototype.slice.call(areas.querySelectorAll('.area-card[data-expand]')) : [];
+  function setAreaCard(card, open){
+    var btn = card.querySelector('.area-card-toggle');
+    var detail = card.querySelector('.area-card-detail');
+    if (!btn || !detail) return;
+    card.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    detail.hidden = !open;
+  }
+  function setAreasStage(stage){
+    areas.setAttribute('data-stage', String(stage));
+    cards.forEach(function(card){ setAreaCard(card, stage === 3); });
+    if (areasTitleBtn) areasTitleBtn.setAttribute('aria-expanded', stage > 0 ? 'true' : 'false');
+    if (areasExpand) areasExpand.setAttribute('aria-expanded', stage === 3 ? 'true' : 'false');
+  }
+  function stepAreasStage(){
+    var n = parseInt(areas.getAttribute('data-stage') || '0', 10);
+    setAreasStage((n + 1) % 4);
+  }
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('.area-card-toggle');
+    if (btn){
+      var fromBtn = btn.closest('.area-card[data-expand]');
+      if (fromBtn) setAreaCard(fromBtn, !fromBtn.classList.contains('open'));
+      return;
+    }
+    if (e.target.closest('a, input, select, textarea, button')) return;
+    var box = e.target.closest('.area-card[data-expand]');
+    if (box) setAreaCard(box, !box.classList.contains('open'));
+  });
+  if (areasTitleBtn) areasTitleBtn.addEventListener('click', stepAreasStage);
+  if (areasExpand) areasExpand.addEventListener('click', stepAreasStage);
+  setAreasStage(0);
 
   applyStaticText();
   syncMenuLabels();

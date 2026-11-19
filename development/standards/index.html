@@ -129,6 +129,29 @@
   <div id="app">Loading the flove development docs…</div>
   <script src="vendor/docsify-edit.js"></script>
   <script>
+    /* Section anchors: docsify's slugify keeps the middle dot and prefixes a
+       leading digit with _, so the #1318--... links used across the docs never
+       matched a heading. Give each heading docsify's own :id=<slug> config,
+       using the GitHub-style slug those links already use. The heading text
+       and the Markdown saved by docsify-edit stay untouched. */
+    function docsifySectionAnchors(){
+      function slug(text){
+        return text.replace(/\[([^\]]+)\]\([^)]*\)/g,'$1')
+          .replace(/<[^>]*>/g,'')
+          .trim().toLowerCase()
+          .replace(/[^\w\s-]/g,'')
+          .replace(/\s/g,'-');
+      }
+      return { hook: { beforeEach: function(md){
+        return md.split(/(```[\s\S]*?```|~~~[\s\S]*?~~~)/g).map(function(part){
+          if (/^[`~]{3}/.test(part)) return part;
+          return part.replace(/(^#{1,6})\s+(.+)$/gm, function(line, hashes, title){
+            if (/(?:^|\s):id=/.test(title)) return line;
+            return hashes + ' ' + title + ' :id=' + slug(title);
+          });
+        }).join('');
+      } } };
+    }
     window.$docsify = {
       name: 'Flove dev wiki',
       logo: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='12' y1='0' x2='88' y2='0' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='%23ff3344'/><stop offset='.5' stop-color='%23ff8a3a'/><stop offset='1' stop-color='%23ffd633'/></linearGradient></defs><path d='M50 60 C 22 60 12 38 16 18 C 38 22 54 38 50 60 Z' fill='url(%23g)'/><path d='M50 60 C 78 60 88 38 84 18 C 62 22 46 38 50 60 Z' fill='url(%23g)'/><path d='M50 58 C 50 72 50 84 50 92' stroke='url(%23g)' stroke-width='6' stroke-linecap='round' fill='none'/></svg>",
@@ -155,7 +178,7 @@
           gfm: 'vendor/turndown-plugin-gfm.min.js'
         }
       },
-      plugins: [window.DocsifyEdit && DocsifyEdit.plugin].filter(Boolean)
+      plugins: [window.DocsifyEdit && DocsifyEdit.plugin, docsifySectionAnchors].filter(Boolean)
     };
   </script>
   <script src="vendor/docsify.min.js"></script>

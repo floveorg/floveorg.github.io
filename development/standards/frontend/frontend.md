@@ -105,7 +105,7 @@ key, so a single choice is the default across the whole family.
     the first-run language picker + global changers; on upgrade the landing
     moves to **`appy-basic`** (Go-home button + features intro). Same §13.2
     `flove:lang` + `?lang=` contract, different host. Spec:
-    `flove/docs/superpowers/specs/2026-06-24-appy-intros-rainbow-roadmap-design.md`.
+    `flove/development/standards/debates/archive/making-of/superpowers/specs/2026-06-24-appy-intros-rainbow-roadmap-design.md`.
 - **Cross-app reach — origin vs `file://`.** localStorage is per-origin.
   Served from **one origin** (`flove.org`, §10.5) the key is shared →
   pick-once-applies-everywhere. As **separate `file://` files** the
@@ -418,7 +418,7 @@ menu is the canonical one:
   gated by a one-time flag (`appy-basic-welcomed`).
 
 The intros surface the **unified rainbow-card roadmap** — the §13.2 rainbow
-cards merged with the diagonal (`2026-06-19-appy-five-apps-tier-ladders`).
+cards merged with the diagonal (`archive/making-of/superpowers/specs/2026-06-19-appy-five-apps-tier-ladders-design.md`).
 **PRO reframed as the full-feature tier unlock — no longer a standalone
 card (PRO ⟷ mini, §13.2); MyNet + Nety added.** Top-level colour cards, each carrying a
 mini→super roadmap from the diagonal:
@@ -428,7 +428,7 @@ mini→super roadmap from the diagonal:
 advanced+; Vizy stays the `super` capstone). Locked rainbow cards stay **opacity-dimmed
 and keep advertising their "upgrade Navigation" affordance** (not hidden; §13.8/§13.13).
 This supersedes the standalone diagonal taxonomy for card UI.
-Spec: `flove/docs/superpowers/specs/2026-06-24-appy-intros-rainbow-roadmap-design.md`.
+Spec: `flove/development/standards/debates/archive/making-of/superpowers/specs/2026-06-24-appy-intros-rainbow-roadmap-design.md`.
 
 ### 13.7 · Canonical vocabulary → [`vocabulary.md`](../vocabulary.md)
 
@@ -651,8 +651,7 @@ applies, may show progress toward the unlock.
 **High demo add-on — `Enable login` (F0/F1, recovery + multiuser).** The
 reference implementation of this **High** path ships as the optional
 **private add-on** to F0/F1 — design spec
-`docs/superpowers/specs/2026-06-25-flove-private-addon-login-encryption-design.md`
-(flove repo). It is the one-button surface the simplification asks for
+`flove/development/standards/debates/archive/making-of/superpowers/specs/2026-06-25-flove-private-addon-login-encryption-design.md`. It is the one-button surface the simplification asks for
 (`lock-enable` "Enable login" + `lock-crypt-exit` + `lock-crypter-pass`),
 **pinned to appy's Privacy tab** (`#tab-privacy` / `switchTab('privacy')` in
 `appy-mini`/`appy-basic`, today a hidden placeholder it un-hides + fills),

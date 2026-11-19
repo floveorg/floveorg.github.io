@@ -3,7 +3,8 @@
 > **Revision 2026-06-19** — this plan was rewritten in place to match what actually got
 > built. The original section-by-section `nety.html` build (Tasks 1–7, now archived in
 > `…-frontend-build.md.bak-orig`) was **superseded** by an interactive tabbed prototype,
-> `apps/miniappy.html`. The **design spec** (`2026-06-18-nety-access-ecosystem-design.md`)
+> `apps/miniappy.html`. The **design spec** (archived at
+> `archive/making-of/superpowers/specs/2026-06-18-nety-access-ecosystem-design.md`)
 > remains the source of truth for *what* the system is; this plan tracks *how* it's being
 > realized in the frontend and what's next.
 >
@@ -139,7 +140,7 @@ shared-mesh, pluggable backend) are further-spec-later.
 
 ## Constraints & workflow (carried forward)
 
-- **Source of truth:** `2026-06-18-nety-access-ecosystem-design.md` (the *what*).
+- **Source of truth:** `archive/making-of/superpowers/specs/2026-06-18-nety-access-ecosystem-design.md` (the *what*).
 - **Naming & tier model (spec §2.1) — verbatim:** `nety` = hardware (resource quota ladder),
   `appy` = data-software (feature ladder), each `mini → basic → normal → advanced → super`.
   Stages = `newbie · known · homie · expert · legend`. A **stage = earned ceiling**; the

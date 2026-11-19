@@ -149,7 +149,7 @@
       <kbd>↗</kbd> on a question links the relevant context. ·
       <kbd>don't keep</kbd> — check to exclude a question from the copied prompt and frozen HTML. ·
       <kbd>Copy prompt</kbd> copies your chosen intent + context + picks (minus skipped questions). ·
-      <kbd>Save to history</kbd> appends your kept answers to the interview history (for making-of.html).
+      <kbd>Save to history</kbd> appends your kept answers to the interview history (kept locally).
     </p>
   </div>
 
@@ -180,15 +180,11 @@
 const CONTEXT = [
   {label:"pendings.md", url:"apps/dev/pendings.md"},
   {label:"contract.md · Versioning", url:"apps/dev/standards/contract.md"},
-  {label:"nety access ecosystem design", url:"apps/dev/making-of/superpowers/specs/2026-06-18-nety-access-ecosystem-design.md"},
   {label:"nety frontend build plan", url:"apps/dev/debates/plans/2026-06-18-nety-frontend-build.md"},
-  {label:"appy five apps tier ladders", url:"apps/dev/making-of/superpowers/specs/2026-06-19-appy-five-apps-tier-ladders-design.md"},
   {label:"trusty app", url:"../../../apps/trusty/trusty.html"},
   {label:"puzzy.md", url:"apps/dev/puzzy.md"},
   {label:"backend.md", url:"apps/dev/backend.md"},
   {label:"backend.md", url:"development/standards/backend.md"},
-  {label:"pwa installable design", url:"apps/dev/making-of/superpowers/specs/2026-07-05-flove-pwa-installable-design.md"},
-  {label:"private addon login encryption", url:"apps/dev/making-of/superpowers/specs/2026-06-25-flove-private-addon-login-encryption-design.md"},
 ];
 
 const DATA = [
@@ -541,7 +537,7 @@ function gather(){
     i++;
     const isSkipped = store['q'+i+'_skip'] || false;
     const picks=[...form.querySelectorAll(`input[name="q${i}"]:checked`)].map(x=>x.value);
-    out.push({sec:g.sec, q:item.q, picks, suggest:item.suggest||[], ref:item.ref||null, skipped:isSkipped}));
+    out.push({sec:g.sec, q:item.q, picks, suggest:item.suggest||[], ref:item.ref||null, skipped:isSkipped});
   }));
   return out;
 }
@@ -611,26 +607,8 @@ document.getElementById('history').addEventListener('click', ()=>{
   try{ history = localStorage.getItem('flove-history') || ''; }catch(e){}
   history = keptHtml + '\n<!-- ··· -->\n' + history;
   localStorage.setItem('flove-history', history);
-  toast('saved to history — check making-of.html');
+  toast('saved to history — kept locally');
 });
-
-function buildMakingOf(){
-  let history = '';
-  try{ history = localStorage.getItem('flove-history') || ''; }catch(e){}
-  if(!history){ toast('no history yet'); return; }
-  const doc = `<!doctype html><html><head><meta charset="utf-8"><title>flove decisions · history</title>
-<style>body{font-family:ui-monospace,monospace;background:#0b0b0f;color:#e9eaf2;max-width:900px;margin:0 auto;padding:2rem 1.2rem;line-height:1.6}
-h1{font-size:1.6rem}h3{font-size:.9rem;color:#8d89ff;margin:2rem 0 .5rem;border-bottom:1px solid #1e2133;padding-bottom:.4rem}
-table{width:100%;border-collapse:collapse;font-size:.72rem;margin-bottom:1.5rem}
-th{text-align:left;padding:.4rem .6rem;border-bottom:1px solid #1e2133;color:#8d89ff;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase}
-td{padding:.4rem .6rem;border-bottom:1px solid rgba(30,33,51,.5);vertical-align:top}
-tr:hover td{background:rgba(141,137,255,.06)}
-small{color:#5a5e72}</style></head>
-<body><h1>🌱 flove decisions · history</h1><small>auto-generated from interview localStorage</small>
-${history}</body></html>`;
-  download('making-of.html', doc);
-  toast('making-of.html downloaded ✓');
-}
 
 function esc(s){ return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 function download(name, text){

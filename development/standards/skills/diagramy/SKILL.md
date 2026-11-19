@@ -27,24 +27,26 @@ Budget: mini **5–7 nodes**; thread **15–21 messages/notes** (≈3×).
 
 ## Files
 
-Write into `development/diagrams/<slug>/`:
+Diagrams live with the app page they explain, inside that app's addons logos
+folder — never in `development/diagrams/`:
+
+- `addons/media/apps/logos/<app>/minidiagrams/` — masters and rendered artifacts
+- `addons/media/apps/logos/<app>/<app>-minidiagrams.html` — the gallery page,
+  one card per move. A **brandy stage-5 gallery** (`/brandy` → `/diagramy`)
+  uses this same pattern.
 
 | File | Role |
 |---|---|
-| `<slug>.mini.excalidraw` | editable master (Excalidraw JSON) |
-| `<slug>.mini.svg` | exported/inline mini used by the page |
-| `<slug>.thread.mmd` | canonical Mermaid source |
-| `<slug>.thread.svg` | pre-rendered thread for the click panel (dark ground) |
-| `<slug>.thread-light.svg` | light-ground render, when the host has a day theme |
-| `<slug>-diagram.html` | self-contained page, both states |
+| `minidiagrams/<slug>.mini.excalidraw` | editable master (Excalidraw JSON) |
+| `minidiagrams/<slug>.mini.svg` | exported/inline mini used by the page |
+| `minidiagrams/<slug>.thread.mmd` | canonical Mermaid source |
+| `minidiagrams/<slug>.thread.svg` | pre-rendered thread for the click panel (dark ground) |
+| `minidiagrams/<slug>.thread-light.svg` | light-ground render, when the host has a day theme |
+| `<app>-minidiagrams.html` | self-contained page, both states |
 
 The `.excalidraw` and `.mmd` are the masters; the SVGs are artifacts. Keep the
-page in sync with both.
-
-A **brandy stage-5 gallery** (`/brandy` → `/diagramy`) uses the
-same pattern once per core move: the page sits at
-`addons/media/apps/logos/<app>/<app>-minidiagrams.html` with a
-`minidiagrams/` source folder, and each card owns its own mini + panel.
+page in sync with both. `development/diagrams/` is not a diagram home — do not
+write new diagram sets there.
 
 ## Mini — one frame, no branches
 
