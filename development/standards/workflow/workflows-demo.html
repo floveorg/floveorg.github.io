@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Workflows demo · flove</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="description" content="Five ways to navigate workflow graphs: tree, radial, flow, mesh and index. Expandable nodes, clickable edges, breadcrumb depth navigation." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f6fa; --surface:#ffffff; --ink:#16161d; --mut:#6c6c82;
+  --line:#e3e3ef; --line2:#c9c9da; --accent:#5ea4e6;
+  --shadow:0 1px 2px rgba(16,16,32,.06), 0 8px 24px rgba(16,16,32,.06);
+  --r:12px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  background:var(--bg); color:var(--ink); min-height:100vh;
+  display:flex; flex-direction:column; -webkit-font-smoothing:antialiased;
+}
+
+/* ── Header ─────────────────────────────────────────────────────── */
+header.topbar{
+  position:sticky; top:0; z-index:20;
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  padding:10px 16px;
+  background:rgba(246,246,250,.85); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);
+}
+.topbar .back{
+  flex:0 0 auto; display:inline-grid; place-items:center;
+  width:32px; height:32px; border-radius:10px;
+  border:1px solid var(--line); background:var(--surface);
+  text-decoration:none; color:var(--ink); font-weight:800; font-size:16px;
+  transition:transform .12s ease;
+}
+.topbar .back:hover{transform:translateX(-2px)}
+.topbar h1{margin:0; font-size:16px; font-weight:800; letter-spacing:-.01em}
+.tabs{display:flex; gap:6px; flex-wrap:wrap}
+.tab{
+  appearance:none; border:1px solid var(--line); background:var(--surface);
+  border-radius:999px; padding:6px 14px;
+  font:inherit; font-size:13px; font-weight:700; cursor:pointer; color:var(--ink);
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.tab:hover{transform:translateY(-1px)}
+.tab.on{color:#fff; background:var(--hue,#5ea4e6); border-color:transparent; box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.depth{margin-left:auto; display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--mut)}
+.depth input[type=range]{width:120px; accent-color:var(--accent)}
+.depth b{color:var(--ink)}
+
+/* ── Breadcrumb / navigation bar ────────────────────────────────── */
+nav.navbar{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:8px 16px; border-bottom:1px solid var(--line); background:var(--surface);
+}
+.back-btn{
+  border:1px solid var(--line); background:var(--surface); border-radius:9px;
+  padding:5px 12px; font:inherit; font-size:13px; font-weight:700; cursor:pointer;
+  transition:transform .12s ease;
+}
+.back-btn:hover:not(:disabled){transform:translateY(-1px)}
+.back-btn:disabled{opacity:.4; cursor:default}
+#crumb{list-style:none; display:flex; gap:4px; flex-wrap:wrap; align-items:center; margin:0; padding:0}
+#crumb li{display:flex; align-items:center; gap:4px}
+#crumb li:not(:last-child)::after{content:'›'; color:var(--line2)}
+.crumb-item{
+  border:0; background:none; font:inherit; font-size:13px; font-weight:600;
+  color:var(--mut); cursor:pointer; padding:3px 7px; border-radius:7px;
+}
+.crumb-item:hover{background:#f0f0f6; color:var(--ink)}
+.crumb-item.cur{color:var(--ink); font-weight:800; cursor:default}
+#levelInfo{
+  margin-left:auto; font-size:12px; font-weight:700; color:var(--mut);
+  background:#f1f1f7; padding:4px 10px; border-radius:999px; white-space:nowrap;
+}
+
+/* ── Layout ─────────────────────────────────────────────────────── */
+.app{flex:1; display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:12px; padding:14px; min-height:0}
+.canvas{
+  display:flex; flex-direction:column;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+  box-shadow:var(--shadow); overflow:hidden; min-height:0;
+}
+.panel{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+  box-shadow:var(--shadow); overflow-y:auto; padding:14px; min-height:0;
+}
+footer.hints{padding:8px 16px; font-size:12px; color:var(--mut); border-top:1px solid var(--line); text-align:center}
+
+/* ── SVG views ──────────────────────────────────────────────────── */
+.gview{flex:1; width:100%; height:100%; min-height:0; display:block}
+.gnode{cursor:pointer}
+.gnode .ndot{fill:#fff; stroke:#8b90a8; stroke-width:2; transition:stroke .15s ease, fill .15s ease}
+.gnode:hover .ndot{stroke:var(--accent)}
+.gnode.sel .ndot{stroke:var(--accent); stroke-width:3; fill:#eef4ff}
+.gnode .nlabel{font-size:12px; fill:var(--ink); text-anchor:middle; pointer-events:none; font-weight:600}
+.gnode .ntoggle{
+  font-size:13px; font-weight:800; fill:var(--ink); cursor:pointer; text-anchor:middle;
+  paint-order:stroke; stroke:#fff; stroke-width:3px; stroke-linejoin:round;
+}
+.edge .vis{stroke:#9aa0b5; stroke-width:2; stroke-linecap:round; fill:none; opacity:.85}
+.edge .vis.curved{fill:none}
+.edge .hit{stroke:transparent; stroke-width:18; fill:none; cursor:pointer}
+.edge.sel .vis{stroke:var(--accent) !important; stroke-width:3.5; opacity:1}
+.edge .vis.pulse{animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{stroke-dasharray:4 6; opacity:.7}50%{stroke-dasharray:12 6; opacity:1}}
+
+/* ── Tree view ──────────────────────────────────────────────────── */
+.tview{flex:1; overflow:auto; padding:14px 10px 8px}
+.tree,.tsub{list-style:none; margin:0; padding:0}
+.tnode{margin:3px 0}
+.trow{
+  display:flex; align-items:center; gap:8px; width:100%;
+  border:1px solid var(--line); background:#fff; border-radius:10px;
+  padding:6px 10px; font:inherit; font-size:13px; font-weight:600; cursor:pointer; text-align:left;
+  transition:border-color .15s ease, background .15s ease;
+}
+.trow:hover{border-color:var(--line2); background:#fafaff}
+.trow.sel{border-color:var(--accent); box-shadow:0 0 0 2px rgba(94,164,230,.18)}
+.tplus{
+  width:20px; height:20px; flex:0 0 auto; display:inline-grid; place-items:center;
+  border-radius:6px; background:#f0f0f6; border:1px solid var(--line);
+  font-weight:800; color:var(--mut); font-size:13px;
+}
+.tplus.dot{visibility:hidden}
+.tname{flex:0 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.tkind{font-size:10px; text-transform:uppercase; letter-spacing:.05em; font-weight:700; color:var(--mut); background:#f4f4f9; border-radius:999px; padding:2px 7px}
+.tcount{margin-left:auto; font-size:11px; font-weight:800; color:var(--mut); background:#f0f0f6; border-radius:999px; padding:1px 7px; min-width:20px; text-align:center}
+.tsub{margin-left:22px; padding-left:10px; border-left:1.5px solid var(--line2)}
+
+/* ── Index view ─────────────────────────────────────────────────── */
+.iview{flex:1; overflow:auto; padding:16px; display:flex; flex-direction:column; gap:14px}
+.irow{display:grid; grid-template-columns:44px minmax(0,1fr); gap:10px; align-items:start}
+.ilevel{font-size:11px; font-weight:800; color:var(--mut); background:#f0f0f6; border-radius:8px; padding:10px 0; text-align:center; align-self:stretch}
+.icells{display:flex; flex-wrap:wrap; gap:8px}
+.icell{
+  border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px 10px;
+  font:inherit; cursor:pointer; text-align:left; min-width:130px; max-width:230px;
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+.icell:hover{border-color:var(--line2)}
+.icell.sel{border-color:var(--accent); box-shadow:0 0 0 2px rgba(94,164,230,.18)}
+.icell-top{display:flex; align-items:center; gap:8px; justify-content:space-between}
+.icell-name{font-size:13px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.ikind{font-size:10px; color:var(--mut); background:#f4f4f9; border-radius:999px; padding:2px 6px; flex:0 0 auto}
+.iplus{display:inline-block; margin-top:6px; font-size:11px; font-weight:800; color:var(--mut); background:#f0f0f6; border-radius:999px; padding:2px 8px}
+.ichips{display:flex; flex-wrap:wrap; gap:4px; margin-top:8px}
+.ichip{font-size:11px; font-weight:600; background:#f4f4fb; border:1px solid var(--line); border-radius:999px; padding:2px 8px; cursor:pointer}
+.ichip:hover{background:#e8e8f5}
+
+/* ── Hint ───────────────────────────────────────────────────────── */
+.hint{flex:0 0 auto; padding:7px 14px; font-size:12px; color:var(--mut); text-align:center; border-top:1px solid var(--line); background:#fafafd}
+
+/* ── Info panel ─────────────────────────────────────────────────── */
+.pempty{color:var(--mut); font-size:13px; text-align:center; padding:30px 10px; line-height:1.7}
+.phead{display:flex; align-items:center; gap:8px; margin-bottom:10px}
+.phead .dot{width:10px; height:10px; border-radius:50%; background:var(--hue,var(--accent)); flex:0 0 auto}
+.phead h2{margin:0; font-size:16px; letter-spacing:-.01em; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.badges{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px}
+.badge{font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; background:#f0f0f6; color:var(--mut)}
+.badge.kind{background:#eef1ff; color:#33314d}
+.pinfo{font-size:13px; line-height:1.55; color:#3a3a4a; margin:0 0 4px; background:#f7f7fb; border:1px solid var(--line); border-radius:10px; padding:10px}
+.psec{margin-top:14px}
+.psec-title{font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--mut); margin:0 0 8px}
+.pchildren{display:flex; flex-direction:column; gap:6px}
+.pchild{
+  text-align:left; border:1px solid var(--line); background:#fff; border-radius:10px;
+  padding:7px 10px; font:inherit; font-size:13px; font-weight:600; cursor:pointer;
+}
+.pchild:hover{border-color:var(--line2); background:#f8f8fc}
+.pactions{display:flex; gap:6px; flex-wrap:wrap; margin-top:14px}
+.pbtn{
+  flex:1; border:1px solid var(--line); background:#f7f7fb; border-radius:9px;
+  padding:6px 8px; font:inherit; font-size:12px; font-weight:700; cursor:pointer; color:var(--ink);
+}
+.pbtn:hover{background:#fff; border-color:var(--line2)}
+.pedge-arrow{font-size:24px; font-weight:800; color:var(--mut); display:block; text-align:center; margin:2px 0 12px}
+
+@media (max-width:900px){
+  .app{grid-template-columns:1fr; grid-template-rows:minmax(0,1fr) auto}
+  .panel{max-height:38vh}
+  .depth{margin-left:0}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important; transition:none !important}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="back" href="../../../docs/index.html" title="back to docs" aria-label="back to docs">←</a>
+  <h1>Workflows demo</h1>
+  <nav class="tabs" id="tabs" aria-label="Graph navigation mode"></nav>
+  <div class="depth" title="Regenerate the graph at this depth (extensible to 6 levels)">
+    <label for="depthSlider">Depth</label>
+    <input id="depthSlider" type="range" min="1" max="6" value="3" />
+    <b id="depthLabel">3 / 6</b>
+  </div>
+</header>
+
+<nav class="navbar" aria-label="Level navigation">
+  <button id="backBtn" class="back-btn" title="Go back one level">← Back</button>
+  <ol id="crumb"></ol>
+  <span id="levelInfo"></span>
+</nav>
+
+<div class="app">
+  <main id="canvas" class="canvas" aria-live="polite"></main>
+  <aside id="panel" class="panel" aria-live="polite"></aside>
+</div>
+
+<footer class="hints">
+  Click a node to inspect and expand it · <b>+ / −</b> folds a subtree · click a vertex (edge) to see the relationship ·
+  breadcrumb jumps between levels · <b>Esc</b> clears · <b>←</b> goes back
+</footer>
+
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const el = (tag, cls, text) => {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+};
+
+/* ── Mode catalogue: each is a navigation metaphor ─────────────── */
+const MODE = {
+  tree:  { label:'Tree',  hue:'#5ea4e6', root:'Plan', kids:['Spec','Build','Test','Ship'],
+           kinds:['stage','step','task'],
+           info:{ stage:'Container phase of the workflow. Expand it to drill into its steps.',
+                  step:'A concrete step. Expand it to reach the leaf tasks underneath.',
+                  task:'Leaf task — nothing below. Its details live in this panel.' } },
+  radial:{ label:'Radial', hue:'#b48aff', root:'Core', kids:['Identity','Graph','Cache'],
+           kinds:['ring','branch','leaf'],
+           info:{ ring:'Outer ring of the radial map. Expand it to grow the branches outward.',
+                  branch:'A radial branch. Expand it for the leaf vertices at its tip.',
+                  leaf:'Leaf vertex — the end of this ray.' } },
+  flow:  { label:'Flow', hue:'#18ce7a', root:'Trigger', kids:['Build','Test','Deploy','Verify'],
+           kinds:['stage','branch','task'],
+           info:{ stage:'Pipeline stage. Its outgoing vertices are the transitions to the next stage.',
+                  branch:'A parallel branch inside the stage. Expand it for the execution tasks.',
+                  task:'Single execution step — runs once, then flows on.' } },
+  mesh:  { label:'Mesh', hue:'#ff9b5e', root:'Gateway', kids:['Auth','Orders','Payments'],
+           kinds:['service','dep','endpoint'],
+           info:{ service:'A service node. Its edges are the live relationships it keeps.',
+                  dep:'Dependency leaf. Expand it to see what it leans on.',
+                  endpoint:'Endpoint — a dead end by design, ready to be extended.' } },
+  index: { label:'Index', hue:'#ff8aae', root:'Sprint', kids:['Design','Dev','QA'],
+           kinds:['track','story','task'],
+           info:{ track:'A track column of the board. Expand it to reveal its stories.',
+                  story:'A story inside the track. Expand it for its tasks.',
+                  task:'Board task — a leaf on this board.' } }
+};
+
+const HINTS = {
+  tree:  'Tree · click a row to inspect & expand · ± folds the subtree · columns grow rightward.',
+  radial:'Radial · click a node to grow a new ring · ± folds a ray · deeper rings appear outward.',
+  flow:  'Flow · stages run left → right · click a node to expand parallel branches · edges are transitions.',
+  mesh:  'Mesh · nodes connect freely · click an edge to read the relationship · branches hang off services.',
+  index: 'Index · a level × track board · click a cell to inspect · ± reveals child chips inline.'
+};
+
+/* ── State ─────────────────────────────────────────────────────── */
+const state = {
+  mode:'tree', depth:3,
+  root:null, pos:new Map(), edges:new Map(),
+  selected:null, path:[],
+  expanded:new Set()
+};
+
+function cfg(){ return MODE[state.mode]; }
+function isExpanded(n){ return state.expanded.has(n.id); }
+function isSelNode(n){ return state.selected && state.selected.type==='node' && state.selected.node===n; }
+function ancestors(n){ const a=[]; let c=n; while(c){ a.unshift(c); c=c.parent; } return a; }
+function allNodes(){
+  const out=[], st=[state.root];
+  while(st.length){ const n=st.pop(); out.push(n); n.children.forEach(c=>st.push(c)); }
+  return out;
+}
+function visible(n){ for(let p=n; p; p=p.parent){ if(!isExpanded(p)) return false; } return true; }
+
+/* ── Graph builder ─────────────────────────────────────────────── */
+function buildGraph(depth){
+  const c = cfg();
+  const root = { id:'r', name:c.root, kind:c.kinds[0], depth:0, parent:null, children:[], links:[] };
+  root.info = infoFor(c, root.kind, 0, root.name);
+  const expand = (node,d) => {
+    if(d+1 >= depth) return;
+    const fan = d===0 ? c.kids.length : 2;
+    for(let i=0;i<fan;i++){
+      const name = d===0 ? c.kids[i] : `${node.name} › ${i+1}`;
+      const kind = c.kinds[Math.min(d+1, c.kinds.length-1)];
+      const child = { id:node.id+'-'+i, name, kind, depth:d+1, parent:node, children:[], links:[] };
+      child.info = infoFor(c, kind, d+1, name);
+      node.children.push(child);
+      expand(child, d+1);
+    }
+  };
+  expand(root, 0);
+  if(state.mode==='mesh') meshLinks(root);
+  return root;
+}
+function infoFor(c, kind, d, name){
+  return `${c.info[kind] || 'Workflow node.'} This ${kind} sits at level ${d+1} of the map.`;
+}
+function meshLinks(root){
+  const rels = ['depends on','feeds','notifies','mirrors'];
+  const l1 = root.children;
+  for(let i=0;i<l1.length;i++){
+    for(let j=i+1;j<l1.length;j++){
+      if((i*3+j) % 3 === 0) continue;
+      const label = rels[(i+j) % rels.length];
+      l1[i].links.push({ to:l1[j].id, label,
+        info:`Relationship "${label}" between these two services — click to select the vertex.` });
+    }
+  }
+}
+function nodeById(id){ return allNodes().find(n=>n.id===id) || null; }
+
+/* ── Navigation actions ────────────────────────────────────────── */
+function selectNode(n){
+  state.selected = { type:'node', node:n };
+  state.path = ancestors(n);
+  render();
+}
+function selectEdge(e){
+  state.selected = { type:'edge', id:e.id };
+  render();
+}
+function clickNode(n){
+  selectNode(n);
+  if(n.children.length && !isExpanded(n)) toggleExpand(n);
+}
+function toggleExpand(n){
+  if(isExpanded(n)) state.expanded.delete(n.id); else state.expanded.add(n.id);
+  render();
+}
+function edgeObj(from,to,label,info,color,link){
+  const id = from.id+'>'+to.id;
+  const e = { id, from, to, label, info, color, link };
+  state.edges.set(id, e);
+  return e;
+}
+
+/* ── Reset / switch ────────────────────────────────────────────── */
+function reset(depth){
+  state.root = buildGraph(depth);
+  state.depth = depth;
+  state.selected = null; state.path = [];
+  state.edges.clear(); state.pos.clear();
+  state.expanded = new Set([state.root.id]);
+  state.root.children.forEach(ch => state.expanded.add(ch.id));
+  document.documentElement.style.setProperty('--accent', cfg().hue);
+  selectNode(state.root);
+}
+function switchMode(id){
+  state.mode = id;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.mode===id));
+  reset(state.depth);
+}
+
+/* ── Render: shell ─────────────────────────────────────────────── */
+function render(){
+  renderCrumb();
+  renderCanvas();
+  renderPanel();
+}
+function renderCrumb(){
+  const crumb = $('#crumb'); crumb.innerHTML='';
+  state.path.forEach((n,i)=>{
+    const li = el('li');
+    const b = el('button','crumb-item', n.name);
+    b.addEventListener('click', ()=>selectNode(n));
+    if(i === state.path.length-1){ b.classList.add('cur'); li.setAttribute('aria-current','step'); }
+    li.appendChild(b);
+    crumb.appendChild(li);
+  });
+  $('#backBtn').disabled = state.path.length <= 1;
+  $('#levelInfo').textContent = `Level ${state.path.length} / ${state.depth}`;
+}
+function viewW(){ return Math.max(560, $('#canvas').clientWidth || 900); }
+function viewH(){ return Math.max(400, ($('#canvas').clientHeight || 640) - 34); }
+function svg(w,h){
+  const s = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  s.setAttribute('viewBox',`0 0 ${w} ${h}`); s.classList.add('gview');
+  return s;
+}
+function svgEl(name){ return document.createElementNS('http://www.w3.org/2000/svg', name); }
+
+function drawNode(g, n){
+  const p = state.pos.get(n.id); if(!p) return;
+  const c = cfg();
+  const grp = svgEl('g');
+  grp.classList.add('gnode'); if(isSelNode(n)) grp.classList.add('sel');
+  grp.setAttribute('transform', `translate(${p.x},${p.y})`);
+  const r = n.depth <= 1 ? 20 : 16;
+  const dot = svgEl('circle'); dot.setAttribute('r', r); dot.classList.add('ndot');
+  dot.style.stroke = c.hue;
+  dot.addEventListener('click', ev => { ev.stopPropagation(); clickNode(n); });
+  const lbl = svgEl('text'); lbl.classList.add('nlabel');
+  lbl.setAttribute('x',0); lbl.setAttribute('y', r+16);
+  lbl.textContent = n.name;
+  grp.append(dot, lbl);
+  if(n.children.length){
+    const t = svgEl('text'); t.classList.add('ntoggle');
+    t.setAttribute('x',0); t.setAttribute('y', -(r+7));
+    t.textContent = isExpanded(n) ? '−' : '+';
+    t.addEventListener('click', ev => { ev.stopPropagation(); toggleExpand(n); });
+    grp.appendChild(t);
+  }
+  g.appendChild(grp);
+}
+function drawEdge(g, e){
+  const p1 = state.pos.get(e.from.id), p2 = state.pos.get(e.to.id);
+  if(!p1 || !p2) return;
+  const sel = state.selected && state.selected.type==='edge' && state.selected.id===e.id;
+  const grp = svgEl('g'); grp.classList.add('edge'); if(sel) grp.classList.add('sel');
+  const hit = svgEl('line'); hit.setAttribute('x1',p1.x); hit.setAttribute('y1',p1.y);
+  hit.setAttribute('x2',p2.x); hit.setAttribute('y2',p2.y); hit.classList.add('hit');
+  const vis = svgEl('line'); vis.setAttribute('x1',p1.x); vis.setAttribute('y1',p1.y);
+  vis.setAttribute('x2',p2.x); vis.setAttribute('y2',p2.y); vis.classList.add('vis','pulse');
+  vis.style.stroke = e.color;
+  hit.addEventListener('click', ev => { ev.stopPropagation(); selectEdge(e); });
+  grp.append(hit, vis);
+  g.appendChild(grp);
+}
+function drawCurved(g, e){
+  const p1 = state.pos.get(e.from.id), p2 = state.pos.get(e.to.id);
+  if(!p1 || !p2) return;
+  const mx=(p1.x+p2.x)/2, my=(p1.y+p2.y)/2, dx=p2.x-p1.x, dy=p2.y-p1.y;
+  const qx = mx - dy*0.28, qy = my + dx*0.28;
+  const d = `M ${p1.x} ${p1.y} Q ${qx} ${qy} ${p2.x} ${p2.y}`;
+  const sel = state.selected && state.selected.type==='edge' && state.selected.id===e.id;
+  const grp = svgEl('g'); grp.classList.add('edge'); if(sel) grp.classList.add('sel');
+  const hit = svgEl('path'); hit.setAttribute('d',d); hit.classList.add('hit');
+  const vis = svgEl('path'); vis.setAttribute('d',d); vis.classList.add('vis','curved');
+  vis.style.stroke = e.color;
+  hit.addEventListener('click', ev => { ev.stopPropagation(); selectEdge(e); });
+  grp.append(hit, vis);
+  g.appendChild(grp);
+}
+function hint(){
+  const h = el('div','hint', HINTS[state.mode]);
+  return h;
+}
+
+/* ── Renderer: Tree ────────────────────────────────────────────── */
+function renderTree(c){
+  const wrap = el('div','tview');
+  const ul = el('ul','tree');
+  branch(ul, state.root);
+  wrap.appendChild(ul); c.append(wrap, hint());
+}
+function branch(ul, node){
+  const li = el('li','tnode');
+  const row = el('button','trow');
+  const hasKids = node.children.length > 0;
+  if(hasKids){
+    const t = el('span','tplus', isExpanded(node) ? '−' : '+');
+    t.addEventListener('click', ev => { ev.stopPropagation(); toggleExpand(node); });
+    row.appendChild(t);
+  } else {
+    row.appendChild(el('span','tplus dot'));
+  }
+  row.appendChild(el('span','tname', node.name));
+  row.appendChild(el('span','tkind', node.kind));
+  if(hasKids) row.appendChild(el('span','tcount', node.children.length));
+  if(isSelNode(node)) row.classList.add('sel');
+  row.addEventListener('click', ()=>clickNode(node));
+  li.appendChild(row);
+  if(hasKids && isExpanded(node)){
+    const sub = el('ul','tsub');
+    node.children.forEach(ch => branch(sub, ch));
+    li.appendChild(sub);
+  }
+  ul.appendChild(li);
+}
+
+/* ── Renderer: Radial ──────────────────────────────────────────── */
+function radialLayout(){
+  const depth = state.depth, W = viewW(), H = viewH();
+  const cx = W/2, cy = H/2;
+  state.pos.set(state.root.id, { x:cx, y:cy });
+  const maxR = Math.min(W,H)/2 - 34;
+  const place = (node,a0,a1,d) => {
+    if(d >= depth) return;
+    const kids = node.children; if(!kids.length) return;
+    const step = (a1-a0)/kids.length;
+    kids.forEach((ch,i)=>{
+      const a = a0 + step*(i+0.5);
+      const r = 64 + d*((maxR-64)/Math.max(depth-1,1));
+      state.pos.set(ch.id, { x:cx + r*Math.cos(a), y:cy + r*Math.sin(a) });
+      place(ch, a0+step*i, a0+step*(i+1), d+1);
+    });
+  };
+  place(state.root, -Math.PI/2, Math.PI*1.5, 1);
+}
+function renderRadial(c){
+  const W = viewW(), H = viewH();
+  const s = svg(W,H); radialLayout();
+  const g = svgEl('g'); s.appendChild(g);
+  allNodes().forEach(n=>{
+    if(n !== state.root && visible(n) && visible(n.parent))
+      drawEdge(g, edgeObj(n.parent, n, 'ray', 'Ray connecting two rings of the radial map.', cfg().hue));
+  });
+  allNodes().forEach(n=>{ if(visible(n)) drawNode(g, n); });
+  c.append(s, hint());
+}
+
+/* ── Renderer: Flow ────────────────────────────────────────────── */
+function flowLayout(){
+  const depth = state.depth, W = viewW(), H = viewH();
+  const pad = 76, gap = depth>1 ? (W-pad*2)/Math.max(depth-1,1) : 0;
+  const cols = []; for(let i=0;i<depth;i++) cols.push([]);
+  allNodes().forEach(n=>{ if(visible(n)) cols[n.depth].push(n); });
+  cols.forEach((arr,d)=>{
+    arr.forEach((n,i)=>{
+      state.pos.set(n.id, { x: pad + d*gap, y: H*(i+1)/(arr.length+1) });
+    });
+  });
+}
+function renderFlow(c){
+  const W = viewW(), H = viewH();
+  const s = svg(W,H); flowLayout();
+  const g = svgEl('g'); s.appendChild(g);
+  allNodes().forEach(n=>{
+    if(n !== state.root && visible(n) && visible(n.parent))
+      drawEdge(g, edgeObj(n.parent, n, 'transition', 'Stage transition flowing to the next column.', cfg().hue));
+  });
+  allNodes().forEach(n=>{ if(visible(n)) drawNode(g, n); });
+  c.append(s, hint());
+}
+
+/* ── Renderer: Mesh ────────────────────────────────────────────── */
+function meshLayout(){
+  const W = viewW(), H = viewH(), cx = W/2, cy = H/2;
+  state.pos.set(state.root.id, { x:cx, y:cy });
+  const l1 = state.root.children;
+  const R = Math.min(W,H)*0.26;
+  l1.forEach((n,i)=>{
+    const a = -Math.PI/2 + i*2*Math.PI/l1.length;
+    state.pos.set(n.id, { x:cx+R*Math.cos(a), y:cy+R*Math.sin(a) });
+  });
+  const placeKids = (node, baseAngle) => {
+    node.children.forEach((ch,i)=>{
+      const p = state.pos.get(node.id);
+      const a = baseAngle + (i - node.children.length/2)*0.7;
+      state.pos.set(ch.id, { x:p.x+95*Math.cos(a), y:p.y+95*Math.sin(a) });
+      placeKids(ch, a);
+    });
+  };
+  l1.forEach((n,i)=>{ placeKids(n, -Math.PI/2 + i*2*Math.PI/l1.length); });
+}
+function renderMesh(c){
+  const W = viewW(), H = viewH();
+  const s = svg(W,H); meshLayout();
+  const g = svgEl('g'); s.appendChild(g);
+  allNodes().forEach(n=>{
+    if(n !== state.root && visible(n) && visible(n.parent))
+      drawEdge(g, edgeObj(n.parent, n, 'link', 'Hierarchy link between a service and its dependency.', cfg().hue));
+  });
+  allNodes().forEach(n=>{
+    n.links.forEach(lnk=>{
+      const to = nodeById(lnk.to);
+      if(to) drawCurved(g, edgeObj(n, to, lnk.label, lnk.info, '#ffb84d', true));
+    });
+  });
+  allNodes().forEach(n=>{ if(visible(n)) drawNode(g, n); });
+  c.append(s, hint());
+}
+
+/* ── Renderer: Index ───────────────────────────────────────────── */
+function renderIndex(c){
+  const wrap = el('div','iview');
+  const byDepth = {};
+  allNodes().forEach(n=>{ (byDepth[n.depth] = byDepth[n.depth] || []).push(n); });
+  for(let d=0; d<state.depth; d++){
+    const row = el('div','irow');
+    row.appendChild(el('div','ilevel', `L${d+1}`));
+    const cells = el('div','icells');
+    (byDepth[d]||[]).forEach(n => cells.appendChild(cell(n)));
+    row.appendChild(cells);
+    wrap.appendChild(row);
+  }
+  c.append(wrap, hint());
+}
+function cell(n){
+  const box = el('div','icell');
+  if(isSelNode(n)) box.classList.add('sel');
+  box.style.setProperty('--hue', cfg().hue);
+  const top = el('div','icell-top');
+  top.appendChild(el('span','icell-name', n.name));
+  top.appendChild(el('span','ikind', n.kind));
+  box.appendChild(top);
+  if(n.children.length){
+    const t = el('span','iplus', `${isExpanded(n) ? '−' : '+'} ${n.children.length}`);
+    t.addEventListener('click', ev => { ev.stopPropagation(); toggleExpand(n); });
+    box.appendChild(t);
+    if(isExpanded(n)){
+      const chips = el('div','ichips');
+      n.children.forEach(ch=>{
+        const chip = el('span','ichip', ch.name);
+        chip.addEventListener('click', ev => { ev.stopPropagation(); selectNode(ch); });
+        chips.appendChild(chip);
+      });
+      box.appendChild(chips);
+    }
+  }
+  box.addEventListener('click', ()=>clickNode(n));
+  return box;
+}
+
+/* ── Render canvas ─────────────────────────────────────────────── */
+function renderCanvas(){
+  const c = $('#canvas'); c.innerHTML='';
+  const r = {
+    tree:renderTree, radial:renderRadial, flow:renderFlow, mesh:renderMesh, index:renderIndex
+  }[state.mode];
+  r(c);
+}
+
+/* ── Info panel ────────────────────────────────────────────────── */
+function renderPanel(){
+  const p = $('#panel'); p.innerHTML='';
+  const sel = state.selected;
+  if(!sel){ p.appendChild(el('div','pempty','Select a node or a vertex (edge) to inspect it.\nIts details, children and level path appear here.')); return; }
+  if(sel.type==='node') panelNode(p, sel.node);
+  else panelEdge(p, state.edges.get(sel.id));
+}
+function head(p, name, hue){
+  const h = el('div','phead');
+  const dot = el('span','dot'); dot.style.setProperty('--hue', hue);
+  h.append(dot, el('h2', null, name));
+  p.appendChild(h);
+}
+function panelNode(p, n){
+  const c = cfg();
+  head(p, n.name, c.hue);
+  const badges = el('div','badges');
+  badges.appendChild(el('span','badge kind', n.kind));
+  badges.appendChild(el('span','badge', `Level ${n.depth+1} of ${state.depth}`));
+  badges.appendChild(el('span','badge', n.children.length ? `${n.children.length} children` : 'leaf'));
+  p.appendChild(badges);
+  p.appendChild(el('p','pinfo', n.info));
+
+  const sec = el('section','psec');
+  sec.appendChild(el('h3','psec-title', `Children · ${n.children.length}`));
+  if(n.children.length){
+    const list = el('div','pchildren');
+    n.children.forEach(ch=>{
+      const b = el('button','pchild', `${isExpanded(ch) ? '▼' : '▷'} ${ch.name} · ${ch.kind}`);
+      b.addEventListener('click', ()=>selectNode(ch));
+      list.appendChild(b);
+    });
+    sec.appendChild(list);
+  } else {
+    sec.appendChild(el('p','pinfo', 'This is a leaf — expand a parent to keep navigating.'));
+  }
+  p.appendChild(sec);
+
+  const acts = el('div','pactions');
+  const up = el('button','pbtn', n.parent ? `↑ Up · ${n.parent.name}` : '↑ Root');
+  up.addEventListener('click', ()=>selectNode(n.parent || n));
+  const exp = el('button','pbtn', '＋ Expand all below');
+  exp.addEventListener('click', ()=>{ setBelow(n, true); });
+  const col = el('button','pbtn', '－ Collapse below');
+  col.addEventListener('click', ()=>{ setBelow(n, false); });
+  acts.append(up, exp, col);
+  p.appendChild(acts);
+}
+function setBelow(n, on){
+  const st = new Set(state.expanded);
+  allNodes().forEach(x=>{
+    let a = x;
+    while(a && a !== n) a = a.parent;
+    if(a === n) on ? st.add(x.id) : st.delete(x.id);
+  });
+  state.expanded = st;
+  render();
+}
+function panelEdge(p, e){
+  if(!e) return;
+  head(p, `${e.from.name} → ${e.to.name}`, '#ffb84d');
+  const badges = el('div','badges');
+  badges.appendChild(el('span','badge kind', 'vertex'));
+  badges.appendChild(el('span','badge', e.label));
+  p.appendChild(badges);
+  p.appendChild(el('div','pedge-arrow', '⟶'));
+  p.appendChild(el('p','pinfo', e.info));
+  p.appendChild(el('p','pinfo', 'This vertex links two nodes across levels. The breadcrumb above lets you jump back to any ancestor in the path.'));
+  const acts = el('div','pactions');
+  const a = el('button','pbtn', `Go to ${e.from.name}`);
+  a.addEventListener('click', ()=>selectNode(e.from));
+  const b = el('button','pbtn', `Go to ${e.to.name}`);
+  b.addEventListener('click', ()=>selectNode(e.to));
+  acts.append(a, b);
+  p.appendChild(acts);
+}
+
+/* ── Wire up UI ────────────────────────────────────────────────── */
+Object.keys(MODE).forEach(id=>{
+  const b = el('button','tab', MODE[id].label);
+  b.dataset.mode = id;
+  b.style.setProperty('--hue', MODE[id].hue);
+  b.addEventListener('click', ()=>switchMode(id));
+  $('#tabs').appendChild(b);
+});
+$('#backBtn').addEventListener('click', ()=>{
+  if(state.path.length > 1) selectNode(state.path[state.path.length-2]);
+});
+$('#depthSlider').addEventListener('input', e=>{
+  const d = +e.target.value;
+  $('#depthLabel').textContent = `${d} / 6`;
+  reset(d);
+});
+$('#canvas').addEventListener('click', e=>{
+  if(e.target === $('#canvas')){ state.selected = null; render(); }
+});
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Escape'){ state.selected = null; render(); }
+  if(e.key === 'ArrowLeft' && state.path.length > 1){
+    e.preventDefault(); selectNode(state.path[state.path.length-2]);
+  }
+});
+let rT;
+window.addEventListener('resize', ()=>{ clearTimeout(rT); rT = setTimeout(()=>render(), 120); });
+
+switchMode('tree');
+</script>
+</body>
+</html>

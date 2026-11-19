@@ -1,0 +1,23 @@
+sequenceDiagram
+  autonumber
+  participant App as App
+  participant C as Central
+  participant I as Index
+  participant F as Feed
+  App->>C: write record · fields + shape
+  C->>C: validate + keep the shape
+  C-->>App: shape accepted
+  C->>I: append one row
+  I-->>C: key
+  C-->>App: record id
+  Note over C,I: the schema lives with Central
+  alt shape unknown
+    C-->>App: rejected · app keeps its copy
+    App->>C: retry with declared fields
+    C->>I: append one row
+    I-->>C: key
+  end
+  I->>F: one calm surface
+  F-->>I: read cursor
+  F-->>App: read back
+  Note over C,F: one middle, not another app

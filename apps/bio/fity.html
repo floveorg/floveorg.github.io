@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+/* flove-store/1 + flove-net fallback — the common local-storage/net layer.
+   Apps inline this same block so they stay self-contained; this file is the
+   canonical reference and is shipped in the offline package. */
+(function () {
+  if (!window.floveStore) {
+    var mem = new Map();
+    function rawGet(k) {
+      try { return localStorage.getItem(k); }
+      catch (_) { return mem.has(k) ? mem.get(k) : null; }
+    }
+    function rawSet(k, v) {
+      try { localStorage.setItem(k, v); return true; }
+      catch (e) {
+        mem.set(k, v);
+        try { window.dispatchEvent(new CustomEvent('flove:storage-error', { detail: { key: k, error: e } })); } catch (_) {}
+        return false;
+      }
+    }
+    window.floveStore = {
+      getRaw: function (k, fallback) { var v = rawGet(k); return v == null ? (fallback === undefined ? null : fallback) : v; },
+      getJSON: function (k, fallback) {
+        try { var v = rawGet(k); return v == null ? (fallback === undefined ? null : fallback) : JSON.parse(v); }
+        catch (_) { return fallback === undefined ? null : fallback; }
+      },
+      set: function (k, v) { return rawSet(k, typeof v === 'string' ? v : JSON.stringify(v)); },
+      setJSON: function (k, v) { return rawSet(k, JSON.stringify(v)); },
+      remove: function (k) { try { localStorage.removeItem(k); } catch (_) {} mem.delete(k); },
+      available: function () {
+        try { var k = '__flove_probe__'; localStorage.setItem(k, '1'); localStorage.removeItem(k); return true; }
+        catch (_) { return false; }
+      },
+      memoryOnly: function () { return !this.available(); }
+    };
+  }
+  if (!window.floveFields) window.floveFields = function () {
+    try { var el = document.getElementById('flove-fields'); return el ? (JSON.parse(el.textContent).fields || []) : []; }
+    catch (_) { return []; }
+  };
+  if (!window.flovePort) {
+    window.flovePort = {
+      schema: 'flove-port/1',
+      export: function () { return { schema: 'flove-portrait/1', app: null, version: 1, generatedAt: new Date().toISOString(), rows: [] }; },
+      consult: function () { return { schema: 'flove-consult/1', app: null, version: 1, generatedAt: new Date().toISOString(), rows: [] }; },
+      import: function () { return { ok: false, applied: 0, errors: ['no app adapter'] }; }
+    };
+  }
+  if (!window.floveNet) window.floveNet = window.flovePort; // deprecated alias
+  if (!window.flovePortrait) window.flovePortrait = window.flovePort;
+  if (!window.floveSummary) window.floveSummary = function () { return window.flovePort.export(); };
+})();
+
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="Marc (marcflove)">
+<meta name="description" content="Fity — an evolutionary bio app. A carousel of the living body: cell, DNA, heartbeat, sprout and more. Click the mark for the menu, click a picture to look inside.">
+<title>Fity · FLOVE</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M20 12 C 32 22 32 42 20 52 M44 12 C 32 22 32 42 44 52' fill='none' stroke='%23e84057' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+/* a11y — 40px hit targets on touch (§6), desktop untouched */
+@media (pointer: coarse){
+  .btn,.btn-primary,.btn-ghost,.btn-soft,.subitem,.tbtn,.cat,.chip,.pc-toggle,.menu-item,.app-menu-item,.topmenu__item{min-height:40px}
+}
+  :root {
+    --membrane: #EEF0E8;   /* pale sage lab-light */
+    --ink: #20261E;
+    --ink-soft: #5A6355;
+    --card-face: #FFFFFF;
+    --accent: #e84057;     /* fity — the two strands */
+    --signal: #3ddc84;     /* fity — the rungs        */
+    --radius: 1.25rem;
+    --shadow: 0 1px 2px rgba(32,38,30,.08), 0 12px 32px -12px rgba(32,38,30,.25);
+    --shadow-lift: 0 2px 4px rgba(32,38,30,.10), 0 24px 48px -16px rgba(32,38,30,.35);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--membrane);
+    color: var(--ink);
+    font-family: system-ui, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+  .display-serif {
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  }
+
+  /* ---------- header ---------- */
+  header {
+    padding: clamp(2rem, 6vh, 4rem) clamp(1.25rem, 6vw, 5rem) 1rem;
+    max-width: 72rem;
+  }
+  .lockup {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: clamp(.9rem, 3vw, 1.5rem);
+    cursor: pointer;
+    border-radius: .9rem;
+    padding: .3rem .6rem .3rem .2rem;
+    margin-left: -.6rem;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .lockup:hover, .lockup:focus-visible { background: rgba(255,255,255,.5); }
+  .lockup:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .lockup .mark { width: clamp(46px, 9vw, 72px); height: clamp(46px, 9vw, 72px);
+    flex: 0 0 auto; overflow: visible; }
+  .lockup .mark .rail-l { transform-box: fill-box; transform-origin: center;
+    animation: breathe-l 4.6s ease-in-out infinite; }
+  .lockup .mark .rail-r { transform-box: fill-box; transform-origin: center;
+    animation: breathe-r 4.6s ease-in-out infinite; }
+  @keyframes breathe-l { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-1.6px); } }
+  @keyframes breathe-r { 0%,100% { transform: translateX(0); } 50% { transform: translateX(1.6px); } }
+  .wordmark {
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    font-size: clamp(2.6rem, 6vw, 4.2rem);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+  }
+  .wordmark em { font-style: normal; color: var(--accent); }
+
+  /* the menu that opens on click of the logo + title */
+  .menu {
+    position: absolute;
+    left: 0; top: calc(100% + .6rem);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: .2rem;
+    min-width: 12.5rem;
+    padding: .45rem;
+    background: rgba(255,255,255,.9);
+    border: 1px solid #E2E5DC;
+    border-radius: 1rem;
+    box-shadow: var(--shadow-lift);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    opacity: 0; visibility: hidden;
+    transform: translateY(-6px);
+    transition: opacity .2s ease, transform .22s cubic-bezier(.2,.9,.3,1.2), visibility .2s;
+    z-index: 20;
+  }
+  .lockup.open .menu { opacity: 1; visibility: visible; transform: translateY(0); }
+  .menu .caret-mark {
+    display: inline-flex; align-items: center; gap: .5rem;
+    font-size: .7rem; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-soft); padding: .25rem .6rem .35rem;
+  }
+  .menu a, .menu button {
+    appearance: none; border: 0; background: transparent;
+    font: inherit; text-align: left; text-decoration: none; color: var(--ink);
+    padding: .5rem .7rem; border-radius: .6rem; cursor: pointer;
+    font-size: .95rem; display: flex; align-items: center; gap: .6rem;
+    transition: background .16s ease, color .16s ease;
+  }
+  .menu a:hover, .menu button:hover, .menu a:focus-visible, .menu button:focus-visible {
+    background: var(--ink); color: var(--membrane); outline: none; }
+  .menu .sep { height: 1px; background: #E2E5DC; margin: .2rem .4rem; }
+  .menu .to-flove { color: var(--signal); font-weight: 600; }
+
+  .thesis {
+    margin-top: .9rem;
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    color: var(--ink-soft);
+    max-width: 34em;
+    line-height: 1.55;
+  }
+  .thesis em { font-style: italic; color: var(--ink); }
+
+  /* ---------- carousel ---------- */
+  .stage { position: relative; margin-top: clamp(1.5rem, 4vh, 3rem); }
+  .rail {
+    display: flex;
+    gap: clamp(.9rem, 2vw, 1.5rem);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: clamp(1.25rem, 6vw, 5rem);
+    padding: 1.5rem clamp(1.25rem, 6vw, 5rem) 2.5rem;
+    scrollbar-width: none;
+  }
+  .rail::-webkit-scrollbar { display: none; }
+
+  .holon-card {
+    flex: 0 0 auto;
+    width: clamp(15rem, 32vw, 19rem);
+    scroll-snap-align: start;
+    border: none;
+    background: var(--card-face);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    text-align: left;
+    padding: 0 0 1.1rem;
+    overflow: hidden;
+    color: inherit;
+    font: inherit;
+    transition: transform .35s cubic-bezier(.2,.9,.3,1.2), box-shadow .35s ease;
+    position: relative;
+  }
+  .holon-card:hover, .holon-card:focus-visible {
+    transform: translateY(-.4rem);
+    box-shadow: var(--shadow-lift);
+  }
+  .holon-card:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .holon-card svg { display: block; width: 100%; height: auto; }
+  .holon-card figcaption {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: .9rem 1.1rem 0;
+  }
+  .holon-name {
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    font-size: 1.35rem;
+  }
+  .holon-level {
+    font-size: .75rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* the five featured pictures get a special highlight */
+  .holon-card.featured svg { border-radius: 0 0 0 0; }
+  .holon-card.featured {
+    box-shadow: var(--shadow), 0 0 0 3px var(--fc);
+  }
+  .holon-card.featured:hover, .holon-card.featured:focus-visible {
+    box-shadow: var(--shadow-lift), 0 0 0 3px var(--fc);
+  }
+  .holon-card.featured .badge {
+    position: absolute; top: .75rem; right: .75rem; z-index: 2;
+    display: inline-flex; align-items: center; gap: .35rem;
+    font-size: .62rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink);
+    background: rgba(255,255,255,.9);
+    border: 1px solid #E2E5DC;
+    padding: .28rem .55rem; border-radius: 999px;
+    -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    box-shadow: 0 2px 8px rgba(32,38,30,.12);
+    pointer-events: none;
+  }
+  .holon-card.featured .badge b { color: var(--fc); }
+
+  /* edge fades hint that the rail continues */
+  .stage::before, .stage::after {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0;
+    width: clamp(1rem, 4vw, 4rem);
+    pointer-events: none;
+    z-index: 2;
+  }
+  .stage::before { left: 0;  background: linear-gradient(90deg, var(--membrane), transparent); }
+  .stage::after  { right: 0; background: linear-gradient(-90deg, var(--membrane), transparent); }
+
+  /* ---------- arrows ---------- */
+  .nav {
+    display: flex;
+    gap: .6rem;
+    justify-content: flex-end;
+    padding: 0 clamp(1.25rem, 6vw, 5rem) .5rem;
+  }
+  .nav button {
+    width: 2.9rem; height: 2.9rem;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink);
+    background: transparent;
+    color: var(--ink);
+    font-size: 1.15rem;
+    cursor: pointer;
+    transition: background .2s ease, color .2s ease, opacity .2s ease;
+  }
+  .nav button:hover:not(:disabled), .nav button:focus-visible { background: var(--ink); color: var(--membrane); }
+  .nav button:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .nav button:disabled { opacity: .25; cursor: default; }
+
+  /* ---------- modal ---------- */
+  dialog.holon-modal {
+    margin: auto;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+    border: none;
+    border-radius: calc(var(--radius) + .25rem);
+    padding: 0;
+    max-width: min(28rem, calc(100vw - 2rem));
+    width: 100%;
+    box-shadow: 0 40px 80px -20px rgba(32,38,30,.5);
+    background: var(--card-face);
+    color: var(--ink);
+  }
+  dialog.holon-modal::backdrop {
+    background: rgba(32,38,30,.45);
+    backdrop-filter: blur(4px);
+  }
+  .modal-art { display: block; width: 100%; height: auto; }
+  .modal-body { padding: 1.4rem 1.6rem 1.8rem; }
+  .modal-eyebrow {
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .modal-title {
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    font-size: 2rem;
+    font-weight: 400;
+    margin: .2rem 0 .8rem;
+  }
+  .modal-title em { font-style: normal; color: var(--accent); }
+  .modal-text { line-height: 1.6; color: var(--ink-soft); }
+  .modal-text strong { color: var(--ink); font-weight: 600; }
+  .modal-close {
+    position: absolute;
+    top: .8rem; right: .8rem;
+    width: 2.4rem; height: 2.4rem;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,.85);
+    color: var(--ink);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(32,38,30,.25);
+  }
+  .modal-close:hover, .modal-close:focus-visible { background: var(--ink); color: #fff; }
+  .modal-close:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+  /* ---------- footer ---------- */
+  footer {
+    margin-top: auto;
+    padding: 2rem clamp(1.25rem, 6vw, 5rem) 2.5rem;
+    font-size: .85rem;
+    color: var(--ink-soft);
+  }
+  footer a { color: var(--ink); text-decoration: underline;
+    text-underline-offset: 3px; }
+  footer a:hover { color: var(--accent); }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .holon-card { transition: none; }
+    .holon-card:hover { transform: none; }
+    .lockup .mark .rail-l, .lockup .mark .rail-r { animation: none; }
+  }
+
+.fity-defs{position:absolute}
+
+  .fity-summary{max-width:1120px;margin:2rem auto 0;padding:0 clamp(1.25rem,6vw,5rem)}
+  .fity-summary h2{font:600 .68rem/1 ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 .45rem}
+  .fity-summary-phrase{font-size:1.02rem;line-height:1.5;margin:0 0 .75rem;max-width:70ch}
+  .fity-summary-actions{display:flex;gap:.5rem;align-items:flex-start;flex-wrap:wrap}
+  .fs-btn{font:inherit;font-size:.82rem;padding:.55rem .9rem;border:1px solid rgba(0,0,0,.28);border-radius:999px;background:#fff;color:var(--ink);cursor:pointer}
+  .fs-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .flove-summary__share{position:relative;display:inline-flex}
+  .flove-summary__menu{position:absolute;top:calc(100% + .35rem);left:0;z-index:5;display:flex;flex-direction:column;min-width:11rem;padding:.3rem;border:1px solid rgba(0,0,0,.16);border-radius:12px;background:#fff;color:#111;box-shadow:0 10px 24px rgba(0,0,0,.18)}
+  .flove-summary__menu[hidden]{display:none}
+  .flove-summary__item{display:flex;gap:.5rem;align-items:center;font:inherit;font-size:.9rem;padding:.45rem .6rem;border:0;border-radius:8px;background:transparent;color:inherit;text-decoration:none;cursor:pointer;white-space:nowrap}
+  .flove-summary__item:hover,.flove-summary__item:focus-visible{background:rgba(0,0,0,.07)}
+  .fity-magic-out{margin:.65rem 0 0;color:var(--ink-soft);font-style:italic}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="lockup" id="lockup" role="button" tabindex="0" aria-haspopup="true"
+       aria-expanded="false" aria-controls="fity-menu" title="Fity menu">
+    <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+      <g fill="none" stroke="#e84057" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <path class="rail-l" d="M20 12 C 30 22, 30 42, 20 52"/>
+        <path class="rail-r" d="M44 12 C 34 22, 34 42, 44 52"/>
+      </g>
+    </svg>
+    <h1 class="wordmark">Fit<em>y</em></h1>
+
+    <nav class="menu" id="fity-menu" aria-label="Fity menu">
+      <span class="caret-mark">🌱 fity</span>
+      <button type="button" data-act="about">ⓘ About</button>
+      <button type="button" data-act="download">⤓ Download</button>
+      <span class="sep"></span>
+      <a href="index.html">Bio Flove</a>
+      <a class="to-flove" href="../index.html">Flove</a>
+    </nav>
+  </div>
+
+  <p class="thesis">Every piece here is one move of the <em>living body</em> — how it copies, beats, grows and trains. Pick the five <strong>fity picks</strong> first; click any picture to look inside.</p>
+</header>
+
+<!-- each symbol is drawn in fity's lab tones -->
+<svg width="0" height="0" class="fity-defs" aria-hidden="true">
+  <defs>
+    <symbol id="m-dna" viewBox="-50 -50 100 100">
+      <g fill="none" stroke="#e84057" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M -12 -20 C -2 -10 -2 10 -12 20"/>
+        <path d="M 12 -20 C 2 -10 2 10 12 20"/>
+      </g>
+      <g stroke="#3ddc84" stroke-width="3" stroke-linecap="round">
+        <line x1="-12" y1="-18" x2="12" y2="-18"/>
+        <line x1="-11" y1="-10" x2="11" y2="-10"/>
+        <line x1="-10" y1="-2"  x2="10" y2="-2"/>
+        <line x1="-10" y1="6"   x2="10" y2="6"/>
+        <line x1="-11" y1="14"  x2="11" y2="14"/>
+        <line x1="-12" y1="22"  x2="12" y2="22"/>
+      </g>
+      <g fill="#3ddc84">
+        <circle cx="-12" cy="-18" r="4"/><circle cx="-11" cy="-10" r="4"/><circle cx="-10" cy="-2" r="4"/><circle cx="-10" cy="6" r="4"/><circle cx="-11" cy="14" r="4"/><circle cx="-12" cy="22" r="4"/>
+        <circle cx="12" cy="-18" r="4"/><circle cx="11" cy="-10" r="4"/><circle cx="10" cy="-2" r="4"/><circle cx="10" cy="6" r="4"/><circle cx="11" cy="14" r="4"/><circle cx="12" cy="22" r="4"/>
+      </g>
+    </symbol>
+    <symbol id="m-pulse" viewBox="-50 -50 100 100">
+      <polyline points="-46 -38 -12 -38 -2 -46 8 -22 18 -38 46 -38"
+        fill="none" stroke="#D96C4F" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M 0 8 C -26 -12 -46 6 -20 24 C -9 31 -4 36 0 40 C 4 36 9 31 20 24 C 46 6 26 -12 0 8 Z"
+        fill="#F9E8E2" stroke="#D96C4F" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M 0 18 C -8 14 -14 14 -20 16 M 0 26 C 6 23 13 23 19 26"
+        fill="none" stroke="#D96C4F" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="m-cell" viewBox="-50 -50 100 100">
+      <circle r="42" fill="none" stroke="#5FA052" stroke-width="4"/>
+      <circle r="26" fill="none" stroke="#5FA052" stroke-width="2" stroke-dasharray="3 5"/>
+      <circle cx="-12" cy="-12" r="14" fill="none" stroke="#5FA052" stroke-width="2"/>
+      <circle r="7" fill="#5FA052"/>
+    </symbol>
+    <symbol id="m-sprout" viewBox="-50 -50 100 100">
+      <path d="M 0 48 C 0 20 0 2 0 -14" stroke="#3E9A7C" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <path d="M 0 -6 C -24 -14 -22 10 -4 2 C -14 2 -10 -4 0 -6 Z" fill="#3E9A7C"/>
+      <path d="M 0 -6 C 24 -14 22 10 4 2 C 14 2 10 -4 0 -6 Z" fill="#3E9A7C"/>
+      <circle cx="0" cy="-26" r="4" fill="#3E9A7C"/>
+    </symbol>
+    <symbol id="m-muscle" viewBox="-50 -50 100 100">
+      <line x1="-46" y1="0" x2="46" y2="0" stroke="#E0A430" stroke-width="4" stroke-linecap="round"/>
+      <rect x="-46" y="-16" width="16" height="32" rx="6" fill="#E0A430"/>
+      <rect x="30"  y="-16" width="16" height="32" rx="6" fill="#E0A430"/>
+      <rect x="-36" y="-11" width="10" height="22" rx="4" fill="#E0A430" opacity=".55"/>
+      <rect x="26"  y="-11" width="10" height="22" rx="4" fill="#E0A430" opacity=".55"/>
+    </symbol>
+    <symbol id="m-brain" viewBox="-50 -50 100 100">
+      <path d="M -18 -14 C -14 -28 -2 -32 8 -28 C 16 -32 30 -28 32 -14 C 36 -6 32 4 28 12 C 22 22 10 28 0 26 C -12 28 -22 22 -28 12 C -32 4 -32 -6 -18 -14 Z"
+        fill="#ECE7F6" stroke="#7A5FB5" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M 0 -38 C 0 -30 0 -24 0 -18" stroke="#7A5FB5" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M -20 -2 C -12 -8 12 -8 20 -2" stroke="#7A5FB5" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M -14 12 C -6 6 6 6 14 12" stroke="#7A5FB5" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="m-steps" viewBox="-50 -50 100 100">
+      <ellipse cx="-22" cy="-22" rx="5" ry="7" fill="#4A7FB5"/>
+      <g fill="#4A7FB5" opacity=".85">
+        <circle cx="-26" cy="-29" r="1.8"/><circle cx="-22" cy="-31" r="1.9"/><circle cx="-18" cy="-29" r="1.8"/>
+      </g>
+      <ellipse cx="18" cy="22" rx="5" ry="7" fill="#4A7FB5" opacity=".7"/>
+      <g fill="#4A7FB5" opacity=".6">
+        <circle cx="14" cy="15" r="1.8"/><circle cx="18" cy="13" r="1.9"/><circle cx="22" cy="15" r="1.8"/>
+      </g>
+      <ellipse cx="22" cy="-8" rx="5" ry="7" fill="#4A7FB5" opacity=".85"/>
+      <g fill="#4A7FB5" opacity=".72">
+        <circle cx="18" cy="-15" r="1.7"/><circle cx="22" cy="-17" r="1.8"/><circle cx="26" cy="-15" r="1.7"/>
+      </g>
+    </symbol>
+    <symbol id="m-tree" viewBox="-50 -50 100 100">
+      <path d="M 0 48 C 0 30 0 22 0 12" stroke="#3E7C5F" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <g stroke="#3E7C5F" stroke-width="3.5" fill="none" stroke-linecap="round">
+        <path d="M 0 26 C -14 22 -22 14 -28 4"/>
+        <path d="M -12 14 C -20 8 -22 0 -20 -8"/>
+        <path d="M 0 18 C 14 16 24 8 30 -6"/>
+        <path d="M 12 12 C 20 4 22 -4 18 -12"/>
+        <path d="M 0 4 C -6 -6 -4 -14 2 -20"/>
+      </g>
+      <circle cx="-26" cy="2" r="3.5" fill="#3E7C5F"/>
+      <circle cx="28" cy="-8" r="3.5" fill="#3E7C5F"/>
+      <circle cx="0" cy="-22" r="3.5" fill="#3E7C5F"/>
+    </symbol>
+  </defs>
+</svg>
+
+<main>
+  <div class="stage">
+    <div class="rail" id="rail" tabindex="0" aria-label="Carousel of fity pictures">
+      <!-- cards injected by script -->
+    </div>
+  </div>
+  <div class="nav">
+    <button type="button" id="prev" aria-label="Scroll to previous pictures">←</button>
+    <button type="button" id="next" aria-label="Scroll to next pictures">→</button>
+  </div>
+</main>
+
+<dialog class="holon-modal" id="modal" aria-labelledby="modal-title">
+  <div class="modal-art" id="modal-art"></div>
+  <button type="button" class="modal-close" id="modal-close" aria-label="Close">✕</button>
+  <div class="modal-body">
+    <p class="modal-eyebrow" id="modal-eyebrow"></p>
+    <h2 class="modal-title" id="modal-title">Details</h2>
+    <p class="modal-text" id="modal-text"></p>
+  </div>
+</dialog>
+
+<section class="fity-summary" aria-labelledby="fitySummaryTitle">
+  <h2 id="fitySummaryTitle">Summary</h2>
+  <p class="fity-summary-phrase">Five moves of the living body: copy, beat, grow, train and the branches that connect them.</p>
+  <div class="fity-summary-actions">
+    <button type="button" class="fs-btn" id="floveSummaryMagic">✨ Magic</button>
+    <span class="flove-summary__share">
+      <button type="button" class="fs-btn" id="floveSummaryShare" aria-expanded="false" aria-controls="floveSummaryShareMenu">📤 Share</button>
+      <span class="flove-summary__menu" id="floveSummaryShareMenu" hidden>
+        <button type="button" class="flove-summary__item" data-action="save">💾 Save JSON</button>
+        <a class="flove-summary__item" data-action="telegram" href="https://t.me/share/url?url=https%3A%2F%2Fflove.org%2Fapps%2Fbio%2Ffity.html" target="_blank" rel="noopener">✈ Telegram</a>
+        <button type="button" class="flove-summary__item" data-action="more">🌐 More</button>
+      </span>
+    </span>
+  </div>
+  <p class="fity-magic-out" id="fityMagicOut" hidden></p>
+</section>
+
+<footer>
+  fity · part of <a href="index.html">flove bio</a> · an <a href="../index.html">evolutionary bio app</a> — the DNA mark leads, and the five <b>fity picks</b> are the ones to try first.
+</footer>
+
+<script>
+  const PICKS = [
+    {
+      id: "dna", name: "DNA", level: "fity pick 01", featured: true,
+      tint: "#FBEAEC", fc: "#e84057",
+      text: "The <strong>code of life</strong> — two strands that copy, recombine and drift across generations. Fity's mark: evolution you can see.",
+      part: "code, mutation, inheritance"
+    },
+    {
+      id: "pulse", name: "Heartbeat", level: "fity pick 02", featured: true,
+      tint: "#F9E8E2", fc: "#D96C4F",
+      text: "The <strong>resting trace</strong> — every beat is a training signal. Fitness lives at the meeting of pulse and habit.",
+      part: "effort, rhythm, rest"
+    },
+    {
+      id: "cell", name: "Cell", level: "fity pick 03", featured: true,
+      tint: "#EAF3E6", fc: "#5FA052",
+      text: "The smallest whole that is unmistakably <strong>alive</strong>: it keeps a boundary, repairs itself, and copies itself.",
+      part: "boundary, energy, copy"
+    },
+    {
+      id: "sprout", name: "Sprout", level: "fity pick 04", featured: true,
+      tint: "#E4F1EC", fc: "#3E9A7C",
+      text: "Growth is the <strong>original training</strong> — a plant will bend toward the light it needs. So do you.",
+      part: "growth, light, adaptation"
+    },
+    {
+      id: "muscle", name: "Training", level: "fity pick 05", featured: true,
+      tint: "#F9F0DC", fc: "#E0A430",
+      text: "Load, recover, repeat — the <strong>overload principle</strong> is evolution applied to the body you are building.",
+      part: "load, recovery, progress"
+    },
+    {
+      id: "brain", name: "Brain", level: "support", featured: false,
+      tint: "#ECE7F6", fc: "#7A5FB5",
+      text: "The <strong>coordination layer</strong> — every rep is a conversation between muscle and mind.",
+      part: "learning, coordination, habit"
+    },
+    {
+      id: "steps", name: "Steps", level: "support", featured: false,
+      tint: "#E3EDF6", fc: "#4A7FB5",
+      text: "Daylight movement — the <strong>cheapest adaptation</strong> there is. A body made to walk.",
+      part: "mobility, daylight, rhythm"
+    },
+    {
+      id: "tree", name: "Tree of life", level: "support", featured: false,
+      tint: "#E6F0E9", fc: "#3E7C5F",
+      text: "Every living thing hangs from the same <strong>branching tree</strong> — fity studies how the branches grew.",
+      part: "descent, branching, time"
+    }
+  ];
+
+  const rail = document.getElementById("rail");
+  const modal = document.getElementById("modal");
+
+  function artSVG(p, size) {
+    return `<svg viewBox="-50 -50 100 100" width="${size}" height="${size}" role="img" aria-hidden="true"
+              style="background:${p.tint}">
+              <use href="#m-${p.id}" x="-42" y="-42" width="84" height="84"/>
+            </svg>`;
+  }
+
+  PICKS.forEach((p, i) => {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "holon-card" + (p.featured ? " featured" : "");
+    if (p.featured) card.style.setProperty("--fc", p.fc);
+    card.setAttribute("aria-haspopup", "dialog");
+    card.setAttribute("aria-label", `${p.name}, ${p.level}. Open info.`);
+    card.innerHTML = (p.featured
+        ? `<span class="badge">★ <b>fity pick</b></span>` : ``)
+      + `${artSVG(p, "100%")}
+        <figcaption>
+          <span class="holon-name">${p.name}</span>
+          <span class="holon-level">${p.level}</span>
+        </figcaption>`;
+    card.addEventListener("click", () => openModal(p, i));
+    rail.appendChild(card);
+  });
+
+  function openModal(p, i) {
+    document.getElementById("modal-art").innerHTML = artSVG(p, "100%");
+    document.getElementById("modal-eyebrow").textContent =
+      `fity · ${p.level ? p.level.replace(/\d\d/, "") : ""} ${String(i + 1).padStart(2, "0")} of ${String(PICKS.length).padStart(2, "0")}`;
+    document.getElementById("modal-title").innerHTML = p.name;
+    document.getElementById("modal-text").innerHTML = p.text;
+    modal.showModal();
+  }
+  function openAbout() {
+    document.getElementById("modal-art").innerHTML = artSVG(PICKS[0], "100%");
+    document.getElementById("modal-eyebrow").textContent = "fity · about";
+    document.getElementById("modal-title").innerHTML = "Fit<em>y</em>";
+    document.getElementById("modal-text").innerHTML =
+      "<strong>Fity</strong> is an evolutionary bio app — it reads the living body through its own code: DNA, heartbeat, growth and training. " +
+      "It keeps a <strong>quiet lab</strong> and lets the moving body teach. Menu: <strong>Download</strong> takes the mark, <strong>Bio Flove</strong> returns to the bio apps, <strong>Flove</strong> opens the launcher.";
+    modal.showModal();
+  }
+
+  document.getElementById("modal-close").addEventListener("click", () => modal.close());
+  modal.addEventListener("click", (e) => {
+    const r = modal.getBoundingClientRect();
+    const outside = e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+    if (outside) modal.close();
+  });
+
+  /* the menu on the logo + title */
+  const lockup = document.getElementById("lockup");
+  const menu = document.getElementById("fity-menu");
+  function setOpen(open) {
+    lockup.classList.toggle("open", open);
+    lockup.setAttribute("aria-expanded", String(open));
+  }
+  lockup.addEventListener("click", (e) => {
+    if (e.target.closest("a, button")) return;
+    setOpen(!lockup.classList.contains("open"));
+  });
+  lockup.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpen(!lockup.classList.contains("open")); }
+    else if (e.key === "Escape") setOpen(false);
+  });
+  menu.querySelector('[data-act="about"]').addEventListener("click", () => { setOpen(false); openAbout(); });
+  menu.querySelector('[data-act="download"]').addEventListener("click", () => {
+    setOpen(false);
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">' +
+      '<path fill="none" stroke="#e84057" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="M20 12 C 30 22, 30 42, 20 52"/>' +
+      '<path fill="none" stroke="#e84057" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="M44 12 C 34 22, 34 42, 44 52"/>' +
+      '</svg>';
+    const blob = new Blob([svg], { type: "image/svg+xml" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "fity.svg"; a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  document.addEventListener("click", (e) => {
+    if (lockup.classList.contains("open") && !lockup.contains(e.target)) setOpen(false);
+  });
+
+  const prev = document.getElementById("prev");
+  const next = document.getElementById("next");
+  function cardStep() {
+    const card = rail.querySelector(".holon-card");
+    return card ? card.offsetWidth + parseFloat(getComputedStyle(rail).gap || 16) : 300;
+  }
+  prev.addEventListener("click", () => rail.scrollBy({ left: -cardStep(), behavior: "smooth" }));
+  next.addEventListener("click", () => rail.scrollBy({ left: cardStep(), behavior: "smooth" }));
+  function syncArrows() {
+    prev.disabled = rail.scrollLeft <= 4;
+    next.disabled = rail.scrollLeft >= rail.scrollWidth - rail.clientWidth - 4;
+  }
+  rail.addEventListener("scroll", syncArrows, { passive: true });
+  window.addEventListener("resize", syncArrows);
+  syncArrows();
+</script>
+
+<script>
+(function(){
+  var btn = document.getElementById('floveSummaryShare');
+  var menu = document.getElementById('floveSummaryShareMenu');
+  var magic = document.getElementById('floveSummaryMagic');
+  var out = document.getElementById('fityMagicOut');
+  if (!btn || !menu) return;
+  btn.addEventListener('click', function(){ menu.hidden = !menu.hidden; btn.setAttribute('aria-expanded', String(!menu.hidden)); });
+  document.addEventListener('click', function(e){ if (!menu.hidden && !menu.contains(e.target) && !btn.contains(e.target)) menu.hidden = true; });
+  var save = menu.querySelector('[data-action="save"]');
+  if (save) save.addEventListener('click', function(){
+    var p = window.flovePortrait && window.flovePortrait.get ? window.flovePortrait.get() : null;
+    if (!p) return;
+    var blob = new Blob([JSON.stringify(p, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'fity-portrait.json'; a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  if (magic && out) magic.addEventListener('click', function(){
+    out.hidden = false;
+    out.textContent = '✨ ' + PICKS.map(function(p){ return p.name; }).join(' · ') + ' — read the living body.';
+  });
+})();
+</script>
+<!-- flove fields manifest · read by tools/extract-fields.py -->
+<script type="application/json" id="flove-fields">
+{
+  "schema": "flove-fields/1",
+  "app": "fity",
+  "displayOnly": true,
+  "status": "complete",
+  "fields": []
+}
+</script>
+<script>
+/* a11y — role=button/menuitem: Enter/Space activate them */
+document.addEventListener('keydown', function(e){
+  var t = e.target;
+  if (!t || !t.matches || !t.matches('[role="button"][tabindex], [role="menuitem"][tabindex], [role="tab"][tabindex]')) return;
+  if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); t.click(); }
+});
+</script>
+<script>
+(function(){
+  if (typeof PICKS === 'undefined' || !Array.isArray(PICKS)) return;
+  function portrait(){
+    return {
+      schema: 'flove-portrait/1', app: 'fity', version: 1,
+      generatedAt: new Date().toISOString(),
+      phrase: 'Five moves of the living body: copy, beat, grow, train and the branches that connect them.',
+      rows: PICKS.map(function(p){
+        return {
+          key: p.id,
+          kind: p.featured ? 'pick' : 'support',
+          title: p.name,
+          subtitle: p.level,
+          items: String(p.part || '').split(',').map(function(x){ return x.trim(); }).filter(Boolean)
+        };
+      }),
+      source: { url: location.href }
+    };
+  }
+  window.flovePortrait = {
+    get: portrait,
+    validate: function(p){
+      return { ok: !!(p && p.schema === 'flove-portrait/1' && Array.isArray(p.rows) && p.rows.length), errors: [] };
+    }
+  };
+  window.floveSummary = portrait;
+})();
+</script>
+<!-- flove-conformance:start -->
+<script data-flove-conformance>
+/* Runtime conformance — dev harness: development/tools/conformance.html
+   Supersedes selfTest(); never writes user data (merge gets an empty envelope).
+   Parity vs floveFields() is advisory: rows are semantic layers, not a field
+   dump, so an app's field ids may not appear verbatim. */
+(function(){
+  var api = window.flovePortrait;
+  if (!api || typeof api.get !== 'function' || typeof api.conformance === 'function') return;
+
+  function flatFields(list, out){
+    out = out || [];
+    (list || []).forEach(function(f){
+      if (!f || !f.id) return;
+      out.push(f.id);              // leaf ids are already dotted (bonds.friendship)
+      if (f.fields) flatFields(f.fields, out);
+    });
+    return out;
+  }
+  function norm(s){
+    return String(s == null ? '' : s).toLowerCase()
+      .replace(/[\s_:.\/-]+/g, '.').replace(/^\.+|\.+$/g, '');
+  }
+  function slug(s){
+    return String(s == null ? '' : s).toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+
+  api.conformance = function(opts){
+    opts = opts || {};
+    var checks = [];
+    function check(name, ok, level, detail){
+      checks.push({ name: name, ok: !!ok, level: level || 'critical',
+                    detail: detail == null ? '' : String(detail) });
+    }
+
+    var p = null, getError = '';
+    try { p = api.get(); } catch (e) { getError = e && e.message || String(e); }
+    check('get() returns an envelope', p && typeof p === 'object', 'critical', getError);
+    if (!p || typeof p !== 'object'){
+      return { ok: false, app: null, checks: checks, errors: ['get()'], coverage: null };
+    }
+
+    var app = slug(p.app);
+    check('schema is flove-portrait/1', p.schema === 'flove-portrait/1', 'critical', p.schema);
+    check('app slug is present', !!app, 'critical', p.app);
+
+    var filename = app + '-portrait.json';
+    check('filename is <app>-portrait.json',
+          /^[a-z0-9][a-z0-9-]*-portrait\.json$/.test(filename), 'advisory', filename);
+    var json = '';
+    try { json = JSON.stringify(p); } catch (e) { json = ''; }
+    var mime = '';
+    try { mime = new Blob([json], { type: 'application/json;charset=utf-8' }).type; } catch (e) {}
+    check('blob MIME is application/json;charset=utf-8',
+          mime === 'application/json;charset=utf-8', 'advisory', mime);
+    check('envelope survives JSON.stringify', json.length > 2, 'critical', json.length + ' chars');
+
+    var v = null;
+    try { v = api.validate ? api.validate(p) : null; }
+    catch (e) { v = { ok: false, errors: [e.message] }; }
+    check('validate() accepts the envelope', v && v.ok, 'critical',
+          v && (v.errors || []).join('; '));
+
+    var rows = Array.isArray(p.rows) ? p.rows : null;
+    check('rows[] is an array', !!rows, 'critical', rows ? rows.length + ' rows' : typeof p.rows);
+    if (!rows){
+      return { ok: false, app: app, checks: checks, errors: ['rows[]'], coverage: null };
+    }
+
+    var keys = [], items = [], blank = false, untitled = false;
+    rows.forEach(function(r){
+      r = r || {};
+      var k = norm(r.key);
+      if (k) keys.push(k);
+      var list = Array.isArray(r.items) ? r.items : [];
+      if (list.length && !String(r.title || '').trim()) untitled = true;
+      list.forEach(function(it){
+        if (it === null || it === undefined) { blank = true; return; }
+        if (typeof it === 'string' && !it.trim()) { blank = true; return; }
+        items.push(typeof it === 'object' ? JSON.stringify(it) : String(it));
+      });
+    });
+    check('row keys are unique', new Set(keys).size === keys.length, 'critical',
+          keys.length + ' keys');
+    check('items are never blank', !blank, 'critical');
+    check('filled rows have a title', !untitled, 'critical');
+
+    var fieldsSource = window.floveFields, fields = [];
+    var fieldsKind = typeof fieldsSource;
+    try {
+      if (fieldsKind === 'function') fields = flatFields(fieldsSource() || []);
+      else if (Array.isArray(fieldsSource)) fields = flatFields(fieldsSource);
+    } catch (e) {}
+    check('floveFields() is callable', fieldsKind === 'function' || fieldsKind === 'undefined',
+          'advisory', fieldsKind === 'function' || fieldsKind === 'undefined' ? '' : fieldsKind);
+    var haystack = norm(keys.join(' ') + ' ' + items.join(' ') + ' ' +
+                        (p.phrase || '') + ' ' + json);
+    var mapped = fields.filter(function(id){ return haystack.indexOf(norm(id)) !== -1; });
+    check('field ids discoverable in the portrait (parity is advisory)', true, 'advisory',
+          mapped.length + '/' + fields.length + ' fields · ' +
+          Math.round(fields.length ? mapped.length / fields.length * 100 : 100) + '%');
+
+    var c = null;
+    try { c = api.consult ? api.consult(opts.consult || {}) : null; } catch (e) { c = null; }
+    var consulted = c && Array.isArray(c.rows)
+      ? c.rows.map(function(r){ return norm(r && r.key); }) : [];
+    check('consult() returns flove-consult/1',
+          c && c.schema === 'flove-consult/1' && Array.isArray(c.rows), 'critical',
+          c && c.schema);
+    check('consult() rows are a subset of get() rows',
+          consulted.every(function(k){ return keys.indexOf(k) !== -1; }), 'critical',
+          consulted.length + ' consulted');
+
+    var merged = null, mergeError = '';
+    try {
+      merged = api.merge
+        ? api.merge({
+            schema: 'flove-portrait/1', app: p.app, version: 1,
+            generatedAt: p.generatedAt, lang: p.lang,
+            rows: [{ key: '__conformance__', kind: 'probe', title: '', items: [] }],
+            consent: p.consent, source: p.source
+          })
+        : null;
+    } catch (e) { mergeError = e && e.message || String(e); }
+    check('merge() accepts a probe row without applying it',
+          merged && merged.ok === true && (merged.applied || 0) === 0, 'advisory',
+          mergeError || (merged ? 'applied ' + (merged.applied || 0) : 'no merge()'));
+
+    var errors = checks.filter(function(x){ return !x.ok && x.level === 'critical'; })
+                       .map(function(x){ return x.name; });
+    var advisories = checks.filter(function(x){ return !x.ok && x.level === 'advisory'; })
+                           .map(function(x){ return x.name; });
+    return { ok: errors.length === 0, app: app, checks: checks,
+             errors: errors, advisories: advisories,
+             coverage: fields.length ? { mapped: mapped.length, total: fields.length } : null };
+  };
+})();
+</script>
+<!-- flove-conformance:end -->
+<script data-flove-appy-standard>
+(function(){
+  if (window.floveAppyStandard) return;
+  window.floveAppyStandard = true;
+  var KEY = 'flove:appy:plays';
+  function bx(en, es){ return '<span class="en" lang="en">'+en+'</span><span class="es" lang="es">'+es+'</span>'; }
+  function storeGet(){ try { return window.floveStore ? window.floveStore.getRaw(KEY) : localStorage.getItem(KEY); } catch (_) { return null; } }
+  function storeSet(v){ try { if (window.floveStore) { window.floveStore.set(KEY, v); return true; } localStorage.setItem(KEY, v); return true; } catch (_) { return false; } }
+  function appyUrl(){ return location.href.replace(/\/(apps|projects)\/.*$/, '/apps/appy/appy-basic.html#profile'); }
+  function toast(html){
+    var el = document.getElementById('floveAppyToast');
+    if (!el){
+      el = document.createElement('div'); el.id = 'floveAppyToast';
+      el.style.cssText = 'position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9999;max-width:min(92vw,520px);background:#161623;color:#ecebf5;border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:12px 16px;font:13px/1.45 system-ui,sans-serif;box-shadow:0 18px 40px rgba(0,0,0,.45)';
+      document.body.appendChild(el);
+    }
+    el.innerHTML = html;
+    clearTimeout(el._t); el._t = setTimeout(function(){ el.remove(); }, 6000);
+  }
+  function message(html){
+    var h = document.querySelector('[data-flove-hint],#hintMessage,.hint-area,.flove-hint,[role="status"]');
+    if (h) h.innerHTML = html; else toast(html);
+  }
+  function openAppy(rec){
+    var w = null;
+    try { w = window.open(appyUrl(), '_blank'); } catch (_) {}
+    if (!w) return false;
+    var fileMode = location.protocol === 'file:' || location.origin === 'null';
+    var target = fileMode ? '*' : location.origin;
+    var same = function (o) { return o === location.origin || (fileMode && (o === 'null' || o === 'file://')); };
+    var on = function (e) {
+      if (e.source !== w || !same(e.origin)) return;
+      if (e.data && e.data.type === 'flove-appy-ready') {
+        w.postMessage({ type: 'flove-appy-play', record: rec }, target);
+        window.removeEventListener('message', on);
+      }
+    };
+    window.addEventListener('message', on);
+    setTimeout(function(){ window.removeEventListener('message', on); }, 20000);
+    return true;
+  }
+  function meta(p){
+    var raw = (p && (p.app || p.appId)) || (document.title || '').split(/[·|—]/)[0].trim() || 'App';
+    var name = String(raw).charAt(0).toUpperCase() + String(raw).slice(1);
+    var id = String((p && p.appId) || raw).toLowerCase().replace(/[^a-z0-9]+/g, '') || 'app';
+    var pth = location.pathname;
+    var cat = /\/metas\//.test(pth) ? 'inside'
+      : /\/bio\//.test(pth) ? 'inside'
+      : /\/economy\//.test(pth) ? 'economy'
+      : /\/trusty\//.test(pth) ? 'mating'
+      : /\/puzzy\//.test(pth) ? 'ling'
+      : /\/psychosocial\//.test(pth) ? 'social'
+      : 'social';
+    return { name: name, id: id, cat: cat };
+  }
+  function save(){
+    if (!window.flovePortrait || typeof window.flovePortrait.get !== 'function'){
+      message('✈ ' + bx('This app has no portrait to share yet.', 'Esta app aún no tiene un retrato para compartir.'));
+      return;
+    }
+    var p;
+    try { p = window.flovePortrait.get(); }
+    catch (_) { message('✈ ' + bx('Could not build the portrait.', 'No se pudo construir el retrato.')); return; }
+    var v = window.flovePortrait.validate ? window.flovePortrait.validate(p) : { ok: true };
+    if (!v || v.ok === false){
+      message('✈ ' + bx('Could not save to Appy — export to JSON instead.', 'No se pudo guardar en Appy — exporta el JSON.'));
+      return;
+    }
+    var m = meta(p);
+    var raw = storeGet(), list = [];
+    try { list = raw ? JSON.parse(raw) : []; } catch (_) { list = []; }
+    if (!Array.isArray(list)) list = [];
+    var entry = {
+      app: m.name, appId: m.id, category: m.cat,
+      schema: p.schema || 'flove-portrait/1', portrait: p,
+      url: (p.source && p.source.url) || location.href,
+      via: 'share', date: new Date().toISOString(),
+      id: 'a' + Date.now().toString(36), file: m.id + '-portrait.json'
+    };
+    var at = -1;
+    for (var i = 0; i < list.length; i++){
+      if (list[i] && list[i].app === entry.app && list[i].via !== 'upload'){ at = i; break; }
+    }
+    if (at >= 0){ entry.id = (list[at] && list[at].id) || entry.id; list[at] = entry; }
+    else list.push(entry);
+    if (!storeSet(JSON.stringify(list))){
+      message('✈ ' + bx('Local storage is blocked — use Save JSON and upload it in Appy.', 'El almacenamiento local está bloqueado — usa Guardar JSON y súbelo en Appy.'));
+      return;
+    }
+    message('✓ ' + bx('Saved in your Appy profile · <a href="' + appyUrl() + '" data-appy-link>See profile</a>',
+                     'Guardado en tu perfil de Appy · <a href="' + appyUrl() + '" data-appy-link>Ver perfil</a>'));
+    Array.prototype.forEach.call(document.querySelectorAll('[data-appy-link]'), function (a) {
+      a.addEventListener('click', function (e) { if (openAppy(entry)) e.preventDefault(); });
+    });
+    if (location.protocol === 'file:' || location.origin === 'null') openAppy(entry);
+  }
+  window.floveShareToAppy = save;
+  function mk(ref){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = ref.className;
+    b.setAttribute('data-appy-standard', '1');
+    b.setAttribute('aria-label', 'Send to Appy');
+    b.innerHTML = '✈ <span class="en" lang="en">Appy</span><span class="es" lang="es">Appy</span>';
+    b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); save(); });
+    return b;
+  }
+  function add(){
+    if (document.querySelector('[data-appy-standard]')) return;
+    var g = document.querySelector('[data-group="share"]');
+    if (g){
+      var par = g.parentElement;
+      var b = mk(g);
+      var save = par.querySelector('[data-group="save"],[data-action="save"]');
+      if (save && save.nextSibling) par.insertBefore(b, save.nextSibling);
+      else par.insertBefore(b, g);
+      if (window.applyLang) applyLang();
+      return;
+    }
+    var a = document.querySelector('[data-act="save"]');
+    if (a){
+      a.parentElement.insertBefore(mk(a), a.nextSibling);
+      if (window.applyLang) applyLang();
+      return;
+    }
+    var f = document.querySelector('.flove-share__item[data-action="save"]') || document.querySelector('.flove-share__item');
+    if (f){
+      f.parentElement.insertBefore(mk(f), f.nextSibling);
+      if (window.applyLang) applyLang();
+      return;
+    }
+    var fs = document.querySelector('.flove-summary__item[data-action="save"]') || document.querySelector('.flove-summary__item');
+    if (fs){
+      fs.parentElement.insertBefore(mk(fs), fs.nextSibling);
+      if (window.applyLang) applyLang();
+      return;
+    }
+    var b2 = mk({ className: '' });
+    b2.textContent = '✈ Appy';
+    b2.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:9998;border:1px solid rgba(34,211,238,.55);background:rgba(8,12,20,.88);color:#22d3ee;border-radius:999px;padding:9px 14px;font:700 11px/1 ui-monospace,monospace;letter-spacing:.08em;cursor:pointer;box-shadow:0 10px 26px rgba(0,0,0,.4)';
+    b2.addEventListener('click', function (e) { e.preventDefault(); save(); });
+    document.body.appendChild(b2);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', add);
+  else add();
+  setTimeout(add, 1200);
+})();
+</script>
+
+<script data-flove-fields-flat>
+/* Technical helper: flat routing field paths for cross-app combination.
+   Read-only; no UI, storage or network side effect. */
+(function(){
+  if (window.floveFieldsFlat) return;
+  function walk(list, parent, out){
+    (list || []).forEach(function(f){
+      if (!f || !f.id) return;
+      var path = String(f.id);
+      if (parent && path.indexOf(parent + '.') !== 0) path = parent + '.' + path;
+      out.push({ path: path, id: f.id, label: f.label || '', type: f.type || '', parent: parent || null });
+      if (f.fields) walk(f.fields, path, out);
+      if (f.item && f.item.fields) walk(f.item.fields, path, out);
+    });
+  }
+  window.floveFieldsFlat = function(){
+    var out = [];
+    walk(typeof window.floveFields === 'function' ? window.floveFields() : [], '', out);
+    return out;
+  };
+  if (window.flovePort && !window.flovePort.fields) window.flovePort.fields = window.floveFieldsFlat;
+})();
+</script>
+</body>
+</html>

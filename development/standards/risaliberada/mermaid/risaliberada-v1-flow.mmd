@@ -1,0 +1,42 @@
+%%{ init: { 'htmlLabels': false, 'flowchart': { 'htmlLabels': false } } }%%
+flowchart LR
+    A["Person"] -->|"START (1st time) · voice note/audio"| BOT
+    A -->|"① Telegram · ② Author (word) · ③ Anonymous"| BOT
+    A -->|"tags · default «libre»"| BOT
+
+    subgraph GH["GitHub — floveorg/risa"]
+        BOT["@RisaLiberadaBot"] -->|"getUpdates cron 5–10 min"| ACT["Actions (ffmpeg)"]
+        ACT --> STATE["state/offset.txt<br/>state/queue.json"]
+        ACT --> BANCO["risa.json (prepend · newest-first)"]
+        ACT --> UNAMES["usernames.json<br/>(auto-claim 1st publish)"]
+    end
+
+    ACT -->|"✅ Publish"| MOD
+    MOD["🔒 Moderator group"] -->|"✅ Publish / 🗑 Delete"| ACT
+    ACT -->|"uploads mp3"| R2["Cloudflare R2<br/>bucket risa/b_*.mp3"]
+    R2 -->|"src = public URL"| BANCO
+    ACT -->|"ensureUsername()"| UNAMES
+    BANCO -->|"posts audio + 🌐 subdomain"| CH["📢 Channel @risaliberada"]
+    CH -->|"listen"| A
+    BANCO -->|"fetch risa.json"| WEB["Web risa.liberada.net<br/>6th playlist · feed · chips · word<br/>threadOrder() indented replies"]
+    WEB -->|"listen · deep link / QR"| A
+
+    subgraph REPLY["Reply chain"]
+        A -->|"forwards channel clip"| BOT
+        BOT -->|"detects forward<br/>asks for reply"| A
+        A -->|"voice note (reply)"| BOT
+        BOT -->|"draft with parent<br/>notifies original author"| ACT
+    end
+
+    subgraph SUB["Subdomain"]
+        A -->|"maria.liberada.net"| CF["☁️ Cloudflare Worker"]
+        CF -->|"fetch usernames.json<br/>5 min cache"| UNAMES
+        CF -->|"302 → risa.liberada.net/#/u/&lt;key&gt;"| WEB
+    end
+
+    style MOD fill:#fef3c7,stroke:#f59e0b
+    style R2 fill:#e0e7ff,stroke:#6366f1
+    style BOT fill:#fee2e2,stroke:#ef4444
+    style CF fill:#dbeafe,stroke:#3b82f6
+    style REPLY fill:#f0f8ff,stroke:#6366f1
+    style SUB fill:#f5fff5,stroke:#22c55e

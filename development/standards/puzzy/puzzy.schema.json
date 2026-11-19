@@ -1,0 +1,249 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flove.org/development/standards/puzzy/puzzy.schema.json",
+  "title": "flove-puzzy/1",
+  "description": "The puzzy extended-definition bundle: entries (polysemic dictionary), frames (polarity/triad/confluence) and annotations (relational ratings). Normative text: ../puzzy.md.",
+  "type": "object",
+  "required": ["schema", "version", "generatedAt", "entries", "frames", "annotations"],
+  "properties": {
+    "schema": { "const": "flove-puzzy/1" },
+    "version": { "type": "integer", "minimum": 1 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "app": { "type": "string" },
+    "note": { "type": "string" },
+    "entries": { "type": "array", "items": { "$ref": "#/$defs/entry" } },
+    "frames": { "type": "array", "items": { "$ref": "#/$defs/frame" } },
+    "annotations": { "type": "array", "items": { "$ref": "#/$defs/annotation" } }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^pz:[a-z]{2,3}:[^\\s#]+$|^pz:app:[a-z0-9-]+:[^\\s#]+$|^pz:frame:[^\\s#]+$"
+    },
+    "senseId": {
+      "type": "string",
+      "pattern": "^pz:.+#[1-9][0-9]*$"
+    },
+    "lang": {
+      "type": "string",
+      "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+    },
+    "status": {
+      "enum": ["draft", "suggested", "published", "merged", "deprecated", "orphaned"]
+    },
+    "scope": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": { "enum": ["lexicon", "app-data", "frame", "person"] },
+        "app": { "type": "string" },
+        "field": { "type": "string" },
+        "owner": { "type": "string" },
+        "privacy": { "enum": ["private", "shared", "public"], "default": "private" }
+      },
+      "additionalProperties": true
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["source"],
+      "properties": {
+        "source": { "enum": ["user", "wizy", "import", "canon"] },
+        "author": { "type": "string" },
+        "importedFrom": { "type": "string", "format": "uri-reference" },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "dataRef": {
+      "type": "object",
+      "required": ["app", "field"],
+      "properties": {
+        "app": { "type": "string" },
+        "field": { "type": "string" },
+        "row": { "type": "string" },
+        "path": { "type": "string" },
+        "value": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "relation": {
+      "type": "object",
+      "required": ["type", "target"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "^(syn|near|ant|comp|hyper|hypo|holo|mero|deriv|coll|assoc|see|trans|frame|same|x-[a-z0-9-]+)$"
+        },
+        "target": { "type": "string", "minLength": 1 },
+        "strength": { "type": "integer", "minimum": 0, "maximum": 10 },
+        "axis": { "type": "string" },
+        "pole": { "enum": ["left", "mid", "right"] },
+        "source": { "enum": ["user", "wizy", "import", "canon"] },
+        "external": { "type": "boolean" },
+        "label": { "type": "string" },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "modes": {
+      "type": "object",
+      "properties": {
+        "ostensive": { "type": "array", "items": { "type": "string" } },
+        "operational": { "type": "string" },
+        "contrastive": { "type": "array", "items": { "type": "string" } },
+        "etymological": { "type": "string" },
+        "formal": { "type": "string" },
+        "narrative": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "facets": {
+      "type": "object",
+      "properties": {
+        "prism": {
+          "type": "object",
+          "properties": {
+            "stance": { "enum": ["subjective", "objective"] },
+            "scope": { "enum": ["momentual", "general"] }
+          },
+          "additionalProperties": true
+        },
+        "tone": { "enum": ["normal", "funny", "formal", "trivial"] },
+        "teleology": { "enum": ["experimental", "random", "fine", "fatal"] },
+        "field": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "time": {
+          "type": "object",
+          "properties": {
+            "span": { "enum": ["past", "present", "future"] },
+            "length": { "enum": ["short", "mid", "long"] }
+          },
+          "additionalProperties": true
+        },
+        "warrant": {
+          "enum": ["evidence", "axiom", "prediction", "proposal", "challenge", "case-study", "review", "sources"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "definition": {
+      "type": "object",
+      "properties": {
+        "modes": { "$ref": "#/$defs/modes" },
+        "facets": { "$ref": "#/$defs/facets" }
+      },
+      "additionalProperties": true
+    },
+    "sense": {
+      "type": "object",
+      "required": ["id", "gloss"],
+      "properties": {
+        "id": { "$ref": "#/$defs/senseId" },
+        "name": { "type": "string", "minLength": 1 },
+        "gloss": { "type": "string", "minLength": 1 },
+        "primary": { "type": "boolean" },
+        "pos": { "enum": ["noun", "verb", "adjective", "adverb", "phrase", "proper", "concept", "act", "person", "app", "other"] },
+        "register": { "enum": ["neutral", "formal", "informal", "slang", "technical", "poetic", "archaic"] },
+        "domain": { "type": "string" },
+        "definition": { "$ref": "#/$defs/definition" },
+        "examples": { "type": "array", "items": { "type": "string" } },
+        "relations": { "type": "array", "items": { "$ref": "#/$defs/relation" } },
+        "note": { "type": "string" },
+        "status": { "enum": ["active", "deprecated", "merged"] },
+        "mergedInto": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "entry": {
+      "type": "object",
+      "required": ["id", "key", "lemma", "lang", "scope", "provenance", "status", "senses"],
+      "properties": {
+        "schema": { "const": "flove-puzzy/1" },
+        "id": { "$ref": "#/$defs/id" },
+        "key": { "type": "string", "minLength": 1 },
+        "lemma": { "type": "string", "minLength": 1 },
+        "lang": { "$ref": "#/$defs/lang" },
+        "pos": { "enum": ["noun", "verb", "adjective", "adverb", "phrase", "proper", "concept", "act", "person", "app", "other"] },
+        "scope": { "$ref": "#/$defs/scope" },
+        "provenance": { "$ref": "#/$defs/provenance" },
+        "status": { "$ref": "#/$defs/status" },
+        "senses": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/sense" } },
+        "relations": { "type": "array", "items": { "$ref": "#/$defs/relation" } },
+        "dataRefs": { "type": "array", "items": { "$ref": "#/$defs/dataRef" } },
+        "mergedInto": { "type": "string" },
+        "created": { "type": "string", "format": "date-time" },
+        "updated": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": true
+    },
+    "frame": {
+      "type": "object",
+      "required": ["id", "kind", "arity", "members"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^pz:frame:" },
+        "kind": { "enum": ["polarity", "triad", "confluence"] },
+        "arity": { "enum": [2, 3, 5, 7] },
+        "members": { "type": "array", "minItems": 2, "items": { "type": "string" } },
+        "roles": { "type": "array", "items": { "type": "string" } },
+        "mid": { "type": ["string", "null"] },
+        "note": { "type": "string" },
+        "scope": { "$ref": "#/$defs/scope" },
+        "provenance": { "$ref": "#/$defs/provenance" },
+        "status": { "$ref": "#/$defs/status" }
+      },
+      "additionalProperties": true
+    },
+    "rating": {
+      "type": "object",
+      "required": ["axis", "value"],
+      "properties": {
+        "axis": { "type": "string", "minLength": 1 },
+        "value": { "type": "integer", "minimum": 1, "maximum": 7 },
+        "faculties": {
+          "type": "array",
+          "items": { "enum": ["hear", "touch", "view", "taste", "smell"] }
+        },
+        "senses": {
+          "description": "Deprecated alias of faculties.",
+          "type": "array",
+          "items": { "enum": ["hear", "touch", "view", "taste", "smell"] }
+        }
+      },
+      "additionalProperties": true
+    },
+    "annotation": {
+      "type": "object",
+      "required": ["subject", "model", "rater", "ratings"],
+      "properties": {
+        "subject": { "type": "string", "minLength": 1 },
+        "model": { "enum": ["5-axis", "7-axis", "custom"] },
+        "rater": {
+          "type": "object",
+          "required": ["id"],
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "declared_faculties": {
+              "type": "array",
+              "items": { "enum": ["hear", "touch", "view", "taste", "smell"] }
+            },
+            "declared_senses": {
+              "description": "Deprecated alias of declared_faculties.",
+              "type": "array",
+              "items": { "enum": ["hear", "touch", "view", "taste", "smell"] }
+            }
+          },
+          "additionalProperties": true
+        },
+        "ratings": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/rating" } },
+        "primitives": {
+          "description": "Deprecated. Maps to frames and Relation{type:\"frame\"}.",
+          "type": "object",
+          "additionalProperties": true
+        },
+        "created": { "type": "string", "format": "date-time" },
+        "updated": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": true
+    }
+  }
+}

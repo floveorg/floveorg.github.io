@@ -1,0 +1,22 @@
+sequenceDiagram
+    autonumber
+    participant U as Person
+    participant B as Authy
+    participant H as Holders
+    participant Q as Quorum
+    participant K as New key
+    U->>B: lost the device
+    B-->>U: start recovery
+    B->>H: ask 3 of 5 vouchers
+    H-->>Q: sign the request
+    alt quorum not reached
+      Q-->>U: wait and retry
+    else 3 signatures
+      Q->>K: mint a new root
+    end
+    K->>B: bind the same identity
+    B->>B: carry standing forward
+    B->>H: revoke old keys
+    H-->>U: report the change
+    Note over B,K: keys rotate · identity stays
+    U->>B: unlock the new device

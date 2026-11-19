@@ -1,0 +1,28 @@
+sequenceDiagram
+    autonumber
+    actor P as Person
+    participant T as Telegram
+    participant A as Authy
+    participant N as MyNet
+    participant F as MyFamily
+    participant B as Browsy
+    participant R as Peer
+    P->>A: authenticate Telegram
+    A->>T: challenge
+    T-->>A: presence + id
+    Note over A: L2 presence · no @handle public
+    A->>N: enable MyNet
+    Note over N: people · circles · feed
+    N->>F: simplified record
+    F-->>N: person + relation + traits + affinity
+    N->>B: save class L
+    Note over B: local federation
+    B-->>R: encrypted L projection
+    alt claim Telegram
+        P->>A: open claim nonce
+        A->>T: deep link + DM
+        T-->>A: id == id
+        Note over A: L3 verified · public publish
+    else no Telegram
+        N-->>P: MyNet stays locked
+    end

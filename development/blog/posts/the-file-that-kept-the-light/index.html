@@ -1,0 +1,116 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>The file that kept the light · flove · blog</title><meta name=description content="Notes from flove — a slower internet where relating, not extracting, is the point."><link rel=icon href=/development/blog/flove-icon.svg><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel=stylesheet><link rel=stylesheet href=/development/blog/css/blog.css></head><body><header class=site-head><details class=brand-menu><summary class=brand><span class=brand-mark aria-hidden=true><svg class="logo" viewBox="0 0 100 100" width="30" height="30" focusable="false"><defs><linearGradient id="flogo" x1="12" y1="0" x2="88" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#f34"/><stop offset=".5" stop-color="#ff8a3a"/><stop offset="1" stop-color="#ffd633"/></linearGradient></defs><path d="M50 60C22 60 12 38 16 18c22 4 38 20 34 42z" fill="url(#flogo)"/><path d="M50 60c28 0 38-22 34-42-22 4-38 20-34 42z" fill="url(#flogo)"/><path d="M50 58c0 14 0 26 0 34" stroke="url(#flogo)" stroke-width="6" stroke-linecap="round" fill="none"/></svg>
+</span>flove <span class=brand-sub>blog</span></summary><nav class=brand-drop aria-label="site menu"><a href=/development/blog/#about>About</a>
+<a href=https://flove.org/development/standards/>Dev wiki</a>
+<a href=https://flove.org/docs/>Docs</a>
+<a href=https://flove.org/apps/index.html>Apps</a>
+<a href=https://flove.org/>flove.org</a></nav></details></header><main class=wrap><article class=post><h1>The file that kept the light</h1><p class=post-meta><time datetime=2026-11-15>15 Nov 2026</time>
+· <a class=cat href=/development/blog/categories/tech/>Tech</a>
+· <span class=tag>flove</span> <span class=tag>routing</span> <span class=tag>taxonomy</span> <span class=tag>catalogue</span> <span class=tag>questy</span> <span class=tag>skills</span> <span class=tag>accessibility</span></p><p>There is a file in this repo that nobody opens for pleasure: <code>tools/routing.json</code>.
+It is the map of every app — id, name, url, description, tags, folder, category,
+fields, status, and who consumes what. It reads like plumbing. Today it behaved
+like a lamp.</p><p>This is the story of a long polishing session that began with colours, went down
+into every app in <code>apps/</code>, and ended up re-mining that file from a side we had
+left in the dark. By the end, the plumbing was checking itself every time we
+publish.</p><h2 id=it-started-with-two-names-for-one-thing>It started with two names for one thing</h2><p>Identities were placed, not just drawn: brandy (sketch → study) grew an
+extension, <code>brandy-flove</code>, that takes a chosen mark and puts it in the catalogue,
+the tree, the launcher and the tab — the same procedure, backwards, for when a
+mark or a name changes.</p><h2 id=the-day-we-went-into-the-apps>The day we went into the apps</h2><p>Then the work moved from the map to the territory.</p><p><strong>The apps stopped borrowing other people&rsquo;s plumbing.</strong></p><p><strong>Accessibility stopped being an afterthought.</strong> The numbers are the honest way
+to say it, and they are in the table below: every app now has a main landmark, a
+page heading, reduced-motion support, and controls with names.</p><h2 id=by-the-numbers>By the numbers</h2><table><thead><tr><th>What</th><th>Before today</th><th>Now</th></tr></thead><tbody><tr><td>Apps with an embedded field manifest</td><td>48 / 51 (94%)</td><td><strong>54 / 54 (100%)</strong></td></tr><tr><td>Apps marked <code>complete</code></td><td>50 / 51 (98%)</td><td><strong>54 / 54 (100%)</strong></td></tr><tr><td>Catalog-only apps</td><td>3</td><td><strong>0</strong></td></tr><tr><td>Apps with a main landmark</td><td>38 (70%)</td><td><strong>54 (100%)</strong></td></tr><tr><td>Apps with a page <code>&lt;h1></code></td><td>17 (31%)</td><td><strong>54 (100%)</strong></td></tr><tr><td>Apps with reduced motion</td><td>47 (87%)</td><td><strong>54 (100%)</strong></td></tr><tr><td>Bilingual spans missing <code>lang</code></td><td>986 in 14 apps</td><td><strong>0</strong></td></tr><tr><td>Placeholder links (<code>href="#"</code>)</td><td>60 in 22 apps</td><td><strong>0</strong></td></tr><tr><td>Form controls without a name</td><td>151 in 24 apps</td><td><strong>0</strong></td></tr><tr><td>External webfont / icon links</td><td>22 / 11 apps</td><td><strong>0 / 0</strong></td></tr><tr><td>Tier references in trunk code</td><td>Puzzy, flove.js, catalogue, distro</td><td><strong>0</strong></td></tr></tbody></table><h2 id=what-came-out-of-the-apps>What came out of the apps</h2><p>Then we went looking for weight that no longer had a purpose. The summary panels
+had accumulated three generations of export code: Markdown, CSV, XML, HTML and
+JPEG serializers, each with its own escaping helpers, alongside the JSON that
+everything now uses. Some apps carried hidden Publish bridges and Save cycles
+that had been superseded twice over. We deleted them.</p><p><strong>The numbers, measured across 60 commits touching <code>apps/</code>:</strong></p><table><thead><tr><th>What</th><th>Count</th></tr></thead><tbody><tr><td>Lines deleted from <code>apps/</code></td><td><strong>6,602</strong></td></tr><tr><td>Lines added back</td><td>3,021</td></tr><tr><td><strong>Net reduction in <code>apps/</code></strong></td><td><strong>−3,581 lines</strong></td></tr><tr><td>Apps that <em>gained</em> a summary section in the same pass</td><td>8</td></tr><tr><td>Biggest single clean-ups</td><td>PracSys −516 · Inventary −495 · MyFamily −402 · Keys −371 · Souls −348</td></tr></tbody></table><p>The eight additions matter as much as the subtractions: Sensy, Poly, Raty, Comby,
+Lowy, Wisy, Minioffer and Offer had no summary export at all. They got one —
+a phrase, Magic, Share, and a <code>flove-portrait.json</code> — while the old apps were
+losing four formats apiece. The folder still ends the day around <strong>201,000 lines
+across 79 HTML files</strong>, every app a single self-contained file.</p><h2 id=why-tidy-is-a-feature>Why tidy is a feature</h2><p>None of that code was shared. There is no runtime, no bundle, no common
+JavaScript that every app imports. Each app is still freely designed: its own
+layout, its own palette, its own way of asking questions, its own little
+metaphor. The tidying happened in the <em>contract</em>, not in the design.</p><p>That is exactly what lets the skills cross-operate. <code>jsony</code> can walk the app
+folder and read the same <code>flove-portrait/1</code> envelope from Goddy, Crafty or
+Souls. <code>exporty</code> can ask the same question of every summary section because it
+now exposes the same two buttons and the same filename. <code>optimizy</code> can polish one
+app without knowing the others, and still leave the family consistent. A narrow
+waist — <code>schema</code>, <code>app</code>, <code>phrase</code>, <code>rows</code> — holds the whole collection together
+while the bodies stay as different as they like.</p><p>The exceptions stay exceptions on purpose: Keys, Blogy, Souls and Worthing keep
+their full multi-format exports and their rich displays, with JSON normalised and
+first in the menu. Consistency here is a grammar everyone can read, not a uniform.</p><h2 id=questy-becomes-a-place>Questy becomes a place</h2><p>The quiet milestone of the day: <strong>questy is no longer only a skill.</strong> Its form —
+the one that interviews you about a project, picks the thinking hats, sets the
+volume, writes the config — is now an app in its own right: 17 fields, category
+<code>social</code>, listed in the psychosocial launcher with its own question-mark glyph,
+and reachable at
+<a href=https://flove.org/development/standards/skills/questy/>flove.org/development/standards/skills/questy</a>.</p><p>Nothing was duplicated. The same file is the skill&rsquo;s front door and the app&rsquo;s
+page. That is the first time a skill has crossed over into the catalogue, and it
+feels right: questy was always the one asking the questions.</p><h2 id=questy-flove-the-whole-thing-in-one-card>questy-flove: the whole thing in one card</h2><p>If questy is the skill that asks, <strong>questy-flove</strong> is the one that carries flove
+into someone else&rsquo;s conversation. Not as documentation, not as a link — as a
+small, live instrument.</p><p>The idea is almost annoyingly simple. Any project conversation already has an
+agent asking questions. questy-flove adds <strong>one section</strong> to that conversation:
+a dial from 0 to 4 that says how much flove you want present. At 0 the questions
+are generic and flove never appears. At 1–2 it is a flavour: a word, a category,
+a colour. At 3 it quotes an app&rsquo;s own field page, in that category&rsquo;s hat. At 4
+the flove data model drives the pass — related apps&rsquo; fields become influent data,
+still under their own category&rsquo;s hat. And a fifth degree, <strong>Very much</strong>, stops
+being a number and becomes a door: <em>Browse flove</em>, the whole model or just the
+parts you need.</p><p>Two more dials sit under it, and both are deliberately tiny:</p><ul><li><strong>Category weights</strong> at 0/1/2. Only a <code>2</code> enters the agent prompt; the rest is
+presence, not instruction.</li><li><strong>Voice</strong> — Love, Joy, Wisdom, each at 0/1/2. They are not moods for the
+writing; they are the three families flove already uses to tell what a thing
+is for.</li></ul><p>That is the whole state. One object:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&#34;schema&#34;</span><span class=p>:</span> <span class=s2>&#34;flove-influence/1&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&#34;influence&#34;</span><span class=p>:</span> <span class=mi>0</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&#34;categoryWeights&#34;</span><span class=p>:</span> <span class=p>{</span> <span class=nt>&#34;inside&#34;</span><span class=p>:</span> <span class=mi>0</span><span class=p>,</span> <span class=nt>&#34;mating&#34;</span><span class=p>:</span> <span class=mi>0</span><span class=p>,</span> <span class=nt>&#34;ling&#34;</span><span class=p>:</span> <span class=mi>0</span><span class=p>,</span> <span class=nt>&#34;social&#34;</span><span class=p>:</span> <span class=mi>0</span><span class=p>,</span> <span class=nt>&#34;economy&#34;</span><span class=p>:</span> <span class=mi>0</span> <span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&#34;voice&#34;</span><span class=p>:</span> <span class=p>{</span> <span class=nt>&#34;love&#34;</span><span class=p>:</span> <span class=mi>0</span><span class=p>,</span> <span class=nt>&#34;joy&#34;</span><span class=p>:</span> <span class=mi>0</span><span class=p>,</span> <span class=nt>&#34;wise&#34;</span><span class=p>:</span> <span class=mi>0</span> <span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&#34;surface&#34;</span><span class=p>:</span> <span class=s2>&#34;compact&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>The output is a <strong><code>flove-profile</code> JSON</strong> — the apps played, the answers keyed by
+each app&rsquo;s own questions or input fields, plus <code>influence</code>, <code>categoryWeights</code>,
+<code>voice</code> and a visibility block. That file is what appy-basic imports. So the
+distance between &ldquo;a stranger&rsquo;s agent conversation&rdquo; and &ldquo;a flove profile&rdquo; is one
+small card and one JSON.</p><p>The minimalism is the point. The same state has <strong>four surfaces</strong>, and they are
+the same object wearing different clothes:</p><table><thead><tr><th>Surface</th><th>Shape</th><th>Where it goes</th></tr></thead><tbody><tr><td><strong>Full</strong></td><td>the whole section: degrees, weights, voice, browse, copyable agent YAML</td><td>onboarding, first run</td></tr><tr><td><strong>Compact</strong></td><td>the gauge and the voice</td><td>a sidebar</td></tr><tr><td><strong>Minimal</strong></td><td>the gauge and one human line</td><td>an inline card next to content</td></tr><tr><td><strong>Micro</strong></td><td>the gauge alone</td><td>a header, a footer, a phone</td></tr></tbody></table><p>Any agent conversation can host the micro one — a <code>flove · degree</code> chip — and
+still be able to grow into the full model when the conversation gets deep. That
+is how flove travels quickly <em>and</em> deeply: the door is small, the house is
+large, and you never have to explain the house to walk through the door.</p><h2 id=wizy-specified-into-an-estate>Wizy, specified into an estate</h2><p>The voice needed somewhere to live, and that is where the other milestone comes
+in: <strong>Wizy</strong>.</p><p>We had a suggestion engine with a good instinct and a vague constitution. The
+influence work forced it to be specified — a solid, extended estate rather than a
+clever prompt. The result is a page that says what Wizy is and what it reads:</p><ul><li>a <strong>compact card</strong> with suggestion depth <code>0–4</code> — the same degrees as
+questy-flove, in the place where the suggestions actually appear;</li><li>a <strong>micro chip</strong> in the inline suggestions (<code>flove · degree</code>), so the degree is
+visible where it acts;</li><li><strong>category weights</strong> that focus what Wizy reads, with the doubled categories
+leading;</li><li><strong>Love / Joy / Wisdom</strong> mapped to its labeler families, each anchored on the
+page (<a href=https://flove.org/apps/sys/wizy/index.html#love>#love</a>,
+<a href=https://flove.org/apps/sys/wizy/index.html#joy>#joy</a>,
+<a href=https://flove.org/apps/sys/wizy/index.html#wise>#wise</a>);</li><li>a <strong>full setup disclosure</strong> with the category grid and a copyable <strong>agent
+YAML</strong>, so the same configuration can leave the page and enter any agent;</li><li>state persisted at <code>wizy:flove-influence</code> through <code>floveStore</code>.</li></ul><p>And a naming decision that had been floating for months settled with it:
+<strong>Wizy</strong> is the Social app / suggestion engine; <strong>Wisy</strong> is the wise Wizy — a
+separate Linguistics app and its own labeler collection. Two words, two homes, no
+more guessing in the routing.</p><p>That is what &ldquo;specified into an estate&rdquo; means here: not more features, but a
+boundary. Wizy now knows what it reads, what it suggests, what it remembers —
+and the rest of flove can point at it without ambiguity.</p><h2 id=the-json-backbone-drawn>The JSON backbone, drawn</h2><p>The whole day kept returning to one question, so we drew it. On the
+<a href=https://flove.org/development/>development page</a> there is now a small diagram
+of the <strong>JSON backbone</strong>, and it is the honest map of what happens after a
+commit:</p><p><img src=../../images/json-backbone.svg alt="The JSON backbone: a commit in apps/ queues the change, jsony runs its four checks, writes a pending report and the review applies the alignment"></p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>apps/ commit → post-commit → jsony_check → tools/jsony-pending.md → review / apply
+</span></span></code></pre></div><p>Five steps, no magic:</p><ol><li><strong>A commit touches <code>apps/</code>.</strong> The post-commit hook looks at the changed
+paths; no app change, it exits quietly.</li><li><strong>Queue only.</strong> <code>--record --soft</code> appends the changed files to
+<code>tools/jsony-state.json</code>. No check, no block.</li><li><strong><code>--changed</code> runs four checks:</strong> <code>routing.json</code> ids and URLs; Appy&rsquo;s
+<code>APP_ROUTING</code> ids and categories; the export envelopes (<code>flove-portrait</code>,
+<code>flove-profile</code>).</li><li><strong>A pending report</strong> lands in <code>tools/jsony-pending.md</code> (for you) and <code>.json</code>
+(for a later agent pass). The processed commit becomes the watermark.</li><li><strong>Review → apply → align:</strong> fix routing, update the Appy snapshot, regenerate
+the catalogue, run exporty on the changed app, re-run <code>--strict</code> until clean.</li></ol><p>What it treats as <strong>critical</strong>: a manifest missing from routing, a routing URL
+that does not resolve on disk, an Appy snapshot missing an app or carrying the
+wrong category, an export envelope that lost <code>flove-profile</code>, <code>flove-routing/3</code>,
+<code>appsPlayed</code>, <code>flove-portrait/1</code> or <code>flovePort</code>. What it treats as <strong>advisory</strong>:
+an app with fields that has no portrait adapter.</p><p>The diagram lives at
+<a href=https://flove.org/development/standards/skills/jsony/index.html>jsony/index.html</a>
+— open it before your next release; it is the shortest honest description of the
+backbone we have.</p><h2 id=the-last-pearl-jsony-inside-updaty>The last pearl: jsony inside updaty</h2><p>And then the small thing that ties the whole day shut.</p><p>Because <code>routing.json</code> is now the backbone of everything — fields, portraits,
+exports, the Appy profile, the catalogue — we put jsony <strong>inside updaty-web</strong>, as
+the last step before the push. So the publish path now ends like this: commit the
+source → push to Gitea → <strong>check that the JSON still agrees with itself</strong> →
+publish the site. The lamp is checked every time we turn it on.</p><p>That is the pearl of the journey: the plumbing we started the day complaining
+about is now the thing that guards the door.</p><p>Come poke around: <a href=https://flove.org/apps/>the catalogue</a>, the
+<a href=https://flove.org/development/standards/>standards</a>, or the
+<a href=https://flove.org/development/>making-of</a>. If you find a
+drawer that opens onto another drawer, that is probably the point — or a bug we
+would love to hear about. Either way, it was one determined human and one
+alarmingly patient robot today, and the robot has finally learned to check its
+own JSON — jsony inside updaty, as the last pearl of the journey.</p><p><em>slow it · flow it · love it.</em></p></article><p class=back><a href=/development/blog/>← all posts</a></p></main></body></html>

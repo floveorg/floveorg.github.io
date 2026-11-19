@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chatland — chat 3D nativo para Android</title>
+<meta name="description" content="Chatland es un recinto 3D nativo para Android: quince lands, siete residentes y 19 animaciones cada uno. 60 FPS medidos, sin Unity, sin Godot y sin WebView.">
+<meta name="theme-color" content="#0E1512">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20120%20120'%3E%3Cdefs%3E%3CclipPath%20id='c'%3E%3Cpath%20d='M42%2014%20H78%20A24%2024%200%200%201%20102%2038%20V62%20A24%2024%200%200%201%2078%2086%20H52%20L26%20106%20L31%2086%20H42%20A24%2024%200%200%201%2018%2062%20V38%20A24%2024%200%200%201%2042%2014%20Z'/%3E%3C/clipPath%3E%3C/defs%3E%3Cpath%20d='M42%2014%20H78%20A24%2024%200%200%201%20102%2038%20V62%20A24%2024%200%200%201%2078%2086%20H52%20L26%20106%20L31%2086%20H42%20A24%2024%200%200%201%2018%2062%20V38%20A24%2024%200%200%201%2042%2014%20Z'%20fill='%23FFFFFF'/%3E%3Cg%20clip-path='url(%23c)'%3E%3Ccircle%20cx='79'%20cy='41'%20r='9'%20fill='%23F0B03C'/%3E%3Cpath%20d='M14%2078%20C28%2058%2048%2066%2066%2068%20C84%2070%2096%2058%20106%2064%20V92%20H14%20Z'%20fill='%23BFE06A'/%3E%3Cpath%20d='M14%2086%20C34%2070%2050%2078%2068%2080%20C84%2082%2096%2072%20106%2078%20V92%20H14%20Z'%20fill='%232E9E6B'/%3E%3C/g%3E%3Cpath%20d='M42%2014%20H78%20A24%2024%200%200%201%20102%2038%20V62%20A24%2024%200%200%201%2078%2086%20H52%20L26%20106%20L31%2086%20H42%20A24%2024%200%200%201%2018%2062%20V38%20A24%2024%200%200%201%2042%2014%20Z'%20fill='none'%20stroke='%2314211C'%20stroke-width='3.4'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="stylesheet" href="assets/css/flow.css">
+<link rel="stylesheet" href="assets/css/flow.css">
+<link rel="stylesheet" href="assets/css/flow.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+
+<!-- ══════════ sprite de la marca 01 Horizon ══════════ -->
+<svg class="svg-sprite" width="0" height="0" aria-hidden="true" focusable="false">
+  <defs>
+    <clipPath id="cl-horizon">
+      <path d="M42 14 H78 A24 24 0 0 1 102 38 V62 A24 24 0 0 1 78 86 H52 L26 106 L31 86 H42 A24 24 0 0 1 18 62 V38 A24 24 0 0 1 42 14 Z"/>
+    </clipPath>
+    <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="rgba(199,214,202,.55)"/>
+    </marker>
+    <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="rgba(199,214,202,.55)"/>
+    </marker>
+    <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="rgba(199,214,202,.55)"/>
+    </marker>
+  </defs>
+</svg>
+
+<a class="skip" href="#paso-1">Saltar al contenido</a>
+
+<div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
+
+<!-- ══════════ NAV ══════════ -->
+<nav class="nav" aria-label="Principal">
+  <a class="brand" href="#paso-0" aria-label="Chatland, inicio">
+    <svg class="mark" viewBox="0 0 120 120" aria-hidden="true">
+      <path class="m-body" d="M42 14 H78 A24 24 0 0 1 102 38 V62 A24 24 0 0 1 78 86 H52 L26 106 L31 86 H42 A24 24 0 0 1 18 62 V38 A24 24 0 0 1 42 14 Z"/>
+      <g clip-path="url(#cl-horizon)">
+        <circle class="m-sun" cx="79" cy="41" r="9"/>
+        <path class="m-hill1" d="M14 78 C28 58 48 66 66 68 C84 70 96 58 106 64 V92 H14 Z"/>
+        <path class="m-hill2" d="M14 86 C34 70 50 78 68 80 C84 82 96 72 106 78 V92 H14 Z"/>
+      </g>
+      <path class="m-line" d="M42 14 H78 A24 24 0 0 1 102 38 V62 A24 24 0 0 1 78 86 H52 L26 106 L31 86 H42 A24 24 0 0 1 18 62 V38 A24 24 0 0 1 42 14 Z"/>
+    </svg>
+    <span class="word">Chatland</span>
+  </a>
+  <div class="nav-links">
+    <a href="#paso-1">Motivos</a>
+    <a href="#paso-2">El camino</a>
+    <a href="#paso-4">Conversar</a>
+    <a href="#paso-6">La sala 3D</a>
+    <a href="#paso-7">El plano</a>
+  </div>
+  <a class="nav-cta" href="#paso-8">Quiero</a>
+</nav>
+
+<!-- ══════════ BARRA DE PASO ══════════ -->
+<div class="stepbar" id="stepbar" role="group" aria-label="Navegación por pasos">
+  <span class="now" id="stepNow">01 / 08</span>
+  <span class="name" id="stepName">Motivos</span>
+  <span class="arrows">
+    <button type="button" id="stepPrev" aria-label="Paso anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <button type="button" id="stepNext" aria-label="Paso siguiente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+  </span>
+</div>
+
+<!-- ══════════ HERO ══════════ -->
+<header class="hero" id="paso-0">
+  <div class="corridor" id="corridor" aria-hidden="true">
+    <div class="world">
+      <div class="arch" style="--i:1"></div>
+      <div class="arch" style="--i:2"></div>
+      <div class="arch" style="--i:3"></div>
+      <div class="arch" style="--i:4"></div>
+      <div class="arch" style="--i:5"></div>
+      <div class="arch" style="--i:6"></div>
+      <div class="arch" style="--i:7"></div>
+      <div class="arch" style="--i:8"></div>
+      <div class="floorline"></div>
+      <div class="fog"></div>
+    </div>
+  </div>
+  <canvas class="dust" id="dust" aria-hidden="true"></canvas>
+
+  <div class="hero-inner">
+    <h1>Mensajería <br><em>enriquecida</em></h1>
+    <p class="hero-sub">Lo mejor de la vida, las conversaciones del día a día</p>
+
+    <div class="hero-mark" id="heroRise">
+      <span class="halo" aria-hidden="true"></span>
+      <svg class="mark" viewBox="0 0 120 120" role="img" aria-label="Chatland: una burbuja de conversación que guarda un paisaje — el sol, una loma verde y el cielo">
+        <path class="m-body" d="M42 14 H78 A24 24 0 0 1 102 38 V62 A24 24 0 0 1 78 86 H52 L26 106 L31 86 H42 A24 24 0 0 1 18 62 V38 A24 24 0 0 1 42 14 Z"/>
+        <g clip-path="url(#cl-horizon)">
+          <circle class="m-sun" cx="79" cy="41" r="9"/>
+          <path class="m-hill1" d="M14 78 C28 58 48 66 66 68 C84 70 96 58 106 64 V92 H14 Z"/>
+          <path class="m-hill2" d="M14 86 C34 70 50 78 68 80 C84 82 96 72 106 78 V92 H14 Z"/>
+        </g>
+        <path class="m-line" d="M42 14 H78 A24 24 0 0 1 102 38 V62 A24 24 0 0 1 78 86 H52 L26 106 L31 86 H42 A24 24 0 0 1 18 62 V38 A24 24 0 0 1 42 14 Z"/>
+      </svg>
+      <span class="hero-horizon" aria-hidden="true"></span>
+    </div>
+
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#paso-8">Quiero Chatland <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></a>
+    </div>
+
+    <p class="hero-facts">
+      <span><b>19</b> mensajes</span>
+      <span><b>13</b> zonas</span>
+      <span><b>7</b> avatares</span>
+      <span><b>5</b> sentidos</span>
+      <span><b>3, 2, 1...</b> entrada</span>
+    </p>
+  </div>
+
+  <div class="scroll-hint" aria-hidden="true"><i></i>Motivos y maneras</div>
+</header>
+
+<main>
+
+<!-- ══════════ 01 · EL TOUR ══════════ -->
+<section class="section tour" id="paso-1" data-step="01" data-step-name="Motivos">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-side">
+        <img class="sec-mark" src="logos/10-horizon-senal.svg" alt="" aria-hidden="true">
+      </div>
+      <div>
+        <p class="sec-kicker">Ver para leer</p>
+        <h2>Palabras y gestos <br><em>espacio y tiempo</em></h2>
+        <p class="lede">Cada conversación es singular. Más sitio, menos ruido. Un lugar, no otra pestaña.</p>
+      </div>
+    </div>
+
+    <div class="tour-stage reveal" id="tourStage">
+      <div class="tour-track" id="tourTrack"></div>
+      <div class="tour-arrows">
+        <button class="tour-arrow prev" type="button" id="tourPrev" aria-label="Diapositiva anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <button class="tour-arrow next" type="button" id="tourNext" aria-label="Diapositiva siguiente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+      </div>
+    </div>
+
+    <div class="surprise reveal d1">
+      <span><b>19</b> mensajes</span>
+      <span><b>13</b> zonas</span>
+      <span><b>7</b> avatares</span>
+      <span><b>5</b> sentidos</span>
+      <span><b>3, 2, 1...</b> entrada</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 02 · EL CAMINO ══════════ -->
+<section class="section" id="paso-2" data-step="02" data-step-name="El camino">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-side">
+        <img class="sec-mark" src="logos/10-horizon-senal.svg" alt="" aria-hidden="true">
+      </div>
+      <div>
+        <p class="sec-kicker">Cómo se entra</p>
+        <h2>Un camino. <br><em>Cuatro umbrales.</em></h2>
+        <p class="lede">Abrir Chatland no es cargar una pantalla: es <b>llegar a un sitio</b>. Y a un sitio se llega cruzando algo —una verja, una sala, una mesa— hasta la puerta del fondo. Lo que sigue es ese mismo camino, contado cada vez más de cerca: primero los umbrales, después los tramos, y al final el plano entero con sus cables a la vista.</p>
+      </div>
+    </div>
+
+    <div class="thresholds reveal">
+      <div class="th"><b>01 · Cruzar</b><h3>La llave</h3>
+        <p>Nadie entra sin abrir. El recinto se abre con lo que ya eres en el teléfono: un PIN, una contraseña o una huella.</p></div>
+      <div class="th"><b>02 · Estar</b><h3>El mapa</h3>
+        <p>Dentro no hay un feed: hay un mapa. Eliges una conversación de dos o una zona con gente, y te quedas el tiempo que quieras.</p></div>
+      <div class="th"><b>03 · Volver</b><h3>La pausa</h3>
+        <p>El ascensor corta la señal. Chatland no te expulsa: te deja en pausa y guarda lo que estabas escribiendo.</p></div>
+      <div class="th"><b>04 · Bajar</b><h3>La puerta</h3>
+        <p>Al fondo hay una puerta que no es un chat. Es una sala en 3D, y solo se abre si esa zona dice que eres de allí.</p></div>
+    </div>
+
+    <figure class="dgm reveal d1"><svg class="dgm-svg" viewBox="0 0 876 206" role="img" aria-label="Cuatro umbrales —verja, recinto, conversación, sala 3D— con un regreso al recinto"><rect class="n-pill" x="18" y="64" width="150" height="56" rx="28.0"/><text class="n-lbl" x="93.0" y="96.5">La verja</text><rect class="n-box" x="228" y="64" width="170" height="56" rx="10"/><text class="n-lbl" x="313.0" y="96.5">El recinto</text><rect class="n-box" x="458" y="64" width="190" height="56" rx="10"/><text class="n-lbl" x="553.0" y="96.5">La conversación</text><rect class="n-box" x="708" y="64" width="150" height="56" rx="10"/><text class="n-lbl" x="783.0" y="96.5">La sala 3D</text><path class="e-path" d="M168,92 L228,92" marker-end="url(#arw)"/><path class="e-path" d="M398,92 L458,92" marker-end="url(#arw)"/><path class="e-path" d="M648,92 L708,92" marker-end="url(#arw)"/><path class="e-path dashed" d="M783,120 L783,168 L313,168 L313,120" marker-end="url(#arw)"/><text class="e-lbl" x="500" y="185">volver</text></svg><figcaption>Cuatro umbrales y un regreso · el camino mínimo, todavía sin piezas</figcaption></figure>
+
+    <div class="split" style="margin-top:clamp(34px,5vh,52px)">
+      <div class="reveal">
+        <p class="quote">Entrar no es abrir. <br><em>Es llegar.</em></p>
+      </div>
+      <div class="copy reveal d1">
+        <p>Casi todas las apps de mensajería empiezan en una lista. Chatland empieza en una puerta. Esa diferencia —llegar en vez de encender— ordena todo lo demás: hay un sitio, hay quien está dentro, hay un fuera.</p>
+        <p>Los cuatro umbrales no son pantallas: son <b>decisiones</b>. Con qué llave entras, con quién te quedas, qué haces cuando la red falla y si bajas o no a la sala del fondo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 03 · LOS CUATRO TRAMOS ══════════ -->
+<section class="section" id="paso-3" data-step="03" data-step-name="Los tramos">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-side">
+        <img class="sec-mark" src="logos/01-horizon-basico.svg" alt="" aria-hidden="true">
+      </div>
+      <div>
+        <p class="sec-kicker">El camino, de cerca</p>
+        <h2>Cuatro tramos. <br><em>Uno detrás de otro.</em></h2>
+        <p class="lede">El mismo recorrido, ahora con las piezas que lo sostienen. Cada tramo tiene su diagrama; el último deja ver ya los servicios reales.</p>
+      </div>
+    </div>
+    <div class="deck reveal" data-deck aria-roledescription="carrusel" aria-label="El camino en cuatro tramos"><div class="deck-stage"><article class="deck-slide"><figure class="dgm"><svg class="dgm-svg" viewBox="0 0 1016 216" role="img" aria-label="Acceso: abrir la app, desbloquear, autenticar contra Prosody y llegar al Home"><rect class="n-pill" x="16" y="61" width="140" height="56" rx="28.0"/><text class="n-lbl" x="86.0" y="93.5">Abrir ChatLand</text><polygon class="n-dec" points="291.0,41 376,89.0 291.0,137 206,89.0"/><text class="n-lbl" x="291.0" y="85.0">¿Bloqueo</text><text class="n-lbl" x="291.0" y="102.0">activo?</text><rect class="n-box" x="426" y="61" width="160" height="56" rx="10"/><text class="n-lbl" x="506.0" y="85.0">PIN, clave</text><text class="n-lbl" x="506.0" y="102.0">o huella</text><rect class="n-box" x="636" y="61" width="170" height="56" rx="10"/><text class="n-lbl" x="721.0" y="93.5">Prosody :5222</text><rect class="n-box" x="846" y="61" width="140" height="56" rx="10"/><text class="n-lbl" x="916.0" y="93.5">Home</text><path class="e-path" d="M156,89 L201,89" marker-end="url(#arw)"/><path class="e-path" d="M376,89 L426,89" marker-end="url(#arw)"/><text class="e-lbl" x="401" y="76">sí</text><path class="e-path" d="M291,137 L291,176 L700,176 L700,117" marker-end="url(#arw)"/><text class="e-lbl" x="300" y="172">no</text><path class="e-path" d="M376,89 L426,89" marker-end="url(#arw)"/><path class="e-path" d="M586,89 L636,89" marker-end="url(#arw)"/><path class="e-path" d="M806,89 L846,89" marker-end="url(#arw)"/></svg><figcaption>Tramo 01 · acceso</figcaption></figure><div class="slide-copy"><span class="slide-k">Tramo 01 · Cruzar</span><h3>La verja y la llave</h3><p>La app abre con dos puertas encadenadas, y no son la misma. La primera es <b>local</b>: el bloqueo del teléfono. La segunda es <b>de servidor</b>: la sesión de mensajería.</p><ul class="slide-list"><li>Sin bloqueo activo se salta directo a comprobar la sesión guardada.</li><li>Con bloqueo, se resuelve con PIN, contraseña o biometría.</li><li>Una sesión válida guarda el perfil y deja al visitante en el Home.</li><li>Si las credenciales fallan, el error aparece en la misma puerta.</li></ul></div></article><article class="deck-slide"><figure class="dgm"><svg class="dgm-svg" viewBox="0 0 846 236" role="img" aria-label="Desde el Home se abre un chat de dos o una zona, y ambos acaban en una burbuja"><rect class="n-pill" x="16" y="84" width="140" height="56" rx="28.0"/><text class="n-lbl" x="86.0" y="116.5">Home</text><polygon class="n-dec" points="291.0,64 376,112.0 291.0,160 206,112.0"/><text class="n-lbl" x="291.0" y="108.0">¿Qué</text><text class="n-lbl" x="291.0" y="125.0">abres?</text><rect class="n-box" x="426" y="44" width="170" height="56" rx="10"/><text class="n-lbl" x="511.0" y="76.5">Chat 1:1</text><rect class="n-box" x="426" y="148" width="170" height="56" rx="10"/><text class="n-lbl" x="511.0" y="180.5">Zona (MUC)</text><rect class="n-box" x="646" y="96" width="170" height="56" rx="10"/><text class="n-lbl" x="731.0" y="128.5">La burbuja</text><path class="e-path" d="M156,112 L201,112" marker-end="url(#arw)"/><path class="e-path" d="M376,96 L426,72" marker-end="url(#arw)"/><text class="e-lbl" x="399" y="76">1:1</text><path class="e-path" d="M376,128 L426,176" marker-end="url(#arw)"/><text class="e-lbl" x="392" y="160">zona</text><path class="e-path" d="M596,72 L646,118" marker-end="url(#arw)"/><path class="e-path" d="M596,176 L646,130" marker-end="url(#arw)"/></svg><figcaption>Tramo 02 · el recinto</figcaption></figure><div class="slide-copy"><span class="slide-k">Tramo 02 · Estar</span><h3>El mapa, no el feed</h3><p>Desde el Home no se abre «una pestaña»: se elige <b>dónde estar</b>. Una conversación de dos o una zona con aforo; el perfil y los ajustes quedan al margen.</p><ul class="slide-list"><li>Un chat 1:1 es una conversación privada entre dos personas.</li><li>Una zona es una sala con aforo: se entra y se sale sin cerrar nada.</li><li>Perfil y ajustes vuelven siempre al mapa, nunca a una pantalla suelta.</li></ul></div></article><article class="deck-slide"><figure class="dgm"><svg class="dgm-svg" viewBox="0 0 846 224" role="img" aria-label="Reconexión: cae la conexión, la app queda en pausa, la cola sale en orden y se vuelve a la zona"><rect class="n-box" x="16" y="64" width="150" height="56" rx="10"/><text class="n-lbl" x="91.0" y="88.0">Se cae</text><text class="n-lbl" x="91.0" y="105.0">la conexión</text><rect class="n-pill" x="216" y="64" width="150" height="56" rx="28.0"/><text class="n-lbl" x="291.0" y="96.5">Reconnecting</text><rect class="n-box" x="416" y="64" width="190" height="56" rx="10"/><text class="n-lbl" x="511.0" y="88.0">flushOutbox</text><text class="n-lbl" x="511.0" y="105.0">en orden</text><rect class="n-box" x="656" y="64" width="170" height="56" rx="10"/><text class="n-lbl" x="741.0" y="96.5">Vuelta a la zona</text><rect class="n-box" x="416" y="156" width="190" height="48" rx="10"/><text class="n-lbl" x="511.0" y="184.5">Outbox local</text><path class="e-path" d="M166,92 L216,92" marker-end="url(#arw)"/><path class="e-path" d="M366,92 L416,92" marker-end="url(#arw)"/><path class="e-path" d="M606,92 L656,92" marker-end="url(#arw)"/><path class="e-path dashed" d="M511,156 L511,120" marker-end="url(#arw)"/><text class="e-lbl" x="470" y="138">al volver</text></svg><figcaption>Tramo 03 · reconexión</figcaption></figure><div class="slide-copy"><span class="slide-k">Tramo 03 · Volver</span><h3>La pausa, no la expulsión</h3><p>Cuando la red cae, la app no cierra la sesión: la deja <b>en pausa</b>. Lo que estabas escribiendo se guarda en local y sale después, en orden.</p><ul class="slide-list"><li>El estado pasa a «reconectando» sin echar al visitante.</li><li>La cola de salida se vacía respetando el orden de escritura.</li><li>Al volver, la app se reincorpora a la zona en la que estabas.</li></ul></div></article><article class="deck-slide"><figure class="dgm"><svg class="dgm-svg" viewBox="0 0 968 178" role="img" aria-label="Sala 3D: el token lo valida Prosody, Colyseus entrega un snapshot y Filament lo dibuja"><rect class="n-box" x="14" y="61" width="150" height="56" rx="10"/><text class="n-lbl" x="89.0" y="93.5">Pedir token</text><rect class="n-box" x="204" y="61" width="170" height="56" rx="10"/><text class="n-lbl" x="289.0" y="85.0">Prosody valida</text><text class="n-lbl" x="289.0" y="102.0">membresía</text><rect class="n-box" x="414" y="61" width="150" height="56" rx="10"/><text class="n-lbl" x="489.0" y="93.5">Colyseus</text><rect class="n-box" x="604" y="61" width="160" height="56" rx="10"/><text class="n-lbl" x="684.0" y="93.5">Snapshot</text><rect class="n-box" x="804" y="61" width="150" height="56" rx="10"/><text class="n-lbl" x="879.0" y="93.5">Filament</text><path class="e-path" d="M164,89 L204,89" marker-end="url(#arw)"/><path class="e-path" d="M374,89 L414,89" marker-end="url(#arw)"/><text class="e-lbl" x="396" y="70">jwt</text><path class="e-path" d="M564,89 L604,89" marker-end="url(#arw)"/><path class="e-path" d="M764,89 L804,89" marker-end="url(#arw)"/></svg><figcaption>Tramo 04 · sala 3D</figcaption></figure><div class="slide-copy"><span class="slide-k">Tramo 04 · Bajar</span><h3>La puerta del fondo</h3><p>La sala 3D no es una pestaña más: es <b>otro servidor</b>, otra autoridad y otro presupuesto. Se entra con un token que firma Prosody y que dura poco.</p><ul class="slide-list"><li>El token solo se emite si la zona confirma que eres miembro.</li><li>Colyseus valida token, sala y escena antes de dejarte entrar.</li><li>El servidor manda: el móvil pinta el estado, no lo inventa.</li></ul></div></article></div><div class="deck-nav"><button class="deck-btn" type="button" data-deck-prev aria-label="Diapositiva anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><div class="deck-dots" role="tablist" aria-label="Diapositivas"></div><span class="deck-count" aria-live="polite">01 / 04</span><button class="deck-btn" type="button" data-deck-next aria-label="Diapositiva siguiente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button></div></div>
+  </div>
+</section>
+
+<!-- ══════════ 04 · CONVERSAR ══════════ -->
+<section class="section" id="paso-4" data-step="04" data-step-name="Conversar">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-side">
+        <img class="sec-mark" src="logos/03-horizon-latido.svg" alt="" aria-hidden="true">
+      </div>
+      <div>
+        <p class="sec-kicker">Funciones clave</p>
+        <h2>Conversar <br><em>sin perder el hilo.</em></h2>
+        <p class="lede">Cuatro gestos que la app resuelve por ti. Cada uno se puede contar en una frase; el detalle está en la lista.</p>
+      </div>
+    </div>
+    <div class="deck reveal" data-deck aria-roledescription="carrusel" aria-label="Conversar"><div class="deck-stage"><article class="deck-slide"><figure class="dgm"><svg class="dgm-svg" viewBox="0 0 846 236" role="img" aria-label="Desde el Home se abre un chat de dos o una zona, y ambos acaban en una burbuja"><rect class="n-pill" x="16" y="84" width="140" height="56" rx="28.0"/><text class="n-lbl" x="86.0" y="116.5">Home</text><polygon class="n-dec" points="291.0,64 376,112.0 291.0,160 206,112.0"/><text class="n-lbl" x="291.0" y="108.0">¿Qué</text><text class="n-lbl" x="291.0" y="125.0">abres?</text><rect class="n-box" x="426" y="44" width="170" height="56" rx="10"/><text class="n-lbl" x="511.0" y="76.5">Chat 1:1</text><rect class="n-box" x="426" y="148" width="170" height="56" rx="10"/><text class="n-lbl" x="511.0" y="180.5">Zona (MUC)</text><rect class="n-box" x="646" y="96" width="170" height="56" rx="10"/><text class="n-lbl" x="731.0" y="128.5">La burbuja</text><path class="e-path" d="M156,112 L201,112" marker-end="url(#arw)"/><path class="e-path" d="M376,96 L426,72" marker-end="url(#arw)"/><text class="e-lbl" x="399" y="76">1:1</text><path class="e-path" d="M376,128 L426,176" marker-end="url(#arw)"/><text class="e-lbl" x="392" y="160">zona</text><path class="e-path" d="M596,72 L646,118" marker-end="url(#arw)"/><path class="e-path" d="M596,176 L646,130" marker-end="url(#arw)"/></svg><figcaption>Dos puertas, una burbuja</figcaption></figure><div class="slide-copy"><span class="slide-k">Función · conversar</span><h3>Dos maneras de empezar</h3><p>Hablar con alguien no siempre es lo mismo. A veces es <b>una persona</b>; a veces es <b>una sala</b>. La app trata las dos como el mismo gesto: entrar y escribir.</p><ol class="slide-steps"><li><b>Abrir un chat 1:1</b><span>conversación privada, dos personas, sin aforo.</span></li><li><b>Entrar en una zona</b><span>sala con gente y veinte plazas; se entra y se sale sin cerrar nada.</span></li><li><b>La misma pantalla</b><span>el chat se ve igual; cambia quién está al otro lado.</span></li></ol></div></article><article class="deck-slide"><figure class="dgm"><svg class="dgm-svg" viewBox="0 0 846 236" role="img" aria-label="Desde el Home se abre un chat de dos o una zona, y ambos acaban en una burbuja"><rect class="n-pill" x="16" y="84" width="140" height="56" rx="28.0"/><text class="n-lbl" x="86.0" y="116.5">Home</text><polygon class="n-dec" points="291.0,64 376,112.0 291.0,160 206,112.0"/><text class="n-lbl" x="291.0" y="108.0">¿Qué</text><text class="n-lbl" x="291.0" y="125.0">abres?</text><rect class="n-box" x="426" y="44" width="170" height="56" rx="10"/><text class="n-lbl" x="511.0" y="76.5">Chat 1:1</text><rect class="n-box" x="426" y="148" width="170" height="56" rx="10"/><text class="n-lbl" x="511.0" y="180.5">Zona (MUC)</text><rect class="n-box" x="646" y="96" width="170" height="56" rx="10"/><text class="n-lbl" x="731.0" y="128.5">La burbuja</text><path class="e-path" d="M156,112 L201,112" marker-end="url(#arw)"/><path class="e-path" d="M376,96 L426,72" marker-end="url(#arw)"/><text class="e-lbl" x="399" y="76">1:1</text><path class="e-path" d="M376,128 L426,176" marker-end="url(#arw)"/><text class="e-lbl" x="392" y="160">zona</text><path class="e-path" d="M596,72 L646,118" marker-end="url(#arw)"/><path class="e-path" d="M596,176 L646,130" marker-end="url(#arw)"/></svg><figcaption>El mensaje sale</figcaption></figure><div class="slide-copy"><span class="slide-k">Función · conversar</span><h3>El mensaje sale</h3><p>Escribir es local; enviar es un viaje. La app separa las dos cosas para que el gesto no dependa de la cobertura.</p><ol class="slide-steps"><li><b>Escribir</b><span>el texto vive en el campo de escritura, no en el servidor.</span></li><li><b>Pulsar enviar</b><span>si hay conexión, el mensaje va por XMPP al gateway.</span></li><li><b>La burbuja</b><span>si el envío sale bien, aparece en el chat; si no, se avisa.</span></li></ol></div></article><article class="deck-slide"><figure class="dgm"><svg class="dgm-svg" viewBox="0 0 968 178" role="img" aria-label="Sala 3D: el token lo valida Prosody, Colyseus entrega un snapshot y Filament lo dibuja"><rect class="n-box" x="14" y="61" width="150" height="56" rx="10"/><text class="n-lbl" x="89.0" y="93.5">Pedir token</text><rect class="n-box" x="204" y="61" width="170" height="56" rx="10"/><text class="n-lbl" x="289.0" y="85.0">Prosody valida</text><text class="n-lbl" x="289.0" y="102.0">membresía</text><rect class="n-box" x="414" y="61" width="150" height="56" rx="10"/><text class="n-lbl" x="489.0" y="93.5">Colyseus</text><rect class="n-box" x="604" y="61" width="160" height="56" rx="10"/><text class="n-lbl" x="684.0" y="93.5">Snapshot</text><rect class="n-box" x="804" y="61" width="150" height="56" rx="10"/><text class="n-lbl" x="879.0" y="93.5">Filament</text><path class="e-path" d="M164,89 L204,89" marker-end="url(#arw)"/><path class="e-path" d="M374,89 L414,89" marker-end="url(#arw)"/><text class="e-lbl" x="396" y="70">jwt</text><path class="e-path" d="M564,89 L604,89" marker-end="url(#arw)"/><path class="e-path" d="M764,89 L804,89" marker-end="url(#arw)"/></svg><figcaption>Subir antes de enviar</figcaption></figure><div class="slide-copy"><span class="slide-k">Función · conversar</span><h3>El adjunto sube antes</h3><p>Un archivo no viaja dentro del mensaje: se sube aparte y lo que viaja es su dirección. Por eso un adjunto puede fallar sin que el mensaje se pierda.</p><ol class="slide-steps"><li><b>Adjuntar</b><span>la app abre el selector del teléfono.</span></li><li><b>Subir a Upload :5280</b><span>el archivo sale de la app y vuelve como URL.</span></li><li><b>Añadir la URL y enviar</b><span>el mensaje lleva la dirección; si la subida falla, no se manda a medias.</span></li></ol></div></article><article class="deck-slide"><figure class="dgm"><svg class="dgm-svg" viewBox="0 0 846 224" role="img" aria-label="Reconexión: cae la conexión, la app queda en pausa, la cola sale en orden y se vuelve a la zona"><rect class="n-box" x="16" y="64" width="150" height="56" rx="10"/><text class="n-lbl" x="91.0" y="88.0">Se cae</text><text class="n-lbl" x="91.0" y="105.0">la conexión</text><rect class="n-pill" x="216" y="64" width="150" height="56" rx="28.0"/><text class="n-lbl" x="291.0" y="96.5">Reconnecting</text><rect class="n-box" x="416" y="64" width="190" height="56" rx="10"/><text class="n-lbl" x="511.0" y="88.0">flushOutbox</text><text class="n-lbl" x="511.0" y="105.0">en orden</text><rect class="n-box" x="656" y="64" width="170" height="56" rx="10"/><text class="n-lbl" x="741.0" y="96.5">Vuelta a la zona</text><rect class="n-box" x="416" y="156" width="190" height="48" rx="10"/><text class="n-lbl" x="511.0" y="184.5">Outbox local</text><path class="e-path" d="M166,92 L216,92" marker-end="url(#arw)"/><path class="e-path" d="M366,92 L416,92" marker-end="url(#arw)"/><path class="e-path" d="M606,92 L656,92" marker-end="url(#arw)"/><path class="e-path dashed" d="M511,156 L511,120" marker-end="url(#arw)"/><text class="e-lbl" x="470" y="138">al volver</text></svg><figcaption>La cola de salida</figcaption></figure><div class="slide-copy"><span class="slide-k">Función · conversar</span><h3>Sin red, no se pierde</h3><p>Escribir sin conexión no es un error: es una espera. El mensaje se queda en el outbox hasta que la red vuelve.</p><ol class="slide-steps"><li><b>Sin conexión</b><span>el mensaje se guarda en el outbox local.</span></li><li><b>La app lo dice</b><span>no finge que salió: lo deja pendiente.</span></li><li><b>Al volver la red</b><span>la cola se vacía en orden y el mensaje llega.</span></li></ol></div></article></div><div class="deck-nav"><button class="deck-btn" type="button" data-deck-prev aria-label="Diapositiva anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><div class="deck-dots" role="tablist" aria-label="Diapositivas"></div><span class="deck-count" aria-live="polite">01 / 04</span><button class="deck-btn" type="button" data-deck-next aria-label="Diapositiva siguiente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button></div></div>
+  </div>
+</section>
+
+<!-- ══════════ 05 · VOLVER ══════════ -->
+<section class="section" id="paso-5" data-step="05" data-step-name="Volver">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-side">
+        <img class="sec-mark" src="logos/04-horizon-respiro.svg" alt="" aria-hidden="true">
+      </div>
+      <div>
+        <p class="sec-kicker">Cuando la red se va</p>
+        <h2>Un momento <br><em>sin cobertura.</em></h2>
+        <p class="lede">La prueba de un chat no es cuando todo va bien, sino cuando el móvil se queda sin barras. Aquí el camino no se rompe: se queda esperando.</p>
+      </div>
+    </div>
+    <div class="deck reveal" data-deck aria-roledescription="carrusel" aria-label="Volver"><div class="deck-stage"><article class="deck-slide"><figure class="dgm"><svg class="dgm-svg" viewBox="0 0 846 224" role="img" aria-label="Reconexión: cae la conexión, la app queda en pausa, la cola sale en orden y se vuelve a la zona"><rect class="n-box" x="16" y="64" width="150" height="56" rx="10"/><text class="n-lbl" x="91.0" y="88.0">Se cae</text><text class="n-lbl" x="91.0" y="105.0">la conexión</text><rect class="n-pill" x="216" y="64" width="150" height="56" rx="28.0"/><text class="n-lbl" x="291.0" y="96.5">Reconnecting</text><rect class="n-box" x="416" y="64" width="190" height="56" rx="10"/><text class="n-lbl" x="511.0" y="88.0">flushOutbox</text><text class="n-lbl" x="511.0" y="105.0">en orden</text><rect class="n-box" x="656" y="64" width="170" height="56" rx="10"/><text class="n-lbl" x="741.0" y="96.5">Vuelta a la zona</text><rect class="n-box" x="416" y="156" width="190" height="48" rx="10"/><text class="n-lbl" x="511.0" y="184.5">Outbox local</text><path class="e-path" d="M166,92 L216,92" marker-end="url(#arw)"/><path class="e-path" d="M366,92 L416,92" marker-end="url(#arw)"/><path class="e-path" d="M606,92 L656,92" marker-end="url(#arw)"/><path class="e-path dashed" d="M511,156 L511,120" marker-end="url(#arw)"/><text class="e-lbl" x="470" y="138">al volver</text></svg><figcaption>Se cae la señal</figcaption></figure><div class="slide-copy"><span class="slide-k">Reconexión · 01</span><h3>Se cae la señal</h3><p>Un ascensor, un túnel, un avión en modo avión. La sesión no se cierra: se queda <b>esperando</b>.</p><ul class="slide-list"><li>La app pasa a estado «reconectando» y no expulsa al visitante.</li><li>Nada de lo escrito se pierde: el texto sigue donde estaba.</li><li>El camino no se rompe; se queda en pausa.</li></ul></div></article><article class="deck-slide"><figure class="dgm"><svg class="dgm-svg" viewBox="0 0 846 224" role="img" aria-label="Reconexión: cae la conexión, la app queda en pausa, la cola sale en orden y se vuelve a la zona"><rect class="n-box" x="16" y="64" width="150" height="56" rx="10"/><text class="n-lbl" x="91.0" y="88.0">Se cae</text><text class="n-lbl" x="91.0" y="105.0">la conexión</text><rect class="n-pill" x="216" y="64" width="150" height="56" rx="28.0"/><text class="n-lbl" x="291.0" y="96.5">Reconnecting</text><rect class="n-box" x="416" y="64" width="190" height="56" rx="10"/><text class="n-lbl" x="511.0" y="88.0">flushOutbox</text><text class="n-lbl" x="511.0" y="105.0">en orden</text><rect class="n-box" x="656" y="64" width="170" height="56" rx="10"/><text class="n-lbl" x="741.0" y="96.5">Vuelta a la zona</text><rect class="n-box" x="416" y="156" width="190" height="48" rx="10"/><text class="n-lbl" x="511.0" y="184.5">Outbox local</text><path class="e-path" d="M166,92 L216,92" marker-end="url(#arw)"/><path class="e-path" d="M366,92 L416,92" marker-end="url(#arw)"/><path class="e-path" d="M606,92 L656,92" marker-end="url(#arw)"/><path class="e-path dashed" d="M511,156 L511,120" marker-end="url(#arw)"/><text class="e-lbl" x="470" y="138">al volver</text></svg><figcaption>La cola sale en orden</figcaption></figure><div class="slide-copy"><span class="slide-k">Reconexión · 02</span><h3>La cola sale en orden</h3><p>Mientras no hay red, los mensajes se acumulan. Al volver, salen <b>en el orden en que se escribieron</b>, no en el que la red se acuerde.</p><ul class="slide-list"><li>El outbox guarda los pendientes en local.</li><li>El vaciado respeta la secuencia original.</li><li>Si un envío falla, se avisa en vez de dar por hecho que llegó.</li></ul></div></article><article class="deck-slide"><figure class="dgm"><svg class="dgm-svg" viewBox="0 0 846 224" role="img" aria-label="Reconexión: cae la conexión, la app queda en pausa, la cola sale en orden y se vuelve a la zona"><rect class="n-box" x="16" y="64" width="150" height="56" rx="10"/><text class="n-lbl" x="91.0" y="88.0">Se cae</text><text class="n-lbl" x="91.0" y="105.0">la conexión</text><rect class="n-pill" x="216" y="64" width="150" height="56" rx="28.0"/><text class="n-lbl" x="291.0" y="96.5">Reconnecting</text><rect class="n-box" x="416" y="64" width="190" height="56" rx="10"/><text class="n-lbl" x="511.0" y="88.0">flushOutbox</text><text class="n-lbl" x="511.0" y="105.0">en orden</text><rect class="n-box" x="656" y="64" width="170" height="56" rx="10"/><text class="n-lbl" x="741.0" y="96.5">Vuelta a la zona</text><rect class="n-box" x="416" y="156" width="190" height="48" rx="10"/><text class="n-lbl" x="511.0" y="184.5">Outbox local</text><path class="e-path" d="M166,92 L216,92" marker-end="url(#arw)"/><path class="e-path" d="M366,92 L416,92" marker-end="url(#arw)"/><path class="e-path" d="M606,92 L656,92" marker-end="url(#arw)"/><path class="e-path dashed" d="M511,156 L511,120" marker-end="url(#arw)"/><text class="e-lbl" x="470" y="138">al volver</text></svg><figcaption>Vuelta a la zona</figcaption></figure><div class="slide-copy"><span class="slide-k">Reconexión · 03</span><h3>La zona te espera</h3><p>Cuando la conexión vuelve, la app no te deja en el mapa: te devuelve <b>a la zona</b> en la que estabas.</p><ul class="slide-list"><li>Se reincorpora a la zona activa sin volver a elegirla.</li><li>Si el fallo es definitivo, el estado pasa a «failed» con aviso.</li><li>Reintentar es una acción visible, no un silencio.</li></ul></div></article></div><div class="deck-nav"><button class="deck-btn" type="button" data-deck-prev aria-label="Diapositiva anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><div class="deck-dots" role="tablist" aria-label="Diapositivas"></div><span class="deck-count" aria-live="polite">01 / 03</span><button class="deck-btn" type="button" data-deck-next aria-label="Diapositiva siguiente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button></div></div>
+  </div>
+</section>
+
+<!-- ══════════ 06 · LA SALA 3D ══════════ -->
+<section class="section" id="paso-6" data-step="06" data-step-name="La sala 3D">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-side">
+        <img class="sec-mark" src="logos/13-horizon-luz.svg" alt="" aria-hidden="true">
+      </div>
+      <div>
+        <p class="sec-kicker">La puerta del fondo</p>
+        <h2>Una sala que <br><em>no dibuja tu móvil.</em></h2>
+        <p class="lede">La parte 3D es opcional y distinta al resto: aquí manda el servidor. El cliente no calcula el mundo —lo pinta.</p>
+      </div>
+    </div>
+    <div class="deck reveal" data-deck aria-roledescription="carrusel" aria-label="La sala 3D"><div class="deck-stage"><article class="deck-slide"><figure class="dgm"><svg class="dgm-svg" viewBox="0 0 968 178" role="img" aria-label="Sala 3D: el token lo valida Prosody, Colyseus entrega un snapshot y Filament lo dibuja"><rect class="n-box" x="14" y="61" width="150" height="56" rx="10"/><text class="n-lbl" x="89.0" y="93.5">Pedir token</text><rect class="n-box" x="204" y="61" width="170" height="56" rx="10"/><text class="n-lbl" x="289.0" y="85.0">Prosody valida</text><text class="n-lbl" x="289.0" y="102.0">membresía</text><rect class="n-box" x="414" y="61" width="150" height="56" rx="10"/><text class="n-lbl" x="489.0" y="93.5">Colyseus</text><rect class="n-box" x="604" y="61" width="160" height="56" rx="10"/><text class="n-lbl" x="684.0" y="93.5">Snapshot</text><rect class="n-box" x="804" y="61" width="150" height="56" rx="10"/><text class="n-lbl" x="879.0" y="93.5">Filament</text><path class="e-path" d="M164,89 L204,89" marker-end="url(#arw)"/><path class="e-path" d="M374,89 L414,89" marker-end="url(#arw)"/><text class="e-lbl" x="396" y="70">jwt</text><path class="e-path" d="M564,89 L604,89" marker-end="url(#arw)"/><path class="e-path" d="M764,89 L804,89" marker-end="url(#arw)"/></svg><figcaption>El token</figcaption></figure><div class="slide-copy"><span class="slide-k">Sala 3D · 01</span><h3>Un token que dura poco</h3><p>La sala 3D no se abre con la sesión del chat. Se pide un token aparte, y solo lo firma Prosody después de comprobar que eres <b>miembro de la zona</b>.</p><ul class="slide-list"><li>Si no eres miembro, el acceso se deniega sin más.</li><li>El token es un JWT HS256 de vida corta.</li><li>Se pide justo antes de entrar, no se guarda para siempre.</li></ul></div></article><article class="deck-slide"><figure class="dgm"><svg class="dgm-svg" viewBox="0 0 968 178" role="img" aria-label="Sala 3D: el token lo valida Prosody, Colyseus entrega un snapshot y Filament lo dibuja"><rect class="n-box" x="14" y="61" width="150" height="56" rx="10"/><text class="n-lbl" x="89.0" y="93.5">Pedir token</text><rect class="n-box" x="204" y="61" width="170" height="56" rx="10"/><text class="n-lbl" x="289.0" y="85.0">Prosody valida</text><text class="n-lbl" x="289.0" y="102.0">membresía</text><rect class="n-box" x="414" y="61" width="150" height="56" rx="10"/><text class="n-lbl" x="489.0" y="93.5">Colyseus</text><rect class="n-box" x="604" y="61" width="160" height="56" rx="10"/><text class="n-lbl" x="684.0" y="93.5">Snapshot</text><rect class="n-box" x="804" y="61" width="150" height="56" rx="10"/><text class="n-lbl" x="879.0" y="93.5">Filament</text><path class="e-path" d="M164,89 L204,89" marker-end="url(#arw)"/><path class="e-path" d="M374,89 L414,89" marker-end="url(#arw)"/><text class="e-lbl" x="396" y="70">jwt</text><path class="e-path" d="M564,89 L604,89" marker-end="url(#arw)"/><path class="e-path" d="M764,89 L804,89" marker-end="url(#arw)"/></svg><figcaption>Colyseus decide</figcaption></figure><div class="slide-copy"><span class="slide-k">Sala 3D · 02</span><h3>Colyseus decide</h3><p>Con el token en la mano, entra en juego el servidor espacial. No basta con tener token: hay que tener <b>token, sala y escena</b>.</p><ul class="slide-list"><li>Se valida el token, la sala y la escena pedidas.</li><li>Si algo no cuadra, error de sesión espacial.</li><li>El cliente no puede saltarse esta puerta.</li></ul></div></article><article class="deck-slide"><figure class="dgm"><svg class="dgm-svg" viewBox="0 0 968 178" role="img" aria-label="Sala 3D: el token lo valida Prosody, Colyseus entrega un snapshot y Filament lo dibuja"><rect class="n-box" x="14" y="61" width="150" height="56" rx="10"/><text class="n-lbl" x="89.0" y="93.5">Pedir token</text><rect class="n-box" x="204" y="61" width="170" height="56" rx="10"/><text class="n-lbl" x="289.0" y="85.0">Prosody valida</text><text class="n-lbl" x="289.0" y="102.0">membresía</text><rect class="n-box" x="414" y="61" width="150" height="56" rx="10"/><text class="n-lbl" x="489.0" y="93.5">Colyseus</text><rect class="n-box" x="604" y="61" width="160" height="56" rx="10"/><text class="n-lbl" x="684.0" y="93.5">Snapshot</text><rect class="n-box" x="804" y="61" width="150" height="56" rx="10"/><text class="n-lbl" x="879.0" y="93.5">Filament</text><path class="e-path" d="M164,89 L204,89" marker-end="url(#arw)"/><path class="e-path" d="M374,89 L414,89" marker-end="url(#arw)"/><text class="e-lbl" x="396" y="70">jwt</text><path class="e-path" d="M564,89 L604,89" marker-end="url(#arw)"/><path class="e-path" d="M764,89 L804,89" marker-end="url(#arw)"/></svg><figcaption>El servidor manda</figcaption></figure><div class="slide-copy"><span class="slide-k">Sala 3D · 03</span><h3>El servidor manda</h3><p>En la sala, el móvil no calcula el mundo: lo <b>recibe</b>. El servidor entrega un estado y el cliente lo dibuja.</p><ul class="slide-list"><li>El snapshot es la autoridad: posiciones, asientos y objetos.</li><li>El cliente pinta, no decide.</li><li>Por eso dos móviles distintos ven la misma sala.</li></ul></div></article><article class="deck-slide"><figure class="dgm"><svg class="dgm-svg" viewBox="0 0 968 178" role="img" aria-label="Sala 3D: el token lo valida Prosody, Colyseus entrega un snapshot y Filament lo dibuja"><rect class="n-box" x="14" y="61" width="150" height="56" rx="10"/><text class="n-lbl" x="89.0" y="93.5">Pedir token</text><rect class="n-box" x="204" y="61" width="170" height="56" rx="10"/><text class="n-lbl" x="289.0" y="85.0">Prosody valida</text><text class="n-lbl" x="289.0" y="102.0">membresía</text><rect class="n-box" x="414" y="61" width="150" height="56" rx="10"/><text class="n-lbl" x="489.0" y="93.5">Colyseus</text><rect class="n-box" x="604" y="61" width="160" height="56" rx="10"/><text class="n-lbl" x="684.0" y="93.5">Snapshot</text><rect class="n-box" x="804" y="61" width="150" height="56" rx="10"/><text class="n-lbl" x="879.0" y="93.5">Filament</text><path class="e-path" d="M164,89 L204,89" marker-end="url(#arw)"/><path class="e-path" d="M374,89 L414,89" marker-end="url(#arw)"/><text class="e-lbl" x="396" y="70">jwt</text><path class="e-path" d="M564,89 L604,89" marker-end="url(#arw)"/><path class="e-path" d="M764,89 L804,89" marker-end="url(#arw)"/></svg><figcaption>Godot es opt-in</figcaption></figure><div class="slide-copy"><span class="slide-k">Sala 3D · 04</span><h3>Godot es opt-in</h3><p>El recinto se dibuja con Filament. La parte de Godot es un <b>módulo opcional</b> para lo que necesita más músculo: avatares, asientos, objetos e IK.</p><ul class="slide-list"><li>Por defecto, todo va en Filament.</li><li>Godot se arranca como proceso aparte vía Binder.</li><li>Si no está, la sala sigue siendo usable.</li></ul></div></article></div><div class="deck-nav"><button class="deck-btn" type="button" data-deck-prev aria-label="Diapositiva anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><div class="deck-dots" role="tablist" aria-label="Diapositivas"></div><span class="deck-count" aria-live="polite">01 / 04</span><button class="deck-btn" type="button" data-deck-next aria-label="Diapositiva siguiente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button></div></div>
+  </div>
+</section>
+
+<!-- ══════════ 07 · EL MAPA ══════════ -->
+<section class="section" id="paso-7" data-step="07" data-step-name="El mapa">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-side">
+        <img class="sec-mark" src="logos/14-horizon-obra.svg" alt="" aria-hidden="true">
+      </div>
+      <div>
+        <p class="sec-kicker">El plano completo</p>
+        <h2>Todo el camino, <br><em>en una sola imagen.</em></h2>
+        <p class="lede">Sin desglose de hilos ni detalles de concurrencia: el flujo estándar tal como lo recorren <b>ChatViewModel</b>, <b>AttachmentUploader</b>, <b>SpatialSessionController</b> y <b>ColyseusNativeGateway</b>.</p>
+      </div>
+    </div>
+
+    <div class="bigmap reveal" tabindex="0" role="region" aria-label="Plano completo del flujo, desplazable">
+      <img src="assets/diagrams/chatland-flujo.svg" width="3300" height="2300" loading="lazy" decoding="async"
+           alt="Plano del flujo de Chatland: acceso, chat y zonas, reconexión y sala 3D, con sus servicios y decisiones">
+    </div>
+    <p class="map-hint">Desplázate dentro del marco para recorrerlo · o ábrelo entero</p>
+    <div class="map-actions reveal d1">
+      <a class="btn btn-ghost" href="assets/diagrams/chatland-flujo.svg" target="_blank" rel="noopener">Abrir el plano a tamaño completo <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></a>
+      <a class="btn btn-ghost" href="assets/diagrams/chatland-flujo.excalidraw" download>Descargar para editar (.excalidraw)</a>
+    </div>
+
+    <div class="ports reveal d2">
+      <table>
+        <caption>Quién hace qué · el reparto del camino</caption>
+        <tbody>
+          <tr><th scope="row">Mensajería</th><td>Prosody en <code>:5222</code> · XMPP, sesión y membresía de zonas</td></tr>
+          <tr><th scope="row">Envío y cola</th><td><code>ChatViewModel</code> · <code>sendMessage</code>, <code>flushOutbox</code> · pendientes en <code>OutboxStore.kt</code></td></tr>
+          <tr><th scope="row">Adjuntos</th><td><code>AttachmentUploader</code> → Upload en <code>:5280</code> (<code>tools/xmpp/upload_server.py</code>)</td></tr>
+          <tr><th scope="row">Sala 3D</th><td><code>SpatialSessionController.enter</code> · token vía <code>SmackXmppGateway</code> · Colyseus en <code>:2568</code></td></tr>
+          <tr><th scope="row">Render</th><td>Filament · Godot como módulo opt-in vía Binder</td></tr>
+          <tr><th scope="row">Autoridad</th><td>El servidor espacial entrega el estado; el cliente solo lo pinta</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="honest-block reveal d3"><b>Lo que este plano no cuenta, a propósito.</b> Los hilos, los tiempos de espera, los reintentos exactos y el orden fino entre procesos cambian con cada dispositivo y con cada versión; dibujarlos aquí daría una precisión que no se sostiene. El plano enseña el camino, no el cronómetro.</p>
+  </div>
+</section>
+
+<!-- ══════════ 08 · ENTRADA ══════════ -->
+<section class="entrance" id="paso-8" data-step="08" data-step-name="Entrada">
+  <div class="wrap">
+    <div class="emark reveal" aria-hidden="true">
+      <svg class="emark-rings" viewBox="0 0 120 120">
+        <circle class="ring2" cx="60" cy="60" r="57"/>
+        <circle class="ring" cx="60" cy="60" r="51"/>
+      </svg>
+      <img class="emark-logo" src="logos/02-horizon-amanecer.svg" alt="">
+    </div>
+    <h2 class="reveal">La verja está abierta.</h2>
+    <p class="lede reveal d1">Entrada libre. Descarga, elige un residente y entra en la primera land. El resto del recinto está a un toque.</p>
+    <div class="hero-actions reveal d2">
+      <a class="btn btn-primary" href="#paso-0">Descargar para Android <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></a>
+      <a class="btn btn-ghost" href="logos/index.html">Ver el sistema de marca <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></a>
+    </div>
+    <p class="reqs reveal d2">
+      <span>Android 8.0+</span>
+      <span>145 MB</span>
+      <span>15 lands incluidas</span>
+      <span>Sin registro para mirar</span>
+    </p>
+    <div class="stamp reveal d3" aria-hidden="true">Entrada<br>Chatland<br>· 01 ·</div>
+  </div>
+</section>
+
+</main>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="frow">
+      <a class="fbrand" href="#paso-0">
+        <svg class="mark" viewBox="0 0 120 120" aria-hidden="true">
+          <path class="m-body" d="M42 14 H78 A24 24 0 0 1 102 38 V62 A24 24 0 0 1 78 86 H52 L26 106 L31 86 H42 A24 24 0 0 1 18 62 V38 A24 24 0 0 1 42 14 Z"/>
+          <g clip-path="url(#cl-horizon)"><circle class="m-sun" cx="79" cy="41" r="9"/><path class="m-hill1" d="M14 78 C28 58 48 66 66 68 C84 70 96 58 106 64 V92 H14 Z"/><path class="m-hill2" d="M14 86 C34 70 50 78 68 80 C84 82 96 72 106 78 V92 H14 Z"/></g>
+          <path class="m-line" d="M42 14 H78 A24 24 0 0 1 102 38 V62 A24 24 0 0 1 78 86 H52 L26 106 L31 86 H42 A24 24 0 0 1 18 62 V38 A24 24 0 0 1 42 14 Z"/>
+        </svg>
+        <span>Chatland</span>
+      </a>
+      <nav aria-label="Enlaces del pie">
+        <a href="#paso-1">Motivos</a>
+        <a href="#paso-3">Residentes</a>
+        <a href="#paso-5">Ficha técnica</a>
+        <a href="logos/index.html">Sistema de marca</a>
+      </nav>
+    </div>
+    <p class="fine"><b>Nota de prototipo.</b> Esta página es una presentación de diseño. Las cifras de rendimiento, el número de lands, residentes, animaciones y plazas provienen del análisis técnico del producto (2026-11-12) y se muestran con su condición. Los nombres de las lands y de los residentes son de trabajo y pueden cambiar. Los entornos 3D que ves aquí son una <b>reconstrucción ligera</b> hecha con geometría y luz horneada en CSS, no capturas del motor; sirven para mostrar la idea, no para sustituir una captura real.</p>
+    <p class="fine">Chatland · Sistema de marca <b>01 Horizon</b> · <a href="logos/index.html">10 variantes, 2 tamaños cada una</a>.</p>
+  </div>
+</footer>
+
+<!-- ══════════ MODAL DE DIAPOSITIVA ══════════ -->
+<div class="tmodal" id="tmodal" hidden>
+  <div class="tmodal-backdrop" data-close="1"></div>
+  <div class="tmodal-panel" role="dialog" aria-modal="true" aria-labelledby="tmodalTitle">
+    <button class="tmodal-close" type="button" id="tmodalClose" aria-label="Cerrar">×</button>
+    <div class="tmodal-scene" id="tmodalScene" aria-hidden="true"></div>
+    <div class="tmodal-body">
+      <span class="face tmodal-face" id="tmodalFace" aria-hidden="true"></span>
+      <p class="tmodal-k" id="tmodalK"></p>
+      <h3 id="tmodalTitle">Detalle de la diapositiva</h3>
+      <p id="tmodalDesc"></p>
+      <span class="tmodal-tag" id="tmodalTag"></span>
+      <span class="tmodal-index" id="tmodalIndex"></span>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/site.js" defer></script>
+<script src="assets/js/decks.js" defer></script>
+<script src="assets/js/decks.js" defer></script>
+<script src="assets/js/decks.js" defer></script>
+</body>
+</html>

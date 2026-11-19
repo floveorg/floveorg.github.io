@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Blogy — a multi-tier blogging app. Post, tag, and explore across categories.">
+<meta name="theme-color" content="#d32f2f">
+<title>Blogy · FLOVE</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path fill='%23d32f2f' fill-rule='evenodd' d='M16 27.5C16 27.5 3.5 19.8 3.5 11.2 3.5 7.3 6.6 4.5 10 4.5 12.7 4.5 15 6 16 8.2 17 6 19.3 4.5 22 4.5 25.4 4.5 28.5 7.3 28.5 11.2 28.5 19.8 16 27.5 16 27.5Z M7.6 17.3 h2.2 v3.2 h-2.2 z M11.1 15.3 h2.2 v5.2 h-2.2 z M14.6 13.3 h2.2 v7.2 h-2.2 z'/></svg>">
+<link rel="stylesheet" href="../appy/flove.css">
+<style>
+:root{
+  --bg:#f5f2f0; --void:#f5f2f0; --ink:#1a1412; --ink-soft:#5a4f4a; --ink-dim:#8a7f7a;
+  --line:rgba(26,20,18,.10); --line-2:rgba(26,20,18,.05);
+  --accent:#d32f2f; --accent-deep:#9a0007; --accent-rgb:211,47,47;
+  --fill-soft:rgba(211,47,47,.08); --fill-mid:rgba(211,47,47,.14);
+  --panel:rgba(255,255,255,.82); --panel-border:rgba(211,47,47,.2);
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --r:16px; --ease:cubic-bezier(.2,.8,.2,1); --maxw:960px;
+}
+:root.dark{
+  --bg:#12100e; --void:#12100e; --ink:#e6e0da; --ink-soft:#a69b93; --ink-dim:#716660;
+  --line:rgba(230,224,218,.12); --line-2:rgba(230,224,218,.06);
+  --fill-soft:rgba(211,47,47,.12); --fill-mid:rgba(211,47,47,.2);
+  --panel:rgba(22,20,18,.82);
+}
+@media (prefers-color-scheme:dark){
+  :root:not(.dark):not(.light){
+    --bg:#12100e; --void:#12100e; --ink:#e6e0da; --ink-soft:#a69b93; --ink-dim:#716660;
+    --line:rgba(230,224,218,.12); --line-2:rgba(230,224,218,.06);
+    --fill-soft:rgba(211,47,47,.12); --fill-mid:rgba(211,47,47,.2);
+    --panel:rgba(22,20,18,.82);
+  }
+}
+*{box-sizing:border-box; margin:0; padding:0}
+html{scroll-behavior:smooth}
+body{
+  min-height:100vh; background:var(--bg); color:var(--ink);
+  font-family:var(--sans); font-size:17px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(1100px 700px at 90% -10%, var(--fill-soft), transparent 60%),
+    radial-gradient(800px 600px at 10% 110%, var(--fill-soft), transparent 55%);
+  background-attachment:fixed; overflow-x:hidden;
+}
+a{color:inherit; text-decoration:none}
+::selection{background:rgba(211,47,47,.3); color:#fff}
+
+/* ── top bar ── */
+.topbar{position:sticky; top:0; z-index:100; display:flex; align-items:center; gap:.75rem;
+  padding:.6rem 1.2rem; background:var(--panel); backdrop-filter:blur(14px) saturate(1.4);
+  -webkit-backdrop-filter:blur(14px) saturate(1.4);
+  border-bottom:1px solid var(--line);}
+.topbar-brand{display:inline-flex; align-items:center; gap:.5rem; margin-right:auto;
+  font-weight:800; font-size:1.05rem; letter-spacing:.01em;}
+.topbar-brand .heart-mark{width:26px; height:26px; flex:none; display:block; fill:var(--accent);}
+.topbar-brand .brand-sub{font-weight:600; font-size:.68rem; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--ink-soft);}
+
+/* ── shell ── */
+.shell{position:relative; z-index:1; max-width:var(--maxw); margin:0 auto; padding:1.4rem 1.2rem 6rem;}
+
+/* ── section heading ── */
+.sec-head{display:flex; align-items:center; gap:.7rem; margin:0 0 .85rem; font-size:.62rem;
+  letter-spacing:.22em; text-transform:uppercase; color:var(--ink-soft); font-family:var(--mono);}
+.sec-head::after{content:""; flex:1; height:1px; background:linear-gradient(90deg,var(--line),transparent);}
+
+/* ── category grid (2 rows × 4 cols) ── */
+.cat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:.7rem; margin-bottom:1.4rem;}
+.cat-card{display:flex; flex-direction:column; align-items:center; gap:.45rem; padding:1.2rem .6rem .9rem;
+  border-radius:var(--r); border:1px solid var(--line); background:var(--panel);
+  cursor:pointer; text-align:center; position:relative; overflow:hidden;
+  transition:border-color .2s var(--ease), transform .2s var(--ease), box-shadow .2s var(--ease);}
+.cat-card:hover{border-color:var(--accent); transform:translateY(-3px);
+  box-shadow:0 8px 24px -8px rgba(211,47,47,.18);}
+.cat-card:active{transform:translateY(-1px);}
+.cat-card:focus-visible{outline:2px solid var(--accent); outline-offset:3px;}
+.cat-card .cat-icon{font-size:1.6rem; line-height:1; flex:none;}
+.cat-card .cat-name{font-weight:700; font-size:.82rem; letter-spacing:.02em; color:var(--ink);}
+.cat-card .cat-count{font-size:.64rem; color:var(--ink-soft); font-family:var(--mono);}
+.cat-card .cat-accent{position:absolute; top:0; left:0; right:0; height:3px;
+  background:var(--accent); opacity:0; transition:opacity .2s var(--ease);}
+.cat-card:hover .cat-accent{opacity:1;}
+
+/* ── circles bar ── */
+.circles-bar{display:flex; align-items:center; gap:.5rem; margin-top:.2rem; margin-bottom:1.8rem;
+  padding:.5rem .6rem; border-radius:12px; border:1px solid var(--line-2);
+  background:var(--panel);}
+.circles-label{display:flex; align-items:center; gap:.38rem; font-size:.72rem; font-weight:700;
+  letter-spacing:.04em; color:var(--ink-soft); cursor:pointer;
+  transition:color .16s var(--ease);}
+.circles-label:hover{color:var(--accent);}
+.circles-label .circles-dot{width:8px; height:8px; border-radius:50%; background:var(--accent);
+  box-shadow:0 0 6px rgba(211,47,47,.45); flex:none;}
+.circles-add{margin-left:auto; width:32px; height:32px; border-radius:50%; display:flex;
+  align-items:center; justify-content:center; border:1px solid var(--line);
+  background:transparent; color:var(--ink-soft); cursor:pointer; font-size:1.2rem; line-height:1;
+  transition:border-color .16s var(--ease), color .16s var(--ease), background .16s var(--ease);}
+.circles-add:hover{border-color:var(--accent); color:var(--accent); background:var(--fill-soft);}
+.circles-add:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+/* ── footer ── */
+.foot{margin-top:2rem; padding-top:1.2rem; border-top:1px solid var(--line);
+  text-align:center; color:var(--ink-dim); font-size:.82rem;}
+.foot .fmark{display:inline-block; font-size:1.1rem; color:var(--ink-soft);
+  animation:spin 30s linear infinite;}
+.foot a{color:var(--ink-soft);}
+.foot a:hover{color:var(--ink);}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── load reveal ── */
+.lift{opacity:0; transform:translateY(18px);}
+.ready .lift{opacity:1; transform:none; transition:opacity .6s var(--ease), transform .6s var(--ease);}
+.ready .lift{transition-delay:var(--d,0s);}
+
+/* ── responsive ── */
+@media (max-width:640px){
+  .cat-grid{grid-template-columns:repeat(2,1fr); gap:.55rem;}
+  .shell{padding:1rem .8rem 5rem;}
+  .topbar{padding:.5rem .8rem;}
+}
+@media (max-width:400px){
+  .cat-grid{grid-template-columns:1fr 1fr; gap:.4rem;}
+  .cat-card{padding:.9rem .4rem .7rem;}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important; transition-duration:.01ms !important;}
+  .lift{opacity:1; transform:none;}
+  .ready .lift{transition:none;}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="../../index.html" class="topbar-brand">
+    <svg class="heart-mark" viewBox="0 0 32 32" aria-label="Blogy heart">
+      <path fill-rule="evenodd" d="M16 27.5C16 27.5 3.5 19.8 3.5 11.2 3.5 7.3 6.6 4.5 10 4.5 12.7 4.5 15 6 16 8.2 17 6 19.3 4.5 22 4.5 25.4 4.5 28.5 7.3 28.5 11.2 28.5 19.8 16 27.5 16 27.5Z M7.6 17.3 h2.2 v3.2 h-2.2 z M11.1 15.3 h2.2 v5.2 h-2.2 z M14.6 13.3 h2.2 v7.2 h-2.2 z"/>
+    </svg>
+    Blogy
+    <span class="brand-sub">Standard</span>
+  </a>
+  <button class="theme-toggle" aria-label="Toggle light/dark theme">◐</button>
+</header>
+
+<div class="shell">
+  <p class="sec-head lift" style="--d:.05s">Categories</p>
+
+  <div class="cat-grid lift" style="--d:.12s">
+    <div class="cat-card" tabindex="0" role="button">
+      <div class="cat-accent" style="background:#d32f2f"></div>
+      <span class="cat-icon">✍️</span>
+      <span class="cat-name">Writing</span>
+      <span class="cat-count">12 posts</span>
+    </div>
+    <div class="cat-card" tabindex="0" role="button">
+      <div class="cat-accent" style="background:#2563eb"></div>
+      <span class="cat-icon">💻</span>
+      <span class="cat-name">Tech</span>
+      <span class="cat-count">8 posts</span>
+    </div>
+    <div class="cat-card" tabindex="0" role="button">
+      <div class="cat-accent" style="background:#059669"></div>
+      <span class="cat-icon">🌿</span>
+      <span class="cat-name">Lifestyle</span>
+      <span class="cat-count">15 posts</span>
+    </div>
+    <div class="cat-card" tabindex="0" role="button">
+      <div class="cat-accent" style="background:#d97706"></div>
+      <span class="cat-icon">✈️</span>
+      <span class="cat-name">Travel</span>
+      <span class="cat-count">6 posts</span>
+    </div>
+    <div class="cat-card" tabindex="0" role="button">
+      <div class="cat-accent" style="background:#dc2626"></div>
+      <span class="cat-icon">🍽️</span>
+      <span class="cat-name">Food</span>
+      <span class="cat-count">21 posts</span>
+    </div>
+    <div class="cat-card" tabindex="0" role="button">
+      <div class="cat-accent" style="background:#7c3aed"></div>
+      <span class="cat-icon">🎨</span>
+      <span class="cat-name">Art</span>
+      <span class="cat-count">9 posts</span>
+    </div>
+    <div class="cat-card" tabindex="0" role="button">
+      <div class="cat-accent" style="background:#ec4899"></div>
+      <span class="cat-icon">🎵</span>
+      <span class="cat-name">Music</span>
+      <span class="cat-count">14 posts</span>
+    </div>
+    <div class="cat-card" tabindex="0" role="button">
+      <div class="cat-accent" style="background:#0891b2"></div>
+      <span class="cat-icon">🔬</span>
+      <span class="cat-name">Science</span>
+      <span class="cat-count">5 posts</span>
+    </div>
+  </div>
+
+  <p class="sec-head lift" style="--d:.2s">Tabs</p>
+
+  <div class="circles-bar lift" style="--d:.28s">
+    <span class="circles-label">
+      <span class="circles-dot"></span>
+      Circles
+    </span>
+    <button class="circles-add" aria-label="Create new tab">+</button>
+  </div>
+
+  <footer class="foot lift" style="--d:.38s">
+    <span class="fmark">♥</span>
+    <p style="margin:.5rem 0 0">
+      Blogy · part of <a href="../../index.html">flove</a> ·
+      everything stays on your device.
+    </p>
+  </footer>
+</div>
+
+<script src="../appy/flove-theme.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.documentElement.classList.add('ready');
+});
+</script>
+</body>
+</html>

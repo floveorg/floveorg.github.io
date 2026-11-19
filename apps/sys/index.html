@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="author" content="Marc (marcflove)">
+<meta name="copyright" content="© 2026 Marc · CC BY-SA 4.0">
+<link rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">
+<meta name="description" content="Sys — the layer under every screen: identity, trust, suggestions, network, settings and the database home.">
+<meta name="theme-color" content="#0b0b0f">
+<title>Sys · the layer under every screen</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%238d89ff' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M10 23h17M37 23h17M10 41h17M37 41h17'/%3E%3Ccircle cx='32' cy='23' r='5'/%3E%3C/g%3E%3Ccircle cx='32' cy='41' r='5' fill='%2300f7a7'/%3E%3C/svg%3E">
+<style>
+  *{box-sizing:border-box}
+  :root{--bg:#0b0b0f;--ink:#e9eaf2;--muted:#a3a7b4;--line:#1e2133;--card:#11131a;--accent:#8d89ff;--signal:#00f7a7}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:
+    radial-gradient(900px 520px at 100% -10%,rgba(0,247,167,.09),transparent 55%),
+    radial-gradient(800px 520px at -10% 20%,rgba(141,137,255,.13),transparent 55%),
+    var(--bg);
+    color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;line-height:1.6}
+  .wrap{max-width:72rem;margin:0 auto;padding:3.2rem 1.4rem 4rem}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .top{display:flex;align-items:center;justify-content:flex-start;gap:1rem;margin-bottom:0;position:relative}
+  .brand-wrap{position:relative}
+  .brand{background:none;border:0;color:inherit;cursor:pointer;text-align:left;padding:0}
+  .brand{display:flex;align-items:center;gap:.7rem;font-weight:700;font-size:1.15rem}
+  .brand small{display:block;font-size:.62rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+  .bee{width:34px;height:34px;flex:none}
+  .lang{font-size:.66rem;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:.3rem .7rem;background:var(--card)}
+  h1{font-size:clamp(1.7rem,4vw,2.9rem);line-height:1.08;margin:0 0 .7rem;letter-spacing:-.02em}
+  .dot{color:var(--signal)}
+  .sub{color:var(--muted);max-width:82ch;margin:0 0 2rem;font-size:.95rem}
+  .sub-below{max-width:960px;margin:2rem auto 1.2rem;text-align:center}
+  .sub-below .line{display:block}
+  .diagramy{margin:0;border:0;border-radius:0;padding:0;background:none}
+  .dy-mini{width:100%;max-width:560px;height:auto;display:block;margin:0 auto}
+  .dy-mini [data-chip]{cursor:pointer}
+  .dy-mini [data-chip]:focus-visible{outline:2px solid var(--signal);outline-offset:2px;border-radius:8px}
+  .dy-trigger{display:block;margin:12px auto 0;background:none;border:1px solid var(--line);color:var(--muted);cursor:pointer;padding:5px 12px;border-radius:999px;font:inherit;font-size:.72rem}
+  .dy-trigger:hover{color:var(--ink);border-color:var(--accent)}
+  .dy-panel-head{justify-content:flex-end}
+  .dy-download{text-align:center;margin-top:10px}
+  .dy-download .btn{display:inline-block}
+  .dy-panel{margin-top:16px;border-top:1px dashed var(--line);padding-top:12px}
+  .dy-panel[hidden]{display:none}
+  .dy-panel-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;font-size:.8rem}
+  .dy-close{margin-left:auto;background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:4px 9px;cursor:pointer}
+  .dy-close:hover{border-color:var(--accent)}
+  .dy-thread{overflow:auto;max-height:74vh;border:1px solid var(--line);border-radius:12px;background:#0d0d14}
+  .dy-thread svg{min-width:760px;width:100%;height:auto;display:block}
+    .btn{border:1px solid var(--line);border-radius:999px;padding:.45rem .9rem;font-size:.75rem;background:var(--card);color:var(--ink)}
+  .btn:hover{border-color:var(--accent);text-decoration:none}
+  footer{margin-top:2.6rem;border-top:1px solid var(--line);padding-top:1rem;color:var(--muted);font-size:.72rem}
+  .brand-menu{position:absolute;top:calc(100% + 10px);left:0;z-index:20;min-width:230px;padding:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 16px 40px rgba(0,0,0,.45);display:flex;flex-direction:column}
+  .brand-menu[hidden]{display:none}
+  .brand-menu a,.brand-menu button{padding:8px 10px;border-radius:8px;color:var(--ink);font-size:.8rem;text-decoration:none;background:none;border:0;text-align:left;font:inherit;cursor:pointer}
+  .brand-menu a:hover,.brand-menu button:hover{background:rgba(141,137,255,.12);color:var(--signal);text-decoration:none}
+  .brand-menu .sep{height:1px;background:var(--line);margin:6px 4px}
+  .about-modal{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:1rem}
+  .about-modal[hidden]{display:none}
+  .about-back{position:absolute;inset:0;background:rgba(5,5,10,.72);backdrop-filter:blur(6px)}
+  .about-dialog{position:relative;width:min(680px,100%);background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.6);padding:18px 20px}
+  .about-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:10px}
+  .about-head strong{display:block;font-size:1rem}
+  .about-head span{display:block;color:var(--muted);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
+  .about-close{background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:4px 9px;cursor:pointer}
+  .about-slide{min-height:220px;padding:20px 4px}
+  .slide-k{font-size:.62rem;letter-spacing:.16em;color:var(--signal);text-transform:uppercase}
+  .about-slide h2{margin:.3rem 0 .6rem;font-size:1.35rem}
+  .about-slide p{color:var(--muted);font-size:.86rem;margin:0}
+  .about-foot{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:10px;color:var(--muted);font-size:.72rem}
+  .about-foot button{background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:4px 10px;cursor:pointer;margin-left:6px}
+  .about-foot button:disabled{opacity:.35;cursor:default}
+  .app-modal{position:fixed;inset:0;z-index:110;display:grid;place-items:center;padding:1rem}
+  .app-modal[hidden]{display:none}
+  .app-back{position:absolute;inset:0;background:rgba(5,5,10,.78);backdrop-filter:blur(8px)}
+  .app-dialog{position:relative;width:min(720px,100%);max-height:88vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:0 30px 80px rgba(0,0,0,.6);padding:20px 22px;display:flex;flex-direction:column;gap:14px}
+  .app-head{display:flex;align-items:flex-start;gap:12px;border-bottom:1px solid var(--line);padding-bottom:12px}
+  .app-icon{width:44px;height:44px;flex:none;border-radius:12px;border:1px solid var(--line);display:grid;place-items:center;font-size:1.15rem;color:var(--signal);background:rgba(141,137,255,.08)}
+  .app-head h2{margin:0;font-size:1.3rem;line-height:1.15}
+  .app-tag{margin:3px 0 0;color:var(--muted);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase}
+  .app-close{margin-left:auto;background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:4px 9px;cursor:pointer}
+  .app-close:hover{border-color:var(--accent)}
+  .app-desc{margin:0;color:var(--muted);font-size:.86rem}
+  .app-captions{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+  .app-captions li{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:rgba(255,255,255,.02);color:var(--muted);font-size:.8rem}
+  .app-captions li::before{content:"·";color:var(--signal);margin-right:7px}
+  .app-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding-top:12px}
+  .app-cat{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .app-foot .btn{margin-left:auto;text-decoration:none;display:inline-block}
+  @media(max-width:700px){.wrap{padding:2rem 1rem 3rem}.dy-thread svg{min-width:680px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand-wrap">
+      <button class="brand" type="button" id="brandMenuBtn" aria-expanded="false" aria-controls="brandMenu">
+        <svg class="bee" viewBox="0 0 64 64" fill="none" aria-hidden="true"><g stroke="#8d89ff" stroke-width="2.4"><line x1="32" y1="32" x2="17" y2="20"/><line x1="32" y1="32" x2="48" y2="21"/><line x1="32" y1="32" x2="27" y2="49"/></g><g fill="#8d89ff"><circle cx="17" cy="20" r="3"/><circle cx="48" cy="21" r="3"/><circle cx="27" cy="49" r="3"/></g><circle cx="32" cy="32" r="6" fill="#00f7a7"/></svg>
+        <div>sys <small>flove</small></div>
+      </button>
+      <div class="brand-menu" id="brandMenu" hidden>
+        <a href="index.html">Home</a>
+        <button type="button" id="aboutBtn" aria-haspopup="dialog">About</button>
+        <div class="sep"></div>
+        <a href="central/index.html">Central</a>
+        <a href="sety/index.html">Sety</a>
+        <a href="../../index.html">flove.org</a>
+        <a href="../../development/index.html">development</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+      </main>
+</div>
+<div class="about-modal" id="aboutModal" hidden>
+  <div class="about-back" id="aboutBack"></div>
+  <div class="about-dialog" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+    <div class="about-head">
+      <div><strong id="aboutTitle">About decentral</strong><span>Intro tour · 10 slides · pending</span></div>
+      <button class="about-close" type="button" id="aboutClose" aria-label="Close About">✕</button>
+    </div>
+    <div class="about-slide" id="aboutSlide"></div>
+    <div class="about-foot">
+      <span id="aboutCount">1 / 10</span>
+      <div><button type="button" id="aboutPrev">←</button><button type="button" id="aboutNext">→</button></div>
+    </div>
+  </div>
+</div>
+<div class="app-modal" id="appModal" hidden>
+  <div class="app-back" data-app-close></div>
+  <div class="app-dialog" role="dialog" aria-modal="true" aria-labelledby="appTitle">
+    <div class="app-head">
+      <div class="app-icon" id="appIcon" aria-hidden="true">◈</div>
+      <div>
+        <h2 id="appTitle">Authy</h2>
+        <p class="app-tag" id="appTag"></p>
+      </div>
+      <button class="app-close" type="button" data-app-close aria-label="Close app intro">✕</button>
+    </div>
+    <p class="app-desc" id="appDesc"></p>
+    <ul class="app-captions" id="appCaptions"></ul>
+    <div class="app-foot">
+      <span class="app-cat" id="appCat"></span>
+      <a class="btn" id="appVisit" href="#">Visit →</a>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var brandBtn=document.getElementById('brandMenuBtn');
+  var brandMenu=document.getElementById('brandMenu');
+  function closeBrand(){ brandMenu.hidden=true; brandBtn.setAttribute('aria-expanded','false'); }
+  brandBtn.addEventListener('click',function(e){ e.stopPropagation(); var open=brandMenu.hidden; brandMenu.hidden=!open; brandBtn.setAttribute('aria-expanded',String(open)); });
+  document.addEventListener('click',function(e){ if(!brandMenu.hidden && !brandMenu.contains(e.target) && e.target!==brandBtn) closeBrand(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeBrand(); });
+  var aboutBtn=document.getElementById('aboutBtn'), aboutModal=document.getElementById('aboutModal'), aboutBack=document.getElementById('aboutBack'), aboutClose=document.getElementById('aboutClose'), aboutSlide=document.getElementById('aboutSlide'), aboutCount=document.getElementById('aboutCount'), aboutPrev=document.getElementById('aboutPrev'), aboutNext=document.getElementById('aboutNext');
+  var slides=[
+    ['Identity','Why decentral: identity, data and apps belong to the people who run them.'],
+    ['Authy','One identity root, signed proofs and scoped sessions.'],
+    ['Telegram presence','L2 presence: linked and usable, without publishing the handle.'],
+    ['MyNet','The social surface Telegram enables: people, circles, feed.'],
+    ['MyFamily','The full record that MyNet simplifies.'],
+    ['Browsy','The extension that keeps Local data and pulls peers directly.'],
+    ['Local peers','Encrypted per recipient, session by session.'],
+    ['Wizy','Local derivation and explanations.'],
+    ['Social / Nety','Only an optional Social card; P never leaves.'],
+    ['Next steps','This intro tour is pending to write.']
+  ];
+  var slideIndex=0;
+  function renderSlide(){
+    var s=slides[slideIndex];
+    aboutSlide.innerHTML='<span class="slide-k">Slide '+(slideIndex+1)+' of 10</span><h2>'+s[0]+'</h2><p>'+s[1]+'</p>';
+    aboutCount.textContent=(slideIndex+1)+' / 10';
+    aboutPrev.disabled=slideIndex===0; aboutNext.disabled=slideIndex===slides.length-1;
+  }
+  function openAbout(){
+    slideIndex=0; renderSlide();
+    aboutModal.hidden=false; document.body.style.overflow='hidden';
+    aboutClose.focus();
+  }
+  function closeAbout(){
+    aboutModal.hidden=true; document.body.style.overflow='';
+    aboutBtn.focus();
+  }
+  aboutBtn.addEventListener('click',function(e){e.stopPropagation(); closeBrand(); openAbout();});
+  aboutClose.addEventListener('click',closeAbout);
+  aboutBack.addEventListener('click',closeAbout);
+  aboutPrev.addEventListener('click',function(){ if(slideIndex>0){slideIndex--;renderSlide();} });
+  aboutNext.addEventListener('click',function(){ if(slideIndex<slides.length-1){slideIndex++;renderSlide();} });
+  document.addEventListener('keydown',function(e){ if(!aboutModal.hidden && e.key==='Escape') closeAbout(); });
+  var apps={
+    authy:{name:'Authy',icon:'◈',tag:'identity · self to verified',cat:'Personal',desc:'One identity root; a bare link stays Self; risa or the Authy claim reaches L3.',captions:['L1 Self · L2 email · L3 Telegram verified · L4 phone.','A bare Telegram link is not a level; it stays Self.','Grants, sessions and recovery are signed here; the root never re-derives.'],href:'authy/index.html'},
+    telegram:{name:'Telegram',icon:'✈',tag:'redirect · claim',cat:'Personal',desc:'A bare link stays Self; risa redirects to the Authy ID or the nonce+DM claim verifies it.',captions:['Authy keeps the proof, not the handle.','risa is a redirect to the Authy ID, not a second root.','Verified Telegram L3 enables MyNet; it is not a second identity.'],href:'authy/index.html#risa'},
+    mynet:{name:'MyNet',icon:'◎',tag:'people · groups · feed',cat:'Local',desc:'The local social surface verified Telegram enables: people, flat groups and feed.',captions:['Uses the MyFamily 7×5 profile → 5 type percentages.','Stored as Local when shared; Personal stays P.','Groups are flat, owner-managed and have no moderation.'],href:'../appy/appy-basic.html#mynet'},
+    myfamily:{name:'MyFamily',icon:'⌂',tag:'person record',cat:'Personal',desc:'The full person record; a new person defaults to P, and Wizy reads it locally.',captions:['P by default; L when shared; S is Social = Public.','The profile is 7 areas × 5 replies → 5 percentages.','MyNet builds flat local groups from these same people.'],href:'../trusty/myfamily.html'},
+    browsy:{name:'Browsy',icon:'◐',tag:'entry + host',cat:'Local',desc:'The extension that hosts Authy and Wizy, keeps Local data and pulls peers directly.',captions:['Entry: popup and page bridge; Host: vault, records, groups, Wizy.','Keeps the record as Local; peers pull it locally, session by session.','Nety receives only an optional Social card.'],href:'browsy/index.html'},
+    wizy:{name:'Wizy',icon:'◇',tag:'JSON manager',cat:'Local',desc:'The JSON manager inside Browsy: merges P + L + S and derives D.',captions:['Reads the vault and merges Personal + Local + Social.','Derives D locally by default; D3 needs explicit consent.','Shows which classes and paths it used.'],href:'wizy/index.html'},
+    nety:{name:'Nety',icon:'≋',tag:'Social layer',cat:'Social',desc:'The network that carries only the Social layer.',captions:['Public or group-visible bundles; P and Local never go through it.','Social reads and web-of-trust ranking, never the permission authority.','Toggle off means zero Nety traffic.'],href:'nety/index.html'}
+  };
+  var appModal=document.getElementById('appModal');
+  var appTitle=document.getElementById('appTitle');
+  var appTag=document.getElementById('appTag');
+  var appDesc=document.getElementById('appDesc');
+  var appCaptions=document.getElementById('appCaptions');
+  var appCat=document.getElementById('appCat');
+  var appVisit=document.getElementById('appVisit');
+  var appIcon=document.getElementById('appIcon');
+  var appLast=null;
+  function closeApp(){
+    if(appModal.hidden) return;
+    appModal.hidden=true;
+    document.body.style.overflow='';
+    if(appLast){ appLast.focus(); appLast=null; }
+  }
+  function openApp(key,chip){
+    var a=apps[key]; if(!a) return;
+    appLast=chip||null;
+    appIcon.textContent=a.icon;
+    appTitle.textContent=a.name;
+    appTag.textContent=a.tag;
+    appDesc.textContent=a.desc;
+    appCat.textContent=a.cat;
+    appCaptions.innerHTML='';
+    a.captions.forEach(function(c){ var li=document.createElement('li'); li.textContent=c; appCaptions.appendChild(li); });
+    appVisit.textContent='Visit '+a.name+' →';
+    appVisit.href=a.href;
+    appModal.hidden=false;
+    document.body.style.overflow='hidden';
+    appModal.querySelector('.app-close').focus();
+  }
+  appModal.querySelectorAll('[data-app-close]').forEach(function(el){ el.addEventListener('click',closeApp); });
+  document.addEventListener('keydown',function(e){ if(!appModal.hidden && e.key==='Escape') closeApp(); });
+  document.querySelectorAll('.dy-mini [data-chip]').forEach(function(g){
+    var chip=g.getAttribute('data-chip');
+    if(!apps[chip]) return;
+    g.setAttribute('role','button');
+    g.setAttribute('tabindex','0');
+    g.setAttribute('aria-haspopup','dialog');
+    g.setAttribute('aria-label', apps[chip].name);
+    function go(){ openApp(chip,g); }
+    g.addEventListener('click',go);
+    g.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); } });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>keyboard harness</title>
+<style>body{margin:0}iframe{width:1200px;height:900px;border:0}</style>
+<pre id="result">pending</pre>
+<iframe id="frame"></iframe>
+<script>
+/* Keyboard walk-through: for every element we hand keyboard duties to (a label
+   with for+tabindex, or a non-button with role=button/menuitem/tab), focus it
+   and press Enter, then Space. A delegated Enter/Space handler activates the
+   element by calling .click(), so a click event is the proof it works. */
+const target = new URLSearchParams(location.search).get('target');
+const frame = document.getElementById('frame');
+const out = document.getElementById('result');
+
+let done = false;
+frame.addEventListener('load', () => { if (done) return; done = true; run(); });
+frame.src = target;
+
+function run(){
+ try{
+  const doc = frame.contentDocument;
+  if (!doc) { out.textContent = 'ERR no document'; return; }
+  // a stray alert() would freeze the headless renderer; the app's feedback is
+  // not what this walk-through measures
+  try { frame.contentWindow.alert = function(){}; frame.contentWindow.confirm = function(){ return false; }; } catch (e) {}
+  const seen = new WeakSet();
+  const clicked = new WeakSet();
+  doc.addEventListener('click', (e) => { clicked.add(e.target); }, true);
+
+  const sels = [
+    'label[for][tabindex]',
+    'a[role="button"][tabindex]',
+    'a[role="menuitem"][tabindex]',
+    '[role="tab"][tabindex]',
+    '[role="button"][tabindex]:not(a):not(button):not(label)'
+  ];
+  const fail = [], ok = [];
+  for (const sel of sels) {
+    doc.querySelectorAll(sel).forEach((el) => {
+      if (seen.has(el)) return;
+      seen.add(el);
+      if (el.hasAttribute('disabled')) return;
+      if (el.tagName === 'A') {                       // real links navigate; the browser owns them
+        const href = el.getAttribute('href') || '';
+        if (href && href !== '#' && !href.startsWith('#') && !href.startsWith('javascript:')) return;
+      }
+      if (el.getClientRects().length === 0) return;      // not rendered
+      let activated = false, focusable = false;
+      try {
+        focusable = true;
+        for (const key of ['Enter', ' ']) {
+          el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+          if (clicked.has(el)) { activated = true; break; }
+        }
+      } catch (e) { /* record below */ }
+      const tag = el.tagName.toLowerCase();
+      const name = el.id ? '#' + el.id : '.' + String(el.className || '').trim().split(/\s+/).join('.');
+      (activated ? ok : fail).push(`${sel} ${tag}${name}`);
+    });
+  }
+  out.textContent = JSON.stringify({ total: ok.length + fail.length, ok: ok.length, fail }, null, 1);
+  document.title = 'done';
+ } catch (e) { out.textContent = 'ERR ' + e.message; }
+}
+</script>

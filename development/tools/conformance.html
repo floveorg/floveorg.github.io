@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Runtime conformance · FLOVE development</title>
+<style>
+  :root{
+    --bg:#0b1020; --panel:#131a2e; --panel2:#0f1526; --line:#26314f;
+    --ink:#e8edf8; --dim:#9aa8c4; --ok:#38d39f; --bad:#ff6b6b;
+    --warn:#f5b463; --info:#63b3ff; --accent:#a78bfa;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--sans)}
+  header{padding:26px clamp(16px,4vw,48px) 10px}
+  h1{margin:0 0 6px;font-size:clamp(1.3rem,2.4vw,1.9rem);letter-spacing:-.02em}
+  h1 .tag{font:600 .6rem/1 var(--mono);vertical-align:middle;color:#0b1020;
+    background:var(--warn);border-radius:999px;padding:4px 8px;margin-left:8px}
+  .lede{max-width:78ch;color:var(--dim);margin:0 0 16px}
+  .lede code,td code{font-family:var(--mono);font-size:.86em;color:var(--warn)}
+  .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 12px}
+  button,select{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:10px 14px;min-height:42px;cursor:pointer}
+  button:hover:not(:disabled),select:hover{border-color:var(--accent)}
+  button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--info);outline-offset:2px}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  #run{background:linear-gradient(135deg,#f5b463,#ed8aa6);color:#241022;border:0;font-weight:700}
+  #stop{border-color:var(--bad);color:#ffd7d7}
+  a{color:var(--info)}
+  #progress{font-family:var(--mono);font-size:.8rem;color:var(--dim);margin:0 0 18px;min-height:1.4em}
+  .note{border:1px solid var(--line);border-left:4px solid var(--warn);background:var(--panel2);
+    border-radius:0 10px 10px 0;padding:12px 14px;margin:0 clamp(16px,4vw,48px) 18px;color:var(--dim)}
+  main{padding:0 clamp(16px,4vw,48px) 60px}
+  .wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel2)}
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  caption{text-align:left;padding:14px 16px;color:var(--dim);font-size:.82rem}
+  th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  th{font:600 .7rem/1.4 var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--dim)}
+  tbody tr:hover{background:rgba(167,139,250,.06)}
+  td.app{font-weight:600;white-space:nowrap}
+  td.path{font-family:var(--mono);font-size:.76rem;color:var(--dim);word-break:break-all}
+  .pill{display:inline-block;font:600 .68rem/1 var(--mono);border-radius:999px;padding:5px 9px;white-space:nowrap}
+  .pill.pass{background:rgba(56,211,159,.14);color:var(--ok)}
+  .pill.fail{background:rgba(255,107,107,.14);color:var(--bad)}
+  .pill.legacy{background:rgba(245,180,99,.14);color:var(--warn)}
+  .pill.none,.pill.idle{background:rgba(154,168,196,.13);color:var(--dim)}
+  .pill.error,.pill.timeout{background:rgba(255,107,107,.14);color:var(--bad)}
+  .counts{display:flex;flex-wrap:wrap;gap:14px;font-family:var(--mono);font-size:.78rem;color:var(--dim);margin:0 0 12px}
+  .counts b{color:var(--ink)}
+  td.num{font-family:var(--mono);text-align:right;white-space:nowrap}
+  .checks{list-style:none;margin:0;padding:0;font-family:var(--mono);font-size:.76rem}
+  .checks li{padding:3px 0;color:var(--dim)}
+  .checks li.critical.ok{color:var(--ok)}
+  .checks li.critical.bad{color:var(--bad)}
+  .checks li.advisory.bad{color:var(--warn)}
+  .checks .d{color:var(--dim);opacity:.75;margin-left:8px}
+  details summary{cursor:pointer;color:var(--info);font-size:.8rem}
+  .empty{padding:26px 16px;color:var(--dim)}
+  html[data-lang="en"] .es,html[data-lang="es"] .en{display:none}
+  @media (max-width:640px){th,td{padding:8px}.path{display:none}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Runtime conformance <span class="tag">DEV</span></h1>
+  <p class="lede">
+    <span class="en">Loads every app from <code>tools/routing.json</code> in a hidden iframe and calls
+      <code>window.flovePortrait.conformance()</code>: validate · row parity · blob name/MIME · empty-envelope merge.
+      Nothing is written — the merge check uses a zero-row payload.</span>
+    <span class="es">Carga cada app de <code>tools/routing.json</code> en un iframe oculto y llama a
+      <code>window.flovePortrait.conformance()</code>: validación · paridad de filas · nombre/MIME del blob · merge con sobre vacío.
+      No escribe nada: la prueba de merge usa un payload sin filas.</span>
+  </p>
+  <div class="bar">
+    <button type="button" id="run"><span class="en">Run all</span><span class="es">Ejecutar todo</span></button>
+    <button type="button" id="stop" disabled><span class="en">Stop</span><span class="es">Parar</span></button>
+    <button type="button" id="export"><span class="en">Export report</span><span class="es">Exportar informe</span></button>
+    <select id="lang" aria-label="Language / Idioma">
+      <option value="en" selected>English</option>
+      <option value="es">Español</option>
+    </select>
+    <a href="../index.html#apps"><span class="en">development index · Apps</span><span class="es">índice de desarrollo · Apps</span></a>
+  </div>
+  <p id="progress" aria-live="polite">Idle · 0 apps</p>
+</header>
+
+<div class="note" id="protocol-note" hidden>
+  <span class="en"><b>Serve this over HTTP.</b> Browsers treat <code>file://</code> frames as opaque origins,
+  so the harness cannot read each app's <code>flovePortrait</code>. From the repo root run
+  <code>python3 -m http.server 8080</code> and open <code>http://localhost:8080/development/tools/conformance.html</code>.</span>
+  <span class="es"><b>Sirve esta página por HTTP.</b> El navegador trata los iframes <code>file://</code> como orígenes opacos
+  y el arnés no puede leer <code>flovePortrait</code>. Desde la raíz del repo ejecuta
+  <code>python3 -m http.server 8080</code> y abre <code>http://localhost:8080/development/tools/conformance.html</code>.</span>
+</div>
+
+<main>
+  <div class="counts" id="counts"></div>
+  <div class="wrap">
+    <table id="report">
+      <caption>
+        <span class="en">Conformance is advisory except for critical checks: schema, rows, duplicate keys/items, blank items, consult subset, validate.</span>
+        <span class="es">La conformidad es orientativa salvo los chequeos críticos: esquema, filas, claves/ítems duplicados, ítems vacíos, subconjunto de consult y validate.</span>
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">App</th>
+          <th scope="col">Status</th>
+          <th scope="col">Critical</th>
+          <th scope="col">Advisory</th>
+          <th scope="col">Coverage</th>
+          <th scope="col">Path</th>
+        </tr>
+      </thead>
+      <tbody id="rows"><tr><td colspan="6" class="empty">—</td></tr></tbody>
+    </table>
+  </div>
+</main>
+
+<iframe id="frame" hidden title="App under test"></iframe>
+
+<script>
+(function(){
+  var ROOT = '../../';
+  var frame = document.getElementById('frame');
+  var rowsEl = document.getElementById('rows');
+  var progressEl = document.getElementById('progress');
+  var countsEl = document.getElementById('counts');
+  var runBtn = document.getElementById('run');
+  var stopBtn = document.getElementById('stop');
+  var exportBtn = document.getElementById('export');
+  var langSel = document.getElementById('lang');
+  var apps = [];
+  var results = [];
+  var expanded = {};
+  var running = false;
+  var stopped = false;
+  var lang = 'en';
+
+  var T = {
+    en: {
+      idle: 'Idle · 0 apps', run: 'Run all', stop: 'Stop', export: 'Export report',
+      noApps: 'No apps loaded yet.', app: 'App', status: 'Status', critical: 'Critical',
+      advisory: 'Advisory', coverage: 'Coverage', path: 'Path', checks: 'checks',
+      pass: 'PASS', fail: 'FAIL', legacy: 'LEGACY selfTest', none: 'no portrait API',
+      timeout: 'timeout', error: 'ERROR', cross: 'cross-origin', running: 'Running',
+      done: 'Done', stopped: 'Stopped', of: 'of', appsWord: 'apps', report: 'report',
+      detail: 'Checks', noChecks: 'No checks recorded.', confirm: 'Download this report as JSON?'
+    },
+    es: {
+      idle: 'Inactivo · 0 apps', run: 'Ejecutar todo', stop: 'Parar', export: 'Exportar informe',
+      noApps: 'Todavía no hay apps cargadas.', app: 'App', status: 'Estado', critical: 'Críticos',
+      advisory: 'Orientativos', coverage: 'Cobertura', path: 'Ruta', checks: 'chequeos',
+      pass: 'PASA', fail: 'FALLA', legacy: 'LEGACY selfTest', none: 'sin API de retrato',
+      timeout: 'tiempo agotado', error: 'ERROR', cross: 'origen cruzado', running: 'Ejecutando',
+      done: 'Terminado', stopped: 'Parado', of: 'de', appsWord: 'apps', report: 'informe',
+      detail: 'Chequeos', noChecks: 'Sin chequeos registrados.', confirm: '¿Descargar este informe como JSON?'
+    }
+  };
+  function t(k){ return (T[lang] || T.en)[k] || k; }
+
+  document.documentElement.dataset.lang = lang;
+  try { lang = localStorage.getItem('flove:lang') === 'es' ? 'es' : 'en'; } catch (e) {}
+  langSel.value = lang;
+  document.documentElement.dataset.lang = lang;
+  langSel.addEventListener('change', function(){
+    lang = langSel.value;
+    document.documentElement.dataset.lang = lang;
+    try { localStorage.setItem('flove:lang', lang); } catch (e) {}
+    render();
+    updateProgress();
+  });
+
+  if (location.protocol === 'file:') {
+    document.getElementById('protocol-note').hidden = false;
+  }
+
+  function pill(status){
+    var cls = status, label = status;
+    if (status === 'pass' || status === 'fail' || status === 'legacy-pass' || status === 'legacy-fail') {
+      cls = status.indexOf('legacy') === 0 ? 'legacy' : status;
+      label = status.indexOf('legacy') === 0 ? t('legacy') : t(status);
+    } else if (status === 'none') { label = t('none'); }
+    else if (status === 'error') { label = t('error'); }
+    else if (status === 'timeout') { label = t('timeout'); }
+    else if (status === 'cross-origin') { cls = 'error'; label = t('cross'); }
+    else { cls = 'idle'; }
+    return '<span class="pill ' + cls + '">' + label + '</span>';
+  }
+
+  function criticalCount(r){
+    if (!r.checks) return '—';
+    var bad = r.checks.filter(function(c){ return c.level === 'critical' && !c.ok; }).length;
+    var total = r.checks.filter(function(c){ return c.level === 'critical'; }).length;
+    return bad ? bad + '/' + total : '0/' + total;
+  }
+  function advisoryCount(r){
+    if (!r.checks) return '—';
+    var bad = r.checks.filter(function(c){ return c.level === 'advisory' && !c.ok; }).length;
+    var total = r.checks.filter(function(c){ return c.level === 'advisory'; }).length;
+    return bad ? bad + '/' + total : '0/' + total;
+  }
+  function coverage(r){
+    if (!r.coverage) return '—';
+    return r.coverage.mapped + '/' + r.coverage.total;
+  }
+
+  function checkList(r){
+    if (!r.checks || !r.checks.length) return '<p class="empty">' + t('noChecks') + '</p>';
+    return '<ul class="checks">' + r.checks.map(function(c){
+      var cls = c.level + ' ' + (c.ok ? 'ok' : 'bad');
+      return '<li class="' + cls + '">' + (c.ok ? '✓ ' : '✗ ') + c.name +
+             (c.detail ? '<span class="d">' + c.detail + '</span>' : '') + '</li>';
+    }).join('') + '</ul>';
+  }
+
+  function render(){
+    if (!results.length){
+      rowsEl.innerHTML = '<tr><td colspan="6" class="empty">' + t('noApps') + '</td></tr>';
+      countsEl.innerHTML = '';
+      return;
+    }
+    var counts = {pass:0, fail:0, legacy:0, none:0, error:0};
+    results.forEach(function(r){
+      if (r.status === 'pass') counts.pass++;
+      else if (r.status === 'fail') counts.fail++;
+      else if (r.status.indexOf('legacy') === 0) counts.legacy++;
+      else if (r.status === 'none') counts.none++;
+      else counts.error++;
+    });
+    countsEl.innerHTML =
+      '<span><b>' + counts.pass + '</b> ' + t('pass').toLowerCase() + '</span>' +
+      '<span><b>' + counts.fail + '</b> ' + t('fail').toLowerCase() + '</span>' +
+      '<span><b>' + counts.legacy + '</b> ' + t('legacy').toLowerCase() + '</span>' +
+      '<span><b>' + counts.none + '</b> ' + t('none') + '</span>' +
+      '<span><b>' + counts.error + '</b> ' + t('error').toLowerCase() + '</span>';
+    var html = results.map(function(r){
+      var key = r.id;
+      var open = !!expanded[key];
+      var detailId = 'd-' + key;
+      var main = '<tr>' +
+        '<td class="app">' + r.name + '</td>' +
+        '<td>' + pill(r.status) + (r.detail ? '<br><small class="d">' + r.detail + '</small>' : '') + '</td>' +
+        '<td class="num">' + criticalCount(r) + '</td>' +
+        '<td class="num">' + advisoryCount(r) + '</td>' +
+        '<td class="num">' + coverage(r) + '</td>' +
+        '<td class="path"><code>' + r.url + '</code><br>' +
+          '<button type="button" data-toggle="' + key + '" aria-expanded="' + open + '" aria-controls="' + detailId + '">' +
+          (open ? '− ' : '+ ') + t('checks') + '</button></td>' +
+        '</tr>';
+      var detail = open ? '<tr id="' + detailId + '"><td colspan="6">' + checkList(r) + '</td></tr>' : '';
+      return main + detail;
+    }).join('');
+    rowsEl.innerHTML = html;
+    Array.prototype.forEach.call(rowsEl.querySelectorAll('[data-toggle]'), function(b){
+      b.addEventListener('click', function(){
+        var k = b.getAttribute('data-toggle');
+        expanded[k] = !expanded[k];
+        render();
+      });
+    });
+  }
+
+  function updateProgress(){
+    if (!apps.length){ progressEl.textContent = t('idle'); return; }
+    var done = results.length;
+    progressEl.textContent = (running ? t('running') : (stopped ? t('stopped') : t('done'))) +
+      ' · ' + done + ' ' + t('of') + ' ' + apps.length + ' ' + t('appsWord');
+  }
+
+  function loadApps(){
+    return fetch(ROOT + 'tools/routing.json', {cache:'no-store'})
+      .then(function(r){
+        if (!r.ok) throw new Error('routing.json ' + r.status);
+        return r.json();
+      })
+      .then(function(data){
+        return (data.apps || []).filter(function(a){
+          return a && a.url && /\.html$/i.test(a.url);
+        }).map(function(a){
+          return {id:String(a.id || a.url), name:String(a.name || a.id || a.url),
+                  url:String(a.url), category:String(a.category || '')};
+        });
+      });
+  }
+
+  function testApp(app){
+    return new Promise(function(resolve){
+      var done = false;
+      var timer = setTimeout(function(){ finish({status:'timeout'}); }, 8000);
+      function finish(res){
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        frame.onload = null;
+        frame.removeAttribute('src');
+        resolve(res);
+      }
+      frame.onload = function(){
+        var win, api;
+        try { win = frame.contentWindow; api = win.flovePortrait; }
+        catch (e) { return finish({status:'cross-origin', detail:'file:// frames are opaque — serve over http'}); }
+        if (!api) return finish({status:'none'});
+        try {
+          if (typeof api.conformance === 'function'){
+            var out = api.conformance();
+            return finish({
+              status: out && out.ok ? 'pass' : 'fail',
+              mode: 'conformance',
+              ok: !!(out && out.ok),
+              checks: (out && out.checks) || [],
+              errors: (out && out.errors) || [],
+              advisories: (out && out.advisories) || [],
+              coverage: out && out.coverage
+            });
+          }
+          if (typeof api.selfTest === 'function'){
+            var st = api.selfTest();
+            return finish({
+              status: st && st.ok ? 'legacy-pass' : 'legacy-fail',
+              mode: 'selfTest',
+              ok: !!(st && st.ok),
+              checks: [],
+              errors: (st && st.errors) || [],
+              advisories: [],
+              coverage: null,
+              detail: 'selfTest only — run inject-conformance.py'
+            });
+          }
+          return finish({status:'none'});
+        } catch (e) {
+          finish({status:'error', detail:String(e && e.message || e)});
+        }
+      };
+      frame.src = ROOT + app.url + '?conformance=1';
+    });
+  }
+
+  var params = new URLSearchParams(location.search);
+  var only = (params.get('app') || '').toLowerCase();
+  var skip = (params.get('skip') || '').toLowerCase().split(',').filter(Boolean);
+
+  async function runAll(){
+    if (running) return;
+    running = true; stopped = false; results = []; expanded = {};
+    runBtn.disabled = true; stopBtn.disabled = false;
+    try {
+      apps = await loadApps();
+      if (only) apps = apps.filter(function(a){
+        return a.id.toLowerCase() === only || a.name.toLowerCase() === only;
+      });
+      if (skip.length) apps = apps.filter(function(a){
+        return skip.indexOf(a.id.toLowerCase()) === -1;
+      });
+    }
+    catch (e) {
+      progressEl.textContent = String(e && e.message || e);
+      running = false; runBtn.disabled = false; stopBtn.disabled = true;
+      return;
+    }
+    render(); updateProgress();
+    for (var i = 0; i < apps.length; i++){
+      if (stopped) break;
+      progressEl.textContent = (i + 1) + ' ' + t('of') + ' ' + apps.length + ' · ' + apps[i].id;
+      var res = await testApp(apps[i]);
+      var merged = Object.assign({}, apps[i], res);
+      results.push(merged);
+      expanded[merged.id] = params.has('expand');
+      render();
+      await new Promise(function(r){ setTimeout(r, 25); });
+    }
+    running = false; runBtn.disabled = false; stopBtn.disabled = true;
+    render(); updateProgress();
+  }
+
+  runBtn.addEventListener('click', runAll);
+  stopBtn.addEventListener('click', function(){ stopped = true; });
+  exportBtn.addEventListener('click', function(){
+    var report = { generatedAt: new Date().toISOString(), results: results };
+    var blob = new Blob([JSON.stringify(report, null, 2)], {type:'application/json;charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'conformance-report.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  render();
+  updateProgress();
+  if (params.has('auto')) runAll();
+})();
+</script>
+</body>
+</html>

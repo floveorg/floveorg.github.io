@@ -1,0 +1,22 @@
+sequenceDiagram
+  autonumber
+  participant P as Person
+  participant C as Central
+  participant G as Grant
+  participant V as Guest
+  P->>C: share a record
+  C-->>P: choose scope + expiry
+  P->>C: scope · expiry
+  C->>G: sign a view
+  G-->>C: signed
+  C-->>V: signed, scoped view
+  V->>C: request the row
+  C->>G: verify
+  G-->>C: valid
+  C-->>V: decrypt one view
+  Note over C,V: the record never becomes public
+  alt expired
+    G-->>C: expired
+    C-->>V: denied
+  end
+  Note over P,V: private stays local

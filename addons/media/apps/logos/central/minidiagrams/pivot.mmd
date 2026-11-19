@@ -1,0 +1,23 @@
+sequenceDiagram
+  autonumber
+  participant A as App A
+  participant B as App B
+  participant D as App C
+  participant C as Central
+  participant I as Index
+  participant P as Person
+  A->>C: record
+  B->>C: record
+  D->>C: record
+  C->>C: normalize the shape
+  C->>I: group by shape
+  I-->>C: one key per record
+  Note over C,I: many records, one point
+  P->>C: open the index
+  alt duplicate key
+    C->>C: merge · keep the older
+    C->>I: rewrite one row
+  end
+  C-->>P: one feed
+  I-->>P: one calm surface
+  Note over C,P: the pivot is a place, not an app

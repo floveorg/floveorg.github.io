@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Marc — Risa Liberada</title>
+  <style>
+    :root {
+      --ink: #2a1810;
+      --paper: #faf6f1;
+      --marigold: #ffb020;
+      --magenta: #e63946;
+      --sage: #a8d5ba;
+      --sky: #89c4e1;
+      --purple: #9b5de5;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    .profile {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    
+    /* Header */
+    .back {
+      display: inline-block;
+      margin-bottom: 24px;
+      color: var(--magenta);
+      text-decoration: none;
+    }
+    .back:hover { text-decoration: underline; }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: var(--marigold);
+      display: grid;
+      place-items: center;
+      font-size: 2.5rem;
+      margin: 0 auto 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.2);
+      position: relative;
+    }
+    .avatar-ring {
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 3px solid var(--marigold);
+      pointer-events: none;
+    }
+    .claimed .avatar-ring { border-color: var(--sage); }
+    .name {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .key {
+      font-size: .875rem;
+      color: #666;
+      margin-bottom: 8px;
+    }
+    .bio {
+      font-size: .9rem;
+      color: #444;
+      margin-bottom: 12px;
+      font-style: italic;
+    }
+    .links {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .link {
+      font-size: .8rem;
+      color: var(--magenta);
+      text-decoration: none;
+    }
+    .link:hover { text-decoration: underline; }
+    
+    /* Claim status */
+    .claim-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: .75rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    .claim-status.claimed {
+      background: var(--sage);
+      color: var(--ink);
+    }
+    .claim-status.unclaimed {
+      background: var(--magenta);
+      color: #fff;
+    }
+    
+    /* Upgrade button */
+    .upgrade-btn {
+      display: block;
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto 32px;
+      padding: 16px 24px;
+      background: linear-gradient(135deg, var(--magenta), var(--purple));
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(230,57,70,.3);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .upgrade-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(230,57,70,.4);
+    }
+    .upgrade-btn small {
+      display: block;
+      font-size: .75rem;
+      font-weight: 400;
+      opacity: .9;
+      margin-top: 4px;
+    }
+    .upgrade-btn.claimed {
+      background: var(--sage);
+      color: var(--ink);
+      box-shadow: none;
+    }
+    
+    /* Stats */
+    .stats {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      margin-bottom: 32px;
+    }
+    .stat {
+      text-align: center;
+    }
+    .stat-num {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--magenta);
+    }
+    .stat-label {
+      font-size: .7rem;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    
+    /* Avatars / subprofiles */
+    .avatars-section {
+      margin-bottom: 32px;
+    }
+    .section-title {
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #888;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .avatars-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .avatar-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: #fff;
+      border: 2px solid var(--ink);
+      border-radius: 24px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .avatar-chip:hover {
+      background: var(--ink);
+      color: #fff;
+    }
+    .avatar-chip.active {
+      background: var(--ink);
+      color: #fff;
+    }
+    .avatar-chip .emoji {
+      font-size: 1.2rem;
+    }
+    .avatar-chip .apps {
+      font-size: .65rem;
+      color: #888;
+    }
+    .avatar-chip.active .apps { color: #ccc; }
+    
+    /* Tabs */
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid var(--ink);
+      margin-bottom: 24px;
+    }
+    .tab {
+      flex: 1;
+      padding: 12px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #666;
+      transition: all .15s;
+    }
+    .tab:hover { color: var(--ink); }
+    .tab.active {
+      color: var(--ink);
+      border-bottom-color: var(--magenta);
+    }
+    
+    /* Clips */
+    .clips { text-align: left; }
+    .clip {
+      background: #fff;
+      border: 2px solid var(--ink);
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 4px 4px 0 rgba(42,24,16,.15);
+      position: relative;
+    }
+    .clip.unclaimed {
+      border-color: var(--magenta);
+      border-style: dashed;
+    }
+    .clip-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .clip-title {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    .clip-app {
+      font-size: .65rem;
+      padding: 2px 8px;
+      background: var(--sky);
+      border-radius: 10px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .clip-app.lovy { background: var(--purple); color: #fff; }
+    .clip-meta {
+      font-size: .8rem;
+      color: #666;
+      margin-bottom: 8px;
+    }
+    .clip-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .tag {
+      font-size: .7rem;
+      padding: 2px 8px;
+      background: var(--sage);
+      border: 1px solid var(--ink);
+    }
+    .clip-reactions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: .8rem;
+      color: #666;
+    }
+    .clip-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .btn {
+      padding: 6px 12px;
+      border: 2px solid var(--ink);
+      background: none;
+      cursor: pointer;
+      font-size: .8rem;
+      text-decoration: none;
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all .1s;
+    }
+    .btn:hover {
+      background: var(--ink);
+      color: #fff;
+    }
+    .btn-fav {
+      border-color: var(--marigold);
+      color: var(--marigold);
+    }
+    .btn-fav:hover, .btn-fav.on {
+      background: var(--marigold);
+      color: var(--ink);
+    }
+    .btn-claim {
+      background: var(--magenta);
+      color: #fff;
+      border-color: var(--magenta);
+      font-weight: 600;
+    }
+    .btn-claim:hover {
+      background: #c12f3a;
+      border-color: #c12f3a;
+    }
+    
+    /* Claim banner */
+    .claim-banner {
+      background: linear-gradient(135deg, var(--magenta), var(--purple));
+      color: #fff;
+      padding: 16px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .claim-banner h3 {
+      margin-bottom: 8px;
+    }
+    .claim-banner p {
+      font-size: .85rem;
+      opacity: .9;
+      margin-bottom: 12px;
+    }
+    
+    /* Empty state */
+    .empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: #888;
+    }
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="profile">
+    <!-- Back link: close in Mini App, navigate in web -->
+    <a class="back" id="back-link" href="https://risa.liberada.net">← Volver a Risa</a>
+    
+    <!-- Header -->
+    <div class="header" id="header">
+      <!-- Rendered by JS -->
+    </div>
+    
+    <!-- Upgrade / Claim button -->
+    <div id="upgrade-section">
+      <!-- Rendered by JS -->
+    </div>
+    
+    <!-- Stats -->
+    <div class="stats" id="stats">
+      <!-- Rendered by JS -->
+    </div>
+    
+    <!-- Avatars / subprofiles -->
+    <div class="avatars-section" id="avatars-section">
+      <div class="section-title">Identidades</div>
+      <div class="avatars-row" id="avatars-row">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+    
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="clips">Risas</button>
+      <button class="tab" data-tab="favorites">Favoritas</button>
+    </div>
+    
+    <!-- Clips -->
+    <div class="clips" id="clips-tab">
+      <div id="clips"><!-- Rendered by JS --></div>
+    </div>
+    
+    <!-- Favorites -->
+    <div class="clips" id="favorites-tab" hidden>
+      <div id="favorites"><!-- Rendered by JS --></div>
+    </div>
+  </div>
+
+  <script>
+    // ============ CONFIG ============
+    const KEY = 'marcflove';
+    const tg = window.Telegram?.WebApp;
+    const tgUser = tg?.initDataUnsafe?.user;
+    const isMiniApp = !!tg;
+    
+    // Configure Telegram Mini App (if present)
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      tg.setHeaderColor('#faf6f1');
+      tg.setBackgroundColor('#faf6f1');
+    }
+    
+    // ============ PROFILE DATA ============
+    // In real v2: loaded from profile.json
+    // For now: mock data with Telegram user detection for claim
+    const profile = {
+      key: 'marcflove',
+      name: 'Marc',
+      claimed: false, // Start unclaimed to test flow
+      claimed_at: null,
+      tg_public: false,
+      level: 1,
+      avatars: [
+        { id: 'default', name: 'Marc', emoji: '🎤', apps: ['risa', 'lovy'] },
+        { id: 'dev', name: 'MarcDev', emoji: '💻', apps: ['lovy'] }
+      ],
+      bio: 'Risas y código. Buenos Aires.',
+      links: [
+        { label: 'GitHub', url: 'https://github.com/marcflove' },
+        { label: 'flove.org', url: 'https://flove.org' }
+      ]
+    };
+    
+    let clips = [];
+    let favorites = [];
+    let activeAvatar = null;
+    let activeTab = 'clips';
+    
+    // ============ URL FALLBACK ============
+    // If lol/<key>/ doesn't exist, redirect to v1 hash URL
+    async function checkLolExists() {
+      try {
+        const res = await fetch('profile.json', { method: 'HEAD' });
+        if (!res.ok) {
+          // lol/<key>/ doesn't exist, redirect to v1
+          const v1Url = `https://risa.liberada.net/#/u/${KEY}`;
+          console.log('lol/ not found, redirecting to v1:', v1Url);
+          window.location.replace(v1Url);
+          return false;
+        }
+        return true;
+      } catch (e) {
+        // Network error or file not found — redirect to v1
+        const v1Url = `https://risa.liberada.net/#/u/${KEY}`;
+        console.log('lol/ check failed, redirecting to v1:', v1Url);
+        window.location.replace(v1Url);
+        return false;
+      }
+    }
+    
+    // ============ INIT ============
+    async function init() {
+      // Check if lol/<key>/ exists
+      const lolExists = await checkLolExists();
+      if (!lolExists) return; // Redirecting...
+      
+      // Load data
+      await loadData();
+      
+      // Render everything
+      render();
+      
+      // Back link behavior
+      if (isMiniApp) {
+        document.getElementById('back-link').textContent = '← Cerrar';
+        document.getElementById('back-link').onclick = (e) => {
+          e.preventDefault();
+          tg.close();
+        };
+      }
+    }
+    
+    // ============ DATA LOADING ============
+    async function loadData() {
+      try {
+        const [clipsRes, favsRes] = await Promise.all([
+          fetch('clips.json'),
+          fetch('favorites.json').catch(() => ({ json: () => [] }))
+        ]);
+        clips = await clipsRes.json();
+        favorites = await favsRes.json();
+      } catch (e) {
+        console.error('Error loading data:', e);
+      }
+    }
+    
+    // ============ RENDER ============
+    function render() {
+      renderHeader();
+      renderUpgrade();
+      renderStats();
+      renderAvatars();
+      renderClips();
+      renderFavorites();
+    }
+    
+    function renderHeader() {
+      const avatar = profile.avatars[0];
+      document.getElementById('header').innerHTML = `
+        <div class="avatar ${profile.claimed ? 'claimed' : ''}">
+          ${avatar.emoji}
+          <div class="avatar-ring"></div>
+        </div>
+        <div class="name">${esc(profile.name)}</div>
+        <div class="key">@${esc(profile.key)}</div>
+        ${profile.bio ? `<div class="bio">${esc(profile.bio)}</div>` : ''}
+        <div class="links">
+          ${profile.links.map(l => 
+            `<a class="link" href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} ↗</a>`
+          ).join('')}
+        </div>
+        <div class="claim-status ${profile.claimed ? 'claimed' : 'unclaimed'}">
+          ${profile.claimed ? '✓ Verificado' : '● Sin verificar'}
+        </div>
+      `;
+    }
+    
+    function renderUpgrade() {
+      const section = document.getElementById('upgrade-section');
+      
+      if (profile.claimed) {
+        section.innerHTML = `
+          <button class="upgrade-btn claimed" disabled>
+            ✓ Perfil verificado
+            <small>Tu identidad está vinculada a Telegram</small>
+          </button>
+        `;
+        return;
+      }
+      
+      // Unclaimed: show upgrade CTA
+      if (isMiniApp) {
+        // Mini App: auto-claim (Telegram knows who you are)
+        section.innerHTML = `
+          <button class="upgrade-btn" id="auto-claim-btn">
+            🔗 Soy yo
+            <small>Tu Telegram ya está verificado — toca para vincular tu perfil</small>
+          </button>
+        `;
+        document.getElementById('auto-claim-btn').addEventListener('click', autoClaim);
+      } else {
+        // Web: manual claim via Telegram DM
+        section.innerHTML = `
+          <a class="upgrade-btn" href="https://t.me/RisaLiberadaBot?start=claim_${KEY}" target="_blank" rel="noopener">
+            🔗 Soy yo
+            <small>Verifica tu Telegram y desbloquea favoritos, edición y más</small>
+          </a>
+        `;
+      }
+    }
+    
+    function renderStats() {
+      const myClips = filterByAvatar(clips);
+      const myFavs = filterByAvatar(favorites);
+      const totalReactions = myClips.reduce((sum, c) => sum + (c.reactions || 0), 0);
+      
+      document.getElementById('stats').innerHTML = `
+        <div class="stat">
+          <div class="stat-num">${myClips.length}</div>
+          <div class="stat-label">Risas</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">${myFavs.length}</div>
+          <div class="stat-label">Favoritas</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">${totalReactions}</div>
+          <div class="stat-label">Reacciones</div>
+        </div>
+      `;
+    }
+    
+    function renderAvatars() {
+      if (profile.avatars.length <= 1) {
+        document.getElementById('avatars-section').hidden = true;
+        return;
+      }
+      
+      document.getElementById('avatars-row').innerHTML = profile.avatars.map(a => `
+        <button class="avatar-chip ${activeAvatar === a.id ? 'active' : ''}" data-avatar="${a.id}">
+          <span class="emoji">${a.emoji}</span>
+          <span>${esc(a.name)}</span>
+          <span class="apps">${a.apps.join(' · ')}</span>
+        </button>
+      `).join('') + `
+        <button class="avatar-chip ${activeAvatar === null ? 'active' : ''}" data-avatar="all">
+          <span class="emoji">🌍</span>
+          <span>Todas</span>
+        </button>
+      `;
+      
+      document.querySelectorAll('.avatar-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          activeAvatar = chip.dataset.avatar === 'all' ? null : chip.dataset.avatar;
+          render();
+        });
+      });
+    }
+    
+    function renderClips() {
+      const filtered = filterByAvatar(clips).filter(c => c.app !== 'lovy');
+      const container = document.getElementById('clips');
+      
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="empty">
+            <div class="empty-icon">🎤</div>
+            <p>Aún no hay risas. ¡Sé la primera!</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = filtered.map(c => renderClipCard(c, false)).join('');
+      attachClipHandlers(container);
+    }
+    
+    function renderFavorites() {
+      const filtered = filterByAvatar(favorites);
+      const container = document.getElementById('favorites');
+      
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="empty">
+            <div class="empty-icon">⭐</div>
+            <p>No hay favoritas aún.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = filtered.map(c => renderClipCard(c, true)).join('');
+      attachClipHandlers(container);
+    }
+    
+    function renderClipCard(c, isFav) {
+      const isUnclaimed = !c.name || c.name === 'Anónima';
+      const appClass = c.app === 'lovy' ? 'lovy' : '';
+      
+      return `
+        <div class="clip ${isUnclaimed ? 'unclaimed' : ''}">
+          <div class="clip-header">
+            <div class="clip-title">${esc(c.t || 'Risa de ' + (c.name || 'alguien'))}</div>
+            <span class="clip-app ${appClass}">${esc(c.app)}</span>
+          </div>
+          <div class="clip-meta">${c.when || 'ahora'} · ${(c.tags || 'risa libre').split(',').length} etiquetas</div>
+          <div class="clip-tags">
+            ${(c.tags || 'risa libre').split(',').map(t => 
+              `<span class="tag">${esc(t.trim())}</span>`
+            ).join('')}
+          </div>
+          <div class="clip-reactions">
+            ${c.reactions ? `<span>😂 ${c.reactions}</span>` : ''}
+            ${c.favorited_by && c.favorited_by.length ? `<span>⭐ ${c.favorited_by.length}</span>` : ''}
+          </div>
+          <div class="clip-actions">
+            ${c.src ? `<a class="btn" href="${esc(c.src)}" download>↓ Descargar</a>` : ''}
+            <button class="btn share-btn" data-url="${esc(c.src || '')}" data-title="${esc(c.t || '')}">↗ Compartir</button>
+            <button class="btn btn-fav ${isFav ? 'on' : ''}" data-id="${esc(c.id)}">${isFav ? '★' : '☆'}</button>
+            ${isUnclaimed && isMiniApp ? `<button class="btn btn-claim" data-id="${esc(c.id)}">🔗 Soy yo</button>` : ''}
+          </div>
+        </div>
+      `;
+    }
+    
+    function attachClipHandlers(container) {
+      container.querySelectorAll('.share-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const url = btn.dataset.url;
+          const title = btn.dataset.title;
+          if (navigator.share) {
+            navigator.share({ title: 'Risa liberada', text: title, url });
+          } else {
+            window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`);
+          }
+        });
+      });
+      
+      container.querySelectorAll('.btn-fav').forEach(btn => {
+        btn.addEventListener('click', () => {
+          btn.classList.toggle('on');
+          btn.textContent = btn.classList.contains('on') ? '★' : '☆';
+        });
+      });
+      
+      container.querySelectorAll('.btn-claim').forEach(btn => {
+        btn.addEventListener('click', () => claimClip(btn.dataset.id));
+      });
+    }
+    
+    function filterByAvatar(list) {
+      if (!activeAvatar) return list;
+      return list.filter(c => c.avatar === activeAvatar);
+    }
+    
+    async function autoClaim() {
+      // In real v2: POST /api/authy/claim with tg.initData (signed by Telegram)
+      // The backend verifies the initData signature, extracts user.id, and links the profile
+      
+      if (isMiniApp && tgUser) {
+        // Mini App: Telegram already verified who you are
+        console.log('Auto-claiming for Telegram user:', tgUser.id, tgUser.username);
+        
+        // Haptic feedback
+        tg.HapticFeedback?.notificationOccurred('success');
+        
+        // Update profile
+        profile.claimed = true;
+        profile.claimed_at = new Date().toISOString();
+        profile.level = 3; // L3: verified via Telegram
+        
+        // Show toast
+        showToast(`✅ Hola ${tgUser.first_name}, tu perfil está vinculado`);
+      } else {
+        // Web fallback
+        alert('✅ Perfil reclamado (mockup)');
+        profile.claimed = true;
+      }
+      
+      render();
+    }
+    
+    async function claimClip(clipId) {
+      // In real v2: POST /api/authy/claim {clipId} with tg.initData
+      if (isMiniApp && tgUser) {
+        tg.HapticFeedback?.notificationOccurred('success');
+        showToast(`✅ Clip vinculado a tu perfil`);
+      } else {
+        alert(`✅ Clip ${clipId} reclamado (mockup)`);
+      }
+    }
+    
+    function showToast(msg) {
+      // Simple toast for Mini App
+      const existing = document.querySelector('.toast-msg');
+      if (existing) existing.remove();
+      
+      const toast = document.createElement('div');
+      toast.className = 'toast-msg';
+      toast.textContent = msg;
+      toast.style.cssText = `
+        position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+        background: #2a1810; color: #fff; padding: 10px 20px; border-radius: 8px;
+        font-size: .85rem; z-index: 999; animation: fadeIn .2s;
+      `;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2500);
+    }
+    
+    function esc(s) {
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+    
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        activeTab = tab.dataset.tab;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('clips-tab').hidden = activeTab !== 'clips';
+        document.getElementById('favorites-tab').hidden = activeTab !== 'favorites';
+      });
+    });
+    
+    init();
+  </script>
+</body>
+</html>

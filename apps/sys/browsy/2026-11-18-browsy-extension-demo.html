@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#6c5ce7">
+<meta name="description" content="Browsy extension field test — ephemeral web hash, consent-based page pull, and Wizy Magic in Goddy with Myself and MyFamily data.">
+<meta name="flove:distro" content="decentral">
+<meta name="flove:app" content="browsy">
+<title>Browsy · extension field test</title>
+<link rel="icon" type="image/png" href="icons/icon-32.png">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f4fb;--paper:#fff;--paper-2:#fbfaff;
+  --ink:#171525;--ink-2:#3c3852;--muted:#6f6a83;
+  --line:rgba(23,21,37,.1);--line-2:rgba(23,21,37,.18);
+  --accent:#6c5ce7;--accent-2:#12b3a0;--accent-soft:rgba(108,92,231,.09);
+  --love:#e5484d;--joy:#b9820a;--wisdom:#2f6fb3;--ok:#12824a;--warn:#9a5b00;
+  --r:16px;--r-sm:11px;--maxw:1140px;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --shadow:0 1px 2px rgba(23,21,37,.05),0 22px 55px -38px rgba(40,28,110,.55);
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+html{scroll-behavior:smooth;scroll-padding-top:5.5rem}
+body{font:15px/1.6 var(--sans);color:var(--ink);background:
+  radial-gradient(900px 480px at 8% -10%,rgba(108,92,231,.12),transparent 65%),
+  radial-gradient(760px 420px at 100% 4%,rgba(18,179,160,.09),transparent 62%),
+  var(--bg);
+  min-height:100dvh;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+button{font:inherit;color:inherit}
+button,a{-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+.wrap{width:100%;max-width:var(--maxw);margin:0 auto;padding:0 clamp(1rem,4vw,2rem)}
+.skip{position:absolute;left:-999px;top:.5rem;z-index:99;background:var(--paper);color:var(--ink);
+  padding:.6rem .9rem;border-radius:8px;box-shadow:var(--shadow)}
+.skip:focus{left:1rem}
+[hidden]{display:none!important}
+
+/* ── top bar ─────────────────────────────────────────────────── */
+.top{position:sticky;top:0;z-index:70;background:color-mix(in srgb,var(--bg) 84%,transparent);
+  border-bottom:1px solid var(--line);backdrop-filter:blur(14px)}
+.top-in{display:flex;align-items:center;gap:1rem;padding:.7rem clamp(1rem,4vw,2rem);max-width:var(--maxw);margin:0 auto}
+.brand{display:inline-flex;align-items:center;gap:.55rem;color:var(--ink);font-weight:800;letter-spacing:-.03em}
+.brand:hover{text-decoration:none}
+.brand-mark{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(135deg,var(--accent),#9a7bff);font:800 .8rem var(--mono)}
+.brand b{font-size:1.02rem}
+.brand-sub{font-family:var(--mono);font-size:.52rem;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--muted);border:1px solid var(--line-2);border-radius:999px;padding:.18rem .45rem;margin-left:.15rem}
+.top-nav{display:flex;align-items:center;gap:.2rem;margin-left:auto;flex-wrap:wrap}
+.top-nav a{font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;color:var(--muted);
+  padding:.42rem .52rem;border-radius:7px}
+.top-nav a:hover{color:var(--accent);background:var(--accent-soft);text-decoration:none}
+
+/* ── shared type ─────────────────────────────────────────────── */
+.kicker{display:inline-block;font-family:var(--mono);font-size:.56rem;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--accent);background:var(--accent-soft);
+  border:1px solid rgba(108,92,231,.2);border-radius:999px;padding:.3rem .6rem}
+h1,h2,h3{font-family:var(--sans);letter-spacing:-.035em;line-height:1.12}
+h2{font-size:clamp(1.5rem,3.4vw,2.1rem)}
+h3{font-size:1rem;letter-spacing:-.02em}
+.lede{color:var(--muted);font-size:1rem;line-height:1.65;max-width:66ch}
+.small{font-size:.75rem;line-height:1.55;color:var(--muted)}
+.mt-xs{margin-top:.4rem}
+.mono{font-family:var(--mono)}
+
+/* ── hero ────────────────────────────────────────────────────── */
+.hero{padding:clamp(2.6rem,7vw,5rem) 0 2.2rem;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr);
+  gap:clamp(1.4rem,4vw,3.5rem);align-items:center}
+.hero h1{font-size:clamp(2.3rem,6vw,4.2rem);letter-spacing:-.055em;margin:.7rem 0 .8rem;max-width:12ch;
+  overflow-wrap:break-word}
+.hero h1 span{color:var(--accent)}
+.hero .lede{font-size:clamp(.96rem,1.2vw,1.06rem)}
+.hero-actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.15rem}
+.hero-badges{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:1.2rem}
+.hero-badges span{font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);border:1px solid var(--line-2);border-radius:999px;padding:.25rem .5rem;background:rgba(255,255,255,.55)}
+.hero-card{position:relative;border:1px solid var(--line-2);border-radius:22px;padding:1.1rem;
+  background:linear-gradient(160deg,rgba(255,255,255,.94),rgba(251,250,255,.8));box-shadow:var(--shadow)}
+.hero-card::before{content:"";position:absolute;inset:12% -8% -12% 18%;z-index:-1;border-radius:30px;
+  background:linear-gradient(120deg,rgba(108,92,231,.16),rgba(18,179,160,.12));filter:blur(28px)}
+.hero-card-head{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.7rem}
+.hero-card-head b{font-size:.86rem}
+.hero-card-head span{font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.hero-hash{font:700 .72rem/1.5 var(--mono);color:var(--ink-2);background:var(--paper);border:1px dashed var(--line-2);
+  border-radius:10px;padding:.55rem .6rem;overflow-wrap:anywhere}
+.hero-mini{display:grid;gap:.45rem;margin-top:.75rem}
+.hero-mini div{display:flex;align-items:center;gap:.5rem;font-size:.75rem;color:var(--ink-2)}
+.hero-mini i{width:7px;height:7px;border-radius:50%;background:var(--accent-2);flex:none}
+.hero-mini span{color:var(--muted);margin-left:auto;font-family:var(--mono);font-size:.56rem}
+
+/* ── buttons ─────────────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;min-height:2.6rem;
+  padding:.6rem .95rem;border:1px solid var(--line-2);border-radius:10px;background:var(--paper);
+  font:700 .78rem var(--sans);color:var(--ink);cursor:pointer;transition:background .18s,border-color .18s,transform .18s}
+.btn:hover{border-color:var(--accent);background:var(--accent-soft);text-decoration:none}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:#5b4bd9;border-color:#5b4bd9}
+.btn.small{min-height:2.1rem;padding:.35rem .65rem;font-size:.68rem}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.linkbtn{border:0;background:none;color:var(--accent);font:700 .68rem var(--mono);letter-spacing:.04em;
+  cursor:pointer;padding:.2rem 0;text-align:left}
+.linkbtn:hover{text-decoration:underline}
+
+/* ── sections ────────────────────────────────────────────────── */
+section.block{padding:clamp(1.9rem,4vw,3rem) 0;border-top:1px solid var(--line)}
+.sec-head{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.2rem;max-width:78ch}
+.sec-head h2{max-width:22ch}
+.flow{list-style:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.6rem;margin-top:1.1rem}
+.flow-step{position:relative;display:flex;flex-direction:column;gap:.4rem;padding:.9rem;border:1px solid var(--line);
+  border-radius:14px;background:var(--paper);box-shadow:var(--shadow)}
+.flow-step::after{content:"→";position:absolute;right:-.52rem;top:50%;transform:translateY(-50%);
+  color:var(--accent);font-size:.9rem;z-index:1;background:var(--bg);padding:.1rem}
+.flow-step:last-child::after{display:none}
+.flow-num{font-family:var(--mono);font-size:.52rem;letter-spacing:.12em;color:var(--accent)}
+.flow-step h3{font-size:.86rem}
+.flow-step p{font-size:.72rem;line-height:1.55;color:var(--muted)}
+.flow-step em{font-family:var(--mono);font-size:.55rem;font-style:normal;letter-spacing:.05em;color:var(--accent-2)}
+.roles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.6rem;margin-top:.7rem}
+.role{padding:.8rem .9rem;border:1px solid var(--line);border-radius:13px;background:var(--paper-2)}
+.role b{display:block;font-size:.82rem}
+.role span{display:block;font-size:.69rem;line-height:1.5;color:var(--muted);margin-top:.12rem}
+
+/* ── browser frame ───────────────────────────────────────────── */
+.browser-shell{margin-top:.4rem}
+.frame{border:1px solid var(--line-2);border-radius:18px;background:var(--paper);
+  box-shadow:0 2px 5px rgba(23,21,37,.05),0 32px 75px -50px rgba(40,28,110,.65);overflow:hidden}
+.frame-top{display:flex;align-items:center;gap:.55rem;padding:.52rem .62rem;background:#efedf7;
+  border-bottom:1px solid var(--line)}
+.frame-dots{display:flex;gap:.28rem;flex:none}
+.frame-dots i{width:9px;height:9px;border-radius:50%;background:#d7d2e6;display:block}
+.frame-dots i:first-child{background:#f2a1a1}
+.frame-dots i:nth-child(2){background:#f0d18a}
+.frame-dots i:nth-child(3){background:#a7dfc0}
+.frame-tab{display:flex;align-items:center;gap:.35rem;max-width:190px;padding:.32rem .55rem;border:1px solid var(--line);
+  border-bottom-color:transparent;border-radius:8px 8px 0 0;background:var(--paper);font-size:.66rem;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:none}
+.tab-dot{width:15px;height:15px;border-radius:5px;background:linear-gradient(135deg,#ff5a3c,#ffb36b);
+  color:#fff;font:800 .48rem var(--mono);display:grid;place-items:center;flex:none}
+.frame-url{flex:1;min-width:0;display:flex;align-items:center;gap:.35rem;padding:.38rem .6rem;border:1px solid var(--line);
+  border-radius:8px;background:var(--paper);font:500 .66rem var(--mono);color:var(--ink-2);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.frame-url .lock{color:var(--ok);font-size:.68rem;flex:none}
+.ext-btn{position:relative;width:36px;height:32px;border:1px solid var(--line-2);border-radius:8px;
+  background:var(--paper);display:grid;place-items:center;cursor:pointer;flex:none}
+.ext-btn:hover{border-color:var(--accent);background:var(--accent-soft)}
+.ext-mark{width:19px;height:19px;border-radius:6px;background:linear-gradient(135deg,var(--accent),#9a7bff);
+  color:#fff;font:800 .55rem var(--mono);display:grid;place-items:center}
+.ext-badge{position:absolute;right:-4px;top:-5px;min-width:15px;height:15px;padding:0 3px;border-radius:999px;
+  background:var(--accent-2);color:#fff;font:800 .5rem var(--mono);display:grid;place-items:center;
+  border:2px solid #efedf7}
+.frame-body{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,.78fr);min-height:540px}
+.frame-body.panel-hidden{grid-template-columns:1fr}
+
+/* ── the simulated site ─────────────────────────────────────── */
+.site{padding:1rem 1.1rem 1.2rem;min-width:0;background:
+  radial-gradient(520px 220px at 18% 0%,rgba(255,90,60,.08),transparent 70%),
+  linear-gradient(180deg,#fff,#fdfcff)}
+.site-top{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding-bottom:.8rem;
+  border-bottom:1px solid var(--line);flex-wrap:wrap}
+.site-brand{display:flex;align-items:center;gap:.55rem}
+.site-logo{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(135deg,#ff5a3c,#ff9a5a);font:800 .9rem var(--mono)}
+.site-brand b{display:block;font-size:.95rem;letter-spacing:-.02em}
+.site-brand small{display:block;font-size:.6rem;color:var(--muted);font-family:var(--mono);letter-spacing:.05em}
+.site-nav{display:flex;gap:.25rem;flex-wrap:wrap}
+.site-nav span{font-family:var(--mono);font-size:.58rem;letter-spacing:.05em;color:var(--muted);
+  padding:.28rem .5rem;border-radius:999px;border:1px solid transparent}
+.site-nav span.on{color:#c7442b;border-color:rgba(255,90,60,.25);background:rgba(255,90,60,.07)}
+.goddy{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(210px,.95fr);gap:.7rem;margin-top:.8rem}
+.matrix-card,.note-card{border:1px solid var(--line);border-radius:14px;padding:.85rem .9rem;background:var(--paper)}
+.card-kicker{font-family:var(--mono);font-size:.5rem;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
+.matrix-title,.note-title{font-size:.98rem;line-height:1.25;letter-spacing:-.025em;margin:.25rem 0 .65rem}
+.matrix{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.cell{border:1px solid var(--line);border-radius:9px;padding:.45rem .38rem;background:var(--paper-2);
+  font-size:.6rem;line-height:1.35;color:var(--ink-2);text-align:center;min-height:3.1rem;
+  display:flex;flex-direction:column;justify-content:center;gap:.1rem;cursor:default}
+.cell b{display:block;font-family:var(--mono);font-size:.48rem;letter-spacing:.06em;color:var(--muted);
+  text-transform:uppercase;font-weight:600}
+.cell.is-hot{border-color:rgba(255,90,60,.55);background:rgba(255,90,60,.1);color:#9b2f1b;
+  box-shadow:inset 0 0 0 1px rgba(255,90,60,.15)}
+.cell.is-hot b{color:#c7442b}
+.matrix-hint{font-size:.62rem;line-height:1.5;color:var(--muted);margin-top:.55rem}
+.matrix-hint b{color:#c7442b}
+.note-title{font-size:1.02rem}
+.note-card p{font-size:.73rem;line-height:1.62;color:var(--ink-2)}
+.note-tags{display:flex;gap:.28rem;flex-wrap:wrap;margin-top:.6rem}
+.note-tags span{font-family:var(--mono);font-size:.5rem;letter-spacing:.07em;color:#9b2f1b;
+  background:rgba(255,90,60,.08);border:1px solid rgba(255,90,60,.2);border-radius:999px;padding:.2rem .42rem}
+.magic-zone{margin-top:.85rem}
+.magic{display:inline-flex;align-items:center;gap:.45rem;padding:.6rem 1rem;border-radius:999px;
+  border:1px solid rgba(108,92,231,.4);background:rgba(108,92,231,.09);color:var(--accent);
+  font-weight:800;font-size:.82rem;cursor:pointer;transition:.18s}
+.magic:hover{background:rgba(108,92,231,.15);border-color:var(--accent)}
+.magic[aria-expanded="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.magic small{font-family:var(--mono);font-size:.48rem;letter-spacing:.08em;text-transform:uppercase;
+  opacity:.8;font-weight:500}
+.magic-panel{margin-top:.55rem;border:1px solid rgba(108,92,231,.24);border-radius:14px;
+  background:linear-gradient(180deg,rgba(108,92,231,.035),rgba(255,255,255,.72));padding:.8rem;
+  animation:panelIn .24s var(--ease)}
+@keyframes panelIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.magic-head{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;justify-content:space-between}
+.magic-kicker{font-family:var(--mono);font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.magic-session{font-family:var(--mono);font-size:.48rem;letter-spacing:.04em;color:var(--accent-2);
+  background:rgba(18,179,160,.07);border:1px solid rgba(18,179,160,.22);border-radius:999px;padding:.18rem .42rem}
+.magic-session.is-expired{color:#b42318;background:rgba(180,35,24,.05);border-color:rgba(180,35,24,.3)}
+.wizard-row,.mode-row{display:flex;gap:.3rem;flex-wrap:wrap}
+.wizard-row button,.mode-row button{border:1px solid var(--line-2);background:var(--paper);border-radius:999px;
+  padding:.3rem .58rem;font-size:.68rem;font-weight:700;color:var(--ink-2);cursor:pointer}
+.wizard-row button:hover,.mode-row button:hover{border-color:var(--accent);color:var(--accent)}
+.wizard-row button[aria-pressed="true"],.mode-row button[aria-pressed="true"]{
+  background:var(--accent);border-color:var(--accent);color:#fff}
+.mode-row{margin:.55rem 0 .5rem}
+.mode-row button{border-radius:8px}
+.magic-note{font-size:.71rem;line-height:1.55;color:var(--ink-2);margin:.25rem 0 .5rem}
+.magic-note b{color:var(--accent)}
+.magic-pull{margin-bottom:.5rem}
+.results{display:grid;gap:.5rem}
+.hint{border:1px solid var(--line);border-left:3px solid var(--hint,var(--accent));border-radius:11px;
+  padding:.6rem .65rem;background:var(--paper);min-width:0}
+.hint-top{display:flex;align-items:center;justify-content:space-between;gap:.4rem;margin-bottom:.2rem}
+.hint-num{font-family:var(--mono);font-size:.48rem;letter-spacing:.1em;color:var(--muted)}
+.hint-wiz{font-family:var(--mono);font-size:.48rem;letter-spacing:.06em;color:var(--hint,var(--accent));text-transform:uppercase}
+.hint-text{font-size:.75rem;line-height:1.58;color:var(--ink-2)}
+.hint-src{display:flex;gap:.28rem;flex-wrap:wrap;margin-top:.4rem}
+.src{display:inline-flex;align-items:center;gap:.24rem;border:1px solid var(--line);border-radius:999px;
+  padding:.16rem .42rem;font-size:.56rem;color:var(--ink-2);background:var(--paper-2)}
+.src:hover{border-color:var(--accent);text-decoration:none}
+.src b{font-weight:700}
+.src span{font-family:var(--mono);font-size:.46rem;letter-spacing:.06em;color:var(--muted)}
+.src.p{border-color:rgba(154,91,0,.28);background:rgba(154,91,0,.05)}
+.src.l{border-color:rgba(18,130,74,.28);background:rgba(18,130,74,.05)}
+.src.person{border-color:rgba(18,179,160,.35);background:rgba(18,179,160,.06)}
+.why{margin-top:.35rem;border:0;background:none;color:var(--muted);font:600 .58rem var(--mono);
+  letter-spacing:.04em;cursor:pointer;padding:.18rem 0}
+.why:hover{color:var(--accent)}
+.trace{margin-top:.4rem;padding:.45rem .5rem;border:1px dashed var(--line-2);border-radius:8px;
+  background:var(--paper-2);display:grid;gap:.2rem}
+.trace div{display:grid;grid-template-columns:4.2rem minmax(0,1fr);gap:.4rem;font-size:.58rem;line-height:1.4}
+.trace span{font-family:var(--mono);font-size:.48rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.trace b,.trace code{font:600 .57rem var(--mono);color:var(--ink-2);overflow-wrap:anywhere}
+.magic-foot{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-top:.55rem}
+.magic-foot .small{font-family:var(--mono);font-size:.5rem;letter-spacing:.04em}
+.person-card{border:1px solid rgba(18,179,160,.28);border-radius:10px;background:rgba(18,179,160,.05);
+  padding:.5rem .6rem;margin:.45rem 0 0}
+.person-card b{font-size:.73rem}
+.person-card span{display:block;font-size:.62rem;color:var(--muted);line-height:1.45}
+
+/* ── extension side panel ───────────────────────────────────── */
+.panel{border-left:1px solid var(--line);background:var(--paper-2);padding:.8rem;min-width:0;
+  display:flex;flex-direction:column;gap:.55rem}
+.panel-head{display:flex;align-items:center;gap:.45rem;justify-content:space-between}
+.panel-brand{display:flex;align-items:center;gap:.4rem}
+.panel-brand b{display:block;font-size:.78rem;line-height:1.1}
+.panel-brand small{display:block;font-family:var(--mono);font-size:.48rem;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--muted)}
+.status{font-family:var(--mono);font-size:.48rem;letter-spacing:.08em;text-transform:uppercase;
+  border:1px solid var(--line-2);border-radius:999px;padding:.2rem .45rem;color:var(--muted);white-space:nowrap}
+.status[data-status="pulling"]{color:var(--warn);border-color:rgba(154,91,0,.35);background:rgba(154,91,0,.06)}
+.status[data-status="pulled"]{color:var(--ok);border-color:rgba(18,130,74,.35);background:rgba(18,130,74,.06)}
+.status[data-status="stopped"]{color:#b42318;border-color:rgba(180,35,24,.3);background:rgba(180,35,24,.05)}
+.pcard{border:1px solid var(--line);border-radius:12px;background:var(--paper);padding:.6rem .65rem}
+.pcard.is-expired{border-color:rgba(180,35,24,.4);background:rgba(180,35,24,.03)}
+.panel-row{display:flex;align-items:center;justify-content:space-between;gap:.4rem;margin-bottom:.3rem}
+.label{font-family:var(--mono);font-size:.48rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.chip{font-family:var(--mono);font-size:.44rem;letter-spacing:.08em;text-transform:uppercase;
+  border:1px solid var(--line-2);border-radius:999px;padding:.15rem .38rem;color:var(--muted)}
+.hash-full{display:block;font:600 .62rem/1.55 var(--mono);color:var(--ink-2);background:var(--paper-2);
+  border:1px dashed var(--line-2);border-radius:8px;padding:.4rem .45rem;overflow-wrap:anywhere;word-break:break-all}
+.hash-meta{display:flex;align-items:center;justify-content:space-between;gap:.4rem;margin-top:.35rem;
+  font-family:var(--mono);font-size:.52rem;color:var(--muted)}
+.ttl-track{height:5px;border-radius:999px;background:var(--line);overflow:hidden;margin-top:.35rem}
+.ttl-track i{display:block;height:100%;width:100%;border-radius:inherit;
+  background:linear-gradient(90deg,var(--accent-2),var(--accent));transition:width .4s linear}
+.ttl-track.is-expired i{background:#b42318}
+.panel-actions{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.5rem}
+.panel-actions .btn{flex:1;min-height:2.1rem;padding:.35rem .5rem;font-size:.66rem}
+.panel-actions .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.panel-foot{font-size:.6rem;line-height:1.5;color:var(--muted);margin-top:auto;padding-top:.2rem}
+.derive-detail{margin-top:.4rem;padding:.45rem .5rem;border:1px dashed var(--line-2);border-radius:8px;
+  background:var(--paper-2);display:grid;gap:.22rem}
+.derive-detail div{display:grid;grid-template-columns:3.8rem 1fr;gap:.35rem;font-size:.56rem;line-height:1.4}
+.derive-detail span{font-family:var(--mono);font-size:.46rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.derive-detail b,.derive-detail code{font:600 .56rem var(--mono);color:var(--ink-2);overflow-wrap:anywhere}
+
+/* ── session log ─────────────────────────────────────────────── */
+.session-log{margin-top:.55rem;border:1px solid var(--line);border-radius:12px;background:var(--paper);
+  padding:.55rem .65rem}
+.log-head{display:flex;align-items:center;justify-content:space-between;gap:.4rem;margin-bottom:.3rem}
+.log-head span{font-family:var(--mono);font-size:.48rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.log-list{list-style:none;display:grid;gap:.13rem;max-height:7.2rem;overflow:auto}
+.log-list li{display:flex;gap:.45rem;font-size:.6rem;line-height:1.4;color:var(--ink-2)}
+.log-list time{font-family:var(--mono);font-size:.5rem;color:var(--muted);flex:none;padding-top:.08rem}
+.demo-note{display:flex;gap:.5rem 1rem;flex-wrap:wrap;align-items:center;margin-top:.55rem;
+  font-size:.66rem;line-height:1.5;color:var(--muted)}
+.demo-note b{color:var(--ink-2)}
+.demo-note a{color:var(--accent);font-weight:600}
+.demo-note code{font-family:var(--mono);font-size:.92em;color:var(--ink-2)}
+.live{font-family:var(--mono);font-size:.5rem;letter-spacing:.05em;color:var(--accent-2);margin-left:auto}
+
+/* ── hash explainer ──────────────────────────────────────────── */
+.hash-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem;margin-top:1rem}
+.hash-card{border:1px solid var(--line);border-radius:15px;padding:.9rem;background:var(--paper);box-shadow:var(--shadow)}
+.hash-card.hot{border-color:rgba(108,92,231,.3);background:linear-gradient(160deg,rgba(108,92,231,.06),rgba(255,255,255,.9))}
+.hash-card-head{display:flex;align-items:center;justify-content:space-between;gap:.4rem;margin-bottom:.35rem}
+.hash-card h3{font-size:.94rem}
+.hash-card p{font-size:.76rem;line-height:1.6;color:var(--muted)}
+.hash-list{list-style:none;display:grid;gap:.3rem;margin-top:.55rem}
+.hash-list li{position:relative;padding-left:.9rem;font-size:.7rem;line-height:1.5;color:var(--ink-2)}
+.hash-list li::before{content:"";position:absolute;left:0;top:.52em;width:6px;height:6px;border-radius:50%;
+  background:var(--accent-2)}
+.hash-list.p li::before{background:var(--accent)}
+.timeline{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.4rem;margin-top:1rem}
+.tl-step{position:relative;padding:.65rem .6rem;border:1px solid var(--line);border-radius:11px;
+  background:var(--paper-2);font-size:.66rem;line-height:1.5;color:var(--ink-2)}
+.tl-step b{display:block;font-family:var(--mono);font-size:.48rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:.2rem}
+.tl-step::after{content:"→";position:absolute;right:-.42rem;top:50%;transform:translateY(-50%);color:var(--accent);
+  background:var(--bg);padding:.08rem;font-size:.7rem;z-index:1}
+.tl-step:last-child::after{display:none}
+
+/* ── test cards ──────────────────────────────────────────────── */
+.tests{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.65rem;margin-top:1rem}
+.test-card{display:flex;flex-direction:column;gap:.4rem;border:1px solid var(--line);border-radius:15px;
+  padding:.85rem .9rem;background:var(--paper);box-shadow:var(--shadow);min-width:0}
+.test-top{display:flex;align-items:center;justify-content:space-between;gap:.4rem}
+.test-tag{font-family:var(--mono);font-size:.48rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.test-time{font-family:var(--mono);font-size:.48rem;color:var(--muted)}
+.test-card h3{font-size:.92rem;margin-top:.1rem}
+.test-card p{font-size:.73rem;line-height:1.55;color:var(--muted)}
+.checks{list-style:none;display:grid;gap:.24rem;margin:.15rem 0 .3rem}
+.checks li{position:relative;padding-left:1rem;font-size:.66rem;line-height:1.45;color:var(--ink-2)}
+.checks li::before{content:"✓";position:absolute;left:0;top:0;color:var(--accent-2);font-size:.62rem;font-weight:800}
+.test-card .btn{margin-top:auto;width:100%}
+
+/* ── rules ───────────────────────────────────────────────────── */
+.rules{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.6rem;margin-top:1rem}
+.rule{border:1px solid var(--line);border-radius:14px;padding:.8rem .85rem;background:var(--paper-2)}
+.rule b{display:block;font-size:.8rem;line-height:1.35;margin-bottom:.2rem}
+.rule p{font-size:.69rem;line-height:1.55;color:var(--muted)}
+.rule a{font-family:var(--mono);font-size:.54rem;letter-spacing:.05em}
+.sources{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1.1rem;font-size:.68rem}
+.sources a{border:1px solid var(--line-2);border-radius:999px;padding:.28rem .58rem;color:var(--ink-2)}
+.sources a:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+
+/* ── footer ──────────────────────────────────────────────────── */
+.footer{border-top:1px solid var(--line);margin-top:1rem;padding:1.6rem 0 3rem}
+.footer-in{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  font-size:.68rem;line-height:1.6;color:var(--muted)}
+.footer-in b{color:var(--ink-2)}
+.footer-links{display:flex;gap:.8rem;flex-wrap:wrap}
+
+/* ── responsive ──────────────────────────────────────────────── */
+@media(max-width:1000px){
+  .flow,.roles,.rules{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .flow-step:nth-child(2)::after,.rules .rule:nth-child(2)::after{display:none}
+  .timeline{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .tl-step:nth-child(3)::after{display:none}
+  .tests{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:880px){
+  .hero{grid-template-columns:1fr;padding-top:2.6rem}
+  .hero h1{max-width:none;font-size:clamp(2rem,7.2vw,3.2rem)}
+  .hero-card{max-width:520px}
+  .frame-body{grid-template-columns:1fr}
+  .panel{border-left:0;border-top:1px solid var(--line)}
+  .frame-tab{display:none}
+  .goddy{grid-template-columns:1fr}
+  .hash-grid{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .top-nav{display:none}
+  .brand-sub{display:none}
+  .flow,.roles,.rules,.tests,.timeline{grid-template-columns:1fr}
+  .flow-step::after,.tl-step::after{display:none}
+  .frame-url{font-size:.58rem}
+  .site{padding:.8rem .7rem 1rem}
+  .panel{padding:.7rem}
+  .hero-badges span{font-size:.46rem}
+  .panel-actions .btn{font-size:.62rem}
+  .log-list{max-height:6rem}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#demo">Skip to the field test</a>
+
+<header class="top">
+  <div class="top-in">
+    <a class="brand" href="index.html" aria-label="Browsy index">
+      <span class="brand-mark" aria-hidden="true">B</span>
+      <b>browsy</b>
+      <span class="brand-sub">extension field test</span>
+    </a>
+    <nav class="top-nav" aria-label="Sections">
+      <a href="#plan">Plan</a>
+      <a href="#demo">Demo</a>
+      <a href="#hash">Hash</a>
+      <a href="#tests">Tests</a>
+      <a href="#rules">Rules</a>
+      <a href="2026-11-17-browsy-wizy-nety.html">Rationale ↗</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero wrap" aria-labelledby="heroTitle">
+    <div>
+      <span class="kicker">browsy · extension plan · field test</span>
+      <h1 id="heroTitle">The extension, <span>in the room.</span></h1>
+      <p class="lede">A clickable test of the Browsy extension plan: an ephemeral web hash, a page the user allows, and Wizy Magic inside Goddy — first with the broad self, then with MyFamily data when someone else is in the room.</p>
+      <div class="hero-actions">
+        <a class="btn primary" href="#demo">Start the field test →</a>
+        <a class="btn" href="#hash">Compare the hashes</a>
+      </div>
+      <div class="hero-badges">
+        <span>simulated window</span>
+        <span>local only</span>
+        <span>no network</span>
+        <span>sample data</span>
+      </div>
+    </div>
+    <aside class="hero-card" aria-label="Current demo session">
+      <div class="hero-card-head"><b>Session preview</b><span>ephemeral · web</span></div>
+      <div class="hero-hash" id="heroHash">bafkrei…</div>
+      <div class="hero-mini">
+        <div><i aria-hidden="true"></i>Page pull <span id="heroPull">not pulled</span></div>
+        <div><i aria-hidden="true"></i>Wizy derive <span>D1 · local</span></div>
+        <div><i aria-hidden="true"></i>Canonical key <span>extension only</span></div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="block wrap" id="plan" aria-labelledby="planTitle">
+    <div class="sec-head">
+      <span class="kicker">the plan · four moves</span>
+      <h2 id="planTitle">The extension is the host. Wizy is the organ.</h2>
+      <p class="lede">Browsy does not replace the app. It authenticates the session, pulls only with consent, lets Wizy derive locally, and hands the app a view — never the vault, the root key or the identity hash.</p>
+    </div>
+    <ol class="flow">
+      <li class="flow-step">
+        <span class="flow-num">01 · install</span>
+        <h3>One key holder</h3>
+        <p>The extension installs once. The service worker creates and stores the canonical Ed25519 root.</p>
+        <em>authy · canonical</em>
+      </li>
+      <li class="flow-step">
+        <span class="flow-num">02 · pull</span>
+        <h3>Click, then read</h3>
+        <p>You click Browsy on the page you are reading. It reads visible text and form signals, never passwords, hidden inputs or tokens.</p>
+        <em>consent · allowlist</em>
+      </li>
+      <li class="flow-step">
+        <span class="flow-num">03 · derive</span>
+        <h3>Local by default</h3>
+        <p>Wizy mixes the page with the P and L records already in the vault. Deterministic rules first; explanations stay visible.</p>
+        <em>wizy · D1</em>
+      </li>
+      <li class="flow-step">
+        <span class="flow-num">04 · hand off</span>
+        <h3>A scoped view</h3>
+        <p>Authy signs a grant for this session. The app receives the view it asked for, not the vault or the root.</p>
+        <em>grant · expiry</em>
+      </li>
+    </ol>
+    <div class="roles" role="group" aria-label="Extension roles">
+      <div class="role"><b>Authy</b><span>Unlocks, signs grants and keeps the session scoped.</span></div>
+      <div class="role"><b>Wizy</b><span>JSON manager, merge and local derivation inside Browsy.</span></div>
+      <div class="role"><b>Vault</b><span>Encrypted P and L records; P normally never leaves.</span></div>
+      <div class="role"><b>Nety</b><span>Only S publications travel through the social path.</span></div>
+    </div>
+  </section>
+
+  <section class="block wrap" id="demo" aria-labelledby="demoTitle">
+    <div class="sec-head">
+      <span class="kicker">the field test · simulated window</span>
+      <h2 id="demoTitle">Goddy is open. Browsy is in the toolbar.</h2>
+      <p class="lede">The page below is a mock of <b>flove.org/apps/metas/goddy.html</b>. The side panel is the extension. The Magic button belongs to Goddy, but the hints come from Wizy inside Browsy. Rotate the web hash and every trace changes with it.</p>
+    </div>
+
+    <div class="browser-shell">
+      <div class="frame" role="group" aria-label="Simulated browser window with the Goddy app and the Browsy side panel">
+        <div class="frame-top">
+          <div class="frame-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="frame-tab"><span class="tab-dot" aria-hidden="true">G</span> Goddy · flove</div>
+          <div class="frame-url"><span class="lock" aria-hidden="true">🔒</span> flove.org/apps/metas/goddy.html</div>
+          <button class="ext-btn" id="extBtn" type="button" aria-expanded="true" aria-controls="sidePanel" aria-label="Toggle the Browsy side panel">
+            <span class="ext-mark" aria-hidden="true">B</span>
+            <span class="ext-badge" id="extBadge" aria-hidden="true">·</span>
+          </button>
+        </div>
+        <div class="frame-body" id="frameBody">
+          <div class="site">
+            <div class="site-top">
+              <div class="site-brand">
+                <span class="site-logo" aria-hidden="true">G</span>
+                <div><b>Goddy</b><small>goddess · god · us</small></div>
+              </div>
+              <div class="site-nav" aria-hidden="true">
+                <span class="on">Matrix</span><span>Notes</span><span>Profile</span>
+              </div>
+            </div>
+
+            <div class="goddy">
+              <section class="matrix-card" aria-labelledby="matrixTitle">
+                <span class="card-kicker">your matrix · 3 × 3</span>
+                <h2 class="matrix-title" id="matrixTitle">How fully do you see each cell?</h2>
+                <div class="matrix" role="img" aria-label="A three by three matrix of goddess, god and us. The goddess curiosity cell is marked.">
+                  <div class="cell is-hot"><b>goddess</b>curious</div>
+                  <div class="cell"><b>goddess</b>clear</div>
+                  <div class="cell"><b>goddess</b>distant</div>
+                  <div class="cell"><b>god</b>steady</div>
+                  <div class="cell"><b>god</b>guarded</div>
+                  <div class="cell"><b>god</b>open</div>
+                  <div class="cell"><b>us</b>patient</div>
+                  <div class="cell"><b>us</b>vivid</div>
+                  <div class="cell"><b>us</b>unfinished</div>
+                </div>
+                <p class="matrix-hint">One cell is marked <b>curious</b>. That is the signal Wizy reads first.</p>
+              </section>
+              <section class="note-card" aria-labelledby="noteTitle">
+                <span class="card-kicker">note · sunday</span>
+                <h2 class="note-title" id="noteTitle">The garden, the call, the hour free</h2>
+                <p>Call grandma on Sunday. Ask about the garden. Keep the hour free — no errands, no screens, just the call.</p>
+                <div class="note-tags" role="group" aria-label="Tags"><span>family</span><span>care</span><span>sunday</span></div>
+              </section>
+            </div>
+
+            <div class="magic-zone">
+              <button class="magic" id="magicBtn" type="button" aria-expanded="false" aria-controls="magicPanel">
+                ✨ Magic <small id="magicRead">wizy · in the page</small>
+              </button>
+              <div class="magic-panel" id="magicPanel" hidden>
+                <div class="magic-head">
+                  <span class="magic-kicker" id="magicKicker">wizy · D1 · reading L + P</span>
+                  <span class="magic-session" id="magicSession">session bafkrei…</span>
+                  <div class="wizard-row" role="group" aria-label="Wizy wizard">
+                    <button type="button" data-wizard="love" aria-pressed="true">😍 Love</button>
+                    <button type="button" data-wizard="joy" aria-pressed="false">😂 Joy</button>
+                    <button type="button" data-wizard="wisdom" aria-pressed="false">🫠 Wisdom</button>
+                  </div>
+                </div>
+                <div class="mode-row" role="group" aria-label="Wizy mode">
+                  <button type="button" data-mode="myself" aria-pressed="true">Myself</button>
+                  <button type="button" data-mode="others" aria-pressed="false">With others</button>
+                </div>
+                <p class="magic-note" id="magicNote">No page pull yet. Wizy is composing from the app portraits and local records only.</p>
+                <button class="btn small magic-pull" id="magicPull" type="button">Read this tab</button>
+                <div class="person-card" id="personCard" hidden>
+                  <b>Marta · MyFamily · L</b>
+                  <span>Sunday check-in · care × 4 · honesty × 2. Kept as an L record; the raw P notes stay in the vault.</span>
+                </div>
+                <div class="results" id="magicResults" role="status" aria-live="polite"></div>
+                <div class="magic-foot">
+                  <button class="btn small" id="moreBtn" type="button">3 more</button>
+                  <span class="small">D1 · deterministic rules · no network</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="panel" id="sidePanel" aria-label="Browsy side panel">
+            <div class="panel-head">
+              <div class="panel-brand">
+                <span class="ext-mark" aria-hidden="true">B</span>
+                <div><b>Browsy</b><small>side panel</small></div>
+              </div>
+              <span class="status" id="pullStatus" data-status="idle">idle</span>
+            </div>
+
+            <div class="pcard" id="hashCard">
+              <div class="panel-row"><span class="label">ephemeral web hash</span><span class="chip">web</span></div>
+              <code class="hash-full" id="hashFull">bafkrei…</code>
+              <div class="hash-meta"><span id="hashShort">bafkrei…</span><span id="ttl">12:00</span></div>
+              <div class="ttl-track" id="ttlTrack"><i id="ttlBar"></i></div>
+              <div class="panel-actions">
+                <button class="btn" id="rotateBtn" type="button">Rotate</button>
+                <button class="btn" id="copyBtn" type="button">Copy</button>
+              </div>
+              <p class="small mt-xs">Not portable. The extension key is canonical.</p>
+            </div>
+
+            <div class="pcard">
+              <div class="panel-row"><span class="label">read this tab?</span><span class="status" id="consentStatus" data-status="idle">not pulled</span></div>
+              <p class="small" id="consentText">Page signals stay in this tab. Passwords, hidden inputs and tokens are never read.</p>
+              <div class="panel-actions">
+                <button class="btn primary" id="allowBtn" type="button">Allow pull</button>
+                <button class="btn" id="stopBtn" type="button" disabled>Stop</button>
+              </div>
+            </div>
+
+            <div class="pcard" id="pageCard" hidden>
+              <div class="panel-row"><span class="label">pulled signals</span><span class="chip">visible text</span></div>
+              <p class="small"><b>Goddy</b> · matrix cell “goddess · curious” · note “the garden, the call, the hour free”.</p>
+            </div>
+
+            <div class="pcard">
+              <div class="panel-row"><span class="label">wizy derive</span><span class="chip" id="deriveChip">local</span></div>
+              <p class="small" id="deriveText">Waiting for a Magic click in the page.</p>
+              <button class="linkbtn" id="explainBtn" type="button" aria-expanded="false">Show derivation</button>
+              <div class="derive-detail" id="deriveDetail" hidden>
+                <div><span>rule</span><b>D1 · deterministic</b></div>
+                <div><span>input</span><b>page signals + app portraits</b></div>
+                <div><span>class</span><b id="deriveClass">P + L</b></div>
+                <div><span>output</span><b>D · local only</b></div>
+                <div><span>network</span><b>none</b></div>
+              </div>
+            </div>
+
+            <p class="panel-foot">No network. P stays here; L by grant; S only if published.</p>
+          </aside>
+        </div>
+      </div>
+
+      <div class="session-log" role="region" aria-label="Session events">
+        <div class="log-head"><span>session log · local</span><span id="logCount">0 events</span></div>
+        <ol class="log-list" id="logList"></ol>
+      </div>
+      <div class="demo-note">
+        <span><b>Simulated:</b> the app, the page and the extension chrome are one HTML demo. The hash is minted in this tab and expires; it is not a real key.</span>
+        <span>For your own plays, the <a href="index.html">Browsy index Magic</a> reads <code>flove:appy:plays</code> and <code>flove:myfamily:state</code>.</span>
+        <span class="live" id="liveAnnounce" role="status" aria-live="polite">ready</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="block wrap" id="hash" aria-labelledby="hashTitle">
+    <div class="sec-head">
+      <span class="kicker">the hash · two lives</span>
+      <h2 id="hashTitle">Ephemeral in the tab. Canonical in the extension.</h2>
+      <p class="lede">The hash in the demo is a web-provisional identity: generated in the tab, good for one session, explicitly not portable. The extension identity is the one that becomes the Nety PeerId. The two are never the same key.</p>
+    </div>
+    <div class="hash-grid">
+      <article class="hash-card hot">
+        <div class="hash-card-head"><h3>Web hash · ephemeral</h3><span class="chip">source: web</span></div>
+        <p>Minted by the page when no extension is present. It can sign local grants for the session, but it has no migration path into the extension.</p>
+        <ul class="hash-list">
+          <li>Lives in this tab, rotated in the demo.</li>
+          <li><code>source:"web"</code> · <code>notPortable:true</code>.</li>
+          <li>Installing the extension starts a new canonical identity.</li>
+          <li>The old web record is kept but hidden — never promoted.</li>
+        </ul>
+      </article>
+      <article class="hash-card">
+        <div class="hash-card-head"><h3>Extension hash · canonical</h3><span class="chip">source: extension</span></div>
+        <p>Created and stored by the service worker. One identity, one hash; the same value is the Nety PeerId.</p>
+        <ul class="hash-list p">
+          <li><code>CIDv1(sha256(ed25519_pubkey)) → bafk…</code></li>
+          <li>Unlocks with Authy; signs grants and sessions.</li>
+          <li>The page never receives the vault, the root or this hash from a pull.</li>
+          <li>Recovery is the seed; social quorum comes later.</li>
+        </ul>
+      </article>
+    </div>
+    <div class="timeline" role="group" aria-label="Web hash lifecycle">
+      <div class="tl-step"><b>01 · open</b>No extension identity in this tab.</div>
+      <div class="tl-step"><b>02 · mint</b>Web hash appears: <span class="mono">bafkrei…</span></div>
+      <div class="tl-step"><b>03 · scope</b>Goddy Magic uses it for this session.</div>
+      <div class="tl-step"><b>04 · rotate</b>Close or rotate; the session scope goes.</div>
+      <div class="tl-step"><b>05 · install</b>Extension becomes canonical; web record stays hidden.</div>
+    </div>
+  </section>
+
+  <section class="block wrap" id="tests" aria-labelledby="testsTitle">
+    <div class="sec-head">
+      <span class="kicker">three real tests</span>
+      <h2 id="testsTitle">Run the same magic, twice, with different data.</h2>
+      <p class="lede">Each test sets the wizard, the mode and the page state for you. The point is not the sentence — it is what the trace shows: which class was read, which session hash scoped it, and whether anything left the tab.</p>
+    </div>
+    <div class="tests">
+      <article class="test-card">
+        <div class="test-top"><span class="test-tag">test 01</span><span class="test-time">~30 s</span></div>
+        <h3>Myself · the broad self</h3>
+        <p>Wizy reads across the user’s own apps, not one screen. The hints connect the matrix to a soul map, a draft and a boundary.</p>
+        <ul class="checks">
+          <li>Goddy matrix + Souls animal</li>
+          <li>Blogy draft + Trusty boundary</li>
+          <li>No MyFamily person in the mix</li>
+        </ul>
+        <button class="btn" type="button" data-test="myself">Run Myself test →</button>
+      </article>
+      <article class="test-card">
+        <div class="test-top"><span class="test-tag">test 02</span><span class="test-time">~30 s</span></div>
+        <h3>With others · MyFamily</h3>
+        <p>Marta is an L record with a clear category. Two app links come from the user; the person and the category come from MyFamily.</p>
+        <ul class="checks">
+          <li>Marta · care × 4 · honesty × 2</li>
+          <li>L record, not the raw P notes</li>
+          <li>Person chip remains local</li>
+        </ul>
+        <button class="btn" type="button" data-test="others">Run With-others test →</button>
+      </article>
+      <article class="test-card">
+        <div class="test-top"><span class="test-tag">test 03</span><span class="test-time">~10 s</span></div>
+        <h3>Rotate the session</h3>
+        <p>Rotate the ephemeral hash while Magic is open. Every “Why this?” trace should show the new hash and a fresh TTL.</p>
+        <ul class="checks">
+          <li>Hash changes in every trace</li>
+          <li>TTL resets to 12:00</li>
+          <li>Extension canonical untouched</li>
+        </ul>
+        <button class="btn" type="button" data-test="hash">Rotate and re-derive →</button>
+      </article>
+    </div>
+  </section>
+
+  <section class="block wrap" id="rules" aria-labelledby="rulesTitle">
+    <div class="sec-head">
+      <span class="kicker">the rules kept</span>
+      <h2 id="rulesTitle">What this demo refuses to do.</h2>
+      <p class="lede">The interface is playful because the rules are strict. These are the invariants the extension plan keeps, even when the demo makes the flow look easy.</p>
+    </div>
+    <div class="rules">
+      <article class="rule"><b>Browsy pulls; the page does not ask.</b><p>There is no page-to-extension identity or vault API. The user clicks Browsy; the extension reads the public page.</p><a href="../../../development/standards/debates/browsy/spec.md">spec §3.8 →</a></article>
+      <article class="rule"><b>P stays in memory.</b><p>Personal records are read locally. A projection is L; a public card is S. Neither is the raw record.</p><a href="2026-11-17-browsy-wizy-nety.html">rationale →</a></article>
+      <article class="rule"><b>Derived is local by default.</b><p>Wizy runs D1 deterministic rules first. A remote model would need separate consent and a fresh threat review.</p><a href="../../../development/standards/debates/browsy/rationale.md">derivation →</a></article>
+      <article class="rule"><b>No silent injection.</b><p>Typed state — idle, pulling, no-access, error — a persistent indicator, a Stop button and a per-site allowlist.</p><a href="../../../development/standards/debates/browsy/spec.md">pull scope →</a></article>
+    </div>
+    <div class="sources" role="group" aria-label="Source documents">
+      <a href="index.html">Browsy index</a>
+      <a href="2026-11-17-browsy-wizy-nety.html">Browsy · Wizy · Nety</a>
+      <a href="../../../development/standards/debates/browsy/spec.md">Extension spec</a>
+      <a href="../../../development/standards/debates/browsy/rationale.md">Rationale</a>
+      <a href="../../../development/standards/debates/proposals/frontend-wizy.md">Wizy operating areas</a>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-in">
+    <div>
+      <b>Browsy extension field test</b><br>
+      A UI test, not a shipped extension. Sample data from Goddy, Souls, Blogy, Trusty, Keys, Socy and MyFamily. No network calls; no real personal data.
+    </div>
+    <div class="footer-links">
+      <a href="index.html">Back to Browsy</a>
+      <a href="#demo">Run it again</a>
+      <a href="#main">Top</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+
+  var $ = function(id){ return document.getElementById(id); };
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var WIZ = {
+    love:   { name:'Love',   emoji:'😍', color:'var(--love)',   off:0, hint:'care' },
+    joy:    { name:'Joy',    emoji:'😂', color:'var(--joy)',    off:1, hint:'luck' },
+    wisdom: { name:'Wisdom', emoji:'🫠', color:'var(--wisdom)', off:2, hint:'judgment' }
+  };
+  var SRC = {
+    goddy: { app:'Goddy',  phrase:'the goddess cell you marked curious', cls:'L', url:'../../../apps/metas/goddy.html' },
+    souls: { app:'Souls',  phrase:'the animal you chose in Souls',      cls:'P', url:'../../../apps/metas/souls.html' },
+    blogy: { app:'Blogy',  phrase:'the Sunday market draft',            cls:'L', url:'../../../apps/blogy/blogy-advanced.html' },
+    trusty:{ app:'Trusty', phrase:'the boundary you set in Trusty',     cls:'P', url:'../../../apps/trusty/trusty.html' },
+    keys:  { app:'Keys',   phrase:'the triad that explains the feeling',cls:'L', url:'../../../apps/puzzy/keys/keys-advanced.html' },
+    socy:  { app:'Socy',   phrase:'the freedom you named in Socy',      cls:'L', url:'../../../apps/psychosocial/socy.html' }
+  };
+  var ORDER = ['goddy','souls','blogy','trusty','keys','socy'];
+  var PERSON = {
+    name:'Marta', category:'care', cls:'L',
+    url:'../../../apps/trusty/myfamily.html',
+    detail:'Sunday check-in · care × 4 · honesty × 2'
+  };
+  var TEMPLATES = {
+    myself: {
+      love:   function(a,b){ return 'With ' + a.phrase + ' and ' + b.phrase + ', ask who would recognise this version of you.'; },
+      joy:    function(a,b){ return 'After ' + a.phrase + ' and ' + b.phrase + ', turn the next small step into a ritual.'; },
+      wisdom: function(a,b){ return 'Through ' + a.phrase + ' and ' + b.phrase + ', decide which cell is worth filling next.'; }
+    },
+    others: {
+      love:   function(a,b,p){ return 'With ' + a.phrase + ' and ' + b.phrase + ', ' + p.name + ' brings ' + p.category + ' into the room — ask what would feel closer this week.'; },
+      joy:    function(a,b,p){ return 'After ' + a.phrase + ' and ' + b.phrase + ', ' + p.name + ' brings ' + p.category + ' into the room — turn the next call into a tiny ritual.'; },
+      wisdom: function(a,b,p){ return 'Through ' + a.phrase + ' and ' + b.phrase + ', ' + p.name + ' brings ' + p.category + ' into the room — decide what is yours to offer and what stays with ' + p.name + '.'; }
+    }
+  };
+
+  var state = {
+    hash:'',
+    ttl:12 * 60,
+    totalTtl:12 * 60,
+    pulled:false,
+    pull:'idle',
+    magic:false,
+    wizard:'love',
+    mode:'myself',
+    offset:0,
+    events:0
+  };
+  var timer = null;
+  var pullTimer = null;
+
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];
+    });
+  }
+  function base32(bytes){
+    var a = 'abcdefghijklmnopqrstuvwxyz234567', bits = 0, value = 0, out = '';
+    for (var i=0; i<bytes.length; i++){
+      value = (value << 8) | bytes[i];
+      bits += 8;
+      while (bits >= 5){
+        out += a[(value >>> (bits - 5)) & 31];
+        bits -= 5;
+      }
+    }
+    if (bits > 0) out += a[(value << (5 - bits)) & 31];
+    return out;
+  }
+  function mintHash(){
+    var b = new Uint8Array(32);
+    if (window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(b);
+    else for (var i=0; i<b.length; i++) b[i] = Math.floor(Math.random() * 256);
+    return 'bafkrei' + base32(b).slice(0, 45);
+  }
+  function shortHash(h){ return h.slice(0, 12) + '…' + h.slice(-4); }
+  function now(){
+    try { return new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+    catch (_) { return new Date().toISOString().slice(11,19); }
+  }
+  function announce(text){ var el = $('liveAnnounce'); if (el) el.textContent = text; }
+  function log(text){
+    var list = $('logList');
+    if (!list) return;
+    var li = document.createElement('li');
+    li.innerHTML = '<time>' + esc(now()) + '</time><span>' + esc(text) + '</span>';
+    list.insertBefore(li, list.firstChild);
+    state.events++;
+    while (list.children.length > 9) list.removeChild(list.lastChild);
+    var count = $('logCount');
+    if (count) count.textContent = state.events + (state.events === 1 ? ' event' : ' events');
+  }
+
+  function paintHash(){
+    var hash = state.hash;
+    if ($('hashFull')) $('hashFull').textContent = hash;
+    if ($('hashShort')) $('hashShort').textContent = shortHash(hash);
+    if ($('heroHash')) $('heroHash').textContent = shortHash(hash);
+    if ($('magicSession')){
+      $('magicSession').textContent = state.ttl > 0 ? 'session ' + shortHash(hash) : 'session expired';
+      $('magicSession').classList.toggle('is-expired', state.ttl === 0);
+    }
+    var ttl = $('ttl');
+    if (ttl) ttl.textContent = state.ttl > 0
+      ? Math.floor(state.ttl / 60) + ':' + (state.ttl % 60 < 10 ? '0' : '') + (state.ttl % 60)
+      : 'expired';
+    if ($('ttlBar')) $('ttlBar').style.width = Math.max(0, (state.ttl / state.totalTtl) * 100) + '%';
+    if ($('ttlTrack')) $('ttlTrack').classList.toggle('is-expired', state.ttl === 0);
+    if ($('hashCard')) $('hashCard').classList.toggle('is-expired', state.ttl === 0);
+    var heroPull = $('heroPull');
+    if (heroPull) heroPull.textContent = state.pulled ? 'pulled' : 'not pulled';
+  }
+  function startClock(){
+    if (timer) clearInterval(timer);
+    state.ttl = state.totalTtl;
+    paintHash();
+    timer = setInterval(function(){
+      if (state.ttl > 0){
+        state.ttl--;
+        paintHash();
+        if (state.ttl === 0){
+          clearInterval(timer);
+          timer = null;
+          log('web hash expired · rotate to open a new session');
+          announce('The ephemeral web hash expired. Rotate it to continue.');
+        }
+      }
+    }, 1000);
+  }
+  function rotateHash(){
+    state.hash = mintHash();
+    startClock();
+    renderMagic();
+    renderPanel();
+    log('web hash rotated · ' + shortHash(state.hash));
+    announce('Web hash rotated. Session scope reset.');
+  }
+  async function copyHash(){
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        await navigator.clipboard.writeText(state.hash);
+        log('web hash copied · ' + shortHash(state.hash));
+        announce('Web hash copied.');
+        return;
+      }
+    } catch (_) {}
+    try {
+      var field = document.createElement('textarea');
+      field.value = state.hash;
+      field.setAttribute('readonly', '');
+      field.style.position = 'fixed';
+      field.style.left = '-9999px';
+      document.body.appendChild(field);
+      field.select();
+      var ok = document.execCommand('copy');
+      document.body.removeChild(field);
+      if (!ok) throw new Error('copy rejected');
+      log('web hash copied · ' + shortHash(state.hash));
+      announce('Web hash copied.');
+    } catch (_) {
+      announce('Copy failed; select the hash manually.');
+    }
+  }
+
+  function allowPull(){
+    if (state.pull === 'pulling') return;
+    state.pulled = true;
+    state.pull = 'pulling';
+    renderPull();
+    renderMagic();
+    renderPanel();
+    log('consent granted · flove.org');
+    announce('Page pull allowed. Visible text only.');
+    if (pullTimer) clearTimeout(pullTimer);
+    pullTimer = setTimeout(function(){
+      if (state.pull !== 'pulling') return;
+      state.pull = 'pulled';
+      renderPull();
+      renderMagic();
+      renderPanel();
+      log('page pulled · 2 signals kept');
+      announce('Page pulled: the matrix cell and the Sunday note.');
+    }, 650);
+  }
+  function stopPull(){
+    state.pulled = false;
+    state.pull = 'stopped';
+    if (pullTimer) { clearTimeout(pullTimer); pullTimer = null; }
+    renderPull();
+    renderMagic();
+    renderPanel();
+    log('pull stopped · page signals dropped');
+    announce('Page pull stopped. The page signals were dropped.');
+  }
+  function renderPull(){
+    var labels = { idle:'idle', pulling:'pulling', pulled:'pulled', stopped:'stopped' };
+    var consents = { idle:'not pulled', pulling:'pulling', pulled:'pulled', stopped:'stopped' };
+    if ($('pullStatus')) { $('pullStatus').textContent = labels[state.pull] || 'idle'; $('pullStatus').setAttribute('data-status', state.pull); }
+    if ($('consentStatus')) { $('consentStatus').textContent = consents[state.pull] || 'not pulled'; $('consentStatus').setAttribute('data-status', state.pull); }
+    if ($('pageCard')) $('pageCard').hidden = !state.pulled;
+    if ($('allowBtn')) $('allowBtn').disabled = state.pull === 'pulling' || state.pulled;
+    if ($('stopBtn')) $('stopBtn').disabled = !state.pulled;
+    if ($('extBadge')) $('extBadge').textContent = state.pulled ? '1' : '·';
+    if ($('consentText')) $('consentText').textContent = state.pulled
+      ? 'Visible text, labels and form values except password, secret, hidden and token fields. Raw values never go to logs.'
+      : 'Page signals stay in this tab. Passwords, hidden inputs and tokens are never read.';
+    if ($('heroPull')) $('heroPull').textContent = state.pulled ? 'pulled' : 'not pulled';
+  }
+
+  function pairAt(k){
+    var n = ORDER.length;
+    var a = ORDER[((k % n) + n) % n];
+    var b = ORDER[((k + 1 + Math.floor(k / n)) % n + n) % n];
+    if (b === a) b = ORDER[(ORDER.indexOf(b) + 1) % n];
+    return [a, b];
+  }
+  function buildHints(){
+    var wiz = WIZ[state.wizard];
+    var out = [];
+    for (var i=0; i<3; i++){
+      var pair = pairAt(state.offset + i + wiz.off);
+      var a = SRC[pair[0]], b = SRC[pair[1]];
+      out.push({
+        sentence: TEMPLATES[state.mode][state.wizard](a, b, PERSON),
+        sources: [
+          { app:a.app, cls:a.cls, url:a.url },
+          { app:b.app, cls:b.cls, url:b.url }
+        ]
+      });
+    }
+    return out;
+  }
+  function sourceChip(s){
+    return '<a class="src ' + esc(s.cls.toLowerCase()) + '" href="' + esc(s.url) + '" target="_blank" rel="noopener">'
+      + '<b>' + esc(s.app) + '</b><span>' + esc(s.cls) + '</span></a>';
+  }
+  function renderHint(h, i){
+    var wiz = WIZ[state.wizard];
+    var trace = '<div class="trace" hidden>'
+      + '<div><span>session</span><code>' + esc(shortHash(state.hash)) + '</code></div>'
+      + '<div><span>reads</span><b>' + h.sources.map(function(s){ return s.cls + ' · ' + s.app; }).join(' + ')
+      + (state.mode === 'others' ? ' + L · MyFamily' : '') + '</b></div>'
+      + '<div><span>rule</span><b>D1 · deterministic</b></div>'
+      + '<div><span>output</span><b>D · local only</b></div>'
+      + '<div><span>network</span><b>none</b></div>'
+      + '</div>';
+    var person = state.mode === 'others'
+      ? '<a class="src person" href="' + esc(PERSON.url) + '" target="_blank" rel="noopener"><b>' + esc(PERSON.name) + '</b><span>L · MyFamily</span></a>'
+      : '';
+    return '<article class="hint" style="--hint:' + wiz.color + '">'
+      + '<div class="hint-top"><span class="hint-num">0' + (i + 1) + '</span><span class="hint-wiz">' + wiz.emoji + ' ' + wiz.name + '</span></div>'
+      + '<p class="hint-text">' + esc(h.sentence) + '</p>'
+      + '<div class="hint-src">' + h.sources.map(sourceChip).join('') + person + '</div>'
+      + '<button class="why" type="button" aria-expanded="false">Why this?</button>'
+      + trace
+      + '</article>';
+  }
+  function renderMagic(){
+    var panel = $('magicPanel');
+    var btn = $('magicBtn');
+    if (panel) panel.hidden = !state.magic;
+    if (btn) btn.setAttribute('aria-expanded', String(state.magic));
+    document.querySelectorAll('[data-wizard]').forEach(function(b){
+      b.setAttribute('aria-pressed', String(b.getAttribute('data-wizard') === state.wizard));
+    });
+    document.querySelectorAll('[data-mode]').forEach(function(b){
+      b.setAttribute('aria-pressed', String(b.getAttribute('data-mode') === state.mode));
+    });
+    if ($('magicKicker')) $('magicKicker').textContent = 'wizy · D1 · reading ' + (state.mode === 'others' ? 'L + L' : 'L + P');
+    if ($('magicRead')) $('magicRead').textContent = 'wizy · ' + (state.magic ? state.mode : 'in the page');
+    if ($('magicNote')) $('magicNote').innerHTML = state.pulled
+      ? 'Page read: <b>matrix cell</b> and <b>Sunday note</b>. Wizy is composing from the page plus the app portraits.'
+      : 'No page pull yet. Wizy is composing from the app portraits and local records only.';
+    if ($('magicPull')) $('magicPull').hidden = state.pulled;
+    if ($('personCard')) $('personCard').hidden = state.mode !== 'others';
+    if ($('magicResults')) {
+      var hints = buildHints();
+      $('magicResults').innerHTML = hints.map(renderHint).join('');
+      Array.prototype.forEach.call($('magicResults').querySelectorAll('.why'), function(why){
+        why.addEventListener('click', function(){
+          var trace = why.nextElementSibling;
+          if (!trace) return;
+          var open = trace.hidden;
+          trace.hidden = !open;
+          why.setAttribute('aria-expanded', String(open));
+          why.textContent = open ? 'Hide why' : 'Why this?';
+        });
+      });
+    }
+    if ($('moreBtn')){
+      $('moreBtn').textContent = state.offset ? 'First three' : '3 more';
+      $('moreBtn').setAttribute('aria-label', state.offset ? 'Show the first three hints' : 'Show three more hints');
+    }
+  }
+  function renderPanel(){
+    var text = 'Waiting for a Magic click in the page.';
+    if (state.magic) text = state.pulled
+      ? 'Composing ' + (state.mode === 'others' ? 'with Marta’s L record and ' : '') + 'the pulled page + local portraits.'
+      : 'Composing from local portraits only. The page has not been read.';
+    if ($('deriveText')) $('deriveText').textContent = text;
+    if ($('deriveChip')) $('deriveChip').textContent = state.pulled ? 'L + P' : 'local';
+    if ($('deriveClass')) $('deriveClass').textContent = state.mode === 'others' ? 'P + L + L' : 'P + L';
+    if ($('personCard')) $('personCard').hidden = state.mode !== 'others';
+    paintHash();
+  }
+  function renderAll(){
+    renderPull();
+    renderMagic();
+    renderPanel();
+  }
+
+  function openMagic(){
+    state.magic = true;
+    renderAll();
+  }
+  function setWizard(w){
+    if (!WIZ[w]) return;
+    state.wizard = w;
+    state.offset = 0;
+    renderAll();
+    log('wizard changed · ' + WIZ[w].name);
+  }
+  function setMode(m){
+    state.mode = m === 'others' ? 'others' : 'myself';
+    state.offset = 0;
+    renderAll();
+    log('mode changed · ' + (state.mode === 'others' ? 'With others' : 'Myself'));
+  }
+  function runTest(kind){
+    if (kind === 'hash') rotateHash();
+    state.wizard = kind === 'hash' ? 'wisdom' : 'love';
+    state.mode = kind === 'others' ? 'others' : 'myself';
+    state.offset = 0;
+    if (!state.pulled && kind !== 'hash') allowPull();
+    openMagic();
+    log('test started · ' + (kind === 'others' ? 'With others' : kind === 'hash' ? 'rotate session' : 'Myself'));
+    announce('Test started: ' + (kind === 'others' ? 'With others and MyFamily' : kind === 'hash' ? 'rotate the session' : 'Myself'));
+    var demo = $('demo');
+    if (demo) demo.scrollIntoView({behavior: reduceMotion ? 'auto' : 'smooth', block:'start'});
+  }
+
+  $('magicBtn').addEventListener('click', function(){
+    state.magic = !state.magic;
+    renderAll();
+    log(state.magic ? 'Magic opened · ' + state.wizard + ' · ' + state.mode : 'Magic closed');
+    if (state.magic) announce('Magic opened. ' + WIZ[state.wizard].name + ', ' + (state.mode === 'others' ? 'with others' : 'myself') + '.');
+  });
+  document.querySelectorAll('[data-wizard]').forEach(function(b){
+    b.addEventListener('click', function(){ setWizard(b.getAttribute('data-wizard')); });
+  });
+  document.querySelectorAll('[data-mode]').forEach(function(b){
+    b.addEventListener('click', function(){ setMode(b.getAttribute('data-mode')); });
+  });
+  $('moreBtn').addEventListener('click', function(){
+    state.offset = state.offset ? 0 : 3;
+    renderMagic();
+    log('hint set changed · ' + (state.offset ? 'next three' : 'first three'));
+  });
+  $('allowBtn').addEventListener('click', allowPull);
+  $('magicPull').addEventListener('click', allowPull);
+  $('stopBtn').addEventListener('click', stopPull);
+  $('rotateBtn').addEventListener('click', rotateHash);
+  $('copyBtn').addEventListener('click', copyHash);
+  $('explainBtn').addEventListener('click', function(){
+    var open = $('deriveDetail').hidden;
+    $('deriveDetail').hidden = !open;
+    $('explainBtn').setAttribute('aria-expanded', String(open));
+    $('explainBtn').textContent = open ? 'Hide derivation' : 'Show derivation';
+  });
+  $('extBtn').addEventListener('click', function(){
+    var open = $('sidePanel').hidden;
+    $('sidePanel').hidden = !open;
+    $('frameBody').classList.toggle('panel-hidden', !open);
+    $('extBtn').setAttribute('aria-expanded', String(open));
+    if (open) renderPanel();
+    log(open ? 'side panel opened' : 'side panel closed');
+  });
+  document.querySelectorAll('[data-test]').forEach(function(b){
+    b.addEventListener('click', function(){ runTest(b.getAttribute('data-test')); });
+  });
+
+  state.hash = mintHash();
+  startClock();
+  renderAll();
+  log('demo opened · simulated window');
+  log('web hash minted · ' + shortHash(state.hash));
+  announce('Demo ready.');
+})();
+</script>
+
+</body>
+</html>

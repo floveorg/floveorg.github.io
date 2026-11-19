@@ -1,0 +1,37 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>a11y harness</title>
+<style>body{margin:0}iframe{width:1200px;height:900px;border:0}</style>
+<pre id="result">pending</pre>
+<iframe id="frame"></iframe>
+<script>
+const target = new URLSearchParams(location.search).get('target');
+const frame = document.getElementById('frame');
+const out = document.getElementById('result');
+const AXE = new URL('vendor/axe.min.js', location.href).href;
+frame.addEventListener('load', () => {
+  const doc = frame.contentDocument;
+  if (!doc || doc.querySelector('script[data-axe]')) return;
+  // audit the settled UI: jump entrance animations and transitions to their end
+  // state so a fade-in mid-flight is not read as a contrast failure
+  const still = doc.createElement('style');
+  still.textContent = '*,*::before,*::after{animation-duration:0s!important;animation-delay:0s!important;transition:none!important}';
+  doc.head.appendChild(still);
+  const s = doc.createElement('script');
+  s.dataset.axe = '1';
+  s.src = AXE;
+  s.onload = async () => {
+    try {
+      const res = await frame.contentWindow.axe.run(doc, { resultTypes: ['violations'] });
+      out.textContent = JSON.stringify(res.violations.map(v => ({
+        id: v.id, impact: v.impact, help: v.help, nodes: v.nodes.length,
+        targets: v.nodes.slice(0, 3).map(n => n.target.join(' '))
+      })), null, 2);
+      document.title = 'done';
+    } catch (e) { out.textContent = 'ERR ' + e.message; document.title = 'error'; }
+  };
+  s.onerror = () => { out.textContent = 'ERR axe load'; document.title = 'error'; };
+  doc.head.appendChild(s);
+});
+frame.src = target;
+</script>

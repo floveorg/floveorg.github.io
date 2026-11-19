@@ -1,0 +1,3475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+/* flove-store/1 + flove-net fallback — the common local-storage/net layer.
+   Apps inline this same block so they stay self-contained; this file is the
+   canonical reference and is shipped in the offline package. */
+(function () {
+  if (!window.floveStore) {
+    var mem = new Map();
+    function rawGet(k) {
+      try { return localStorage.getItem(k); }
+      catch (_) { return mem.has(k) ? mem.get(k) : null; }
+    }
+    function rawSet(k, v) {
+      try { localStorage.setItem(k, v); return true; }
+      catch (e) {
+        mem.set(k, v);
+        try { window.dispatchEvent(new CustomEvent('flove:storage-error', { detail: { key: k, error: e } })); } catch (_) {}
+        return false;
+      }
+    }
+    window.floveStore = {
+      getRaw: function (k, fallback) { var v = rawGet(k); return v == null ? (fallback === undefined ? null : fallback) : v; },
+      getJSON: function (k, fallback) {
+        try { var v = rawGet(k); return v == null ? (fallback === undefined ? null : fallback) : JSON.parse(v); }
+        catch (_) { return fallback === undefined ? null : fallback; }
+      },
+      set: function (k, v) { return rawSet(k, typeof v === 'string' ? v : JSON.stringify(v)); },
+      setJSON: function (k, v) { return rawSet(k, JSON.stringify(v)); },
+      remove: function (k) { try { localStorage.removeItem(k); } catch (_) {} mem.delete(k); },
+      available: function () {
+        try { var k = '__flove_probe__'; localStorage.setItem(k, '1'); localStorage.removeItem(k); return true; }
+        catch (_) { return false; }
+      },
+      memoryOnly: function () { return !this.available(); }
+    };
+  }
+  if (!window.floveFields) window.floveFields = function () {
+    try { var el = document.getElementById('flove-fields'); return el ? (JSON.parse(el.textContent).fields || []) : []; }
+    catch (_) { return []; }
+  };
+  if (!window.flovePort) {
+    window.flovePort = {
+      schema: 'flove-port/1',
+      export: function () { return { schema: 'flove-portrait/1', app: null, version: 1, generatedAt: new Date().toISOString(), rows: [] }; },
+      consult: function () { return { schema: 'flove-consult/1', app: null, version: 1, generatedAt: new Date().toISOString(), rows: [] }; },
+      import: function () { return { ok: false, applied: 0, errors: ['no app adapter'] }; }
+    };
+  }
+  if (!window.floveNet) window.floveNet = window.flovePort; // deprecated alias
+  if (!window.flovePortrait) window.flovePortrait = window.flovePort;
+  if (!window.floveSummary) window.floveSummary = function () { return window.flovePort.export(); };
+})();
+
+</script>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Raty · FLOVE</title>
+  <link rel="icon" type="image/svg+xml" href="favicon-raty.svg">
+  <style data-flove-inlined="flove.css">
+/* a11y — 40px hit targets on touch (§6), desktop untouched */
+@media (pointer: coarse){
+  .btn,.btn-primary,.btn-ghost,.btn-soft,.subitem,.tbtn,.cat,.chip,.pc-toggle,.menu-item,.app-menu-item,.topmenu__item{min-height:40px}
+}
+.a11y-h1{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+/* Pruned to the flove.css parts raty uses: tokens, the flove-bar, the brand button and its menu. */
+
+/* ============================================================
+   🌱 flove.css · shared identity layer for all FLOVE demos
+   --------------------------------------------------------------
+   Design intent
+   - One cohesive frame around 13 very different apps.
+   - Each app keeps its own palette by overriding `--app-*` tokens
+     in its local `:root`. This file only paints the common skin.
+   - Two visual primitives identify the family everywhere:
+       1. The 🌱 sprout mark (brand)
+       2. The flove-bar at the very top (back to launcher + app name)
+   - A common motion vocabulary (gentle lift, soft fade, wiggle).
+   ============================================================ */
+
+:root{
+  /* The sprout — flove brand mark. Used as logo glyph everywhere. */
+  --flove-mark: "🌱";
+
+  /* Per-app overridable accent. Apps redeclare these. */
+  --app-accent:        #6ee7b7;
+  --app-accent-soft:   #a7f3d0;
+  --app-ink-on-accent: #042418;
+
+  /* Family geometry & motion (constant across apps) */
+  --flove-radius-sm: 12px;
+  --flove-radius:    20px;
+  --flove-radius-lg: 28px;
+  --flove-radius-pill: 999px;
+  --flove-ease:    cubic-bezier(.2,.8,.2,1);
+  --flove-fast:    .15s var(--flove-ease);
+  --flove-medium:  .25s var(--flove-ease);
+  --flove-slow:    .4s  var(--flove-ease);
+
+  /* Family typography. Apps may override font-family but should keep these scales. */
+  --flove-font-ui: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --flove-font-display: 'Georgia', 'Times New Roman', serif;
+}
+
+/* ============================================================
+   THE FLOVE BAR — a thin sticky strip at the very top of every
+   app. Holds the back-to-launcher link, the sprout brand,
+   and the app name. Lives ABOVE every app's own header.
+   ============================================================ */
+.flove-bar{
+  position: sticky;
+  top: 0;
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  font-family: var(--flove-font-ui);
+  font-size: 13px;
+  letter-spacing: .3px;
+  background: rgba(255,255,255,.55);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  color: #1a1a1a;
+}
+
+/* Auto dark variant when app body is dark */
+
+.flove-bar--dark{
+  background: rgba(10,12,18,.6);
+  border-bottom-color: rgba(255,255,255,.08);
+  color: #e9ecf3;
+}
+
+.flove-bar .flove-mark{
+  font-size: 16px;
+  color: var(--app-accent);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--app-accent) 35%, transparent));
+}
+.flove-bar .flove-app-name{
+  font-weight: 500;
+  opacity: .85;
+}
+
+/* clickable app title → dropdown menu below */
+.flove-brand{ position: relative; display: inline-flex; align-items: center; }
+.flove-brand-btn{
+  display: inline-flex; align-items: center; gap: 6px;
+  background: none; border: 0; cursor: pointer; color: inherit;
+  font-family: inherit; font-size: inherit; font-weight: 600; letter-spacing: .3px;
+  padding: 4px 10px; border-radius: var(--flove-radius-pill);
+  transition: background var(--flove-fast);
+}
+.flove-brand-btn:hover{ background: var(--app-accent-soft); color: var(--app-ink-on-accent); }
+.flove-brand-btn .flove-app-name{ font-weight: 600; opacity: 1; }
+.flove-brand-btn .flove-caret{ font-size: .7em; opacity: .7; }
+.flove-brand[data-open="true"] .flove-caret{ transform: rotate(180deg); }
+.flove-menu{
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 200;
+  display: flex; flex-direction: column; min-width: 172px; padding: 6px;
+  border-radius: 12px; background: rgba(10,12,18,.97);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 12px 34px rgba(0,0,0,.45);
+}
+.flove-menu[hidden]{ display: none; }
+.flove-menu a{
+  display: block; padding: 8px 12px; border-radius: 8px;
+  text-decoration: none; color: #e9ecf3; font-size: 13px;
+}
+.flove-menu a:hover{ background: var(--app-accent-soft); color: var(--app-ink-on-accent); }
+
+/* Reduced motion: disable all flove animations */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after{ transition-duration: .01ms !important; }
+}
+
+/* Mobile: hide the bottom badge so it doesn't compete with app UI */
+@media (max-width: 480px) {
+  .flove-bar{ font-size: 12px; padding: 6px 10px; }
+}
+
+/* enhanced flove-bar — center categories + right menu ───────── */
+
+.flove-menu{
+  width: min(280px, calc(100vw - 24px));
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: var(--flove-radius);
+  box-shadow: 0 18px 40px rgba(0,0,0,.18);
+  padding: 6px;
+  z-index: 200;
+  font-family: var(--flove-font-ui);
+}
+/* the white panel above needs dark item text; the base dark-menu rule
+   (.flove-menu a) would otherwise leave them near-invisible */
+.flove-menu a{ color: inherit; }
+.flove-menu[hidden]{ display: none; }
+
+
+  /* ── Standard summary section ── */
+  .flove-summary{ margin:2rem auto; max-width:720px; padding:1.1rem 1.2rem;
+    border:1px solid rgba(0,0,0,.14); border-radius:14px; background:rgba(255,255,255,.78); color:#1a1820; }
+  .flove-summary h2{ font-size:1rem; margin:0 0 .6rem; letter-spacing:.02em; }
+  .flove-summary__phrase{ margin:0 0 .9rem; font-size:1.05rem; line-height:1.5; }
+  .flove-summary__phrase em{ font-style:italic; }
+  .flove-summary__actions{ display:flex; gap:.5rem; flex-wrap:wrap; }
+  .flove-summary__btn{ font:inherit; font-size:.9rem; padding:.45rem .85rem; border-radius:999px;
+    border:1px solid rgba(0,0,0,.18); background:#fff; cursor:pointer; }
+  .flove-summary__btn[aria-pressed="true"]{ background:#111; color:#fff; }
+
+
+  .flove-summary__btn{ min-height:44px; }
+  .flove-summary__btn:focus-visible, .flove-summary__item:focus-visible{
+    outline:2px solid currentColor; outline-offset:2px; }
+  @media (prefers-reduced-motion: reduce){
+    .flove-summary__menu{ transition:none; }
+  }
+  .flove-summary__share{ position:relative; display:inline-flex; }
+  .flove-summary__menu{ position:absolute; top:calc(100% + .35rem); left:0; z-index:5;
+    display:flex; flex-direction:column; min-width:11rem; padding:.3rem;
+    border:1px solid rgba(0,0,0,.16); border-radius:12px; background:#fff; color:#111;
+    box-shadow:0 10px 24px rgba(0,0,0,.18); }
+  .flove-summary__menu[hidden]{ display:none; }
+  .flove-summary__item{ display:flex; gap:.5rem; align-items:center; font:inherit; font-size:.9rem;
+    padding:.45rem .6rem; border:0; border-radius:8px; background:transparent; color:inherit;
+    text-decoration:none; cursor:pointer; white-space:nowrap; }
+  .flove-summary__item:hover,.flove-summary__item:focus-visible{ background:rgba(0,0,0,.07); }
+</style>
+  <style>
+    :root{
+      /* flove identity overrides — Puzzy: violet accent, teal flourish, on a deep canvas */
+      --app-accent:        #8d89ff;
+      --app-accent-soft:   #c9c6ff;
+      --app-ink-on-accent: #0b0b14;
+
+      /* Puzzy local palette (dark) */
+      --bg:#0b0b0f; --panel:#11131a; --ink:#e9eaf2; --muted:#a3a7b4;
+      --line:#1e2133; --field:#13162a; --accent2:#70f0d3;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--ink);
+      background:
+        radial-gradient(1000px 700px at 110% -10%, rgba(141,137,255,.16), transparent 60%),
+        radial-gradient(800px 600px at -10% 120%, rgba(112,240,211,.12), transparent 50%),
+        var(--bg);
+      font-family:var(--flove-font-ui); letter-spacing:.2px;
+    }
+
+    /* i18n — pure CSS (§13.2) */
+    .t-es{ display:none }
+    body:has(#ui-lang-es:checked) .t-en{ display:none }
+    body:has(#ui-lang-es:checked) .t-es{ display:inline }
+
+    /* language toggle inside the flove-bar */
+    .lang{ display:inline-flex; gap:2px; margin-left:auto }
+    .lang input{ position:absolute; opacity:0; pointer-events:none }
+    .lang label{
+      font-size:11px; font-weight:600; letter-spacing:.4px; padding:3px 9px;
+      border-radius:var(--flove-radius-pill); cursor:pointer; color:var(--muted);
+      border:1px solid transparent;
+    }
+    #ui-lang-en:checked ~ label[for=ui-lang-en],
+    #ui-lang-es:checked ~ label[for=ui-lang-es]{
+      color:var(--app-ink-on-accent); background:var(--app-accent); border-color:var(--app-accent);
+    }
+
+    /* header — live phrase row at the very top, Create at its right */
+    .top{ max-width:980px; margin:1rem auto .4rem; padding:0 1rem }
+    .phrase-row{ display:flex; align-items:stretch; gap:.7rem }
+    .live-phrase{
+      flex:1; display:flex; flex-wrap:wrap; align-items:center; gap:.35rem;
+      border:1px dashed var(--line); border-radius:var(--flove-radius);
+      padding:.7rem 1rem; min-height:2.6rem; color:var(--accent2);
+      font-size:1.05rem; letter-spacing:.4px;
+      background:linear-gradient(180deg,rgba(112,240,211,.06),rgba(255,255,255,.02));
+    }
+    .live-phrase .phrase-mid{ color:var(--accent2) }
+
+    /* TRUE / LOVE — squared editable fields (button form ↔ text field) */
+    .phrase-chip, .phrase-input{
+      font:inherit; font-size:1rem; font-weight:700; letter-spacing:.5px;
+      padding:.18rem .55rem; line-height:1.2; border-radius:6px;            /* squared, not pill */
+    }
+    .phrase-chip{
+      cursor:text; color:var(--app-ink-on-accent);
+      background:var(--app-accent); border:1px solid var(--app-accent);
+    }
+    /* TRUE and LOVE get different backgrounds */
+    .phrase-chip--true{ background:var(--app-accent); border-color:var(--app-accent) }
+    .phrase-chip--love{ background:var(--accent2);    border-color:var(--accent2) }
+    .phrase-chip:hover{ box-shadow:0 0 10px rgba(141,137,255,.45) }
+    .phrase-input{
+      color:var(--ink); background:var(--field);
+      border:1px solid var(--accent2); outline:none; min-width:3.5rem;
+      box-shadow:0 0 0 2px rgba(112,240,211,.18);
+    }
+
+    /* Create — modern + ~30% bigger than the old chip */
+    .create-cta{
+      align-self:stretch; cursor:pointer; white-space:nowrap;
+      font:inherit; font-weight:800; letter-spacing:.6px; font-size:1.1rem;
+      padding:.6rem 1.5rem; border-radius:var(--flove-radius);
+      color:var(--app-ink-on-accent); border:1px solid transparent;
+      background:linear-gradient(135deg,var(--app-accent),#b3a4ff 55%,var(--accent2));
+      box-shadow:0 6px 18px rgba(141,137,255,.38);
+      transition:transform var(--flove-fast), box-shadow var(--flove-fast), filter var(--flove-fast);
+    }
+    .create-cta:hover{ transform:translateY(-1px); box-shadow:0 9px 24px rgba(141,137,255,.55); filter:brightness(1.05) }
+    .create-cta:active{ transform:translateY(0) }
+
+    /* chips (still used by the scale CTA: Add raters / Save) */
+    .chip{
+      display:inline-flex; align-items:center; gap:.35rem; cursor:pointer;
+      padding:.4rem .8rem; border-radius:var(--flove-radius-pill);
+      background:#171a2e; border:1px solid var(--line); color:var(--ink);
+      font:inherit; font-size:.85rem; text-decoration:none;
+      transition:border-color var(--flove-fast), box-shadow var(--flove-fast), background var(--flove-fast);
+    }
+    .chip:hover{ border-color:var(--app-accent); box-shadow:0 0 12px rgba(141,137,255,.3) }
+    .chip.big{ font-size:.95rem; padding:.5rem 1rem }
+    .chip.primary{ background:var(--app-accent); color:var(--app-ink-on-accent); border-color:var(--app-accent) }
+
+    /* "Pick rater forms" — now a top section above every list */
+    .pick-top{ max-width:980px; margin:.6rem auto .2rem; padding:0 1rem }
+    .pick-top h2{ margin:0 0 .2rem; font-size:1.1rem; letter-spacing:.5px; color:var(--app-accent) }
+
+    /* main layout */
+    .layout{
+      max-width:980px; margin:1rem auto 4rem; padding:0 1rem;
+      display:grid; gap:1.2rem; grid-template-columns:1fr;
+    }
+
+    /* scales */
+    .scales{ display:grid; gap:.9rem }
+    .scale{
+      border:1px solid var(--line); border-radius:var(--flove-radius);
+      padding:.9rem 1rem;
+      background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+      display:grid; gap:.4rem;
+    }
+    .scale .labels{ display:flex; justify-content:space-between; align-items:baseline; gap:.5rem }
+    .lbl{ font-size:.8rem; font-weight:600; letter-spacing:.5px; color:var(--muted) }
+    .lbl.left{ color:var(--app-accent) }
+    .lbl.right{ color:var(--accent2) }
+    .lbl.mid{ color:var(--muted); font-style:italic }
+    .picker{ display:grid; gap:.35rem }
+    .picker input[type=range]{ width:100%; accent-color:var(--app-accent) }
+    .ticks{ display:flex; justify-content:space-between; color:var(--muted); font-size:.7rem }
+
+    .senses-mini{ display:flex; gap:.3rem; flex-wrap:wrap }
+    .sense-pill{
+      cursor:pointer; border:1px solid var(--line); background:#171a2e;
+      border-radius:var(--flove-radius-pill); padding:.2rem .5rem; font-size:1rem; line-height:1;
+      transition:border-color var(--flove-fast), box-shadow var(--flove-fast);
+    }
+    .sense-pill:hover{ border-color:var(--app-accent) }
+    .sense-pill.on{ border-color:var(--accent2); box-shadow:0 0 10px rgba(112,240,211,.4) }
+
+    .cta{ display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.4rem }
+
+    /* senses column */
+    .senses{
+      border:1px solid var(--line); border-radius:var(--flove-radius);
+      padding:1rem; align-self:start;
+      background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+      display:grid; gap:.6rem;
+    }
+    .senses h4{ margin:0; font-size:.9rem; letter-spacing:.5px; color:var(--app-accent) }
+    .senses p{ margin:0; color:var(--muted); font-size:.85rem }
+
+    /* =====================================================================
+       FORMS-LAB — node-count buttons (2·3·4·5·7) + raters (pure CSS, §13.2)
+       The buttons multiselect node-counts; each reveals a batch of raters
+       rendered with that many nodes (less → more). "full" reveals the 7
+       fully-named raters (the RATY fulls), each switchable per-card.
+       ===================================================================== */
+    .forms-lab{ max-width:980px; margin:.4rem auto 3rem; padding:0 1rem }
+    .forms-lab h2{ margin:0 0 .2rem; font-size:1.1rem; letter-spacing:.5px; color:var(--app-accent) }
+    .forms-lab .lab-lede{ color:var(--muted); margin:0 0 .9rem; font-size:.88rem }
+
+    /* control row: hidden inputs + label-buttons. DOM: full label first → left */
+    .form-ctrl{ display:flex; align-items:center; gap:.4rem; flex-wrap:wrap; margin-bottom:1.1rem }
+    .form-ctrl > input{ position:absolute; opacity:0; pointer-events:none }
+    .numbtn{
+      cursor:pointer; min-width:2.4rem; text-align:center;
+      padding:.45rem .7rem; border-radius:var(--flove-radius-pill);
+      background:#171a2e; border:1px solid var(--line); color:var(--ink);
+      font-weight:700; letter-spacing:.5px;
+      transition:border-color var(--flove-fast), box-shadow var(--flove-fast), background var(--flove-fast), color var(--flove-fast);
+    }
+    .numbtn:hover{ border-color:var(--app-accent) }
+    #f2:checked ~ label[for=f2], #f3:checked ~ label[for=f3],
+    #f4:checked ~ label[for=f4], #f5:checked ~ label[for=f5],
+    #f7:checked ~ label[for=f7]{
+      background:var(--app-accent); color:var(--app-ink-on-accent);
+      border-color:var(--app-accent); box-shadow:0 0 12px rgba(141,137,255,.35);
+    }
+    /* "full" — appears on the left only once any number is active */
+    .fullbtn{
+      display:none; cursor:pointer; padding:.45rem .8rem; font-weight:700; letter-spacing:.5px;
+      border-radius:var(--flove-radius-pill); color:var(--accent2);
+      background:#13251f; border:1px solid var(--accent2);
+    }
+    .fullbtn:hover{ box-shadow:0 0 12px rgba(112,240,211,.4) }
+    .form-ctrl:has(.numf:checked) .fullbtn{ display:inline-flex }
+    #ffull:checked ~ .fullbtn{ background:var(--accent2); color:var(--app-ink-on-accent) }
+
+    /* batches — revealed by their number; DOM order 2→7 keeps "less → more" */
+    .batch{ display:none; margin-bottom:1.2rem }
+    .batch > .bh{ margin:0 0 .5rem; font-size:.82rem; letter-spacing:.5px; color:var(--muted); font-weight:600 }
+    .batch .cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(255px,1fr)); gap:.8rem }
+    body:has(#f2:checked) .batch--2{ display:block }
+    body:has(#f3:checked) .batch--3{ display:block }
+    body:has(#f4:checked) .batch--4{ display:block }
+    body:has(#f5:checked) .batch--5{ display:block }
+    body:has(#f7:checked) .batch--7{ display:block }
+
+    /* the fulls block — revealed by "full" */
+    .fulls{ display:none }
+    body:has(#ffull:checked) .fulls{ display:block }
+    .fulls .cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:.8rem }
+
+    /* rater card */
+    .rater{
+      position:relative;
+      border:1px solid var(--line); border-radius:var(--flove-radius-sm);
+      background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02)),#15182b;
+      padding:.9rem;
+    }
+    .rater h3{ margin:0 0 .45rem; font-size:1rem; color:var(--app-accent); letter-spacing:.5px }
+
+    /* labels + node-pointer rows (mirror intensonims) */
+    .labels, .icons{ list-style:none; padding:0; margin:.35rem 0 }
+    .labels.seven, .icons.seven{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px }
+    .labels.five,  .icons.five { display:grid; grid-template-columns:repeat(5,1fr); gap:6px }
+    .labels li{ text-align:center; font-size:.78rem; color:var(--app-accent-soft); opacity:.95 }
+    .icons li{ text-align:center; font-size:1.05rem; opacity:.95 }
+
+    /* the colored bar */
+    .bar{
+      display:grid; gap:2px; background:#0f1120; padding:2px;
+      border-radius:var(--flove-radius-sm); border:1px solid var(--line);
+      box-shadow:inset 0 10px 22px rgba(0,0,0,.35);
+    }
+    .bar.seven{ grid-template-columns:repeat(7,1fr) }
+    .bar.five { grid-template-columns:repeat(5,1fr) }
+    .bar span{ display:block; height:38px; border-radius:10px }
+    .bar.seven.use-gradient.rainbow-smooth span{
+      background:linear-gradient(90deg,#ff2d2d 0%, #ff8a00 16.66%, #ffe100 33.33%, #36d63a 50%, #2aa9ff 66.66%, #3b4cff 83.33%, #a64bff 100%);
+      background-size:700% 100%;
+    }
+    .bar.seven.use-gradient span:nth-child(1){ background-position:0% 0 }
+    .bar.seven.use-gradient span:nth-child(2){ background-position:16.66% 0 }
+    .bar.seven.use-gradient span:nth-child(3){ background-position:33.33% 0 }
+    .bar.seven.use-gradient span:nth-child(4){ background-position:50% 0 }
+    .bar.seven.use-gradient span:nth-child(5){ background-position:66.66% 0 }
+    .bar.seven.use-gradient span:nth-child(6){ background-position:83.33% 0 }
+    .bar.seven.use-gradient span:nth-child(7){ background-position:100% 0 }
+    .bar.five.use-gradient.rainbow-smooth span{
+      background:linear-gradient(90deg,#ff2d2d 0%, #ffe100 25%, #36d63a 50%, #2aa9ff 75%, #a64bff 100%);
+      background-size:500% 100%;
+    }
+    .bar.five.use-gradient span:nth-child(1){ background-position:0% 0 }
+    .bar.five.use-gradient span:nth-child(2){ background-position:25% 0 }
+    .bar.five.use-gradient span:nth-child(3){ background-position:50% 0 }
+    .bar.five.use-gradient span:nth-child(4){ background-position:75% 0 }
+    .bar.five.use-gradient span:nth-child(5){ background-position:100% 0 }
+
+    /* senses across the FULL width of the bar */
+    .senses-bar{ display:flex; gap:.3rem; margin-top:.45rem }
+    .senses-bar > input{ position:absolute; opacity:0; pointer-events:none }
+    .senses-bar .sense-pill{
+      flex:1; text-align:center; cursor:pointer; line-height:1;
+      border:1px solid var(--line); background:#171a2e;
+      border-radius:var(--flove-radius-pill); padding:.25rem 0; font-size:1rem;
+      transition:border-color var(--flove-fast), box-shadow var(--flove-fast);
+    }
+    .senses-bar .sense-pill:hover{ border-color:var(--app-accent) }
+    .senses-bar > input:checked + .sense-pill{
+      border-color:var(--accent2); box-shadow:0 0 10px rgba(112,240,211,.4);
+    }
+
+    /* per-card form switcher — small, centered radios for "the rest" + the max */
+    .form-pick{ display:flex; justify-content:center; gap:.3rem; margin-top:.55rem }
+    .form-pick > input{ position:absolute; opacity:0; pointer-events:none }
+    .frbtn{
+      cursor:pointer; font-size:.72rem; line-height:1; padding:.18rem .5rem;
+      border-radius:var(--flove-radius-pill); color:var(--muted);
+      background:#171a2e; border:1px solid var(--line);
+      transition:all var(--flove-fast);
+    }
+    .frbtn:hover{ border-color:var(--app-accent); color:var(--ink) }
+    .frbtn--max{ font-weight:700; color:var(--app-accent-soft) }
+    .form-pick > input:checked + .frbtn{
+      background:var(--app-accent); color:var(--app-ink-on-accent); border-color:var(--app-accent);
+    }
+
+    /* === form switching (pure CSS, scoped per card via :has) ===
+       7·4·3·2 keep the 7-cell bar and only HIDE the empty node-pointers;
+       5 swaps in a dedicated 5-cell bar (its node-pointers genuinely change). */
+    .rater .form5only{ display:none }
+    .rater:has(.formr[value="5"]:checked) .form-not5{ display:none }
+    .rater:has(.formr[value="5"]:checked) .form5only{ display:block }
+
+    /* form 4 → nodes at 1,3,5,7 (hide 2,4,6) */
+    .rater:has(.formr[value="4"]:checked) .seven li:nth-child(2),
+    .rater:has(.formr[value="4"]:checked) .seven li:nth-child(4),
+    .rater:has(.formr[value="4"]:checked) .seven li:nth-child(6){ visibility:hidden }
+    /* form 3 → nodes at 1,4,7 (hide 2,3,5,6) */
+    .rater:has(.formr[value="3"]:checked) .seven li:nth-child(2),
+    .rater:has(.formr[value="3"]:checked) .seven li:nth-child(3),
+    .rater:has(.formr[value="3"]:checked) .seven li:nth-child(5),
+    .rater:has(.formr[value="3"]:checked) .seven li:nth-child(6){ visibility:hidden }
+    /* form 2 → nodes at extremes 1,7 (hide 2,3,4,5,6) */
+    .rater:has(.formr[value="2"]:checked) .seven li:nth-child(2),
+    .rater:has(.formr[value="2"]:checked) .seven li:nth-child(3),
+    .rater:has(.formr[value="2"]:checked) .seven li:nth-child(4),
+    .rater:has(.formr[value="2"]:checked) .seven li:nth-child(5),
+    .rater:has(.formr[value="2"]:checked) .seven li:nth-child(6){ visibility:hidden }
+
+    /* ===== Create panel — inline JS form (§13: JS lives in forms) ===== */
+    .create-panel{
+      max-width:980px; margin:.2rem auto 1rem; padding:1rem 1.1rem;
+      border:1px solid var(--line); border-radius:var(--flove-radius);
+      background:linear-gradient(180deg,rgba(141,137,255,.06),rgba(255,255,255,.02));
+    }
+    .create-panel[hidden]{ display:none }
+    .create-panel h2{ margin:0 0 .6rem; font-size:1.05rem; color:var(--app-accent); letter-spacing:.5px; text-align:center }
+    .cp-row{ display:flex; justify-content:center; gap:.4rem; flex-wrap:wrap; margin:.5rem 0 }
+    .polbtn, .cp-num{
+      cursor:pointer; padding:.42rem .9rem; border-radius:var(--flove-radius-pill);
+      background:#171a2e; border:1px solid var(--line); color:var(--ink);
+      font:inherit; font-weight:700; letter-spacing:.4px; transition:all var(--flove-fast);
+    }
+    .polbtn:hover, .cp-num:hover{ border-color:var(--app-accent) }
+    .cp-num{ min-width:2.4rem; text-align:center }
+    .polbtn.is-on{ background:var(--accent2); color:var(--app-ink-on-accent); border-color:var(--accent2) }
+    .polbtn[data-pol="neg"].is-on{ background:#5aa9ff; border-color:#5aa9ff }
+    .modebtn.is-on{ background:var(--app-accent); color:var(--app-ink-on-accent); border-color:var(--app-accent) }
+    /* mode badge on created cards */
+    .mode-tag{
+      display:inline-block; vertical-align:middle; margin-left:.4rem;
+      font-size:.6rem; letter-spacing:.6px; text-transform:uppercase; font-weight:600;
+      color:var(--app-accent); border:1px solid var(--app-accent); border-radius:var(--flove-radius-pill); padding:.05rem .4rem;
+    }
+    /* picked nodes on a created bar (point/area/multi) */
+    .rater .bar span.pick{ outline:3px solid var(--accent2); outline-offset:-3px; filter:brightness(1.15) }
+    .rater.neg .bar span.pick{ outline-color:#dff0ff }
+    .cp-num.is-on{ background:var(--app-accent); color:var(--app-ink-on-accent); border-color:var(--app-accent); box-shadow:0 0 12px rgba(141,137,255,.35) }
+
+    .cp-editors{ display:grid; gap:.7rem; margin:.6rem 0 }
+    .cp-editor{ border:1px dashed var(--line); border-radius:var(--flove-radius-sm); padding:.7rem }
+    .cp-name{
+      width:100%; margin-bottom:.5rem; padding:.4rem .6rem; font:inherit;
+      background:var(--field); color:var(--ink); border:1px solid var(--line); border-radius:var(--flove-radius-sm);
+    }
+    .cp-inputs{ display:grid; gap:4px; margin-bottom:4px }
+    .cp-inputs input{
+      text-align:center; padding:.3rem .2rem; font:inherit; font-size:.8rem;
+      background:var(--field); color:var(--ink); border:1px solid var(--line); border-radius:8px;
+    }
+    .cp-inputs input:focus{ outline:none; border-color:var(--accent2) }
+    .btn-add{
+      cursor:pointer; padding:.5rem 1.4rem; border-radius:var(--flove-radius-pill);
+      background:var(--app-accent); color:var(--app-ink-on-accent); border:1px solid var(--app-accent);
+      font:inherit; font-weight:700; letter-spacing:.4px;
+    }
+    .btn-add:hover{ box-shadow:0 0 16px rgba(141,137,255,.5) }
+    .cp-list{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:.8rem; margin-top:1rem }
+
+    /* created cards: delete cross + negative = blueish */
+    .rater .del{
+      position:absolute; top:.4rem; right:.45rem; cursor:pointer; line-height:1;
+      width:1.4rem; height:1.4rem; border-radius:50%; border:1px solid var(--line);
+      background:#171a2e; color:var(--muted); font-size:.85rem;
+    }
+    .rater .del:hover{ border-color:#ff6b6b; color:#ff6b6b }
+    .rater.neg{ border-color:#5aa9ff; background:linear-gradient(180deg,rgba(90,169,255,.12),rgba(255,255,255,.02)),#10182b }
+    .rater.neg h3{ color:#8cc4ff }
+    .rater.neg .bar span{ background:linear-gradient(90deg,#2b5b9e,#3f7fd6,#5aa9ff,#86c5ff,#bfe0ff)!important; background-size:100% 100%!important }
+
+    /* ===== Forms-lab: main-list numbers row (duplicate) + popular demos ===== */
+    .mainform{ display:flex; justify-content:center; gap:.4rem; flex-wrap:wrap; margin:.2rem 0 1rem }
+    .mainform > input{ position:absolute; opacity:0; pointer-events:none }
+    #mf2:checked ~ label[for=mf2], #mf3:checked ~ label[for=mf3],
+    #mf4:checked ~ label[for=mf4], #mf5:checked ~ label[for=mf5],
+    #mf7:checked ~ label[for=mf7]{
+      background:var(--app-accent); color:var(--app-ink-on-accent); border-color:var(--app-accent); box-shadow:0 0 12px rgba(141,137,255,.35);
+    }
+    .popular{ display:none; margin-top:1.1rem }
+    .fulls:has(#mf2:checked) .popular,
+    .fulls:has(#mf3:checked) .popular,
+    .fulls:has(#mf4:checked) .popular,
+    .fulls:has(#mf5:checked) .popular{ display:block }
+    .popular > .bh{ color:var(--accent2) }
+    .popular .cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(255px,1fr)); gap:.8rem }
+    .rater.pop{
+      border-color:var(--accent2);
+      box-shadow:0 0 0 1px rgba(112,240,211,.35), 0 12px 28px rgba(112,240,211,.12);
+      background:linear-gradient(180deg,rgba(112,240,211,.08),rgba(255,255,255,.02)),#13211e;
+    }
+    .rater.pop h3{ color:var(--accent2) }
+    .pop-tag{ float:right; font-size:.66rem; letter-spacing:.5px; color:var(--accent2); border:1px solid var(--accent2); border-radius:var(--flove-radius-pill); padding:.05rem .4rem }
+
+    /* ===== whole-card selection · reorder · views (JS-driven) ===== */
+    .rater{ cursor:pointer }
+    .rater.selected{ box-shadow:0 0 0 2px var(--app-accent), 0 14px 30px rgba(141,137,255,.28) }
+    .rater.selected::after{
+      content:""; position:absolute; inset:0; border-radius:inherit;
+      background:rgba(141,137,255,.12); pointer-events:none;
+    }
+    .rater.dragging{ opacity:.5; outline:2px dashed var(--accent2); outline-offset:-2px }
+
+    /* up/down arrows on the right */
+    .rater.has-reorder{ padding-right:2rem }
+    .reorder{
+      position:absolute; top:50%; right:.3rem; transform:translateY(-50%);
+      display:flex; flex-direction:column; gap:3px; z-index:3;
+    }
+    .reorder button{
+      cursor:pointer; width:1.5rem; height:1.3rem; line-height:1; padding:0;
+      border-radius:6px; border:1px solid var(--line); background:#171a2e; color:var(--muted); font-size:.65rem;
+    }
+    .reorder button:hover{ border-color:var(--app-accent); color:var(--ink) }
+
+    /* "views" button — appears after the numbers when exactly two are selected, 30% bigger */
+    .views-ctrl{ align-items:center; gap:.4rem; margin-left:.4rem }
+    .viewsbtn{
+      cursor:pointer; font-weight:700; letter-spacing:.5px; border-radius:var(--flove-radius-pill);
+      background:var(--accent2); color:var(--app-ink-on-accent); border:1px solid var(--accent2);
+      font-size:1.3em; padding:.4rem 1rem;            /* ~30% larger than the number buttons */
+      box-shadow:0 0 14px rgba(112,240,211,.4);
+    }
+    .viewsbtn:hover{ box-shadow:0 0 20px rgba(112,240,211,.6) }
+    .views-menu{ display:inline-flex; gap:.3rem }
+    .views-menu[hidden]{ display:none }
+    .views-menu button{
+      cursor:pointer; padding:.4rem .7rem; border-radius:var(--flove-radius-pill);
+      background:#171a2e; border:1px solid var(--line); color:var(--ink); font:inherit;
+    }
+    .views-menu button:hover{ border-color:var(--accent2); color:var(--accent2) }
+
+    /* views stage (rendered comparative figure) */
+    .views-stage{
+      position:relative; margin:.4rem 0 1.1rem; padding:1rem .8rem;
+      border:1px solid var(--accent2); border-radius:var(--flove-radius);
+      background:linear-gradient(180deg,rgba(112,240,211,.06),rgba(255,255,255,.02)),#10121f;
+    }
+    .views-stage[hidden]{ display:none }
+    .views-stage h4{ margin:.1rem 0 .5rem; color:var(--accent2); letter-spacing:.4px; font-size:.95rem; text-transform:capitalize }
+    .views-stage svg{ width:100%; height:auto; display:block }
+    .vclose{
+      position:absolute; top:.5rem; right:.5rem; cursor:pointer; width:1.6rem; height:1.6rem;
+      border-radius:50%; border:1px solid var(--line); background:#171a2e; color:var(--muted); font-size:.95rem;
+    }
+    .vclose:hover{ border-color:#ff6b6b; color:#ff6b6b }
+
+    /* know more */
+    .output{ max-width:980px; margin:0 auto 5rem; padding:0 1rem }
+    .output summary{ cursor:pointer; color:var(--muted) }
+    .output__box{ border:1px solid var(--line); border-radius:var(--flove-radius-sm); padding:.7rem; background:#111426; margin-top:.5rem }
+    .output a{ color:var(--accent2) }
+
+    /* =====================================================================
+       DESIGN CATEGORIES — basic (points + nodes) · normal bar · big bars
+       Applied to created raters, the main scales and the full raters.
+       big bars = default; non-selected cells dim to 80% opacity.
+       ===================================================================== */
+    .bar:has(span.pick) span:not(.pick){ opacity:.8 }          /* big-bar 80% dim */
+
+    .rater.d-normal .bar span{ height:16px }
+    .rater.d-basic .bar{ display:none }
+    .rater.d-basic .icons li{ font-size:1.55rem }
+    .rater.d-basic .icons{ margin-top:.45rem }
+
+    /* per-card design dropdown (injected) + create-panel dropdown */
+    .cp-design-row{ justify-content:center }
+    .cp-design, .design-pick{
+      font:inherit; padding:.28rem .5rem; border-radius:8px;
+      background:var(--field); color:var(--ink); border:1px solid var(--line); cursor:pointer;
+    }
+    .cp-design:focus, .design-pick:focus{ outline:none; border-color:var(--accent2) }
+    /* icon only, ~30% bigger; the option text (numbers / bar-type words) is dropped */
+    .design-pick{ font-size:1.3rem; line-height:1; margin:.1rem 0 .5rem; padding:.2rem .35rem }
+    .cp-design{ font-size:1.3rem; line-height:1; padding:.3rem .5rem }
+
+    /* main raters get an original, solid-looking border */
+    .scale, .scales .rater, .fulls .cards > .rater{
+      border:2px solid var(--app-accent-soft);
+      box-shadow:inset 0 0 0 1px rgba(11,11,20,.55), 0 3px 0 rgba(8,9,18,.9), 0 8px 18px rgba(0,0,0,.4);
+    }
+
+    /* main scales: alternate bar displays (basic = the slider, kept default) */
+    .scale .scale-bar{ display:none; margin:.1rem 0 }
+    .scale.d-big .scale-bar, .scale.d-normal .scale-bar{ display:grid }
+    .scale.d-normal .scale-bar span{ height:16px }
+    /* hide only the slider in normal/big — keep the ticks (1..N labels) visible with the bar */
+    .scale.d-big .picker input[type=range],
+    .scale.d-normal .picker input[type=range]{ display:none }
+    .scale-bar span{ cursor:pointer }
+    .scale-tools{ display:flex; justify-content:flex-end; align-items:center; gap:.4rem; margin-top:-.1rem }
+
+    /* senses moved to the right of each scale, stacked one per row */
+    .scale{ display:flex; gap:.85rem; align-items:stretch }
+    .scale-main{ flex:1; min-width:0; display:grid; gap:.4rem; align-content:start }
+    /* senses/colours/emotions are hidden until their side icon is tapped */
+    .senses-bar[hidden], .senses-mini[hidden]{ display:none }
+
+    /* "More raters" disclosure, below the main raters */
+    .more-raters{ max-width:980px; margin:1.6rem auto 0; padding:0 1rem }
+    .phrase-row--dup{ margin-bottom:.2rem }
+    .more-ctrls{ display:flex; justify-content:center; gap:.6rem; margin:.55rem 0 .4rem }
+    /* Create: only slightly coloured when not selected; full gradient when active */
+    .create-cta--sm{
+      align-self:auto; font-size:.9rem; font-weight:700; padding:.45rem 1.1rem;
+      background:rgba(141,137,255,.16); color:var(--ink);
+      border:1px solid var(--app-accent-soft); box-shadow:none;
+    }
+    .create-cta--sm:hover{ transform:none; border-color:var(--app-accent); filter:none }
+    .create-cta--sm[aria-expanded="true"]{
+      background:linear-gradient(135deg,var(--app-accent),#b3a4ff 55%,var(--accent2));
+      color:var(--app-ink-on-accent); border-color:transparent; box-shadow:0 4px 12px rgba(141,137,255,.4);
+    }
+    .morebtn{
+      cursor:pointer; font:inherit; font-weight:700; letter-spacing:.5px; font-size:.9rem;
+      padding:.45rem 1.1rem; border-radius:var(--flove-radius-pill);
+      background:#171a2e; border:1px solid var(--app-accent-soft); color:var(--ink);
+      transition:border-color var(--flove-fast), box-shadow var(--flove-fast), background var(--flove-fast);
+    }
+    .morebtn:hover{ border-color:var(--app-accent); box-shadow:0 0 12px rgba(141,137,255,.35) }
+    .morebtn[aria-expanded="true"]{ background:var(--app-accent); color:var(--app-ink-on-accent); border-color:var(--app-accent) }
+    .more-body[hidden]{ display:none }
+
+    /* main scales selectable as a whole item (like the rater cards) */
+    .scale{ cursor:pointer }
+    .scale.selected{ box-shadow:0 0 0 2px var(--app-accent), 0 14px 30px rgba(141,137,255,.28) }
+    .scale.selected::after{
+      content:""; position:absolute; inset:0; border-radius:inherit;
+      background:rgba(141,137,255,.12); pointer-events:none;
+    }
+    .scale{ position:relative }
+
+    /* phrase: one adjective by default, click to expand the rest */
+    .adj-toggle{
+      cursor:pointer; color:var(--accent2); text-decoration:underline dotted;
+      text-underline-offset:2px;
+    }
+    .adj-toggle:hover{ filter:brightness(1.15) }
+
+    /* phrase mode controls: Merge ⇄ Compare */
+    .phrase-btn{
+      cursor:pointer; font:inherit; font-size:.8rem; font-weight:700; letter-spacing:.3px;
+      padding:.22rem .8rem; margin-left:.4rem; border-radius:var(--flove-radius-pill);
+      border:1px solid var(--app-accent-soft); background:#171a2e; color:var(--app-accent);
+      transition:border-color var(--flove-fast), box-shadow var(--flove-fast);
+    }
+    .phrase-btn:hover{ border-color:var(--app-accent); box-shadow:0 0 10px rgba(141,137,255,.3) }
+    .phrase-btn[hidden]{ display:none }
+    .phrase-body[hidden]{ display:none }
+    /* Merge / Compare radios — Merge stacked above Compare */
+    .phrase-modes{ display:inline-flex; flex-direction:column; gap:.25rem; vertical-align:middle; margin-left:.4rem }
+    .phrase-modes .phrase-btn{ margin-left:0 }
+    /* Merge / Compare in their own row, centered below the two keyword fields */
+    .phrase-modes-row{ display:flex; justify-content:center; gap:.5rem; margin:.45rem 0 .2rem }
+    .phrase-modes-row[hidden]{ display:none }
+    .phrase-modes-row .phrase-btn{ margin-left:0 }
+    .phrase-btn.is-on{ background:var(--app-accent); color:var(--app-ink-on-accent); border-color:var(--app-accent); box-shadow:0 0 10px rgba(141,137,255,.4) }
+    /* the comparison connector ("as more … than") inserted between the two words only in Compare */
+    .cmp-connector[hidden]{ display:none }
+    .phrase-summary{ color:var(--accent2); font-weight:700; letter-spacing:.3px }
+    .static-line{ color:var(--accent2); letter-spacing:.3px }
+    .static-line[hidden]{ display:none }
+
+    /* first-section node-count row + per-rater node strip + mode dropdown */
+    .scale-nodes-row{ max-width:980px; margin:.2rem auto .6rem; padding:0 1rem; display:flex; justify-content:center; gap:.4rem; flex-wrap:wrap }
+    .scale-nodes-row .numbtn{ cursor:pointer }
+    .scale-nodes-row .numbtn.on{ background:var(--app-accent); color:var(--app-ink-on-accent); border-color:var(--app-accent); box-shadow:0 0 12px rgba(141,137,255,.35) }
+    .scale-nodes{ display:flex; justify-content:center; gap:.3rem; margin-bottom:.2rem }
+    .node-num{ cursor:pointer; font:inherit; font-size:.7rem; font-weight:700; line-height:1; padding:.12rem .45rem;
+      border-radius:var(--flove-radius-pill); border:1px solid var(--line); background:#171a2e; color:var(--muted) }
+    .node-num:hover{ border-color:var(--app-accent); color:var(--ink) }
+    .node-num.active{ background:var(--accent2); color:var(--app-ink-on-accent); border-color:var(--accent2) }
+    .mode-pick{ align-self:center; cursor:pointer; font:inherit; font-size:.78rem; padding:.22rem .5rem; border-radius:8px;
+      background:var(--field); color:var(--ink); border:1px solid var(--line) }
+    .mode-pick:focus{ outline:none; border-color:var(--accent2) }
+    .magic-btn{ cursor:pointer; background:none; border:none; font-size:1rem; line-height:1; padding:0 .15rem }
+    .magic-btn:hover{ filter:brightness(1.2) drop-shadow(0 0 4px rgba(141,137,255,.6)) }
+    /* empty TRUE/LOVE chip still clickable */
+    .phrase-chip:empty{ min-width:2.6rem; min-height:1.3rem; opacity:.6 }
+
+    /* ===== Save raters into groups ===== */
+    .save-panel{
+      max-width:980px; margin:.2rem auto 1rem; padding:1rem 1.1rem;
+      border:1px solid var(--line); border-radius:var(--flove-radius);
+      background:linear-gradient(180deg,rgba(112,240,211,.06),rgba(255,255,255,.02));
+    }
+    .save-panel[hidden]{ display:none }
+    .save-panel h2{ margin:0 0 .6rem; font-size:1.05rem; color:var(--accent2); letter-spacing:.5px; text-align:center }
+    .groups-row{ display:flex; justify-content:center; flex-wrap:wrap; gap:.5rem; margin:.4rem 0 .8rem }
+    .group-ph{
+      min-width:6rem; min-height:3rem; display:flex; align-items:center; justify-content:center;
+      cursor:pointer; padding:.5rem .9rem; border-radius:var(--flove-radius-sm);
+      border:2px dashed var(--app-accent-soft); color:var(--app-accent-soft);
+      background:#13162a; font-weight:700; letter-spacing:.4px; position:relative;
+      transition:all var(--flove-fast);
+    }
+    .group-ph[data-count]:not([data-count="0"])::after{
+      content:attr(data-count); position:absolute; top:-.5rem; right:-.5rem;
+      min-width:1.3rem; height:1.3rem; padding:0 .3rem; border-radius:50%;
+      background:var(--accent2); color:var(--app-ink-on-accent);
+      font-size:.7rem; display:flex; align-items:center; justify-content:center;
+    }
+    .group-ph.dragover{ border-style:solid; border-color:var(--accent2); box-shadow:0 0 12px rgba(112,240,211,.4) }
+    .group-ph.active{ border-style:solid; background:var(--app-accent); color:var(--app-ink-on-accent); border-color:var(--app-accent) }
+    .group-ph.group-all{ border-style:solid; cursor:pointer }   /* default "All" — not renameable */
+    .group-rename{
+      width:5rem; font:inherit; font-weight:700; text-align:center;
+      background:var(--field); color:var(--ink); border:1px solid var(--accent2); border-radius:6px; padding:.1rem .3rem;
+    }
+    .group-add{
+      cursor:pointer; width:3rem; min-height:3rem; border-radius:var(--flove-radius-sm);
+      border:2px solid var(--line); background:#171a2e; color:var(--app-accent); font-size:1.3rem; font-weight:700;
+    }
+    .group-add:hover{ border-color:var(--app-accent) }
+    .save-list{ display:grid; gap:.4rem; margin:.4rem 0 .8rem }
+    .save-empty{ color:var(--muted); text-align:center; margin:.4rem 0; font-size:.88rem }
+    .save-item{
+      display:flex; align-items:center; gap:.5rem; cursor:grab;
+      padding:.45rem .6rem; border-radius:var(--flove-radius-sm);
+      border:1px solid var(--line); background:#15182b;
+    }
+    .save-item.dragging{ opacity:.5; outline:2px dashed var(--accent2) }
+    .save-item .si-name{ flex:1; font-weight:600; letter-spacing:.3px }
+    .save-item .si-badge{ font-size:.7rem; color:var(--accent2); font-weight:700; min-width:1.4rem; text-align:center }
+    .save-item .si-arrows{ display:inline-flex; gap:3px }
+    .save-item .si-arrows button{
+      cursor:pointer; width:1.5rem; height:1.3rem; line-height:1; padding:0;
+      border-radius:6px; border:1px solid var(--line); background:#171a2e; color:var(--muted); font-size:.65rem;
+    }
+    .save-item .si-arrows button:hover{ border-color:var(--app-accent); color:var(--ink) }
+    .save-go{
+      cursor:pointer; padding:.5rem 1.6rem; border-radius:var(--flove-radius-pill);
+      background:var(--accent2); color:var(--app-ink-on-accent); border:1px solid var(--accent2);
+      font:inherit; font-weight:700; letter-spacing:.4px;
+    }
+    .save-go:hover{ box-shadow:0 0 16px rgba(112,240,211,.5) }
+
+    /* centered + tools: ＋ row on top, view buttons (H·V·spider) below */
+    .rater-tools{ display:flex; flex-direction:column; align-items:center; gap:.4rem; margin-top:.5rem }
+    .tool-row{ display:flex; align-items:center; gap:.4rem }
+    .tool-plus{
+      cursor:pointer; width:2rem; height:2rem; line-height:1; padding:0; font-size:1.1rem;
+      border-radius:50%; border:1px solid var(--app-accent-soft); background:#171a2e; color:var(--app-accent);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .tool-plus:hover{ border-color:var(--app-accent) }
+    .tool-plus.open{ background:var(--app-accent); color:var(--app-ink-on-accent); border-color:var(--app-accent) }
+    .tool-icons{ display:flex; gap:.3rem }
+    .tool-icons[hidden]{ display:none }
+    .side-icon{
+      cursor:pointer; width:1.9rem; height:1.9rem; line-height:1; padding:0; font-size:1rem;
+      border-radius:8px; border:1px solid var(--line); background:#171a2e; color:var(--ink);
+      display:flex; align-items:center; justify-content:center;
+      transition:border-color var(--flove-fast), box-shadow var(--flove-fast);
+    }
+    .side-icon:hover{ border-color:var(--app-accent) }
+    .side-icon.active{ border-color:var(--accent2); box-shadow:0 0 10px rgba(112,240,211,.4); background:#13251f }
+
+    /* senses shown as a full-width selectable bar of icon cells */
+    .sense-row{
+      display:grid; grid-template-columns:repeat(5,1fr); gap:4px; margin-top:.5rem;
+      padding:2px; background:#0f1120; border:1px solid var(--line); border-radius:var(--flove-radius-sm);
+    }
+    .sense-row[hidden]{ display:none }
+    .sense-row > input{ display:none }
+    .sense-row .sense-pill{ flex:none; width:auto; text-align:center; border-radius:8px; padding:.32rem 0 }
+
+    /* colours / emotions bars */
+    .extra-row{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-top:.5rem }
+    .extra-row.emotions{ overflow:visible }
+    .extra-row .extra-cell{
+      height:26px; border-radius:8px; border:1px solid var(--line); cursor:pointer;
+      display:flex; align-items:center; justify-content:center; font-size:1.1rem;
+      transition:opacity var(--flove-fast), transform var(--flove-fast);
+    }
+    .extra-row.emotions .extra-cell{ background:#13162a }
+    .extra-cell.sel{ outline:2px solid var(--accent2); outline-offset:-2px }
+
+    /* per-rater view buttons (icon-only, no bg/border) + the rendered view box */
+    .view-btns{ display:flex; gap:.3rem }
+    .view-btn{
+      cursor:pointer; padding:0 .15rem; font:inherit; font-size:1.05rem; line-height:1;
+      background:none; border:none; color:var(--muted);
+    }
+    .view-btn:hover{ color:var(--ink) }
+    .view-btn.active{ color:var(--accent2); text-shadow:0 0 8px rgba(112,240,211,.5) }
+    .rater-view{ margin-top:.5rem; padding:.45rem; border:1px solid var(--line); border-radius:var(--flove-radius-sm); background:#0f1120 }
+    .rater-view svg{ width:100%; height:auto; display:block }
+
+    /* live view of ratings: rate + includable metarater layers */
+    .view-layers{ display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:.45rem; font-size:.72rem; color:var(--muted) }
+    .view-layers label{ display:inline-flex; align-items:center; gap:.25rem; cursor:pointer }
+    .view-layers input{ accent-color:var(--accent2) }
+    .view-stage{ display:grid; gap:.45rem }
+    .view-stage .bar{ pointer-events:none }
+    .view-stage.vstage .bar{ grid-template-columns:1fr !important; width:70px; margin:0 auto }   /* vertical bar */
+    .view-stage.vstage .bar span{ height:20px }
+    .view-stage svg{ width:100%; height:auto; display:block }
+
+    /* main raters (scales): the + tools sit on the right, vertically centered */
+    .scale > .rater-tools{ align-self:center; margin-top:0 }
+
+    /* reorder arrows are now left/right */
+    .reorder{ flex-direction:row }
+    .rater.has-reorder{ padding-right:3.2rem }
+
+    /* ===== My Raters — right-side drawer ===== */
+    .myr-tab{
+      position:fixed; top:38%; right:0; z-index:40; cursor:pointer; writing-mode:vertical-rl;
+      padding:.9rem .4rem; border:1px solid var(--app-accent); border-right:none; border-radius:8px 0 0 8px;
+      background:var(--app-accent); color:var(--app-ink-on-accent); font:inherit; font-weight:800; letter-spacing:.6px;
+      box-shadow:-2px 0 12px rgba(0,0,0,.3);
+    }
+    .myr-tab:hover{ filter:brightness(1.06) }
+    .myr-tab[aria-expanded="true"]{ display:none }
+    .myr-drawer{
+      position:fixed; top:0; right:0; z-index:41; height:100vh; width:min(520px,96vw);
+      display:flex; flex-direction:column; gap:.6rem; padding:1rem;
+      background:var(--panel); border-left:1px solid var(--line);
+      box-shadow:-12px 0 36px rgba(0,0,0,.5); overflow-y:auto;
+    }
+    .myr-drawer[hidden]{ display:none }
+    .myr-head{ display:flex; align-items:center; gap:.5rem }
+    .myr-head h2{ margin:0; flex:1; font-size:1.1rem; color:var(--app-accent); letter-spacing:.5px }
+    .myr-head .group-add{ width:2.3rem; min-height:0; height:2.3rem; font-size:1.3rem; border-radius:8px }
+    .myr-close{ cursor:pointer; width:2.6rem; height:2.6rem; border-radius:50%; border:2px solid var(--app-accent-soft); background:#171a2e; color:var(--ink); font-size:1.7rem; line-height:1; font-weight:700 }
+    .myr-close:hover{ border-color:#ff6b6b; color:#ff6b6b }
+    .myr-newgroup{ display:flex; gap:.4rem; align-items:center }
+    .myr-newgroup[hidden]{ display:none }
+    .newgroup-name{
+      flex:1; font:inherit; padding:.4rem .7rem; border-radius:var(--flove-radius-pill);
+      background:var(--field); color:var(--ink); border:1px dashed var(--app-accent-soft);
+    }
+    .newgroup-name:focus{ outline:none; border-style:solid; border-color:var(--accent2) }
+    .newgroup-save{
+      cursor:pointer; font:inherit; font-weight:700; padding:.4rem 1rem; border-radius:var(--flove-radius-pill);
+      background:var(--accent2); color:var(--app-ink-on-accent); border:1px solid var(--accent2);
+    }
+    .newgroup-save:hover{ box-shadow:0 0 12px rgba(112,240,211,.5) }
+    /* scrolls when the list outgrows the drawer (≈ more than 5 raters) */
+    .myr-body{ flex:1; min-height:0; overflow-y:auto; display:grid; gap:.8rem; align-content:start }
+    .myr-foot{ display:flex; justify-content:center; padding-top:.4rem }
+    .myr-section{ display:grid; gap:.5rem }
+    .myr-sec-h{ margin:.2rem 0 0; font-size:.78rem; letter-spacing:.6px; text-transform:uppercase; color:var(--accent2) }
+    .myr-item{ display:flex; align-items:center; gap:.5rem; cursor:grab; border:1px solid var(--line); border-radius:var(--flove-radius-sm); background:#15182b; padding:.4rem }
+    .myr-item.dragging{ opacity:.5; outline:2px dashed var(--accent2) }
+    /* big up/down arrows, sit on the RIGHT of each My-raters item */
+    .myr-move{ flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:5px }
+    .myr-move button{ cursor:pointer; width:2.3rem; height:2rem; line-height:1; padding:0; border-radius:8px; border:1px solid var(--app-accent-soft); background:#171a2e; color:var(--app-accent); font-size:1.05rem }
+    .myr-move button:hover{ border-color:var(--app-accent); color:var(--ink) }
+    .mi-badge{ font-size:.6rem; color:var(--accent2); font-weight:700 }
+    .myr-clone{ flex:1; min-width:0; pointer-events:none; cursor:default; transform:scale(.94); transform-origin:left center }
+    .myr-clone.scale{ display:block; border-width:1px }
+    .group-chip{
+      display:inline-flex; align-items:center; gap:.35rem; cursor:pointer; padding:.3rem .6rem;
+      border-radius:var(--flove-radius-pill); border:1px solid var(--app-accent-soft);
+      background:#13162a; color:var(--app-accent-soft); font-weight:700; font-size:.85rem;
+    }
+    .group-chip.checked{ background:var(--app-accent); color:var(--app-ink-on-accent); border-color:var(--app-accent) }
+    .group-chip.dragover{ border-color:var(--accent2); box-shadow:0 0 12px rgba(112,240,211,.4) }
+    .group-chip input{ accent-color:var(--accent2) }
+    .gc-count{ font-size:.7rem; opacity:.85 }
+    /* ===== Axis — combine the 2 selected raters on one shared axis ===== */
+    .axis-ctrl{ display:none; justify-content:center; margin:.5rem auto; max-width:980px; padding:0 1rem }
+    body.axis-ready .axis-ctrl{ display:flex }
+    .axis-btn{
+      cursor:pointer; font:inherit; font-weight:700; letter-spacing:.5px; font-size:1rem;
+      padding:.45rem 1.2rem; border-radius:var(--flove-radius-pill);
+      background:var(--accent2); color:var(--app-ink-on-accent); border:1px solid var(--accent2);
+      box-shadow:0 0 14px rgba(112,240,211,.4); display:inline-flex; align-items:center; gap:.4rem;
+    }
+    .axis-btn:hover{ box-shadow:0 0 20px rgba(112,240,211,.6) }
+
+    /* the Axis shows as the FIRST main rater (live preview) + saved axis cards below it */
+    .axis-live, .axis-saved-card{ position:relative; border-radius:var(--flove-radius);
+      border:2px solid var(--accent2); padding:1.2rem 1.1rem;
+      background:linear-gradient(180deg,rgba(112,240,211,.07),rgba(255,255,255,.02)),#10121f;
+      box-shadow:inset 0 0 0 1px rgba(11,11,20,.55), 0 3px 0 rgba(8,9,18,.9), 0 8px 18px rgba(0,0,0,.4) }
+    .axis-live[hidden]{ display:none }
+
+    /* crossing layout: the horizontal rater and the vertical rater overlap as one axis-cross,
+       keeping ONLY their extreme (end) labels — no captions/titles */
+    .axis-cross{ position:relative; max-width:560px; margin:.4rem auto .2rem }
+    .axis-cross .cross-h{ position:absolute; left:0; right:0; top:50%; transform:translateY(-50%);
+      display:flex; align-items:center; gap:.55rem; z-index:1 }
+    .axis-cross .cross-h > .bar{ flex:1 }
+    .axis-cross .cross-v{ position:absolute; top:0; bottom:0; left:50%; transform:translateX(-50%);
+      display:flex; flex-direction:column; align-items:center; justify-content:space-between; z-index:2 }
+    .axis-cross .end{ font-size:.72rem; color:var(--app-accent-soft); white-space:nowrap }
+    .axis-cross .cross-h .end{ max-width:9ch; overflow:hidden; text-overflow:ellipsis }
+    /* vertical bar = a column of cells; it crosses over the horizontal bar */
+    .bar.vbar{ display:flex; flex-direction:column; width:66px; gap:2px;
+      box-shadow:0 0 0 3px #10121f, inset 0 10px 22px rgba(0,0,0,.35) }
+    .bar.vbar span{ width:100%; height:34px }
+
+    /* multi-check cells (live only); unchecked dim to 50% once one is picked */
+    .axis-cross .bar span{ cursor:pointer }
+    .axis-cross .bar span.pick{ outline:3px solid var(--accent2); outline-offset:-3px; filter:brightness(1.15) }
+    .axis-cross .bar:has(span.pick) span:not(.pick){ opacity:.5 }
+
+    /* live preview: Save button below the cross */
+    .axis-actions{ display:flex; justify-content:center; gap:.5rem; margin-top:1.1rem }
+    .axis-save{ cursor:pointer; font:inherit; font-weight:700; letter-spacing:.5px; font-size:.95rem;
+      padding:.45rem 1.4rem; border-radius:var(--flove-radius-pill);
+      background:var(--accent2); color:var(--app-ink-on-accent); border:1px solid var(--accent2);
+      box-shadow:0 0 14px rgba(112,240,211,.4); display:inline-flex; align-items:center; gap:.4rem }
+    .axis-save:hover{ box-shadow:0 0 20px rgba(112,240,211,.6) }
+
+    /* once saved: same axis stays (static) with a bigger delete + up/down arrows on the right */
+    .axis-saved-card .axis-cross{ pointer-events:none }
+    .axis-card-ctrls{ position:absolute; top:.5rem; right:.5rem; z-index:5;
+      display:flex; flex-direction:column; align-items:center; gap:5px }
+    .axis-card-ctrls button{ cursor:pointer; line-height:1; padding:0; border-radius:7px;
+      border:1px solid var(--line); background:#171a2e; color:var(--muted) }
+    .axis-card-ctrls button:hover{ border-color:var(--app-accent); color:var(--ink) }
+    /* delete = the big button */
+    .axis-card-ctrls .ac-del{ width:2.5rem; height:2.5rem; font-size:1.6rem; border-color:#ff6b6b; color:#ff6b6b }
+    .axis-card-ctrls .ac-del:hover{ color:#fff; background:#3a1417; box-shadow:0 0 14px rgba(255,107,107,.45) }
+    /* arrows = smaller */
+    .axis-card-ctrls .ac-up, .axis-card-ctrls .ac-down{ width:1.8rem; height:1.5rem; font-size:.8rem }
+
+.flove-mark--raty{width:22px;height:22px;display:inline-block;vertical-align:middle;filter:drop-shadow(0 0 4px #8d89ff)}
+</style>
+</head>
+<body>
+  <!-- language radios (drive the pure-CSS i18n) -->
+  <nav class="flove-bar flove-bar--dark">
+    <div class="flove-brand" id="ratyBrand">
+      <button class="flove-brand-btn" id="ratyBrandBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="ratyMenu">
+        <svg class="flove-mark flove-mark--raty" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="#8d89ff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17a8 8 0 0 1 16 0"/><path d="M7 17a5 5 0 0 1 10 0"/><path d="M9.5 17a2.5 2.5 0 0 1 5 0"/><circle fill="#8d89ff" stroke="none" cx="12" cy="17" r="1.3"/></svg>
+        <span class="flove-app-name">Raty</span>
+        <span class="flove-caret" aria-hidden="true">▾</span>
+      </button>
+      <nav class="flove-menu" id="ratyMenu" role="menu" hidden>
+        <a href="index.html" role="menuitem" tabindex="0"><span class="t-en" lang="en">Puzzy apps</span><span class="t-es" lang="es">Apps de puzzy</span></a>
+        <a href="../../index.html" role="menuitem" tabindex="0"><span class="t-en" lang="en">All apps</span><span class="t-es" lang="es">Todas las apps</span></a>
+        <a href="https://flove.org" target="_blank" rel="noopener" role="menuitem" tabindex="0">flove.org</a>
+      </nav>
+    </div>
+    <span class="lang">
+      <input type="radio" name="ui-lang" id="ui-lang-en" checked>
+      <input type="radio" name="ui-lang" id="ui-lang-es">
+      <label for="ui-lang-en">EN</label>
+      <label for="ui-lang-es">ES</label>
+    </span>
+  </nav>
+
+  <!-- live phrase at the very top -->
+  <header class="top">
+    <div class="phrase-row">
+      <div class="live-phrase" id="livePhrase" aria-live="polite"></div>
+    </div>
+  </header>
+
+  <!-- main area -->
+  <main class="layout">
+<h1 class="a11y-h1">Raty</h1>
+    <!-- each scale now carries its own node-count buttons (see setupTools) -->
+    <section class="scales">
+      <!-- each scale has a 1–7 rating and sense toggles -->
+
+      <!-- INTENSE / EQUAL / BANAL -->
+      <div class="scale" data-scale="INTENSE–BANAL">
+        <div class="labels">
+          <span class="lbl left"><span class="t-en" lang="en">INTENSE</span><span class="t-es" lang="es">INTENSO</span></span>
+          <span class="lbl mid"><span class="t-en" lang="en">EQUAL</span><span class="t-es" lang="es">IGUAL</span></span>
+          <span class="lbl right"><span class="t-en" lang="en">BANAL</span><span class="t-es" lang="es">BANAL</span></span>
+        </div>
+        <div class="picker">
+          <input type="range" min="1" max="7" step="1" value="4" aria-label="INTENSE to BANAL">
+          <div class="ticks" aria-hidden="true">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span>
+          </div>
+          <div class="senses-mini" role="group" aria-label="Relate this scale to senses">
+            <button type="button" class="sense-pill" data-sense="hear" title="Hear">👂</button>
+            <button type="button" class="sense-pill" data-sense="touch" title="Touch">🖐️</button>
+            <button type="button" class="sense-pill" data-sense="view" title="View">👁️</button>
+            <button type="button" class="sense-pill" data-sense="taste" title="Taste">👅</button>
+            <button type="button" class="sense-pill" data-sense="smell" title="Smell">👃</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIMILAR / COMPLEMENT / DIFFERENT -->
+      <div class="scale" data-scale="SIMILAR–DIFFERENT" data-mid="COMPLEMENT">
+        <div class="labels">
+          <span class="lbl left"><span class="t-en" lang="en">SIMILAR</span><span class="t-es" lang="es">SIMILAR</span></span>
+          <span class="lbl mid"><span class="t-en" lang="en">COMPLEMENT</span><span class="t-es" lang="es">COMPLEMENTO</span></span>
+          <span class="lbl right"><span class="t-en" lang="en">DIFFERENT</span><span class="t-es" lang="es">DIFERENTE</span></span>
+        </div>
+        <div class="picker">
+          <input type="range" min="1" max="7" step="1" value="4" aria-label="SIMILAR to DIFFERENT">
+          <div class="ticks" aria-hidden="true">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span>
+          </div>
+          <div class="senses-mini" role="group" aria-label="Relate this scale to senses">
+            <button type="button" class="sense-pill" data-sense="hear" title="Hear">👂</button>
+            <button type="button" class="sense-pill" data-sense="touch" title="Touch">🖐️</button>
+            <button type="button" class="sense-pill" data-sense="view" title="View">👁️</button>
+            <button type="button" class="sense-pill" data-sense="taste" title="Taste">👅</button>
+            <button type="button" class="sense-pill" data-sense="smell" title="Smell">👃</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABSTRACT / CONCRETE -->
+      <div class="scale" data-scale="ABSTRACT–CONCRETE">
+        <div class="labels">
+          <span class="lbl left"><span class="t-en" lang="en">ABSTRACT</span><span class="t-es" lang="es">ABSTRACTO</span></span>
+          <span class="lbl right"><span class="t-en" lang="en">CONCRETE</span><span class="t-es" lang="es">CONCRETO</span></span>
+        </div>
+        <div class="picker">
+          <input type="range" min="1" max="7" step="1" value="4" aria-label="ABSTRACT to CONCRETE">
+          <div class="ticks" aria-hidden="true">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span>
+          </div>
+          <div class="senses-mini" role="group" aria-label="Relate this scale to senses">
+            <button type="button" class="sense-pill" data-sense="hear" title="Hear">👂</button>
+            <button type="button" class="sense-pill" data-sense="touch" title="Touch">🖐️</button>
+            <button type="button" class="sense-pill" data-sense="view" title="View">👁️</button>
+            <button type="button" class="sense-pill" data-sense="taste" title="Taste">👅</button>
+            <button type="button" class="sense-pill" data-sense="smell" title="Smell">👃</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- POSITIVE / NEGATIVE -->
+      <div class="scale" data-scale="POSITIVE–NEGATIVE">
+        <div class="labels">
+          <span class="lbl left"><span class="t-en" lang="en">POSITIVE</span><span class="t-es" lang="es">POSITIVO</span></span>
+          <span class="lbl right"><span class="t-en" lang="en">NEGATIVE</span><span class="t-es" lang="es">NEGATIVO</span></span>
+        </div>
+        <div class="picker">
+          <input type="range" min="1" max="7" step="1" value="4" aria-label="POSITIVE to NEGATIVE">
+          <div class="ticks" aria-hidden="true">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span>
+          </div>
+          <div class="senses-mini" role="group" aria-label="Relate this scale to senses">
+            <button type="button" class="sense-pill" data-sense="hear" title="Hear">👂</button>
+            <button type="button" class="sense-pill" data-sense="touch" title="Touch">🖐️</button>
+            <button type="button" class="sense-pill" data-sense="view" title="View">👁️</button>
+            <button type="button" class="sense-pill" data-sense="taste" title="Taste">👅</button>
+            <button type="button" class="sense-pill" data-sense="smell" title="Smell">👃</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CLOSE / FAR -->
+      <div class="scale" data-scale="CLOSE–FAR">
+        <div class="labels">
+          <span class="lbl left"><span class="t-en" lang="en">CLOSE</span><span class="t-es" lang="es">CERCA</span></span>
+          <span class="lbl right"><span class="t-en" lang="en">FAR</span><span class="t-es" lang="es">LEJOS</span></span>
+        </div>
+        <div class="picker">
+          <input type="range" min="1" max="7" step="1" value="4" aria-label="CLOSE to FAR">
+          <div class="ticks" aria-hidden="true">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span>
+          </div>
+          <div class="senses-mini" role="group" aria-label="Relate this scale to senses">
+            <button type="button" class="sense-pill" data-sense="hear" title="Hear">👂</button>
+            <button type="button" class="sense-pill" data-sense="touch" title="Touch">🖐️</button>
+            <button type="button" class="sense-pill" data-sense="view" title="View">👁️</button>
+            <button type="button" class="sense-pill" data-sense="taste" title="Taste">👅</button>
+            <button type="button" class="sense-pill" data-sense="smell" title="Smell">👃</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRIMARY / SECONDARY -->
+      <div class="scale" data-scale="PRIMARY–SECONDARY">
+        <div class="labels">
+          <span class="lbl left"><span class="t-en" lang="en">PRIMARY</span><span class="t-es" lang="es">PRIMARIO</span></span>
+          <span class="lbl right"><span class="t-en" lang="en">SECONDARY</span><span class="t-es" lang="es">SECUNDARIO</span></span>
+        </div>
+        <div class="picker">
+          <input type="range" min="1" max="7" step="1" value="4" aria-label="PRIMARY to SECONDARY">
+          <div class="ticks" aria-hidden="true">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span>
+          </div>
+          <div class="senses-mini" role="group" aria-label="Relate this scale to senses">
+            <button type="button" class="sense-pill" data-sense="hear" title="Hear">👂</button>
+            <button type="button" class="sense-pill" data-sense="touch" title="Touch">🖐️</button>
+            <button type="button" class="sense-pill" data-sense="view" title="View">👁️</button>
+            <button type="button" class="sense-pill" data-sense="taste" title="Taste">👅</button>
+            <button type="button" class="sense-pill" data-sense="smell" title="Smell">👃</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- UNKNOWN / KNOWN -->
+      <div class="scale" data-scale="UNKNOWN–KNOWN">
+        <div class="labels">
+          <span class="lbl left"><span class="t-en" lang="en">UNKNOWN</span><span class="t-es" lang="es">DESCONOCIDO</span></span>
+          <span class="lbl right"><span class="t-en" lang="en">KNOWN</span><span class="t-es" lang="es">CONOCIDO</span></span>
+        </div>
+        <div class="picker">
+          <input type="range" min="1" max="7" step="1" value="4" aria-label="UNKNOWN to KNOWN">
+          <div class="ticks" aria-hidden="true">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span>
+          </div>
+          <div class="senses-mini" role="group" aria-label="Relate this scale to senses">
+            <button type="button" class="sense-pill" data-sense="hear" title="Hear">👂</button>
+            <button type="button" class="sense-pill" data-sense="touch" title="Touch">🖐️</button>
+            <button type="button" class="sense-pill" data-sense="view" title="View">👁️</button>
+            <button type="button" class="sense-pill" data-sense="taste" title="Taste">👅</button>
+            <button type="button" class="sense-pill" data-sense="smell" title="Smell">👃</button>
+          </div>
+        </div>
+
+        <div class="cta">
+          <a class="chip big" href="#createPanel" id="addRatersLink"><span class="t-en" lang="en">Add raters</span><span class="t-es" lang="es">Añadir valoradores</span></a>
+          <button class="chip big primary" type="button"><span class="t-en" lang="en">Save</span><span class="t-es" lang="es">Guardar</span></button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+  <section class="flove-summary" id="floveSummary" aria-labelledby="floveSummaryTitle">
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+    <h2 id="floveSummaryTitle">✦ <span class="t-en" lang="en">Summary</span><span class="t-es" lang="es">Resumen</span></h2>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+    <p class="flove-summary__phrase" aria-live="polite"><em id="floveSummaryPhrase"></em></p>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+    <div class="flove-summary__actions">
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+      <button type="button" class="flove-summary__btn" id="floveSummaryMagic" aria-pressed="false">✨ Magic</button>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+      <span class="flove-summary__share">
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+        <button type="button" class="flove-summary__btn" id="floveSummaryShare" aria-expanded="false" aria-controls="floveSummaryShareMenu">📤 <span class="t-en" lang="en">Share</span><span class="t-es" lang="es">Compartir</span></button>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+        <span class="flove-summary__menu" id="floveSummaryShareMenu" hidden>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+          <button type="button" class="flove-summary__item" data-action="save">💾 <span class="t-en" lang="en">Save JSON</span><span class="t-es" lang="es">Guardar JSON</span></button>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+          <a class="flove-summary__item" data-action="mail" href="mailto:?subject=flove%20%C2%B7%20raty">📧 <span class="t-en" lang="en">Email</span><span class="t-es" lang="es">Correo</span></a>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+        </span>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+      </span>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+    </div>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+  </section>
+
+  <script>
+  (function(){
+    const el = id => document.getElementById(id);
+    const phraseOut = el('floveSummaryPhrase');
+    let magic = false;
+
+    function plain(){
+      const src = el('livePhrase') || el('livePhrase2');
+      return (src && src.textContent || '').replace(/\s+/g, ' ').trim();
+    }
+    function rows(){
+      const out = [];
+      document.querySelectorAll('.scale').forEach((s, i) => {
+        const r = s.querySelector('input[type="range"]');
+        const senses = [...s.querySelectorAll('.sense-pill[aria-pressed="true"], .sense-pill.on')].map(b => b.dataset.sense).filter(Boolean);
+        out.push({ key:'scale:' + i, kind:'scale', title: s.dataset.scale || ('scale ' + (i + 1)),
+          items: [ r ? r.value : '', senses.length ? 'senses: ' + senses.join(', ') : '' ].filter(Boolean) });
+      });
+      return out;
+    }
+    function magicPhrase(){
+      const picks = [];
+      document.querySelectorAll('.scale').forEach(s => {
+        const r = s.querySelector('input[type="range"]'); if (!r) return;
+        const v = Number(r.value); if (v === 4) return;
+        const labels = [...s.querySelectorAll('.lbl')].map(n => n.textContent.trim()).filter(Boolean);
+        const pick = v < 4 ? labels[0] : labels[labels.length - 1];
+        if (pick) picks.push(pick);
+      });
+      return picks.length ? '✦ ' + picks.join(' · ') : '✦ ' + plain();
+    }
+    function portrait(){
+      const rr = rows();
+      return {
+        schema:'flove-portrait/1', app:'raty', version:1,
+        generatedAt:new Date().toISOString(),
+        lang:(document.documentElement.lang || 'en').slice(0, 2),
+        phrase: plain() || magicPhrase(),
+        rows: rr, words: [],
+        completeness:{ layers: rr.length, total: 7 },
+        consent:{ share:'app', purposes:['self-reflection', 'export'] },
+        source:{ url:'https://flove.org/apps/puzzy/raty.html' }
+      };
+    }
+    window.flovePortrait = window.flovePortrait || {};
+    window.flovePortrait.get = portrait;
+    window.flovePortrait.validate = p => Array.isArray(p && p.rows) ? { ok:true, errors:[] } : { ok:false, errors:['rows'] };
+    window.flovePortrait.consult = () => {
+  const __p = portrait();
+  return { schema: 'flove-consult/1', app: __p.app, version: __p.version, generatedAt: new Date().toISOString(), rows: __p.rows };
+};
+    window.flovePortrait.selfTest = () => ({ ok:true, errors:[] });
+
+    function paint(){ out.textContent = (magic ? magicPhrase() : plain()) || '—'; }
+  function download(){
+    const blob = new Blob([JSON.stringify(portrait(), null, 2)], { type:'application/json;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'raty-portrait.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+  function touchDevice(){
+    return !!(navigator.canShare && (navigator.maxTouchPoints > 1 || window.matchMedia('(pointer: coarse)').matches));
+  }
+  const menu = el('floveSummaryShareMenu');
+  const shareBtn = el('floveSummaryShare');
+  async function share(){
+    const p = portrait();
+    const text = p.phrase || out.textContent;
+    const file = new File([JSON.stringify(p, null, 2)], 'raty-portrait.json', { type:'application/json' });
+    if (touchDevice() && navigator.canShare({ files:[file] })){
+      try { await navigator.share({ title:'flove · raty', text, files:[file] }); return; } catch(_){}
+    }
+    menu.hidden = !menu.hidden;
+    shareBtn.setAttribute('aria-expanded', String(!menu.hidden));
+  }
+  el('floveSummaryMagic').addEventListener('click', e => { magic = !magic; e.currentTarget.setAttribute('aria-pressed', String(magic)); paint(); });
+  shareBtn.addEventListener('click', share);
+  menu.querySelector('[data-action="save"]').addEventListener('click', () => { download(); menu.hidden = true; shareBtn.setAttribute('aria-expanded','false'); });
+  document.addEventListener('click', e => {
+    if (!menu.hidden && !e.target.closest('#floveSummaryShare') && !e.target.closest('#floveSummaryShareMenu')){
+      menu.hidden = true; shareBtn.setAttribute('aria-expanded','false');
+    }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !menu.hidden){ menu.hidden = true; shareBtn.setAttribute('aria-expanded','false'); shareBtn.focus(); }
+  });
+  document.addEventListener('input', paint);
+  document.addEventListener('change', paint);
+  paint();
+  })();
+</script>
+
+
+  <!-- ============================================================= -->
+  <!-- MORE RATERS — duplicated phrase + Create/More toggle, raters below -->
+  <!-- ============================================================= -->
+  <section class="more-raters">
+    <!-- duplicate of the top phrase (same editable TRUE/LOVE features) -->
+    <div class="phrase-row phrase-row--dup">
+      <div class="live-phrase" id="livePhrase2" aria-live="polite"></div>
+    </div>
+
+    <!-- centered controls: Create · More -->
+    <div class="more-ctrls">
+      <button type="button" class="create-cta create-cta--sm" id="createToggle2" aria-expanded="false"><span class="t-en" lang="en">Create</span><span class="t-es" lang="es">Crear</span></button>
+      <button type="button" class="morebtn" id="moreToggle" aria-expanded="false"><span class="t-en" lang="en">More</span><span class="t-es" lang="es">Más</span></button>
+    </div>
+
+    <!-- inline Create panel — shown above the lists when Create is tapped -->
+    <section class="create-panel" id="createPanel" hidden aria-label="Create a rater">
+      <h2><span class="t-en" lang="en">Create a rater</span><span class="t-es" lang="es">Crear un valorador</span></h2>
+
+      <div class="cp-row cp-polarity" role="group" aria-label="Polarity">
+        <button type="button" class="polbtn is-on" data-pol="pos"><span class="t-en" lang="en">Positive</span><span class="t-es" lang="es">Positivo</span></button>
+        <button type="button" class="polbtn" data-pol="neg"><span class="t-en" lang="en">Negative</span><span class="t-es" lang="es">Negativo</span></button>
+      </div>
+
+      <div class="cp-row cp-modes" role="group" aria-label="Selection mode">
+        <button type="button" class="polbtn modebtn is-on" data-mode="point"><span class="t-en" lang="en">Point</span><span class="t-es" lang="es">Punto</span></button>
+        <button type="button" class="polbtn modebtn" data-mode="area"><span class="t-en" lang="en">Area</span><span class="t-es" lang="es">Área</span></button>
+        <button type="button" class="polbtn modebtn" data-mode="multi"><span class="t-en" lang="en">Multi</span><span class="t-es" lang="es">Multi</span></button>
+      </div>
+
+      <!-- design dropdown (sized like the other words in the panel) -->
+      <div class="cp-row cp-design-row">
+        <select class="cp-design" id="cpDesign" title="Design">
+          <option value="big">▰</option>
+          <option value="normal">▭</option>
+          <option value="basic">•</option>
+        </select>
+      </div>
+
+      <div class="cp-row cp-nums" role="group" aria-label="Node counts">
+        <button type="button" class="cp-num" data-n="2">2</button>
+        <button type="button" class="cp-num" data-n="3">3</button>
+        <button type="button" class="cp-num" data-n="4">4</button>
+        <button type="button" class="cp-num" data-n="5">5</button>
+        <button type="button" class="cp-num" data-n="7">7</button>
+      </div>
+
+      <div class="cp-editors" id="cpEditors"></div>
+
+      <div class="cp-row"><button type="button" class="btn-add" id="cpAdd"><span class="t-en" lang="en">Add</span><span class="t-es" lang="es">Añadir</span></button></div>
+    </section>
+
+    <!-- revealed by "More": the node-count buttons row + every rater list -->
+    <div class="more-body" id="moreBody" hidden>
+      <div class="form-ctrl">
+        <input type="checkbox" id="ffull">
+        <input type="checkbox" id="f2" class="numf">
+        <input type="checkbox" id="f3" class="numf">
+        <input type="checkbox" id="f4" class="numf">
+        <input type="checkbox" id="f5" class="numf">
+        <input type="checkbox" id="f7" class="numf">
+        <label for="f2" class="numbtn">2</label>
+        <label for="f3" class="numbtn">3</label>
+        <label for="f4" class="numbtn">4</label>
+        <label for="f5" class="numbtn">5</label>
+        <label for="f7" class="numbtn">7</label>
+        <label for="ffull" class="fullbtn">full</label>
+      </div>
+
+  <!-- ============================================================= -->
+  <!-- FORMS-LAB: node-count buttons (2·3·4·5·7) + raters (pure CSS) -->
+  <!-- ============================================================= -->
+  <section class="forms-lab">
+    <!-- BATCH 2 — nodes at the extremes (1,7) -->
+    <div class="batch batch--2">
+      <p class="bh"><span class="t-en" lang="en">2-node raters</span><span class="t-es" lang="es">Valoradores de 2 nodos</span></p>
+      <div class="cards">
+        <div class="rater-slot" data-rater="truthy"></div>
+        <div class="rater-slot" data-rater="switchy"></div>
+      </div>
+    </div>
+
+    <!-- BATCH 3 — nodes at 1,4,7 (extremes + middle) -->
+    <div class="batch batch--3">
+      <p class="bh"><span class="t-en" lang="en">3-node raters</span><span class="t-es" lang="es">Valoradores de 3 nodos</span></p>
+      <div class="cards">
+        <div class="rater-slot" data-rater="heaty"></div>
+        <div class="rater-slot" data-rater="moody"></div>
+      </div>
+    </div>
+
+    <!-- BATCH 4 — nodes at 1,3,5,7 -->
+    <div class="batch batch--4">
+      <p class="bh"><span class="t-en" lang="en">4-node raters</span><span class="t-es" lang="es">Valoradores de 4 nodos</span></p>
+      <div class="cards">
+        <div class="rater-slot" data-rater="gradey"></div>
+        <div class="rater-slot" data-rater="seasony"></div>
+      </div>
+    </div>
+
+    <!-- BATCH 5 — a genuine 5-cell bar (node-pointers change) -->
+    <div class="batch batch--5">
+      <p class="bh"><span class="t-en" lang="en">5-node raters</span><span class="t-es" lang="es">Valoradores de 5 nodos</span></p>
+      <div class="cards">
+        <div class="rater-slot" data-rater="likerty"></div>
+        <div class="rater-slot" data-rater="starry"></div>
+      </div>
+    </div>
+
+    <!-- BATCH 7 — full seven nodes -->
+    <div class="batch batch--7">
+      <p class="bh"><span class="t-en" lang="en">7-node raters</span><span class="t-es" lang="es">Valoradores de 7 nodos</span></p>
+      <div class="cards">
+        <div class="rater-slot" data-rater="sizy-2"></div>
+        <div class="rater-slot" data-rater="posy"></div>
+      </div>
+    </div>
+
+    <!-- THE 7 FULLS — fully-named raters categorized for ALL numbers.
+         Each shows its highest form (7) and the rest as small radios. -->
+    <div class="fulls">
+      <p class="bh"><span class="t-en" lang="en">Full raters — every node named · re-form per card</span><span class="t-es" lang="es">Valoradores full — cada nodo nombrado · reformables por tarjeta</span></p>
+
+      <!-- duplicated numbers row for the main raters list; a non-7 choice
+           reveals the highlighted "popular" demos below -->
+      <div class="mainform" role="group" aria-label="Re-form main raters / reveal popular">
+        <input type="checkbox" id="mf2"><input type="checkbox" id="mf3"><input type="checkbox" id="mf4"><input type="checkbox" id="mf5"><input type="checkbox" id="mf7">
+        <label for="mf2" class="numbtn">2</label>
+        <label for="mf3" class="numbtn">3</label>
+        <label for="mf4" class="numbtn">4</label>
+        <label for="mf5" class="numbtn">5</label>
+        <label for="mf7" class="numbtn">7</label>
+      </div>
+
+      <div class="cards">
+
+        <!-- SIZY -->
+        <div class="rater-slot" data-rater="sizy"></div>
+
+        <!-- JOINY -->
+        <div class="rater-slot" data-rater="joiny"></div>
+
+        <!-- TASTY -->
+        <div class="rater-slot" data-rater="tasty"></div>
+
+        <!-- SURPRISY -->
+        <div class="rater-slot" data-rater="surp"></div>
+
+        <!-- DEARY -->
+        <div class="rater-slot" data-rater="deary"></div>
+
+        <!-- STATY -->
+        <div class="rater-slot" data-rater="staty"></div>
+
+        <!-- LIGHTY -->
+        <div class="rater-slot" data-rater="lighty"></div>
+
+        <!-- ===== brought in: the non-repeated intensonims raters (RATIONALY) ===== -->
+
+        <!-- NEGATY -->
+        <div class="rater-slot" data-rater="negaty"></div>
+
+        <!-- ZERY -->
+        <div class="rater-slot" data-rater="zery"></div>
+
+        <!-- FORMALY -->
+        <div class="rater-slot" data-rater="formaly"></div>
+
+        <!-- FUTURY -->
+        <div class="rater-slot" data-rater="futury"></div>
+
+        <!-- DIGGY -->
+        <div class="rater-slot" data-rater="diggy"></div>
+
+        <!-- SHOWY -->
+        <div class="rater-slot" data-rater="showy"></div>
+
+      </div>
+
+      <!-- popular demos — appear when a non-7 ("other") setting is chosen;
+           7-node bars with only 2-3 labels, highlighted as community favourites -->
+      <div class="popular">
+        <p class="bh"><span class="t-en" lang="en">★ Popular raters — community favourites</span><span class="t-es" lang="es">★ Valoradores populares — favoritos de la comunidad</span></p>
+        <div class="cards">
+
+          <div class="rater-slot" data-rater="agey"></div>
+
+          <div class="rater-slot" data-rater="pricey"></div>
+
+          <div class="rater-slot" data-rater="speedy"></div>
+
+          <div class="rater-slot" data-rater="trusty"></div>
+
+          <div class="rater-slot" data-rater="hardy"></div>
+
+          <div class="rater-slot" data-rater="rarey"></div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+    </div><!-- /more-body -->
+  </section><!-- /more-raters -->
+
+  <!-- My raters — right-side drawer: the selected raters shown with their own settings, grouped -->
+  <button type="button" class="myr-tab" id="myrTab" aria-expanded="false"><span class="t-en" lang="en">My raters</span><span class="t-es" lang="es">Mis valoradores</span></button>
+  <aside class="myr-drawer" id="myRaters" hidden aria-label="My raters">
+    <div class="myr-head">
+      <h2><span class="t-en" lang="en">My raters</span><span class="t-es" lang="es">Mis valoradores</span></h2>
+      <button type="button" class="myr-close" id="myrClose" aria-label="Close">×</button>
+    </div>
+    <!-- + opens this: an empty (nameable) button + Save → becomes a grouper below -->
+    <div class="myr-newgroup" id="myrNewGroup" hidden>
+      <input type="text" class="newgroup-name" id="newGroupName" placeholder="" aria-label="NewGroupName">
+      <button type="button" class="newgroup-save" id="newGroupSave"><span class="t-en" lang="en">Save</span><span class="t-es" lang="es">Guardar</span></button>
+    </div>
+    <div class="groups-row" id="groupsRow"></div>
+    <div class="myr-body" id="myrBody"></div>
+  </aside>
+
+  <details class="output">
+    <summary><span class="t-en" lang="en">Know more</span><span class="t-es" lang="es">Saber más</span></summary>
+    <div class="output__box">
+      <span class="t-en" lang="en">Visit</span><span class="t-es" lang="es">Visita</span> <a href="https://flove.org">flove.org</a>
+    </div>
+  </details>
+
+  <script>
+  /* app-title dropdown menu (replaces the old "← Apps" link) */
+  (function(){
+    const brand = document.getElementById('ratyBrand');
+    const btn   = document.getElementById('ratyBrandBtn');
+    const menu  = document.getElementById('ratyMenu');
+    if(!brand || !btn || !menu) return;
+    const setOpen = (open)=>{
+      menu.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      brand.dataset.open = String(open);
+    };
+    btn.addEventListener('click', (e)=>{ e.stopPropagation(); setOpen(menu.hidden); });
+    document.addEventListener('click', (e)=>{ if(!brand.contains(e.target)) setOpen(false); });
+    document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') setOpen(false); });
+  })();
+  </script>
+
+  <script>
+  (function(){
+    const livePhrase = document.getElementById('livePhrase');
+
+    /* ---- editable phrase fields: button form ↔ text field ----
+       TRUE starts as a focused text field; LOVE starts as a squared button.
+       Leaving a field (blur) turns its text into the squared button form. */
+    function makeField(initial, startEditing, mod, onChange, onInput){
+      const wrap = document.createElement('span');
+      wrap.className = 'phrase-field';
+      let value = initial;
+      function showButton(){
+        wrap.innerHTML = '';
+        const btn = document.createElement('button');
+        btn.type = 'button'; btn.className = 'phrase-chip' + (mod ? ' '+mod : ''); btn.textContent = value;
+        btn.addEventListener('click', showInput);
+        wrap.appendChild(btn);
+      }
+      function showInput(){
+        wrap.innerHTML = '';
+        const inp = document.createElement('input');
+        inp.type = 'text'; inp.className = 'phrase-input'; inp.value = value; inp.setAttribute('aria-label','Phrase');
+        inp.size = Math.max(4, value.length);
+        inp.addEventListener('input', ()=>{ inp.size = Math.max(4, inp.value.length); onInput && onInput(inp.value); });
+        inp.addEventListener('keydown', e=>{ if(e.key==='Enter') inp.blur(); });
+        inp.addEventListener('blur', ()=>{ value = inp.value.trim(); showButton(); onChange && onChange(value); });
+        wrap.appendChild(inp);
+        inp.focus(); inp.select();
+      }
+      wrap.getValue = ()=> value;
+      wrap.setValue = (v)=>{ value = v; showButton(); onChange && onChange(value); };   // magic-fill
+      wrap.focusInput = showInput;
+      startEditing ? showInput() : showButton();
+      return wrap;
+    }
+
+    // mount an editable phrase: "TRUE" is more <one adjective>… than LOVE.
+    // clicking the adjective expands the full list. only the first phrase autofocuses.
+    const phrases = [];
+    const staticUpdaters = [];           // the bottom (static) phrase render hooks
+    let topSubjField = null, topObjField = null;
+    let phraseMode = 'none';             // 'none' = no second word yet · 'merge' = words joined · 'compare' = connector between them
+    // 🪄 magic-fill: each click cycles a 5-word loop (6th click resets to empty)
+    const SUBJ_WORDS = ['True','Love','Life','Time','Self'];
+    const OBJ_WORDS  = ['Love','Fear','Hope','Art','Death'];
+    function magicBtn(words, field){
+      const b = document.createElement('button'); b.type='button'; b.className='magic-btn'; b.title='Suggest'; b.textContent='🪄';
+      let idx = 0;
+      b.addEventListener('click', ()=>{ idx = (idx+1) % (words.length+1); field.setValue(idx===0 ? '' : words[idx-1]); });
+      return b;
+    }
+    // progressive phrase:
+    //  ① only the (violet) first field shows.
+    //  ② once it holds a word → Merge / Compare appear (toggleable radios).
+    //  ③ picking a mode reveals the (green) second field AFTER the buttons,
+    //     with the phrase (connector "as more … than") BEFORE them in Compare.
+    //  ④ in Merge, filling the green word + clicking away joins both words
+    //     together and the buttons hop to the end.
+    function mountPhrase(container, autofocus){
+      let mode = 'none';   // 'none' | 'merge' | 'compare'
+
+      const adj = document.createElement('span');
+      adj.className = 'adj-toggle'; adj.title = 'Click to expand';
+      const ph = { adj, expanded:false };
+      adj.addEventListener('click', ()=>{ ph.expanded = !ph.expanded; renderPhrase(); });
+
+      // the comparison connector ("as more <adj> than") — shown only in Compare.
+      const moreWord = document.createElement('span'); moreWord.className='more-word'; moreWord.textContent=' more';
+      const connector = document.createElement('span'); connector.className='cmp-connector';
+      connector.append(' as', moreWord, ' ', adj, ' than ');
+
+      // live-input hook on the first field → reveal the Merge/Compare row as soon
+      // as typing starts (without rebuilding the field being edited).
+      const subjField = makeField('', false, 'phrase-chip--true',
+        ()=>{ layout(); renderPhrase(); },
+        (live)=> syncModes(!!(live && live.trim())) );                              // onInput
+      const objField  = makeField('', false, 'phrase-chip--love', ()=>{ layout(); renderPhrase(); });   // empty by default
+      const subjMagic = magicBtn(SUBJ_WORDS, subjField);   // left of the subject field
+      const objMagic  = magicBtn(OBJ_WORDS,  objField);    // right of the object field
+
+      const btn = (cls,en,es)=>{ const b=document.createElement('button'); b.type='button'; b.className='phrase-btn '+cls; b.innerHTML='<span class="t-en" lang="en">'+en+'</span><span class="t-es" lang="es">'+es+'</span>'; return b; };
+      const mergeBtn = btn('merge','Merge','Unir');
+      const cmpBtn   = btn('cmp','Compare','Comparar');
+      // Merge / Compare now live in their OWN row BELOW the two keyword fields.
+      const modesRow = document.createElement('div'); modesRow.className='phrase-modes-row'; modesRow.hidden = true;
+      modesRow.append(mergeBtn, cmpBtn);
+      // place the row AFTER the whole phrase-row (which is a flex row) so it sits
+      // BELOW the keyword fields, not beside them.
+      (container.closest('.phrase-row') || container).insertAdjacentElement('afterend', modesRow);
+
+      // Show the buttons row once the first field holds (or is being given) a word;
+      // keep it visible while a mode is active. liveHasText overrides the stored value.
+      function syncModes(liveHasText){
+        const hasSubj = (liveHasText !== undefined) ? liveHasText : !!subjField.getValue();
+        modesRow.hidden = !(hasSubj || mode !== 'none');
+        mergeBtn.classList.toggle('is-on', mode==='merge');
+        cmpBtn.classList.toggle('is-on', mode==='compare');
+      }
+
+      // Merge / Compare behave as mutually-exclusive toggles that can also untick
+      // themselves (clicking the active one returns to 'none' → green field hidden).
+      function setMode(m){
+        mode = (mode === m) ? 'none' : m;
+        phraseMode = mode;
+        layout(); renderPhrase();
+        // first click into a mode → reveal the second field ready to type
+        if(mode !== 'none') objField.focusInput();
+      }
+      mergeBtn.addEventListener('click', ()=> setMode('merge'));
+      cmpBtn.addEventListener('click', ()=> setMode('compare'));
+
+      // (re)flow the phrase line; the buttons sit in modesRow (below), so the line
+      // only carries the keyword fields + the Compare connector.
+      function layout(){
+        connector.hidden = (mode !== 'compare');
+        container.innerHTML = '';
+        container.append(subjMagic, subjField);
+        if(mode === 'compare'){
+          container.append(' ', connector, ' ', objField, objMagic);
+        } else if(mode === 'merge'){
+          container.append(' ', objField, objMagic);
+        }
+        syncModes();
+      }
+
+      layout();
+      phrases.push(ph);
+      if(autofocus) subjField.focusInput();
+      return { subjField, objField };
+    }
+
+    // bottom phrase: STATIC — read-only mirror of the live phrase, with a hide/expand toggle
+    function mountStaticPhrase(container){
+      const toggle = document.createElement('button'); toggle.type='button'; toggle.className='phrase-btn';
+      toggle.innerHTML = '<span class="t-en" lang="en">Phrase</span><span class="t-es" lang="es">Frase</span>';
+      const line = document.createElement('span'); line.className = 'static-line';
+      toggle.addEventListener('click', ()=>{ line.hidden = !line.hidden; });
+      container.append(toggle, ' ', line);
+      staticUpdaters.push((parts)=>{
+        const subj = (topSubjField && topSubjField.getValue()) || 'It';
+        const obj  = (topObjField  && topObjField.getValue())  || '';
+        if(phraseMode === 'compare'){
+          line.textContent = ' ' + subj + ' is more ' + parts.join(', ') + ' than ' + (obj || 'Love') + '.';
+        } else {
+          // Merge → reads as a single (first) item: both words merged, no "than …"
+          const merged = [subj, obj].filter(Boolean).join(' ') || subj;
+          line.textContent = ' ' + merged + ' is ' + parts.join(', ') + '.';
+        }
+      });
+    }
+
+    const top = mountPhrase(livePhrase, true);
+    topSubjField = top.subjField; topObjField = top.objField;
+    const livePhrase2 = document.getElementById('livePhrase2');   // static phrase below the main raters
+    if(livePhrase2) mountStaticPhrase(livePhrase2);
+
+    // active-language text of an element holding .t-en / .t-es (never both concatenated)
+    const isEs = () => !!document.getElementById('ui-lang-es')?.checked;
+    function langText(el){
+      if(!el) return '';
+      const en = el.querySelector('.t-en'), es = el.querySelector('.t-es');
+      if(en || es) return ((isEs() ? es?.textContent : en?.textContent) || en?.textContent || es?.textContent || '').trim();
+      return el.textContent.trim();
+    }
+
+    // Per-scale state
+    const scales = [...document.querySelectorAll('.scale')].map((el, scaleIdx)=>{
+      const range = el.querySelector('input[type="range"]');
+      const leftEl = el.querySelector('.lbl.left');
+      const rightEl = el.querySelector('.lbl.right');
+      const midEl = el.querySelector('.lbl.mid');
+      const midData = el.dataset.mid || '';
+      const senseButtons = el.querySelectorAll('.sense-pill');
+      const selectedSenses = new Set();
+
+      range.addEventListener('input', renderPhrase);
+      senseButtons.forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const s = b.dataset.sense;
+          if(selectedSenses.has(s)){ selectedSenses.delete(s); b.classList.remove('on'); }
+          else { selectedSenses.add(s); b.classList.add('on'); }
+          renderPhrase();
+        });
+      });
+
+      setupScaleDesign(el, range, scaleIdx);
+      return {el, range, leftEl, rightEl, midEl, midData, selectedSenses};
+    });
+
+    /* design categories on each main scale (basic slider default · normal · big bars)
+       + move the sense icons to the right of the field, stacked one per row. */
+    function setupScaleDesign(el, range, scaleIdx){
+      const picker = el.querySelector('.picker');
+      const sensesMini = el.querySelector('.senses-mini');
+
+      const bar = document.createElement('div');
+      bar.className = 'bar seven use-gradient rainbow-smooth scale-bar';
+      for(let i=0;i<7;i++){
+        const s = document.createElement('span');
+        s.addEventListener('click', ()=>{
+          bar.querySelectorAll('span').forEach(x=>x.classList.remove('pick'));
+          s.classList.add('pick');
+          range.value = i+1; range.dispatchEvent(new Event('input',{bubbles:true}));
+        });
+        bar.appendChild(s);
+      }
+      picker.insertBefore(bar, sensesMini);   // bar sits where the slider is
+      if(sensesMini) sensesMini.remove();      // pull senses out → right column
+
+      // wrap the rating content; the mode/design/node tools are added by setupTools
+      const main = document.createElement('div');
+      main.className = 'scale-main';
+      while(el.firstChild) main.appendChild(el.firstChild);
+      el.appendChild(main);
+      if(sensesMini) el.appendChild(sensesMini);
+    }
+
+    function renderPhrase(){
+      const parts = scales.map(sc=>{
+        const v = parseInt(sc.range.value,10);
+        const midTxt = sc.midEl ? langText(sc.midEl) : sc.midData;
+        const dir = v < 4 ? langText(sc.leftEl).toLowerCase()
+                  : (v > 4 ? langText(sc.rightEl).toLowerCase()
+                  : (midTxt ? midTxt.toLowerCase() : 'balanced'));
+        const tagSenses = sc.selectedSenses.size ? ' ('+[...sc.selectedSenses].join(', ')+')' : '';
+        return dir + tagSenses;
+      });
+      phrases.forEach(ph=>{
+        ph.adj.textContent = ph.expanded ? parts.join(', ') : ((parts[0]||'…') + ' …');
+      });
+      staticUpdaters.forEach(fn=> fn(parts));
+    }
+
+    renderPhrase();
+
+    /* design dropdown on the full raters (big bars = default) */
+    document.querySelectorAll('.fulls .cards > .rater').forEach(card=>{
+      const sel = document.createElement('select');
+      sel.className = 'design-pick'; sel.title = 'Design'; sel.setAttribute('aria-label','Design');
+      sel.innerHTML = '<option value="big">▰</option>'+
+                      '<option value="normal">▭</option>'+
+                      '<option value="basic">•</option>';
+      sel.addEventListener('change', ()=>{
+        card.classList.remove('d-big','d-normal','d-basic');
+        card.classList.add('d-'+sel.value);
+      });
+      const h = card.querySelector('h3');
+      h.after(sel);
+    });
+  })();
+  </script>
+
+  <!-- inline Create form (JS lives in the form, §13) -->
+  <script>
+  (function(){
+    const panel   = document.getElementById('createPanel');
+    if(!panel) return;
+    const toggle  = document.getElementById('createToggle');   // top button removed; may be null
+    const editors = document.getElementById('cpEditors');
+    const mainList = document.querySelector('.scales');   // created raters go to the top of the main list
+    const addBtn  = document.getElementById('cpAdd');
+    const designSel = document.getElementById('cpDesign');
+    let polarity  = 'pos';
+    let mode      = 'point';
+    let design    = 'big';                                  // big bars = default
+
+    if(designSel) designSel.addEventListener('change', ()=>{ design = designSel.value; });
+
+    const GRAD = 'linear-gradient(90deg,#ff2d2d,#ff8a00,#ffe100,#36d63a,#2aa9ff,#3b4cff,#a64bff)';
+
+    function buildBar(n){
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.display = 'grid';
+      bar.style.gridTemplateColumns = 'repeat('+n+',1fr)';
+      for(let i=0;i<n;i++){
+        const s = document.createElement('span');
+        s.style.background = GRAD;
+        s.style.backgroundSize = '700% 100%';
+        s.style.backgroundPosition = (n===1 ? 50 : i/(n-1)*100) + '% 0';
+        bar.appendChild(s);
+      }
+      return bar;
+    }
+    function grid(cls,n){
+      const ul = document.createElement('ul');
+      ul.className = cls;
+      ul.style.display = 'grid';
+      ul.style.gridTemplateColumns = 'repeat('+n+',1fr)';
+      ul.style.gap = '6px';
+      return ul;
+    }
+
+    if(toggle) toggle.addEventListener('click', ()=>{ panel.hidden = !panel.hidden; });
+
+    // second Create button (in the More-raters area) toggles the same panel
+    const toggle2 = document.getElementById('createToggle2');
+    if(toggle2) toggle2.addEventListener('click', ()=>{
+      panel.hidden = !panel.hidden;
+      toggle2.setAttribute('aria-expanded', String(!panel.hidden));
+      if(!panel.hidden) panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+    });
+
+    // "More raters" reveals the node-count buttons row + every rater list
+    const moreToggle = document.getElementById('moreToggle');
+    const moreBody = document.getElementById('moreBody');
+    if(moreToggle && moreBody) moreToggle.addEventListener('click', ()=>{
+      const open = moreBody.hidden;
+      moreBody.hidden = !open;
+      moreToggle.setAttribute('aria-expanded', String(open));
+    });
+
+    // polarity — single choice
+    panel.querySelectorAll('.cp-polarity .polbtn').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        panel.querySelectorAll('.cp-polarity .polbtn').forEach(x=>x.classList.remove('is-on'));
+        b.classList.add('is-on');
+        polarity = b.dataset.pol;
+      });
+    });
+
+    // selection mode — single choice (Point / Area / Multi)
+    panel.querySelectorAll('.cp-modes .modebtn').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        panel.querySelectorAll('.cp-modes .modebtn').forEach(x=>x.classList.remove('is-on'));
+        b.classList.add('is-on');
+        mode = b.dataset.mode;
+      });
+    });
+
+    // make a created bar interactive per its mode
+    function attachMode(bar, m){
+      const cells=[...bar.querySelectorAll('span')];
+      let areaStart=null;
+      cells.forEach((cell,idx)=>{
+        cell.style.cursor='pointer';
+        cell.addEventListener('click', (e)=>{
+          e.stopPropagation();               // don't toggle whole-card selection
+          if(m==='point'){
+            cells.forEach(c=>c.classList.remove('pick'));
+            cell.classList.add('pick');
+          } else if(m==='multi'){
+            cell.classList.toggle('pick');
+          } else { // area — first click sets start, second sets the inclusive range
+            if(areaStart===null){ cells.forEach(c=>c.classList.remove('pick')); areaStart=idx; cell.classList.add('pick'); }
+            else { const a=Math.min(areaStart,idx), z=Math.max(areaStart,idx); cells.forEach((c,i)=>c.classList.toggle('pick', i>=a&&i<=z)); areaStart=null; }
+          }
+        });
+      });
+    }
+
+    // node counts — multiselect, but only ONE editor shows: the highest count.
+    // On Add, the lower counts are added below it as variants of the same rater.
+    const selCounts = new Set();
+    panel.querySelectorAll('.cp-num').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const n = +b.dataset.n;
+        b.classList.toggle('is-on');
+        if(b.classList.contains('is-on')) selCounts.add(n); else selCounts.delete(n);
+        renderEditor();
+      });
+    });
+
+    function renderEditor(){
+      // keep what was typed when the selection changes
+      const prev = editors.querySelector('.cp-editor');
+      const prevName = prev ? (prev.querySelector('.cp-name').value || '') : '';
+      const prevVals = prev ? [...prev.querySelectorAll('.cp-inputs input')].map(i=>i.value||'') : [];
+      editors.innerHTML = '';
+      if(!selCounts.size) return;
+      const max = Math.max(...selCounts);            // only the highest count is filled
+      const ed = document.createElement('div');
+      ed.className = 'cp-editor'; ed.dataset.n = max;
+      const name = document.createElement('input');
+      name.className = 'cp-name'; name.placeholder = 'name…'; name.value = prevName;
+      ed.appendChild(name);
+      const inputs = document.createElement('div');
+      inputs.className = 'cp-inputs';
+      inputs.style.gridTemplateColumns = 'repeat('+max+',1fr)';
+      for(let i=0;i<max;i++){
+        const inp = document.createElement('input');
+        inp.placeholder = 'text / 🙂'; inp.value = prevVals[i] || '';
+        inputs.appendChild(inp);
+      }
+      ed.appendChild(inputs);
+      ed.appendChild(buildBar(max));
+      editors.appendChild(ed);
+    }
+
+    // evenly sample m values from a longer list (for the lower-count variants)
+    function sample(arr, m){
+      if(m >= arr.length) return arr.slice();
+      if(m === 1) return [arr[Math.floor(arr.length/2)]];
+      const out = [];
+      for(let i=0;i<m;i++) out.push(arr[Math.round(i*(arr.length-1)/(m-1))]);
+      return out;
+    }
+
+    function buildCard(name, n, vals){
+      const card = document.createElement('div');
+      card.className = 'rater mode-' + mode + ' d-' + design + (polarity==='neg' ? ' neg' : '');
+      card.dataset.mode = mode;
+
+      const del = document.createElement('button');
+      del.type = 'button'; del.className = 'del'; del.textContent = '×';
+      del.setAttribute('aria-label','Delete');
+      del.addEventListener('click', ()=>card.remove());
+      card.appendChild(del);
+
+      const h = document.createElement('h3');
+      h.textContent = name.toUpperCase();            // no type/mode tag shown
+      card.appendChild(h);
+
+      // per-card design dropdown — icon only (switchable later)
+      const dsel = document.createElement('select');
+      dsel.className = 'design-pick'; dsel.title = 'Design'; dsel.setAttribute('aria-label','Design');
+      dsel.innerHTML = '<option value="big">▰</option><option value="normal">▭</option><option value="basic">•</option>';
+      dsel.value = design;
+      dsel.addEventListener('change', ()=>{
+        card.classList.remove('d-big','d-normal','d-basic');
+        card.classList.add('d-'+dsel.value);
+      });
+      h.after(dsel);
+
+      const labels = grid('labels', n);
+      for(let i=0;i<n;i++){ const li=document.createElement('li'); li.textContent=(vals[i]||''); labels.appendChild(li); }
+      card.appendChild(labels);
+
+      const bar = buildBar(n);
+      attachMode(bar, mode);
+      card.appendChild(bar);
+
+      const icons = grid('icons', n);
+      for(let i=0;i<n;i++){ const li=document.createElement('li'); li.textContent='●'; icons.appendChild(li); }
+      card.appendChild(icons);
+      return card;
+    }
+
+    // add — highest-count rater on top, the rest of the rates below it
+    addBtn.addEventListener('click', ()=>{
+      const ed = editors.querySelector('.cp-editor');
+      if(!ed) return;
+      const counts = [...selCounts].sort((a,b)=>b-a);   // descending: max first
+      const maxN = counts[0];
+      const name = (ed.querySelector('.cp-name').value || '').trim() || 'NEW';
+      const vals = [...ed.querySelectorAll('.cp-inputs input')].map(i=>(i.value||'').trim());
+
+      let prev = null;
+      counts.forEach((cnt, idx)=>{
+        const values = (cnt === maxN) ? vals : sample(vals, cnt);
+        const card = buildCard(name, cnt, values);
+        if(idx === 0) mainList.insertBefore(card, mainList.firstChild);  // top of the main list
+        else prev.after(card);                                           // the rest, below it
+        prev = card;
+      });
+
+      // reset
+      editors.innerHTML = '';
+      selCounts.clear();
+      panel.querySelectorAll('.cp-num.is-on').forEach(x=>x.classList.remove('is-on'));
+    });
+  })();
+  </script>
+
+  <script>
+  /* Static rater cards rendered from data — the single source for the 29
+     built-in raters. The runtime initRater/setupTools runs afterwards. */
+  (function(){
+    const RATY_RATERS = [
+{"id": "truthy", "name": "TRUTHY", "pop": false, "labels7": [["False", "Falso"], null, null, null, null, null, ["True", "Verdadero"]], "labels5": [], "icons7": ["○", "", "", "", "", "", "●"], "icons5": [], "checked": "7"},
+{"id": "switchy", "name": "SWITCHY", "pop": false, "labels7": [["Off", "Apagado"], null, null, null, null, null, ["On", "Encendido"]], "labels5": [], "icons7": ["⭘", "", "", "", "", "", "⚡"], "icons5": [], "checked": "7"},
+{"id": "heaty", "name": "HEATY", "pop": false, "labels7": [["Cold", "Frío"], null, null, ["Warm", "Templado"], null, null, ["Hot", "Caliente"]], "labels5": [], "icons7": ["❄️", "", "", "🌤️", "", "", "🔥"], "icons5": [], "checked": "7"},
+{"id": "moody", "name": "MOODY", "pop": false, "labels7": [["Sad", "Triste"], null, null, ["Neutral", "Neutro"], null, null, ["Happy", "Feliz"]], "labels5": [], "icons7": ["😢", "", "", "😐", "", "", "😄"], "icons5": [], "checked": "7"},
+{"id": "gradey", "name": "GRADEY", "pop": false, "labels7": [null, null, null, null, null, null, null], "labels5": [], "icons7": ["🟥", "", "🟧", "", "🟨", "", "🟩"], "icons5": [], "checked": "7"},
+{"id": "seasony", "name": "SEASONY", "pop": false, "labels7": [["Winter", "Invierno"], null, ["Spring", "Primavera"], null, ["Summer", "Verano"], null, ["Autumn", "Otoño"]], "labels5": [], "icons7": ["❄️", "", "🌱", "", "☀️", "", "🍂"], "icons5": [], "checked": "7"},
+{"id": "likerty", "name": "LIKERTY", "pop": false, "labels7": [], "labels5": [["Strongly disagree", "Muy en contra"], ["Disagree", "En contra"], ["Neutral", "Neutro"], ["Agree", "A favor"], ["Strongly agree", "Muy a favor"]], "icons7": [], "icons5": ["👎", "🙁", "😐", "🙂", "👍"], "checked": "7"},
+{"id": "starry", "name": "STARRY", "pop": false, "labels7": [], "labels5": [null, null, null, null, null], "icons7": [], "icons5": ["⭐", "⭐", "⭐", "⭐", "⭐"], "checked": "7"},
+{"id": "sizy-2", "name": "SIZY", "pop": false, "labels7": [["Existential", "Existencial"], ["Personal", "Personal"], ["Local", "Local"], ["Cultural", "Cultural"], ["Social", "Social"], ["Global", "Global"], ["Universal", "Universal"]], "labels5": [], "icons7": ["●", "●", "●", "●", "●", "●", "●"], "icons5": [], "checked": "7"},
+{"id": "posy", "name": "POSY", "pop": false, "labels7": [["Noise", "Ruido"], ["Signal", "Señal"], ["Sign", "Signo"], ["Symbol", "Símbolo"], ["Icon", "Icono"], ["Archetype", "Arquetipo"], ["Paradigm", "Paradigma"]], "labels5": [], "icons7": ["◆", "◆", "◆", "◆", "◆", "◆", "◆"], "icons5": [], "checked": "7"},
+{"id": "sizy", "name": "SIZY", "pop": false, "labels7": [["Existential", "Existencial"], ["Personal", "Personal"], ["Local", "Local"], ["Cultural", "Cultural"], ["Social", "Social"], ["Global", "Global"], ["Universal", "Universal"]], "labels5": [["Existential", "Existencial"], ["Personal", "Personal"], ["Cultural", "Cultural"], ["Global", "Global"], ["Universal", "Universal"]], "icons7": ["●", "●", "●", "●", "●", "●", "●"], "icons5": ["●", "●", "●", "●", "●"], "checked": "7"},
+{"id": "joiny", "name": "JOINY", "pop": false, "labels7": [["Equal", "Igual"], ["Companion", "Compañero"], ["Mate", "Colega"], ["Friend", "Amigo"], ["Close", "Cercano"], ["Intimate", "Íntimo"], ["Couple", "Pareja"]], "labels5": [["Equal", "Igual"], ["Companion", "Compañero"], ["Friend", "Amigo"], ["Intimate", "Íntimo"], ["Couple", "Pareja"]], "icons7": ["⚙️", "❤️", "🧪", "🛡️", "🦋", "🧠", "🌙"], "icons5": ["⚙️", "❤️", "🛡️", "🧠", "🌙"], "checked": "7"},
+{"id": "tasty", "name": "TASTY", "pop": false, "labels7": [["Lovely", "Encantador"], ["Bonding", "Vinculante"], ["Cute", "Mono"], ["Nice", "Agradable"], ["Cool", "Guay"], ["Like", "Me gusta"], ["Ok", "Vale"]], "labels5": [["Lovely", "Encantador"], ["Bonding", "Vinculante"], ["Nice", "Agradable"], ["Like", "Me gusta"], ["Ok", "Vale"]], "icons7": ["🔥", "🌶️", "🌞", "🌿", "❄️", "🪻", "💜"], "icons5": ["🔥", "🌶️", "🌿", "🪻", "💜"], "checked": "7"},
+{"id": "surp", "name": "SURPRISY", "pop": false, "labels7": [["Big", "Grande"], ["Great", "Genial"], ["Huge", "Enorme"], ["Amazing", "Asombroso"], ["Marvelous", "Maravilloso"], ["Awesome", "Impresionante"], ["Incredible", "Increíble"]], "labels5": [["Big", "Grande"], ["Great", "Genial"], ["Amazing", "Asombroso"], ["Awesome", "Impresionante"], ["Incredible", "Increíble"]], "icons7": ["🌑", "🌘", "🌗", "🌖", "🌕", "✨", "💡"], "icons5": ["🌑", "🌘", "🌖", "✨", "💡"], "checked": "7"},
+{"id": "deary", "name": "DEARY", "pop": false, "labels7": [["Felt", "Sentido"], ["Wanted", "Querido"], ["Wished", "Deseado"], ["Desired", "Anhelado"], ["Flirted", "Coqueteado"], ["Passionated", "Apasionado"], ["Loved", "Amado"]], "labels5": [["Felt", "Sentido"], ["Wanted", "Querido"], ["Desired", "Anhelado"], ["Passionated", "Apasionado"], ["Loved", "Amado"]], "icons7": ["●", "●", "●", "●", "●", "●", "●"], "icons5": ["●", "●", "●", "●", "●"], "checked": "7"},
+{"id": "staty", "name": "STATY", "pop": false, "labels7": [["Novel", "Novedoso"], ["Emergent", "Emergente"], ["Rising", "Ascendente"], ["Generative", "Generativo"], ["Continuum", "Continuo"], ["Progressive", "Progresivo"], ["Permanent", "Permanente"]], "labels5": [["Novel", "Novedoso"], ["Emergent", "Emergente"], ["Generative", "Generativo"], ["Progressive", "Progresivo"], ["Permanent", "Permanente"]], "icons7": ["●", "●", "●", "●", "●", "●", "●"], "icons5": ["●", "●", "●", "●", "●"], "checked": "7"},
+{"id": "lighty", "name": "LIGHTY", "pop": false, "labels7": [["Please", "Agrado"], ["Fun", "Diversión"], ["Satisfaction", "Satisfacción"], ["Happy", "Feliz"], ["Delight", "Deleite"], ["Joy", "Júbilo"], ["Bliss", "Dicha"]], "labels5": [["Please", "Agrado"], ["Fun", "Diversión"], ["Happy", "Feliz"], ["Joy", "Júbilo"], ["Bliss", "Dicha"]], "icons7": ["●", "●", "●", "●", "●", "●", "●"], "icons5": ["●", "●", "●", "●", "●"], "checked": "7"},
+{"id": "negaty", "name": "NEGATY", "pop": false, "labels7": [["Impossible", "Imposible"], ["Unobservable", "Inobservable"], ["Unknowable", "Incognoscible"], ["Unfalsifiable", "Infalsable"], ["Unprobable", "Improbable"], ["Unknown", "Desconocido"], ["Uncertain", "Incierto"]], "labels5": [["Impossible", "Imposible"], ["Unobservable", "Inobservable"], ["Unfalsifiable", "Infalsable"], ["Unknown", "Desconocido"], ["Uncertain", "Incierto"]], "icons7": ["🧘", "🙂", "🚶", "🏃", "⚡", "🔥", "🌋"], "icons5": ["🧘", "🙂", "🏃", "🔥", "🌋"], "checked": "7"},
+{"id": "zery", "name": "ZERY", "pop": false, "labels7": [["Occult", "Oculto"], ["Shady", "Sombrío"], ["Obscure", "Recóndito"], ["Dark", "Oscuro"], ["Void", "Vacío"], ["Empty", "Vacuo"], ["Nothing", "Nada"]], "labels5": [["Occult", "Oculto"], ["Shady", "Sombrío"], ["Dark", "Oscuro"], ["Empty", "Vacuo"], ["Nothing", "Nada"]], "icons7": ["○", "○", "○", "○", "○", "○", "○"], "icons5": ["○", "○", "○", "○", "○"], "checked": "7"},
+{"id": "formaly", "name": "FORMALY", "pop": false, "labels7": [["Hypothesis", "Hipótesis"], ["Axiom", "Axioma"], ["Principle", "Principio"], ["Theory", "Teoría"], ["Prediction", "Predicción"], ["Theorem", "Teorema"], ["Conjecture", "Conjetura"]], "labels5": [["Hypothesis", "Hipótesis"], ["Axiom", "Axioma"], ["Theory", "Teoría"], ["Theorem", "Teorema"], ["Conjecture", "Conjetura"]], "icons7": ["●", "●", "●", "●", "●", "●", "●"], "icons5": ["●", "●", "●", "●", "●"], "checked": "7"},
+{"id": "futury", "name": "FUTURY", "pop": false, "labels7": [["Drive", "Impulso"], ["Intention", "Intención"], ["Purpose", "Propósito"], ["Target", "Objetivo"], ["Plan", "Plan"], ["Project", "Proyecto"], ["Uthopia", "Utopía"]], "labels5": [["Drive", "Impulso"], ["Intention", "Intención"], ["Target", "Objetivo"], ["Project", "Proyecto"], ["Uthopia", "Utopía"]], "icons7": ["✚", "✚", "✚", "✚", "✚", "✚", "✚"], "icons5": ["✚", "✚", "✚", "✚", "✚"], "checked": "7"},
+{"id": "diggy", "name": "DIGGY", "pop": false, "labels7": [["Curiosity", "Curiosidad"], ["Wonder", "Asombro"], ["Inquiry", "Indagación"], ["Discovery", "Descubrimiento"], ["Understanding", "Comprensión"], ["Learning", "Aprendizaje"], ["Teaching", "Enseñanza"]], "labels5": [["Curiosity", "Curiosidad"], ["Wonder", "Asombro"], ["Discovery", "Descubrimiento"], ["Learning", "Aprendizaje"], ["Teaching", "Enseñanza"]], "icons7": ["—", "—", "—", "—", "—", "—", "—"], "icons5": ["—", "—", "—", "—", "—"], "checked": "7"},
+{"id": "showy", "name": "SHOWY", "pop": false, "labels7": [["Intuition", "Intuición"], ["Guess", "Suposición"], ["Belief", "Creencia"], ["Evidence", "Evidencia"], ["Fact", "Hecho"], ["Reality", "Realidad"], ["Truth", "Verdad"]], "labels5": [["Intuition", "Intuición"], ["Guess", "Suposición"], ["Evidence", "Evidencia"], ["Reality", "Realidad"], ["Truth", "Verdad"]], "icons7": ["·", "·", "·", "·", "·", "·", "·"], "icons5": ["·", "·", "·", "·", "·"], "checked": "7"},
+{"id": "agey", "name": "AGEY", "pop": true, "labels7": [["Young", "Joven"], null, null, ["Adult", "Adulto"], null, null, ["Old", "Mayor"]], "labels5": [], "icons7": ["👶", "", "", "🧑", "", "", "🧓"], "icons5": [], "checked": "7"},
+{"id": "pricey", "name": "PRICEY", "pop": true, "labels7": [["Cheap", "Barato"], null, null, null, null, null, ["Pricey", "Caro"]], "labels5": [], "icons7": ["🪙", "", "", "", "", "", "💎"], "icons5": [], "checked": "7"},
+{"id": "speedy", "name": "SPEEDY", "pop": true, "labels7": [["Slow", "Lento"], null, null, ["Medium", "Medio"], null, null, ["Fast", "Rápido"]], "labels5": [], "icons7": ["🐌", "", "", "🚶", "", "", "🚀"], "icons5": [], "checked": "7"},
+{"id": "trusty", "name": "TRUSTY", "pop": true, "labels7": [["Doubt", "Duda"], null, null, null, null, null, ["Trust", "Confianza"]], "labels5": [], "icons7": ["🤨", "", "", "", "", "", "🤝"], "icons5": [], "checked": "7"},
+{"id": "hardy", "name": "HARDY", "pop": true, "labels7": [["Easy", "Fácil"], null, null, ["Medium", "Medio"], null, null, ["Hard", "Difícil"]], "labels5": [], "icons7": ["🟢", "", "", "🟡", "", "", "🔴"], "icons5": [], "checked": "7"},
+{"id": "rarey", "name": "RAREY", "pop": true, "labels7": [["Common", "Común"], null, null, null, null, null, ["Rare", "Raro"]], "labels5": [], "icons7": ["🌾", "", "", "", "", "", "🦄"], "icons5": [], "checked": "7"}
+];
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const labelsHtml = (items, cls, n) => '<ul class="labels ' + cls + '">' +
+      Array.from({length:n}, (_,i) => {
+        const v = items[i];
+        return '<li>' + (v && (v[0] || v[1]) ? '<span class="t-en" lang="en">'+esc(v[0])+'</span><span class="t-es" lang="es">'+esc(v[1])+'</span>' : '') + '</li>';
+      }).join('') + '</ul>';
+    const iconsHtml = (items, cls, n) => '<ul class="icons ' + cls + '">' +
+      Array.from({length:n}, (_,i) => '<li>'+esc(items[i] || '')+'</li>').join('') + '</ul>';
+    const bar = (cls, n) => '<div class="bar ' + cls + ' use-gradient rainbow-smooth">' + '<span></span>'.repeat(n) + '</div>';
+    const formPick = r => {
+      const vals = [2,3,4,5,7];
+      return '<div class="form-pick">' + vals.map(v =>
+        '<input type="radio" name="form-'+r.id+'" id="'+r.id+'-'+v+'" class="formr" value="'+v+'"'+(String(v)===String(r.checked)?' checked':'')+'>'
+        + '<label for="'+r.id+'-'+v+'" class="frbtn'+(v===7?' frbtn--max':'')+'">'+v+'</label>').join('') + '</div>';
+    };
+    const card = r => {
+      if (r.pop) return '<div class="rater pop"><span class="pop-tag">popular</span><h3>'+esc(r.name)+'</h3>'
+        + labelsHtml(r.labels7,'seven',7) + bar('seven',7) + iconsHtml(r.icons7,'seven',7) + '</div>';
+      const head = '<div class="rater"><h3>'+esc(r.name)+'</h3>';
+      if (!r.labels7.length && r.labels5.length) {
+        // five-only card (e.g. Likerty, Starry): no re-form control
+        return head + labelsHtml(r.labels5,'five',5) + bar('five',5) + iconsHtml(r.icons5,'five',5) + '</div>';
+      }
+      if (!r.labels5.length) {
+        // simple seven card: labels / bar / icons only (the runtime adds the tools)
+        return head + labelsHtml(r.labels7,'seven',7) + bar('seven',7) + iconsHtml(r.icons7,'seven',7) + '</div>';
+      }
+      return head
+        + '<div class="form-not5">' + labelsHtml(r.labels7,'seven',7) + bar('seven',7) + iconsHtml(r.icons7,'seven',7) + '</div>'
+        + '<div class="form5only">' + labelsHtml(r.labels5,'five',5) + bar('five',5) + iconsHtml(r.icons5.length ? r.icons5 : r.icons7,'five',5) + '</div>'
+        + formPick(r) + '</div>';
+    };
+    document.querySelectorAll('.rater-slot[data-rater]').forEach(slot => {
+      const r = RATY_RATERS.find(x => x.id === slot.dataset.rater);
+      if (r) slot.outerHTML = card(r);
+    });
+    window.RATY_RATERS = RATY_RATERS;
+  })();
+  </script>
+
+  <!-- selection · views (vertical/axial/spider) · drag & arrow reorder -->
+  <script>
+  (function(){
+    const VIOLET='#8d89ff', TEAL='#70f0d3', SOFT='#c9c6ff', LINE='#2a2e45';
+
+    /* ---------- helpers ---------- */
+    const esc = s => String(s).replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    const isEs = () => !!document.getElementById('ui-lang-es')?.checked;
+    function liText(li){
+      const en=li.querySelector('.t-en'), es=li.querySelector('.t-es');
+      if(en||es) return ((isEs()? es?.textContent : en?.textContent) || en?.textContent || es?.textContent || '').trim();
+      return li.textContent.trim();
+    }
+    function getData(card){
+      const name=(card.querySelector('h3')?.textContent||'rater').trim();
+      const ul=card.querySelector('.form-not5 .labels') || card.querySelector('.labels');
+      const labels=ul ? [...ul.querySelectorAll('li')].map(liText).filter(Boolean) : [];
+      return {name, labels:labels.length?labels:['—']};
+    }
+
+    /* ---------- SVG renderings (combine the two selected raters) ---------- */
+    const W=640, H=380;
+    function grad(id,vertical){
+      return `<linearGradient id="${id}" x1="0" y1="0" x2="${vertical?0:1}" y2="${vertical?1:0}">`+
+             `<stop offset="0%" stop-color="${VIOLET}"/><stop offset="50%" stop-color="${SOFT}"/>`+
+             `<stop offset="100%" stop-color="${TEAL}"/></linearGradient>`;
+    }
+    function renderVertical(a,b){
+      let s=`<svg viewBox="0 0 ${W} ${H}" role="img"><defs>${grad('vg',true)}</defs>`;
+      [{d:a,cx:150},{d:b,cx:430}].forEach(({d,cx})=>{
+        const n=d.labels.length, top=52, bh=H-100, bw=44, ch=bh/n;
+        s+=`<text x="${cx}" y="34" text-anchor="middle" fill="${TEAL}" font-size="14" font-weight="700">${esc(d.name)}</text>`;
+        s+=`<rect x="${cx-bw/2}" y="${top}" width="${bw}" height="${bh}" rx="10" fill="url(#vg)"/>`;
+        for(let i=0;i<n;i++){
+          const y=top+i*ch;
+          if(i>0) s+=`<line x1="${cx-bw/2}" y1="${y}" x2="${cx+bw/2}" y2="${y}" stroke="#0f1120" stroke-width="2"/>`;
+          s+=`<text x="${cx+bw/2+9}" y="${y+ch/2+4}" fill="${SOFT}" font-size="11">${esc(d.labels[i])}</text>`;
+        }
+      });
+      return s+`</svg>`;
+    }
+    function renderAxial(a,b){
+      const ox=96, oy=H-72, axLen=W-200, ayLen=H-150;
+      let s=`<svg viewBox="0 0 ${W} ${H}" role="img"><defs>${grad('hg',false)}${grad('vg',true)}</defs>`;
+      // faint grid
+      const na=a.labels.length, nb=b.labels.length;
+      for(let i=0;i<=na;i++){ const x=ox+i*axLen/na; s+=`<line x1="${x}" y1="${oy}" x2="${x}" y2="${oy-ayLen}" stroke="${LINE}" stroke-width="1" opacity=".4"/>`; }
+      for(let j=0;j<=nb;j++){ const y=oy-j*ayLen/nb; s+=`<line x1="${ox}" y1="${y}" x2="${ox+axLen}" y2="${y}" stroke="${LINE}" stroke-width="1" opacity=".4"/>`; }
+      // axes
+      s+=`<rect x="${ox}" y="${oy-5}" width="${axLen}" height="10" rx="5" fill="url(#hg)"/>`;
+      s+=`<rect x="${ox-5}" y="${oy-ayLen}" width="10" height="${ayLen}" rx="5" fill="url(#vg)"/>`;
+      // X = rater a
+      s+=`<text x="${ox+axLen}" y="${oy+40}" text-anchor="end" fill="${VIOLET}" font-size="13" font-weight="700">${esc(a.name)} →</text>`;
+      for(let i=0;i<na;i++){ const x=ox+(i+0.5)*axLen/na;
+        s+=`<line x1="${x}" y1="${oy-5}" x2="${x}" y2="${oy+5}" stroke="${SOFT}" stroke-width="1"/>`;
+        s+=`<text x="${x}" y="${oy+20}" text-anchor="end" fill="${SOFT}" font-size="10" transform="rotate(-32 ${x} ${oy+20})">${esc(a.labels[i])}</text>`; }
+      // Y = rater b
+      s+=`<text x="${ox-8}" y="${oy-ayLen-12}" fill="${TEAL}" font-size="13" font-weight="700">↑ ${esc(b.name)}</text>`;
+      for(let j=0;j<nb;j++){ const y=oy-(j+0.5)*ayLen/nb;
+        s+=`<line x1="${ox-5}" y1="${y}" x2="${ox+5}" y2="${y}" stroke="${SOFT}" stroke-width="1"/>`;
+        s+=`<text x="${ox-10}" y="${y+4}" text-anchor="end" fill="${SOFT}" font-size="10">${esc(b.labels[j])}</text>`; }
+      return s+`</svg>`;
+    }
+    function renderSpider(a,b){
+      const cx=W/2, cy=H/2+6, R=Math.min(W,H)/2-66;
+      const nodes=[...a.labels.map(l=>({l,c:VIOLET})), ...b.labels.map(l=>({l,c:TEAL}))];
+      const m=nodes.length;
+      let s=`<svg viewBox="0 0 ${W} ${H}" role="img">`;
+      [0.34,0.67,1].forEach(r=> s+=`<circle cx="${cx}" cy="${cy}" r="${R*r}" fill="none" stroke="${LINE}" stroke-width="1" opacity=".5"/>`);
+      const pts=[];
+      for(let k=0;k<m;k++){
+        const ang=-Math.PI/2 + k*2*Math.PI/m;
+        const tx=cx+Math.cos(ang)*R, ty=cy+Math.sin(ang)*R;
+        pts.push(`${tx},${ty}`);
+        s+=`<line x1="${cx}" y1="${cy}" x2="${tx}" y2="${ty}" stroke="${nodes[k].c}" stroke-width="1.5" opacity=".75"/>`;
+        const lx=cx+Math.cos(ang)*(R+14), ly=cy+Math.sin(ang)*(R+14);
+        const anchor=Math.abs(Math.cos(ang))<0.3?'middle':(Math.cos(ang)>0?'start':'end');
+        s+=`<text x="${lx}" y="${ly+3}" text-anchor="${anchor}" fill="${nodes[k].c}" font-size="10">${esc(nodes[k].l)}</text>`;
+      }
+      s+=`<polygon points="${pts.join(' ')}" fill="rgba(141,137,255,.12)" stroke="${SOFT}" stroke-width="1.5"/>`;
+      // legend
+      s+=`<rect x="14" y="14" width="11" height="11" rx="2" fill="${VIOLET}"/><text x="30" y="24" fill="${SOFT}" font-size="11">${esc(a.name)}</text>`;
+      s+=`<rect x="14" y="32" width="11" height="11" rx="2" fill="${TEAL}"/><text x="30" y="42" fill="${SOFT}" font-size="11">${esc(b.name)}</text>`;
+      return s+`</svg>`;
+    }
+    const RENDER={vertical:renderVertical, axial:renderAxial, spider:renderSpider};
+
+    /* ---------- views control (after the numbers) + stage ---------- */
+    const mainform=document.querySelector('.mainform');
+    let stage=null, viewsCtrl=null, menu=null;
+    if(mainform){
+      viewsCtrl=document.createElement('span');
+      viewsCtrl.className='views-ctrl'; viewsCtrl.style.display='none';
+      viewsCtrl.innerHTML='<button type="button" class="viewsbtn">views</button>'+
+        '<span class="views-menu" hidden>'+
+        '<button type="button" data-view="vertical">vertical</button>'+
+        '<button type="button" data-view="axial">axial</button>'+
+        '<button type="button" data-view="spider">spider</button></span>';
+      mainform.appendChild(viewsCtrl);
+      menu=viewsCtrl.querySelector('.views-menu');
+      stage=document.createElement('div');
+      stage.className='views-stage'; stage.id='viewsStage'; stage.hidden=true;
+      mainform.after(stage);
+
+      viewsCtrl.querySelector('.viewsbtn').addEventListener('click', ()=>{ menu.hidden=!menu.hidden; });
+      menu.querySelectorAll('button[data-view]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const sel=selected(); if(sel.length!==2) return;
+          const a=getData(sel[0]), b=getData(sel[1]), v=btn.dataset.view;
+          stage.innerHTML=`<button type="button" class="vclose" aria-label="Close">×</button>`+
+            `<h4>${v} view — ${esc(a.name)} × ${esc(b.name)}</h4>`+RENDER[v](a,b);
+          stage.hidden=false;
+          stage.querySelector('.vclose').addEventListener('click', ()=>{ stage.hidden=true; });
+          menu.hidden=true;
+          stage.scrollIntoView({behavior:'smooth', block:'nearest'});
+        });
+      });
+    }
+
+    /* ---------- selection (whole card) ---------- */
+    const selected = () => [...document.querySelectorAll('.rater.selected')];
+    function updateViews(){
+      if(!viewsCtrl) return;
+      const two = selected().length===2;
+      viewsCtrl.style.display = two ? 'inline-flex' : 'none';
+      if(!two && menu){ menu.hidden=true; }
+    }
+    document.addEventListener('click', (e)=>{
+      if(e.target.closest('label, input, button, a, select, .design-pick, .bar, .reorder, .rater-tools, .rater-view, .myr-drawer, .sense-row, .form-pick, .senses-bar, .senses-mini, .extra-row, .views-ctrl, .views-stage, .mainform')) return;
+      const card=e.target.closest('.rater, .scale'); if(!card) return;
+      card.classList.toggle('selected');
+      updateViews();
+    });
+
+    /* ---------- reorder: arrows + drag&drop (within the same list) ---------- */
+    function initRater(card){
+      if(card.dataset.rInit) return; card.dataset.rInit='1';
+      card.classList.add('has-reorder');
+      card.setAttribute('draggable','true');
+      const r=document.createElement('div'); r.className='reorder';
+      r.innerHTML='<button type="button" class="up" aria-label="Move left">◀</button>'+
+                  '<button type="button" class="down" aria-label="Move right">▶</button>';
+      card.appendChild(r);
+    }
+    document.addEventListener('click', (e)=>{
+      const up=e.target.closest('.reorder .up'), down=e.target.closest('.reorder .down');
+      if(!up && !down) return;
+      const card=e.target.closest('.rater'), p=card.parentNode;
+      if(up && card.previousElementSibling) p.insertBefore(card, card.previousElementSibling);
+      if(down && card.nextElementSibling) p.insertBefore(card.nextElementSibling, card);
+    });
+
+    let dragEl=null;
+    document.addEventListener('dragstart', (e)=>{ const c=e.target.closest('.rater'); if(!c) return; dragEl=c; c.classList.add('dragging'); if(e.dataTransfer) e.dataTransfer.effectAllowed='move'; });
+    document.addEventListener('dragend', ()=>{ if(dragEl){ dragEl.classList.remove('dragging'); dragEl=null; } });
+    document.addEventListener('dragover', (e)=>{
+      if(!dragEl) return;
+      const over=e.target.closest('.rater');
+      if(!over || over===dragEl || over.parentNode!==dragEl.parentNode) return;
+      e.preventDefault();
+      const rect=over.getBoundingClientRect();
+      const after=(e.clientY-rect.top)/rect.height > 0.5;
+      over.parentNode.insertBefore(dragEl, after ? over.nextElementSibling : over);
+    });
+
+    /* ---------- init existing + observe new (created cards) ---------- */
+    document.querySelectorAll('.rater').forEach(initRater);
+    new MutationObserver(muts=>{
+      muts.forEach(m=> m.addedNodes.forEach(nd=>{
+        if(nd.nodeType!==1) return;
+        if(nd.matches && nd.matches('.rater')) initRater(nd);
+        nd.querySelectorAll && nd.querySelectorAll('.rater').forEach(initRater);
+      }));
+    }).observe(document.body, {childList:true, subtree:true});
+  })();
+  </script>
+
+  <!-- per-rater tools: a centered + expands Senses · Colours · Emotions, each shows its bar below -->
+  <script>
+  (function(){
+    const COLOURS  = ['#ff2d2d','#ff8a00','#ffe100','#36d63a','#2aa9ff','#3b4cff','#a64bff']; // rainbow
+    const EMOTIONS = ['😭','😟','😐','🙂','😊','😄','🤩'];
+    const SENSES   = [['hear','👂'],['touch','🖐️'],['view','👁️'],['taste','👅'],['smell','👃']];
+    const SGRAD    = 'linear-gradient(90deg,#ff2d2d,#ff8a00,#ffe100,#36d63a,#2aa9ff,#3b4cff,#a64bff)';
+    const scaleNodeUpdaters = [];   // first-section node-count row → each scale's number strip
+    // each main scale carries its OWN set of node-count buttons (different per scale)
+    const SCALE_NODE_SETS = [[2,3,5,7],[3,4,5,7],[2,4,6,7]];
+
+    // colours bar — start at 50% intensity, +5% per click (multi-click, caps at 100%)
+    function buildColours(){
+      const row = document.createElement('div'); row.className = 'extra-row colours';
+      COLOURS.forEach(v=>{
+        const c = document.createElement('span'); c.className = 'extra-cell';
+        c.style.background = v; c.style.opacity = '.5'; c.dataset.boost = '0';
+        c.addEventListener('click', ()=>{
+          const b = Math.min(10, (+c.dataset.boost) + 1); c.dataset.boost = b;
+          c.style.opacity = (0.5 + b*0.05).toFixed(2);
+          c.classList.add('sel');
+        });
+        row.appendChild(c);
+      });
+      return row;
+    }
+    // emotions bar — 3 clicks each grow the emoji 20% (multi-click, 4th resets)
+    function buildEmotions(){
+      const row = document.createElement('div'); row.className = 'extra-row emotions';
+      EMOTIONS.forEach(v=>{
+        const c = document.createElement('span'); c.className = 'extra-cell'; c.textContent = v; c.dataset.clicks = '0';
+        c.addEventListener('click', ()=>{
+          const n = ((+c.dataset.clicks) + 1) % 4; c.dataset.clicks = n;
+          c.style.transform = 'scale(' + (1 + 0.2*n) + ')';
+          c.classList.toggle('sel', n > 0);
+        });
+        row.appendChild(c);
+      });
+      return row;
+    }
+    // senses bar — full-width selectable bar of icon cells (multi-click)
+    function buildSenses(){
+      const row = document.createElement('div'); row.className = 'sense-row';
+      SENSES.forEach(([k,ic])=>{
+        const b = document.createElement('button'); b.type='button'; b.className='sense-pill'; b.title=k; b.textContent=ic;
+        b.addEventListener('click', ()=>b.classList.toggle('on'));
+        row.appendChild(b);
+      });
+      return row;
+    }
+    const BUILD = { colours:buildColours, emotions:buildEmotions, senses:buildSenses };
+
+    /* ---- per-rater views: vertical · axial · spider (default = the horizontal bar) ---- */
+    const esEs = () => !!document.getElementById('ui-lang-es')?.checked;
+    function lang(el){
+      const en=el.querySelector('.t-en'), es=el.querySelector('.t-es');
+      if(en||es) return ((esEs()? es?.textContent : en?.textContent) || en?.textContent || es?.textContent || '').trim();
+      return el.textContent.trim();
+    }
+    function getInfo(el){
+      if(el.classList.contains('scale')){
+        const parts=[el.querySelector('.lbl.left'), el.querySelector('.lbl.mid'), el.querySelector('.lbl.right')].filter(Boolean).map(lang);
+        return { name: el.dataset.scale||'scale', labels: parts.length?parts:['—'] };
+      }
+      const name=(el.querySelector('h3')?.textContent||'rater').trim();
+      const ul=el.querySelector('.form-not5 .labels')||el.querySelector('.labels');
+      const labels=ul?[...ul.querySelectorAll('li')].map(li=>li.textContent.trim()).filter(Boolean):[];
+      return { name, labels: labels.length?labels:['—'] };
+    }
+    const esc = s => String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    const col = (i,n) => COLOURS[Math.round(i*(COLOURS.length-1)/Math.max(1,n-1))];
+    function renderView(kind, d){
+      const n=d.labels.length;
+      if(kind==='vertical'){
+        const W=200, ch=30, H=n*ch+20, bw=42, bx=14, top=10;
+        let s=`<svg viewBox="0 0 ${W} ${H}" role="img">`;
+        for(let i=0;i<n;i++){ const y=top+i*ch;
+          s+=`<rect x="${bx}" y="${y}" width="${bw}" height="${ch-4}" rx="6" fill="${col(i,n)}"/>`;
+          s+=`<text x="${bx+bw+8}" y="${y+(ch-4)/2+4}" fill="#c9c6ff" font-size="11">${esc(d.labels[i])}</text>`; }
+        return s+`</svg>`;
+      }
+      if(kind==='axial'){
+        const W=320, H=84, ox=24, ax=W-48, y=50;
+        let s=`<svg viewBox="0 0 ${W} ${H}" role="img"><defs><linearGradient id="axg" x1="0" y1="0" x2="1" y2="0">`+
+          COLOURS.map((c,i)=>`<stop offset="${i/(COLOURS.length-1)*100}%" stop-color="${c}"/>`).join('')+`</linearGradient></defs>`;
+        s+=`<rect x="${ox}" y="${y-4}" width="${ax}" height="8" rx="4" fill="url(#axg)"/>`;
+        for(let i=0;i<n;i++){ const x=ox+(n===1?ax/2:i*ax/(n-1));
+          s+=`<circle cx="${x}" cy="${y}" r="5" fill="${col(i,n)}" stroke="#0b0b14"/>`;
+          s+=`<text x="${x}" y="${y-12}" text-anchor="middle" fill="#c9c6ff" font-size="10" transform="rotate(-18 ${x} ${y-12})">${esc(d.labels[i])}</text>`; }
+        return s+`</svg>`;
+      }
+      const W=180, H=150, cx=W/2, cy=H/2, R=46;        // spider (smaller)
+      let s=`<svg viewBox="0 0 ${W} ${H}" role="img" style="max-width:200px;margin:0 auto">`;
+      [0.5,1].forEach(r=> s+=`<circle cx="${cx}" cy="${cy}" r="${R*r}" fill="none" stroke="#2a2e45" stroke-width="1"/>`);
+      const pts=[];
+      for(let i=0;i<n;i++){ const a=-Math.PI/2 + i*2*Math.PI/n, x=cx+Math.cos(a)*R, y=cy+Math.sin(a)*R; pts.push(`${x},${y}`);
+        s+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="${col(i,n)}" stroke-width="1.5"/>`;
+        const lx=cx+Math.cos(a)*(R+11), ly=cy+Math.sin(a)*(R+11);
+        const anch=Math.abs(Math.cos(a))<0.3?'middle':(Math.cos(a)>0?'start':'end');
+        s+=`<text x="${lx}" y="${ly+3}" text-anchor="${anch}" fill="#c9c6ff" font-size="8">${esc(d.labels[i])}</text>`; }
+      s+=`<polygon points="${pts.join(' ')}" fill="rgba(141,137,255,.15)" stroke="#c9c6ff" stroke-width="1.5"/>`;
+      return s+`</svg>`;
+    }
+
+    function setupTools(el){
+      if(el.dataset.toolsInit) return; el.dataset.toolsInit = '1';
+      const isScale = el.classList.contains('scale');
+      const host = isScale ? (el.querySelector('.scale-main') || el) : el;
+
+      // the rater's own senses become the (hidden) full-width senses bar, multi-click
+      let senses = el.querySelector('.senses-bar, .senses-mini');
+      if(senses){ senses.hidden = true; senses.classList.add('sense-row'); }
+
+      const tools = document.createElement('div'); tools.className = 'rater-tools';
+
+      // ＋ and its sub-icons (senses 🖐️ · colours 🌈 · emotions 🙂)
+      const plus = document.createElement('button'); plus.type='button'; plus.className='tool-plus'; plus.title='Add'; plus.textContent='＋';
+      const icons = document.createElement('span'); icons.className = 'tool-icons'; icons.hidden = true;
+      const mk = (ic,title,kind)=>{
+        const b = document.createElement('button'); b.type='button'; b.className='side-icon';
+        b.title = title; b.textContent = ic; b.dataset.kind = kind; return b;
+      };
+      icons.append(mk('🖐️','Senses','senses'), mk('🌈','Colours','colours'), mk('🙂','Emotions','emotions'));
+      const topRow = document.createElement('div'); topRow.className='tool-row'; topRow.append(plus, icons);
+      plus.addEventListener('click', ()=>{ icons.hidden = !icons.hidden; plus.classList.toggle('open', !icons.hidden); });
+      icons.addEventListener('click', e=>{
+        const b = e.target.closest('.side-icon'); if(!b) return;
+        const kind = b.dataset.kind;
+        if(kind === 'senses'){
+          if(!senses){ senses = buildSenses(); host.appendChild(senses); }
+          senses.hidden = !senses.hidden;
+          b.classList.toggle('active', !senses.hidden);
+        } else {
+          const ex = host.querySelector(':scope > .extra-row.'+kind);
+          if(ex){ ex.remove(); b.classList.remove('active'); }
+          else { host.appendChild(BUILD[kind]()); b.classList.add('active'); }
+        }
+        refreshView();        // keep an open live view in sync with the metaraters present
+      });
+
+      // view buttons — BELOW the + and its subs: H horizontal (default) · V vertical · spider.
+      // V/spider open a live view of the ratings: the rate + each added metarater, includable.
+      const views = document.createElement('span'); views.className = 'view-btns';
+      const vmk = (icon,title,kind)=>{ const b=document.createElement('button'); b.type='button'; b.className='view-btn'; b.textContent=icon; b.title=title; b.dataset.view=kind; return b; };
+      const hBtn=vmk('▤','Horizontal','h'), vBtn=vmk('▥','Vertical','v'), sBtn=vmk('✳️','Spider','spider');
+      hBtn.classList.add('active');
+      views.append(hBtn, vBtn, sBtn);
+
+      function buildLiveView(kind){
+        const box = document.createElement('div'); box.className='rater-view'; box.dataset.view=kind;
+        const layers = [{key:'rate', label:(esEs()?'Valoración':'Rate'), on:true}];
+        if(host.querySelector(':scope > .extra-row.colours'))  layers.push({key:'colours',  label:(esEs()?'Colores':'Colours'),   on:true});
+        if(host.querySelector(':scope > .extra-row.emotions')) layers.push({key:'emotions', label:(esEs()?'Emociones':'Emotions'), on:true});
+        const sr = el.querySelector('.sense-row'); if(sr && !sr.hidden) layers.push({key:'senses', label:(esEs()?'Sentidos':'Senses'), on:true});
+
+        const ctrls = document.createElement('div'); ctrls.className='view-layers';
+        layers.forEach(L=>{
+          const lab=document.createElement('label'); const cb=document.createElement('input'); cb.type='checkbox'; cb.checked=true;
+          cb.addEventListener('change', ()=>{ L.on=cb.checked; draw(); });
+          lab.append(cb, document.createTextNode(' '+L.label)); ctrls.appendChild(lab);
+        });
+        const stage = document.createElement('div'); stage.className='view-stage'+(kind==='v'?' vstage':'');
+        box.append(ctrls, stage);
+        function draw(){
+          stage.innerHTML='';
+          layers.forEach(L=>{
+            if(!L.on) return;
+            if(L.key==='rate'){
+              if(kind==='spider'){ const d=document.createElement('div'); d.innerHTML=renderView('spider', getInfo(el)); if(d.firstChild) stage.appendChild(d.firstChild); }
+              else { const bar = el.querySelector('.bar'); if(bar){ const c=bar.cloneNode(true); c.style.pointerEvents='none'; stage.appendChild(c); } }
+            } else {
+              const src = L.key==='senses' ? el.querySelector('.sense-row') : host.querySelector(':scope > .extra-row.'+L.key);
+              if(src){ const c=src.cloneNode(true); c.hidden=false; c.removeAttribute('hidden'); c.style.pointerEvents='none'; stage.appendChild(c); }
+            }
+          });
+        }
+        draw();
+        return box;
+      }
+      function currentView(){ const b=views.querySelector('.view-btn.active'); return b?b.dataset.view:'h'; }
+      function refreshView(){ const v=currentView(); if(v!=='h'){ const old=host.querySelector(':scope > .rater-view'); if(old) old.replaceWith(buildLiveView(v)); } }
+      function setView(kind, btn){
+        views.querySelectorAll('.view-btn').forEach(x=>x.classList.remove('active'));
+        const sb = host.querySelector(':scope > .rater-view'); if(sb) sb.remove();
+        btn.classList.add('active');
+        if(kind !== 'h') host.appendChild(buildLiveView(kind));   // H = default horizontal
+      }
+      views.addEventListener('click', e=>{ const b=e.target.closest('.view-btn'); if(b) setView(b.dataset.view, b); });
+
+      if(isScale){
+        // ── first-section rater: mode dropdown (above +) · design+view dropdown (below +) · node strip ──
+        const range = el.querySelector('input[type=range]');
+        const sbar  = el.querySelector('.scale-bar');
+        let mode = 'single', nodeN = 7;
+        function wireBar(n){
+          nodeN = n;
+          sbar.classList.remove('seven','use-gradient','rainbow-smooth'); sbar.innerHTML='';
+          sbar.style.gridTemplateColumns = 'repeat('+n+',1fr)';
+          let areaStart = null;
+          for(let i=0;i<n;i++){
+            const s = document.createElement('span');
+            s.style.background = SGRAD; s.style.backgroundSize='700% 100%'; s.style.backgroundPosition=(n===1?50:i/(n-1)*100)+'% 0';
+            s.addEventListener('click', ()=>{
+              const cells=[...sbar.children];
+              if(mode==='single'){ cells.forEach(c=>c.classList.remove('pick')); s.classList.add('pick'); }
+              else if(mode==='multi'){ s.classList.toggle('pick'); }
+              else { if(areaStart===null){ cells.forEach(c=>c.classList.remove('pick')); areaStart=i; s.classList.add('pick'); }
+                     else { const a=Math.min(areaStart,i),z=Math.max(areaStart,i); cells.forEach((c,k)=>c.classList.toggle('pick',k>=a&&k<=z)); areaStart=null; } }
+              range.value=(n===1?4:Math.round(i/(n-1)*6)+1); range.dispatchEvent(new Event('input',{bubbles:true}));
+            });
+            sbar.appendChild(s);
+          }
+          // labels: tick row mirrors the node count (1..N)
+          const ticks = el.querySelector('.ticks');
+          if(ticks){ ticks.innerHTML=''; for(let k=1;k<=n;k++){ const t=document.createElement('span'); t.textContent=k; ticks.appendChild(t); } }
+          // worded poles aligned to the bar cells: left at cell 1 · right at cell N ·
+          // the middle word (EQUAL/COMPLEMENT, when the scale has one) at ceil(N/2),
+          // and only from 3 nodes upward (2 = extremes only).
+          const labelsRow = el.querySelector('.labels');
+          if(labelsRow){
+            const L = labelsRow.querySelector('.lbl.left');
+            const M = labelsRow.querySelector('.lbl.mid');
+            const R = labelsRow.querySelector('.lbl.right');
+            labelsRow.style.display = 'grid';
+            labelsRow.style.gridTemplateColumns = 'repeat('+n+',1fr)';
+            labelsRow.style.alignItems = 'baseline';
+            if(L){ L.style.gridColumn = 1; L.style.justifySelf = 'start';  L.style.textAlign = 'left'; }
+            if(R){ R.style.gridColumn = n; R.style.justifySelf = 'end';    R.style.textAlign = 'right'; }
+            if(M){
+              if(n >= 3){ M.style.display = ''; M.style.gridColumn = Math.ceil(n/2); M.style.justifySelf = 'center'; M.style.textAlign = 'center'; }
+              else { M.style.display = 'none'; }
+            }
+          }
+        }
+        // this scale's own number set (different per scale) + its default node count
+        const scaleIndex = [...document.querySelectorAll('.scale')].indexOf(el);
+        const mySet = SCALE_NODE_SETS[scaleIndex] || [2,3,5,7];
+        const defN  = mySet.includes(7) ? 7 : Math.max(...mySet);
+        if(sbar) wireBar(defN);
+
+        const modeSel = document.createElement('select'); modeSel.className='mode-pick'; modeSel.title='Selection'; modeSel.setAttribute('aria-label','Selection mode');
+        modeSel.innerHTML='<option value="single">single</option><option value="area">area</option><option value="multi">multi</option>';
+        modeSel.addEventListener('change', ()=>{ mode=modeSel.value; if(sbar) wireBar(nodeN); });
+
+        const dsel = document.createElement('select'); dsel.className='design-pick'; dsel.title='Bar style / view'; dsel.setAttribute('aria-label','Bar style');
+        dsel.innerHTML='<option value="basic">•</option><option value="normal">▭</option><option value="big">▰</option><option value="vertical">▥</option><option value="spider">✳️</option>';
+        dsel.addEventListener('change', ()=>{
+          const v=dsel.value; const oldV=host.querySelector(':scope > .rater-view'); if(oldV) oldV.remove();
+          if(v==='vertical'||v==='spider'){ host.appendChild(buildLiveView(v==='vertical'?'v':'spider')); }
+          else { el.classList.remove('d-basic','d-normal','d-big'); el.classList.add('d-'+v);
+                 if(v!=='basic' && sbar){ [...sbar.children].forEach((x,i)=>x.classList.toggle('pick', i===(+range.value-1))); } }
+        });
+
+        const nodesRow = document.createElement('div'); nodesRow.className='scale-nodes';
+        const mainEl = el.querySelector('.scale-main'); if(mainEl) mainEl.insertBefore(nodesRow, mainEl.firstChild);
+        function renderNodes(counts){
+          nodesRow.innerHTML='';
+          [...counts].sort((a,b)=>a-b).forEach(c=>{
+            const b=document.createElement('button'); b.type='button'; b.className='node-num'+(c===nodeN?' active':''); b.textContent=c;
+            b.addEventListener('click', ()=>{
+              if(!el.classList.contains('d-normal') && !el.classList.contains('d-big')){ el.classList.remove('d-basic'); el.classList.add('d-normal'); dsel.value='normal'; }
+              if(sbar) wireBar(c);
+              nodesRow.querySelectorAll('.node-num').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+            });
+            nodesRow.appendChild(b);
+          });
+        }
+        scaleNodeUpdaters.push(renderNodes);
+        renderNodes(mySet);                        // populate this scale's own buttons independently
+
+        tools.append(modeSel, topRow, dsel);       // mode above · + · design+view below
+      } else {
+        tools.append(topRow, views);               // cards keep the separate view buttons
+      }
+      (isScale ? el : host).appendChild(tools);
+      if(senses) host.appendChild(senses);       // senses bar lives below the content (hidden until tapped)
+    }
+
+    document.querySelectorAll('.rater, .scale').forEach(setupTools);
+    new MutationObserver(muts=>{
+      muts.forEach(m=> m.addedNodes.forEach(nd=>{
+        if(nd.nodeType !== 1) return;
+        if(nd.matches && nd.matches('.rater')) setupTools(nd);
+        nd.querySelectorAll && nd.querySelectorAll('.rater').forEach(setupTools);
+      }));
+    }).observe(document.body, {childList:true, subtree:true});
+
+    // (the shared first-section node-count row is gone — each scale owns its own buttons now)
+  })();
+  </script>
+
+  <!-- My Raters drawer: the selected raters (with their settings), grouped & stackable -->
+  <script>
+  (function(){
+    const tab = document.getElementById('myrTab');
+    const drawer = document.getElementById('myRaters');
+    if(!tab || !drawer) return;
+    const closeBtn = document.getElementById('myrClose');
+    const groupsRow = document.getElementById('groupsRow');
+    const addBtn = document.getElementById('groupAdd');
+    const newGroup = document.getElementById('myrNewGroup');
+    const newGroupName = document.getElementById('newGroupName');
+    const newGroupSave = document.getElementById('newGroupSave');
+    const body = document.getElementById('myrBody');
+    const isEs = () => !!document.getElementById('ui-lang-es')?.checked;
+
+    let groupCount = 0;    // groups are created via + → name → Save
+    let groups = [];       // {num, name, checked}
+    let entries = [];      // unified ordered list: {key, el, group, isAxis} — axes + selected raters
+    let axKey = 0;
+    let dragItem = null;
+
+    // a saved axis arrives here from the Axis tool → it becomes a My-raters item of type "axis"
+    function addAxis(crossNode){
+      if(!crossNode) return;
+      const el = crossNode.cloneNode(true); el.classList.add('myr-clone');
+      entries.unshift({ key:'ax'+(axKey++), el, group:null, isAxis:true });
+      if(!drawer.hidden) render();
+    }
+    window.addEventListener('flove:save-axis', e=> addAxis(e.detail));
+
+    // a display-only clone — exactly as configured: bar tuned, ratings in,
+    // metaraters shown if shown, but with the view deselected and chrome removed.
+    function cloneRater(el){
+      const c = el.cloneNode(true);
+      c.classList.remove('selected','dragging','has-reorder','has-side','v-vert');
+      c.removeAttribute('draggable');
+      c.querySelectorAll('.reorder, .rater-tools, .rater-view, .del, .design-pick, .scale-tools, .views-ctrl, .views-stage').forEach(x=>x.remove());
+      c.classList.add('myr-clone');
+      return c;
+    }
+    function gather(){
+      // keep the saved axes, rebuild the selected-rater entries from the page
+      const axes = entries.filter(e=>e.isAxis);
+      const sel = [...document.querySelectorAll('.rater.selected, .scale.selected')]
+        .map((el,i)=>({ key:'k'+i, el, group:null, isAxis:false }));
+      entries = axes.concat(sel);
+    }
+    function move(it, dir){
+      const i = entries.indexOf(it), j = i + dir;
+      if(j < 0 || j >= entries.length) return;
+      entries.splice(i,1); entries.splice(j,0,it); render();
+    }
+    function section(g, list){
+      const sec = document.createElement('div'); sec.className = 'myr-section';
+      const h = document.createElement('h3'); h.className = 'myr-sec-h';
+      h.textContent = g ? g.name : (isEs()?'Seleccionados':'Selected');
+      sec.appendChild(h);
+      if(!list.length){
+        const p = document.createElement('p'); p.className='save-empty';
+        p.textContent = isEs()?'Sin valoradores.':'No raters.'; sec.appendChild(p); return sec;
+      }
+      list.forEach((it, idx)=>{
+        const item = document.createElement('div'); item.className='myr-item'; item.dataset.key=it.key; item.draggable=true;
+        const mv = document.createElement('div'); mv.className='myr-move';
+        if(idx > 0){                                    // no up-arrow on the first item
+          const U = document.createElement('button'); U.type='button'; U.className='mi-up'; U.textContent='▲';
+          U.addEventListener('click', ()=>move(it,-1)); mv.append(U);
+        }
+        if(idx < list.length-1){                         // no down-arrow on the last item
+          const D = document.createElement('button'); D.type='button'; D.className='mi-down'; D.textContent='▼';
+          D.addEventListener('click', ()=>move(it,1)); mv.append(D);
+        }
+        if(it.group){ const bd=document.createElement('span'); bd.className='mi-badge'; bd.textContent='g'+it.group; mv.appendChild(bd); }
+        const content = it.isAxis ? it.el.cloneNode(true) : cloneRater(it.el);
+        item.append(content, mv);   // content left · big arrows on the right
+        item.addEventListener('dragstart', ()=>{ dragItem = it; item.classList.add('dragging'); });
+        item.addEventListener('dragend', ()=>{ dragItem = null; item.classList.remove('dragging'); });
+        sec.appendChild(item);
+      });
+      return sec;
+    }
+    function render(){
+      // group chips (no checkbox — click to stack its section; drag a rater onto it to assign)
+      groupsRow.innerHTML = '';
+      groups.forEach(g=>{
+        const chip = document.createElement('button'); chip.type='button';
+        chip.className = 'group-chip' + (g.checked?' checked':''); chip.dataset.group = g.num;
+        chip.innerHTML = '<span class="gc-name">'+esc(g.name)+'</span>'+
+                         '<span class="gc-count">'+entries.filter(it=>it.group===g.num).length+'</span>';
+        groupsRow.appendChild(chip);
+      });
+      // body: the unified list (saved axes + selected raters), then a section per checked group
+      body.innerHTML = '';
+      body.appendChild(section(null, entries));
+      groups.filter(g=>g.checked).forEach(g=> body.appendChild(section(g, entries.filter(it=>it.group===g.num))));
+    }
+    const esc = s => String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+    groupsRow.addEventListener('click', e=>{
+      const chip = e.target.closest('.group-chip'); if(!chip) return;
+      if(chip.querySelector('.group-rename')) return;       // mid-rename
+      const g = groups.find(x=>x.num===+chip.dataset.group); if(g){ g.checked = !g.checked; render(); }
+    });
+    groupsRow.addEventListener('dblclick', e=>{
+      const chip = e.target.closest('.group-chip'); if(!chip) return;
+      const g = groups.find(x=>x.num===+chip.dataset.group); if(!g) return;
+      const nameSpan = chip.querySelector('.gc-name'); if(!nameSpan) return;
+      const inp = document.createElement('input'); inp.className='group-rename'; inp.value=g.name;
+      nameSpan.replaceWith(inp); inp.focus(); inp.select();
+      inp.addEventListener('click', ev=>ev.preventDefault());
+      inp.addEventListener('blur', ()=>{ g.name = inp.value.trim()||g.name; render(); });
+      inp.addEventListener('keydown', ev=>{ if(ev.key==='Enter') inp.blur(); });
+    });
+    groupsRow.addEventListener('dragover', e=>{ const chip=e.target.closest('.group-chip'); if(chip&&dragItem){ e.preventDefault(); chip.classList.add('dragover'); }});
+    groupsRow.addEventListener('dragleave', e=>{ const chip=e.target.closest('.group-chip'); if(chip) chip.classList.remove('dragover'); });
+    groupsRow.addEventListener('drop', e=>{
+      const chip=e.target.closest('.group-chip'); if(!chip||!dragItem) return;
+      e.preventDefault(); chip.classList.remove('dragover');
+      const gn=+chip.dataset.group; dragItem.group = (dragItem.group===gn ? null : gn); render();
+    });
+    // + opens the new-group form (empty nameable button + Save) — the + button was removed
+    if(addBtn) addBtn.addEventListener('click', ()=>{
+      newGroup.hidden = !newGroup.hidden;
+      if(!newGroup.hidden){ newGroupName.value=''; newGroupName.focus(); }
+    });
+    function addGroup(){
+      groupCount++;
+      const nm = newGroupName.value.trim() || ('group'+groupCount);
+      groups.push({num:groupCount, name:nm, checked:false});
+      newGroup.hidden = true; newGroupName.value=''; render();
+    }
+    newGroupSave.addEventListener('click', addGroup);
+    newGroupName.addEventListener('keydown', e=>{ if(e.key==='Enter') addGroup(); });
+
+    function setOpen(open){
+      drawer.hidden = !open;
+      tab.setAttribute('aria-expanded', String(open));
+      document.body.classList.toggle('myr-open', open);
+      if(open){ gather(); render(); }
+    }
+    tab.addEventListener('click', ()=> setOpen(drawer.hidden));
+    closeBtn.addEventListener('click', ()=> setOpen(false));
+    // collapse the drawer when clicking anywhere else (outside the drawer / its tab).
+    // Capture phase: decide containment BEFORE inner handlers (move→render) detach the target.
+    document.addEventListener('click', e=>{
+      if(drawer.hidden) return;
+      if(e.target.closest('#myRaters') || e.target.closest('#myrTab')) return;
+      setOpen(false);
+    }, true);
+  })();
+  </script>
+  <!-- Axis: when exactly 2 raters/scales are selected (at main · more · my raters),
+       show an "Axis" option that lays both on one shared axis for multi-checking. -->
+  <script>
+  (function(){
+    const SGRAD = 'linear-gradient(90deg,#ff2d2d,#ff8a00,#ffe100,#36d63a,#2aa9ff,#3b4cff,#a64bff)';
+    const esEs = () => !!document.getElementById('ui-lang-es')?.checked;
+    function activeText(el){
+      if(!el) return '';
+      const en=el.querySelector('.t-en'), es=el.querySelector('.t-es');
+      if(en||es) return ((esEs()? es?.textContent : en?.textContent) || en?.textContent || es?.textContent || '').trim();
+      return el.textContent.trim();
+    }
+    // node count chosen at a card: scales use the active node-num, raters the checked formr
+    function nodeCountOf(card){
+      if(card.classList.contains('scale')){
+        const a=card.querySelector('.scale-nodes .node-num.active');
+        return a ? (parseInt(a.textContent,10)||7) : 7;
+      }
+      const f=card.querySelector('.formr:checked');
+      return f ? (parseInt(f.value,10)||7) : 7;
+    }
+    // name + labels + chosen node count for a selected card (main scales & rater cards)
+    function info(card){
+      if(card.classList.contains('scale')){
+        const parts=[card.querySelector('.lbl.left'), card.querySelector('.lbl.mid'), card.querySelector('.lbl.right')]
+          .filter(Boolean).map(activeText).filter(Boolean);
+        return { name: card.dataset.scale || 'scale', labels: parts.length?parts:['—'], nodes: nodeCountOf(card) };
+      }
+      const name=(card.querySelector('h3')?.textContent||'rater').trim();
+      const ul=card.querySelector('.form-not5 .labels') || card.querySelector('.labels');
+      const labels=ul ? [...ul.querySelectorAll('li')].map(activeText).filter(Boolean) : [];
+      return { name, labels: labels.length?labels:['—'], nodes: nodeCountOf(card) };
+    }
+    const allSelected = () => [...document.querySelectorAll('.rater.selected, .scale.selected')];
+
+    // a multi-checkable colour bar with the card's chosen number of nodes (cells),
+    // laid out horizontally or vertically
+    function buildBar(d, vertical){
+      const bar=document.createElement('div'); bar.className='bar'+(vertical?' vbar':'');
+      const n=Math.max(1, d.nodes|0);
+      if(!vertical) bar.style.gridTemplateColumns='repeat('+n+',1fr)';
+      for(let i=0;i<n;i++){
+        const s=document.createElement('span');
+        s.style.background=SGRAD; s.style.backgroundSize='700% 100%';
+        s.style.backgroundPosition=(n===1?50:i/(n-1)*100)+'% 0';
+        s.addEventListener('click', ()=> s.classList.toggle('pick'));   // multi-check
+        bar.appendChild(s);
+      }
+      return bar;
+    }
+    function endSpan(t){ const s=document.createElement('span'); s.className='end'; s.textContent=t; return s; }
+    function extremes(d){ return d.labels.length>=2 ? [d.labels[0], d.labels[d.labels.length-1]] : [d.labels[0]||'—', d.labels[0]||'—']; }
+    // the crossing figure: rater A laid horizontally and rater B vertically, overlapping;
+    // keep ONLY their extreme labels (no captions/titles)
+    function buildCross(a, b){
+      const cross=document.createElement('div'); cross.className='axis-cross';
+      const ae=extremes(a), be=extremes(b);
+      const hg=document.createElement('div'); hg.className='cross-h';
+      hg.append(endSpan(ae[0]), buildBar(a,false), endSpan(ae[1]));
+      const vg=document.createElement('div'); vg.className='cross-v';
+      vg.append(endSpan(be[0]), buildBar(b,true), endSpan(be[1]));
+      cross.append(hg, vg);
+      cross.style.minHeight = (b.nodes*34 + Math.max(0,b.nodes-1)*2 + 48) + 'px';   // room for top/bottom labels
+      return cross;
+    }
+
+    const scalesHost = () => document.querySelector('.scales') || document.querySelector('main.layout') || document.body;
+
+    // the live preview sits as the FIRST main rater; on Save it turns IN PLACE into a saved card
+    let live=null;
+    function makeLive(){
+      const el=document.createElement('div'); el.className='axis-live'; el.hidden=true;
+      const h=scalesHost(); h.insertBefore(el, h.firstChild); live=el; return el;
+    }
+    makeLive();
+    function closeAxis(){ if(live) live.hidden=true; }
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeAxis(); });
+
+    // move a saved card up/down among the main raters (never above the live preview)
+    function moveCard(card, dir){
+      if(dir<0){ const p=card.previousElementSibling; if(p && p!==live) card.parentNode.insertBefore(card, p); }
+      else     { const n=card.nextElementSibling;     if(n) card.parentNode.insertBefore(n, card); }
+    }
+
+    let pair=null;   // the two selected cards behind the current preview
+
+    // Save: keep THIS axis where it is (no copy) — hide the Save button, freeze the cross,
+    // add a bigger delete + up/down arrows on the right, mirror it into My raters as an axis,
+    // and unselect the two originating raters
+    function saveAxis(){
+      const card=live; if(!card) return;
+      card.querySelector('.axis-actions')?.remove();     // hide / drop the Save button
+      card.classList.remove('axis-live'); card.classList.add('axis-saved-card');
+      const ctrls=document.createElement('div'); ctrls.className='axis-card-ctrls';
+      const del=document.createElement('button');  del.type='button';  del.className='ac-del';  del.title='Delete'; del.textContent='×';
+      const up=document.createElement('button');   up.type='button';   up.className='ac-up';    up.title='Up';     up.textContent='▲';
+      const down=document.createElement('button'); down.type='button'; down.className='ac-down'; down.title='Down'; down.textContent='▼';
+      del.addEventListener('click',  ()=> card.remove());
+      up.addEventListener('click',   ()=> moveCard(card,-1));
+      down.addEventListener('click', ()=> moveCard(card, 1));
+      ctrls.append(del, up, down);
+      card.appendChild(ctrls);
+      // mirror into My raters as an "axis" item
+      const cross=card.querySelector('.axis-cross');
+      if(cross) window.dispatchEvent(new CustomEvent('flove:save-axis', { detail:cross }));
+      // unselect the two raters this axis came from
+      if(pair) pair.forEach(c=> c.classList.remove('selected'));
+      pair=null; live=null;                              // next Axis opens a fresh preview (no duplicate)
+      updateAxis();
+    }
+
+    function openAxis(){
+      const cards=allSelected(); if(cards.length!==2) return;
+      if(!live || !live.isConnected) makeLive();
+      pair=cards;
+      const a=info(cards[0]), b=info(cards[1]);
+      live.innerHTML='';
+      const cross=buildCross(a, b);                     // A → horizontal · B → vertical, crossing
+      const actions=document.createElement('div'); actions.className='axis-actions';
+      const saveBtn=document.createElement('button'); saveBtn.type='button'; saveBtn.className='axis-save';
+      saveBtn.innerHTML='💾 <span class="t-en" lang="en">Save</span><span class="t-es" lang="es">Guardar</span>';
+      saveBtn.addEventListener('click', saveAxis);
+      actions.append(saveBtn);
+      live.append(cross, actions);
+      live.hidden=false;
+      live.scrollIntoView({behavior:'smooth', block:'nearest'});
+    }
+
+    // inject an Axis control into main · more · my-raters
+    function makeCtrl(extra){
+      const c=document.createElement('div'); c.className='axis-ctrl'+(extra?(' '+extra):'');
+      const b=document.createElement('button'); b.type='button'; b.className='axis-btn';
+      b.innerHTML='⤬ <span class="t-en" lang="en">Axis</span><span class="t-es" lang="es">Eje</span>';
+      b.addEventListener('click', openAxis);
+      c.appendChild(b); return c;
+    }
+    const main=document.querySelector('main.layout');
+    if(main) main.insertBefore(makeCtrl(), main.firstChild);            // main scales
+    const mainform=document.querySelector('.mainform');
+    if(mainform) mainform.after(makeCtrl());                            // more raters
+    // (the Axis button was removed from the My raters drawer)
+
+    // reveal the Axis option only when exactly two are selected
+    function updateAxis(){
+      const want = allSelected().length===2;
+      if(document.body.classList.contains('axis-ready')!==want) document.body.classList.toggle('axis-ready', want);
+      if(!want) closeAxis();
+    }
+    let raf=0;
+    document.addEventListener('click', ()=>{ cancelAnimationFrame(raf); raf=requestAnimationFrame(updateAxis); });
+    updateAxis();
+  })();
+  </script>
+
+<!-- flove fields manifest · read by tools/extract-fields.py -->
+<script type="application/json" id="flove-fields">
+{
+  "schema": "flove-fields/1",
+  "app": "raty",
+  "status": "complete",
+  "fields": [
+    {
+      "id": "subject",
+      "label": "Subject word",
+      "type": "text"
+    },
+    {
+      "id": "object",
+      "label": "Object word",
+      "type": "text"
+    },
+    {
+      "id": "phraseMode",
+      "label": "Phrase mode",
+      "type": "pick",
+      "options": [
+        "None",
+        "Merge",
+        "Compare"
+      ]
+    },
+    {
+      "id": "scales",
+      "label": "Core scales",
+      "type": "repeat",
+      "min": 7,
+      "max": 7,
+      "item": {
+        "id": "scale",
+        "label": "Scale",
+        "fields": [
+          {
+            "id": "scale",
+            "label": "Scale",
+            "type": "pick",
+            "options": [
+              "INTENSE–BANAL",
+              "SIMILAR–DIFFERENT",
+              "ABSTRACT–CONCRETE",
+              "POSITIVE–NEGATIVE",
+              "CLOSE–FAR",
+              "PRIMARY–SECONDARY",
+              "UNKNOWN–KNOWN"
+            ]
+          },
+          {
+            "id": "value",
+            "label": "Value (1–7)",
+            "type": "number",
+            "min": 1,
+            "max": 7
+          },
+          {
+            "id": "senses",
+            "label": "Senses",
+            "type": "multi",
+            "options": [
+              "Hear",
+              "Touch",
+              "View",
+              "Taste",
+              "Smell"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "raters",
+      "label": "Raters",
+      "type": "repeat",
+      "min": 28,
+      "max": 28,
+      "item": {
+        "id": "rater",
+        "label": "Rater",
+        "fields": [
+          {
+            "id": "rater",
+            "label": "Rater",
+            "type": "pick",
+            "options": [
+              "TRUTHY",
+              "SWITCHY",
+              "HEATY",
+              "MOODY",
+              "GRADEY",
+              "SEASONY",
+              "LIKERTY",
+              "STARRY",
+              "SIZY",
+              "POSY",
+              "JOINY",
+              "TASTY",
+              "SURPRISY",
+              "DEARY",
+              "STATY",
+              "LIGHTY",
+              "NEGATY",
+              "ZERY",
+              "FORMALY",
+              "FUTURY",
+              "DIGGY",
+              "SHOWY",
+              "AGEY",
+              "PRICEY",
+              "SPEEDY",
+              "TRUSTY",
+              "HARDY",
+              "RAREY"
+            ]
+          },
+          {
+            "id": "value",
+            "label": "Value (1–7)",
+            "type": "number",
+            "min": 1,
+            "max": 7
+          },
+          {
+            "id": "senses",
+            "label": "Senses",
+            "type": "multi",
+            "options": [
+              "Hear",
+              "Touch",
+              "View",
+              "Taste",
+              "Smell"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "customRater",
+      "label": "Custom rater",
+      "type": "group",
+      "fields": [
+        {
+          "id": "customRater.name",
+          "label": "Name",
+          "type": "text"
+        },
+        {
+          "id": "customRater.leftPole",
+          "label": "Left pole",
+          "type": "text"
+        },
+        {
+          "id": "customRater.rightPole",
+          "label": "Right pole",
+          "type": "text"
+        },
+        {
+          "id": "customRater.polarity",
+          "label": "Polarity",
+          "type": "pick",
+          "options": [
+            "Positive",
+            "Negative"
+          ]
+        },
+        {
+          "id": "customRater.mode",
+          "label": "Selection mode",
+          "type": "pick",
+          "options": [
+            "Point",
+            "Area",
+            "Multi"
+          ]
+        },
+        {
+          "id": "customRater.design",
+          "label": "Design",
+          "type": "pick",
+          "options": [
+            "Big",
+            "Normal",
+            "Basic"
+          ]
+        },
+        {
+          "id": "customRater.nodes",
+          "label": "Node count",
+          "type": "pick",
+          "options": [
+            "2",
+            "3",
+            "4",
+            "5",
+            "7"
+          ]
+        },
+        {
+          "id": "customRater.labels",
+          "label": "Node labels",
+          "type": "text[]"
+        }
+      ]
+    },
+    {
+      "id": "visibleSizes",
+      "label": "Visible rater sizes",
+      "type": "multi",
+      "options": [
+        "Full",
+        "2",
+        "3",
+        "4",
+        "5",
+        "7"
+      ]
+    },
+    {
+      "id": "language",
+      "label": "Language",
+      "type": "pick",
+      "options": [
+        "English",
+        "Spanish"
+      ]
+    }
+  ]
+}
+</script>
+<script>
+document.getElementById('addRatersLink')?.addEventListener('click', function(e){
+  e.preventDefault();
+  var p=document.getElementById('createPanel');
+  if(p){ p.hidden=false; p.scrollIntoView({behavior:'smooth',block:'center'}); }
+});
+</script>
+<script>
+/* a11y — role=button/menuitem: Enter/Space activate them */
+document.addEventListener('keydown', function(e){
+  var t = e.target;
+  if (!t || !t.matches || !t.matches('[role="button"][tabindex], [role="menuitem"][tabindex], [role="tab"][tabindex]')) return;
+  if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); t.click(); }
+});
+</script>
+<!-- flove-conformance:start -->
+<script data-flove-conformance>
+/* Runtime conformance — dev harness: development/tools/conformance.html
+   Supersedes selfTest(); never writes user data (merge gets an empty envelope).
+   Parity vs floveFields() is advisory: rows are semantic layers, not a field
+   dump, so an app's field ids may not appear verbatim. */
+(function(){
+  var api = window.flovePortrait;
+  if (!api || typeof api.get !== 'function' || typeof api.conformance === 'function') return;
+
+  function flatFields(list, out){
+    out = out || [];
+    (list || []).forEach(function(f){
+      if (!f || !f.id) return;
+      out.push(f.id);              // leaf ids are already dotted (bonds.friendship)
+      if (f.fields) flatFields(f.fields, out);
+    });
+    return out;
+  }
+  function norm(s){
+    return String(s == null ? '' : s).toLowerCase()
+      .replace(/[\s_:.\/-]+/g, '.').replace(/^\.+|\.+$/g, '');
+  }
+  function slug(s){
+    return String(s == null ? '' : s).toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+
+  api.conformance = function(opts){
+    opts = opts || {};
+    var checks = [];
+    function check(name, ok, level, detail){
+      checks.push({ name: name, ok: !!ok, level: level || 'critical',
+                    detail: detail == null ? '' : String(detail) });
+    }
+
+    var p = null, getError = '';
+    try { p = api.get(); } catch (e) { getError = e && e.message || String(e); }
+    check('get() returns an envelope', p && typeof p === 'object', 'critical', getError);
+    if (!p || typeof p !== 'object'){
+      return { ok: false, app: null, checks: checks, errors: ['get()'], coverage: null };
+    }
+
+    var app = slug(p.app);
+    check('schema is flove-portrait/1', p.schema === 'flove-portrait/1', 'critical', p.schema);
+    check('app slug is present', !!app, 'critical', p.app);
+
+    var filename = app + '-portrait.json';
+    check('filename is <app>-portrait.json',
+          /^[a-z0-9][a-z0-9-]*-portrait\.json$/.test(filename), 'advisory', filename);
+    var json = '';
+    try { json = JSON.stringify(p); } catch (e) { json = ''; }
+    var mime = '';
+    try { mime = new Blob([json], { type: 'application/json;charset=utf-8' }).type; } catch (e) {}
+    check('blob MIME is application/json;charset=utf-8',
+          mime === 'application/json;charset=utf-8', 'advisory', mime);
+    check('envelope survives JSON.stringify', json.length > 2, 'critical', json.length + ' chars');
+
+    var v = null;
+    try { v = api.validate ? api.validate(p) : null; }
+    catch (e) { v = { ok: false, errors: [e.message] }; }
+    check('validate() accepts the envelope', v && v.ok, 'critical',
+          v && (v.errors || []).join('; '));
+
+    var rows = Array.isArray(p.rows) ? p.rows : null;
+    check('rows[] is an array', !!rows, 'critical', rows ? rows.length + ' rows' : typeof p.rows);
+    if (!rows){
+      return { ok: false, app: app, checks: checks, errors: ['rows[]'], coverage: null };
+    }
+
+    var keys = [], items = [], blank = false, untitled = false;
+    rows.forEach(function(r){
+      r = r || {};
+      var k = norm(r.key);
+      if (k) keys.push(k);
+      var list = Array.isArray(r.items) ? r.items : [];
+      if (list.length && !String(r.title || '').trim()) untitled = true;
+      list.forEach(function(it){
+        if (it === null || it === undefined) { blank = true; return; }
+        if (typeof it === 'string' && !it.trim()) { blank = true; return; }
+        items.push(typeof it === 'object' ? JSON.stringify(it) : String(it));
+      });
+    });
+    check('row keys are unique', new Set(keys).size === keys.length, 'critical',
+          keys.length + ' keys');
+    check('items are never blank', !blank, 'critical');
+    check('filled rows have a title', !untitled, 'critical');
+
+    var fieldsSource = window.floveFields, fields = [];
+    var fieldsKind = typeof fieldsSource;
+    try {
+      if (fieldsKind === 'function') fields = flatFields(fieldsSource() || []);
+      else if (Array.isArray(fieldsSource)) fields = flatFields(fieldsSource);
+    } catch (e) {}
+    check('floveFields() is callable', fieldsKind === 'function' || fieldsKind === 'undefined',
+          'advisory', fieldsKind === 'function' || fieldsKind === 'undefined' ? '' : fieldsKind);
+    var haystack = norm(keys.join(' ') + ' ' + items.join(' ') + ' ' +
+                        (p.phrase || '') + ' ' + json);
+    var mapped = fields.filter(function(id){ return haystack.indexOf(norm(id)) !== -1; });
+    check('field ids discoverable in the portrait (parity is advisory)', true, 'advisory',
+          mapped.length + '/' + fields.length + ' fields · ' +
+          Math.round(fields.length ? mapped.length / fields.length * 100 : 100) + '%');
+
+    var c = null;
+    try { c = api.consult ? api.consult(opts.consult || {}) : null; } catch (e) { c = null; }
+    var consulted = c && Array.isArray(c.rows)
+      ? c.rows.map(function(r){ return norm(r && r.key); }) : [];
+    check('consult() returns flove-consult/1',
+          c && c.schema === 'flove-consult/1' && Array.isArray(c.rows), 'critical',
+          c && c.schema);
+    check('consult() rows are a subset of get() rows',
+          consulted.every(function(k){ return keys.indexOf(k) !== -1; }), 'critical',
+          consulted.length + ' consulted');
+
+    var merged = null, mergeError = '';
+    try {
+      merged = api.merge
+        ? api.merge({
+            schema: 'flove-portrait/1', app: p.app, version: 1,
+            generatedAt: p.generatedAt, lang: p.lang,
+            rows: [{ key: '__conformance__', kind: 'probe', title: '', items: [] }],
+            consent: p.consent, source: p.source
+          })
+        : null;
+    } catch (e) { mergeError = e && e.message || String(e); }
+    check('merge() accepts a probe row without applying it',
+          merged && merged.ok === true && (merged.applied || 0) === 0, 'advisory',
+          mergeError || (merged ? 'applied ' + (merged.applied || 0) : 'no merge()'));
+
+    var errors = checks.filter(function(x){ return !x.ok && x.level === 'critical'; })
+                       .map(function(x){ return x.name; });
+    var advisories = checks.filter(function(x){ return !x.ok && x.level === 'advisory'; })
+                           .map(function(x){ return x.name; });
+    return { ok: errors.length === 0, app: app, checks: checks,
+             errors: errors, advisories: advisories,
+             coverage: fields.length ? { mapped: mapped.length, total: fields.length } : null };
+  };
+})();
+</script>
+<!-- flove-conformance:end -->
+<script data-flove-appy-standard>
+(function(){
+  if (window.floveAppyStandard) return;
+  window.floveAppyStandard = true;
+  var KEY = 'flove:appy:plays';
+  function bx(en, es){ return '<span class="en" lang="en">'+en+'</span><span class="es" lang="es">'+es+'</span>'; }
+  function storeGet(){ try { return window.floveStore ? window.floveStore.getRaw(KEY) : localStorage.getItem(KEY); } catch (_) { return null; } }
+  function storeSet(v){ try { if (window.floveStore) { window.floveStore.set(KEY, v); return true; } localStorage.setItem(KEY, v); return true; } catch (_) { return false; } }
+  function appyUrl(){ return location.href.replace(/\/(apps|projects)\/.*$/, '/apps/appy/appy-basic.html#profile'); }
+  function toast(html){
+    var el = document.getElementById('floveAppyToast');
+    if (!el){
+      el = document.createElement('div'); el.id = 'floveAppyToast';
+      el.style.cssText = 'position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9999;max-width:min(92vw,520px);background:#161623;color:#ecebf5;border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:12px 16px;font:13px/1.45 system-ui,sans-serif;box-shadow:0 18px 40px rgba(0,0,0,.45)';
+      document.body.appendChild(el);
+    }
+    el.innerHTML = html;
+    clearTimeout(el._t); el._t = setTimeout(function(){ el.remove(); }, 6000);
+  }
+  function message(html){
+    var h = document.querySelector('[data-flove-hint],#hintMessage,.hint-area,.flove-hint,[role="status"]');
+    if (h) h.innerHTML = html; else toast(html);
+  }
+  function openAppy(rec){
+    var w = null;
+    try { w = window.open(appyUrl(), '_blank'); } catch (_) {}
+    if (!w) return false;
+    var fileMode = location.protocol === 'file:' || location.origin === 'null';
+    var target = fileMode ? '*' : location.origin;
+    var same = function (o) { return o === location.origin || (fileMode && (o === 'null' || o === 'file://')); };
+    var on = function (e) {
+      if (e.source !== w || !same(e.origin)) return;
+      if (e.data && e.data.type === 'flove-appy-ready') {
+        w.postMessage({ type: 'flove-appy-play', record: rec }, target);
+        window.removeEventListener('message', on);
+      }
+    };
+    window.addEventListener('message', on);
+    setTimeout(function(){ window.removeEventListener('message', on); }, 20000);
+    return true;
+  }
+  function meta(p){
+    var raw = (p && (p.app || p.appId)) || (document.title || '').split(/[·|—]/)[0].trim() || 'App';
+    var name = String(raw).charAt(0).toUpperCase() + String(raw).slice(1);
+    var id = String((p && p.appId) || raw).toLowerCase().replace(/[^a-z0-9]+/g, '') || 'app';
+    var pth = location.pathname;
+    var cat = /\/metas\//.test(pth) ? 'inside'
+      : /\/bio\//.test(pth) ? 'inside'
+      : /\/economy\//.test(pth) ? 'economy'
+      : /\/trusty\//.test(pth) ? 'mating'
+      : /\/puzzy\//.test(pth) ? 'ling'
+      : /\/psychosocial\//.test(pth) ? 'social'
+      : 'social';
+    return { name: name, id: id, cat: cat };
+  }
+  function save(){
+    if (!window.flovePortrait || typeof window.flovePortrait.get !== 'function'){
+      message('✈ ' + bx('This app has no portrait to share yet.', 'Esta app aún no tiene un retrato para compartir.'));
+      return;
+    }
+    var p;
+    try { p = window.flovePortrait.get(); }
+    catch (_) { message('✈ ' + bx('Could not build the portrait.', 'No se pudo construir el retrato.')); return; }
+    var v = window.flovePortrait.validate ? window.flovePortrait.validate(p) : { ok: true };
+    if (!v || v.ok === false){
+      message('✈ ' + bx('Could not save to Appy — export to JSON instead.', 'No se pudo guardar en Appy — exporta el JSON.'));
+      return;
+    }
+    var m = meta(p);
+    var raw = storeGet(), list = [];
+    try { list = raw ? JSON.parse(raw) : []; } catch (_) { list = []; }
+    if (!Array.isArray(list)) list = [];
+    var entry = {
+      app: m.name, appId: m.id, category: m.cat,
+      schema: p.schema || 'flove-portrait/1', portrait: p,
+      url: (p.source && p.source.url) || location.href,
+      via: 'share', date: new Date().toISOString(),
+      id: 'a' + Date.now().toString(36), file: m.id + '-portrait.json'
+    };
+    var at = -1;
+    for (var i = 0; i < list.length; i++){
+      if (list[i] && list[i].app === entry.app && list[i].via !== 'upload'){ at = i; break; }
+    }
+    if (at >= 0){ entry.id = (list[at] && list[at].id) || entry.id; list[at] = entry; }
+    else list.push(entry);
+    if (!storeSet(JSON.stringify(list))){
+      message('✈ ' + bx('Local storage is blocked — use Save JSON and upload it in Appy.', 'El almacenamiento local está bloqueado — usa Guardar JSON y súbelo en Appy.'));
+      return;
+    }
+    message('✓ ' + bx('Saved in your Appy profile · <a href="' + appyUrl() + '" data-appy-link>See profile</a>',
+                     'Guardado en tu perfil de Appy · <a href="' + appyUrl() + '" data-appy-link>Ver perfil</a>'));
+    Array.prototype.forEach.call(document.querySelectorAll('[data-appy-link]'), function (a) {
+      a.addEventListener('click', function (e) { if (openAppy(entry)) e.preventDefault(); });
+    });
+    if (location.protocol === 'file:' || location.origin === 'null') openAppy(entry);
+  }
+  window.floveShareToAppy = save;
+  function mk(ref){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = ref.className;
+    b.setAttribute('data-appy-standard', '1');
+    b.setAttribute('aria-label', 'Send to Appy');
+    b.innerHTML = '✈ <span class="en" lang="en">Appy</span><span class="es" lang="es">Appy</span>';
+    b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); save(); });
+    return b;
+  }
+  function add(){
+    if (document.querySelector('[data-appy-standard]')) return;
+    var g = document.querySelector('[data-group="share"]');
+    if (g){
+      var par = g.parentElement;
+      var b = mk(g);
+      var save = par.querySelector('[data-group="save"],[data-action="save"]');
+      if (save && save.nextSibling) par.insertBefore(b, save.nextSibling);
+      else par.insertBefore(b, g);
+      if (window.applyLang) applyLang();
+      return;
+    }
+    var a = document.querySelector('[data-act="save"]');
+    if (a){
+      a.parentElement.insertBefore(mk(a), a.nextSibling);
+      if (window.applyLang) applyLang();
+      return;
+    }
+    var f = document.querySelector('.flove-share__item[data-action="save"]') || document.querySelector('.flove-share__item');
+    if (f){
+      f.parentElement.insertBefore(mk(f), f.nextSibling);
+      if (window.applyLang) applyLang();
+      return;
+    }
+    var fs = document.querySelector('.flove-summary__item[data-action="save"]') || document.querySelector('.flove-summary__item');
+    if (fs){
+      fs.parentElement.insertBefore(mk(fs), fs.nextSibling);
+      if (window.applyLang) applyLang();
+      return;
+    }
+    var b2 = mk({ className: '' });
+    b2.textContent = '✈ Appy';
+    b2.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:9998;border:1px solid rgba(34,211,238,.55);background:rgba(8,12,20,.88);color:#22d3ee;border-radius:999px;padding:9px 14px;font:700 11px/1 ui-monospace,monospace;letter-spacing:.08em;cursor:pointer;box-shadow:0 10px 26px rgba(0,0,0,.4)';
+    b2.addEventListener('click', function (e) { e.preventDefault(); save(); });
+    document.body.appendChild(b2);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', add);
+  else add();
+  setTimeout(add, 1200);
+})();
+</script>
+
+<script data-flove-fields-flat>
+/* Technical helper: flat routing field paths for cross-app combination.
+   Read-only; no UI, storage or network side effect. */
+(function(){
+  if (window.floveFieldsFlat) return;
+  function walk(list, parent, out){
+    (list || []).forEach(function(f){
+      if (!f || !f.id) return;
+      var path = String(f.id);
+      if (parent && path.indexOf(parent + '.') !== 0) path = parent + '.' + path;
+      out.push({ path: path, id: f.id, label: f.label || '', type: f.type || '', parent: parent || null });
+      if (f.fields) walk(f.fields, path, out);
+      if (f.item && f.item.fields) walk(f.item.fields, path, out);
+    });
+  }
+  window.floveFieldsFlat = function(){
+    var out = [];
+    walk(typeof window.floveFields === 'function' ? window.floveFields() : [], '', out);
+    return out;
+  };
+  if (window.flovePort && !window.flovePort.fields) window.flovePort.fields = window.floveFieldsFlat;
+})();
+</script>
+</body>
+</html>

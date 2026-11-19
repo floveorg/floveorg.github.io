@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Economy · FLOVE</title>
+<meta name="description" content="The Economy launcher — Lowy, Crafty and the giving folder: Inventary, Wanty, Dealy, Freed, Shary and Rewardy, to move resources without money.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23dc2626' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M4 9.5h6'/><path d='M8.2 7.4 10.5 9.5 8.2 11.6'/><path d='M20 14.5h-6'/><path d='M15.8 12.4 13.5 14.5 15.8 16.6'/><circle cx='12' cy='12' r='2' fill='%23dc2626' stroke='none'/></svg>">
+<script>
+/* flove-store/1 + flove-net fallback — the common local-storage/net layer.
+   Apps inline this same block so they stay self-contained; this file is the
+   canonical reference and is shipped in the offline package. */
+(function () {
+  if (!window.floveStore) {
+    var mem = new Map();
+    function rawGet(k) {
+      try { return localStorage.getItem(k); }
+      catch (_) { return mem.has(k) ? mem.get(k) : null; }
+    }
+    function rawSet(k, v) {
+      try { localStorage.setItem(k, v); return true; }
+      catch (e) {
+        mem.set(k, v);
+        try { window.dispatchEvent(new CustomEvent('flove:storage-error', { detail: { key: k, error: e } })); } catch (_) {}
+        return false;
+      }
+    }
+    window.floveStore = {
+      getRaw: function (k, fallback) { var v = rawGet(k); return v == null ? (fallback === undefined ? null : fallback) : v; },
+      getJSON: function (k, fallback) {
+        try { var v = rawGet(k); return v == null ? (fallback === undefined ? null : fallback) : JSON.parse(v); }
+        catch (_) { return fallback === undefined ? null : fallback; }
+      },
+      set: function (k, v) { return rawSet(k, typeof v === 'string' ? v : JSON.stringify(v)); },
+      setJSON: function (k, v) { return rawSet(k, JSON.stringify(v)); },
+      remove: function (k) { try { localStorage.removeItem(k); } catch (_) {} mem.delete(k); },
+      available: function () {
+        try { var k = '__flove_probe__'; localStorage.setItem(k, '1'); localStorage.removeItem(k); return true; }
+        catch (_) { return false; }
+      },
+      memoryOnly: function () { return !this.available(); }
+    };
+  }
+  if (!window.floveFields) window.floveFields = function () {
+    try { var el = document.getElementById('flove-fields'); return el ? (JSON.parse(el.textContent).fields || []) : []; }
+    catch (_) { return []; }
+  };
+  if (!window.flovePort) {
+    window.flovePort = {
+      schema: 'flove-port/1',
+      export: function () { return { schema: 'flove-portrait/1', app: null, version: 1, generatedAt: new Date().toISOString(), rows: [] }; },
+      consult: function () { return { schema: 'flove-consult/1', app: null, version: 1, generatedAt: new Date().toISOString(), rows: [] }; },
+      import: function () { return { ok: false, applied: 0, errors: ['no app adapter'] }; }
+    };
+  }
+  if (!window.floveNet) window.floveNet = window.flovePort; // deprecated alias
+  if (!window.flovePortrait) window.flovePortrait = window.flovePort;
+  if (!window.floveSummary) window.floveSummary = function () { return window.flovePort.export(); };
+})();
+
+</script>
+
+<style>
+/* a11y — 40px hit targets on touch (§6), desktop untouched */
+@media (pointer: coarse){
+  .btn,.btn-primary,.btn-ghost,.btn-soft,.subitem,.tbtn,.cat,.chip,.pc-toggle,.menu-item,.app-menu-item,.topmenu__item{min-height:40px}
+}
+.a11y-h1{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+/* ============================================================
+   economy/index.html — the Economy launcher.
+
+   Displays the economy apps as a pyramid: Lowy and Crafty sit
+   above the giving folder. Each rung LAUNCHES its own page (each
+   page stays the single source of truth for itself).
+
+   Fully self-contained: no external CSS/JS, and no app logic — only the inert flove common layer.
+   Entrance is a pure-CSS staggered "rise" — apex first, base last,
+   every tier settling into place. Help lives OUTSIDE the pyramid
+   as its own detached node.
+   ============================================================ */
+
+:root{
+  --accent:  #dc2626;              /* dealy red */
+  --ink:     #241413;
+  --ink-soft:#6b4a47;
+  --muted:   #9a7a77;
+  --line:    rgba(120, 40, 36, .14);
+  --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display:'Georgia', 'Times New Roman', serif;
+  --ease:    cubic-bezier(.2,.8,.2,1);
+}
+
+*{ box-sizing: border-box; }
+html[lang="en"] .es{ display: none; }
+html[lang="es"] .en{ display: none; }
+html,body{ min-height: 100%; }
+body{
+  margin: 0;
+  font-family: var(--font-ui);
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 82% 4%,  rgba(220,38,38,.10), transparent 40%),
+    radial-gradient(circle at 6% 98%,  rgba(124,58,237,.08), transparent 46%),
+    linear-gradient(180deg, #fdfbfa, #f2ece9);
+  background-attachment: fixed;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── the pyramid ───────────────────────────────────────────── */
+main{
+  flex: 1 1 auto; width: 100%; max-width: 500px; margin: 0 auto;
+  padding: 22px 18px 30px;
+  display: flex; flex-direction: column; justify-content: flex-start;
+}
+.pyramid{ list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+
+/* staircase — each bigger tier starts a bit further right than the
+   smaller one above it. mini sits at the far left. */
+.rung--basic   { margin-left: 34px;  }
+.rung--normal  { margin-left: 74px;  }
+.rung--advanced{ margin-left: 122px; }
+
+/* each card: only logo + name show; clicking the head toggles a panel
+   with the card's details + a Go button. Pure-CSS checkbox toggle, one
+   per card, so any number can stay open at once (multi-expand). */
+.rung{
+  position: relative;
+  display: flex; flex-direction: column; align-items: flex-start;
+  animation: fade-right 1.6s var(--ease) both;
+}
+.card-ctl{ position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+.card-head{
+  display: inline-flex; align-items: center; gap: 11px;
+  padding: 4px 6px; cursor: pointer; color: var(--ink);
+  transition: transform .22s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.card-head:hover{ transform: translateX(2px); }
+.card-head:hover .rung-name{ color: var(--a); }
+.card-ctl:focus-visible + .card-head{ outline: 2px solid var(--a); outline-offset: 3px; border-radius: 12px; }
+
+.rung-disc{
+  flex: 0 0 auto;
+  width: 30px; height: 30px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--a);
+  transition: transform .22s var(--ease);
+}
+.card-head:hover .rung-disc{ transform: scale(1.1); }
+.rung-disc svg{ width: 26px; height: 26px; }
+
+.rung-name{ font-family: var(--font-display); font-weight: 600; line-height: 1.1; transition: color .22s var(--ease); }
+
+/* collapsible info panel — details + Go (animated open via grid rows) */
+.card-info{
+  display: grid; grid-template-rows: 0fr; opacity: 0;
+  margin-left: 41px;
+  transition: grid-template-rows .32s var(--ease), opacity .32s var(--ease);
+}
+.card-ctl:checked ~ .card-info{ grid-template-rows: 1fr; opacity: 1; }
+.card-info-inner{ overflow: hidden; min-height: 0;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 5px; padding-top: 6px; }
+.rung-slogan{ font-size: .82rem; color: var(--ink-soft); }
+.go-btn{
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 2px; padding: 6px 14px; border-radius: 999px;
+  background: var(--a); color: #fff; text-decoration: none;
+  font-size: .8rem; font-weight: 600; letter-spacing: .3px;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--a) 32%, transparent);
+  transition: transform .18s var(--ease), filter .18s var(--ease);
+}
+.go-btn:hover, .go-btn:focus-visible{ transform: translateX(3px); filter: brightness(1.06); outline: none; }
+.go-btn svg{ width: 15px; height: 15px; }
+
+/* size lives in the TITLES ONLY — small apex (mini) → big base (super) */
+.rung--mini     .rung-name{ font-size: 1.05rem; }
+.rung--basic    .rung-name{ font-size: 1.35rem; }
+.rung--normal   .rung-name{ font-size: 1.7rem;  }
+.rung--advanced .rung-name{ font-size: 2.05rem; }
+.rung--super    .rung-name{ font-size: 2.45rem; }
+
+/* intro — each card fades in rightwards, one every 4s */
+.rung--mini    { animation-delay: 0s;  }
+.rung--basic   { animation-delay: 4s;  }
+.rung--normal  { animation-delay: 8s;  }
+.rung--advanced{ animation-delay: 12s; }
+.rung--super   { animation-delay: 16s; }
+.rung--shary{ animation-delay: 20s; }
+.rung--freed   { animation-delay: 24s; }
+@keyframes fade-right{ from{ opacity: 0; transform: translateX(-34px); } to{ opacity: 1; transform: none; } }
+
+/* ── the base row — Rewardy (super) with Freed & Shary to its left.
+   Freed a third of Rewardy's size, Shary a half. Bottoms aligned. ── */
+/* base step: Rewardy sits at its staircase indent; Freed & Shary hang
+   to its left (absolute) so they never push Rewardy off the step. */
+.base-row{ position: relative; margin-left: 195px; display: flex; align-items: flex-end; }
+.base-super{ position: relative; }
+.base-sats{ position: absolute; right: calc(100% + 14px); bottom: 4px; display: flex; align-items: flex-end; gap: 13px; }
+.rung--freed .card-head, .rung--shary .card-head{ padding: 2px 3px; gap: 6px; }
+.rung--shary .rung-name{ font-size: 1.22rem; }   /* half of Rewardy's 2.45rem */
+.rung--shary .rung-disc{ width: 20px; height: 20px; }
+.rung--shary .rung-disc svg{ width: 16px; height: 16px; }
+.rung--freed    .rung-name{ font-size: .82rem; }     /* a third of Rewardy's 2.45rem */
+.rung--worthing .rung-name{ font-size: .82rem; }
+.rung--worthing .rung-disc{ width: 16px; height: 16px; }
+.rung--worthing .rung-disc svg{ width: 14px; height: 14px; }
+.rung--freed    .rung-disc{ width: 14px; height: 14px; }
+.rung--freed    .rung-disc svg{ width: 12px; height: 12px; }
+
+/* base-step cards drop their info panel below themselves (absolute), so
+   opening one never disturbs the row; reserve space beneath when open. */
+.base-row .card-info{ position: absolute; top: calc(100% + 2px); left: 0; margin-left: 0; z-index: 6; min-width: max-content; }
+.pyramid:has(.base-row .card-ctl:checked){ padding-bottom: 108px; }
+
+/* ── the two poles — Lowy (top) & Help (bottom): a polarity.
+   Same pill, opposite palette (dark/light) and opposite entrance. ── */
+.pole-div{ width: 62px; height: 1px; margin: 18px auto; background: var(--line); }
+.pole-wrap{ display: flex; justify-content: center; }
+/* poles collapse to disc + name; clicking reveals slogan + Go. Their
+   fade-in is stretched across the whole ~13s card intro. */
+.pole{
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column;
+  padding: 9px 20px 9px 12px;
+  border-radius: 22px;
+  transition: transform .3s var(--ease), box-shadow .3s var(--ease);
+}
+.pole::after{                       /* elegant light-sweep on hover */
+  content: ""; position: absolute; top: 0; left: -70%; width: 45%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.42), transparent);
+  transform: skewX(-16deg); pointer-events: none;
+}
+.pole:hover, .pole:focus-within{ transform: translateY(-4px); }
+.pole:hover::after, .pole:focus-within::after{ animation: sheen 2s var(--ease); }
+@keyframes sheen{ from{ left: -70%; } to{ left: 130%; } }
+
+.pole-ctl{ position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.pole-head{ display: flex; align-items: center; gap: 11px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pole-ctl:focus-visible + .pole-head{ outline: 2px solid currentColor; outline-offset: 3px; border-radius: 999px; }
+.pole-disc{ width: 40px; height: 40px; border-radius: 50%; flex: 0 0 auto;
+  display: inline-flex; align-items: center; justify-content: center; }
+.pole-disc svg{ width: 22px; height: 22px; }
+.pole-name{ font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; line-height: 1.1; }
+
+.pole-info{ display: grid; grid-template-rows: 0fr; opacity: 0; margin-left: 51px;
+  transition: grid-template-rows .32s var(--ease), opacity .32s var(--ease); }
+.pole-ctl:checked ~ .pole-info{ grid-template-rows: 1fr; opacity: 1; }
+.pole-info-inner{ overflow: hidden; min-height: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding-top: 7px; }
+.pole-slogan{ font-size: .8rem; opacity: .78; }
+.pole-go{ display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 999px;
+  text-decoration: none; font-size: .78rem; font-weight: 600; letter-spacing: .3px;
+  transition: transform .18s var(--ease), filter .18s var(--ease); }
+.pole-go:hover, .pole-go:focus-visible{ transform: translateX(3px); filter: brightness(1.05); outline: none; }
+.pole-go svg{ width: 14px; height: 14px; }
+
+/* Lowy — the dark, editorial pole (fades in from above, slowly) */
+.pole--lowy{
+  background: linear-gradient(155deg, #2a2723, #16130f);
+  color: #f2ebda;
+  box-shadow: 0 14px 32px rgba(20,15,10,.30);
+  animation: pole-lowy 26s linear both;
+}
+.pole--lowy .pole-disc{ background: rgba(220,184,119,.16); color: #dcb877; }
+.pole--lowy .pole-go{ background: #dcb877; color: #221c12; }
+.pole--lowy:hover, .pole--lowy:focus-within{ box-shadow: 0 20px 44px rgba(20,15,10,.40); }
+
+/* Help — the light, warm pole (mirror; fades in from below, slowly) */
+.pole--help{
+  background: linear-gradient(155deg, #ffffff, #d3f4ec);
+  color: #123b36;
+  box-shadow: 0 14px 32px rgba(13,148,136,.18);
+  animation: pole-help 26s linear both;
+}
+.pole--help .pole-disc{ background: #0d9488; color: #fff; animation: float 4.5s ease-in-out infinite; }
+.pole--help .pole-go{ background: #0d9488; color: #fff; }
+.pole--help:hover, .pole--help:focus-within{ box-shadow: 0 20px 44px rgba(13,148,136,.28); }
+
+@keyframes pole-lowy{ from{ opacity: 0; transform: translateY(-16px); } to{ opacity: 1; transform: none; } }
+@keyframes pole-help{ from{ opacity: 0; transform: translateY(16px); } to{ opacity: 1; transform: none; } }
+@keyframes float{ 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-4px); } }
+
+/* ── reduced motion — hold everything still, keep it usable ── */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{ animation: none !important; }
+  .rung, .pole, .pole-disc{ opacity: 1; transform: none; }
+  *{ transition-duration: .01ms !important; }
+}
+
+@media (max-width: 480px){
+  .card-head{ gap: 9px; }
+  .rung--advanced .rung-name{ font-size: 1.85rem; }
+  .rung--super    .rung-name{ font-size: 2.15rem; }
+  /* gentler stair + satellites back in flow so nothing runs off-screen */
+  .rung--basic   { margin-left: 22px; }
+  .rung--normal  { margin-left: 50px; }
+  .rung--advanced{ margin-left: 86px; }
+  .base-row{ margin-left: 12px; flex-wrap: wrap; gap: 6px; }
+  .base-sats{ position: static; margin-right: 8px; flex-wrap: wrap; gap: 8px; }
+  .rung--super .rung-name{ font-size: 1.95rem; }
+}
+
+  /* ── Standard summary section ── */
+  .flove-summary{ margin:2rem auto; max-width:760px; padding:1.1rem 1.2rem;
+    border:1px solid rgba(0,0,0,.12); border-radius:14px; background:rgba(255,255,255,.72); }
+  .flove-summary h2{ font-size:1rem; margin:0 0 .6rem; }
+  .flove-summary__phrase{ margin:0 0 .9rem; font-size:1.05rem; line-height:1.5; }
+  .flove-summary__phrase em{ font-style:italic; }
+  .flove-summary__actions{ display:flex; gap:.5rem; flex-wrap:wrap; }
+  .flove-summary__btn{ font:inherit; font-size:.9rem; padding:.45rem .85rem; border-radius:999px;
+    border:1px solid rgba(0,0,0,.18); background:#fff; cursor:pointer; }
+  .flove-summary__btn[aria-pressed="true"]{ background:#111; color:#fff; }
+
+
+  .flove-summary__btn{ min-height:44px; }
+  .flove-summary__btn:focus-visible, .flove-summary__item:focus-visible{
+    outline:2px solid currentColor; outline-offset:2px; }
+  @media (prefers-reduced-motion: reduce){
+    .flove-summary__menu{ transition:none; }
+  }
+  .flove-summary__share{ position:relative; display:inline-flex; }
+  .flove-summary__menu{ position:absolute; top:calc(100% + .35rem); left:0; z-index:5;
+    display:flex; flex-direction:column; min-width:11rem; padding:.3rem;
+    border:1px solid rgba(0,0,0,.16); border-radius:12px; background:#fff; color:#111;
+    box-shadow:0 10px 24px rgba(0,0,0,.18); }
+  .flove-summary__menu[hidden]{ display:none; }
+  .flove-summary__item{ display:flex; gap:.5rem; align-items:center; font:inherit; font-size:.9rem;
+    padding:.45rem .6rem; border:0; border-radius:8px; background:transparent; color:inherit;
+    text-decoration:none; cursor:pointer; white-space:nowrap; }
+  .flove-summary__item:hover,.flove-summary__item:focus-visible{ background:rgba(0,0,0,.07); }
+
+/* ── page nav — two ways back, then the page name ───────────── */
+.page-nav{
+  width:100%; max-width:500px; margin:0 auto; padding:18px 18px 0;
+  display:flex; align-items:center; gap:10px;
+}
+.nav-arrow{
+  position:relative; display:inline-grid; place-items:center;
+  width:54px; height:54px; border-radius:50%;
+  background:linear-gradient(155deg,#2a2723,#16130f); color:#f2ebda;
+  text-decoration:none; font-size:30px; line-height:1;
+  box-shadow:0 10px 24px rgba(20,15,10,.18);
+  transition:transform .2s var(--ease), box-shadow .2s var(--ease);
+}
+.nav-arrow:hover,.nav-arrow:focus-visible{ transform:translateX(-3px); box-shadow:0 14px 28px rgba(20,15,10,.24); outline:none; }
+.nav-arrow::after{
+  content:attr(data-route); position:absolute; left:0; top:calc(100% + 7px); z-index:9;
+  padding:5px 8px; border-radius:6px; background:#241413; color:#fff;
+  font:600 10px/1.2 var(--font-ui); white-space:nowrap; opacity:0;
+  transform:translateY(-3px); pointer-events:none; transition:.16s var(--ease);
+}
+.nav-arrow:hover::after,.nav-arrow:focus-visible::after{ opacity:1; transform:none; }
+.page-title{
+  margin:0 0 0 6px; padding:7px 14px; border-radius:9px;
+  font-family:var(--font-display); font-size:1.8rem; line-height:1; letter-spacing:-.02em;
+  color:#7f1d1d; background:rgba(220,38,38,.10); border-bottom:2px solid var(--accent);
+}
+
+/* ── Crafty — below Lowy, ten-second fade in ────────────────── */
+.pole--crafty{
+  background:linear-gradient(155deg,#0f766e,#134e4a);
+  color:#ecfeff;
+  box-shadow:0 14px 32px rgba(15,118,110,.24);
+  animation:crafty-in 10s ease both;
+}
+.pole--crafty .pole-disc{ background:rgba(153,246,228,.16); color:#99f6e4; }
+.pole--crafty .pole-go{ background:#99f6e4; color:#134e4a; }
+.pole--crafty:hover,.pole--crafty:focus-within{ box-shadow:0 20px 44px rgba(15,118,110,.32); }
+@keyframes crafty-in{ from{ opacity:0; transform:translateY(-10px); } to{ opacity:1; transform:none; } }
+
+@media (max-width:480px){
+  .page-nav{ padding-top:14px; }
+  .nav-arrow{ width:48px; height:48px; font-size:26px; }
+  .page-title{ font-size:1.5rem; padding:6px 11px; }
+}
+
+</style>
+</head>
+<body>
+
+<header class="page-nav">
+  <a class="nav-arrow" href="../index.html" data-route="apps/index.html" title="apps/index.html" aria-label="Back to apps index">←</a>
+  <a class="nav-arrow" href="../psychosocial/index.html" data-route="apps/psychosocial/index.html" title="apps/psychosocial/index.html" aria-label="Back to psychosocial index">←</a>
+  <h1 class="page-title">Economy</h1>
+</header>
+
+<main>
+
+  <!-- Lowy — the top pole. Its opposite is Help at the very bottom. -->
+  <div class="pole-wrap">
+    <div class="pole pole--lowy">
+      <input type="checkbox" id="p-lowy" class="pole-ctl">
+      <label class="pole-head" for="p-lowy">
+        <span class="pole-disc" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4C9.2 4 4 9.4 4 15.9A4.6 4.6 0 0 0 8.6 20.5C15.4 20.5 20 15 20 4z"/><path d="M4.6 20.4 12.6 12"/></svg>
+        </span>
+        <span class="pole-name">Lowy</span>
+      </label>
+      <div class="pole-info"><div class="pole-info-inner">
+        <span class="pole-slogan">Living lighter.</span>
+        <a class="pole-go" href="lowy.html">Go <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div></div>
+    </div>
+  </div>
+  <div class="pole-div" aria-hidden="true"></div>
+
+  <div class="pole-wrap">
+    <div class="pole pole--crafty">
+      <input type="checkbox" id="p-crafty" class="pole-ctl">
+      <label class="pole-head" for="p-crafty">
+        <span class="pole-disc" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.8 18.6 10 12 20.2 5.4 10Z"/><path d="M5.4 10h13.2"/><path d="M12 3.8 9 10l3 10.2"/><path d="M12 3.8 15 10l-3 10.2"/></svg>
+        </span>
+        <span class="pole-name">Crafty</span>
+      </label>
+      <div class="pole-info"><div class="pole-info-inner">
+        <span class="pole-slogan">Team work and wage.</span>
+        <a class="pole-go" href="crafty.html">Go <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div></div>
+    </div>
+  </div>
+  <div class="pole-div" aria-hidden="true"></div>
+
+  <!-- The staircase — each card shows only logo + name; click to expand
+       its details + Go. Independent, so several can stay open at once. -->
+  <ol class="pyramid">
+    <li>
+      <div class="rung rung--mini" style="--a:#059669;">
+        <input type="checkbox" id="c-mini" class="card-ctl">
+        <label class="card-head" for="c-mini">
+          <span class="rung-disc" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h10l-2.4-2.4M17 16H7l2.4 2.4"/><path d="M12 12.4a1.6 1.6 0 0 0 1.6-1.6c0-1.1-1.6-2.4-1.6-2.4s-1.6 1.3-1.6 2.4A1.6 1.6 0 0 0 12 12.4z"/></svg>
+          </span>
+          <span class="rung-name">MiniDealy</span>        </label>
+        <div class="card-info"><div class="card-info-inner">
+          <span class="rung-slogan">A small kind swap.</span>
+          <a class="go-btn" href="dealy/dealy-mini.html">Go <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div></div>
+      </div>
+    </li>
+    <li>
+      <div class="rung rung--basic" style="--a:#1e4a6b;">
+        <input type="checkbox" id="c-basic" class="card-ctl">
+        <label class="card-head" for="c-basic">
+          <span class="rung-disc" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5h17v11h-17zM3.5 8.5 6 4.5h12l2.5 4M12 4.5v15"/></svg>
+          </span>
+          <span class="rung-name">Inventary</span>        </label>
+        <div class="card-info"><div class="card-info-inner">
+          <span class="rung-slogan">All of yours.</span>
+          <a class="go-btn" href="dealy/inventary.html">Go <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div></div>
+      </div>
+    </li>
+    <li>
+      <div class="rung rung--normal" style="--a:#1f6390;">
+        <input type="checkbox" id="c-normal" class="card-ctl">
+        <label class="card-head" for="c-normal">
+          <span class="rung-disc" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6l2.6 5.5 6 .9-4.3 4.2 1 6-5.3-2.8L6.7 20.2l1-6L3.4 10l6-.9z"/></svg>
+          </span>
+          <span class="rung-name">Wanty</span>        </label>
+        <div class="card-info"><div class="card-info-inner">
+          <span class="rung-slogan">Start thriving.</span>
+          <a class="go-btn" href="dealy/wanty.html">Go <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div></div>
+      </div>
+    </li>
+    <li>
+      <div class="rung rung--advanced" style="--a:#dc2626;">
+        <input type="checkbox" id="c-advanced" class="card-ctl">
+        <label class="card-head" for="c-advanced">
+          <span class="rung-disc" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.2 12.6 12.6 20.2a1.9 1.9 0 0 1-2.7 0l-6.1-6.1a1.9 1.9 0 0 1-.6-1.4V5a1.9 1.9 0 0 1 1.9-1.9h7.7c.5 0 1 .2 1.4.6l6 6a1.9 1.9 0 0 1 0 2.9z"/><circle cx="7.6" cy="7.6" r="1.3"/></svg>
+          </span>
+          <span class="rung-name">Dealy</span>        </label>
+        <div class="card-info"><div class="card-info-inner">
+          <span class="rung-slogan">Gift, lend, swap&hellip;</span>
+          <a class="go-btn" href="dealy/index.html">Go <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div></div>
+      </div>
+    </li>
+    <li>
+      <!-- base step: Freed & Shary hang to the left of Rewardy -->
+      <div class="base-row">
+        <div class="base-sats">
+          <div class="rung rung--freed" style="--a:#10b981;">
+            <input type="checkbox" id="c-freed" class="card-ctl">
+            <label class="card-head" for="c-freed">
+              <span class="rung-disc" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 9.5h17v10h-17zM2.5 6.5h19v3h-19zM12 6.5v13"/><circle cx="9.4" cy="4.6" r="1.9"/><circle cx="14.6" cy="4.6" r="1.9"/></svg>
+              </span>
+              <span class="rung-name">Freed</span>            </label>
+            <div class="card-info"><div class="card-info-inner">
+              <span class="rung-slogan">Waive for all.</span>
+              <a class="go-btn" href="dealy/freed.html">Go <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            </div></div>
+          </div>
+          <div class="rung rung--shary" style="--a:#8b5cf6;">
+            <input type="checkbox" id="c-shary" class="card-ctl">
+            <label class="card-head" for="c-shary">
+              <span class="rung-disc" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v4.2h-4.2"/></svg>
+              </span>
+              <span class="rung-name">Shary</span>            </label>
+            <div class="card-info"><div class="card-info-inner">
+              <span class="rung-slogan">Lend on clear terms.</span>
+              <a class="go-btn" href="dealy/shary.html">Go <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            </div></div>
+          </div>
+          <div class="rung rung--worthing" style="--a:#0ea5e9;">
+            <input type="checkbox" id="c-worthing" class="card-ctl">
+            <label class="card-head" for="c-worthing">
+              <span class="rung-disc" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6.4" r="2.3"/><circle cx="12" cy="17.6" r="2.3"/><circle cx="6.4" cy="12" r="2.3"/><circle cx="17.6" cy="12" r="2.3"/><circle cx="8.05" cy="8.05" r="2.3"/><circle cx="15.95" cy="8.05" r="2.3"/><circle cx="8.05" cy="15.95" r="2.3"/><circle cx="15.95" cy="15.95" r="2.3"/><circle fill="currentColor" stroke="none" cx="12" cy="12" r="2.2"/></svg>
+              </span>
+              <span class="rung-name">Worthing</span>            </label>
+            <div class="card-info"><div class="card-info-inner">
+              <span class="rung-slogan">Why matter.</span>
+              <a class="go-btn" href="worthing.html">Go <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            </div></div>
+          </div>
+        </div>
+        <div class="base-super">
+          <div class="rung rung--super" style="--a:#7c3aed;">
+            <input type="checkbox" id="c-super" class="card-ctl">
+            <label class="card-head" for="c-super">
+              <span class="rung-disc" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.8" r="5.3"/><path d="M8.6 13.2 6.6 21l5.4-2.9 5.4 2.9-2-7.8"/></svg>
+              </span>
+              <span class="rung-name">Rewardy</span>            </label>
+            <div class="card-info"><div class="card-info-inner">
+                  <span class="rung-slogan">Earn direct.</span>
+              <a class="go-btn" href="dealy/rewardy.html">Go <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            </div></div>
+          </div>
+        </div>
+      </div>
+    </li>
+  </ol>
+
+  <!-- Help — the bottom pole. Mirror & opposite of Lowy at the top. -->
+  <div class="pole-div" aria-hidden="true"></div>
+  <div class="pole-wrap">
+    <div class="pole pole--help">
+      <input type="checkbox" id="p-help" class="pole-ctl">
+      <label class="pole-head" for="p-help">
+        <span class="pole-disc" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l1.6-4.5A8.4 8.4 0 1 1 21 11.5z"/><path d="M9.2 9.4a2.8 2.8 0 0 1 5.5.8c0 1.9-2.8 2.5-2.8 2.5"/><path d="M12 16.2h.01"/></svg>
+        </span>
+        <span class="pole-name">Help</span>
+      </label>
+      <div class="pole-info"><div class="pole-info-inner">
+        <span class="pole-slogan">Chat &amp; guides.</span>
+        <a class="pole-go" href="dealy/help.html">Go <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div></div>
+    </div>
+  </div>
+</main>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+  <section class="flove-summary" id="floveSummary" aria-labelledby="floveSummaryTitle">
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+    <h2 id="floveSummaryTitle">✦ <span class="en" lang="en">Summary</span><span class="es" lang="es">Resumen</span></h2>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+    <p class="flove-summary__phrase" aria-live="polite"><em id="floveSummaryPhrase"></em></p>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+    <div class="flove-summary__actions">
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+      <button type="button" class="flove-summary__btn" id="floveSummaryMagic" aria-pressed="false">✨ Magic</button>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+      <span class="flove-summary__share">
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+        <button type="button" class="flove-summary__btn" id="floveSummaryShare" aria-expanded="false" aria-controls="floveSummaryShareMenu">📤 <span class="en" lang="en">Share</span><span class="es" lang="es">Compartir</span></button>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+        <span class="flove-summary__menu" id="floveSummaryShareMenu" hidden>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+          <button type="button" class="flove-summary__item" data-action="save">💾 <span class="en" lang="en">Save JSON</span><span class="es" lang="es">Guardar JSON</span></button>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+          <a class="flove-summary__item" data-action="mail" href="mailto:?subject=flove%20%C2%B7%20economy">📧 <span class="en" lang="en">Email</span><span class="es" lang="es">Correo</span></a>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+        </span>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+      </span>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+    </div>
+  <!-- ── Standard summary section: phrase · Magic · Save (JSON) · Share ── -->
+  </section>
+
+  <script>
+  (function(){
+    const el = id => document.getElementById(id);
+    const out = el('floveSummaryPhrase');
+    let magic = false;
+
+    function tools(){
+      return [...document.querySelectorAll('.rung')].map((r, i) => {
+        const name = (r.querySelector('.rung-name') || {}).textContent || '';
+        const tier = (r.querySelector('.rung-tier') || {}).textContent || '';
+        const slogan = (r.querySelector('.rung-slogan') || {}).textContent || '';
+        const ctl = r.querySelector('.card-ctl');
+        return { key:'tool:' + i, kind:'tool', title:name.trim(), items:[tier.trim(), slogan.trim()].filter(Boolean), open: !!(ctl && ctl.checked) };
+      }).filter(t => t.title);
+    }
+    function plain(){
+      const open = tools().filter(t => t.open).map(t => t.title);
+      return open.length ? 'Economy · ' + open.join(' · ') : 'The economy staircase — from Lowy to Help.';
+    }
+    function magicPhrase(){
+      const open = tools().filter(t => t.open);
+      if (!open.length) return '✦ Lowy and Crafty up top, Help at the bottom, every rung a way to move resources.';
+      return '✦ ' + open.map(t => t.title + (t.items[1] ? ' — ' + t.items[1] : '')).join(' · ');
+    }
+    function portrait(){
+      const rr = tools().map(t => ({ key:t.key, kind:t.kind, title:t.title, items:t.items }));
+      return {
+        schema:'flove-portrait/1', app:'economy', version:1,
+        generatedAt:new Date().toISOString(),
+        lang:(document.documentElement.lang || 'en').slice(0, 2),
+        phrase: plain(),
+        rows: rr, words: [],
+        completeness:{ layers: rr.length, total: rr.length },
+        consent:{ share:'app', purposes:['self-reflection', 'export'] },
+        source:{ url:'https://flove.org/apps/economy/index.html' }
+      };
+    }
+    window.flovePortrait = window.flovePortrait || {};
+    window.flovePortrait.get = portrait;
+    window.flovePortrait.validate = p => Array.isArray(p && p.rows) ? { ok:true, errors:[] } : { ok:false, errors:['rows'] };
+    window.flovePortrait.consult = () => {
+  const __p = portrait();
+  return { schema: 'flove-consult/1', app: __p.app, version: __p.version, generatedAt: new Date().toISOString(), rows: __p.rows };
+};
+    window.flovePortrait.selfTest = () => ({ ok:true, errors:[] });
+
+    function paint(){ out.textContent = (magic ? magicPhrase() : plain()) || '—'; }
+  function download(){
+    const blob = new Blob([JSON.stringify(portrait(), null, 2)], { type:'application/json;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'economy-portrait.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+  function touchDevice(){
+    return !!(navigator.canShare && (navigator.maxTouchPoints > 1 || window.matchMedia('(pointer: coarse)').matches));
+  }
+  const menu = el('floveSummaryShareMenu');
+  const shareBtn = el('floveSummaryShare');
+  async function share(){
+    const p = portrait();
+    const text = p.phrase || out.textContent;
+    const file = new File([JSON.stringify(p, null, 2)], 'economy-portrait.json', { type:'application/json' });
+    if (touchDevice() && navigator.canShare({ files:[file] })){
+      try { await navigator.share({ title:'flove · economy', text, files:[file] }); return; } catch(_){}
+    }
+    menu.hidden = !menu.hidden;
+    shareBtn.setAttribute('aria-expanded', String(!menu.hidden));
+  }
+  el('floveSummaryMagic').addEventListener('click', e => { magic = !magic; e.currentTarget.setAttribute('aria-pressed', String(magic)); paint(); });
+  shareBtn.addEventListener('click', share);
+  menu.querySelector('[data-action="save"]').addEventListener('click', () => { download(); menu.hidden = true; shareBtn.setAttribute('aria-expanded','false'); });
+  document.addEventListener('click', e => {
+    if (!menu.hidden && !e.target.closest('#floveSummaryShare') && !e.target.closest('#floveSummaryShareMenu')){
+      menu.hidden = true; shareBtn.setAttribute('aria-expanded','false');
+    }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !menu.hidden){ menu.hidden = true; shareBtn.setAttribute('aria-expanded','false'); shareBtn.focus(); }
+  });
+  document.addEventListener('input', paint);
+  document.addEventListener('change', paint);
+  paint();
+  })();
+</script>
+
+
+<!-- flove fields manifest · read by tools/extract-fields.py · the launcher holds no data (pure-CSS economy launcher) -->
+<script type="application/json" id="flove-fields">
+{
+  "schema": "flove-fields/1",
+  "app": "offer",
+  "displayOnly": true,
+  "status": "complete",
+  "fields": []
+}
+</script>
+<!-- flove-conformance:start -->
+<script data-flove-conformance>
+/* Runtime conformance — dev harness: development/tools/conformance.html
+   Supersedes selfTest(); never writes user data (merge gets an empty envelope).
+   Parity vs floveFields() is advisory: rows are semantic layers, not a field
+   dump, so an app's field ids may not appear verbatim. */
+(function(){
+  var api = window.flovePortrait;
+  if (!api || typeof api.get !== 'function' || typeof api.conformance === 'function') return;
+
+  function flatFields(list, out){
+    out = out || [];
+    (list || []).forEach(function(f){
+      if (!f || !f.id) return;
+      out.push(f.id);              // leaf ids are already dotted (bonds.friendship)
+      if (f.fields) flatFields(f.fields, out);
+    });
+    return out;
+  }
+  function norm(s){
+    return String(s == null ? '' : s).toLowerCase()
+      .replace(/[\s_:.\/-]+/g, '.').replace(/^\.+|\.+$/g, '');
+  }
+  function slug(s){
+    return String(s == null ? '' : s).toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+
+  api.conformance = function(opts){
+    opts = opts || {};
+    var checks = [];
+    function check(name, ok, level, detail){
+      checks.push({ name: name, ok: !!ok, level: level || 'critical',
+                    detail: detail == null ? '' : String(detail) });
+    }
+
+    var p = null, getError = '';
+    try { p = api.get(); } catch (e) { getError = e && e.message || String(e); }
+    check('get() returns an envelope', p && typeof p === 'object', 'critical', getError);
+    if (!p || typeof p !== 'object'){
+      return { ok: false, app: null, checks: checks, errors: ['get()'], coverage: null };
+    }
+
+    var app = slug(p.app);
+    check('schema is flove-portrait/1', p.schema === 'flove-portrait/1', 'critical', p.schema);
+    check('app slug is present', !!app, 'critical', p.app);
+
+    var filename = app + '-portrait.json';
+    check('filename is <app>-portrait.json',
+          /^[a-z0-9][a-z0-9-]*-portrait\.json$/.test(filename), 'advisory', filename);
+    var json = '';
+    try { json = JSON.stringify(p); } catch (e) { json = ''; }
+    var mime = '';
+    try { mime = new Blob([json], { type: 'application/json;charset=utf-8' }).type; } catch (e) {}
+    check('blob MIME is application/json;charset=utf-8',
+          mime === 'application/json;charset=utf-8', 'advisory', mime);
+    check('envelope survives JSON.stringify', json.length > 2, 'critical', json.length + ' chars');
+
+    var v = null;
+    try { v = api.validate ? api.validate(p) : null; }
+    catch (e) { v = { ok: false, errors: [e.message] }; }
+    check('validate() accepts the envelope', v && v.ok, 'critical',
+          v && (v.errors || []).join('; '));
+
+    var rows = Array.isArray(p.rows) ? p.rows : null;
+    check('rows[] is an array', !!rows, 'critical', rows ? rows.length + ' rows' : typeof p.rows);
+    if (!rows){
+      return { ok: false, app: app, checks: checks, errors: ['rows[]'], coverage: null };
+    }
+
+    var keys = [], items = [], blank = false, untitled = false;
+    rows.forEach(function(r){
+      r = r || {};
+      var k = norm(r.key);
+      if (k) keys.push(k);
+      var list = Array.isArray(r.items) ? r.items : [];
+      if (list.length && !String(r.title || '').trim()) untitled = true;
+      list.forEach(function(it){
+        if (it === null || it === undefined) { blank = true; return; }
+        if (typeof it === 'string' && !it.trim()) { blank = true; return; }
+        items.push(typeof it === 'object' ? JSON.stringify(it) : String(it));
+      });
+    });
+    check('row keys are unique', new Set(keys).size === keys.length, 'critical',
+          keys.length + ' keys');
+    check('items are never blank', !blank, 'critical');
+    check('filled rows have a title', !untitled, 'critical');
+
+    var fieldsSource = window.floveFields, fields = [];
+    var fieldsKind = typeof fieldsSource;
+    try {
+      if (fieldsKind === 'function') fields = flatFields(fieldsSource() || []);
+      else if (Array.isArray(fieldsSource)) fields = flatFields(fieldsSource);
+    } catch (e) {}
+    check('floveFields() is callable', fieldsKind === 'function' || fieldsKind === 'undefined',
+          'advisory', fieldsKind === 'function' || fieldsKind === 'undefined' ? '' : fieldsKind);
+    var haystack = norm(keys.join(' ') + ' ' + items.join(' ') + ' ' +
+                        (p.phrase || '') + ' ' + json);
+    var mapped = fields.filter(function(id){ return haystack.indexOf(norm(id)) !== -1; });
+    check('field ids discoverable in the portrait (parity is advisory)', true, 'advisory',
+          mapped.length + '/' + fields.length + ' fields · ' +
+          Math.round(fields.length ? mapped.length / fields.length * 100 : 100) + '%');
+
+    var c = null;
+    try { c = api.consult ? api.consult(opts.consult || {}) : null; } catch (e) { c = null; }
+    var consulted = c && Array.isArray(c.rows)
+      ? c.rows.map(function(r){ return norm(r && r.key); }) : [];
+    check('consult() returns flove-consult/1',
+          c && c.schema === 'flove-consult/1' && Array.isArray(c.rows), 'critical',
+          c && c.schema);
+    check('consult() rows are a subset of get() rows',
+          consulted.every(function(k){ return keys.indexOf(k) !== -1; }), 'critical',
+          consulted.length + ' consulted');
+
+    var merged = null, mergeError = '';
+    try {
+      merged = api.merge
+        ? api.merge({
+            schema: 'flove-portrait/1', app: p.app, version: 1,
+            generatedAt: p.generatedAt, lang: p.lang,
+            rows: [{ key: '__conformance__', kind: 'probe', title: '', items: [] }],
+            consent: p.consent, source: p.source
+          })
+        : null;
+    } catch (e) { mergeError = e && e.message || String(e); }
+    check('merge() accepts a probe row without applying it',
+          merged && merged.ok === true && (merged.applied || 0) === 0, 'advisory',
+          mergeError || (merged ? 'applied ' + (merged.applied || 0) : 'no merge()'));
+
+    var errors = checks.filter(function(x){ return !x.ok && x.level === 'critical'; })
+                       .map(function(x){ return x.name; });
+    var advisories = checks.filter(function(x){ return !x.ok && x.level === 'advisory'; })
+                           .map(function(x){ return x.name; });
+    return { ok: errors.length === 0, app: app, checks: checks,
+             errors: errors, advisories: advisories,
+             coverage: fields.length ? { mapped: mapped.length, total: fields.length } : null };
+  };
+})();
+</script>
+<!-- flove-conformance:end -->
+<script data-flove-fields-flat>
+/* Technical helper: flat routing field paths for cross-app combination.
+   Read-only; no UI, storage or network side effect. */
+(function(){
+  if (window.floveFieldsFlat) return;
+  function walk(list, parent, out){
+    (list || []).forEach(function(f){
+      if (!f || !f.id) return;
+      var path = String(f.id);
+      if (parent && path.indexOf(parent + '.') !== 0) path = parent + '.' + path;
+      out.push({ path: path, id: f.id, label: f.label || '', type: f.type || '', parent: parent || null });
+      if (f.fields) walk(f.fields, path, out);
+      if (f.item && f.item.fields) walk(f.item.fields, path, out);
+    });
+  }
+  window.floveFieldsFlat = function(){
+    var out = [];
+    walk(typeof window.floveFields === 'function' ? window.floveFields() : [], '', out);
+    return out;
+  };
+  if (window.flovePort && !window.flovePort.fields) window.flovePort.fields = window.floveFieldsFlat;
+})();
+</script>
+</body>
+</html>

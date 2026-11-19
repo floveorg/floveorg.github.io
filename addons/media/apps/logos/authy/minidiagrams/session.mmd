@@ -1,0 +1,23 @@
+sequenceDiagram
+    autonumber
+    participant App as App
+    participant B as Authy
+    participant U as Person
+    participant S as Session
+    App->>B: request a session
+    B-->>App: scope and level needed
+    B->>U: unlock · passphrase or WebAuthn
+    U-->>B: unlocked
+    B->>B: check P never leaves
+    B->>S: sign grant · scope · expiry
+    S-->>App: session open
+    App->>S: read L · write S
+    alt expired
+      S-->>App: renew
+      S->>B: verify standing
+      B-->>S: extend
+    else revoked
+      B->>S: revoke
+      S-->>App: closed
+    end
+    Note over B,S: one grant per app · no background key

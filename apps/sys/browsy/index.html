@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+/* flove-store/1 + flove-net fallback — the common local-storage/net layer.
+   Apps inline this same block so they stay self-contained; this file is the
+   canonical reference and is shipped in the offline package. */
+(function () {
+  if (!window.floveStore) {
+    var mem = new Map();
+    function rawGet(k) {
+      try { return localStorage.getItem(k); }
+      catch (_) { return mem.has(k) ? mem.get(k) : null; }
+    }
+    function rawSet(k, v) {
+      try { localStorage.setItem(k, v); return true; }
+      catch (e) {
+        mem.set(k, v);
+        try { window.dispatchEvent(new CustomEvent('flove:storage-error', { detail: { key: k, error: e } })); } catch (_) {}
+        return false;
+      }
+    }
+    window.floveStore = {
+      getRaw: function (k, fallback) { var v = rawGet(k); return v == null ? (fallback === undefined ? null : fallback) : v; },
+      getJSON: function (k, fallback) {
+        try { var v = rawGet(k); return v == null ? (fallback === undefined ? null : fallback) : JSON.parse(v); }
+        catch (_) { return fallback === undefined ? null : fallback; }
+      },
+      set: function (k, v) { return rawSet(k, typeof v === 'string' ? v : JSON.stringify(v)); },
+      setJSON: function (k, v) { return rawSet(k, JSON.stringify(v)); },
+      remove: function (k) { try { localStorage.removeItem(k); } catch (_) {} mem.delete(k); },
+      available: function () {
+        try { var k = '__flove_probe__'; localStorage.setItem(k, '1'); localStorage.removeItem(k); return true; }
+        catch (_) { return false; }
+      },
+      memoryOnly: function () { return !this.available(); }
+    };
+  }
+  if (!window.floveFields) window.floveFields = function () {
+    try { var el = document.getElementById('flove-fields'); return el ? (JSON.parse(el.textContent).fields || []) : []; }
+    catch (_) { return []; }
+  };
+  if (!window.floveNet) {
+    window.floveNet = {
+      schema: 'flove-net/1',
+      export: function () { return { schema: 'flove-portrait/1', app: null, version: 1, generatedAt: new Date().toISOString(), rows: [] }; },
+      consult: function () { return { schema: 'flove-consult/1', app: null, version: 1, generatedAt: new Date().toISOString(), rows: [] }; },
+      import: function () { return { ok: false, applied: 0, errors: ['no app adapter'] }; }
+    };
+  }
+  if (!window.flovePortrait) window.flovePortrait = window.floveNet;
+  if (!window.floveSummary) window.floveSummary = function () { return window.floveNet.export(); };
+})();
+
+</script>
+
+<meta charset="utf-8">
+<meta name="flove:distro" content="sys">
+<meta name="flove:app" content="browsy">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#6c5ce7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>browsy · flove</title>
+<link rel="icon" type="image/png" href="icons/icon-32.png">
+<style>
+/* a11y — 40px hit targets on touch (§6), desktop untouched */
+@media (pointer: coarse){
+  .btn,.btn-primary,.btn-ghost,.btn-soft,.subitem,.tbtn,.cat,.chip,.pc-toggle,.menu-item,.app-menu-item,.topmenu__item{min-height:40px}
+}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--ink:#1a1820;--bg:#fff;--accent:#6c5ce7;--edge:#241f36;--muted:#5f5f66}
+body{font:15px/1.6 'Inter',system-ui,sans-serif;color:var(--ink);background:var(--bg);min-height:100dvh;overflow-x:hidden}
+
+/* hero */
+.hero{padding:4rem 1.5rem 3rem;text-align:center}
+.hero h1{font-size:clamp(2rem,6vw,3.2rem);letter-spacing:-.04em;margin-bottom:.4rem}
+.hero h1 span{color:var(--accent)}
+.hero p{color:var(--muted);font-size:1.05rem;max-width:520px;margin:0 auto}
+
+/* badge demo */
+.badge-demo{display:flex;justify-content:center;gap:2rem;padding:2rem 1.5rem;flex-wrap:wrap}
+.badge{text-align:center}
+.badge-ring{width:80px;height:80px;border-radius:50%;display:grid;place-items:center;margin:0 auto .5rem;
+  font-size:1.8rem;font-weight:800;color:#fff;position:relative;transition:transform .3s}
+.badge-ring:hover{transform:scale(1.08)}
+.badge-ring svg{position:absolute;inset:-4px;animation:ringPulse 2s ease-in-out infinite}
+@keyframes ringPulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.06)}}
+.badge-label{font-size:.75rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+
+.b1 .badge-ring{background:linear-gradient(135deg,#ff3344,#ff8a3a)}
+.b1 svg circle{stroke:#ff3344}
+.b2 .badge-ring{background:linear-gradient(135deg,#5ea4e6,#8d89ff)}
+.b2 svg circle{stroke:#5ea4e6}
+.b3 .badge-ring{background:linear-gradient(135deg,#33d97a,#4fd6cc)}
+.b3 svg circle{stroke:#33d97a}
+
+/* features */
+.features{max-width:720px;margin:0 auto;padding:2rem 1.5rem 3rem}
+.features h2{font-size:1.3rem;margin-bottom:1rem;letter-spacing:-.02em}
+.feature{display:flex;gap:1rem;margin-bottom:1.2rem;align-items:flex-start}
+.feature-icon{width:36px;height:36px;border-radius:8px;display:grid;place-items:center;flex-shrink:0;
+  font-size:1rem;background:#f4f1ff;color:var(--accent)}
+.feature b{display:block;font-size:.95rem;margin-bottom:.1rem}
+.feature span{font-size:.85rem;color:var(--muted)}
+
+/* tour steps */
+.tour{max-width:720px;margin:0 auto;padding:0 1.5rem 3rem}
+.tour h2{font-size:1.3rem;margin-bottom:1rem;letter-spacing:-.02em}
+.step{display:flex;gap:1rem;margin-bottom:1.5rem;align-items:flex-start}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;
+  display:grid;place-items:center;font-size:.8rem;font-weight:700;flex-shrink:0}
+.step-text{flex:1}
+.step-text b{display:block;font-size:.95rem;margin-bottom:.15rem}
+.step-text span{font-size:.85rem;color:var(--muted)}
+
+/* floating reward demo */
+.reward-demo{position:relative;max-width:400px;margin:0 auto 3rem;padding:2rem;
+  background:#f9f8ff;border:1px solid rgba(108,92,231,.15);border-radius:16px;text-align:center}
+.reward-demo h3{font-size:1rem;margin-bottom:.8rem}
+.reward-float{position:relative;height:60px;margin-bottom:1rem}
+.reward-dot{position:absolute;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
+  font-size:.7rem;font-weight:700;color:#fff;animation:float 4s ease-in-out infinite}
+.rd-1{background:#c81f31;left:10%;animation-delay:0s}
+.rd-2{background:#5ea4e6;left:35%;animation-delay:-.8s}
+.rd-3{background:#33d97a;left:60%;animation-delay:-1.6s}
+.rd-4{background:#b45309;left:85%;animation-delay:-2.4s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.reward-text{font-size:.85rem;color:var(--muted)}
+
+/* footer */
+.footer{text-align:center;padding:2rem 1.5rem 3rem;color:var(--muted);font-size:.8rem}
+.footer a{color:var(--accent);text-decoration:none}
+
+/* use cases + pull diagram */
+.uc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin:1rem 0 1.4rem}
+.uc-card{border:1px solid rgba(108,92,231,.18);border-radius:14px;padding:1rem;background:#fff}
+.uc-card h3{font-size:1rem;margin:0 0 .35rem}
+.uc-card p{font-size:.84rem;color:var(--muted);margin:.2rem 0 .5rem}
+.uc-tag{display:inline-block;font-family:monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;
+  border-radius:999px;padding:2px 8px;margin-bottom:.45rem;border:1px solid rgba(108,92,231,.3);color:var(--accent)}
+.uc-tag.l{border-color:rgba(51,217,122,.5);color:#12824a}
+.uc-tag.mix{border-color:rgba(94,164,230,.5);color:#2b6aa3}
+.uc-classes{display:flex;gap:.3rem;margin:.35rem 0 .6rem;flex-wrap:wrap}
+.uc-classes span{font-family:monospace;font-size:.62rem;border:1px solid #e6e2f5;border-radius:6px;padding:1px 6px;color:#5a5670}
+.uc-card a{font-size:.82rem;color:var(--accent);text-decoration:none}
+.uc-card a:hover{text-decoration:underline}
+.pullfig{margin:1.2rem 0 2rem;border:1px solid rgba(108,92,231,.18);border-radius:16px;padding:12px;background:#fbfaff}
+.pullfig svg{width:100%;height:auto;display:block}
+.pullfig .cap{font-size:.78rem;color:var(--muted);margin:8px 6px 0;text-align:center}
+/* diagramy figures */
+#diagrams{max-width:1020px}
+.diagramy{margin:1.2rem 0;border:1px solid rgba(108,92,231,.18);border-radius:16px;padding:12px;background:#fff}
+.dy-trigger{display:block;width:100%;background:none;border:0;color:inherit;cursor:pointer;text-align:left;padding:0}
+.dy-mini{width:100%;max-width:520px;height:auto;display:block;margin:0 auto}
+.dy-caption{display:block;text-align:center;color:var(--muted);font-size:.78rem;margin-top:8px}
+.dy-caption b{color:var(--accent);font-weight:600}
+.dy-panel{margin-top:14px;border-top:1px dashed rgba(108,92,231,.25);padding-top:12px}
+.dy-panel[hidden]{display:none}
+.dy-panel-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;font-size:.8rem}
+.dy-panel-head strong{color:#3b3654}
+.dy-panel-head a{font-size:.72rem;color:var(--accent)}
+.dy-close{margin-left:auto;background:#fff;border:1px solid rgba(108,92,231,.3);color:#3b3654;border-radius:8px;padding:4px 9px;cursor:pointer}
+.dy-thread{overflow:auto;max-height:72vh;border:1px solid #262a3a;border-radius:12px;background:#0d0d14}
+.dy-thread svg{min-width:760px;width:100%;height:auto;display:block}
+@media(max-width:700px){.dy-thread svg{min-width:680px}}
+/* ── Wizy Magic — Browsy ─────────────────────────────────────── */
+.browsy-wizy{max-width:720px;margin:0 auto;padding:0 1.5rem 2rem;text-align:center}
+.browsy-magic-btn{display:inline-flex;align-items:center;gap:.45rem;padding:.62rem 1rem;border-radius:999px;
+  border:1px solid rgba(108,92,231,.45);background:rgba(108,92,231,.08);color:#4f3fc9;
+  font:700 .76rem ui-monospace,monospace;cursor:pointer;transition:background .16s,border-color .16s,color .16s}
+.browsy-magic-btn:hover{border-color:var(--accent);background:rgba(108,92,231,.14)}
+.browsy-magic-btn[aria-expanded="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.browsy-wizy-panel{margin:.6rem auto 0;padding:.8rem;border:1px solid rgba(108,92,231,.22);border-radius:14px;
+  background:#fbfaff;display:flex;flex-direction:column;gap:.6rem;text-align:left}
+.browsy-wizy-panel[hidden]{display:none}
+.browsy-wizy-wizards,.browsy-wizy-modes{display:flex;gap:.38rem;flex-wrap:wrap}
+.browsy-wizy-wizards button,.browsy-wizy-modes button{border:1px solid #e6e2f5;background:#fff;color:#3b3654;
+  border-radius:999px;padding:.4rem .68rem;font:700 .66rem ui-monospace,monospace;cursor:pointer}
+.browsy-wizy-wizards button:hover,.browsy-wizy-modes button:hover{border-color:var(--accent);color:var(--accent)}
+.browsy-wizy-wizards button[aria-pressed="true"],.browsy-wizy-modes button[aria-pressed="true"]{
+  background:var(--accent);border-color:var(--accent);color:#fff}
+.browsy-wizy-results{display:flex;flex-direction:column;gap:.42rem;min-height:1.2rem}
+.browsy-wizy-result{font-size:.8rem;line-height:1.55;color:#2b2740}
+.browsy-wizy-result a{color:var(--accent);text-decoration:none;border-bottom:1px dotted rgba(108,92,231,.55)}
+.browsy-wizy-result a:hover{border-bottom-style:solid}
+.browsy-wizy-prep{color:#777;font-family:ui-monospace,monospace;font-size:.6rem;letter-spacing:.07em;
+  text-transform:uppercase;padding:0 .16rem}
+.browsy-wizy-more{align-self:flex-start;border:1px solid #e6e2f5;background:#fff;color:var(--accent);
+  border-radius:999px;padding:.42rem .72rem;font:700 .64rem ui-monospace,monospace;cursor:pointer}
+.browsy-wizy-more:hover{border-color:var(--accent)}
+.browsy-wizy-empty{color:#777;font-size:.72rem;line-height:1.5}
+/* ── Browsy identity — web provisional ─────────────────────── */
+.browsy-identity{max-width:720px;margin:0 auto;padding:0 1.5rem 2rem}
+.browsy-identity-card{border:1px solid rgba(108,92,231,.22);border-radius:16px;background:#fbfaff;padding:1rem 1.1rem}
+.browsy-identity-head{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.4rem}
+.browsy-identity-head h2{font-size:1rem;margin:0;letter-spacing:-.01em}
+.browsy-identity-badge{font:700 .6rem ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--accent);border:1px solid rgba(108,92,231,.35);border-radius:999px;padding:.18rem .5rem}
+.browsy-identity-warning{font-size:.76rem;line-height:1.5;color:#8a4b00;background:#fff8e6;
+  border:1px solid #f0d59b;border-radius:10px;padding:.55rem .7rem;margin:.5rem 0 .7rem}
+.browsy-identity-row{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.browsy-identity-row button{border:1px solid rgba(108,92,231,.45);background:rgba(108,92,231,.08);
+  color:var(--accent);border-radius:999px;padding:.55rem .9rem;font:700 .74rem ui-monospace,monospace;cursor:pointer}
+.browsy-identity-row button:hover{border-color:var(--accent);background:rgba(108,92,231,.14)}
+.browsy-identity-row button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.browsy-identity-hash{font:700 .76rem ui-monospace,monospace;color:#3b3654;background:#fff;border:1px dashed #d8d2ee;
+  border-radius:10px;padding:.55rem .7rem;margin-top:.6rem;overflow-wrap:anywhere}
+.browsy-identity-msg{font-size:.72rem;color:#777;margin-top:.45rem;min-height:1.1em}
+.browsy-identity-msg.ok{color:#12824a}
+.browsy-identity-msg.err{color:#b42318}
+body.embed .hero, body.embed .footer, body.embed main > section:not(.browsy-identity){display:none !important}
+body.embed .browsy-identity{padding:0;margin:0;max-width:none}
+body.embed .browsy-identity-card{border:0;background:transparent;padding:0}
+/* ── extension field test callout ──────────────────────────── */
+.browsy-fieldtest{max-width:720px;margin:0 auto;padding:0 1.5rem 2rem}
+.browsy-fieldtest-card{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  border:1px solid rgba(108,92,231,.25);border-radius:16px;padding:1rem 1.1rem;
+  background:linear-gradient(120deg,#fbfaff,#f2f8ff)}
+.browsy-fieldtest-card b{display:block;font-size:.95rem;letter-spacing:-.015em;margin:.15rem 0 .1rem}
+.browsy-fieldtest-card span{display:block;font-size:.78rem;line-height:1.5;color:#6f6a83;max-width:46ch}
+.browsy-fieldtest-kicker{font-family:ui-monospace,monospace;font-size:.52rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--accent)}
+.browsy-fieldtest-link{flex:none;font-size:.78rem;font-weight:700;color:var(--accent);text-decoration:none;
+  border:1px solid rgba(108,92,231,.35);border-radius:999px;padding:.45rem .75rem;background:#fff}
+.browsy-fieldtest-link:hover{background:rgba(108,92,231,.1);border-color:var(--accent)}
+@media(prefers-reduced-motion:reduce){
+  .badge-ring svg,.reward-dot{animation:none!important}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1><span>browsy</span></h1>
+  <p>The bridge between flove apps and the rest of the web. Save, share, discover — from any tab.</p>
+</header>
+
+
+
+<!-- rewardy display demo -->
+<main>
+<section class="browsy-wizy" aria-label="Wizy Magic">
+  <button type="button" class="browsy-magic-btn" id="browsyMagicBtn" aria-expanded="false" aria-controls="browsyMagicPanel" onclick="bwizy.toggle()">✨ Magic</button>
+  <div class="browsy-wizy-panel" id="browsyMagicPanel" hidden>
+    <div class="browsy-wizy-wizards" role="group" aria-label="Wizy wizards">
+      <button type="button" data-wizard="love" aria-pressed="false" onclick="bwizy.wizard('love')">💗 Love</button>
+      <button type="button" data-wizard="joy" aria-pressed="false" onclick="bwizy.wizard('joy')">😂 Joy</button>
+      <button type="button" data-wizard="wisdom" aria-pressed="false" onclick="bwizy.wizard('wisdom')">🫠 Wisdom</button>
+    </div>
+    <div class="browsy-wizy-modes" role="group" aria-label="Wizy mode">
+      <button type="button" data-mode="myself" aria-pressed="false" onclick="bwizy.mode('myself')">Myself</button>
+      <button type="button" data-mode="others" aria-pressed="false" onclick="bwizy.mode('others')">With others</button>
+    </div>
+    <div class="browsy-wizy-results" id="browsyWizyResults" role="status" aria-live="polite"></div>
+    <button type="button" class="browsy-wizy-more" id="browsyWizyMore" onclick="bwizy.more()" hidden>3 more</button>
+  </div>
+</section>
+
+<section class="browsy-identity" id="browsyIdentity" aria-label="Browsy identity">
+  <div class="browsy-identity-card">
+    <div class="browsy-identity-head">
+      <h2>Browsy identity</h2>
+      <span class="browsy-identity-badge" id="browsyIdentitySource">web</span>
+    </div>
+    <p class="browsy-identity-warning">Local key, not portable. This identity lives only in this browser and cannot be imported into the Browsy extension. The extension is the canonical identity.</p>
+    <div class="browsy-identity-row">
+      <button type="button" class="primary" id="browsyIdentityCreate">Generate Browsy key</button>
+      <button type="button" id="browsyIdentityCopy" hidden>Copy hash</button>
+    </div>
+    <div class="browsy-identity-hash" id="browsyIdentityHash" hidden></div>
+    <div class="browsy-identity-msg" id="browsyIdentityMsg" role="status" aria-live="polite"></div>
+  </div>
+</section>
+
+<section class="browsy-fieldtest" aria-label="Browsy extension field test">
+  <div class="browsy-fieldtest-card">
+    <div>
+      <span class="browsy-fieldtest-kicker">field test · 2026-11-18</span>
+      <b>The extension plan, in a real window</b>
+      <span>Ephemeral web hash · consent pull · Wizy Magic in Goddy · MyFamily when someone else is in the room.</span>
+    </div>
+    <a class="browsy-fieldtest-link" href="2026-11-18-browsy-extension-demo.html">Open the demo →</a>
+  </div>
+</section>
+
+<section class="badge-demo">
+  <div class="badge b1">
+    <div class="badge-ring">
+      <svg viewBox="0 0 88 88"><circle cx="44" cy="44" r="40" fill="none" stroke-width="3" stroke-dasharray="6 4" opacity=".6"/></svg>
+      ★
+    </div>
+    <div class="badge-label">flove detected</div>
+  </div>
+  <div class="badge b2">
+    <div class="badge-ring">
+      <svg viewBox="0 0 88 88"><circle cx="44" cy="44" r="40" fill="none" stroke-width="3" stroke-dasharray="6 4" opacity=".6"/></svg>
+      3
+    </div>
+    <div class="badge-label">saves today</div>
+  </div>
+  <div class="badge b3">
+    <div class="badge-ring">
+      <svg viewBox="0 0 88 88"><circle cx="44" cy="44" r="40" fill="none" stroke-width="3" stroke-dasharray="6 4" opacity=".6"/></svg>
+      ✓
+    </div>
+    <div class="badge-label">synced</div>
+  </div>
+</section>
+
+<!-- features -->
+<section class="features">
+  <h2>What it does</h2>
+  <div class="feature">
+    <div class="feature-icon">🔐</div>
+    <div><b>Identity</b><span>Ed25519 keypair, profile, recovery — on demand, only when you click.</span></div>
+  </div>
+  <div class="feature">
+    <div class="feature-icon">🔗</div>
+    <div><b>Trust</b><span>Vouches, facets, 3-hop chains — computed when central asks.</span></div>
+  </div>
+  <div class="feature">
+    <div class="feature-icon">💾</div>
+    <div><b>Save to flove</b><span>Right-click → "Save to flove" or "Share to Nety".</span></div>
+  </div>
+  <div class="feature">
+    <div class="feature-icon">⭐</div>
+    <div><b>Badge</b><span>★ appears when you're on a flove page.</span></div>
+  </div>
+  <div class="feature">
+    <div class="feature-icon">⚙️</div>
+    <div><b>Settings sync</b><span>Theme, language, sound — browsy persists, central displays.</span></div>
+  </div>
+</section>
+
+<!-- tour -->
+<section class="tour">
+  <h2>The tour</h2>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-text"><b>Install</b><span>Add to Chrome. One click, no account.</span></div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-text"><b>Browse</b><span>Badge ★ lights up on flove pages.</span></div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-text"><b>Save</b><span>Right-click → "Save to flove" from any tab.</span></div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-text"><b>Trust</b><span>On flove.org, browsy computes your trust score on demand.</span></div>
+  </div>
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-text"><b>Sync</b><span>Settings persist across devices via browsy.</span></div>
+  </div>
+</section>
+
+<section class="features" id="usecases">
+  <h2>Use cases inside Browsy</h2>
+  <p style="font-size:.9rem;color:var(--muted);margin:0 0 .8rem">Browsy hosts the local data layer. Each app keeps its own JSON; Browsy manages the record and its class. MyFamily is the <b>L</b> use case; Goddy is a mixed <b>P + L + S</b> case with more public output.</p>
+  <div class="uc-grid">
+    <div class="uc-card" id="myfamily">
+      <span class="uc-tag l">P → L · private by default</span>
+      <h3>MyFamily</h3>
+      <p>Each added person starts as <b>P</b> (private); Wizy reads it locally. Sharing to a peer or group creates an <b>L</b> projection; S is only a minimal public card. The profile is the 7×5 MyFamily matrix → 5 type percentages. MyNet builds flat local groups from these same people.</p>
+      <div class="uc-classes"><span>P default</span><span>L shared</span><span>S public</span></div>
+      <a href="../../../apps/trusty/myfamily.html">Open MyFamily ↗</a>
+    </div>
+    <div class="uc-card">
+      <span class="uc-tag l">L · MyFamily profile</span>
+      <h3>MyNet</h3>
+      <p>Verified Telegram enables MyNet in appy-basic. It uses the MyFamily 7×5 profile → 5 type percentages, kept as <b>L</b> when shared; Personal stays <b>P</b>. Groups are flat and owner-managed; pick people, set roles and a projection. Public publishing needs verified Telegram and is deferred.</p>
+      <div class="uc-classes"><span>L shared</span><span>MyFamily 7×5</span><span>Local groups</span></div>
+      <a href="../../../apps/appy/appy-basic.html">Open appy-basic ↗</a>
+    </div>
+    <div class="uc-card">
+      <span class="uc-tag mix">P + L + S · mixed</span>
+      <h3>Goddy</h3>
+      <p>Rated rows can stay private (P), be shared locally (L), and produce public summaries (S). More S than MyFamily by design: the portrait is meant to be shown.</p>
+      <div class="uc-classes"><span>P private</span><span>L shared</span><span>S public</span></div>
+      <a href="../../../apps/metas/goddy.html">Open Goddy ↗</a>
+    </div>
+    <div class="uc-card">
+      <span class="uc-tag">Authy · identity</span>
+      <h3>Every app</h3>
+      <p>Authy unlocks the vault, signs grants and gives Wizy a scoped session. No app receives the private key.</p>
+      <a href="../../../apps/sys/authy/index.html">Open the Authy index ↗</a>
+    </div>
+  </div>
+
+  <div class="pullfig">
+    <svg viewBox="0 0 1000 410" role="img" aria-labelledby="pullTitle pullDesc">
+      <title id="pullTitle">MyFamily L pull thread</title>
+      <desc id="pullDesc">MyFamily saves a record as class L to Browsy. Browsy signs a grant with paths and expiry. A permitted peer pulls the encrypted projection over the local net, verifies it, and Wizy merges it locally.</desc>
+      <g font-family="system-ui,sans-serif">
+        <g fill="#fff" stroke="#b9aef0" stroke-width="1.3">
+          <rect x="15" y="18" width="130" height="40" rx="9"/>
+          <rect x="265" y="18" width="130" height="40" rx="9"/>
+          <rect x="555" y="18" width="150" height="40" rx="9"/>
+          <rect x="800" y="18" width="150" height="40" rx="9"/>
+        </g>
+        <g font-size="12" font-weight="600" fill="#3b3654" text-anchor="middle">
+          <text x="80" y="43">MyFamily</text>
+          <text x="330" y="43">Browsy · owner</text>
+          <text x="630" y="43">Browsy · peer</text>
+          <text x="875" y="43">Wizy · peer</text>
+        </g>
+        <g stroke="#d8d2ee" stroke-width="1.2" stroke-dasharray="4 5">
+          <line x1="80" y1="58" x2="80" y2="380"/>
+          <line x1="330" y1="58" x2="330" y2="380"/>
+          <line x1="630" y1="58" x2="630" y2="380"/>
+          <line x1="875" y1="58" x2="875" y2="380"/>
+        </g>
+        <defs>
+          <marker id="pa" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#6c5ce7"/></marker>
+          <marker id="pg" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#12824a"/></marker>
+        </defs>
+        <g stroke="#6c5ce7" stroke-width="1.5" fill="none">
+          <line x1="80" y1="110" x2="330" y2="110" marker-end="url(#pa)"/>
+          <line x1="630" y1="210" x2="330" y2="210" marker-end="url(#pa)"/>
+          <line x1="330" y1="260" x2="630" y2="260" marker-end="url(#pa)"/>
+          <line x1="630" y1="365" x2="875" y2="365" marker-end="url(#pg)"/>
+        </g>
+        <path d="M330 145 C 380 145, 380 173, 330 173" stroke="#6c5ce7" fill="none" stroke-width="1.5" marker-end="url(#pa)"/>
+        <path d="M630 300 C 680 300, 680 326, 630 326" stroke="#12824a" fill="none" stroke-width="1.5" marker-end="url(#pg)"/>
+        <g font-size="10.5" fill="#6a6380" text-anchor="middle">
+          <text x="205" y="102">save record · class L</text>
+          <text x="480" y="202">pull allowed deltas · local net</text>
+          <text x="480" y="252">encrypted projection + signature</text>
+          <text x="752" y="357">merge · derive D0/D1</text>
+          <text x="400" y="166" text-anchor="start">sign grant · paths · expiry</text>
+          <text x="700" y="320" text-anchor="start">verify · decrypt</text>
+        </g>
+      </g>
+    </svg>
+    <p class="cap">The pull is local and direct: MyFamily → Browsy owner → permitted peer. P is never in the projection; S is a separate public card. P2P permissions are another planned trunk.</p>
+  </div>
+</section>
+
+<section class="features" id="diagrams">
+  <h2>Diagrams of this model</h2>
+  <p style="font-size:.9rem;color:var(--muted);margin:0 0 .4rem">Two stories, each a mini that unfolds into its full thread: how Telegram enables MyNet and how the resulting MyFamily record is pulled locally. Both work offline.</p>
+<figure class="diagramy">
+  <button class="dy-trigger" type="button" aria-expanded="false" aria-controls="dy-panel-authy-mynet-myfamily">
+    <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Telegram unlocks Authy L2, which enables MyNet, a simplified MyFamily, saved as L in Browsy and pulled by a peer.">
+  <defs>
+    <marker id="a1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 Z" fill="#6c5ce7"/></marker>
+  </defs>
+  <rect x="4" y="8" width="312" height="164" rx="16" fill="none" stroke="#6c5ce7" stroke-opacity=".32" stroke-width="1.2" stroke-dasharray="6 5"/>
+  <g stroke="#6c5ce7" stroke-width="2" fill="none" stroke-linecap="round">
+    <path d="M86 63 L99 63" marker-end="url(#a1)"/>
+    <path d="M178 63 L193 63" marker-end="url(#a1)"/>
+    <path d="M226 80 C 230 92, 232 100, 232 111" marker-end="url(#a1)"/>
+    <path d="M194 129 L180 129" marker-end="url(#a1)"/>
+    <path d="M100 129 L87 129" marker-end="url(#a1)"/>
+  </g>
+  <g font-family="ui-monospace,monospace" font-size="8.5" text-anchor="middle">
+    <rect x="18" y="46" width="68" height="34" rx="8" fill="#11131a" stroke="#6c5ce7" stroke-width="2"/>
+    <text x="52" y="67" fill="#e9eaf2">Telegram</text>
+    <rect x="100" y="46" width="78" height="34" rx="8" fill="#11131a" stroke="#00d9a3" stroke-width="2"/>
+    <text x="139" y="67" fill="#e9eaf2">Authy L2</text>
+    <rect x="194" y="46" width="64" height="34" rx="8" fill="#11131a" stroke="#6c5ce7" stroke-width="2"/>
+    <text x="226" y="67" fill="#e9eaf2">MyNet</text>
+    <rect x="194" y="112" width="80" height="34" rx="8" fill="#11131a" stroke="#6c5ce7" stroke-width="2"/>
+    <text x="234" y="133" fill="#e9eaf2">MyFamily</text>
+    <rect x="100" y="112" width="78" height="34" rx="8" fill="#11131a" stroke="#00d9a3" stroke-width="2"/>
+    <text x="139" y="133" fill="#e9eaf2">Browsy</text>
+    <rect x="18" y="112" width="68" height="34" rx="8" fill="#11131a" stroke="#6c5ce7" stroke-width="2"/>
+    <text x="52" y="133" fill="#e9eaf2">Peer</text>
+  </g>
+  <text x="93" y="106" font-family="ui-monospace,monospace" font-size="6.5" text-anchor="middle" fill="#a3a7b4">Local</text>
+  <text x="160" y="168" font-family="ui-monospace,monospace" font-size="7.5" text-anchor="middle" fill="#a3a7b4">Telegram → Authy → MyNet → MyFamily → Browsy → Peer</text>
+</svg>
+    <span class="dy-caption">Telegram → Authy L2 → MyNet → simplified MyFamily → Browsy → peer · Local · <b>unfold the thread</b></span>
+  </button>
+  <div class="dy-panel" id="dy-panel-authy-mynet-myfamily" hidden>
+    <div class="dy-panel-head">
+      <strong>The full thread</strong>
+      <a href="../../../development/diagrams/authy-mynet-myfamily/authy-mynet-myfamily.thread.mmd" download>source .mmd</a>
+      <button class="dy-close" type="button" aria-label="Close thread">✕</button>
+    </div>
+    <div class="dy-thread"><svg id="dy-authy-mynet-myfamily" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="background-color: transparent;" viewBox="-50 -10 1556 1055" role="graphics-document document" aria-roledescription="sequence"><g><rect x="1306" y="930" fill="#eaeaea" stroke="#666" width="150" height="74" name="R" rx="6" ry="6" class="actor actor-bottom" data-look="neo" filter="url(#dy-authy-mynet-myfamily-drop-shadow)"/><text x="1381" y="967" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="1381" dy="0">Peer</tspan></text></g><g><rect x="1091" y="930" fill="#eaeaea" stroke="#666" width="150" height="74" name="B" rx="6" ry="6" class="actor actor-bottom" data-look="neo" filter="url(#dy-authy-mynet-myfamily-drop-shadow)"/><text x="1166" y="967" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="1166" dy="0">Browsy</tspan></text></g><g><rect x="891" y="930" fill="#eaeaea" stroke="#666" width="150" height="74" name="F" rx="6" ry="6" class="actor actor-bottom" data-look="neo" filter="url(#dy-authy-mynet-myfamily-drop-shadow)"/><text x="966" y="967" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="966" dy="0">MyFamily</tspan></text></g><g><rect x="600" y="930" fill="#eaeaea" stroke="#666" width="150" height="74" name="N" rx="6" ry="6" class="actor actor-bottom" data-look="neo" filter="url(#dy-authy-mynet-myfamily-drop-shadow)"/><text x="675" y="967" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="675" dy="0">MyNet</tspan></text></g><g><rect x="400" y="930" fill="#eaeaea" stroke="#666" width="150" height="74" name="A" rx="6" ry="6" class="actor actor-bottom" data-look="neo" filter="url(#dy-authy-mynet-myfamily-drop-shadow)"/><text x="475" y="967" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="475" dy="0">Authy</tspan></text></g><g><rect x="200" y="930" fill="#eaeaea" stroke="#666" width="150" height="74" name="T" rx="6" ry="6" class="actor actor-bottom" data-look="neo" filter="url(#dy-authy-mynet-myfamily-drop-shadow)"/><text x="275" y="967" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="275" dy="0">Telegram</tspan></text></g><g/><g><line id="actor6" x1="1381" y1="74" x2="1381" y2="930" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="R" data-et="life-line" data-id="R"/><g id="root-6" data-look="neo" data-et="participant" data-type="participant" data-id="R"><rect x="1306" y="0" fill="#eaeaea" stroke="#666" width="150" height="74" name="R" rx="6" ry="6" class="actor actor-top" data-look="neo" filter="url(#dy-authy-mynet-myfamily-drop-shadow)"/><text x="1381" y="37" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="1381" dy="0">Peer</tspan></text></g></g><g><line id="actor5" x1="1166" y1="74" x2="1166" y2="930" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="B" data-et="life-line" data-id="B"/><g id="root-5" data-look="neo" data-et="participant" data-type="participant" data-id="B"><rect x="1091" y="0" fill="#eaeaea" stroke="#666" width="150" height="74" name="B" rx="6" ry="6" class="actor actor-top" data-look="neo" filter="url(#dy-authy-mynet-myfamily-drop-shadow)"/><text x="1166" y="37" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="1166" dy="0">Browsy</tspan></text></g></g><g><line id="actor4" x1="966" y1="74" x2="966" y2="930" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="F" data-et="life-line" data-id="F"/><g id="root-4" data-look="neo" data-et="participant" data-type="participant" data-id="F"><rect x="891" y="0" fill="#eaeaea" stroke="#666" width="150" height="74" name="F" rx="6" ry="6" class="actor actor-top" data-look="neo" filter="url(#dy-authy-mynet-myfamily-drop-shadow)"/><text x="966" y="37" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="966" dy="0">MyFamily</tspan></text></g></g><g><line id="actor3" x1="675" y1="74" x2="675" y2="930" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="N" data-et="life-line" data-id="N"/><g id="root-3" data-look="neo" data-et="participant" data-type="participant" data-id="N"><rect x="600" y="0" fill="#eaeaea" stroke="#666" width="150" height="74" name="N" rx="6" ry="6" class="actor actor-top" data-look="neo" filter="url(#dy-authy-mynet-myfamily-drop-shadow)"/><text x="675" y="37" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="675" dy="0">MyNet</tspan></text></g></g><g><line id="actor2" x1="475" y1="74" x2="475" y2="930" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="A" data-et="life-line" data-id="A"/><g id="root-2" data-look="neo" data-et="participant" data-type="participant" data-id="A"><rect x="400" y="0" fill="#eaeaea" stroke="#666" width="150" height="74" name="A" rx="6" ry="6" class="actor actor-top" data-look="neo" filter="url(#dy-authy-mynet-myfamily-drop-shadow)"/><text x="475" y="37" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="475" dy="0">Authy</tspan></text></g></g><g><line id="actor1" x1="275" y1="74" x2="275" y2="930" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="T" data-et="life-line" data-id="T"/><g id="root-1" data-look="neo" data-et="participant" data-type="participant" data-id="T"><rect x="200" y="0" fill="#eaeaea" stroke="#666" width="150" height="74" name="T" rx="6" ry="6" class="actor actor-top" data-look="neo" filter="url(#dy-authy-mynet-myfamily-drop-shadow)"/><text x="275" y="37" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="275" dy="0">Telegram</tspan></text></g></g><g><line id="actor0" x1="75" y1="74" x2="75" y2="930" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="P" data-et="life-line" data-id="P"/></g><style>#dy-authy-mynet-myfamily{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#ccc;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#dy-authy-mynet-myfamily .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#dy-authy-mynet-myfamily .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#dy-authy-mynet-myfamily .error-icon{fill:#a44141;}#dy-authy-mynet-myfamily .error-text{fill:#ddd;stroke:#ddd;}#dy-authy-mynet-myfamily .edge-thickness-normal{stroke-width:1px;}#dy-authy-mynet-myfamily .edge-thickness-thick{stroke-width:3.5px;}#dy-authy-mynet-myfamily .edge-pattern-solid{stroke-dasharray:0;}#dy-authy-mynet-myfamily .edge-thickness-invisible{stroke-width:0;fill:none;}#dy-authy-mynet-myfamily .edge-pattern-dashed{stroke-dasharray:3;}#dy-authy-mynet-myfamily .edge-pattern-dotted{stroke-dasharray:2;}#dy-authy-mynet-myfamily .marker{fill:lightgrey;stroke:lightgrey;}#dy-authy-mynet-myfamily .marker.cross{stroke:lightgrey;}#dy-authy-mynet-myfamily svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#dy-authy-mynet-myfamily p{margin:0;}#dy-authy-mynet-myfamily .actor{stroke:#ccc;fill:#1f2020;stroke-width:1;}#dy-authy-mynet-myfamily rect.actor.outer-path[data-look="neo"]{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#dy-authy-mynet-myfamily rect.note[data-look="neo"]{stroke:hsl(180, 0%, 18.3529411765%);fill:hsl(180, 1.5873015873%, 28.3529411765%);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#dy-authy-mynet-myfamily text.actor&gt;tspan{fill:lightgrey;stroke:none;}#dy-authy-mynet-myfamily .actor-line{stroke:#ccc;}#dy-authy-mynet-myfamily .innerArc{stroke-width:1.5;stroke-dasharray:none;}#dy-authy-mynet-myfamily .messageLine0{stroke-width:1.5;stroke-dasharray:none;stroke:lightgrey;}#dy-authy-mynet-myfamily .messageLine1{stroke-width:1.5;stroke-dasharray:2,2;stroke:lightgrey;}#dy-authy-mynet-myfamily [id$="-arrowhead"] path{fill:lightgrey;stroke:lightgrey;}#dy-authy-mynet-myfamily .sequenceNumber{fill:black;}#dy-authy-mynet-myfamily [id$="-sequencenumber"]{fill:lightgrey;}#dy-authy-mynet-myfamily [id$="-crosshead"] path{fill:lightgrey;stroke:lightgrey;}#dy-authy-mynet-myfamily .messageText{fill:lightgrey;stroke:none;}#dy-authy-mynet-myfamily .labelBox{stroke:#ccc;fill:#1f2020;filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#dy-authy-mynet-myfamily .labelText,#dy-authy-mynet-myfamily .labelText&gt;tspan{fill:lightgrey;stroke:none;}#dy-authy-mynet-myfamily .loopText,#dy-authy-mynet-myfamily .loopText&gt;tspan{fill:lightgrey;stroke:none;}#dy-authy-mynet-myfamily .sectionTitle,#dy-authy-mynet-myfamily .sectionTitle&gt;tspan{fill:lightgrey;stroke:none;}#dy-authy-mynet-myfamily .loopLine{stroke-width:2px;stroke-dasharray:2,2;stroke:#ccc;fill:#ccc;}#dy-authy-mynet-myfamily .note{stroke:hsl(180, 0%, 18.3529411765%);fill:hsl(180, 1.5873015873%, 28.3529411765%);}#dy-authy-mynet-myfamily .noteText,#dy-authy-mynet-myfamily .noteText&gt;tspan{fill:rgb(183.8476190475, 181.5523809523, 181.5523809523);stroke:none;}#dy-authy-mynet-myfamily .activation0{fill:hsl(180, 1.5873015873%, 28.3529411765%);stroke:#ccc;}#dy-authy-mynet-myfamily .activation1{fill:hsl(180, 1.5873015873%, 28.3529411765%);stroke:#ccc;}#dy-authy-mynet-myfamily .activation2{fill:hsl(180, 1.5873015873%, 28.3529411765%);stroke:#ccc;}#dy-authy-mynet-myfamily .actorPopupMenu{position:absolute;}#dy-authy-mynet-myfamily .actorPopupMenuPanel{position:absolute;fill:#1f2020;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);filter:drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));}#dy-authy-mynet-myfamily .actor-man circle,#dy-authy-mynet-myfamily line{fill:#1f2020;stroke-width:2px;}#dy-authy-mynet-myfamily g rect.rect{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));stroke:#ccc;}#dy-authy-mynet-myfamily .node .neo-node{stroke:#ccc;}#dy-authy-mynet-myfamily [data-look="neo"].node rect,#dy-authy-mynet-myfamily [data-look="neo"].cluster rect,#dy-authy-mynet-myfamily [data-look="neo"].node polygon{stroke:url(#dy-authy-mynet-myfamily-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#dy-authy-mynet-myfamily [data-look="neo"].swimlane.cluster rect{filter:none;}#dy-authy-mynet-myfamily [data-look="neo"].node path{stroke:url(#dy-authy-mynet-myfamily-gradient);stroke-width:1px;}#dy-authy-mynet-myfamily [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#dy-authy-mynet-myfamily [data-look="neo"].node .neo-line path{stroke:#ccc;filter:none;}#dy-authy-mynet-myfamily [data-look="neo"].node circle{stroke:url(#dy-authy-mynet-myfamily-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#dy-authy-mynet-myfamily [data-look="neo"].node circle .state-start{fill:#000000;}#dy-authy-mynet-myfamily [data-look="neo"].icon-shape .icon{fill:url(#dy-authy-mynet-myfamily-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#dy-authy-mynet-myfamily [data-look="neo"].icon-shape .icon-neo path{stroke:url(#dy-authy-mynet-myfamily-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#dy-authy-mynet-myfamily :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g/><defs><symbol id="my-svg-computer" width="24" height="24"><path transform="scale(.5)" d="M2 2v13h20v-13h-20zm18 11h-16v-9h16v9zm-10.228 6l.466-1h3.524l.467 1h-4.457zm14.228 3h-24l2-6h2.104l-1.33 4h18.45l-1.297-4h2.073l2 6zm-5-10h-14v-7h14v7z"/></symbol></defs><defs><symbol id="my-svg-database" fill-rule="evenodd" clip-rule="evenodd"><path transform="scale(.5)" d="M12.258.001l.256.004.255.005.253.008.251.01.249.012.247.015.246.016.242.019.241.02.239.023.236.024.233.027.231.028.229.031.225.032.223.034.22.036.217.038.214.04.211.041.208.043.205.045.201.046.198.048.194.05.191.051.187.053.183.054.18.056.175.057.172.059.168.06.163.061.16.063.155.064.15.066.074.033.073.033.071.034.07.034.069.035.068.035.067.035.066.035.064.036.064.036.062.036.06.036.06.037.058.037.058.037.055.038.055.038.053.038.052.038.051.039.05.039.048.039.047.039.045.04.044.04.043.04.041.04.04.041.039.041.037.041.036.041.034.041.033.042.032.042.03.042.029.042.027.042.026.043.024.043.023.043.021.043.02.043.018.044.017.043.015.044.013.044.012.044.011.045.009.044.007.045.006.045.004.045.002.045.001.045v17l-.001.045-.002.045-.004.045-.006.045-.007.045-.009.044-.011.045-.012.044-.013.044-.015.044-.017.043-.018.044-.02.043-.021.043-.023.043-.024.043-.026.043-.027.042-.029.042-.03.042-.032.042-.033.042-.034.041-.036.041-.037.041-.039.041-.04.041-.041.04-.043.04-.044.04-.045.04-.047.039-.048.039-.05.039-.051.039-.052.038-.053.038-.055.038-.055.038-.058.037-.058.037-.06.037-.06.036-.062.036-.064.036-.064.036-.066.035-.067.035-.068.035-.069.035-.07.034-.071.034-.073.033-.074.033-.15.066-.155.064-.16.063-.163.061-.168.06-.172.059-.175.057-.18.056-.183.054-.187.053-.191.051-.194.05-.198.048-.201.046-.205.045-.208.043-.211.041-.214.04-.217.038-.22.036-.223.034-.225.032-.229.031-.231.028-.233.027-.236.024-.239.023-.241.02-.242.019-.246.016-.247.015-.249.012-.251.01-.253.008-.255.005-.256.004-.258.001-.258-.001-.256-.004-.255-.005-.253-.008-.251-.01-.249-.012-.247-.015-.245-.016-.243-.019-.241-.02-.238-.023-.236-.024-.234-.027-.231-.028-.228-.031-.226-.032-.223-.034-.22-.036-.217-.038-.214-.04-.211-.041-.208-.043-.204-.045-.201-.046-.198-.048-.195-.05-.19-.051-.187-.053-.184-.054-.179-.056-.176-.057-.172-.059-.167-.06-.164-.061-.159-.063-.155-.064-.151-.066-.074-.033-.072-.033-.072-.034-.07-.034-.069-.035-.068-.035-.067-.035-.066-.035-.064-.036-.063-.036-.062-.036-.061-.036-.06-.037-.058-.037-.057-.037-.056-.038-.055-.038-.053-.038-.052-.038-.051-.039-.049-.039-.049-.039-.046-.039-.046-.04-.044-.04-.043-.04-.041-.04-.04-.041-.039-.041-.037-.041-.036-.041-.034-.041-.033-.042-.032-.042-.03-.042-.029-.042-.027-.042-.026-.043-.024-.043-.023-.043-.021-.043-.02-.043-.018-.044-.017-.043-.015-.044-.013-.044-.012-.044-.011-.045-.009-.044-.007-.045-.006-.045-.004-.045-.002-.045-.001-.045v-17l.001-.045.002-.045.004-.045.006-.045.007-.045.009-.044.011-.045.012-.044.013-.044.015-.044.017-.043.018-.044.02-.043.021-.043.023-.043.024-.043.026-.043.027-.042.029-.042.03-.042.032-.042.033-.042.034-.041.036-.041.037-.041.039-.041.04-.041.041-.04.043-.04.044-.04.046-.04.046-.039.049-.039.049-.039.051-.039.052-.038.053-.038.055-.038.056-.038.057-.037.058-.037.06-.037.061-.036.062-.036.063-.036.064-.036.066-.035.067-.035.068-.035.069-.035.07-.034.072-.034.072-.033.074-.033.151-.066.155-.064.159-.063.164-.061.167-.06.172-.059.176-.057.179-.056.184-.054.187-.053.19-.051.195-.05.198-.048.201-.046.204-.045.208-.043.211-.041.214-.04.217-.038.22-.036.223-.034.226-.032.228-.031.231-.028.234-.027.236-.024.238-.023.241-.02.243-.019.245-.016.247-.015.249-.012.251-.01.253-.008.255-.005.256-.004.258-.001.258.001zm-9.258 20.499v.01l.001.021.003.021.004.022.005.021.006.022.007.022.009.023.01.022.011.023.012.023.013.023.015.023.016.024.017.023.018.024.019.024.021.024.022.025.023.024.024.025.052.049.056.05.061.051.066.051.07.051.075.051.079.052.084.052.088.052.092.052.097.052.102.051.105.052.11.052.114.051.119.051.123.051.127.05.131.05.135.05.139.048.144.049.147.047.152.047.155.047.16.045.163.045.167.043.171.043.176.041.178.041.183.039.187.039.19.037.194.035.197.035.202.033.204.031.209.03.212.029.216.027.219.025.222.024.226.021.23.02.233.018.236.016.24.015.243.012.246.01.249.008.253.005.256.004.259.001.26-.001.257-.004.254-.005.25-.008.247-.011.244-.012.241-.014.237-.016.233-.018.231-.021.226-.021.224-.024.22-.026.216-.027.212-.028.21-.031.205-.031.202-.034.198-.034.194-.036.191-.037.187-.039.183-.04.179-.04.175-.042.172-.043.168-.044.163-.045.16-.046.155-.046.152-.047.148-.048.143-.049.139-.049.136-.05.131-.05.126-.05.123-.051.118-.052.114-.051.11-.052.106-.052.101-.052.096-.052.092-.052.088-.053.083-.051.079-.052.074-.052.07-.051.065-.051.06-.051.056-.05.051-.05.023-.024.023-.025.021-.024.02-.024.019-.024.018-.024.017-.024.015-.023.014-.024.013-.023.012-.023.01-.023.01-.022.008-.022.006-.022.006-.022.004-.022.004-.021.001-.021.001-.021v-4.127l-.077.055-.08.053-.083.054-.085.053-.087.052-.09.052-.093.051-.095.05-.097.05-.1.049-.102.049-.105.048-.106.047-.109.047-.111.046-.114.045-.115.045-.118.044-.12.043-.122.042-.124.042-.126.041-.128.04-.13.04-.132.038-.134.038-.135.037-.138.037-.139.035-.142.035-.143.034-.144.033-.147.032-.148.031-.15.03-.151.03-.153.029-.154.027-.156.027-.158.026-.159.025-.161.024-.162.023-.163.022-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.011-.178.01-.179.008-.179.008-.181.006-.182.005-.182.004-.184.003-.184.002h-.37l-.184-.002-.184-.003-.182-.004-.182-.005-.181-.006-.179-.008-.179-.008-.178-.01-.176-.011-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.022-.162-.023-.161-.024-.159-.025-.157-.026-.156-.027-.155-.027-.153-.029-.151-.03-.15-.03-.148-.031-.146-.032-.145-.033-.143-.034-.141-.035-.14-.035-.137-.037-.136-.037-.134-.038-.132-.038-.13-.04-.128-.04-.126-.041-.124-.042-.122-.042-.12-.044-.117-.043-.116-.045-.113-.045-.112-.046-.109-.047-.106-.047-.105-.048-.102-.049-.1-.049-.097-.05-.095-.05-.093-.052-.09-.051-.087-.052-.085-.053-.083-.054-.08-.054-.077-.054v4.127zm0-5.654v.011l.001.021.003.021.004.021.005.022.006.022.007.022.009.022.01.022.011.023.012.023.013.023.015.024.016.023.017.024.018.024.019.024.021.024.022.024.023.025.024.024.052.05.056.05.061.05.066.051.07.051.075.052.079.051.084.052.088.052.092.052.097.052.102.052.105.052.11.051.114.051.119.052.123.05.127.051.131.05.135.049.139.049.144.048.147.048.152.047.155.046.16.045.163.045.167.044.171.042.176.042.178.04.183.04.187.038.19.037.194.036.197.034.202.033.204.032.209.03.212.028.216.027.219.025.222.024.226.022.23.02.233.018.236.016.24.014.243.012.246.01.249.008.253.006.256.003.259.001.26-.001.257-.003.254-.006.25-.008.247-.01.244-.012.241-.015.237-.016.233-.018.231-.02.226-.022.224-.024.22-.025.216-.027.212-.029.21-.03.205-.032.202-.033.198-.035.194-.036.191-.037.187-.039.183-.039.179-.041.175-.042.172-.043.168-.044.163-.045.16-.045.155-.047.152-.047.148-.048.143-.048.139-.05.136-.049.131-.05.126-.051.123-.051.118-.051.114-.052.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.051.07-.052.065-.051.06-.05.056-.051.051-.049.023-.025.023-.024.021-.025.02-.024.019-.024.018-.024.017-.024.015-.023.014-.023.013-.024.012-.022.01-.023.01-.023.008-.022.006-.022.006-.022.004-.021.004-.022.001-.021.001-.021v-4.139l-.077.054-.08.054-.083.054-.085.052-.087.053-.09.051-.093.051-.095.051-.097.05-.1.049-.102.049-.105.048-.106.047-.109.047-.111.046-.114.045-.115.044-.118.044-.12.044-.122.042-.124.042-.126.041-.128.04-.13.039-.132.039-.134.038-.135.037-.138.036-.139.036-.142.035-.143.033-.144.033-.147.033-.148.031-.15.03-.151.03-.153.028-.154.028-.156.027-.158.026-.159.025-.161.024-.162.023-.163.022-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.011-.178.009-.179.009-.179.007-.181.007-.182.005-.182.004-.184.003-.184.002h-.37l-.184-.002-.184-.003-.182-.004-.182-.005-.181-.007-.179-.007-.179-.009-.178-.009-.176-.011-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.022-.162-.023-.161-.024-.159-.025-.157-.026-.156-.027-.155-.028-.153-.028-.151-.03-.15-.03-.148-.031-.146-.033-.145-.033-.143-.033-.141-.035-.14-.036-.137-.036-.136-.037-.134-.038-.132-.039-.13-.039-.128-.04-.126-.041-.124-.042-.122-.043-.12-.043-.117-.044-.116-.044-.113-.046-.112-.046-.109-.046-.106-.047-.105-.048-.102-.049-.1-.049-.097-.05-.095-.051-.093-.051-.09-.051-.087-.053-.085-.052-.083-.054-.08-.054-.077-.054v4.139zm0-5.666v.011l.001.02.003.022.004.021.005.022.006.021.007.022.009.023.01.022.011.023.012.023.013.023.015.023.016.024.017.024.018.023.019.024.021.025.022.024.023.024.024.025.052.05.056.05.061.05.066.051.07.051.075.052.079.051.084.052.088.052.092.052.097.052.102.052.105.051.11.052.114.051.119.051.123.051.127.05.131.05.135.05.139.049.144.048.147.048.152.047.155.046.16.045.163.045.167.043.171.043.176.042.178.04.183.04.187.038.19.037.194.036.197.034.202.033.204.032.209.03.212.028.216.027.219.025.222.024.226.021.23.02.233.018.236.017.24.014.243.012.246.01.249.008.253.006.256.003.259.001.26-.001.257-.003.254-.006.25-.008.247-.01.244-.013.241-.014.237-.016.233-.018.231-.02.226-.022.224-.024.22-.025.216-.027.212-.029.21-.03.205-.032.202-.033.198-.035.194-.036.191-.037.187-.039.183-.039.179-.041.175-.042.172-.043.168-.044.163-.045.16-.045.155-.047.152-.047.148-.048.143-.049.139-.049.136-.049.131-.051.126-.05.123-.051.118-.052.114-.051.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.052.07-.051.065-.051.06-.051.056-.05.051-.049.023-.025.023-.025.021-.024.02-.024.019-.024.018-.024.017-.024.015-.023.014-.024.013-.023.012-.023.01-.022.01-.023.008-.022.006-.022.006-.022.004-.022.004-.021.001-.021.001-.021v-4.153l-.077.054-.08.054-.083.053-.085.053-.087.053-.09.051-.093.051-.095.051-.097.05-.1.049-.102.048-.105.048-.106.048-.109.046-.111.046-.114.046-.115.044-.118.044-.12.043-.122.043-.124.042-.126.041-.128.04-.13.039-.132.039-.134.038-.135.037-.138.036-.139.036-.142.034-.143.034-.144.033-.147.032-.148.032-.15.03-.151.03-.153.028-.154.028-.156.027-.158.026-.159.024-.161.024-.162.023-.163.023-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.01-.178.01-.179.009-.179.007-.181.006-.182.006-.182.004-.184.003-.184.001-.185.001-.185-.001-.184-.001-.184-.003-.182-.004-.182-.006-.181-.006-.179-.007-.179-.009-.178-.01-.176-.01-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.023-.162-.023-.161-.024-.159-.024-.157-.026-.156-.027-.155-.028-.153-.028-.151-.03-.15-.03-.148-.032-.146-.032-.145-.033-.143-.034-.141-.034-.14-.036-.137-.036-.136-.037-.134-.038-.132-.039-.13-.039-.128-.041-.126-.041-.124-.041-.122-.043-.12-.043-.117-.044-.116-.044-.113-.046-.112-.046-.109-.046-.106-.048-.105-.048-.102-.048-.1-.05-.097-.049-.095-.051-.093-.051-.09-.052-.087-.052-.085-.053-.083-.053-.08-.054-.077-.054v4.153zm8.74-8.179l-.257.004-.254.005-.25.008-.247.011-.244.012-.241.014-.237.016-.233.018-.231.021-.226.022-.224.023-.22.026-.216.027-.212.028-.21.031-.205.032-.202.033-.198.034-.194.036-.191.038-.187.038-.183.04-.179.041-.175.042-.172.043-.168.043-.163.045-.16.046-.155.046-.152.048-.148.048-.143.048-.139.049-.136.05-.131.05-.126.051-.123.051-.118.051-.114.052-.11.052-.106.052-.101.052-.096.052-.092.052-.088.052-.083.052-.079.052-.074.051-.07.052-.065.051-.06.05-.056.05-.051.05-.023.025-.023.024-.021.024-.02.025-.019.024-.018.024-.017.023-.015.024-.014.023-.013.023-.012.023-.01.023-.01.022-.008.022-.006.023-.006.021-.004.022-.004.021-.001.021-.001.021.001.021.001.021.004.021.004.022.006.021.006.023.008.022.01.022.01.023.012.023.013.023.014.023.015.024.017.023.018.024.019.024.02.025.021.024.023.024.023.025.051.05.056.05.06.05.065.051.07.052.074.051.079.052.083.052.088.052.092.052.096.052.101.052.106.052.11.052.114.052.118.051.123.051.126.051.131.05.136.05.139.049.143.048.148.048.152.048.155.046.16.046.163.045.168.043.172.043.175.042.179.041.183.04.187.038.191.038.194.036.198.034.202.033.205.032.21.031.212.028.216.027.22.026.224.023.226.022.231.021.233.018.237.016.241.014.244.012.247.011.25.008.254.005.257.004.26.001.26-.001.257-.004.254-.005.25-.008.247-.011.244-.012.241-.014.237-.016.233-.018.231-.021.226-.022.224-.023.22-.026.216-.027.212-.028.21-.031.205-.032.202-.033.198-.034.194-.036.191-.038.187-.038.183-.04.179-.041.175-.042.172-.043.168-.043.163-.045.16-.046.155-.046.152-.048.148-.048.143-.048.139-.049.136-.05.131-.05.126-.051.123-.051.118-.051.114-.052.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.051.07-.052.065-.051.06-.05.056-.05.051-.05.023-.025.023-.024.021-.024.02-.025.019-.024.018-.024.017-.023.015-.024.014-.023.013-.023.012-.023.01-.023.01-.022.008-.022.006-.023.006-.021.004-.022.004-.021.001-.021.001-.021-.001-.021-.001-.021-.004-.021-.004-.022-.006-.021-.006-.023-.008-.022-.01-.022-.01-.023-.012-.023-.013-.023-.014-.023-.015-.024-.017-.023-.018-.024-.019-.024-.02-.025-.021-.024-.023-.024-.023-.025-.051-.05-.056-.05-.06-.05-.065-.051-.07-.052-.074-.051-.079-.052-.083-.052-.088-.052-.092-.052-.096-.052-.101-.052-.106-.052-.11-.052-.114-.052-.118-.051-.123-.051-.126-.051-.131-.05-.136-.05-.139-.049-.143-.048-.148-.048-.152-.048-.155-.046-.16-.046-.163-.045-.168-.043-.172-.043-.175-.042-.179-.041-.183-.04-.187-.038-.191-.038-.194-.036-.198-.034-.202-.033-.205-.032-.21-.031-.212-.028-.216-.027-.22-.026-.224-.023-.226-.022-.231-.021-.233-.018-.237-.016-.241-.014-.244-.012-.247-.011-.25-.008-.254-.005-.257-.004-.26-.001-.26.001z"/></symbol></defs><defs><symbol id="my-svg-clock" width="24" height="24"><path transform="scale(.5)" d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm5.848 12.459c.202.038.202.333.001.372-1.907.361-6.045 1.111-6.547 1.111-.719 0-1.301-.582-1.301-1.301 0-.512.77-5.447 1.125-7.445.034-.192.312-.181.343.014l.985 6.238 5.394 1.011z"/></symbol></defs><defs><marker id="my-svg-arrowhead" refX="7.9" refY="5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M -1 0 L 10 5 L 0 10 z"/></marker></defs><defs><marker id="my-svg-crosshead" markerWidth="15" markerHeight="8" orient="auto" refX="4" refY="4.5"><path fill="none" stroke="#000000" stroke-width="1pt" d="M 1,2 L 6,7 M 6,2 L 1,7" style="stroke-dasharray: 0, 0;"/></marker></defs><defs><marker id="my-svg-filled-head" refX="15.5" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L14,7 L9,1 Z"/></marker></defs><defs><marker id="my-svg-sequencenumber" refX="15" refY="15" markerWidth="60" markerHeight="40" orient="auto"><circle cx="15" cy="15" r="6"/></marker></defs><defs><marker id="my-svg-solidTopArrowHead" refX="7.9" refY="7.25" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 0 L 10 8 L 0 8 z"/></marker></defs><defs><marker id="my-svg-solidBottomArrowHead" refX="7.9" refY="0.75" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 0 L 10 0 L 0 8 z"/></marker></defs><defs><marker id="my-svg-stickTopArrowHead" refX="7.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 0 L 7 7" stroke="black" stroke-width="1.5" fill="none"/></marker></defs><defs><marker id="my-svg-stickBottomArrowHead" refX="7.5" refY="0" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 7 L 7 0" stroke="black" stroke-width="1.5" fill="none"/></marker></defs><defs><filter id="my-svg-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#FFFFFF"/></filter></defs><g data-et="note" data-id="i4"><rect x="359" y="222" fill="#EDF2AE" stroke="#666" width="232" height="37" class="note" data-look="neo"/><text x="475" y="227" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="noteText" dy="1em" style="font-size: 16px; font-weight: 400;"><tspan x="475">L2 presence · no @handle public</tspan></text></g><g data-et="note" data-id="i6"><rect x="595.5" y="315" fill="#EDF2AE" stroke="#666" width="159" height="37" class="note" data-look="neo"/><text x="675" y="320" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="noteText" dy="1em" style="font-size: 16px; font-weight: 400;"><tspan x="675">people · circles · feed</tspan></text></g><g data-et="note" data-id="i10"><rect x="1091" y="498" fill="#EDF2AE" stroke="#666" width="150" height="37" class="note" data-look="neo"/><text x="1166" y="503" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="noteText" dy="1em" style="font-size: 16px; font-weight: 400;"><tspan x="1166">local federation</tspan></text></g><g data-et="note" data-id="i16"><rect x="377" y="772" fill="#EDF2AE" stroke="#666" width="196" height="37" class="note" data-look="neo"/><text x="475" y="777" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="noteText" dy="1em" style="font-size: 16px; font-weight: 400;"><tspan x="475">L3 verified · public publish</tspan></text></g><g data-et="control-structure" data-id="i19"><line x1="64" y1="591" x2="686" y2="591" class="loopLine"/><line x1="686" y1="591" x2="686" y2="910" class="loopLine"/><line x1="64" y1="910" x2="686" y2="910" class="loopLine"/><line x1="64" y1="591" x2="64" y2="910" class="loopLine"/><line x1="64" y1="824" x2="686" y2="824" class="loopLine" style="stroke-dasharray: 3, 3;"/><polygon points="64,591 114,591 114,619 105.6,626 64,626" class="labelBox"/><text x="89" y="611" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="labelText" style="font-size: 16px; font-weight: 400;">alt</text><text x="400" y="609" text-anchor="middle" class="loopText" style="font-size: 16px; font-weight: 400;"><tspan x="400">[claim Telegram]</tspan></text><text x="375" y="842" text-anchor="middle" class="sectionTitle" style="font-size: 16px; font-weight: 400;">[no Telegram]</text></g><g class="actor-man actor-top" name="P" data-et="participant" data-type="actor" data-id="P" style="stroke: rgb(204, 204, 204);"><line id="actor-man-torso0" x1="75" y1="21.307692307692307" x2="75" y2="34.84615384615385"/><line id="actor-man-arms0" x1="62.815384615384616" y1="26.72307692307692" x2="87.18461538461538" y2="26.72307692307692"/><line x1="62.815384615384616" y1="45" x2="75" y2="34.84615384615385"/><line x1="75" y1="34.84615384615385" x2="85.83076923076923" y2="45"/><circle cx="75" cy="11.153846153846153" r="10.153846153846155" width="150" height="74"/><text x="75" y="59.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-man" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="75" dy="0">Person</tspan></text></g><text x="272" y="89" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">authenticate Telegram</text><line x1="82" y1="120" x2="468" y2="120" class="messageLine0" data-et="message" data-id="i1" data-from="P" data-to="A" stroke-width="2" stroke="none" marker-end="url(#dy-authy-mynet-myfamily-arrowhead)" style="fill: none;"/><line x1="75" y1="120" x2="75" y2="120" stroke-width="0" marker-start="url(#dy-authy-mynet-myfamily-sequencenumber)"/><text x="75" y="124" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">1</text><text x="378" y="135" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">challenge</text><line x1="480" y1="166" x2="282" y2="166" class="messageLine0" data-et="message" data-id="i2" data-from="A" data-to="T" stroke-width="2" stroke="none" marker-end="url(#dy-authy-mynet-myfamily-arrowhead)" style="fill: none;"/><line x1="475" y1="166" x2="475" y2="166" stroke-width="0" marker-start="url(#dy-authy-mynet-myfamily-sequencenumber)"/><text x="475" y="170" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">2</text><text x="372" y="181" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">presence + id</text><line x1="282" y1="212" x2="468" y2="212" class="messageLine1" data-et="message" data-id="i3" data-from="T" data-to="A" stroke-width="2" stroke="none" marker-end="url(#dy-authy-mynet-myfamily-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><line x1="275" y1="212" x2="275" y2="212" stroke-width="0" marker-start="url(#dy-authy-mynet-myfamily-sequencenumber)"/><text x="275" y="216" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">3</text><text x="572" y="274" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">enable MyNet</text><line x1="482" y1="305" x2="668" y2="305" class="messageLine0" data-et="message" data-id="i5" data-from="A" data-to="N" stroke-width="2" stroke="none" marker-end="url(#dy-authy-mynet-myfamily-arrowhead)" style="fill: none;"/><line x1="475" y1="305" x2="475" y2="305" stroke-width="0" marker-start="url(#dy-authy-mynet-myfamily-sequencenumber)"/><text x="475" y="309" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">4</text><text x="818" y="367" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">simplified record</text><line x1="682" y1="398" x2="959" y2="398" class="messageLine0" data-et="message" data-id="i7" data-from="N" data-to="F" stroke-width="2" stroke="none" marker-end="url(#dy-authy-mynet-myfamily-arrowhead)" style="fill: none;"/><line x1="675" y1="398" x2="675" y2="398" stroke-width="0" marker-start="url(#dy-authy-mynet-myfamily-sequencenumber)"/><text x="675" y="402" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">5</text><text x="824" y="413" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">person + relation + traits + affinity</text><line x1="971" y1="444" x2="682" y2="444" class="messageLine1" data-et="message" data-id="i8" data-from="F" data-to="N" stroke-width="2" stroke="none" marker-end="url(#dy-authy-mynet-myfamily-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><line x1="966" y1="444" x2="966" y2="444" stroke-width="0" marker-start="url(#dy-authy-mynet-myfamily-sequencenumber)"/><text x="966" y="448" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">6</text><text x="918" y="459" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">save class L</text><line x1="682" y1="488" x2="1159" y2="488" class="messageLine0" data-et="message" data-id="i9" data-from="N" data-to="B" stroke-width="2" stroke="none" marker-end="url(#dy-authy-mynet-myfamily-arrowhead)" style="fill: none;"/><line x1="675" y1="488" x2="675" y2="488" stroke-width="0" marker-start="url(#dy-authy-mynet-myfamily-sequencenumber)"/><text x="675" y="492" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">7</text><text x="1271" y="550" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">encrypted L projection</text><line x1="1173" y1="581" x2="1374" y2="581" class="messageLine1" data-et="message" data-id="i11" data-from="B" data-to="R" stroke-width="2" stroke="none" marker-end="url(#dy-authy-mynet-myfamily-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><line x1="1166" y1="581" x2="1166" y2="581" stroke-width="0" marker-start="url(#dy-authy-mynet-myfamily-sequencenumber)"/><text x="1166" y="585" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">8</text><text x="272" y="641" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">open claim nonce</text><line x1="82" y1="672" x2="468" y2="672" class="messageLine0" data-et="message" data-id="i13" data-from="P" data-to="A" stroke-width="2" stroke="none" marker-end="url(#dy-authy-mynet-myfamily-arrowhead)" style="fill: none;"/><line x1="75" y1="672" x2="75" y2="672" stroke-width="0" marker-start="url(#dy-authy-mynet-myfamily-sequencenumber)"/><text x="75" y="676" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">9</text><text x="378" y="687" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">deep link + DM</text><line x1="480" y1="718" x2="282" y2="718" class="messageLine0" data-et="message" data-id="i14" data-from="A" data-to="T" stroke-width="2" stroke="none" marker-end="url(#dy-authy-mynet-myfamily-arrowhead)" style="fill: none;"/><line x1="475" y1="718" x2="475" y2="718" stroke-width="0" marker-start="url(#dy-authy-mynet-myfamily-sequencenumber)"/><text x="475" y="722" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">10</text><text x="372" y="733" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">id == id</text><line x1="282" y1="762" x2="468" y2="762" class="messageLine1" data-et="message" data-id="i15" data-from="T" data-to="A" stroke-width="2" stroke="none" marker-end="url(#dy-authy-mynet-myfamily-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><line x1="275" y1="762" x2="275" y2="762" stroke-width="0" marker-start="url(#dy-authy-mynet-myfamily-sequencenumber)"/><text x="275" y="766" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">11</text><text x="378" y="869" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">MyNet stays locked</text><line x1="680" y1="900" x2="82" y2="900" class="messageLine1" data-et="message" data-id="i18" data-from="N" data-to="P" stroke-width="2" stroke="none" marker-end="url(#dy-authy-mynet-myfamily-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><line x1="675" y1="900" x2="675" y2="900" stroke-width="0" marker-start="url(#dy-authy-mynet-myfamily-sequencenumber)"/><text x="675" y="904" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">12</text><g class="actor-man actor-bottom" name="P" style="stroke: rgb(204, 204, 204);"><line id="actor-man-torso6" x1="75" y1="956.3076923076923" x2="75" y2="969.8461538461538"/><line id="actor-man-arms6" x1="62.815384615384616" y1="961.723076923077" x2="87.18461538461538" y2="961.723076923077"/><line x1="62.815384615384616" y1="980" x2="75" y2="969.8461538461538"/><line x1="75" y1="969.8461538461538" x2="85.83076923076923" y2="980"/><circle cx="75" cy="946.1538461538462" r="10.153846153846155" width="150" height="74"/><text x="75" y="994.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-man" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="75" dy="0">Person</tspan></text></g></svg></div>
+  </div>
+</figure>
+
+<figure class="diagramy">
+  <button class="dy-trigger" type="button" aria-expanded="false" aria-controls="dy-panel-browsy-local-mesh">
+    <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MyFamily saves a local record in Browsy; a peer pulls it, Wizy derives locally, and only consent makes a social public card on Nety.">
+  <defs>
+    <marker id="a2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 Z" fill="#6c5ce7"/></marker>
+    <marker id="a2s" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 Z" fill="#a78bfa"/></marker>
+  </defs>
+  <rect x="4" y="8" width="312" height="164" rx="16" fill="none" stroke="#6c5ce7" stroke-opacity=".32" stroke-width="1.2" stroke-dasharray="6 5"/>
+  <g stroke="#6c5ce7" stroke-width="2" fill="none" stroke-linecap="round">
+    <path d="M98 63 L111 63" marker-end="url(#a2)"/>
+    <path d="M192 63 L205 63" marker-end="url(#a2)"/>
+    <path d="M246 80 L246 111" marker-end="url(#a2)"/>
+    <path d="M206 129 L193 129" marker-end="url(#a2)"/>
+  </g>
+  <path d="M152 80 L152 111" stroke="#a78bfa" stroke-width="2" fill="none" stroke-dasharray="4 4" marker-end="url(#a2s)"/>
+  <text x="163" y="100" font-family="ui-monospace,monospace" font-size="6.5" fill="#a78bfa">Social</text>
+  <text x="199" y="92" font-family="ui-monospace,monospace" font-size="6.5" text-anchor="middle" fill="#a3a7b4">Local</text>
+  <g font-family="ui-monospace,monospace" font-size="8.5" text-anchor="middle">
+    <rect x="18" y="46" width="80" height="34" rx="8" fill="#11131a" stroke="#6c5ce7" stroke-width="2"/>
+    <text x="58" y="67" fill="#e9eaf2">MyFamily</text>
+    <rect x="112" y="46" width="80" height="34" rx="8" fill="#11131a" stroke="#00d9a3" stroke-width="2"/>
+    <text x="152" y="67" fill="#e9eaf2">Browsy</text>
+    <rect x="206" y="46" width="80" height="34" rx="8" fill="#11131a" stroke="#6c5ce7" stroke-width="2"/>
+    <text x="246" y="67" fill="#e9eaf2">Peer</text>
+    <rect x="206" y="112" width="80" height="34" rx="8" fill="#11131a" stroke="#6c5ce7" stroke-width="2"/>
+    <text x="246" y="133" fill="#e9eaf2">Wizy D</text>
+    <rect x="112" y="112" width="80" height="34" rx="8" fill="#11131a" stroke="#a78bfa" stroke-width="2"/>
+    <text x="152" y="133" fill="#e9eaf2">Nety</text>
+  </g>
+  <text x="160" y="168" font-family="ui-monospace,monospace" font-size="7.5" text-anchor="middle" fill="#a3a7b4">Local pull · local derive · Social only if published</text>
+</svg>
+    <span class="dy-caption">MyFamily → Browsy → peer · Local · Wizy · Social · <b>unfold the thread</b></span>
+  </button>
+  <div class="dy-panel" id="dy-panel-browsy-local-mesh" hidden>
+    <div class="dy-panel-head">
+      <strong>The full thread</strong>
+      <a href="../../../development/diagrams/browsy-local-mesh/browsy-local-mesh.thread.mmd" download>source .mmd</a>
+      <button class="dy-close" type="button" aria-label="Close thread">✕</button>
+    </div>
+    <div class="dy-thread"><svg id="dy-browsy-local-mesh" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="background-color: transparent;" viewBox="-50 -10 1312 1065" role="graphics-document document" aria-roledescription="sequence"><g><rect x="1062" y="940" fill="#eaeaea" stroke="#666" width="150" height="74" name="N" rx="6" ry="6" class="actor actor-bottom" data-look="neo" filter="url(#dy-browsy-local-mesh-drop-shadow)"/><text x="1137" y="977" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="1137" dy="0">Nety</tspan></text></g><g><rect x="862" y="940" fill="#eaeaea" stroke="#666" width="150" height="74" name="W" rx="6" ry="6" class="actor actor-bottom" data-look="neo" filter="url(#dy-browsy-local-mesh-drop-shadow)"/><text x="937" y="977" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="937" dy="0">Wizy</tspan></text></g><g><rect x="602" y="940" fill="#eaeaea" stroke="#666" width="150" height="74" name="R" rx="6" ry="6" class="actor actor-bottom" data-look="neo" filter="url(#dy-browsy-local-mesh-drop-shadow)"/><text x="677" y="977" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="677" dy="0">Peer</tspan></text></g><g><rect x="400" y="940" fill="#eaeaea" stroke="#666" width="150" height="74" name="B" rx="6" ry="6" class="actor actor-bottom" data-look="neo" filter="url(#dy-browsy-local-mesh-drop-shadow)"/><text x="475" y="977" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="475" dy="0">Browsy</tspan></text></g><g><rect x="200" y="940" fill="#eaeaea" stroke="#666" width="150" height="74" name="F" rx="6" ry="6" class="actor actor-bottom" data-look="neo" filter="url(#dy-browsy-local-mesh-drop-shadow)"/><text x="275" y="977" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="275" dy="0">MyFamily</tspan></text></g><g/><g><line id="actor5" x1="1137" y1="74" x2="1137" y2="940" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="N" data-et="life-line" data-id="N"/><g id="root-5" data-look="neo" data-et="participant" data-type="participant" data-id="N"><rect x="1062" y="0" fill="#eaeaea" stroke="#666" width="150" height="74" name="N" rx="6" ry="6" class="actor actor-top" data-look="neo" filter="url(#dy-browsy-local-mesh-drop-shadow)"/><text x="1137" y="37" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="1137" dy="0">Nety</tspan></text></g></g><g><line id="actor4" x1="937" y1="74" x2="937" y2="940" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="W" data-et="life-line" data-id="W"/><g id="root-4" data-look="neo" data-et="participant" data-type="participant" data-id="W"><rect x="862" y="0" fill="#eaeaea" stroke="#666" width="150" height="74" name="W" rx="6" ry="6" class="actor actor-top" data-look="neo" filter="url(#dy-browsy-local-mesh-drop-shadow)"/><text x="937" y="37" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="937" dy="0">Wizy</tspan></text></g></g><g><line id="actor3" x1="677" y1="74" x2="677" y2="940" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="R" data-et="life-line" data-id="R"/><g id="root-3" data-look="neo" data-et="participant" data-type="participant" data-id="R"><rect x="602" y="0" fill="#eaeaea" stroke="#666" width="150" height="74" name="R" rx="6" ry="6" class="actor actor-top" data-look="neo" filter="url(#dy-browsy-local-mesh-drop-shadow)"/><text x="677" y="37" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="677" dy="0">Peer</tspan></text></g></g><g><line id="actor2" x1="475" y1="74" x2="475" y2="940" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="B" data-et="life-line" data-id="B"/><g id="root-2" data-look="neo" data-et="participant" data-type="participant" data-id="B"><rect x="400" y="0" fill="#eaeaea" stroke="#666" width="150" height="74" name="B" rx="6" ry="6" class="actor actor-top" data-look="neo" filter="url(#dy-browsy-local-mesh-drop-shadow)"/><text x="475" y="37" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="475" dy="0">Browsy</tspan></text></g></g><g><line id="actor1" x1="275" y1="74" x2="275" y2="940" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="F" data-et="life-line" data-id="F"/><g id="root-1" data-look="neo" data-et="participant" data-type="participant" data-id="F"><rect x="200" y="0" fill="#eaeaea" stroke="#666" width="150" height="74" name="F" rx="6" ry="6" class="actor actor-top" data-look="neo" filter="url(#dy-browsy-local-mesh-drop-shadow)"/><text x="275" y="37" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="275" dy="0">MyFamily</tspan></text></g></g><g><line id="actor0" x1="75" y1="74" x2="75" y2="940" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="P" data-et="life-line" data-id="P"/></g><style>#dy-browsy-local-mesh{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#ccc;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#dy-browsy-local-mesh .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#dy-browsy-local-mesh .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#dy-browsy-local-mesh .error-icon{fill:#a44141;}#dy-browsy-local-mesh .error-text{fill:#ddd;stroke:#ddd;}#dy-browsy-local-mesh .edge-thickness-normal{stroke-width:1px;}#dy-browsy-local-mesh .edge-thickness-thick{stroke-width:3.5px;}#dy-browsy-local-mesh .edge-pattern-solid{stroke-dasharray:0;}#dy-browsy-local-mesh .edge-thickness-invisible{stroke-width:0;fill:none;}#dy-browsy-local-mesh .edge-pattern-dashed{stroke-dasharray:3;}#dy-browsy-local-mesh .edge-pattern-dotted{stroke-dasharray:2;}#dy-browsy-local-mesh .marker{fill:lightgrey;stroke:lightgrey;}#dy-browsy-local-mesh .marker.cross{stroke:lightgrey;}#dy-browsy-local-mesh svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#dy-browsy-local-mesh p{margin:0;}#dy-browsy-local-mesh .actor{stroke:#ccc;fill:#1f2020;stroke-width:1;}#dy-browsy-local-mesh rect.actor.outer-path[data-look="neo"]{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#dy-browsy-local-mesh rect.note[data-look="neo"]{stroke:hsl(180, 0%, 18.3529411765%);fill:hsl(180, 1.5873015873%, 28.3529411765%);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#dy-browsy-local-mesh text.actor&gt;tspan{fill:lightgrey;stroke:none;}#dy-browsy-local-mesh .actor-line{stroke:#ccc;}#dy-browsy-local-mesh .innerArc{stroke-width:1.5;stroke-dasharray:none;}#dy-browsy-local-mesh .messageLine0{stroke-width:1.5;stroke-dasharray:none;stroke:lightgrey;}#dy-browsy-local-mesh .messageLine1{stroke-width:1.5;stroke-dasharray:2,2;stroke:lightgrey;}#dy-browsy-local-mesh [id$="-arrowhead"] path{fill:lightgrey;stroke:lightgrey;}#dy-browsy-local-mesh .sequenceNumber{fill:black;}#dy-browsy-local-mesh [id$="-sequencenumber"]{fill:lightgrey;}#dy-browsy-local-mesh [id$="-crosshead"] path{fill:lightgrey;stroke:lightgrey;}#dy-browsy-local-mesh .messageText{fill:lightgrey;stroke:none;}#dy-browsy-local-mesh .labelBox{stroke:#ccc;fill:#1f2020;filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#dy-browsy-local-mesh .labelText,#dy-browsy-local-mesh .labelText&gt;tspan{fill:lightgrey;stroke:none;}#dy-browsy-local-mesh .loopText,#dy-browsy-local-mesh .loopText&gt;tspan{fill:lightgrey;stroke:none;}#dy-browsy-local-mesh .sectionTitle,#dy-browsy-local-mesh .sectionTitle&gt;tspan{fill:lightgrey;stroke:none;}#dy-browsy-local-mesh .loopLine{stroke-width:2px;stroke-dasharray:2,2;stroke:#ccc;fill:#ccc;}#dy-browsy-local-mesh .note{stroke:hsl(180, 0%, 18.3529411765%);fill:hsl(180, 1.5873015873%, 28.3529411765%);}#dy-browsy-local-mesh .noteText,#dy-browsy-local-mesh .noteText&gt;tspan{fill:rgb(183.8476190475, 181.5523809523, 181.5523809523);stroke:none;}#dy-browsy-local-mesh .activation0{fill:hsl(180, 1.5873015873%, 28.3529411765%);stroke:#ccc;}#dy-browsy-local-mesh .activation1{fill:hsl(180, 1.5873015873%, 28.3529411765%);stroke:#ccc;}#dy-browsy-local-mesh .activation2{fill:hsl(180, 1.5873015873%, 28.3529411765%);stroke:#ccc;}#dy-browsy-local-mesh .actorPopupMenu{position:absolute;}#dy-browsy-local-mesh .actorPopupMenuPanel{position:absolute;fill:#1f2020;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);filter:drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));}#dy-browsy-local-mesh .actor-man circle,#dy-browsy-local-mesh line{fill:#1f2020;stroke-width:2px;}#dy-browsy-local-mesh g rect.rect{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));stroke:#ccc;}#dy-browsy-local-mesh .node .neo-node{stroke:#ccc;}#dy-browsy-local-mesh [data-look="neo"].node rect,#dy-browsy-local-mesh [data-look="neo"].cluster rect,#dy-browsy-local-mesh [data-look="neo"].node polygon{stroke:url(#dy-browsy-local-mesh-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#dy-browsy-local-mesh [data-look="neo"].swimlane.cluster rect{filter:none;}#dy-browsy-local-mesh [data-look="neo"].node path{stroke:url(#dy-browsy-local-mesh-gradient);stroke-width:1px;}#dy-browsy-local-mesh [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#dy-browsy-local-mesh [data-look="neo"].node .neo-line path{stroke:#ccc;filter:none;}#dy-browsy-local-mesh [data-look="neo"].node circle{stroke:url(#dy-browsy-local-mesh-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#dy-browsy-local-mesh [data-look="neo"].node circle .state-start{fill:#000000;}#dy-browsy-local-mesh [data-look="neo"].icon-shape .icon{fill:url(#dy-browsy-local-mesh-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#dy-browsy-local-mesh [data-look="neo"].icon-shape .icon-neo path{stroke:url(#dy-browsy-local-mesh-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#dy-browsy-local-mesh :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g/><defs><symbol id="my-svg-computer" width="24" height="24"><path transform="scale(.5)" d="M2 2v13h20v-13h-20zm18 11h-16v-9h16v9zm-10.228 6l.466-1h3.524l.467 1h-4.457zm14.228 3h-24l2-6h2.104l-1.33 4h18.45l-1.297-4h2.073l2 6zm-5-10h-14v-7h14v7z"/></symbol></defs><defs><symbol id="my-svg-database" fill-rule="evenodd" clip-rule="evenodd"><path transform="scale(.5)" d="M12.258.001l.256.004.255.005.253.008.251.01.249.012.247.015.246.016.242.019.241.02.239.023.236.024.233.027.231.028.229.031.225.032.223.034.22.036.217.038.214.04.211.041.208.043.205.045.201.046.198.048.194.05.191.051.187.053.183.054.18.056.175.057.172.059.168.06.163.061.16.063.155.064.15.066.074.033.073.033.071.034.07.034.069.035.068.035.067.035.066.035.064.036.064.036.062.036.06.036.06.037.058.037.058.037.055.038.055.038.053.038.052.038.051.039.05.039.048.039.047.039.045.04.044.04.043.04.041.04.04.041.039.041.037.041.036.041.034.041.033.042.032.042.03.042.029.042.027.042.026.043.024.043.023.043.021.043.02.043.018.044.017.043.015.044.013.044.012.044.011.045.009.044.007.045.006.045.004.045.002.045.001.045v17l-.001.045-.002.045-.004.045-.006.045-.007.045-.009.044-.011.045-.012.044-.013.044-.015.044-.017.043-.018.044-.02.043-.021.043-.023.043-.024.043-.026.043-.027.042-.029.042-.03.042-.032.042-.033.042-.034.041-.036.041-.037.041-.039.041-.04.041-.041.04-.043.04-.044.04-.045.04-.047.039-.048.039-.05.039-.051.039-.052.038-.053.038-.055.038-.055.038-.058.037-.058.037-.06.037-.06.036-.062.036-.064.036-.064.036-.066.035-.067.035-.068.035-.069.035-.07.034-.071.034-.073.033-.074.033-.15.066-.155.064-.16.063-.163.061-.168.06-.172.059-.175.057-.18.056-.183.054-.187.053-.191.051-.194.05-.198.048-.201.046-.205.045-.208.043-.211.041-.214.04-.217.038-.22.036-.223.034-.225.032-.229.031-.231.028-.233.027-.236.024-.239.023-.241.02-.242.019-.246.016-.247.015-.249.012-.251.01-.253.008-.255.005-.256.004-.258.001-.258-.001-.256-.004-.255-.005-.253-.008-.251-.01-.249-.012-.247-.015-.245-.016-.243-.019-.241-.02-.238-.023-.236-.024-.234-.027-.231-.028-.228-.031-.226-.032-.223-.034-.22-.036-.217-.038-.214-.04-.211-.041-.208-.043-.204-.045-.201-.046-.198-.048-.195-.05-.19-.051-.187-.053-.184-.054-.179-.056-.176-.057-.172-.059-.167-.06-.164-.061-.159-.063-.155-.064-.151-.066-.074-.033-.072-.033-.072-.034-.07-.034-.069-.035-.068-.035-.067-.035-.066-.035-.064-.036-.063-.036-.062-.036-.061-.036-.06-.037-.058-.037-.057-.037-.056-.038-.055-.038-.053-.038-.052-.038-.051-.039-.049-.039-.049-.039-.046-.039-.046-.04-.044-.04-.043-.04-.041-.04-.04-.041-.039-.041-.037-.041-.036-.041-.034-.041-.033-.042-.032-.042-.03-.042-.029-.042-.027-.042-.026-.043-.024-.043-.023-.043-.021-.043-.02-.043-.018-.044-.017-.043-.015-.044-.013-.044-.012-.044-.011-.045-.009-.044-.007-.045-.006-.045-.004-.045-.002-.045-.001-.045v-17l.001-.045.002-.045.004-.045.006-.045.007-.045.009-.044.011-.045.012-.044.013-.044.015-.044.017-.043.018-.044.02-.043.021-.043.023-.043.024-.043.026-.043.027-.042.029-.042.03-.042.032-.042.033-.042.034-.041.036-.041.037-.041.039-.041.04-.041.041-.04.043-.04.044-.04.046-.04.046-.039.049-.039.049-.039.051-.039.052-.038.053-.038.055-.038.056-.038.057-.037.058-.037.06-.037.061-.036.062-.036.063-.036.064-.036.066-.035.067-.035.068-.035.069-.035.07-.034.072-.034.072-.033.074-.033.151-.066.155-.064.159-.063.164-.061.167-.06.172-.059.176-.057.179-.056.184-.054.187-.053.19-.051.195-.05.198-.048.201-.046.204-.045.208-.043.211-.041.214-.04.217-.038.22-.036.223-.034.226-.032.228-.031.231-.028.234-.027.236-.024.238-.023.241-.02.243-.019.245-.016.247-.015.249-.012.251-.01.253-.008.255-.005.256-.004.258-.001.258.001zm-9.258 20.499v.01l.001.021.003.021.004.022.005.021.006.022.007.022.009.023.01.022.011.023.012.023.013.023.015.023.016.024.017.023.018.024.019.024.021.024.022.025.023.024.024.025.052.049.056.05.061.051.066.051.07.051.075.051.079.052.084.052.088.052.092.052.097.052.102.051.105.052.11.052.114.051.119.051.123.051.127.05.131.05.135.05.139.048.144.049.147.047.152.047.155.047.16.045.163.045.167.043.171.043.176.041.178.041.183.039.187.039.19.037.194.035.197.035.202.033.204.031.209.03.212.029.216.027.219.025.222.024.226.021.23.02.233.018.236.016.24.015.243.012.246.01.249.008.253.005.256.004.259.001.26-.001.257-.004.254-.005.25-.008.247-.011.244-.012.241-.014.237-.016.233-.018.231-.021.226-.021.224-.024.22-.026.216-.027.212-.028.21-.031.205-.031.202-.034.198-.034.194-.036.191-.037.187-.039.183-.04.179-.04.175-.042.172-.043.168-.044.163-.045.16-.046.155-.046.152-.047.148-.048.143-.049.139-.049.136-.05.131-.05.126-.05.123-.051.118-.052.114-.051.11-.052.106-.052.101-.052.096-.052.092-.052.088-.053.083-.051.079-.052.074-.052.07-.051.065-.051.06-.051.056-.05.051-.05.023-.024.023-.025.021-.024.02-.024.019-.024.018-.024.017-.024.015-.023.014-.024.013-.023.012-.023.01-.023.01-.022.008-.022.006-.022.006-.022.004-.022.004-.021.001-.021.001-.021v-4.127l-.077.055-.08.053-.083.054-.085.053-.087.052-.09.052-.093.051-.095.05-.097.05-.1.049-.102.049-.105.048-.106.047-.109.047-.111.046-.114.045-.115.045-.118.044-.12.043-.122.042-.124.042-.126.041-.128.04-.13.04-.132.038-.134.038-.135.037-.138.037-.139.035-.142.035-.143.034-.144.033-.147.032-.148.031-.15.03-.151.03-.153.029-.154.027-.156.027-.158.026-.159.025-.161.024-.162.023-.163.022-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.011-.178.01-.179.008-.179.008-.181.006-.182.005-.182.004-.184.003-.184.002h-.37l-.184-.002-.184-.003-.182-.004-.182-.005-.181-.006-.179-.008-.179-.008-.178-.01-.176-.011-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.022-.162-.023-.161-.024-.159-.025-.157-.026-.156-.027-.155-.027-.153-.029-.151-.03-.15-.03-.148-.031-.146-.032-.145-.033-.143-.034-.141-.035-.14-.035-.137-.037-.136-.037-.134-.038-.132-.038-.13-.04-.128-.04-.126-.041-.124-.042-.122-.042-.12-.044-.117-.043-.116-.045-.113-.045-.112-.046-.109-.047-.106-.047-.105-.048-.102-.049-.1-.049-.097-.05-.095-.05-.093-.052-.09-.051-.087-.052-.085-.053-.083-.054-.08-.054-.077-.054v4.127zm0-5.654v.011l.001.021.003.021.004.021.005.022.006.022.007.022.009.022.01.022.011.023.012.023.013.023.015.024.016.023.017.024.018.024.019.024.021.024.022.024.023.025.024.024.052.05.056.05.061.05.066.051.07.051.075.052.079.051.084.052.088.052.092.052.097.052.102.052.105.052.11.051.114.051.119.052.123.05.127.051.131.05.135.049.139.049.144.048.147.048.152.047.155.046.16.045.163.045.167.044.171.042.176.042.178.04.183.04.187.038.19.037.194.036.197.034.202.033.204.032.209.03.212.028.216.027.219.025.222.024.226.022.23.02.233.018.236.016.24.014.243.012.246.01.249.008.253.006.256.003.259.001.26-.001.257-.003.254-.006.25-.008.247-.01.244-.012.241-.015.237-.016.233-.018.231-.02.226-.022.224-.024.22-.025.216-.027.212-.029.21-.03.205-.032.202-.033.198-.035.194-.036.191-.037.187-.039.183-.039.179-.041.175-.042.172-.043.168-.044.163-.045.16-.045.155-.047.152-.047.148-.048.143-.048.139-.05.136-.049.131-.05.126-.051.123-.051.118-.051.114-.052.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.051.07-.052.065-.051.06-.05.056-.051.051-.049.023-.025.023-.024.021-.025.02-.024.019-.024.018-.024.017-.024.015-.023.014-.023.013-.024.012-.022.01-.023.01-.023.008-.022.006-.022.006-.022.004-.021.004-.022.001-.021.001-.021v-4.139l-.077.054-.08.054-.083.054-.085.052-.087.053-.09.051-.093.051-.095.051-.097.05-.1.049-.102.049-.105.048-.106.047-.109.047-.111.046-.114.045-.115.044-.118.044-.12.044-.122.042-.124.042-.126.041-.128.04-.13.039-.132.039-.134.038-.135.037-.138.036-.139.036-.142.035-.143.033-.144.033-.147.033-.148.031-.15.03-.151.03-.153.028-.154.028-.156.027-.158.026-.159.025-.161.024-.162.023-.163.022-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.011-.178.009-.179.009-.179.007-.181.007-.182.005-.182.004-.184.003-.184.002h-.37l-.184-.002-.184-.003-.182-.004-.182-.005-.181-.007-.179-.007-.179-.009-.178-.009-.176-.011-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.022-.162-.023-.161-.024-.159-.025-.157-.026-.156-.027-.155-.028-.153-.028-.151-.03-.15-.03-.148-.031-.146-.033-.145-.033-.143-.033-.141-.035-.14-.036-.137-.036-.136-.037-.134-.038-.132-.039-.13-.039-.128-.04-.126-.041-.124-.042-.122-.043-.12-.043-.117-.044-.116-.044-.113-.046-.112-.046-.109-.046-.106-.047-.105-.048-.102-.049-.1-.049-.097-.05-.095-.051-.093-.051-.09-.051-.087-.053-.085-.052-.083-.054-.08-.054-.077-.054v4.139zm0-5.666v.011l.001.02.003.022.004.021.005.022.006.021.007.022.009.023.01.022.011.023.012.023.013.023.015.023.016.024.017.024.018.023.019.024.021.025.022.024.023.024.024.025.052.05.056.05.061.05.066.051.07.051.075.052.079.051.084.052.088.052.092.052.097.052.102.052.105.051.11.052.114.051.119.051.123.051.127.05.131.05.135.05.139.049.144.048.147.048.152.047.155.046.16.045.163.045.167.043.171.043.176.042.178.04.183.04.187.038.19.037.194.036.197.034.202.033.204.032.209.03.212.028.216.027.219.025.222.024.226.021.23.02.233.018.236.017.24.014.243.012.246.01.249.008.253.006.256.003.259.001.26-.001.257-.003.254-.006.25-.008.247-.01.244-.013.241-.014.237-.016.233-.018.231-.02.226-.022.224-.024.22-.025.216-.027.212-.029.21-.03.205-.032.202-.033.198-.035.194-.036.191-.037.187-.039.183-.039.179-.041.175-.042.172-.043.168-.044.163-.045.16-.045.155-.047.152-.047.148-.048.143-.049.139-.049.136-.049.131-.051.126-.05.123-.051.118-.052.114-.051.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.052.07-.051.065-.051.06-.051.056-.05.051-.049.023-.025.023-.025.021-.024.02-.024.019-.024.018-.024.017-.024.015-.023.014-.024.013-.023.012-.023.01-.022.01-.023.008-.022.006-.022.006-.022.004-.022.004-.021.001-.021.001-.021v-4.153l-.077.054-.08.054-.083.053-.085.053-.087.053-.09.051-.093.051-.095.051-.097.05-.1.049-.102.048-.105.048-.106.048-.109.046-.111.046-.114.046-.115.044-.118.044-.12.043-.122.043-.124.042-.126.041-.128.04-.13.039-.132.039-.134.038-.135.037-.138.036-.139.036-.142.034-.143.034-.144.033-.147.032-.148.032-.15.03-.151.03-.153.028-.154.028-.156.027-.158.026-.159.024-.161.024-.162.023-.163.023-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.01-.178.01-.179.009-.179.007-.181.006-.182.006-.182.004-.184.003-.184.001-.185.001-.185-.001-.184-.001-.184-.003-.182-.004-.182-.006-.181-.006-.179-.007-.179-.009-.178-.01-.176-.01-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.023-.162-.023-.161-.024-.159-.024-.157-.026-.156-.027-.155-.028-.153-.028-.151-.03-.15-.03-.148-.032-.146-.032-.145-.033-.143-.034-.141-.034-.14-.036-.137-.036-.136-.037-.134-.038-.132-.039-.13-.039-.128-.041-.126-.041-.124-.041-.122-.043-.12-.043-.117-.044-.116-.044-.113-.046-.112-.046-.109-.046-.106-.048-.105-.048-.102-.048-.1-.05-.097-.049-.095-.051-.093-.051-.09-.052-.087-.052-.085-.053-.083-.053-.08-.054-.077-.054v4.153zm8.74-8.179l-.257.004-.254.005-.25.008-.247.011-.244.012-.241.014-.237.016-.233.018-.231.021-.226.022-.224.023-.22.026-.216.027-.212.028-.21.031-.205.032-.202.033-.198.034-.194.036-.191.038-.187.038-.183.04-.179.041-.175.042-.172.043-.168.043-.163.045-.16.046-.155.046-.152.048-.148.048-.143.048-.139.049-.136.05-.131.05-.126.051-.123.051-.118.051-.114.052-.11.052-.106.052-.101.052-.096.052-.092.052-.088.052-.083.052-.079.052-.074.051-.07.052-.065.051-.06.05-.056.05-.051.05-.023.025-.023.024-.021.024-.02.025-.019.024-.018.024-.017.023-.015.024-.014.023-.013.023-.012.023-.01.023-.01.022-.008.022-.006.023-.006.021-.004.022-.004.021-.001.021-.001.021.001.021.001.021.004.021.004.022.006.021.006.023.008.022.01.022.01.023.012.023.013.023.014.023.015.024.017.023.018.024.019.024.02.025.021.024.023.024.023.025.051.05.056.05.06.05.065.051.07.052.074.051.079.052.083.052.088.052.092.052.096.052.101.052.106.052.11.052.114.052.118.051.123.051.126.051.131.05.136.05.139.049.143.048.148.048.152.048.155.046.16.046.163.045.168.043.172.043.175.042.179.041.183.04.187.038.191.038.194.036.198.034.202.033.205.032.21.031.212.028.216.027.22.026.224.023.226.022.231.021.233.018.237.016.241.014.244.012.247.011.25.008.254.005.257.004.26.001.26-.001.257-.004.254-.005.25-.008.247-.011.244-.012.241-.014.237-.016.233-.018.231-.021.226-.022.224-.023.22-.026.216-.027.212-.028.21-.031.205-.032.202-.033.198-.034.194-.036.191-.038.187-.038.183-.04.179-.041.175-.042.172-.043.168-.043.163-.045.16-.046.155-.046.152-.048.148-.048.143-.048.139-.049.136-.05.131-.05.126-.051.123-.051.118-.051.114-.052.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.051.07-.052.065-.051.06-.05.056-.05.051-.05.023-.025.023-.024.021-.024.02-.025.019-.024.018-.024.017-.023.015-.024.014-.023.013-.023.012-.023.01-.023.01-.022.008-.022.006-.023.006-.021.004-.022.004-.021.001-.021.001-.021-.001-.021-.001-.021-.004-.021-.004-.022-.006-.021-.006-.023-.008-.022-.01-.022-.01-.023-.012-.023-.013-.023-.014-.023-.015-.024-.017-.023-.018-.024-.019-.024-.02-.025-.021-.024-.023-.024-.023-.025-.051-.05-.056-.05-.06-.05-.065-.051-.07-.052-.074-.051-.079-.052-.083-.052-.088-.052-.092-.052-.096-.052-.101-.052-.106-.052-.11-.052-.114-.052-.118-.051-.123-.051-.126-.051-.131-.05-.136-.05-.139-.049-.143-.048-.148-.048-.152-.048-.155-.046-.16-.046-.163-.045-.168-.043-.172-.043-.175-.042-.179-.041-.183-.04-.187-.038-.191-.038-.194-.036-.198-.034-.202-.033-.205-.032-.21-.031-.212-.028-.216-.027-.22-.026-.224-.023-.226-.022-.231-.021-.233-.018-.237-.016-.241-.014-.244-.012-.247-.011-.25-.008-.254-.005-.257-.004-.26-.001-.26.001z"/></symbol></defs><defs><symbol id="my-svg-clock" width="24" height="24"><path transform="scale(.5)" d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm5.848 12.459c.202.038.202.333.001.372-1.907.361-6.045 1.111-6.547 1.111-.719 0-1.301-.582-1.301-1.301 0-.512.77-5.447 1.125-7.445.034-.192.312-.181.343.014l.985 6.238 5.394 1.011z"/></symbol></defs><defs><marker id="my-svg-arrowhead" refX="7.9" refY="5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M -1 0 L 10 5 L 0 10 z"/></marker></defs><defs><marker id="my-svg-crosshead" markerWidth="15" markerHeight="8" orient="auto" refX="4" refY="4.5"><path fill="none" stroke="#000000" stroke-width="1pt" d="M 1,2 L 6,7 M 6,2 L 1,7" style="stroke-dasharray: 0, 0;"/></marker></defs><defs><marker id="my-svg-filled-head" refX="15.5" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L14,7 L9,1 Z"/></marker></defs><defs><marker id="my-svg-sequencenumber" refX="15" refY="15" markerWidth="60" markerHeight="40" orient="auto"><circle cx="15" cy="15" r="6"/></marker></defs><defs><marker id="my-svg-solidTopArrowHead" refX="7.9" refY="7.25" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 0 L 10 8 L 0 8 z"/></marker></defs><defs><marker id="my-svg-solidBottomArrowHead" refX="7.9" refY="0.75" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 0 L 10 0 L 0 8 z"/></marker></defs><defs><marker id="my-svg-stickTopArrowHead" refX="7.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 0 L 7 7" stroke="black" stroke-width="1.5" fill="none"/></marker></defs><defs><marker id="my-svg-stickBottomArrowHead" refX="7.5" refY="0" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 7 L 7 0" stroke="black" stroke-width="1.5" fill="none"/></marker></defs><defs><filter id="my-svg-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#FFFFFF"/></filter></defs><g data-et="note" data-id="i9"><rect x="851" y="508" fill="#EDF2AE" stroke="#666" width="172" height="37" class="note" data-look="neo"/><text x="937" y="513" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="noteText" dy="1em" style="font-size: 16px; font-weight: 400;"><tspan x="937">explanation · local only</tspan></text></g><g data-et="control-structure" data-id="i15"><line x1="464" y1="555" x2="1148" y2="555" class="loopLine"/><line x1="1148" y1="555" x2="1148" y2="781" class="loopLine"/><line x1="464" y1="781" x2="1148" y2="781" class="loopLine"/><line x1="464" y1="555" x2="464" y2="781" class="loopLine"/><line x1="464" y1="695" x2="1148" y2="695" class="loopLine" style="stroke-dasharray: 3, 3;"/><polygon points="464,555 514,555 514,583 505.6,590 464,590" class="labelBox"/><text x="489" y="575" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="labelText" style="font-size: 16px; font-weight: 400;">alt</text><text x="831" y="573" text-anchor="middle" class="loopText" style="font-size: 16px; font-weight: 400;"><tspan x="831">[owner publishes S]</tspan></text><text x="806" y="713" text-anchor="middle" class="sectionTitle" style="font-size: 16px; font-weight: 400;">[no consent]</text></g><g data-et="note" data-id="i18"><rect x="573.5" y="883" fill="#EDF2AE" stroke="#666" width="207" height="37" class="note" data-look="neo"/><text x="677" y="888" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="noteText" dy="1em" style="font-size: 16px; font-weight: 400;"><tspan x="677">copies remain · forward-only</tspan></text></g><g class="actor-man actor-top" name="P" data-et="participant" data-type="actor" data-id="P" style="stroke: rgb(204, 204, 204);"><line id="actor-man-torso0" x1="75" y1="21.307692307692307" x2="75" y2="34.84615384615385"/><line id="actor-man-arms0" x1="62.815384615384616" y1="26.72307692307692" x2="87.18461538461538" y2="26.72307692307692"/><line x1="62.815384615384616" y1="45" x2="75" y2="34.84615384615385"/><line x1="75" y1="34.84615384615385" x2="85.83076923076923" y2="45"/><circle cx="75" cy="11.153846153846153" r="10.153846153846155" width="150" height="74"/><text x="75" y="59.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-man" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="75" dy="0">Person</tspan></text></g><text x="172" y="89" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">reflect on a person</text><line x1="82" y1="120" x2="268" y2="120" class="messageLine0" data-et="message" data-id="i1" data-from="P" data-to="F" stroke-width="2" stroke="none" marker-end="url(#dy-browsy-local-mesh-arrowhead)" style="fill: none;"/><line x1="75" y1="120" x2="75" y2="120" stroke-width="0" marker-start="url(#dy-browsy-local-mesh-sequencenumber)"/><text x="75" y="124" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">1</text><text x="372" y="135" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">save record class L</text><line x1="282" y1="164" x2="468" y2="164" class="messageLine1" data-et="message" data-id="i2" data-from="F" data-to="B" stroke-width="2" stroke="none" marker-end="url(#dy-browsy-local-mesh-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><line x1="275" y1="164" x2="275" y2="164" stroke-width="0" marker-start="url(#dy-browsy-local-mesh-sequencenumber)"/><text x="275" y="168" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">2</text><text x="476" y="179" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">sign grant · paths · expiry</text><path d="M 476,210 C 536,200 536,240 476,230" class="messageLine0" data-et="message" data-id="i3" data-from="B" data-to="B" stroke-width="2" stroke="none" marker-end="url(#dy-browsy-local-mesh-arrowhead)" x1="482" style="fill: none;"/><line x1="475" y1="210" x2="475" y2="210" stroke-width="0" marker-start="url(#dy-browsy-local-mesh-sequencenumber)"/><text x="475" y="214" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">3</text><text x="579" y="255" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">pull allowed deltas</text><line x1="682" y1="286" x2="482" y2="286" class="messageLine0" data-et="message" data-id="i4" data-from="R" data-to="B" stroke-width="2" stroke="none" marker-end="url(#dy-browsy-local-mesh-arrowhead)" style="fill: none;"/><line x1="677" y1="286" x2="677" y2="286" stroke-width="0" marker-start="url(#dy-browsy-local-mesh-sequencenumber)"/><text x="677" y="290" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">4</text><text x="573" y="301" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">encrypted projection</text><line x1="482" y1="332" x2="670" y2="332" class="messageLine1" data-et="message" data-id="i5" data-from="B" data-to="R" stroke-width="2" stroke="none" marker-end="url(#dy-browsy-local-mesh-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><line x1="475" y1="332" x2="475" y2="332" stroke-width="0" marker-start="url(#dy-browsy-local-mesh-sequencenumber)"/><text x="475" y="336" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">5</text><text x="678" y="347" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">verify + decrypt</text><path d="M 678,378 C 738,368 738,408 678,398" class="messageLine0" data-et="message" data-id="i6" data-from="R" data-to="R" stroke-width="2" stroke="none" marker-end="url(#dy-browsy-local-mesh-arrowhead)" x1="684" style="fill: none;"/><line x1="677" y1="378" x2="677" y2="378" stroke-width="0" marker-start="url(#dy-browsy-local-mesh-sequencenumber)"/><text x="677" y="382" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">6</text><text x="804" y="423" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">merge with their P/L</text><line x1="684" y1="454" x2="930" y2="454" class="messageLine0" data-et="message" data-id="i7" data-from="R" data-to="W" stroke-width="2" stroke="none" marker-end="url(#dy-browsy-local-mesh-arrowhead)" style="fill: none;"/><line x1="677" y1="454" x2="677" y2="454" stroke-width="0" marker-start="url(#dy-browsy-local-mesh-sequencenumber)"/><text x="677" y="458" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">7</text><text x="810" y="469" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">local recommendation D0/D1</text><line x1="942" y1="498" x2="684" y2="498" class="messageLine1" data-et="message" data-id="i8" data-from="W" data-to="R" stroke-width="2" stroke="none" marker-end="url(#dy-browsy-local-mesh-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><line x1="937" y1="498" x2="937" y2="498" stroke-width="0" marker-start="url(#dy-browsy-local-mesh-sequencenumber)"/><text x="937" y="502" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">8</text><text x="803" y="605" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">public card · consent</text><line x1="482" y1="636" x2="1130" y2="636" class="messageLine0" data-et="message" data-id="i11" data-from="B" data-to="N" stroke-width="2" stroke="none" marker-end="url(#dy-browsy-local-mesh-arrowhead)" style="fill: none;"/><line x1="475" y1="636" x2="475" y2="636" stroke-width="0" marker-start="url(#dy-browsy-local-mesh-sequencenumber)"/><text x="475" y="640" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">9</text><text x="910" y="651" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">S reads</text><line x1="1142" y1="680" x2="684" y2="680" class="messageLine1" data-et="message" data-id="i12" data-from="N" data-to="R" stroke-width="2" stroke="none" marker-end="url(#dy-browsy-local-mesh-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><line x1="1137" y1="680" x2="1137" y2="680" stroke-width="0" marker-start="url(#dy-browsy-local-mesh-sequencenumber)"/><text x="1137" y="684" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">10</text><text x="573" y="740" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">only L cached</text><line x1="482" y1="771" x2="670" y2="771" class="messageLine1" data-et="message" data-id="i14" data-from="B" data-to="R" stroke-width="2" stroke="none" marker-end="url(#dy-browsy-local-mesh-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><line x1="475" y1="771" x2="475" y2="771" stroke-width="0" marker-start="url(#dy-browsy-local-mesh-sequencenumber)"/><text x="475" y="775" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">11</text><text x="272" y="796" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">revoke / shorten expiry</text><line x1="82" y1="827" x2="468" y2="827" class="messageLine0" data-et="message" data-id="i16" data-from="P" data-to="B" stroke-width="2" stroke="none" marker-end="url(#dy-browsy-local-mesh-arrowhead)" style="fill: none;"/><line x1="75" y1="827" x2="75" y2="827" stroke-width="0" marker-start="url(#dy-browsy-local-mesh-sequencenumber)"/><text x="75" y="831" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">12</text><text x="573" y="842" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">version++ next pull</text><line x1="482" y1="873" x2="670" y2="873" class="messageLine1" data-et="message" data-id="i17" data-from="B" data-to="R" stroke-width="2" stroke="none" marker-end="url(#dy-browsy-local-mesh-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><line x1="475" y1="873" x2="475" y2="873" stroke-width="0" marker-start="url(#dy-browsy-local-mesh-sequencenumber)"/><text x="475" y="877" font-family="sans-serif" font-size="12px" text-anchor="middle" class="sequenceNumber">13</text><g class="actor-man actor-bottom" name="P" style="stroke: rgb(204, 204, 204);"><line id="actor-man-torso5" x1="75" y1="966.3076923076923" x2="75" y2="979.8461538461538"/><line id="actor-man-arms5" x1="62.815384615384616" y1="971.723076923077" x2="87.18461538461538" y2="971.723076923077"/><line x1="62.815384615384616" y1="990" x2="75" y2="979.8461538461538"/><line x1="75" y1="979.8461538461538" x2="85.83076923076923" y2="990"/><circle cx="75" cy="956.1538461538462" r="10.153846153846155" width="150" height="74"/><text x="75" y="1004.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-man" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="75" dy="0">Person</tspan></text></g></svg></div>
+  </div>
+</figure>
+
+  <p style="font-size:.78rem;color:var(--muted)">Standalone pages: <a href="../../../development/diagrams/authy-mynet-myfamily/authy-mynet-myfamily-diagram.html">Telegram → MyNet</a> · <a href="../../../development/diagrams/browsy-local-mesh/browsy-local-mesh-diagram.html">local pull</a>.</p>
+</section>
+
+<section class="features">
+  <h2>Plan &amp; indexes</h2>
+  <div class="feature"><div class="feature-icon">🧩</div><div><b><a href="../../../development/standards/debates/browsy/spec.md">Spec-driven plan</a></b><span>Active specification: requirements BSP-*, MyNet local groups built on MyFamily, phases, reconciliation of old plans and acceptance tests.</span></div></div>
+  <div class="feature"><div class="feature-icon">🧭</div><div><b><a href="2026-11-17-browsy-wizy-nety.html">Browsy · Wizy · Nety</a></b><span>Design rationale: personal, local, social, diagrams, alternatives.</span></div></div>
+  <div class="feature"><div class="feature-icon">🪪</div><div><b><a href="../../../apps/sys/authy/index.html">Authy index</a></b><span>Identity ladder from Appy, extended into levels, sessions, grants and recovery.</span></div></div>
+  <div class="feature"><div class="feature-icon">👪</div><div><b><a href="#myfamily">MyFamily use case</a></b><span>L use case: each person kept P/L/S and used L.</span></div></div>
+  <div class="feature"><div class="feature-icon">📝</div><div><b><a href="../../../development/standards/debates/browsy/browsy-questions.md">Pendings</a></b><span>Open questions for the next questy survey.</span></div></div>
+</section>
+
+<!-- floating reward demo -->
+<section class="reward-demo">
+  <h3>On-demand only</h3>
+  <div class="reward-float">
+    <div class="reward-dot rd-1">click</div>
+    <div class="reward-dot rd-2">→</div>
+    <div class="reward-dot rd-3">compute</div>
+    <div class="reward-dot rd-4">→ display</div>
+  </div>
+  <p class="reward-text">No background work. Browsy computes when you click. Central displays.</p>
+</section>
+
+</main><footer class="footer">
+  <p>part of <a href="../../../index.html" style="text-decoration:underline">flove</a> · bridging flove apps with the web</p>
+</footer>
+
+<script>
+(function(){
+  document.querySelectorAll('.dy-trigger').forEach(function(btn){
+    var panel=document.getElementById(btn.getAttribute('aria-controls'));
+    if(!panel) return;
+    var close=panel.querySelector('.dy-close');
+    function set(open){
+      panel.hidden=!open;
+      btn.setAttribute('aria-expanded',String(open));
+      if(open && close) close.focus(); else btn.focus();
+    }
+    btn.addEventListener('click',function(){set(true)});
+    if(close) close.addEventListener('click',function(){set(false)});
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!panel.hidden)set(false)});
+  });
+})();
+</script>
+
+<script>
+/* Wizy Magic — Browsy. Same interaction as Appy: three wizards, Myself /
+   With others, content links from flove:appy:plays, one sentence with a
+   MyFamily person. Local only; no backend. */
+(function(){
+  var WIZ = {
+    love:   ['with','for','beside','near','toward'],
+    joy:    ['after','into','around','beyond','against'],
+    wisdom: ['through','within','from','before','across']
+  };
+  var WORD = { love:'With', joy:'After', wisdom:'Through' };
+  var CAT = { attention:'care', contact:'time', influence:'guidance', feedback:'honesty',
+              gifting:'generosity', sharing:'sharing', money:'trust' };
+  var state = { open:false, wizard:'love', mode:'myself', offset:0 };
+  var routes = {};
+  try {
+    fetch('../../../tools/routing.json', { cache:'no-store' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(rt){
+        if (!rt || !Array.isArray(rt.apps)) return;
+        rt.apps.forEach(function(a){
+          if (a.name) routes[a.name] = a.url;
+          if (a.id) routes[a.id] = a.url;
+        });
+      })
+      .catch(function(){});
+  } catch (_) {}
+  function store(k){
+    try { return window.floveStore ? window.floveStore.getRaw(k) : localStorage.getItem(k); }
+    catch (_) { return null; }
+  }
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];
+    });
+  }
+  function text(play){
+    var p = play && play.portrait;
+    if (!p) return (play && play.app) || '';
+    if (typeof p.phrase === 'string' && p.phrase.trim()) return p.phrase.trim();
+    if (p.summary && typeof p.summary.text === 'string' && p.summary.text.trim()) {
+      return p.summary.text.split('\n')[0].trim();
+    }
+    var rows = Array.isArray(p.rows) ? p.rows : [];
+    for (var i=0; i<rows.length; i++) {
+      var r = rows[i];
+      if (!r) continue;
+      var items = r.items || [];
+      for (var j=0; j<items.length; j++) {
+        if (String(items[j] == null ? '' : items[j]).trim()) {
+          return (r.title ? r.title + ': ' : '') + items[j];
+        }
+      }
+    }
+    return play.app || '';
+  }
+  function short(s, n){
+    n = n || 72;
+    s = String(s || '').replace(/\s+/g, ' ').trim();
+    return s.length > n ? s.slice(0, n - 1) + '…' : s;
+  }
+  function plays(){
+    var raw = store('flove:appy:plays');
+    var arr = [];
+    try { arr = JSON.parse(raw || '[]'); } catch (_) { arr = []; }
+    var seen = {};
+    return arr.filter(function(p){
+      if (!p || !p.app || seen[p.app]) return false;
+      seen[p.app] = 1;
+      return true;
+    });
+  }
+  function href(app){
+    var u = routes[app] || routes[String(app).toLowerCase()];
+    return u ? '../../../' + u : '../../../apps/appy/appy-basic.html#profile';
+  }
+  function link(play){
+    return '<a href="' + esc(href(play.app)) + '" target="_blank" rel="noopener" title="' +
+      esc(play.app) + '">“' + esc(short(text(play))) + '”</a>';
+  }
+  function myfamily(){
+    var raw = store('flove:myfamily:state');
+    if (!raw) return null;
+    var s;
+    try { s = JSON.parse(raw); } catch (_) { return null; }
+    var name = String((s && (s.friend || s.name)) || '').trim();
+    if (!name) return null;
+    var counts = {};
+    var checks = Object.assign({}, s, s.__checks || {});
+    Object.keys(checks).forEach(function(k){
+      if (k.indexOf(':') !== -1 && checks[k] === true) {
+        var c = k.split(':')[0];
+        counts[c] = (counts[c] || 0) + 1;
+      }
+    });
+    var cat = Object.keys(counts).sort(function(a,b){ return counts[b] - counts[a]; })[0] || '';
+    return { name:name, cat:cat };
+  }
+  function pairAt(k, list){
+    var n = list.length;
+    var a = k % n;
+    var b = (k + 1 + Math.floor(k / n)) % n;
+    if (b === a) b = (b + 1) % n;
+    return { a:list[a], b:list[b] };
+  }
+  function pairs(){
+    var list = plays();
+    if (list.length < 2) return [];
+    var out = [], preps = WIZ[state.wizard];
+    var woff = state.wizard === 'joy' ? 1 : state.wizard === 'wisdom' ? 2 : 0;
+    for (var i=0; i<3; i++) {
+      var pair = pairAt(state.offset + i + woff, list);
+      out.push({ a:pair.a, b:pair.b, prep:preps[(state.offset + i) % preps.length] });
+    }
+    return out;
+  }
+  function renderMyself(){
+    var box = document.getElementById('browsyWizyResults');
+    var more = document.getElementById('browsyWizyMore');
+    if (!box) return;
+    var p = pairs();
+    if (!p.length) {
+      box.innerHTML = '<div class="browsy-wizy-empty">Upload two different apps in Appy to see this.</div>';
+      if (more) more.hidden = true;
+      return;
+    }
+    box.innerHTML = p.map(function(x){
+      return '<div class="browsy-wizy-result">' + link(x.a) +
+        ' <span class="browsy-wizy-prep">' + esc(x.prep) + '</span> ' + link(x.b) + '</div>';
+    }).join('');
+    if (more) more.hidden = false;
+  }
+  function renderOthers(){
+    var box = document.getElementById('browsyWizyResults');
+    var more = document.getElementById('browsyWizyMore');
+    if (!box) return;
+    if (more) more.hidden = true;
+    var other = myfamily(), list = plays();
+    if (!other) {
+      box.innerHTML = '<div class="browsy-wizy-empty">Add someone in MyFamily to see this.</div>';
+      return;
+    }
+    if (list.length < 2) {
+      box.innerHTML = '<div class="browsy-wizy-empty">Upload two different apps in Appy to see this.</div>';
+      return;
+    }
+    var a = list[0], b = list[1];
+    box.innerHTML = '<div class="browsy-wizy-result">' + esc(WORD[state.wizard] || 'With') + ' ' +
+      link(a) + ' and ' + link(b) + ', <b>' + esc(other.name) + '</b> brings <b>' +
+      esc(CAT[other.cat] || 'care') + '</b> into the room.</div>';
+  }
+  function render(){
+    var panel = document.getElementById('browsyMagicPanel');
+    var btn = document.getElementById('browsyMagicBtn');
+    if (panel) panel.hidden = !state.open;
+    if (btn) btn.setAttribute('aria-expanded', String(state.open));
+    document.querySelectorAll('.browsy-wizy-wizards button').forEach(function(b){
+      b.setAttribute('aria-pressed', String(b.dataset.wizard === state.wizard));
+    });
+    document.querySelectorAll('.browsy-wizy-modes button').forEach(function(b){
+      b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode));
+    });
+    if (!state.open) return;
+    if (state.mode === 'others') renderOthers(); else renderMyself();
+  }
+  window.bwizy = {
+    toggle: function(){ state.open = !state.open; render(); },
+    wizard: function(w){ if (!WIZ[w]) return; state.wizard = w; state.offset = 0; render(); },
+    mode: function(m){ state.mode = m === 'others' ? 'others' : 'myself'; state.offset = 0; render(); },
+    more: function(){ state.offset += 3; renderMyself(); }
+  };
+})();
+</script>
+
+<script>
+/* Web provisional Browsy identity. Generates an Ed25519 keypair with
+   WebCrypto, derives the Nety-compatible PeerId (CIDv1 sha256) and stores a
+   local-only record. It is explicitly not portable: the extension is the
+   canonical identity. */
+(function(){
+  var q = new URLSearchParams(location.search);
+  if (q.get('embed') === '1') document.body.classList.add('embed');
+  var source = q.get('source') || 'browsy';
+  var ID_KEY = 'flove:identity';
+  var SEED_KEY = 'flove:identity:web:key';
+  var current = null;
+
+  function b64(bytes){
+    var s = '';
+    for (var i=0; i<bytes.length; i++) s += String.fromCharCode(bytes[i]);
+    return btoa(s);
+  }
+  function unb64(s){
+    var bin = atob(s), out = new Uint8Array(bin.length);
+    for (var i=0; i<bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  function base32(bytes){
+    var a = 'abcdefghijklmnopqrstuvwxyz234567';
+    var bits = 0, value = 0, out = '';
+    for (var i=0; i<bytes.length; i++) {
+      value = (value << 8) | bytes[i];
+      bits += 8;
+      while (bits >= 5) {
+        out += a[(value >>> (bits - 5)) & 31];
+        bits -= 5;
+      }
+    }
+    if (bits > 0) out += a[(value << (5 - bits)) & 31];
+    return out;
+  }
+  function cidFromDigest(digest){
+    var bytes = new Uint8Array(4 + digest.length);
+    bytes[0] = 0x01; // CIDv1
+    bytes[1] = 0x55; // raw
+    bytes[2] = 0x12; // sha2-256
+    bytes[3] = 0x20; // 32 bytes
+    bytes.set(digest, 4);
+    return 'b' + base32(bytes);
+  }
+  function storeGet(k){ try { return window.floveStore ? window.floveStore.getRaw(k) : localStorage.getItem(k); } catch (_) { return null; } }
+  function storeSet(k, v){ try { if (window.floveStore) { window.floveStore.set(k, v); return true; } localStorage.setItem(k, v); return true; } catch (_) { return false; } }
+  function msg(text, kind){
+    var el = document.getElementById('browsyIdentityMsg');
+    if (!el) return;
+    el.textContent = text;
+    el.className = 'browsy-identity-msg' + (kind ? ' ' + kind : '');
+  }
+  function render(rec){
+    current = rec;
+    var hashEl = document.getElementById('browsyIdentityHash');
+    var copy = document.getElementById('browsyIdentityCopy');
+    var create = document.getElementById('browsyIdentityCreate');
+    var badge = document.getElementById('browsyIdentitySource');
+    if (rec && rec.hash) {
+      if (hashEl) { hashEl.hidden = false; hashEl.textContent = rec.hash; }
+      if (copy) copy.hidden = false;
+      if (create) create.textContent = 'Regenerate key';
+      if (badge) badge.textContent = rec.source || 'web';
+    } else {
+      if (hashEl) hashEl.hidden = true;
+      if (copy) copy.hidden = true;
+      if (create) create.textContent = 'Generate Browsy key';
+      if (badge) badge.textContent = 'web';
+    }
+  }
+  function load(){
+    var raw = storeGet(ID_KEY);
+    if (raw) {
+      try {
+        var rec = JSON.parse(raw);
+        if (rec && rec.hash) { render(rec); post(rec); return; }
+      } catch (_) {}
+    }
+    // Older Authy Self cache: display it, but there is no local private seed.
+    var a = storeGet('flove:authy');
+    if (a) {
+      try {
+        var auth = JSON.parse(a);
+        if (auth && auth.self && auth.self.browsyHash) {
+          render({ schema:'flove-identity/1', hash:auth.self.browsyHash, source:'authy-cache', notPortable:true });
+          return;
+        }
+      } catch (_) {}
+    }
+    render(null);
+  }
+  function mirror(hash){
+    try {
+      var a = storeGet('flove:authy');
+      var auth = a ? JSON.parse(a) : { schema:'flove-authy/1' };
+      auth.schema = auth.schema || 'flove-authy/1';
+      auth.self = Object.assign({}, auth.self || {}, { browsyHash: hash });
+      auth.updatedAt = new Date().toISOString();
+      storeSet('flove:authy', JSON.stringify(auth));
+    } catch (_) {}
+  }
+  function post(rec){
+    if (!rec || !window.parent || window.parent === window) return;
+    try { window.parent.postMessage({ type:'flove-browsy-identity', identity:rec, source:'web' }, '*'); } catch (_) {}
+  }
+  async function generate(){
+    if (!(window.crypto && crypto.subtle && crypto.subtle.generateKey)) {
+      msg('This browser cannot generate an Ed25519 key. Use the Browsy extension.', 'err');
+      return;
+    }
+    msg('Generating…');
+    try {
+      var kp = await crypto.subtle.generateKey({ name:'Ed25519' }, true, ['sign', 'verify']);
+      var pub = new Uint8Array(await crypto.subtle.exportKey('raw', kp.publicKey));
+      var priv = new Uint8Array(await crypto.subtle.exportKey('pkcs8', kp.privateKey));
+      var digest = new Uint8Array(await crypto.subtle.digest('SHA-256', pub));
+      var rec = {
+        schema: 'flove-identity/1',
+        hash: cidFromDigest(digest),
+        publicKey: b64(pub),
+        source: 'web',
+        createdAt: new Date().toISOString(),
+        notPortable: true
+      };
+      storeSet(ID_KEY, JSON.stringify(rec));
+      storeSet(SEED_KEY, b64(priv));
+      mirror(rec.hash);
+      render(rec);
+      post(rec);
+      msg('Saved locally. This key is not portable; the extension is canonical.', 'ok');
+    } catch (e) {
+      msg('Could not generate the key: ' + (e && e.message ? e.message : 'WebCrypto error'), 'err');
+    }
+  }
+  document.getElementById('browsyIdentityCreate')?.addEventListener('click', function(){
+    if (current && current.hash && !confirm('Replace the current web identity? It cannot be imported into the extension later.')) return;
+    generate();
+  });
+  document.getElementById('browsyIdentityCopy')?.addEventListener('click', async function(){
+    if (!current || !current.hash) return;
+    try { await navigator.clipboard.writeText(current.hash); msg('Hash copied.', 'ok'); }
+    catch (_) { msg('Copy failed; select the hash manually.', 'err'); }
+  });
+  load();
+})();
+</script>
+
+<!-- flove fields manifest · read by tools/extract-fields.py -->
+<script type="application/json" id="flove-fields">
+{
+  "schema": "flove-fields/1",
+  "app": "browsy",
+  "displayOnly": true,
+  "status": "complete",
+  "fields": []
+}
+</script>
+<script data-flove-fields-flat>
+/* Technical helper: flat routing field paths for cross-app combination.
+   Read-only; no UI, storage or network side effect. */
+(function(){
+  if (window.floveFieldsFlat) return;
+  function walk(list, parent, out){
+    (list || []).forEach(function(f){
+      if (!f || !f.id) return;
+      var path = String(f.id);
+      if (parent && path.indexOf(parent + '.') !== 0) path = parent + '.' + path;
+      out.push({ path: path, id: f.id, label: f.label || '', type: f.type || '', parent: parent || null });
+      if (f.fields) walk(f.fields, path, out);
+      if (f.item && f.item.fields) walk(f.item.fields, path, out);
+    });
+  }
+  window.floveFieldsFlat = function(){
+    var out = [];
+    walk(typeof window.floveFields === 'function' ? window.floveFields() : [], '', out);
+    return out;
+  };
+  if (window.flovePort && !window.flovePort.fields) window.flovePort.fields = window.floveFieldsFlat;
+})();
+</script>
+</body>
+</html>

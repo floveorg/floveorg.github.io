@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6c5ce7">
+<title>Questy FLOVE</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff4d4d'/%3E%3Cstop offset='.2' stop-color='%23ff9a3a'/%3E%3Cstop offset='.4' stop-color='%23ffc41f'/%3E%3Cstop offset='.6' stop-color='%233fb950'/%3E%3Cstop offset='.8' stop-color='%233aa0ff'/%3E%3Cstop offset='1' stop-color='%23b06bff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points='60,8 102,30 102,74 60,96 18,74 18,30' fill='none' stroke='url(%23g)' stroke-width='10' stroke-linejoin='round'/%3E%3Ctext x='60' y='66' text-anchor='middle' font-family='Georgia,serif' font-size='42' font-weight='700' fill='url(%23g)'%3E%3F%3C/text%3E%3C/svg%3E">
+<script>
+(function(){try{var t=JSON.parse(localStorage.getItem('flove:theme'))||'light';
+if(t==='dark')document.documentElement.setAttribute('data-theme','dark');else document.documentElement.removeAttribute('data-theme');}catch(e){}})();
+</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f3f4fb;--ink:#16141f;--muted:#4a4e5a;--line:#e3e5f0;
+  --card:#ffffff;--panel:#edeef7;--accent:#6c5ce7;--signal:#02855c;
+  --cat-inside:#ff9b5e;--cat-mating:#ffd84d;--cat-ling:#6ed089;
+  --cat-social:#5ea4e6;--cat-economy:#6b6bd9;
+  --surface:var(--card);--border:var(--line);--text:var(--ink);
+}
+[data-theme="dark"]{
+  --bg:#0b0b0f;--ink:#e9eaf2;--muted:#a3a7b4;--line:#1e2133;
+  --card:#11131a;--panel:#11131a;--accent:#8d89ff;--signal:#00f7a7;
+}
+body{font-family:ui-monospace,monospace;color:var(--ink);background:var(--bg);line-height:1.7;padding:3rem 1.2rem 5rem;transition:background .25s,color .25s}
+main{max-width:640px;margin:0 auto}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+.questy-brand{text-align:center;margin-bottom:2rem;display:flex;align-items:center;justify-content:center;gap:.9rem}
+.brand-logo{width:46px;height:46px;flex-shrink:0}
+.brand-meta{display:flex;flex-direction:column;align-items:flex-start;line-height:1.15}
+.brand-name{font-size:1.9rem;font-weight:700;letter-spacing:-.03em;
+  background:linear-gradient(90deg,#ff4d4d,#ff9a3a,#ffc41f,#3fb950,#3aa0ff,#b06bff,#ff4d4d);
+  background-size:220% auto;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:surveyWordShine 4.2s linear infinite,surveyWordGlow 2.8s ease-in-out infinite}
+@keyframes surveyWordShine{to{background-position:220% center}}
+@keyframes surveyWordGlow{0%,100%{filter:drop-shadow(0 0 0 rgba(255,255,255,0))}50%{filter:drop-shadow(0 0 8px rgba(108,92,231,.35))}}
+.top-links{position:absolute;top:3.2rem;right:1.5rem;display:flex;gap:.2rem;align-items:center;z-index:10}
+.top-link{padding:.28rem .55rem;border-radius:999px;font-size:.66rem;font-family:inherit;cursor:pointer;
+  border:1px solid var(--border);background:transparent;color:var(--muted);text-decoration:none;
+  transition:all .2s;letter-spacing:.03em;line-height:1.3}
+.top-link:hover{border-color:var(--accent);color:var(--text);background:rgba(108,92,231,.05)}
+.top-link.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.top-drop{position:relative}
+.top-drop-menu{display:none;position:absolute;top:calc(100% + .4rem);left:50%;transform:translateX(-50%);
+  flex-direction:column;gap:.2rem;min-width:120px;background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;padding:.35rem;box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:40}
+.top-drop.open .top-drop-menu{display:flex}
+.top-drop-item{padding:.4rem .7rem;border-radius:5px;font-size:.72rem;cursor:pointer;border:none;background:transparent;
+  color:var(--text);text-decoration:none;font-family:inherit;text-align:left;transition:background .2s}
+.top-drop-item:hover{background:rgba(108,92,231,.08);color:var(--accent)}
+.top-drop-item#themeToggle{font-size:1rem;line-height:1}
+.top-drop-sub{position:relative}
+.top-drop-parent{display:flex;align-items:center;justify-content:space-between;gap:.8rem}
+.sub-arrow{font-size:.58rem;opacity:.65}
+.top-submenu{display:none;position:absolute;top:-.35rem;left:calc(100% + .3rem);flex-direction:column;gap:.2rem;
+  min-width:96px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.35rem;
+  box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:41}
+.top-drop-sub:hover .top-submenu,.top-drop-sub:focus-within .top-submenu,.top-drop-sub.open .top-submenu{display:flex}
+#introsDrop .top-drop-menu{left:auto;right:0;transform:none}
+@media(max-width:760px){
+  .questy-brand{margin-top:2.6rem;margin-bottom:1.4rem}
+  .brand-name{font-size:1.5rem}
+  .brand-logo{width:38px;height:38px}
+  .top-links{top:.7rem;right:.8rem;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100% - 1.6rem)}
+}
+.gate{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:.4rem 0 2rem}
+.gate.off{display:none}
+.project-name{flex:1 1 220px;max-width:340px;padding:.85rem 1rem;border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--text);font-family:inherit;font-size:.8rem;outline:none;transition:.2s}
+.project-name::placeholder{color:var(--muted)}
+.project-name:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,92,231,.12)}
+.enable-btn{position:relative;z-index:1;overflow:hidden;appearance:none;border:0;cursor:pointer;font-family:inherit;font-weight:800;
+  font-size:clamp(1rem,2.2vw,1.25rem);letter-spacing:.16em;text-transform:uppercase;padding:1.05rem 2.5rem;border-radius:999px;color:#fff;
+  background:linear-gradient(110deg,#6c5ce7,#8d89ff 42%,#00c9a7);background-size:200% 100%;
+  box-shadow:0 18px 50px -20px rgba(108,92,231,.95);
+  animation:enableShift 6s ease-in-out infinite,enablePulse 3s ease-out infinite;transition:transform .18s}
+.enable-btn:hover{transform:translateY(-2px)}
+.enable-btn:active{transform:translateY(0) scale(.98)}
+.enable-btn::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 32%,rgba(255,255,255,.55) 50%,transparent 68%);
+  transform:translateX(-130%);animation:enableShine 3.8s ease-in-out infinite;pointer-events:none}
+@keyframes enableShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes enablePulse{0%{box-shadow:0 0 0 0 rgba(108,92,231,.35),0 18px 50px -20px rgba(108,92,231,.95)}
+  70%{box-shadow:0 0 0 22px rgba(108,92,231,0),0 18px 50px -20px rgba(108,92,231,.95)}
+  100%{box-shadow:0 0 0 0 rgba(108,92,231,0),0 18px 50px -20px rgba(108,92,231,.95)}}
+@keyframes enableShine{0%,52%{transform:translateX(-130%)}82%,100%{transform:translateX(130%)}}
+.tool{display:none}
+.tool.on{display:block}
+.mark{width:64px;height:64px;display:block;margin-bottom:1.2rem}
+h1{font-family:Georgia,serif;font-size:1.7rem;letter-spacing:-.02em}
+h1 em{font-style:normal;color:var(--signal)}
+.under-construction{display:inline-block;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--signal);border:1px solid var(--signal);border-radius:999px;padding:.18rem .6rem;vertical-align:middle;margin-left:.6rem}
+.sub{color:var(--muted);font-size:.85rem;margin:.6rem 0 1.6rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1.1rem 1.2rem;margin-bottom:1rem}
+.card h2{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--signal);margin-bottom:.7rem}
+ul{list-style:none}
+li{padding:.3rem 0;font-size:.82rem}
+li b{color:var(--ink)}
+.gauge{display:flex;gap:.4rem;margin-top:.4rem}
+.card .influence-title{font-size:.78rem;letter-spacing:.2em;text-transform:uppercase;color:var(--signal);margin:0 0 .55rem;font-weight:700;text-align:center}
+.skill-variant{display:inline-block;font-size:.52rem;letter-spacing:.06em;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:.12rem .45rem;vertical-align:middle;margin-left:.35rem;text-transform:none;font-weight:600}
+.gauge button{flex:1;padding:.7rem 0;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--muted);font-family:inherit;font-weight:700;font-size:.9rem;cursor:pointer;transition:.2s}
+.gauge button:hover{border-color:var(--accent);color:var(--accent)}
+.gauge button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.voice-block{margin-top:1.15rem;border-top:1px solid var(--line);padding-top:.9rem}
+.voice-title{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--signal);margin-bottom:.5rem}
+.voice-row{display:flex;flex-wrap:wrap;gap:.45rem}
+.voice-row button{flex:1 1 0;min-width:100px;padding:.58rem .7rem;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--muted);font-family:inherit;font-weight:700;font-size:.78rem;cursor:pointer;transition:.2s}
+.voice-row button:hover{opacity:.85}
+.voice-row button.on{flex-grow:1.7;color:var(--ink)}
+.voice-row button[data-v="love"].on{background:rgba(229,72,77,.2);border-color:rgba(229,72,77,.65)}
+.voice-row button[data-v="love"].x2{flex-grow:2.2;background:#e5484d;border-color:#e5484d;color:#fff}
+.voice-row button[data-v="joy"].on{background:rgba(245,166,35,.22);border-color:rgba(245,166,35,.7)}
+.voice-row button[data-v="joy"].x2{flex-grow:2.2;background:#f5a623;border-color:#f5a623;color:#fff}
+.voice-row button[data-v="wise"].on{background:rgba(31,93,158,.2);border-color:rgba(31,93,158,.6)}
+.voice-row button[data-v="wise"].x2{flex-grow:2.2;background:#1f5d9e;border-color:#1f5d9e;color:#fff}
+.voice-info{display:none;margin-top:.7rem;font-size:.72rem;line-height:1.6;color:var(--ink);background:var(--panel);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:.55rem .7rem}
+.voice-info a{color:var(--accent);text-decoration:underline}
+.voice-line + .voice-line{margin-top:.2rem}
+.flove-extra{display:none}
+.flove-extra.show{display:block}
+#influence-card[data-stage="scale"] .voice-block,
+#influence-card[data-stage="scale"] .cat-weight-grid,
+#influence-card[data-stage="scale"] .voice-info,
+#influence-card[data-stage="scale"] .machine-block,
+#influence-card[data-stage="voice"] .cat-weight-grid,
+#influence-card[data-stage="voice"] .voice-info,
+#influence-card[data-stage="voice"] .machine-block{display:none}
+.tool[data-stage="scale"] .after-rater,
+.tool[data-stage="voice"] .after-rater{display:none}
+.cat-weight-grid{display:flex;gap:0;margin:.55rem 0 0;border-radius:12px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
+.cat-weight-cell{appearance:none;border:0;font-family:inherit;font-size:inherit;line-height:inherit;text-align:center;cursor:pointer;
+  position:relative;flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;gap:.3rem;padding:.55rem .25rem;color:var(--ink);
+  background-color:transparent;
+  background-image:linear-gradient(90deg,
+    color-mix(in srgb, var(--prev) 12%, transparent),
+    transparent 26%,
+    transparent 74%,
+    color-mix(in srgb, var(--next) 12%, transparent));
+  transition:background-color .2s,color .2s}
+.cat-weight-cell[data-weight="0"]{background-color:color-mix(in srgb, var(--cat) 4%, transparent)}
+.cat-weight-cell[data-weight="1"]{background-color:color-mix(in srgb, var(--cat) 50%, var(--panel));color:var(--cat-ink,#16141f)}
+.cat-weight-cell[data-weight="2"]{background-color:var(--cat);color:var(--cat-ink,#16141f)}
+[data-theme="dark"] .cat-weight-cell[data-weight="1"]{color:var(--ink)}
+.cat-weight-cell::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--cat);opacity:.55;pointer-events:none}
+.cat-weight-cell[data-weight="2"]::after{opacity:0}
+.cat-weight-cell:hover{filter:brightness(.97)}
+.cat-weight-cell:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;z-index:2}
+.cat-weight-cell + .cat-weight-cell::before{content:"";position:absolute;left:-6px;top:12%;bottom:12%;width:12px;
+  background:linear-gradient(90deg,var(--prev),var(--cat));filter:blur(6px);opacity:.45;pointer-events:none}
+.cat-sprout{display:inline-flex;align-items:center;justify-content:center;gap:.18rem;background:color-mix(in srgb, var(--card) 72%, transparent);border:1px solid var(--line);border-radius:6px;padding:.2rem;color:inherit;font-family:inherit;font-size:.62rem;font-weight:800;cursor:pointer;min-width:24px}
+.cat-weight-cell[data-weight="2"] .cat-sprout{background:rgba(255,255,255,.72);border-color:rgba(0,0,0,.12);color:#16141f}
+.cat-sprout svg{width:14px;height:14px;display:block}
+.cat-sprout.off svg{opacity:.35;filter:grayscale(1)}
+.cat-sprout.weighted svg{animation:sproutSway 4.2s ease-in-out infinite,sproutGlow 3.1s ease-in-out infinite;transform-origin:50% 88%}
+@keyframes sproutSway{0%,100%{transform:rotate(-6deg) scale(1)}50%{transform:rotate(6deg) scale(1.06)}}
+@keyframes sproutGlow{0%,100%{filter:drop-shadow(0 0 1.5px rgba(255,138,58,.35))}50%{filter:drop-shadow(0 0 6px rgba(255,138,58,.65))}}
+.cat-weight-name{font-size:.64rem;font-weight:700;line-height:1.15;text-align:center;overflow-wrap:anywhere}
+.machine-block{position:relative;margin-top:.9rem;border-top:1px solid var(--line);padding-top:.8rem}
+.machine-block pre{font-size:.62rem;line-height:1.5;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:.6rem 2.8rem .6rem .6rem;margin:0;white-space:pre-wrap;color:var(--muted)}
+.human-btn{position:absolute;top:.55rem;right:0;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--muted);display:grid;place-items:center;cursor:pointer;transition:.2s;z-index:1}
+.human-btn:hover{border-color:var(--accent);color:var(--accent)}
+.human-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.human-btn svg{width:17px;height:17px}
+.human-block{font-size:.74rem;line-height:1.7;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--signal);border-radius:0 8px 8px 0;padding:.7rem 2.8rem .7rem .8rem;margin-top:.45rem}
+.human-block p{margin:0 0 .4rem}
+.human-block p:last-child{margin-bottom:0}
+.human-block b{color:var(--ink)}
+.machine-block pre[hidden],.human-block[hidden]{display:none}
+.machine-copy{margin-top:.55rem;width:100%}
+.version{border:1px solid var(--line);border-radius:10px;padding:.7rem .8rem;margin-top:.6rem;background:var(--panel)}
+.version-head{display:flex;justify-content:space-between;gap:.5rem;font-size:.68rem;color:var(--muted);margin-bottom:.45rem}
+.version-head b{color:var(--ink)}
+.mini-gauge{display:flex;gap:.25rem}
+.mini-gauge span{flex:1;text-align:center;border:1px solid var(--line);border-radius:6px;padding:.25rem 0;font-size:.65rem;color:var(--muted)}
+.mini-gauge span.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.mini-voice{display:flex;gap:.25rem;margin-top:.4rem}
+.mini-voice span{flex:1;text-align:center;border-radius:6px;padding:.22rem 0;font-size:.62rem;background:rgba(229,72,77,.16);color:var(--ink)}
+.mini-line{font-size:.68rem;color:var(--muted);margin-top:.3rem}
+.surface-picker{display:flex;flex-wrap:wrap;gap:.4rem;margin:.6rem 0}
+.surface-picker button{flex:1;min-width:110px;padding:.45rem .6rem;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--muted);font-family:inherit;font-size:.7rem;font-weight:700;cursor:pointer;transition:.2s}
+.surface-picker button:hover{border-color:var(--accent);color:var(--accent)}
+.surface-picker button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.surface-pick{font-size:.7rem;font-weight:700;color:var(--signal);margin-bottom:.5rem}
+.version.picked{border-color:var(--accent);box-shadow:0 0 0 2px rgba(108,92,231,.15)}
+.mini-cats{display:flex;gap:.25rem;margin-top:.4rem}
+.mini-cats span{flex:1;text-align:center;border-radius:6px;padding:.22rem 0;font-size:.6rem;font-weight:700;color:#16141f}
+.card-title{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--signal);margin:0 0 .6rem}
+.simpler{margin-top:3.4rem}
+.card .simpler-title{font-size:clamp(1.55rem,3.6vw,2.1rem);letter-spacing:.1em;line-height:1.1;font-weight:800;margin:0 0 1.1rem;
+  background:linear-gradient(90deg,var(--accent),var(--signal));-webkit-background-clip:text;background-clip:text;color:transparent}
+.versions-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.6rem}
+.versions-grid .version{margin-top:0}
+.per-app-head{display:flex;align-items:flex-end;gap:.55rem;flex-wrap:wrap;margin-bottom:.35rem}
+.per-app-title-wrap{display:flex;flex-direction:column;gap:.08rem}
+.per-app-kicker{font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--signal)}
+.per-app-head h2{font-size:1.15rem;letter-spacing:-.01em;text-transform:none;color:var(--ink);margin:0}
+.per-app-count{margin-left:auto;font-size:.62rem;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:.05rem .45rem}
+.per-app-clear{padding:.24rem .65rem;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--accent);font-family:inherit;font-size:.64rem;cursor:pointer}
+.per-app-clear:hover{border-color:var(--accent);background:rgba(108,92,231,.07)}
+.per-app-hint{font-size:.72rem;color:var(--muted);margin:0 0 .55rem}
+.per-app-filter{width:100%;padding:.5rem .65rem;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-family:inherit;font-size:.72rem;margin-bottom:.7rem}
+.per-app-filter:focus{outline:2px solid var(--accent);outline-offset:1px}
+.app-chip .app-tick{display:inline-block;width:1em;margin-left:.1rem;font-size:.9em;font-weight:800;text-align:center;color:var(--cat,var(--accent))}
+.app-logo{width:22px;height:22px;flex:none;background:transparent;border:0;padding:0;color:var(--ink)}
+.app-logo--mono{display:inline-grid;place-items:center;background:transparent;border:0;padding:0;font-size:.72rem;font-weight:800;color:var(--cat,var(--accent))}
+.cat-count{margin-left:.4rem;font-size:.56rem;color:var(--muted);font-weight:400}
+.app-detail{margin-top:.9rem;border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:.8rem .9rem}
+.app-detail[hidden]{display:none}
+.app-detail-head{display:flex;align-items:center;gap:.6rem}
+.app-detail-logo .app-logo{width:30px;height:30px}
+.app-detail-meta{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.app-detail-meta b{font-size:.86rem}
+.app-detail-meta span{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.app-detail-next{margin-left:auto;padding:.28rem .7rem;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--accent);font-family:inherit;font-size:.64rem;cursor:pointer}
+.app-detail-next:hover{border-color:var(--accent)}
+.app-detail p{font-size:.74rem;color:var(--muted);margin:.55rem 0 0;line-height:1.65}
+.demo-meta{font-size:.66rem;letter-spacing:.06em;color:var(--muted);margin:0 0 .15rem}
+.demo-switch{display:flex;flex-wrap:wrap;gap:.35rem;margin:.15rem 0 .7rem}
+.demo-tab{padding:.4rem .75rem;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--muted);font-family:inherit;font-size:.66rem;font-weight:600;cursor:pointer;transition:.2s}
+.demo-tab:hover{border-color:var(--accent);color:var(--ink)}
+.demo-tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.card .demo-title{font-size:clamp(1.5rem,3.4vw,2.1rem);letter-spacing:.1em;line-height:1.1;font-weight:800;margin:0 0 .35rem;
+  background:linear-gradient(90deg,#ff4d4d,#ff9a3a,#ffc41f,#3fb950,#3aa0ff,#b06bff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.demo-lead{font-size:.78rem;color:var(--muted);max-width:72ch;margin:0 0 .8rem}
+.demo-project{display:flex;align-items:baseline;gap:.5rem;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:.5rem .65rem;margin-bottom:.6rem}
+.demo-kicker{font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.demo-project b{font-size:.86rem}
+.demo-tags{margin-left:auto;font-size:.6rem;color:var(--muted)}
+.demo-mix{display:flex;flex-wrap:wrap;gap:.3rem;margin:.35rem 0 .1rem}
+.demo-mix span{font-size:.6rem;padding:.18rem .5rem;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--muted)}
+.demo-mix span.hot{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,var(--line));background:color-mix(in srgb,var(--accent) 8%,var(--panel))}
+.demo-survey{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.5rem;margin-top:.7rem}
+.demo-q{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--hat,var(--accent));border-radius:10px;padding:.65rem .7rem}
+.demo-q-head{display:flex;align-items:center;gap:.35rem;font-size:.56rem;letter-spacing:.08em;text-transform:uppercase}
+.demo-hat{color:#fff;border-radius:999px;padding:.1rem .45rem;font-weight:700}
+.demo-cat{color:var(--muted)}
+.demo-num{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums}
+.demo-text{font-size:.78rem;line-height:1.5;margin:.45rem 0 .5rem}
+.demo-opts{display:flex;flex-wrap:wrap;gap:.25rem}
+.demo-opt{padding:.28rem .55rem;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--muted);font-family:inherit;font-size:.64rem;cursor:pointer;transition:.2s}
+.demo-opt:hover{border-color:var(--hat,var(--accent));color:var(--ink)}
+.demo-opt.on{background:var(--hat,var(--accent));border-color:transparent;color:#fff}
+.demo-reset{margin-top:.7rem;padding:.3rem .75rem;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--accent);font-family:inherit;font-size:.66rem;cursor:pointer}
+.demo-reset:hover{border-color:var(--accent)}
+.links{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.4rem}
+.links a{font-size:.75rem;color:var(--accent);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:.4rem .8rem;transition:.2s}
+.links a:hover{border-color:var(--accent);background:rgba(108,92,231,.08)}
+
+.cat-group{margin-bottom:.8rem}
+.cat-label{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:.35rem;display:flex;align-items:center;gap:.4rem}
+.cat-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.cat-label.cat-inside{color:var(--cat-inside)}
+.cat-label.cat-mating{color:var(--cat-mating)}
+.cat-label.cat-ling{color:var(--cat-ling)}
+.cat-label.cat-social{color:var(--cat-social)}
+.cat-label.cat-economy{color:var(--cat-economy)}
+.cat-dot.cat-inside{background:var(--cat-inside)}
+.cat-dot.cat-mating{background:var(--cat-mating)}
+.cat-dot.cat-ling{background:var(--cat-ling)}
+.cat-dot.cat-social{background:var(--cat-social)}
+.cat-dot.cat-economy{background:var(--cat-economy)}
+.app-chips{display:flex;flex-wrap:wrap;gap:.35rem}
+.app-chip{display:inline-flex;align-items:center;gap:.38rem;font-size:.7rem;padding:.24rem .5rem .24rem .26rem;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer;font-family:inherit;transition:.18s;text-align:left}
+.app-chip:hover{border-color:var(--cat,var(--accent));color:var(--ink)}
+.app-chip.sel{border-color:var(--cat,var(--accent));background:color-mix(in srgb,var(--cat,var(--accent)) 15%,var(--panel));color:var(--ink)}
+.app-chip.focus{outline:2px solid color-mix(in srgb,var(--cat,var(--accent)) 65%,transparent);outline-offset:1px}
+
+.q-batch{margin-bottom:.6rem}
+.q-item{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:.8rem 1rem;margin-bottom:.5rem}
+.q-item.flove-src{border-left:3px solid var(--accent)}
+.q-num{font-size:.68rem;color:var(--muted);font-weight:700;margin-bottom:.25rem}
+.q-text{font-size:.85rem;margin-bottom:.5rem}
+.q-opts{display:flex;flex-wrap:wrap;gap:.3rem}
+.q-opt{font-size:.72rem;padding:.35rem .7rem;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--muted);cursor:pointer;font-family:inherit;transition:.2s}
+.q-opt:hover{border-color:var(--accent);color:var(--accent)}
+.q-opt.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.q-opt.rec{position:relative}
+.q-opt.rec::after{content:"★";font-size:.5rem;position:absolute;top:-.25rem;right:-.15rem;color:var(--signal)}
+.q-note{width:100%;margin-top:.4rem;padding:.4rem .6rem;font-size:.72rem;font-family:inherit;background:var(--card);border:1px solid var(--line);border-radius:6px;color:var(--ink);resize:vertical;min-height:1.6rem}
+.q-field{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;margin-bottom:.25rem;font-size:.72rem}
+.q-field b{color:var(--ink)}
+.q-dot{width:9px;height:9px;border-radius:50%;flex:none}
+.q-tag{font-size:.56rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;padding:.08rem .5rem;border:1px solid var(--line);border-radius:999px}
+.q-hint{font-size:.66rem;color:var(--muted);font-style:italic;margin:-.15rem 0 .5rem}
+.hat-chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.55rem}
+.hat-chip{font-size:.66rem;font-weight:700;padding:.25rem .65rem;border-radius:999px;color:#fff}
+.hat-note{font-size:.66rem;color:var(--muted);margin-top:.55rem;line-height:1.6}
+
+.batch-nav{display:flex;align-items:center;justify-content:space-between;margin:1rem 0}
+.batch-nav button{padding:.4rem .9rem;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--muted);font-family:inherit;font-size:.75rem;cursor:pointer;transition:.2s}
+.batch-nav button:hover{border-color:var(--accent);color:var(--accent)}
+.batch-nav button:disabled{opacity:.3;cursor:default}
+.batch-info{font-size:.72rem;color:var(--muted)}
+
+.export-card{margin-top:1rem}
+.export-btns{display:flex;flex-direction:column;gap:.5rem;margin-top:.6rem}
+.copy-btn{display:flex;align-items:center;justify-content:center;gap:.4rem;padding:.85rem 1.2rem;border:none;border-radius:10px;
+  font-family:inherit;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s}
+.copy-btn:hover{opacity:.9;transform:translateY(-1px)}
+.copy-btn:active{transform:scale(.98)}
+.copy-btn.copied{background:var(--signal)!important;color:#fff!important}
+.btn-generate{background:linear-gradient(135deg,var(--accent),#79c0ff);color:#fff;font-size:.95rem;padding:1rem}
+.export-secondary{display:flex;gap:.5rem}
+.export-secondary .copy-btn{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);
+  border-radius:8px;padding:.5rem .75rem;font-size:.78rem;font-weight:500}
+.export-secondary .copy-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(108,92,231,.06);opacity:1;transform:none}
+.json-preview,.prompt-preview{font-size:.68rem;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:.8rem;margin-top:.6rem;max-height:300px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace;color:var(--muted);display:none}
+.json-preview.show,.prompt-preview.show{display:block}
+.prompt-preview{border-left:3px solid var(--accent)}
+
+.cat-line{display:flex;align-items:center;gap:.6rem;font-size:.72rem;color:var(--muted);flex-wrap:wrap}
+.cat-status{font-weight:700;color:var(--signal)}
+.cat-line button{padding:.3rem .7rem;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--accent);font-family:inherit;font-size:.7rem;font-weight:700;cursor:pointer;transition:.2s}
+.cat-line button:hover{border-color:var(--accent);background:rgba(108,92,231,.08)}
+.cat-line button:disabled{opacity:.4;cursor:default}
+.cat-note{font-size:.68rem;color:var(--muted);margin-top:.4rem}
+.empty{font-size:.78rem;color:var(--muted);text-align:center;padding:2rem 0}
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--signal);color:#fff;padding:.5rem 1.2rem;border-radius:999px;font-size:.75rem;font-weight:700;opacity:0;transition:.3s;pointer-events:none;z-index:99}
+.toast.show{opacity:1}
+@media(max-width:420px){
+  .cat-weight-cell{gap:.2rem;padding:.5rem .15rem}
+  .cat-sprout{min-width:20px;font-size:.58rem}
+  .cat-sprout svg{width:12px;height:12px}
+  .cat-weight-name{font-size:.58rem}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.enable-btn::after{display:none}}
+</style>
+</head>
+<body>
+<svg style="display:none" aria-hidden="true">
+<defs><linearGradient id="grad-metafisica" x1="14" y1="14" x2="86" y2="86" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#c133ff"/><stop offset="50%" stop-color="#6a3aff"/><stop offset="100%" stop-color="#ff8aae"/></linearGradient><linearGradient id="grad-ciencia" x1="14" y1="14" x2="86" y2="86" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#2a9aff"/><stop offset="50%" stop-color="#6a3aff"/><stop offset="100%" stop-color="#8ac4ff"/></linearGradient><linearGradient id="grad-biologia" x1="14" y1="14" x2="86" y2="86" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#33d97a"/><stop offset="50%" stop-color="#6dd933"/><stop offset="100%" stop-color="#8affd0"/></linearGradient><linearGradient id="grad-lenguajes" x1="14" y1="14" x2="86" y2="86" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#ff8aae"/><stop offset="50%" stop-color="#c133ff"/><stop offset="100%" stop-color="#ffd9d9"/></linearGradient><linearGradient id="grad-psico" x1="14" y1="14" x2="86" y2="86" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#ff8a8a"/><stop offset="50%" stop-color="#ff8a3a"/><stop offset="100%" stop-color="#ffd28a"/></linearGradient><linearGradient id="grad-social" x1="14" y1="14" x2="86" y2="86" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#ff3344"/><stop offset="50%" stop-color="#ff8a3a"/><stop offset="100%" stop-color="#ffd633"/></linearGradient><linearGradient id="grad-economia" x1="14" y1="14" x2="86" y2="86" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#1a1820"/><stop offset="50%" stop-color="#4a4658"/><stop offset="100%" stop-color="#9a96a8"/></linearGradient><linearGradient id="grad-g-inside" x1="14" y1="14" x2="86" y2="86" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#ff7a2e"/><stop offset="50%" stop-color="#ff9b5e"/><stop offset="100%" stop-color="#ffcf9a"/></linearGradient><linearGradient id="grad-g-mating" x1="14" y1="14" x2="86" y2="86" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#e8a200"/><stop offset="50%" stop-color="#ffce3a"/><stop offset="100%" stop-color="#fff0a0"/></linearGradient><linearGradient id="grad-g-social" x1="14" y1="14" x2="86" y2="86" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#1f9e57"/><stop offset="50%" stop-color="#6ed089"/><stop offset="100%" stop-color="#b6f0c8"/></linearGradient><linearGradient id="grad-g-economy" x1="14" y1="14" x2="86" y2="86" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#2e74c8"/><stop offset="50%" stop-color="#5ea4e6"/><stop offset="100%" stop-color="#bcd9f5"/></linearGradient><linearGradient id="grad-g-violet" x1="14" y1="14" x2="86" y2="86" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#8a3aff"/><stop offset="50%" stop-color="#b27aff"/><stop offset="100%" stop-color="#e0c8ff"/></linearGradient></defs>
+<symbol id="sproutIcon" viewBox="0 0 100 100"><defs><linearGradient id="sproutGrad2" x1="12" y1="0" x2="88" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff3344"/><stop offset=".5" stop-color="#ff8a3a"/><stop offset="1" stop-color="#ffd633"/></linearGradient></defs><path d="M50 60 C 22 60 12 38 16 18 C 38 22 54 38 50 60 Z" fill="url(#sproutGrad2)"/><path d="M50 60 C 78 60 88 38 84 18 C 62 22 46 38 50 60 Z" fill="url(#sproutGrad2)"/><path d="M50 58 C 50 72 50 84 50 92" stroke="url(#sproutGrad2)" stroke-width="5" stroke-linecap="round" fill="none"/></symbol>
+<symbol id="mark-goddy" viewBox="0 0 64 64"><path d="M32 18.73 A15 15 0 0 0 32 45.27 A15 15 0 0 0 32 18.73 Z" fill="#ff8aae" opacity=".85"/><circle cx="25" cy="32" r="15" fill="none" stroke="#c133ff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="39" cy="32" r="15" fill="none" stroke="#6a3aff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="32" r="2.1" fill="#8b5cf6"/></symbol>
+<symbol id="mark-astry" viewBox="0 0 100 100"><g fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><g transform="rotate(-20 50 50)"><ellipse cx="50" cy="50" rx="38" ry="14" stroke="url(#grad-g-inside)" fill="none"/><ellipse cx="50" cy="50" rx="28" ry="10" stroke="url(#grad-g-inside)" fill="none"/><ellipse cx="50" cy="50" rx="18" ry="7" stroke="url(#grad-g-inside)" fill="none"/></g><circle cx="50" cy="50" r="5" fill="url(#grad-g-inside)" stroke="none"/></g></symbol>
+<symbol id="mark-hacky" viewBox="0 0 100 100"><g fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><rect x="16" y="16" width="68" height="68" rx="6" stroke="url(#grad-g-inside)" fill="none"/><path d="M16 16 L84 16 L84 84 Z" fill="url(#grad-g-inside)" stroke="none"/></g></symbol>
+<symbol id="mark-diesafe" viewBox="0 0 100 100"><g fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><rect x="44" y="50" width="12" height="34" rx="2" fill="url(#grad-g-inside)" stroke="none"/><line x1="50" y1="50" x2="50" y2="44" stroke="url(#grad-g-inside)"/><path d="M50 44 Q40 32 50 14 Q60 32 50 44 Z" fill="url(#grad-g-inside)" stroke="none"/><line x1="36" y1="84" x2="64" y2="84" stroke="url(#grad-g-inside)"/></g></symbol>
+<symbol id="mark-souls" viewBox="0 0 100 100"><g fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M50 78 C 28 64, 16 50, 22 36 C 26 26, 40 26, 50 40 C 60 26, 74 26, 78 36 C 84 50, 72 64, 50 78 Z" stroke="url(#grad-psico)" fill="none"/><g fill="url(#grad-psico)" stroke="none"><circle cx="50" cy="38" r="3"/><circle cx="34" cy="48" r="3"/><circle cx="66" cy="48" r="3"/><circle cx="40" cy="62" r="3"/><circle cx="60" cy="62" r="3"/></g></g></symbol>
+<symbol id="mark-profily" viewBox="0 0 100 100"><g fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="34" r="14" fill="url(#grad-g-inside)" stroke="none"/><path d="M22 86 Q22 56 50 56 Q78 56 78 86 Z" fill="url(#grad-g-inside)" stroke="none"/></g></symbol>
+<symbol id="mark-sensy" viewBox="0 0 64 64"><g fill="none" stroke="url(#grad-g-inside)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="19"/><line x1="32" y1="32" x2="32" y2="13"/><line x1="32" y1="32" x2="50.07" y2="26.13"/><line x1="32" y1="32" x2="43.17" y2="47.37"/><line x1="32" y1="32" x2="20.83" y2="47.37"/><line x1="32" y1="32" x2="13.93" y2="26.13"/></g><g fill="url(#grad-g-inside)" stroke="none"><circle cx="32" cy="13" r="3.1"/><circle cx="50.07" cy="26.13" r="3.1"/><circle cx="43.17" cy="47.37" r="3.1"/><circle cx="20.83" cy="47.37" r="3.1"/><circle cx="13.93" cy="26.13" r="3.1"/></g><circle cx="32" cy="32" r="3.6" fill="#ff2fd6"/></symbol>
+<symbol id="mark-pracsys" viewBox="0 0 100 100"><g fill="none" stroke="url(#grad-g-inside)" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="25" r="8.5" stroke-width="5"/><line x1="50" y1="34" x2="50" y2="66" stroke-width="5"/><line x1="50" y1="42" x2="27" y2="52" stroke-width="3"/><line x1="50" y1="42" x2="73" y2="52" stroke-width="3"/><line x1="50" y1="66" x2="36" y2="84" stroke-width="3"/><line x1="50" y1="66" x2="64" y2="84" stroke-width="3"/></g><g fill="url(#grad-g-inside)"><circle cx="27" cy="52" r="4.2"/><circle cx="73" cy="52" r="4.2"/><circle cx="36" cy="84" r="4.2"/><circle cx="64" cy="84" r="4.2"/></g></symbol>
+<symbol id="mark-willy" viewBox="0 0 100 100"><g fill="none" stroke="url(#grad-g-inside)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="14" width="72" height="72" rx="3"/><line x1="14" y1="50" x2="86" y2="50"/><line x1="50" y1="14" x2="50" y2="86"/></g><circle cx="50" cy="50" r="6" fill="url(#grad-g-inside)"/></symbol>
+<symbol id="mark-moraly" viewBox="0 0 100 100"><g fill="none" stroke="url(#grad-g-inside)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="14" width="72" height="72" rx="3"/><line x1="22" y1="22" x2="78" y2="78"/><line x1="78" y1="22" x2="22" y2="78"/></g><circle cx="50" cy="50" r="6" fill="url(#grad-g-inside)"/></symbol>
+<symbol id="mark-lovy" viewBox="0 0 100 100"><g fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M50 72 C 30 58, 18 46, 22 34 C 26 24, 40 24, 50 38 C 60 24, 74 24, 78 34 C 82 46, 70 58, 50 72 Z" fill="url(#grad-g-mating)" stroke="none"/><path d="M50 72 C 50 80, 50 86, 50 92" stroke="url(#grad-g-mating)" fill="none" stroke-width="4"/></g></symbol>
+<symbol id="mark-daty" viewBox="0 0 24 24"><circle cx="8" cy="9.4" r="2.2"/><path d="M4.6 19.6 a3.4 4 0 0 1 6.8 0"/><circle cx="16" cy="9.4" r="2.2"/><path d="M12.6 19.6 a3.4 4 0 0 1 6.8 0"/><path fill="currentColor" stroke="none" transform="translate(12 5.4) scale(1.25)" d="M0 1.7C-1.8 0-1.8-1.6-0.8-1.6-0.25-1.6 0-1.05 0-0.75 0-1.05 0.25-1.6 0.8-1.6 1.8-1.6 1.8 0 0 1.7Z"/></symbol>
+<symbol id="mark-myfamily" viewBox="0 0 24 24"><path d="M4.5 11.2 l7.5 -6 7.5 6"/><path d="M6.4 11 v8 h11.2 v-8"/><path fill="currentColor" stroke="none" transform="translate(12 15) scale(1.6)" d="M0 1.7C-1.8 0-1.8-1.6-0.8-1.6-0.25-1.6 0-1.05 0-0.75 0-1.05 0.25-1.6 0.8-1.6 1.8-1.6 1.8 0 0 1.7Z"/></symbol>
+<symbol id="mark-maty" viewBox="0 0 24 24"><circle cx="9.4" cy="12" r="3.4"/><circle cx="14.6" cy="12" r="3.4"/><path fill="currentColor" stroke="none" transform="translate(12 12) scale(1.1)" d="M0 1.7C-1.8 0-1.8-1.6-0.8-1.6-0.25-1.6 0-1.05 0-0.75 0-1.05 0.25-1.6 0.8-1.6 1.8-1.6 1.8 0 0 1.7Z"/></symbol>
+<symbol id="mark-varyy" viewBox="0 0 100 100"><g fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="50" r="18" stroke="url(#grad-g-mating)" fill="none"/><line x1="50" y1="68" x2="50" y2="86" stroke="url(#grad-g-mating)"/><line x1="42" y1="78" x2="58" y2="78" stroke="url(#grad-g-mating)"/><line x1="62" y1="38" x2="82" y2="18" stroke="url(#grad-g-mating)"/><path d="M70 14 L86 14 L86 30" stroke="url(#grad-g-mating)" fill="none"/></g></symbol>
+<symbol id="mark-evily" viewBox="0 0 24 24"><path d="M12 18.5 C5.5 13 5.5 8 8.7 8 10.7 8 12 9.9 12 9.9 12 9.9 13.3 8 15.3 8 18.5 8 18.5 13 12 18.5Z"/><path d="M9.2 7.6 q-.7 -1.8 .1 -2.9"/><path d="M14.8 7.6 q.7 -1.8 -.1 -2.9"/><path d="M12 18.5 q3.2 1 3.2 -2.2"/><path fill="currentColor" stroke="none" d="M13.6 13.8 l1.8 -.5 -.5 1.9z"/></symbol>
+<symbol id="mark-trusty" viewBox="0 0 24 24"><circle cx="9.4" cy="8.8" r="2.4"/><circle cx="14.6" cy="8.8" r="2.4"/><path d="M4.5 19.5 a7.5 7 0 0 1 15 0"/></symbol>
+<symbol id="mark-crumbly" viewBox="0 0 24 24"><path d="M12 18.5 C5.5 13 5.5 8 8.7 8 10.7 8 12 9.9 12 9.9 12 9.9 13.3 8 15.3 8 18.5 8 18.5 13 12 18.5Z"/><path d="M12 10 v3.2"/><circle fill="currentColor" stroke="none" cx="12" cy="15.4" r=".85"/></symbol>
+<symbol id="mark-parenty" viewBox="0 0 24 24"><circle cx="7" cy="8.6" r="2"/><path d="M3.8 19.5 a3.2 3.8 0 0 1 6.4 0"/><circle cx="17" cy="8.6" r="2"/><path d="M13.8 19.5 a3.2 3.8 0 0 1 6.4 0"/><circle cx="12" cy="13" r="1.6"/><path d="M9.6 20 a2.4 2.8 0 0 1 4.8 0"/></symbol>
+<symbol id="mark-fity" viewBox="0 0 24 24"><path d="M7.5 4.5C12 8.25 12 15.75 7.5 19.5"/><path d="M16.5 4.5C12 8.25 12 15.75 16.5 19.5"/><path d="M9.2 8h5.6"/><path d="M8.4 12h7.2"/><path d="M9.2 16h5.6"/></symbol>
+<symbol id="mark-keys" viewBox="0 0 100 100"><g fill="url(#grad-g-violet)" stroke="none"><g transform="rotate(0 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g><g transform="rotate(72 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g><g transform="rotate(288 50 50)"><ellipse cx="50" cy="26" rx="6.5" ry="17"/></g><circle cx="50" cy="50" r="4.5"/></g></symbol>
+<symbol id="mark-fivy" viewBox="0 0 100 100"><g fill="url(#grad-g-inside)" stroke="none"><circle cx="50" cy="20" r="8"/><circle cx="79" cy="41" r="8"/><circle cx="68" cy="77" r="8"/><circle cx="32" cy="77" r="8"/><circle cx="21" cy="41" r="8"/><circle cx="50" cy="52" r="6"/></g></symbol>
+<symbol id="mark-puzzy" viewBox="0 0 100 100"><g transform="translate(8 8) scale(3.5)" fill="currentColor" stroke="none"><circle cx="8.7" cy="14.2" r="4.8"/><circle cx="15.3" cy="14.2" r="4.8"/><circle cx="12" cy="9.4" r="4.8"/></g></symbol>
+<symbol id="mark-loly" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.5 a3.5 3.2 0 0 0 7 0"/><circle fill="currentColor" stroke="none" cx="9" cy="9.2" r="1"/><circle fill="currentColor" stroke="none" cx="15" cy="9.2" r="1"/></symbol>
+<symbol id="mark-wisy" viewBox="0 0 24 24"><path d="M8.25 9.75a3.75 3.75 0 1 1 7.5 0c0 2.25-1.875 2.625-1.875 4.875H10.125c0-2.25-1.875-2.625-1.875-4.875z"/><path d="M10.5 16.875h3M11.25 18.75h1.5"/></symbol>
+<symbol id="mark-chacrikun" viewBox="0 0 24 24"><ellipse cx="12" cy="8.5" rx="7" ry="3"/><path d="M5 8.5v6c0 1.9 3.1 3.4 7 3.4s7-1.5 7-3.4v-6"/><path d="M18.5 4.5l-3 8M21 6l-3 8"/></symbol>
+<symbol id="mark-comby" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="5"/><circle cx="8.8" cy="14" r="5"/><circle cx="15.2" cy="14" r="5"/></symbol>
+<symbol id="mark-confluenty" viewBox="0 0 24 24"><path d="M3 12h7.2"/><path d="M7.6 8.4 11 12 7.6 15.6"/><path d="M21 12h-7.2"/><path d="M16.4 8.4 13 12 16.4 15.6"/><circle fill="currentColor" stroke="none" cx="12" cy="12" r="1"/></symbol>
+<symbol id="mark-electrorchestra" viewBox="0 0 24 24"><path d="M3 12h3l2-6 3 12 3-9 2 3h5"/></symbol>
+<symbol id="mark-frotis" viewBox="0 0 24 24"><path d="M4 13h16"/><path d="M6 13a6 6 0 0 0 12 0"/><path d="M9 4.6c1.1 1.3 1.1 3 0 4.3M12 3c1.6 1.9 1.6 4.2 0 6.1M15 4.6c1.1 1.3 1.1 3 0 4.3"/></symbol>
+<symbol id="mark-linky" viewBox="0 0 24 24"><circle cx="7.5" cy="7.5" r="3"/><circle cx="16.5" cy="16.5" r="3"/><path d="M9.7 9.7 14.3 14.3"/></symbol>
+<symbol id="mark-poly" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a4 4 0 0 0 0 8 4 4 0 0 1 0 8"/><circle fill="currentColor" stroke="none" cx="12" cy="8" r="1.1"/><circle cx="12" cy="16" r="1.1"/></symbol>
+<symbol id="mark-raty" viewBox="0 0 24 24"><path d="M4 17a8 8 0 0 1 16 0"/><path d="M7 17a5 5 0 0 1 10 0"/><path d="M9.5 17a2.5 2.5 0 0 1 5 0"/><circle fill="currentColor" stroke="none" cx="12" cy="17" r="1.3"/></symbol>
+<symbol id="mark-sety" viewBox="0 0 32 32"><g transform="translate(4 4)" fill="none" stroke="#f5a623" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 4.5v2.2M12 17.3v2.2M5 8 6.9 9.1M17.1 14.9 19 16M5 16 6.9 14.9M17.1 9.1 19 8"/></g></symbol>
+<symbol id="mark-vizy" viewBox="0 0 24 24"><path d="M3 12s3.6-5.5 9-5.5 9 5.5 9 5.5-3.6 5.5-9 5.5-9-5.5-9-5.5z"/><circle cx="12" cy="12" r="2.4"/><circle fill="currentColor" stroke="none" cx="12" cy="12" r="0.9"/></symbol>
+<symbol id="mark-vizy2" viewBox="0 0 24 24"><path d="M12 12 20 12M12 12 16 5M12 12 8 5M12 12 4 12M12 12 8 19M12 12 16 19"/><circle fill="currentColor" stroke="none" cx="12" cy="12" r="2"/><circle cx="20" cy="12" r="1.2"/><circle cx="16" cy="5" r="1.2"/><circle cx="8" cy="5" r="1.2"/><circle cx="4" cy="12" r="1.2"/><circle cx="8" cy="19" r="1.2"/><circle cx="16" cy="19" r="1.2"/></symbol>
+<symbol id="mark-questy" viewBox="0 0 24 24"><polygon points="12,2.5 20,7 20,17 12,21.5 4,17 4,7"/><path d="M9.5 8.8A2.6 2.6 0 0 1 14.5 9c0 1.8-2.5 2-2.5 3.4"/><circle fill="currentColor" stroke="none" cx="12" cy="16.3" r=".9"/></symbol>
+<symbol id="mark-realy" viewBox="0 0 100 100"><g fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><g stroke="url(#grad-g-social)" fill="none"><path d="M14 30 Q34 50 54 30 T 86 30"/><path d="M14 50 Q34 70 54 50 T 86 50"/><path d="M14 70 Q34 50 54 70 T 86 70"/></g></g></symbol>
+<symbol id="mark-nety" viewBox="0 0 100 100"><g fill="none" stroke="url(#grad-g-social)" stroke-width="3"><line x1="50" y1="50" x2="50" y2="18"/><line x1="50" y1="50" x2="80" y2="40"/><line x1="50" y1="50" x2="70" y2="78"/><line x1="50" y1="50" x2="30" y2="78"/><line x1="50" y1="50" x2="20" y2="40"/></g><g fill="url(#grad-g-social)" stroke="none"><circle cx="50" cy="50" r="9"/><circle cx="50" cy="18" r="6"/><circle cx="80" cy="40" r="6"/><circle cx="70" cy="78" r="6"/><circle cx="30" cy="78" r="6"/><circle cx="20" cy="40" r="6"/></g></symbol>
+<symbol id="mark-socy" viewBox="0 0 100 100"><g fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 50 Q30 30 50 50 Q70 30 86 50" stroke="url(#grad-g-social)" fill="none"/><path d="M50 50 L50 60" stroke="url(#grad-g-social)" fill="none"/><circle cx="50" cy="64" r="2.5" fill="url(#grad-g-social)" stroke="none"/></g></symbol>
+<symbol id="mark-blogy" viewBox="0 0 100 100"><g fill="url(#grad-g-social)" stroke="none"><rect x="20" y="62" width="13" height="20" rx="3"/><rect x="37" y="48" width="13" height="34" rx="3"/><rect x="54" y="34" width="13" height="48" rx="3"/><rect x="71" y="20" width="13" height="62" rx="3"/></g></symbol>
+<symbol id="mark-wizy" viewBox="0 0 24 24"><path d="M12 3l1.875 5.25L19.125 10.125 13.875 12 12 17.25 10.125 12 4.875 10.125 10.125 8.25z"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/></symbol>
+<symbol id="mark-browsy" viewBox="0 0 24 24"><rect x="3.75" y="6.75" width="12.75" height="10.5" rx="1.875"/><rect x="8.25" y="9.75" width="12.75" height="10.5" rx="1.875"/><path d="M8.25 12.75h12.75"/></symbol>
+<symbol id="mark-crafty" viewBox="0 0 24 24"><path d="M12 3.8 L18.6 10 L12 20.2 L5.4 10 Z"/><path d="M5.4 10 H18.6"/><path d="M12 3.8 L9 10 L12 20.2"/><path d="M12 3.8 L15 10 L12 20.2"/></symbol>
+<symbol id="mark-worthing" viewBox="0 0 24 24"><circle cx="12" cy="6.4" r="2.3"/><circle cx="12" cy="17.6" r="2.3"/><circle cx="6.4" cy="12" r="2.3"/><circle cx="17.6" cy="12" r="2.3"/><circle cx="8.05" cy="8.05" r="2.3"/><circle cx="15.95" cy="8.05" r="2.3"/><circle cx="8.05" cy="15.95" r="2.3"/><circle cx="15.95" cy="15.95" r="2.3"/><circle fill="currentColor" stroke="none" cx="12" cy="12" r="2.2"/></symbol>
+<symbol id="mark-lowy" viewBox="0 0 24 24"><path d="M12 20.5V11"/><path d="M12 13.5C8 13.5 6 10.5 6 7.5c3 0 6 2 6 6z"/><path d="M12 11.5c4 0 6-3 6-6-3 0-6 2-6 6z"/></symbol>
+<symbol id="mark-dealy" viewBox="0 0 24 24"><path d="M7 6.5C13 9 13 15 7 17.5"/><path d="M17 6.5C11 9 11 15 17 17.5"/><circle fill="currentColor" stroke="none" cx="12" cy="12" r="1.9"/></symbol>
+<symbol id="mark-freed" viewBox="0 0 24 24"><path d="M4.5 13.5c3.5-4 5.5-.8 7.5-.8s4-3.2 7.5.8"/><circle fill="currentColor" stroke="none" cx="12" cy="12.7" r="1.8"/></symbol>
+<symbol id="mark-inventary" viewBox="0 0 24 24"><rect x="4" y="11" width="9.5" height="8" rx="1.2"/><rect x="11" y="4.5" width="9.5" height="8" rx="1.2"/><path d="M13.6 8.3 l1.6 1.6 L18.4 6.7"/></symbol>
+<symbol id="mark-add-offers" viewBox="0 0 100 100"><g fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><g stroke="url(#grad-economia)" fill="none" stroke-width="6"><line x1="50" y1="22" x2="50" y2="78"/><line x1="22" y1="50" x2="78" y2="50"/></g><g fill="url(#grad-economia)" stroke="none"><circle cx="20" cy="20" r="2.5"/><circle cx="80" cy="20" r="2.5"/><circle cx="20" cy="80" r="2.5"/><circle cx="80" cy="80" r="2.5"/></g></g></symbol>
+<symbol id="mark-rewardyy" viewBox="0 0 24 24"><path d="M12 5 13.7 9.65 18.66 9.84 14.76 12.9 16.11 17.66 12 14.9 7.89 17.66 9.24 12.9 5.34 9.84 10.3 9.65Z"/><circle fill="currentColor" stroke="none" cx="12" cy="12" r="2"/></symbol>
+<symbol id="mark-simple-things" viewBox="0 0 100 100"><g fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><g fill="url(#grad-economia)" stroke="none"><circle cx="22" cy="50" r="10"/><rect x="40" y="40" width="20" height="20" rx="2"/><polygon points="78,40 88,60 68,60"/></g></g></symbol>
+<symbol id="mark-wanty" viewBox="0 0 24 24"><path d="M12 4.5 13.34 10.66 19.5 12 13.34 13.34 12 19.5 10.66 13.34 4.5 12 10.66 10.66Z"/><circle fill="currentColor" stroke="none" cx="12" cy="12" r="1.9"/></symbol>
+</svg>
+<main>
+  <h1 class="sr-only">Questy FLOVE</h1>
+  <div class="questy-brand top-drop" id="introDrop" role="button" tabindex="0" aria-label="Questy menu">
+    <svg class="brand-logo" viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="qfbrand" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff4d4d"/><stop offset=".2" stop-color="#ff9a3a"/><stop offset=".4" stop-color="#ffc41f"/><stop offset=".6" stop-color="#3fb950"/><stop offset=".8" stop-color="#3aa0ff"/><stop offset="1" stop-color="#b06bff"/></linearGradient></defs><polygon points="60,8 102,30 102,74 60,96 18,74 18,30" fill="none" stroke="url(#qfbrand)" stroke-width="10"/><text x="60" y="62" text-anchor="middle" font-family="Georgia,serif" font-size="38" font-weight="700" fill="url(#qfbrand)">?</text></svg>
+    <div class="brand-meta">
+      <span class="brand-name">Questy FLOVE</span>
+    </div>
+    <div class="top-drop-menu" id="introMenu">
+      <button type="button" class="top-drop-item" id="themeToggle" aria-label="Toggle theme">◐</button>
+    </div>
+  </div>
+
+  <div class="top-links">
+    <div class="top-drop" id="introsDrop">
+      <button type="button" class="top-link" id="introsDropBtn" aria-haspopup="true" aria-expanded="false">Intros ▾</button>
+      <div class="top-drop-menu" id="introsMenu">
+        <a href="../questy/intro.html" class="top-drop-item">Why</a>
+        <a href="https://pub-e19f5fad18fb474fb6d6c4f91194e333.r2.dev/Shared/audio/questy-advanced-case.mp3" class="top-drop-item" target="_blank" rel="noopener">Audio</a>
+        <a href="../questy/index.html" class="top-drop-item">How to</a>
+      </div>
+    </div>
+    <div class="top-drop" id="skillsDrop">
+      <button type="button" class="top-link" id="skillsDropBtn" aria-haspopup="true" aria-expanded="false">Skills.md ▾</button>
+      <div class="top-drop-menu" id="skillsDropMenu">
+        <div class="top-drop-sub" id="questySub">
+          <a href="../questy/SKILL.md" class="top-drop-item top-drop-parent" id="questySubBtn" aria-haspopup="true" aria-expanded="false">Questy <span class="sub-arrow" aria-hidden="true">▸</span></a>
+          <div class="top-submenu" id="questySubMenu">
+            <a href="../questy-html/index.html" class="top-drop-item">HTML</a>
+            <a href="index.html" class="top-drop-item">Flove</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="top-drop" id="usecasesDrop">
+      <button type="button" class="top-link" id="usecasesDropBtn" aria-haspopup="true" aria-expanded="false">Usecases ▾</button>
+      <div class="top-drop-menu" id="usecasesMenu">
+        <a href="../questy/index.html" class="top-drop-item">Agent100</a>
+        <a href="../questy/index.html" class="top-drop-item">Recommended</a>
+        <a href="../questy/index.html" class="top-drop-item">All setup</a>
+        <a href="../questy/index.html" class="top-drop-item">Crazy Bob</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="gate" id="gate">
+    <input type="text" class="project-name" id="project-name" placeholder="to my project name here…" autocomplete="off" aria-label="Project name (optional)">
+    <button class="enable-btn" id="enable-btn" type="button" aria-controls="tool">Enable</button>
+  </div>
+
+  <div class="tool" id="tool" data-stage="scale">
+    <div class="card" id="influence-card" data-stage="scale" aria-label="Flove influence">
+      <h2 class="influence-title">FLOVE INFLUENCE <span class="skill-variant" id="skill-variant">questy-flove</span></h2>
+      <div class="gauge" id="gauge" role="radiogroup" aria-label="Flove level 0-5">
+        <button type="button" data-v="0">0</button>
+        <button type="button" data-v="1">1</button>
+        <button type="button" data-v="2">2</button>
+        <button type="button" data-v="3">3</button>
+        <button type="button" data-v="4">4</button>
+        <button type="button" data-v="5">5</button>
+      </div>
+      <div class="flove-extra show" id="flove-extra">
+        <div class="voice-block">
+          <div class="voice-row" id="voice-row">
+            <button type="button" data-v="love" title="Love" data-desc="😍 Love — care and continuity: warm, never sentimental.">😍 Love</button>
+            <button type="button" data-v="joy" title="Joy" data-desc="😂 Joy — earned delight: wit and surprise that sharpen the work.">😂 Joy</button>
+            <button type="button" data-v="wise" title="Wisdom" data-desc="🫠 Wisdom — measured judgement: names trade-offs and leaves room for doubt.">🫠 Wisdom</button>
+          </div>
+        </div>
+
+        <div class="cat-weight-grid" id="cat-weight-grid"></div>
+        <p class="voice-info" id="voice-info"></p>
+
+        <div class="machine-block" id="machine-block-wrap">
+          <button class="human-btn" id="human-btn" type="button" aria-pressed="false" title="Human version" aria-label="Show the human version">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="8" r="3.4"/>
+              <path d="M5.2 20c.7-3.6 3.4-5.6 6.8-5.6s6.1 2 6.8 5.6"/>
+            </svg>
+          </button>
+          <pre id="machine-block"></pre>
+          <div class="human-block" id="human-block" hidden></div>
+          <button type="button" class="copy-btn btn-generate machine-copy" id="machine-copy">🚀 See &amp; Copy</button>
+        </div>
+
+
+      </div>
+    </div>
+
+    <div class="card after-rater per-app-card" id="pick-card" aria-labelledby="per-app-title">
+      <div class="per-app-head">
+        <div class="per-app-title-wrap">
+          <span class="per-app-kicker">Selection</span>
+          <h2 id="per-app-title">Per app</h2>
+        </div>
+        <span class="per-app-count" id="app-count">0 selected</span>
+        <button type="button" class="per-app-clear" id="app-clear">clear</button>
+      </div>
+      <p class="per-app-hint">Pick the apps the session should ask about. Each brings its own fields and category colour.</p>
+      <input type="search" class="per-app-filter" id="app-filter" placeholder="filter apps…" aria-label="Filter apps">
+      <div id="app-picker"></div>
+      <div class="app-detail" id="app-detail" hidden>
+        <div class="app-detail-head">
+          <span class="app-detail-logo" id="app-detail-logo"></span>
+          <div class="app-detail-meta"><b id="app-detail-name"></b><span id="app-detail-cat"></span></div>
+          <button type="button" class="app-detail-next" id="app-detail-next">next app ›</button>
+        </div>
+        <p id="app-detail-text"></p>
+      </div>
+    </div>
+
+    <div class="card after-rater simpler" id="simpler">
+      <h2 class="simpler-title">SIMPLER VERSIONS</h2>
+      <div class="versions-grid">
+        <div class="version" data-version="full">
+          <div class="version-head"><b>Full profile</b></div>
+          <div class="mini-gauge"><span>0</span><span>1</span><span>2</span><span>3</span><span class="on">4</span></div>
+          <div class="mini-cats"><span style="background:#ff9b5e">Inside</span><span style="background:#ffd84d">Mating</span><span style="background:#6ed089">Ling</span><span style="background:#5ea4e6">Social</span><span style="background:#6b6bd9;color:#fff">Econ</span></div>
+          <div class="mini-voice"><span>😍 Love</span><span>😂 Joy</span><span>🫠 Wisdom</span></div>
+        </div>
+        <div class="version" data-version="compact">
+          <div class="version-head"><b>Compact</b></div>
+          <div class="mini-gauge"><span>0</span><span>1</span><span>2</span><span>3</span><span class="on">4</span></div>
+          <div class="mini-voice"><span>😍 Love</span><span>😂 Joy</span><span>🫠 Wisdom</span></div>
+        </div>
+        <div class="version" data-version="minimal">
+          <div class="version-head"><b>Minimal</b></div>
+          <div class="mini-gauge"><span>0</span><span>1</span><span>2</span><span>3</span><span class="on">4</span></div>
+          <div class="mini-line">Flove takes the lead: the session is built from the whole flove model.</div>
+        </div>
+        <div class="version" data-version="micro">
+          <div class="version-head"><b>Micro</b></div>
+          <div class="mini-gauge"><span>0</span><span>1</span><span>2</span><span>3</span><span class="on">4</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card after-rater" id="demonstration" aria-labelledby="demo-title">
+      <p class="demo-meta" id="demo-meta">(Red and Blue, Influence Level: 3 · Love ×2)</p>
+      <h2 id="demo-title" class="demo-title">DEMONSTRATION</h2>
+      <p class="demo-lead" id="demo-lead">A Questy survey mixed into a custom project: <b>improving the United Nations</b>, with flove influence degree 3 and Love doubled. Questy asks; level 3 lets the project’s field page speak in its category colour.</p>
+      <div class="demo-switch" role="tablist" aria-label="Demo survey">
+        <button type="button" class="demo-tab on" data-demo="project" role="tab" aria-selected="true" aria-controls="demo-survey">Demo 1 · custom project</button>
+        <button type="button" class="demo-tab" data-demo="self" role="tab" aria-selected="false" aria-controls="demo-survey">Demo 2 · no project</button>
+      </div>
+      <div class="demo-project">
+        <span class="demo-kicker" id="demo-kicker">custom project</span>
+        <b id="demo-name">Improving the United Nations</b>
+        <span class="demo-tags" id="demo-tags">questy-flove-3 · Love ×2</span>
+      </div>
+      <div class="demo-mix" id="demo-mix"></div>
+      <div class="hat-chips" id="hat-chips"></div>
+      <div class="demo-survey" id="demo-survey" role="tabpanel"></div>
+      <button type="button" class="demo-reset" id="demo-reset">reset demo</button>
+    </div>
+
+    <div class="card after-rater" id="questions-card" style="display:none" aria-label="Questions">
+      <div id="q-batch-area"></div>
+      <div class="batch-nav">
+        <button id="prev-btn" disabled>‹ prev</button>
+        <span class="batch-info" id="batch-info"></span>
+        <button id="next-btn">next ›</button>
+      </div>
+    </div>
+
+    <div class="card after-rater export-card" id="export-card" style="display:none" aria-label="Export">
+      <div class="export-btns">
+        <button id="copy-btn" class="copy-btn btn-generate">🚀 See &amp; Copy</button>
+        <div class="export-secondary">
+          <button id="dl-btn" class="copy-btn">⬇ JSON</button>
+          <button id="preview-toggle" class="copy-btn">👁 Preview</button>
+        </div>
+      </div>
+      <pre class="json-preview" id="json-preview"></pre>
+      <pre class="prompt-preview" id="prompt-preview"></pre>
+    </div>
+
+    <div class="links after-rater">
+      <a href="../questy/SKILL.md">Questy</a>
+      <a href="../questy-all/SKILL.md">Questy-all</a>
+      <a href="../questy/index.html">Survey</a>
+    </div>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+// ===== DATA =====
+// >>> catalog data (generated by build-questy-flove-data.py — hand edits lost)
+const CATEGORIES=[
+  {id:'inside',label:'Inside',colour:'#ff9b5e',hat:'heart',apps:['Goddy','Astry','Hacky','DieSafe','Souls','Profily','Sensy','Pracsys','Willy','MoralY','Lovy']},
+  {id:'mating',label:'Mating',colour:'#ffd84d',hat:'optimism',apps:['Daty','MyFamily','Maty','Varyy','Evily','Trusty','Crumbly','Parenty']},
+  {id:'ling',label:'Ling / Words',colour:'#6ed089',hat:'creative',apps:['Fity','Keys','Fivy','Puzzy','Loly','Wisy','Chacrikun','Comby','Confluenty','ElectrOrchestra','Frotis','Linky','Poly','Raty','Sety','Vizy','Vizy2']},
+  {id:'social',label:'Social',colour:'#5ea4e6',hat:'make',apps:['Questy','Realy','Nety','Socy','Blogy','Wizy','Browsy']},
+  {id:'economy',label:'Economy',colour:'#6b6bd9',hat:'facts',apps:['Crafty','Worthing','Lowy','Dealy','Freed','Inventary','Minioffer','Offer','Rewardy','Shareful','Wanty']},
+];
+const CAT_COLOURS={"inside": "#ff9b5e", "mating": "#ffd84d", "ling": "#6ed089", "social": "#5ea4e6", "economy": "#6b6bd9"};
+
+// Per-app input fields (embedded snapshot from routing.json)
+const INPUT_FIELDS={
+  Goddy:["Matrix cells"],
+  Astry:["Date of birth", "Focus", "Image prompt", "Location", "More details", "Time of birth (optional)", "Traditions"],
+  Hacky:["Dislikes", "Likes", "Who"],
+  DieSafe:["Companions", "Environment", "Heritage", "Legal", "Post-mortem scheduling", "Scenario", "Timeline"],
+  Souls:["Animal", "Animal attachment (optional)", "Biological system (channel)", "Biological system (stage 4)", "Channel thing 1", "Channel thing 2", "Channel thing 3", "Colour", "Immune subsystem", "Matter", "Matter thing 1", "Matter thing 2", "Matter thing 3", "Optional animal name (species 1)", "Optional animal name (species 2)", "Particle", "Particle thing 1", "Particle thing 2", "Particle thing 3", "Quality 1 of the colour", "Quality 2 of the colour", "Quality 3 of the colour", "Refined word for animal thing 1", "Refined word for animal thing 2", "Refined word for animal thing 3", "Refined word for colour quality 1", "Refined word for colour quality 2", "Refined word for colour quality 3", "Sense", "Sense thing 1", "Sense thing 2", "Sense thing 3", "Species category 1", "Species category 2", "Species category 3", "Specific matter", "Subsystem thing 1", "Subsystem thing 2", "Subsystem thing 3", "System thing 1", "System thing 2", "System thing 3", "Thing 1 about the animal", "Thing 1 from the creature", "Thing 1 through the system", "Thing 2 about the animal", "Thing 2 from the creature", "Thing 2 through the system", "Thing 3 about the animal", "Thing 3 from the creature", "Thing 3 through the system"],
+  Profily:["Message", "Selected offers", "Sub-avatars", "Wanty wants"],
+  Sensy:["Annex", "HELLO!", "Incentives", "Let me adore your", "Senses"],
+  Pracsys:["Immune subsystems", "Reasons", "System placements", "Verbs"],
+  Willy:["Will placements"],
+  MoralY:["Commandments", "Language", "Sins", "Word set"],
+  Fity:[],
+  Questy:["Add-ons", "Categories", "Doc roots", "Extra files", "Extra plugins", "Extra types", "Flove influence (0–5)", "Grouped per", "My data", "Project name", "Questions per batch", "Questions per type", "Routes", "Scripts", "Session notes", "Thinking hats", "Tone"],
+  Daty:["Age", "Age from", "Age to", "Bonds", "Current projects", "Desired projects", "Do I want kids?", "How many kids", "Imaginary projects", "Inner", "Kids ages", "Living arrangement", "Name", "Network", "Photo or video", "Profile link", "Resources", "Sex"],
+  MyFamily:["Attention", "Contact", "Feedback", "Friend's name", "Gifting", "Influence", "Money", "Sharing"],
+  Maty:["Boundary domain", "Boundary proximity", "Boundary scope", "Boundary strength", "Extra preferences or clarifications", "Mating type", "Note about a boundary", "Note about others", "Note about what you want", "Note about who", "Offeror", "Openness", "Quick note", "Recipient", "Sex interest", "Transparency", "Us with others"],
+  Varyy:["Custom questions", "I am a", "What I would love the other gender to grow into", "What attracts me", "What bothers me"],
+  Evily:["Also allow", "Compensable", "Curse me", "During (days)", "Expires in (days)", "Fully with", "Get contact", "I allow to send me to hell", "Know me more", "Other", "Person", "Reciprocity", "Use grants", "Use things", "Visibility", "Warn days", "Warn me in advance", "With what"],
+  Trusty:["Check-in", "Context", "Fallback", "Limit", "Other conditions", "Relationship", "Scopes", "Trusted person", "Trustful signals"],
+  Crumbly:["During days", "How", "How long in advance", "Me", "Name", "Other actions / conditions", "Permissions", "Rights expire in days", "Who - what, in advance"],
+  Parenty:["Closeness", "Co-sleep details", "Coexistence", "Emotion", "Father", "Gestation details", "Grants", "Infancy details", "Intensity", "Lactation details", "Living standard", "More details 1", "More details 2", "More details 3", "More details 4", "More details 5", "More details 6", "Mother", "Openness", "Schooling", "Surroundings"],
+  Lovy:["Circles", "Filters", "Liked items", "Rewards"],
+  Keys:["Combo definitions", "Custom group", "Decks", "Favourites", "Free groups", "Master groups", "Perspectives"],
+  Fivy:["Custom fifth deck", "Fixed decks", "Title of your fivy"],
+  Puzzy:["Apps", "Language", "Layout", "Open categories", "Sized bubbles", "Theme"],
+  Loly:[],
+  Wisy:["Explainers", "Field", "Formalise", "Idea", "Mode", "Prism", "Teleology", "Time span", "Tone"],
+  Chacrikun:[],
+  Comby:["Custom tokens", "Emotions", "Keywords", "Selected combinations", "Senses", "Systems", "Wise them"],
+  Confluenty:["Confluence rows", "Sizes"],
+  ElectrOrchestra:[],
+  Frotis:[],
+  Linky:["Links", "Word"],
+  Poly:["Custom rater", "Declared bias", "Language", "More raters", "Opposite texts", "Saved custom raters", "Text"],
+  Raty:["Core scales", "Custom rater", "Language", "Object word", "Phrase mode", "Raters", "Subject word", "Visible rater sizes"],
+  Sety:["Dashboard visibility", "Favourites", "Fields", "Interaction", "Labels", "Language", "Medias", "Navigation", "Network", "Perspectives", "Platforms", "Preferred explains", "Preferred raters", "Profile", "Relation types", "Style", "Wizard"],
+  Vizy:["Raters", "Relations", "Wizard", "Word"],
+  Vizy2:["Categories", "Favourites", "Main word", "Nodes", "Show stats"],
+  Realy:["New realm name", "Notes attachment", "Realms", "Whispers & notes"],
+  Nety:["b2", "g1", "m3", "s1", "x1", "x2", "x3"],
+  Socy:["Comments", "New category", "Related categories", "Standard"],
+  Blogy:["Categories", "Circles", "Entry", "Labeler", "Language", "Media", "Note", "Privacy", "Side detail", "Tags", "Title"],
+  Wizy:[],
+  Browsy:[],
+  Crafty:["Currency", "I confirm the information", "Product name", "Profit split", "Promissory contributions", "Short description", "Target price per unit"],
+  Worthing:["Ratings", "Thing to worth"],
+  Lowy:["Categories", "Kept values", "Sayings", "Ticked tools"],
+  Dealy:["Contribution", "Description", "Modes", "Notes", "Offer title", "People", "Ratings", "Sector", "Settling", "Tags", "Time", "Use clauses", "Use type", "Why", "Worth", "Zone"],
+  Freed:["Curse detail", "Curse potential deceivers", "Ownership", "Reasons for freeing", "Thing", "Wishes"],
+  Inventary:["Categories", "Items", "New thing"],
+  Minioffer:["Condition (1–5)", "Description", "Offer types", "Preference (1–5)", "What are you offering?"],
+  Offer:[],
+  Rewardy:["Comparison view", "Message", "Providers", "Rating axes", "Roles", "Sub-offers"],
+  Shareful:["Description", "Offer title", "Reasons", "Sector", "Tags", "Time and space", "Use", "Who may borrow", "Worth it", "Zone"],
+  Wanty:["Interest", "Like", "Project", "Purpose", "Want", "Wish"],
+};
+
+// Hat colours (category hat in CATEGORIES is authoritative)
+const HAT_COLOURS={"facts": "#6b7280", "heart": "#e5484d", "risk": "#50474e", "optimism": "#d3a83a", "creative": "#2f9e5f", "make": "#3a7bd5"};
+// <<< catalog data
+
+// App marks for the Per app buttons — extracted from apps/apps-full.html
+const APP_MARK={"Goddy":{id:"goddy",vb:"0 0 64 64"}, "Astry":{id:"astry",vb:"0 0 100 100"}, "Hacky":{id:"hacky",vb:"0 0 100 100"}, "DieSafe":{id:"diesafe",vb:"0 0 100 100"}, "Souls":{id:"souls",vb:"0 0 100 100"}, "Profily":{id:"profily",vb:"0 0 100 100"}, "Sensy":{id:"sensy",vb:"0 0 64 64"}, "Pracsys":{id:"pracsys",vb:"0 0 100 100"}, "Willy":{id:"willy",vb:"0 0 100 100"}, "MoralY":{id:"moraly",vb:"0 0 100 100"}, "Lovy":{id:"lovy",vb:"0 0 100 100"}, "Daty":{id:"daty",vb:"0 0 24 24"}, "MyFamily":{id:"myfamily",vb:"0 0 24 24"}, "Maty":{id:"maty",vb:"0 0 24 24"}, "Varyy":{id:"varyy",vb:"0 0 100 100"}, "Evily":{id:"evily",vb:"0 0 24 24"}, "Trusty":{id:"trusty",vb:"0 0 24 24"}, "Crumbly":{id:"crumbly",vb:"0 0 24 24"}, "Parenty":{id:"parenty",vb:"0 0 24 24"}, "Fity":{id:"fity",vb:"0 0 24 24"}, "Keys":{id:"keys",vb:"0 0 100 100"}, "Fivy":{id:"fivy",vb:"0 0 100 100"}, "Puzzy":{id:"puzzy",vb:"0 0 100 100"}, "Loly":{id:"loly",vb:"0 0 24 24"}, "Wisy":{id:"wisy",vb:"0 0 24 24"}, "Chacrikun":{id:"chacrikun",vb:"0 0 24 24"}, "Comby":{id:"comby",vb:"0 0 24 24"}, "Confluenty":{id:"confluenty",vb:"0 0 24 24"}, "ElectrOrchestra":{id:"electrorchestra",vb:"0 0 24 24"}, "Frotis":{id:"frotis",vb:"0 0 24 24"}, "Linky":{id:"linky",vb:"0 0 24 24"}, "Poly":{id:"poly",vb:"0 0 24 24"}, "Raty":{id:"raty",vb:"0 0 24 24"}, "Sety":{id:"sety",vb:"0 0 32 32"}, "Vizy":{id:"vizy",vb:"0 0 24 24"}, "Vizy2":{id:"vizy2",vb:"0 0 24 24"}, "Questy":{id:"questy",vb:"0 0 24 24"}, "Realy":{id:"realy",vb:"0 0 100 100"}, "Nety":{id:"nety",vb:"0 0 100 100"}, "Socy":{id:"socy",vb:"0 0 100 100"}, "Blogy":{id:"blogy",vb:"0 0 100 100"}, "Wizy":{id:"wizy",vb:"0 0 24 24"}, "Browsy":{id:"browsy",vb:"0 0 24 24"}, "Crafty":{id:"crafty",vb:"0 0 24 24"}, "Worthing":{id:"worthing",vb:"0 0 24 24"}, "Lowy":{id:"lowy",vb:"0 0 24 24"}, "Dealy":{id:"dealy",vb:"0 0 24 24"}, "Freed":{id:"freed",vb:"0 0 24 24"}, "Inventary":{id:"inventary",vb:"0 0 24 24"}, "Minioffer":{id:"add-offers",vb:"0 0 100 100"}, "Offer":{id:"add-offers",vb:"0 0 100 100"}, "Rewardy":{id:"rewardyy",vb:"0 0 24 24"}, "Shareful":{id:"simple-things",vb:"0 0 100 100"}, "Wanty":{id:"wanty",vb:"0 0 24 24"}};
+
+// Authored reflective question sets — the app's OWN questions, asked of the USER
+// (what they think/feel inside the app), never of the maker. Each entry: key
+// (profile slot it lands on), text (the reflection), opts (candidate answers).
+const APP_QUESTIONS={
+  Goddy:[
+    {key:"Goddess exists",text:"Do you think there is a goddess?",opts:["Yes","No","Not sure","It depends"]},
+    {key:"God exists",text:"Do you think there is a god?",opts:["Yes","No","Not sure","It depends"]},
+    {key:"Goddess sees us",text:"Do you think the goddess sees us?",opts:["Yes","No","Not sure","It depends"]},
+    {key:"We see the goddess",text:"Do you think we can see the goddess?",opts:["Yes","No","Not sure","It depends"]},
+    {key:"God sees us",text:"Do you think god sees us?",opts:["Yes","No","Not sure","It depends"]},
+    {key:"We see god",text:"Do you think we can see god?",opts:["Yes","No","Not sure","It depends"]},
+    {key:"Goddess and God see each other",text:"Do the goddess and god see each other?",opts:["Yes","No","Not sure","It depends"]},
+    {key:"We see ourselves",text:"Do you think we truly see ourselves?",opts:["Yes","No","Not sure","It depends"]},
+    {key:"How far our seeing goes",text:"How fully do we see — a glimpse, a fuller look, or the whole?",opts:["A glimpse","A fuller look","The whole","I don't know"]}
+  ]
+};
+
+const FIELD_HINTS={
+  "Gender":"your gender identity","Desired relationship":"the kind of relationship you seek","Relationship style":"your style in relationships","Children":"whether you have or want children","About-me":"a short self-description","Media":"photos or media you share","Profiles":"other profiles you link","Projects · current":"projects you're working on now","Projects · desired":"projects you'd like to start","Projects · imaginary":"dream projects with no limits","Publish targets":"where you share publicly","Visibility":"who can see your profile",
+  "Matrix axes":"the dimensions of your value matrix","Cell levels":"the levels within each cell",
+  "Birth anchor":"your birth date or anchor","Traditions":"traditions you follow","Focus":"what you focus on","More details":"anything else about you",
+  "Dislikes":"things you avoid","Likes":"things you enjoy","Bridge":"how you bridge differences","Reveal":"what you reveal about yourself",
+  "Scenario":"the scenario you prepare for","Environment":"your preferred environment","Companions":"who you'd be with","Heritage":"what you leave behind","Farewell Message":"your farewell words","Post mortem actions scheduling":"arrangements after you're gone","Other things to do":"other preparations","Formal information":"formal details",
+  "Stage 1 · You":"who you are at the core","Stage 2 · Species + sense":"your species and senses","Senses":"how you sense the world","Species tree":"your lineage","Stage 3 · Biological system":"your biological makeup","Stage 4 · Matter":"what you're made of","Stage 5 · Particle":"your fundamental particles","Stage 5 · Immune subsystem":"your immune defences","Privacy mode":"how you stay private","Play with":"who you play with","Certify play":"how you certify play",
+  "Sections":"the sections of your profile","Wanty":"your wants","Offers":"what you offer","Contact":"how to reach you","Message wizards":"message assistants","Avatar tools":"avatar helpers",
+  "HELLO!":"your greeting","Let me adore your":"what you want adored","with-by my":"accompaniments","Other senses":"other senses you engage","Incentives":"what motivates you","Annex":"extra details","Disclaimer":"your disclaimer",
+  "Systems":"the systems you work with","Nervous subsystems":"nervous system layers","Immune subsystems":"immune layers","Stages":"your stages","Reason field":"your reasons","Verb field":"your actions",
+  "Wills (formal)":"your formal wills","Commandments":"your commandments","Sins":"your sins",
+  "I am a":"how you identify","Questions":"the questions you ask","Question placeholders":"question templates","Labelers (tone)":"tone labels you use",
+  "Terms":"your terms","Visibility":"who sees you","Compensation":"what you accept as compensation","I also allow to":"additional permissions",
+  "Who":"who you trust","Scope":"the scope of trust","Additional Protection":"extra protections","Trustful signals":"signals of trust","Declaration":"your declaration",
+  "Crumble":"what you crumble","Boycot":"what you boycott","Notifying":"how you notify","Only if":"conditions",
+  "Ways to start":"entry points","Triads":"three-part structures","Philosophy":"your philosophy","Service":"what you serve","Journalism":"your reporting","Fivy decks":"fivy card decks","Extra decks":"additional decks",
+  "Decks":"your card decks","Senses":"senses you engage","Flavors":"flavors you offer","Social":"social features","Elements":"elements you use","Fields (simplex)":"simplex fields",
+  "Categories":"your categories","Posts":"the posts you publish","Privacy":"who can read them","Rate apps":"how you rate apps","Relate apps":"how you relate apps","Redefine apps":"how you redefine apps",
+  "Realms":"the realms you visit","Realm subtitles":"realm subtitles","Real column":"real-world column","Fictional column":"fictional column","More":"more about your realms",
+  "Core categories":"your core categories","Standard form":"standard form fields","New category form":"new category fields",
+  "Project":"your project","Stage":"current stage","Contribution type":"type of contribution","Promisory contributions":"promised contributions","Wanted profits":"desired profits","Payout":"payout terms","Review":"review criteria",
+  "Meaningful":"what you find meaningful","Powerful":"what feels powerful","Useful":"what's useful to you","Friendly":"what feels friendly","Moods":"your moods",
+  "Love languages":"your love languages","Circles":"your social circles","Filters":"your filters","Media":"media you share","Reward":"rewards you value",
+  "Like":"what you like","Wish":"what you wish for","Interest":"your interests","Purpose":"your purpose",
+  "Project name":"the project name","Question count":"how many questions","Batch size":"questions per batch","Grouping":"how questions group","Thinking hats":"the hats you run","Addons":"which addons you run",
+  "Clip name":"the laugh's title","Tags":"its tags","Text":"the clip's text","Source":"where it came from","When":"when it happened",
+  "Parents":"your co-parenting arrangement","Education":"how you raise","Growth":"the growth stages you cover","Economy":"your household economy",
+  "Mode":"how you define","Prism":"the angle you view from","Teleology":"how the end aims","Formalise":"how you formalise the argument","Field":"the wisdom field","Time span":"the timespan you consider","Explainers":"the explainers you give","Tone":"the tone you set",
+  "Attention":"the attention you give","Influence":"how you influence each other","Feedback":"the feedback you give","Gifting":"how you gift","Sharing":"what you share","Money":"how money flows","Your friend is…":"how you describe your friend",
+  "Want":"what you want","Others":"how others are involved","Boundaries":"your boundaries","Notes":"your notes","Invitation":"the invitation you extend",
+  "Modes":"modes you use","Sectors":"sectors you cover","Zones":"zones you operate in","Worth it":"what's worth it","More details":"additional details","Time":"time preferences","Use type":"how you use it","People":"people involved","Contribution":"your contribution","Disputes":"dispute terms"
+};
+
+const INFLUENCE_NAMES=['None','Little','Some','Blend','Much','Very much'];
+const INFLUENCE_DESCS=['None — questions purely about the app, no flove vocabulary','Little — flove flavour, minimal ceremony','Some — flove touches where they help, lightly applied','Blend — flove conventions where they help (default) — the app’s field info page is recommended in its category hat/colour','Much — flove standards throughout — the related apps are recommended in the same category hat/colour','Very much — flove leads: the whole model, every app’s input fields and all cross links, shape the questions'];
+
+const LS_APPS='questy-flove-apps';
+const LS_INFLUENCE='questy-flove-influence';
+const LS_ANSWERS='questy-flove-answers';
+const LS_BATCH='questy-flove-batch';
+const LS_CATALOG='questy-flove-catalog';
+const LS_CATALOG_AT='questy-flove-catalog-at';
+const CATALOG_URL='https://flove.org/tools/routing.json';
+let liveCat=null;
+let liveCatAt=0;
+try{
+  const raw=localStorage.getItem(LS_CATALOG);
+  if(raw){liveCat=JSON.parse(raw);liveCatAt=parseInt(localStorage.getItem(LS_CATALOG_AT)||'0',10);}
+}catch(e){}
+
+let selectedApps=new Set();
+let detailApp=null;
+let influence=0;
+const LS_CATEGORY_WEIGHTS='questy-flove-category-weights';
+let categoryWeights={};
+CATEGORIES.forEach(c=>{ categoryWeights[c.id]=0; });
+const LS_VOICE='questy-flove-voice';
+let voice={love:0,joy:0,wise:0};
+let answers={};
+let currentBatch=0;
+let allQuestions=[];
+let stage='scale'; // scale → voice → cats, in that order
+function applyStage(){
+  const card=document.getElementById('influence-card');
+  const tool=document.getElementById('tool');
+  if(card) card.setAttribute('data-stage',stage);
+  if(tool) tool.setAttribute('data-stage',stage);
+}
+
+// ===== HELPERS =====
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)}
+function saveApps(){}
+function saveInfluence(){}
+function saveCategoryWeights(){}
+function saveVoice(){}
+function saveAnswers(){}
+function saveBatch(){}
+
+function appCat(app){for(const c of CATEGORIES)if(c.apps.includes(app))return c.id;return''}
+function appColour(app){return CAT_COLOURS[appCat(app)]||'#6c5ce7'}
+function categoryHat(app){
+  const c=CATEGORIES.find(x=>x.id===appCat(app));
+  return c&&c.hat?c.hat:'';
+}
+// One hat per app category. The question colour is the category's hat colour,
+// never a per-slot or per-app schema accent.
+function questionColour(app,field){
+  const h=categoryHat(app);
+  return HAT_COLOURS[h]||appColour(app);
+}
+function inputFieldsFor(app){
+  // Live synced catalog first (offline-cached), else the embedded snapshot
+  if(liveCat && liveCat.apps){
+    const id=(app==='MoralY'?'cathy':app==='Crumbly'?'crumbly':app.toLowerCase());
+    const hit=liveCat.apps.find(a=>a.id===id)
+      || liveCat.apps.find(a=>String(a.name||'').toLowerCase()===app.toLowerCase());
+    if(hit && Array.isArray(hit.fields)){
+      return hit.fields.map(f=>f.label).filter(Boolean).sort();
+    }
+  }
+  return INPUT_FIELDS[app]||[];
+}
+
+function catalogStatusText(){
+  if(liveCat){
+    return liveCatAt
+      ? 'cached · synced '+new Date(liveCatAt).toLocaleDateString()
+      : 'synced · this session';
+  }
+  return 'embedded catalog';
+}
+function renderCatalogStatus(){
+  const el=document.getElementById('cat-status');if(el)el.textContent=catalogStatusText();
+}
+function renderHatLegend(){
+  const el=document.getElementById('hat-chips');if(!el)return;
+  el.innerHTML=Object.entries(HAT_COLOURS).map(([hat,c])=>`<span class="hat-chip" style="background:${c}">${hat}</span>`).join('');
+}
+function syncCatalog(){
+  const btn=document.getElementById('sync-cat-btn');if(btn)btn.disabled=true;
+  toast('syncing catalog…');
+  fetch(CATALOG_URL)
+    .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json()})
+    .then(j=>{
+      liveCat=j;liveCatAt=Date.now();
+      if(j && Array.isArray(j.apps)){
+        CATEGORIES.forEach(c=>{
+          c.apps=j.apps.filter(a=>a.category===c.id).map(a=>a.name);
+        });
+      }
+      try{
+        localStorage.setItem(LS_CATALOG,JSON.stringify(j));
+        localStorage.setItem(LS_CATALOG_AT,String(liveCatAt));
+      }catch(e){}
+      generateQuestions();renderQuestions();showExport();
+      renderCatalogStatus();
+      toast('catalog synced ✓');
+    })
+    .catch(()=>toast('offline — using the catalog on this device'))
+    .finally(()=>{if(btn)btn.disabled=false;});
+}
+
+// ===== RENDER APP PICKER =====
+function appLogo(app,cat){
+  const colour=(cat&&cat.colour)||'#6c5ce7';
+  const m=APP_MARK[app];
+  if(!m) return `<span class="app-logo app-logo--mono" style="--cat:${colour}">${app.charAt(0)}</span>`;
+  return `<svg class="app-logo" viewBox="${m.vb}" aria-hidden="true"><use href="#mark-${m.id}"/></svg>`;
+}
+function renderPicker(){
+  const el=document.getElementById('app-picker');
+  if(!el)return;
+  let html='';
+  for(const cat of CATEGORIES){
+    const n=cat.apps.filter(a=>selectedApps.has(a)).length;
+    const colour=cat.colour||'#6c5ce7';
+    html+=`<div class="cat-group"><div class="cat-label cat-${cat.id}"><span class="cat-dot cat-${cat.id}"></span>${cat.label}<span class="cat-count">${n}/${cat.apps.length}</span></div><div class="app-chips">`;
+    for(const app of cat.apps){
+      const on=selectedApps.has(app);
+      html+=`<button class="app-chip ${on?'sel':''}" data-app="${app}" data-cat="${cat.id}" style="--cat:${colour}" aria-pressed="${on?'true':'false'}">${appLogo(app,cat)}<span class="app-name">${app}</span><span class="app-tick" aria-hidden="true">${on?'✓':''}</span></button>`;
+    }
+    html+=`</div></div>`;
+  }
+  el.innerHTML=html;
+  updateAppCount();
+  if(detailApp){
+    const chip=document.querySelector(`#app-picker .app-chip[data-app="${detailApp}"]`);
+    if(chip) chip.classList.add('focus');
+  }
+}
+function updateAppCount(){
+  const c=document.getElementById('app-count');
+  if(c) c.textContent=`${selectedApps.size} selected`;
+}
+function renderAppDetail(app, focus){
+  const box=document.getElementById('app-detail');
+  if(!box)return;
+  document.querySelectorAll('#app-picker .app-chip.focus').forEach(c=>c.classList.remove('focus'));
+  if(!app){ box.hidden=true; detailApp=null; return; }
+  const cat=CATEGORIES.find(c=>c.apps.includes(app));
+  const fields=inputFieldsFor(app);
+  const authored=APP_QUESTIONS[app];
+  const hat=categoryHat(app);
+  const logo=document.getElementById('app-detail-logo');
+  if(logo) logo.innerHTML=appLogo(app,cat);
+  document.getElementById('app-detail-name').textContent=app;
+  document.getElementById('app-detail-cat').textContent=[cat?cat.label:'flove',hat?hat+' hat':''].filter(Boolean).join(' · ');
+  let detail;
+  if(authored){
+    detail=`It asks its own ${authored.length} reflective questions${authored.length?` — ${authored.slice(0,2).map(q=>q.key.toLowerCase()).join(', ')}` : ''} — about what you think inside it.`;
+  } else if(fields.length){
+    detail=`It brings ${fields.length} input field${fields.length===1?'':'s'} — ${fields.slice(0,3).join(', ')}${fields.length>3?'…':''} — and Questy turns each into a question about your own view.`;
+  } else {
+    detail='It has no input fields yet; the session would ask about the app itself.';
+  }
+  document.getElementById('app-detail-text').textContent=`${app} is ${/^[aeiou]/i.test(cat?cat.label:'')?'an':'a'} ${cat?cat.label:'flove'} app. ${detail}`;
+  box.hidden=false;
+  detailApp=app;
+  const chip=document.querySelector(`#app-picker .app-chip[data-app="${app}"]`);
+  if(chip){ chip.classList.add('focus'); if(focus) chip.scrollIntoView({block:'nearest',behavior:'smooth'}); }
+}
+
+const FLOVE_AGENT = {
+  '0': [
+    'read: none',
+    'use: project docs + selected hats only',
+    'amounts: 0 categories · 0 apps · 0 field pages · 0 fields · 0 cross links',
+    'share: 0% flove / 100% project'
+  ].join('\n'),
+  '1': [
+    'flove_read: categories[].id + label only (5)',
+    'questy_use: 1–2 category accents; Questy maps them to hats/colours',
+    'amounts: 5 categories · 0 apps · 0 field pages · 0 fields · 0 cross links',
+    'share: 10–20% of questions (1–2 in 10) carry a flove touch'
+  ].join('\n'),
+  '2': [
+    'flove_read: categories (5) + at most 1 app.fieldPage',
+    'questy_use: reframe 2–3 in 10 questions with a category lens; cite 1 field page',
+    'amounts: 5 categories · ≤1 field page · 0 input fields · 0 cross links',
+    'share: 20–30% flove / 70–80% project'
+  ].join('\n'),
+  '3': [
+    'flove_read: categories (5) + 1 app.field / fieldPage',
+    'questy_use: quote that field page in its category hat/colour; no extraction',
+    'amounts: 5 categories · 1 field page · 0 input fields · 0 cross links',
+    'share: 50% flove / 50% project'
+  ].join('\n'),
+  '4': [
+    'flove_read: categories (5) + fields + cross[] (3) — full matrix: flove.org/development/standards/vocabulary.html',
+    'questy_selects: apps in the chosen categories — Inside 11 · Mating 8 · Ling 17 · Social 8 · Economy 10',
+    'questy_extracts: all input fields ≈1,090 input nodes across 54 apps (1,288 field nodes total; 24 avg/app; 0–184 per app); cross links first',
+    'questy_maps: category → hat/colour after extraction',
+    'amounts: 5 categories · 54 Questy-selected apps · 1,288 field nodes · 3 cross links · 1 consumer (Questy)',
+    'share: 80–100% flove-led / 0–20% project'
+  ].join('\n'),
+  '5': [
+    'flove_read: the whole model — every app, every kind:input field, every cross link',
+    'questy_use: flove sets the shape of every question; the project only sets the frame',
+    'amounts: 5 categories · every app · all input fields · all cross links',
+    'share: 90–100% flove / 0–10% project'
+  ].join('\n')
+};
+
+function renderCategoryWeights(){
+  const grid=document.getElementById('cat-weight-grid');
+  if(!grid)return;
+  grid.replaceChildren();
+  CATEGORIES.forEach((c,i)=>{
+    const cell=document.createElement('button'); cell.type='button'; cell.className='cat-weight-cell';
+    const prev=CATEGORIES[i-1]||c, next=CATEGORIES[i+1]||c;
+    cell.style.setProperty('--cat', c.colour || '#6c5ce7');
+    cell.style.setProperty('--prev', prev.colour || c.colour);
+    cell.style.setProperty('--next', next.colour || c.colour);
+    const w=categoryWeights[c.id]||0;
+    cell.dataset.cat=c.id;
+    cell.dataset.weight=String(w);
+    cell.style.setProperty('--cat-ink', c.id==='economy' ? '#fff' : '#16141f');
+    cell.setAttribute('aria-label',`${c.label} — weight ${w}. Click to change.`);
+    cell.title=`${c.label} · weight ${w} — click to change`;
+    const sprout=document.createElement('span');
+    sprout.className='cat-sprout'+(w===0?' off':'')+(w===2?' weighted':'');
+    sprout.setAttribute('aria-hidden','true');
+    sprout.innerHTML='<svg aria-hidden="true"><use href="#sproutIcon"/></svg>'+(w===2?'x2':w===1?'1':'0');
+    const name=document.createElement('span'); name.className='cat-weight-name'; name.textContent=c.label;
+    cell.append(sprout,name); grid.appendChild(cell);
+  });
+}
+
+function categoryWeightsLine(){
+  const on=Object.keys(categoryWeights).filter(k=>categoryWeights[k]===2).map(k=>{
+    const c=CATEGORIES.find(x=>x.id===k); return `${c?c.label:k} x2`;
+  });
+  return on.length ? `category_weights: ${on.join(', ')}` : '';
+}
+
+function renderMachineBlock(){
+  const pre=document.getElementById('machine-block');
+  if(!pre)return;
+  const base=FLOVE_AGENT[String(influence)]||'';
+  const weights=categoryWeightsLine();
+  const voiceSources={
+    love:{category:'inside',apps:['Souls','Goddy','Astry','Hacky'],fields:['Focus','Self-reflection','Traditions','Likes','Dislikes']},
+    joy:{category:'mating',apps:['MyFamily','Daty','Trusty'],fields:['Friendship','Regular care & affection','Trustful signals']},
+    wise:{category:'social',apps:['Socy','Blogy','Browsy','Nety'],fields:['Categories','Parent category','Related categories','Circles','Posts']}
+  };
+  const active=['love','joy','wise'].filter(v=>voice[v]>0);
+  let extra='';
+  if(active.length){
+    extra += '\nvoice: '+active.map(v=>`${v} ${voice[v]}`).join(' · ');
+    extra += '\nvoice_sources:';
+    active.forEach(v=>{ const src=voiceSources[v]; extra += `\n  ${v}:\n    category: ${src.category}\n    apps: ${src.apps.join(', ')}\n    fields: ${src.fields.join(', ')}`; });
+  }
+  pre.textContent=base+(weights?`\n${weights}`:'')+extra+`\npicked: ${selectedApps.size ? selectedApps.size+' apps — '+[...selectedApps].join(', ') : 'no apps yet'}`;
+  renderHumanBlock();
+}
+
+const HUMAN_LEVEL=[
+  'Wizy stays out of the way: every question comes from your app and your project.',
+  'Wizy adds a light flove flavour — a category colour or a word — without reading app fields.',
+  'Wizy reads the five categories and at most one field page, and lets flove touch a few of the questions.',
+  'Wizy quotes one field page in its category colour and gives flove and your project an even share.',
+  'Wizy reads the whole model — apps, fields and cross-links — and most of the session comes from flove.',
+  'Wizy leads: every app and field in the model shapes the session; your project only sets the frame.'
+];
+const HUMAN_VOICE={
+  love:'Love adds care and continuity, drawn from Souls, Goddy, Astry and Hacky.',
+  joy:'Joy adds earned delight, drawn from MyFamily, Daty and Trusty.',
+  wise:'Wisdom adds measured judgement, drawn from Socy, Blogy, Browsy and Nety.'
+};
+function renderHumanBlock(){
+  const box=document.getElementById('human-block'); if(!box)return;
+  const out=[];
+  const name=INFLUENCE_NAMES[influence]||'';
+  out.push(`<p><b>${name} (${influence}/5).</b> ${HUMAN_LEVEL[influence]||''}</p>`);
+  const strong=CATEGORIES.filter(c=>categoryWeights[c.id]===2).map(c=>c.label);
+  const soft=CATEGORIES.filter(c=>categoryWeights[c.id]===1).map(c=>c.label);
+  if(strong.length||soft.length){
+    const bits=[];
+    if(strong.length) bits.push(`<b>${strong.join(', ')}</b> ${strong.length===1?'is weighted ×2 and speaks first':'are weighted ×2 and speak first'}`);
+    if(soft.length) bits.push(`${soft.join(', ')} ${soft.length===1?'gets':'get'} a hint of extra weight`);
+    out.push(`<p>${bits.join('; ')}.</p>`);
+  } else out.push('<p>No category is weighted yet.</p>');
+  const voices=['love','joy','wise'].filter(v=>voice[v]>0);
+  out.push(voices.length
+    ? '<p>'+voices.map(v=>HUMAN_VOICE[v]+(voice[v]===2?' Doubled.':'')).join(' ')+'</p>'
+    : '<p>No voice is on; the wording stays neutral.</p>');
+  const apps=[...selectedApps];
+  out.push(apps.length
+    ? `<p>You picked <b>${apps.length}</b> ${apps.length===1?'app':'apps'}: ${apps.join(', ')}.</p>`
+    : '<p>No apps picked yet.</p>');
+  box.innerHTML=out.join('');
+}
+
+// ===== GAUGE =====
+function renderGauge(){
+  document.querySelectorAll('#gauge button').forEach(b=>{
+    b.classList.toggle('on',stage!=='scale' && parseInt(b.dataset.v)===influence);
+  });
+  const desc=document.getElementById('influence-desc');
+  if(desc) desc.textContent=INFLUENCE_DESCS[influence]||'';
+  const extra=document.getElementById('flove-extra');
+  if(extra) extra.classList.add('show');
+  const variant=document.getElementById('skill-variant');
+  if(variant) variant.textContent=stage!=='scale'?`questy-flove-${influence}`:'questy-flove';
+  applyStage();
+  renderMachineBlock();
+}
+
+function renderVoice(){
+  const row=document.getElementById('voice-row');
+  if(!row)return;
+  row.querySelectorAll('button[data-v]').forEach(b=>{
+    const w=voice[b.dataset.v]||0;
+    b.classList.toggle('on', w>0);
+    b.classList.toggle('x2', w===2);
+    b.setAttribute('aria-pressed', w>0?'true':'false');
+  });
+  const info=document.getElementById('voice-info');
+  info.replaceChildren();
+  ['love','joy','wise'].forEach(v=>{
+    const w=voice[v]||0; if(!w) return;
+    const btn=row.querySelector(`button[data-v="${v}"]`);
+    const text=(btn.dataset.desc||'')+(w===2?' (x2)':'');
+    const linkText=btn.dataset.linkText||'', url=btn.dataset.url||'';
+    const line=document.createElement('div'); line.className='voice-line';
+    if(url && linkText && text.includes(linkText)){
+      const at=text.indexOf(linkText);
+      line.append(document.createTextNode(text.slice(0,at)));
+      const a=document.createElement('a'); a.href=url; a.textContent=linkText; a.target='_blank'; a.rel='noopener';
+      line.append(a, document.createTextNode(text.slice(at+linkText.length)));
+    } else line.textContent=text;
+    info.appendChild(line);
+  });
+  info.style.display=info.children.length?'block':'none';
+}
+
+// ===== DEMONSTRATION · two six-hat surveys =====
+const DEMO_SURVEYS={
+  project:{
+    kicker:'custom project',
+    name:'Improving the United Nations',
+    tags:'questy-flove-3 · Love ×2',
+    meta:'(Red and Blue, Influence Level: 3 · Love ×2)',
+    mix:['questy-flove-3','field page quoted','Love ×2'],
+    lead:'A Questy survey mixed into a custom project: <b>improving the United Nations</b>, with flove influence degree 3 and Love doubled. Questy asks; level 3 lets the project’s field page speak in its category colour.',
+    questions:[
+      {hat:'heart',cat:'inside',q:'When you picture a better United Nations, what do you most want people to feel?',opts:['Heard','Safe','Hopeful','Proud']},
+      {hat:'facts',cat:'social',q:'Which part of the UN system would you care for first?',opts:['Peacekeeping','Development','Human rights','Climate finance']},
+      {hat:'risk',cat:'economy',q:'What would hurt people most if reform moved too fast?',opts:['Lost trust','Broken mandates','Funding gaps','Paralysis']},
+      {hat:'optimism',cat:'social',q:'What would a caring UN look like in ten years?',opts:['Fewer conflicts','Shared prosperity','A live charter','A civic habit']},
+      {hat:'creative',cat:'ling',q:'Which ritual would make people feel held at the General Assembly?',opts:['A citizens’ hour','A futures debate','A silence for the unheard','A world choir']},
+      {hat:'make',cat:'economy',q:'What small act of care could you build in 30 days?',opts:['A civic dashboard','A deliberative kit','A local assembly','A pledge ledger']}
+    ]
+  },
+  self:{
+    kicker:'no project specified',
+    name:'Questy FLOVE itself',
+    tags:'questy-flove-3 · the flove profile is the project',
+    meta:'(Red and Blue, Influence Level: 3)',
+    mix:['questy-flove-3','field page quoted'],
+    lead:'The same Questy survey with no project attached: <b>the flove profile itself</b> is the thing being improved.',
+    questions:[
+      {hat:'heart',cat:'inside',q:'When a Questy FLOVE session is going well, what do you want to feel?',opts:['Heard','Curious','In control','Surprised']},
+      {hat:'facts',cat:'social',q:'Which part of the flove profile should the session read first?',opts:['The apps','The fields','The influence level','My answers']},
+      {hat:'risk',cat:'economy',q:'What would make the session feel off?',opts:['Too abstract','Too many questions','No clear focus','A voice I do not recognise']},
+      {hat:'optimism',cat:'social',q:'What should a great session leave you with?',opts:['A sharper profile','A next step','A new question','A shareable JSON']},
+      {hat:'creative',cat:'ling',q:'Which small ritual would you add to the session?',opts:['A one-line recap','A hat map','A closing haiku','A silence before answering']},
+      {hat:'make',cat:'economy',q:'What would you build from the exported profile?',opts:['A profile card','An app plan','A shared JSON','A follow-up session']}
+    ]
+  }
+};
+let demoMode='project';
+function renderDemo(){
+  const cfg=DEMO_SURVEYS[demoMode]||DEMO_SURVEYS.project;
+  const lead=document.getElementById('demo-lead');if(lead)lead.innerHTML=cfg.lead;
+  const kicker=document.getElementById('demo-kicker');if(kicker)kicker.textContent=cfg.kicker;
+  const name=document.getElementById('demo-name');if(name)name.textContent=cfg.name;
+  const tags=document.getElementById('demo-tags');if(tags)tags.textContent=cfg.tags;
+  const meta=document.getElementById('demo-meta');if(meta)meta.textContent=cfg.meta;
+  const mix=document.getElementById('demo-mix');
+  if(mix) mix.innerHTML=cfg.mix.map(m=>`<span${/^Love\b/i.test(m)?' class="hot"':''}>${m}</span>`).join('');
+  document.querySelectorAll('.demo-tab').forEach(t=>{
+    const on=t.dataset.demo===demoMode;
+    t.classList.toggle('on',on);t.setAttribute('aria-selected',String(on));
+  });
+  const box=document.getElementById('demo-survey');if(!box)return;
+  const qs=cfg.questions;
+  box.innerHTML=qs.map((q,i)=>{
+    const hat=HAT_COLOURS[q.hat]||'#6c5ce7';
+    const cat=CATEGORIES.find(c=>c.id===q.cat);
+    return `<div class="demo-q" style="--hat:${hat}" data-demo-q="${i}">
+      <div class="demo-q-head"><span class="demo-hat" style="background:${hat}">${q.hat}</span><span class="demo-cat">${cat?cat.label:q.cat}</span><span class="demo-num">${i+1}/${qs.length}</span></div>
+      <p class="demo-text">${q.q}</p>
+      <div class="demo-opts">${q.opts.map((o,j)=>`<button type="button" class="demo-opt" data-demo="${i}:${j}">${o}</button>`).join('')}</div>
+    </div>`;
+  }).join('');
+}
+renderDemo();
+const demoBox=document.getElementById('demo-survey');
+if(demoBox) demoBox.addEventListener('click',e=>{
+  const b=e.target.closest('.demo-opt');if(!b)return;
+  const group=b.closest('.demo-q');
+  group.querySelectorAll('.demo-opt').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+});
+const demoReset=document.getElementById('demo-reset');
+if(demoReset) demoReset.addEventListener('click',renderDemo);
+document.querySelectorAll('.demo-tab').forEach(t=>t.addEventListener('click',()=>{
+  demoMode=t.dataset.demo;
+  renderDemo();
+}));
+
+// ===== QUESTION GENERATION =====
+function generateQuestions(){
+  allQuestions=[];
+  if(selectedApps.size===0)return;
+  let qId=0;
+  for(const app of selectedApps){
+    const cat=appCat(app);
+    const authored=APP_QUESTIONS[app];
+    if(authored){
+      // The app's own reflective questions, asked of the USER about what they
+      // think and feel inside the app (never about building or developing it).
+      for(const aq of authored){
+        qId++;
+        allQuestions.push({
+          id:'q'+qId,app,cat,colour:questionColour(app,null),type:'flove',hat:categoryHat(app),field:aq.key,tag:'belief',
+          text:aq.text,options:aq.opts,rec:0
+        });
+      }
+      continue;
+    }
+    // Fallback until each app authors its reflective set: one reflection per
+    // input field, still addressed to the user's own view.
+    const fields=inputFieldsFor(app);
+    for(const field of fields){
+      const hint=FIELD_HINTS[field]||field.toLowerCase();
+      const hat=categoryHat(app);
+      qId++;
+      allQuestions.push({
+        id:'q'+qId,app,cat,colour:questionColour(app,field),type:'flove',hat,field,hint,
+        text:`What do you think about ${field} in ${app}?`,
+        options:fieldOptions(field,app),
+        rec:0
+      });
+    }
+  }
+  // Shuffle within each app group to interleave flove/own
+  const byApp={};
+  for(const q of allQuestions){(byApp[q.app]=byApp[q.app]||[]).push(q)}
+  allQuestions=[];
+  // Round-robin through apps to mix categories
+  const appKeys=Object.keys(byApp);
+  let maxLen=0;
+  for(const k of appKeys)if(byApp[k].length>maxLen)maxLen=byApp[k].length;
+  for(let i=0;i<maxLen;i++){
+    for(const k of appKeys){
+      if(byApp[k][i])allQuestions.push(byApp[k][i]);
+    }
+  }
+  currentBatch=0;
+  saveBatch();
+}
+
+function fieldOptions(field,app){
+  // Candidate answers for the fallback "what do you think" questions.
+  const lower=field.toLowerCase();
+  if(lower.includes('gender'))return['Woman','Man','Non-binary','Prefer not to say'];
+  if(lower.includes('children'))return['Yes','No','Someday','Prefer not to say'];
+  if(lower.includes('visibility'))return['Public','Friends','Private','Custom'];
+  if(lower.includes('privacy'))return['Open','Selective','Locked','Custom'];
+  if(lower.includes('relationship'))return['Open','Partnered','Exploring','Friendship-first'];
+  if(lower.includes('style'))return['Formal','Casual','Playful','Deep'];
+  return['My view',"I don't have one yet",'Not sure'];
+}
+
+// ===== RENDER QUESTIONS =====
+function renderQuestions(){
+  const card=document.getElementById('questions-card');
+  const area=document.getElementById('q-batch-area');
+  if(allQuestions.length===0){
+    card.style.display='none';
+    document.getElementById('export-card').style.display='none';
+    return;
+  }
+  card.style.display='';
+  const BATCH=5;
+  const totalBatches=Math.ceil(allQuestions.length/BATCH);
+  if(currentBatch>=totalBatches)currentBatch=totalBatches-1;
+  if(currentBatch<0)currentBatch=0;
+  const start=currentBatch*BATCH;
+  const batch=allQuestions.slice(start,start+BATCH);
+  let html='';
+  for(let i=0;i<batch.length;i++){
+    const q=batch[i];
+    const col=q.colour||appColour(q.app);
+    const title=`${q.field} — ${q.cat} · ${q.hat||'category'} hat`;
+    const cls='q-item flove-src';
+    const border=` style="border-left-color:${col}"`;
+    const answered=answers[q.id];
+    const tagTxt=[q.tag,q.hat].filter(Boolean).join(' · ');
+    const hatTag=tagTxt?`<span class="q-tag" style="color:${col};border-color:${col}" title="${title}">${tagTxt}</span>`:'';
+    html+=`<div class="${cls}"${border}>`;
+    html+=`<div class="q-field"><span class="q-dot" style="background:${col}"></span><b>${q.app}</b>${hatTag}</div>`;
+    html+=`<div class="q-num">${start+i+1} of ${allQuestions.length}</div>`;
+    html+=`<div class="q-text">${q.text}</div>`;
+    if(q.hint)html+=`<div class="q-hint">${q.hint}</div>`;
+    html+=`<div class="q-opts" data-qid="${q.id}">`;
+    for(let j=0;j<q.options.length;j++){
+      const on=answered===j?'on':'';
+      const rec=j===q.rec?' rec':'';
+      html+=`<button class="q-opt ${on}${rec}" data-idx="${j}">${q.options[j]}</button>`;
+    }
+    html+=`</div>`;
+    html+=`<textarea class="q-note" data-qid="${q.id}" placeholder="note…">${answers[q.id+':txt']||''}</textarea>`;
+    html+=`</div>`;
+  }
+  area.innerHTML=html;
+  // Wire option clicks
+  area.querySelectorAll('.q-opts').forEach(grp=>{
+    grp.addEventListener('click',e=>{
+      const btn=e.target.closest('.q-opt');if(!btn)return;
+      const qid=grp.dataset.qid;
+      grp.querySelectorAll('.q-opt').forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+      answers[qid]=parseInt(btn.dataset.idx);
+      saveAnswers();
+      showExport();
+    });
+  });
+  // Wire note textareas
+  area.querySelectorAll('.q-note').forEach(ta=>{
+    ta.addEventListener('input',()=>{
+      answers[ta.dataset.qid+':txt']=ta.value;
+      saveAnswers();
+    });
+  });
+  // Batch nav
+  document.getElementById('batch-info').textContent=`batch ${currentBatch+1} / ${totalBatches}`;
+  document.getElementById('prev-btn').disabled=currentBatch<=0;
+  document.getElementById('next-btn').disabled=currentBatch>=totalBatches-1;
+}
+
+// ===== EXPORT =====
+function showExport(){
+  const answeredCount=Object.keys(answers).filter(k=>!k.includes(':txt')).length;
+  if(answeredCount===0){document.getElementById('export-card').style.display='none';return}
+  document.getElementById('export-card').style.display='';
+}
+
+function buildJSON(){
+  const appsPlayed=[];
+  for(const app of selectedApps){
+    const fields=inputFieldsFor(app);
+    const answered={};
+    // Match answers to input fields by question text
+    for(const q of allQuestions){
+      if(q.app!==app)continue;
+      if(q.field && answers[q.id]!==undefined){
+        answered[q.field]=q.options[answers[q.id]];
+      }
+    }
+    if(Object.keys(answered).length>0){
+      const idAlias={MoralY:'cathy'};
+      appsPlayed.push({app,appId:idAlias[app]||app.toLowerCase(),category:appCat(app),answered});
+    }
+  }
+  return{
+    kind:'flove-profile',
+    version:1,
+    routing:'flove-routing/3',
+    exported:new Date().toISOString(),
+    handle:'@you',
+    presence:'LIVE',
+    stage:{name:'newbie',index:0,stars:0},
+    facets:{personal:0,local:0,social:0,global:0},
+    appsPlayed,
+    influence,
+    categoryWeights:{inside:categoryWeights.inside||0,mating:categoryWeights.mating||0,ling:categoryWeights.ling||0,social:categoryWeights.social||0,economy:categoryWeights.economy||0},
+    voice:{love:voice.love||0,joy:voice.joy||0,wise:voice.wise||0},
+    visibility:{content:'mynet',resources:'mynet',profile:'private',scores:'private'}
+  };
+}
+
+function renderPreview(){
+  const json=buildJSON();
+  const el=document.getElementById('json-preview');
+  el.textContent=JSON.stringify(json,null,2);
+  el.classList.toggle('show');
+}
+
+function downloadJSON(){
+  const json=buildJSON();
+  const blob=new Blob([JSON.stringify(json,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='flove-profile.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('downloaded ✓');
+}
+
+function selectContents(el){
+  if(!el)return;
+  try{
+    const r=document.createRange();r.selectNodeContents(el);
+    const s=window.getSelection();s.removeAllRanges();s.addRange(r);
+  }catch(e){}
+}
+function copyText(text,onOk,onFail){
+  const fallback=()=>{
+    const ta=document.createElement('textarea');
+    ta.value=text;ta.setAttribute('readonly','');
+    ta.style.position='fixed';ta.style.top='-9999px';ta.style.left='-9999px';
+    document.body.appendChild(ta);
+    ta.select();ta.setSelectionRange(0,ta.value.length);
+    let ok=false;
+    try{ok=document.execCommand('copy');}catch(e){ok=false;}
+    ta.remove();
+    if(ok){ if(onOk)onOk(); }
+    else if(onFail){ onFail(); }
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>{ if(onOk)onOk(); }).catch(fallback);
+  } else fallback();
+}
+
+function projectNameValue(){
+  const el=document.getElementById('project-name');
+  return el ? el.value.trim() : '';
+}
+function buildPrompt(){
+  const project=projectNameValue();
+  const level=INFLUENCE_NAMES[influence]||'None';
+  const cleanDesc=(INFLUENCE_DESCS[influence]||'').replace(new RegExp('^'+level+'\\s*—\\s*'),'');
+  const weights=CATEGORIES.filter(c=>categoryWeights[c.id]>0)
+    .map(c=>`${c.label} ×${categoryWeights[c.id]}`).join(', ') || 'none';
+  const voices=['love','joy','wise'].filter(v=>voice[v]>0)
+    .map(v=>`${v} ×${voice[v]}`).join(', ') || 'none';
+  const apps=[...selectedApps];
+  const where=project
+    ? `mixed into the project “${project}”`
+    : 'for the flove profile itself';
+  const context=project
+    ? `Use the project “${project}” as the context, and let the flove layer mix into it without replacing the project's own voice.`
+    : 'No custom project is attached: treat this flove profile itself as the project to improve.';
+  return [
+    'You are Questy FLOVE — the flove-app interview.',
+    '',
+    `Run a Questy FLOVE session ${where}.`,
+    context,
+    `Skill: call /questy-flove-${influence} (SKILL.md) — the suffix is the influence degree; that keeps the session operating smoothly.`,
+    'Call Questy (/questy) for the hats and the question workflow — let Questy explain them; Questy FLOVE only adds the flove layer.',
+    'Ask the user — never the app maker — what they think and feel inside each selected app.',
+    '',
+    `Project: ${project || 'none — the flove profile itself'}`,
+    `Influence: ${influence}/4 · ${level} — ${cleanDesc}`,
+    `Category weights: ${weights}`,
+    `Voice: ${voices}`,
+    `Selected apps: ${apps.length ? apps.join(', ') : 'none yet'}`,
+    '',
+    'Start from the appy-basic profile below, keep every answer, and return the updated profile as appy-basic JSON.',
+    '',
+    JSON.stringify(buildJSON(),null,2)
+  ].join('\n');
+}
+function copyPrompt(){
+  const text=buildPrompt();
+  const btn=document.getElementById('copy-btn');
+  const preview=document.getElementById('prompt-preview');
+  if(preview){preview.textContent=text;preview.classList.add('show');}
+  const label='🚀 See & Copy';
+  const done=()=>{
+    if(btn){btn.classList.add('copied');btn.textContent='✓ Copied';setTimeout(()=>{btn.classList.remove('copied');btn.textContent=label;},1600);}
+    toast('prompt copied ✓');
+  };
+  copyText(text,done,()=>{
+    toast('copy blocked — the prompt is selected');
+    if(preview) selectContents(preview);
+  });
+}
+
+// ===== INIT =====
+/* this page keeps no form state across loads */
+['questy-flove-apps','questy-flove-influence','questy-flove-answers','questy-flove-batch','questy-flove-category-weights','questy-flove-voice']
+  .forEach(k=>{try{localStorage.removeItem(k);}catch(e){}});
+renderCatalogStatus();
+renderHatLegend();
+renderPicker();
+renderCategoryWeights();
+renderGauge();
+renderVoice();
+generateQuestions();
+renderQuestions();
+showExport();
+
+/* gate · Enable is the only thing on screen until clicked */
+const gate=document.getElementById('gate');
+const tool=document.getElementById('tool');
+const projectInput=document.getElementById('project-name');
+if(projectInput) projectInput.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();document.getElementById('enable-btn').click();}
+});
+document.getElementById('enable-btn').addEventListener('click',()=>{
+  stage='scale';
+  applyStage();
+  renderGauge();
+  gate.classList.add('off');
+  tool.classList.add('on');
+  window.scrollTo(0,0);
+  syncCatalog();
+});
+
+/* machine ⇄ human */
+document.getElementById('human-btn').addEventListener('click',()=>{
+  const btn=document.getElementById('human-btn');
+  const on=btn.getAttribute('aria-pressed')!=='true';
+  btn.setAttribute('aria-pressed',String(on));
+  document.getElementById('machine-block').hidden=on;
+  document.getElementById('human-block').hidden=!on;
+  btn.title=on?'Machine version':'Human version';
+  btn.setAttribute('aria-label',on?'Show the machine version':'Show the human version');
+});
+
+/* per app — one delegated listener, a filter and a clear */
+const pickerEl=document.getElementById('app-picker');
+if(pickerEl) pickerEl.addEventListener('click',e=>{
+  const btn=e.target.closest('.app-chip');if(!btn)return;
+  const app=btn.dataset.app;
+  const on=!selectedApps.has(app);
+  if(on) selectedApps.add(app); else selectedApps.delete(app);
+  btn.classList.toggle('sel',on);
+  btn.setAttribute('aria-pressed',String(on));
+  const tick=btn.querySelector('.app-tick');if(tick)tick.textContent=on?'✓':'';
+  const group=btn.closest('.cat-group');
+  if(group){
+    const total=group.querySelectorAll('.app-chip').length;
+    const sel=group.querySelectorAll('.app-chip.sel').length;
+    const cc=group.querySelector('.cat-count');if(cc)cc.textContent=sel+'/'+total;
+  }
+  updateAppCount();
+  saveApps();generateQuestions();renderQuestions();renderMachineBlock();
+  if(on) renderAppDetail(app,false);
+  else if(detailApp===app) renderAppDetail(null);
+});
+const appFilter=document.getElementById('app-filter');
+if(appFilter) appFilter.addEventListener('input',()=>{
+  const q=appFilter.value.trim().toLowerCase();
+  document.querySelectorAll('#app-picker .cat-group').forEach(g=>{
+    let visible=0;
+    g.querySelectorAll('.app-chip').forEach(ch=>{
+      const show=!q||ch.dataset.app.toLowerCase().includes(q);
+      ch.hidden=!show;if(show)visible++;
+    });
+    g.hidden=visible===0;
+  });
+});
+const appClear=document.getElementById('app-clear');
+if(appClear) appClear.addEventListener('click',()=>{
+  selectedApps.clear();detailApp=null;renderAppDetail(null);saveApps();renderPicker();generateQuestions();renderQuestions();renderMachineBlock();
+  toast('per-app selection cleared');
+});
+const appNext=document.getElementById('app-detail-next');
+if(appNext) appNext.addEventListener('click',()=>{
+  const all=CATEGORIES.reduce((a,c)=>a.concat(c.apps),[]);
+  if(!all.length)return;
+  const i=detailApp?all.indexOf(detailApp):-1;
+  const next=all[(i+1)%all.length];
+  if(!selectedApps.has(next)) selectedApps.add(next);
+  renderPicker();
+  renderAppDetail(next,true);
+  updateAppCount();
+  generateQuestions();renderQuestions();renderMachineBlock();
+});
+
+/* topbar — the same menus as the Questy index */
+function closeTopMenus(){
+  document.querySelectorAll('.top-drop.open').forEach(d=>{
+    d.classList.remove('open');
+    const b=d.querySelector(':scope > .top-link');
+    if(b) b.setAttribute('aria-expanded','false');
+  });
+}
+document.querySelectorAll('.top-drop').forEach(drop=>{
+  const trigger=drop.matches('.questy-brand')?drop:drop.querySelector(':scope > .top-link');
+  if(!trigger) return;
+  trigger.addEventListener('click',e=>{
+    if(e.target.closest('.top-drop-menu')) return;
+    e.stopPropagation();
+    const was=drop.classList.contains('open');
+    closeTopMenus();
+    if(!was) drop.classList.add('open');
+    if(trigger.classList.contains('top-link')) trigger.setAttribute('aria-expanded',String(!was));
+  });
+  if(drop.matches('.questy-brand')){
+    trigger.addEventListener('keydown',e=>{
+      if(e.key==='Enter'||e.key===' '){e.preventDefault();trigger.click();}
+    });
+  }
+});
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.top-drop')) closeTopMenus();
+});
+document.querySelectorAll('.top-drop-menu a, .top-drop-menu .top-drop-item').forEach(item=>{
+  if(item.id==='themeToggle') return;
+  item.addEventListener('click',()=>closeTopMenus());
+});
+const themeBtn=document.getElementById('themeToggle');
+if(themeBtn){
+  themeBtn.textContent=document.documentElement.getAttribute('data-theme')==='dark'?'☾':'◐';
+  themeBtn.addEventListener('click',e=>{
+    e.stopPropagation();
+    const dark=document.documentElement.getAttribute('data-theme')==='dark';
+    if(dark) document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme','dark');
+    themeBtn.textContent=dark?'◐':'☾';
+    try{localStorage.setItem('flove:theme',JSON.stringify(dark?'light':'dark'));}catch(e){}
+  });
+}
+
+document.getElementById('gauge').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  influence=parseInt(b.dataset.v);
+  if(stage==='scale') stage='voice';
+  renderGauge();
+  saveInfluence();
+  generateQuestions();
+  renderQuestions();
+  applyStage();
+});
+
+document.getElementById('cat-weight-grid').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-cat]');if(!b)return;
+  const cat=b.dataset.cat, w=categoryWeights[cat]||0;
+  categoryWeights[cat]=w===0?1:w===1?2:0;
+  stage='cats';
+  saveCategoryWeights();
+  renderCategoryWeights();
+  renderMachineBlock();
+  applyStage();
+});
+
+document.getElementById('machine-copy').addEventListener('click',()=>{
+  const btn=document.getElementById('machine-copy');
+  const human=document.getElementById('human-btn').getAttribute('aria-pressed')==='true';
+  const src=human?document.getElementById('human-block'):document.getElementById('machine-block');
+  const text=human?src.innerText:src.textContent;
+  const label='🚀 See & Copy';
+  const done=()=>{
+    if(btn){btn.classList.add('copied');btn.textContent='✓ Copied';setTimeout(()=>{btn.classList.remove('copied');btn.textContent=label;},1600);}
+    toast('agent info copied ✓');
+  };
+  copyText(text,done,()=>{
+    toast('copy blocked — the text is selected');
+    selectContents(src);
+  });
+});
+
+document.getElementById('voice-row').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-v]');if(!b)return;
+  const v=b.dataset.v, w=voice[v]||0;
+  voice[v]=w===0?1:w===1?2:0;
+  stage='cats';
+  saveVoice();
+  renderVoice();
+  renderMachineBlock();
+  applyStage();
+});
+
+document.getElementById('prev-btn').addEventListener('click',()=>{currentBatch--;saveBatch();renderQuestions()});
+document.getElementById('next-btn').addEventListener('click',()=>{currentBatch++;saveBatch();renderQuestions()});
+document.getElementById('dl-btn').addEventListener('click',downloadJSON);
+document.getElementById('copy-btn').addEventListener('click',copyPrompt);
+document.getElementById('preview-toggle').addEventListener('click',renderPreview);
+</script>
+</body>
+</html>

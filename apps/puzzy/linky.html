@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+/* flove-store/1 + flove-net fallback — the common local-storage/net layer.
+   Apps inline this same block so they stay self-contained; this file is the
+   canonical reference and is shipped in the offline package. */
+(function () {
+  if (!window.floveStore) {
+    var mem = new Map();
+    function rawGet(k) {
+      try { return localStorage.getItem(k); }
+      catch (_) { return mem.has(k) ? mem.get(k) : null; }
+    }
+    function rawSet(k, v) {
+      try { localStorage.setItem(k, v); return true; }
+      catch (e) {
+        mem.set(k, v);
+        try { window.dispatchEvent(new CustomEvent('flove:storage-error', { detail: { key: k, error: e } })); } catch (_) {}
+        return false;
+      }
+    }
+    window.floveStore = {
+      getRaw: function (k, fallback) { var v = rawGet(k); return v == null ? (fallback === undefined ? null : fallback) : v; },
+      getJSON: function (k, fallback) {
+        try { var v = rawGet(k); return v == null ? (fallback === undefined ? null : fallback) : JSON.parse(v); }
+        catch (_) { return fallback === undefined ? null : fallback; }
+      },
+      set: function (k, v) { return rawSet(k, typeof v === 'string' ? v : JSON.stringify(v)); },
+      setJSON: function (k, v) { return rawSet(k, JSON.stringify(v)); },
+      remove: function (k) { try { localStorage.removeItem(k); } catch (_) {} mem.delete(k); },
+      available: function () {
+        try { var k = '__flove_probe__'; localStorage.setItem(k, '1'); localStorage.removeItem(k); return true; }
+        catch (_) { return false; }
+      },
+      memoryOnly: function () { return !this.available(); }
+    };
+  }
+  if (!window.floveFields) window.floveFields = function () {
+    try { var el = document.getElementById('flove-fields'); return el ? (JSON.parse(el.textContent).fields || []) : []; }
+    catch (_) { return []; }
+  };
+  if (!window.flovePort) {
+    window.flovePort = {
+      schema: 'flove-port/1',
+      export: function () { return { schema: 'flove-portrait/1', app: null, version: 1, generatedAt: new Date().toISOString(), rows: [] }; },
+      consult: function () { return { schema: 'flove-consult/1', app: null, version: 1, generatedAt: new Date().toISOString(), rows: [] }; },
+      import: function () { return { ok: false, applied: 0, errors: ['no app adapter'] }; }
+    };
+  }
+  if (!window.floveNet) window.floveNet = window.flovePort; // deprecated alias
+  if (!window.flovePortrait) window.flovePortrait = window.flovePort;
+  if (!window.floveSummary) window.floveSummary = function () { return window.flovePort.export(); };
+})();
+
+</script>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Linky · FLOVE</title>
+  <link rel="icon" type="image/svg+xml" href="favicon-linky.svg">
+  <!-- flove common skin (tokens · flove-bar · flove-menu · flove-popover · flove-publish), inlined -->
+  <style data-flove-inlined="flove.css">
+/* a11y — 40px hit targets on touch (§6), desktop untouched */
+@media (pointer: coarse){
+  .btn,.btn-primary,.btn-ghost,.btn-soft,.subitem,.tbtn,.cat,.chip,.pc-toggle,.menu-item,.app-menu-item,.topmenu__item{min-height:40px}
+}
+.a11y-h1{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+/* inlined from apps/blogy/flove.css */
+/* ============================================================
+   🌱 flove.css · blogy demo of the abstracted-commons version
+   --------------------------------------------------------------
+   Demo of a future flove distro where the css/js shared by the
+   apps is abstracted into common files and called externally.
+   In the current distro every app inlines its own copy and stays
+   self-contained; nothing here loads an external copy.
+   --------------------------------------------------------------
+   Design intent
+   - Each app keeps its own palette by overriding `--app-*` tokens
+     in its local `:root`. This file only paints the common skin.
+   - Two visual primitives identify the family everywhere:
+       1. The 🌱 sprout mark (brand)
+       2. The flove-bar at the very top (back to launcher + app name)
+   - A common motion vocabulary (gentle lift, soft fade, wiggle).
+   ============================================================ */
+
+:root {
+  /* The sprout — flove brand mark. Used as logo glyph everywhere. */
+  --flove-mark: "🌱";
+
+  /* Per-app overridable accent. Apps redeclare these. */
+  --app-accent:        #6ee7b7;
+  --app-accent-soft:   #a7f3d0;
+  --app-ink-on-accent: #042418;
+
+  /* Family geometry & motion (constant across apps) */
+  --flove-radius-sm: 12px;
+  --flove-radius:    20px;
+  --flove-radius-lg: 28px;
+  --flove-radius-pill: 999px;
+  --flove-ease:    cubic-bezier(.2,.8,.2,1);
+  --flove-fast:    .15s var(--flove-ease);
+  --flove-medium:  .25s var(--flove-ease);
+  --flove-slow:    .4s  var(--flove-ease);
+
+  /* Family typography. Apps may override font-family but should keep these scales. */
+  --flove-font-ui: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --flove-font-display: 'Georgia', 'Times New Roman', serif;
+}
+
+/* ============================================================
+   THE FLOVE BAR — a thin sticky strip at the very top of every
+   app. Holds the back-to-launcher link, the sprout brand,
+   and the app name. Lives ABOVE every app's own header.
+   ============================================================ */
+.flove-bar {
+  position: sticky;
+  top: 0;
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  font-family: var(--flove-font-ui);
+  font-size: 13px;
+  letter-spacing: .3px;
+  background: rgba(255,255,255,.55);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  color: #1a1a1a;
+}
+
+/* Auto dark variant when app body is dark */
+@media (prefers-color-scheme: dark) {
+  .flove-bar.flove-bar--auto {
+    background: rgba(10,12,18,.55);
+    border-bottom-color: rgba(255,255,255,.08);
+    color: #e9ecf3;
+  }
+}
+.flove-bar--dark {
+  background: rgba(10,12,18,.6);
+  border-bottom-color: rgba(255,255,255,.08);
+  color: #e9ecf3;
+}
+
+.flove-bar a.flove-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: inherit;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--flove-radius-pill);
+  transition: background var(--flove-fast), transform var(--flove-fast);
+}
+.flove-bar a.flove-home:hover {
+  background: var(--app-accent-soft);
+  color: var(--app-ink-on-accent);
+  transform: translateX(-2px);
+}
+.flove-bar .flove-mark {
+  font-size: 16px;
+  color: var(--app-accent);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--app-accent) 35%, transparent));
+}
+.flove-bar .flove-app-name {
+  font-weight: 500;
+  opacity: .85;
+}
+.flove-bar .flove-spacer { flex: 1; }
+.flove-bar .flove-tag {
+  font-size: 11px;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  opacity: .55;
+}
+
+/* ============================================================
+   FLOVE-IO ACTION BAR — emitted by flove-io.js (F0).
+   Sits inside a form, gives the user Copy / Save / Share / Publish
+   over the form's current FloveElement payload.
+   ============================================================ */
+.flove-action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  margin-top: 14px;
+  border-radius: var(--flove-radius);
+  background: rgba(127,127,127,.06);
+  border: 1px solid rgba(127,127,127,.18);
+  font-family: var(--flove-font-ui);
+}
+.flove-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid rgba(127,127,127,.3);
+  background: rgba(255,255,255,.04);
+  color: inherit;
+  font-family: inherit;
+  font-size: 13px;
+  border-radius: var(--flove-radius-pill);
+  cursor: pointer;
+  transition: transform var(--flove-fast),
+              border-color var(--flove-fast),
+              background var(--flove-fast);
+}
+.flove-action-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--app-accent);
+}
+.flove-action-btn:active { transform: translateY(0); }
+.flove-action-btn--primary {
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  border-color: var(--app-accent);
+  font-weight: 600;
+}
+.flove-action-btn--primary:hover { filter: brightness(1.05); }
+.flove-action-btn[hidden] { display: none; }
+
+/* Toast variant used by flove-io (slightly tighter, top of footer) */
+.flove-toast--io { bottom: 80px; }
+
+.flove-publish-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.flove-publish-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: var(--flove-radius);
+  background: rgba(0,0,0,.02);
+}
+.flove-publish-row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-direction: row;
+  font-size: .92rem;
+}
+.flove-publish-kind {
+  font-size: .72rem;
+  letter-spacing: .3px;
+  color: #6b7280;
+  text-transform: uppercase;
+  background: rgba(0,0,0,.04);
+  border-radius: var(--flove-radius-pill);
+  padding: 2px 8px;
+}
+.flove-publish-add {
+  border: 1px dashed rgba(0,0,0,.15);
+  border-radius: var(--flove-radius);
+  padding: 10px 12px;
+}
+.flove-publish-add summary {
+  cursor: pointer;
+  font-size: .85rem;
+  color: #4b5563;
+}
+.flove-publish-add[open] summary { margin-bottom: 8px; }
+.flove-publish-add label { margin-bottom: 6px; }
+
+/* enhanced flove-bar — center categories + right menu ───────── */
+.flove-bar--enhanced .flove-mark,
+.flove-bar--enhanced .flove-sprout {
+  user-select: none;
+  transition: transform var(--flove-fast);
+}
+.flove-bar--enhanced .flove-mark:hover,
+.flove-bar--enhanced .flove-sprout:hover { transform: rotate(20deg) scale(1.08); }
+
+.flove-categories {
+  flex: 1 1 auto;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0 6px;
+  scroll-snap-type: x proximity;
+  justify-content: center;
+}
+.flove-categories::-webkit-scrollbar { display: none; }
+.flove-cat-chip {
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+  padding: 4px 12px;
+  font-size: 12px;
+  letter-spacing: .2px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.25);
+  background: rgba(255,255,255,.5);
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform var(--flove-fast),
+              background var(--flove-fast),
+              border-color var(--flove-fast);
+}
+.flove-cat-chip:hover { border-color: var(--app-accent); transform: translateY(-1px); }
+.flove-cat-chip.is-active {
+  background: var(--app-accent);
+  color: var(--app-ink-on-accent);
+  border-color: var(--app-accent);
+}
+
+.flove-menu-btn {
+  width: 36px; height: 36px;
+  border-radius: var(--flove-radius-pill);
+  border: 1px solid rgba(127,127,127,.22);
+  background: rgba(255,255,255,.5);
+  color: inherit;
+  font-size: 18px;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--flove-fast), border-color var(--flove-fast);
+}
+.flove-menu-btn:hover { background: var(--app-accent-soft); border-color: var(--app-accent); }
+.flove-menu-btn[aria-expanded="true"] { background: var(--app-accent); color: var(--app-ink-on-accent); }
+
+.flove-menu {
+  width: min(280px, calc(100vw - 24px));
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: var(--flove-radius);
+  box-shadow: 0 18px 40px rgba(0,0,0,.18);
+  padding: 6px;
+  z-index: 200;
+  font-family: var(--flove-font-ui);
+}
+.flove-menu[hidden] { display: none; }
+.flove-menu__section {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.flove-menu__section:last-child { border-bottom: 0; }
+.flove-menu__title {
+  margin: 0 8px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: #6b7280;
+}
+.flove-menu__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 9px 10px;
+  font: inherit;
+  font-size: .9rem;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: var(--flove-radius);
+  cursor: pointer;
+  text-decoration: none;
+}
+.flove-menu__item:hover {
+  background: var(--app-accent-soft);
+  color: var(--app-ink-on-accent);
+}
+
+@media (max-width: 540px) {
+  .flove-categories { gap: 4px; padding: 0 2px; }
+  .flove-cat-chip { padding: 3px 10px; font-size: 11px; }
+}
+
+/* format popover ────────────────────────────────────────────── */
+.flove-popover {
+  z-index: 999;
+  width: 220px;
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: var(--flove-radius);
+  box-shadow: 0 14px 30px rgba(0,0,0,.18);
+  padding: 4px;
+  font-family: var(--flove-font-ui);
+}
+.flove-popover__item {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: var(--flove-radius);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.flove-popover__item:hover {
+  background: var(--app-accent-soft);
+  color: var(--app-ink-on-accent);
+}
+  
+  .lk-phrase{ margin:1rem 0 0; font-size:1rem; line-height:1.5; }
+  .lk-phrase em{ font-style:italic; }
+  .lk-share{ position:relative; display:inline-flex; }
+  .lk-share__menu{ position:absolute; bottom:calc(100% + .35rem); left:0; z-index:6; display:flex; flex-direction:column;
+    min-width:11rem; padding:.3rem; border:1px solid rgba(0,0,0,.16); border-radius:12px; background:#fff;
+    box-shadow:0 10px 24px rgba(0,0,0,.18); }
+  .lk-share__menu[hidden]{ display:none; }
+  .lk-share__item{ display:flex; gap:.5rem; align-items:center; min-height:44px; padding:.45rem .6rem; border:0; border-radius:8px;
+    background:transparent; color:inherit; font:inherit; font-size:.9rem; text-decoration:none; cursor:pointer; white-space:nowrap; }
+  .lk-share__item:hover,.lk-share__item:focus-visible{ background:rgba(0,0,0,.07); }
+  .lk-share__item:focus-visible, #magicBtn:focus-visible{ outline:2px solid currentColor; outline-offset:2px; }
+</style>
+  <style>
+    /* Linky = the "relate" family → teal accent. */
+    :root{
+      --app-accent:#25c39e;
+      --app-accent-soft:#b6ffe9;
+      --app-ink-on-accent:#04241a;
+    }
+
+    /* ── translaty i18n span toggle (CSS-only): hide every non-active language ── */
+    .es{display:none}                                  /* default view = .en */
+    body:has(#lang-es:checked) .en{display:none}
+    body:has(#lang-es:checked) .es{display:inline}
+
+    /* ── translaty worldball switcher (🌐 opens the language options) ── */
+    .lang{display:inline-block;position:relative;margin:0}
+    .lang>summary{list-style:none;cursor:pointer;width:36px;height:36px;border:1px solid #999;border-radius:50%;
+      display:inline-flex;align-items:center;justify-content:center;font-size:1.2rem;line-height:1;-webkit-user-select:none;user-select:none}
+    .lang>summary::-webkit-details-marker{display:none}
+    .lang[open]>summary{border-color:#333;background:#f2f2f2}
+    .lang-opts{position:absolute;right:0;z-index:210;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;
+      background:transparent;border:0;border-radius:12px;padding:6px}
+    .lang input{position:absolute;opacity:0;pointer-events:none}
+    /* options: no background, no borders; selection shown by weight, not a chip */
+    .lang label{cursor:pointer;padding:0 12px;min-height:40px;display:inline-flex;align-items:center;border:0;border-radius:11px;white-space:nowrap;color:#000;text-shadow:0 1px 2px rgba(255,255,255,.7)}
+    .lang input:checked + label{font-weight:bold;text-decoration:underline}
+    @media (prefers-color-scheme:dark){
+      .lang>summary{border-color:#777} .lang[open]>summary{background:#2a2a2a;border-color:#999}
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh; color:#15201c;
+      font-family:var(--flove-font-ui);
+      background:
+        radial-gradient(1100px 700px at 110% -10%, #e8fff6 0, transparent 55%),
+        radial-gradient(900px 600px at -10% 110%, #eafff8 0, transparent 55%),
+        #f6fffb;
+    }
+
+    /* topbar: the logo + title together are the menu trigger */
+    .flove-bar{ position:sticky; }
+    .brand-btn{
+      display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+      border:0; background:transparent; color:inherit; font:inherit; padding:4px 8px; border-radius:var(--flove-radius-pill);
+    }
+    .brand-btn:hover{ background:var(--app-accent-soft); color:var(--app-ink-on-accent); }
+    .brand-btn[aria-expanded="true"]{ background:var(--app-accent-soft); color:var(--app-ink-on-accent); }
+    .brand-btn .flove-mark{ width:1.25em; height:1.25em; vertical-align:-.2em; color:var(--app-accent); }
+    .brand-btn .flove-app-name{ font-weight:600; opacity:1; }
+    .brand-btn .caret{ font-size:.7em; opacity:.55; }
+    .flove-menu{ position:absolute; top:calc(100% + 6px); left:12px; }
+
+    /* About panel (holds what used to be the intro text) */
+    .about-panel{
+      position:relative;
+      max-width:720px; margin:16px auto 0; padding:14px 40px 14px 16px;
+      border:1px solid rgba(20,60,45,.14); border-radius:16px;
+      background:rgba(255,255,255,.78); color:#33534a; font-size:.95rem;
+    }
+    .about-panel[hidden]{ display:none; }
+    .about-panel p{ margin:.2rem 0; }
+    .about-credit{ font-size:.85rem; opacity:.85; }
+    .about-credit a{ color:var(--app-accent); }
+    .about-x{
+      position:absolute; top:6px; right:10px; border:0; background:transparent;
+      font-size:1.4rem; line-height:1; cursor:pointer; color:#6b8378;
+    }
+    .about-x:hover{ color:#0f2f26; }
+
+    /* page */
+    .wrap{ max-width:720px; margin:0 auto; padding:20px 16px 96px; }
+    #rows{ display:flex; flex-direction:column; gap:14px; }
+    .row{
+      border:1px solid rgba(20,60,45,.12); border-radius:18px;
+      padding:14px; background:rgba(255,255,255,.72);
+      box-shadow:0 10px 24px -16px rgba(20,80,60,.4);
+    }
+    .rate-label{ margin-right:8px; color:#6b8378; font-size:.9rem; }
+
+    .pair{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .cell{ flex:1 1 180px; min-width:0; }
+    .cell[hidden]{ display:none; }
+    .arrow{ color:var(--app-accent); font-weight:800; font-size:1.1rem; }
+    .arrow[hidden]{ display:none; }
+
+    .f-input{
+      width:100%; padding:11px 13px; font:inherit; font-size:1rem;
+      border:1px solid rgba(20,60,45,.22); border-radius:12px; background:#fff; color:inherit;
+    }
+    .f-input:focus{
+      outline:none; border-color:var(--app-accent);
+      box-shadow:0 0 0 3px color-mix(in srgb, var(--app-accent) 26%, transparent);
+    }
+    .f-input.is-frozen{
+      background:var(--app-accent-soft); color:var(--app-ink-on-accent);
+      border-color:transparent; font-weight:600; cursor:default;
+    }
+
+    .num-slot{ margin-top:12px; text-align:center; }
+    .num-slot[hidden]{ display:none; }
+    .f-num{
+      padding:9px 14px; font:inherit; font-size:1rem; border-radius:12px;
+      border:1px solid rgba(20,60,45,.22); background:#fff; color:inherit; cursor:pointer;
+    }
+    .f-num:focus{ outline:none; border-color:var(--app-accent); }
+    .f-num.is-frozen{
+      background:var(--app-accent-soft); color:var(--app-ink-on-accent);
+      border-color:transparent; font-weight:700; cursor:default; -webkit-appearance:none; appearance:none;
+    }
+
+    .btn-slot{ margin-top:12px; text-align:center; }
+    .btn-slot[hidden]{ display:none; }
+    .stepbtn{
+      padding:9px 26px; border:0; border-radius:999px; cursor:pointer; font:inherit; font-weight:700;
+      background:var(--app-accent); color:var(--app-ink-on-accent);
+      box-shadow:0 10px 20px -10px color-mix(in srgb, var(--app-accent) 75%, transparent);
+      transition:transform .15s var(--flove-ease), filter .15s;
+    }
+    .stepbtn:hover{ transform:translateY(-1px); filter:brightness(1.05); }
+    .stepbtn:active{ transform:translateY(0); }
+
+    .hint{ text-align:center; color:#6b8378; font-size:.85rem; margin-top:16px; }
+    .hint[hidden]{ display:none; }
+
+    .actions-wrap{ margin-top:26px; }
+    .flove-action-bar{ justify-content:center; }
+    .clear-btn{ margin-left:auto; }   /* pushes Clear all to the right end */
+
+    /* save format popover */
+    .flove-popover{ position:absolute; }
+    .flove-popover[hidden]{ display:none; }
+    .flove-popover__item{ display:flex; align-items:center; gap:10px; }
+    .flove-popover__item .kind{ margin-left:auto; opacity:.5; font-size:.72rem; text-transform:uppercase; letter-spacing:.5px; }
+
+    /* publish modal */
+    .lk-modal{ position:fixed; inset:0; z-index:600; display:flex; align-items:center; justify-content:center; padding:18px; background:rgba(10,30,24,.4); }
+    .lk-modal[hidden]{ display:none; }
+    .lk-modal__box{
+      width:min(360px, 100%); background:#fff; color:#15201c; border-radius:20px; padding:18px;
+      box-shadow:0 24px 60px rgba(0,0,0,.28); position:relative;
+    }
+    .lk-modal__title{ margin:0 0 12px; font-size:1.1rem; }
+    .lk-modal__x{ position:absolute; top:10px; right:12px; border:0; background:transparent; font-size:1.4rem; line-height:1; cursor:pointer; color:#6b8378; }
+    .flove-publish-row{ cursor:pointer; }
+
+    /* tiny toast */
+    .toast{
+      position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(12px);
+      background:#0f2f26; color:#eafff8; padding:10px 18px; border-radius:999px;
+      font:inherit; font-size:.9rem; opacity:0; pointer-events:none; transition:opacity .2s, transform .2s; z-index:700;
+    }
+    .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+    .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); border:0; }
+
+.flove-publish-list{list-style:none;margin:0;padding:0}
+
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="flove-bar">
+  <button type="button" class="brand-btn" id="menuBtn" aria-expanded="false" aria-controls="menu" aria-haspopup="true" title="Menu">
+    <svg class="flove-mark" viewBox="0 0 32 32" aria-hidden="true"><g transform="translate(4 4)" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="3.6"/><circle cx="17" cy="17" r="3.6"/><path d="M9.5 9.5 14.5 14.5"/></g></svg>
+    <span class="flove-app-name">Linky</span>
+    <span class="caret" aria-hidden="true">▾</span>
+  </button>
+  <span class="flove-spacer"></span>
+  <details class="lang">
+    <summary class="worldball" title="Language" aria-label="Language" data-aria-en="Language" data-aria-es="Idioma">🌐</summary>
+    <div class="lang-opts">
+      <input type="radio" name="lang" id="lang-en" checked><label for="lang-en">English</label>
+      <input type="radio" name="lang" id="lang-es"><label for="lang-es">Español</label>
+    </div>
+  </details>
+  <nav class="flove-menu" id="menu" hidden>
+    <div class="flove-menu__section">
+      <div class="flove-menu__title">Linky</div>
+      <button type="button" class="flove-menu__item" id="aboutBtn"><span class="en" lang="en">About Linky</span><span class="es" lang="es">Acerca de Linky</span></button>
+      <button type="button" class="flove-menu__item" id="resetBtn"><span class="en" lang="en">Reset all links</span><span class="es" lang="es">Borrar todos los enlaces</span></button>
+    </div>
+    <div class="flove-menu__section">
+      <div class="flove-menu__title">flove</div>
+      <a class="flove-menu__item" href="../appy/appy-basic.html"><span class="en" lang="en">Profile</span><span class="es" lang="es">Perfil</span></a>
+      <a class="flove-menu__item" href="index.html"><span class="en" lang="en">All Puzzy apps</span><span class="es" lang="es">Todas las apps de Puzzy</span></a>
+      <a class="flove-menu__item" href="https://flove.org">flove.org</a>
+    </div>
+  </nav>
+</div>
+
+<main class="wrap">
+<h1 class="a11y-h1">Linky</h1>
+  <aside class="about-panel" id="aboutPanel" hidden>
+    <button type="button" class="about-x" id="aboutClose" aria-label="Close" data-aria-en="Close" data-aria-es="Cerrar">×</button>
+    <p class="about-lead"><span class="en" lang="en">Chain a word to a related word, and rate how strongly they link (0–10). Up to 10 links.</span><span class="es" lang="es">Encadena una palabra con otra relacionada y valora la fuerza del vínculo (0–10). Hasta 10 enlaces.</span></p>
+    <p class="about-credit"><span class="en" lang="en">Inspired by <a href="https://www.youtube.com/watch?v=ST0Y-GwnaWs&amp;t=331s" target="_blank" rel="noopener">Words (game)</a>, by Buenafuente.</span><span class="es" lang="es">Inspirado en <a href="https://www.youtube.com/watch?v=ST0Y-GwnaWs&amp;t=331s" target="_blank" rel="noopener">Words (game)</a>, de Buenafuente.</span></p>
+  </aside>
+
+  <div id="rows"></div>
+
+  <p class="hint" id="hint" hidden></p>
+
+  <p class="lk-phrase" aria-live="polite"><em id="lkPhrase"></em></p>
+
+  <div class="actions-wrap">
+    <div class="flove-action-bar" role="group" aria-label="Actions" data-aria-en="Actions" data-aria-es="Acciones">
+      <button type="button" class="flove-action-btn" id="magicBtn" aria-pressed="false">✨ Magic</button>
+      <span class="lk-share">
+        <button type="button" class="flove-action-btn" id="shareBtn" aria-haspopup="true" aria-expanded="false" aria-controls="shareMenu">🔗 <span class="en" lang="en">Share</span><span class="es" lang="es">Compartir</span></button>
+        <span class="lk-share__menu" id="shareMenu" role="menu" hidden>
+          <button type="button" role="menuitem" class="lk-share__item" data-action="save">💾 <span class="en" lang="en">Save JSON</span><span class="es" lang="es">Guardar JSON</span></button>
+          <a role="menuitem" class="lk-share__item" href="mailto:?subject=flove%20%C2%B7%20linky" tabindex="0">📧 <span class="en" lang="en">Email</span><span class="es" lang="es">Correo</span></a>
+        </span>
+      </span>
+      <button type="button" class="flove-action-btn clear-btn" id="clearBtn">🧹 <span class="en" lang="en">Clear all</span><span class="es" lang="es">Borrar todo</span></button>
+    </div>
+  </div>
+</main>
+
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// translaty engine — switches the page language, translates option/placeholder/aria
+// bits, remembers the choice under the shared flove:lang key, syncs <html lang>.
+(function(){
+  const LS = 'flove:lang', LS_OLD = 'translaty-lang';
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const radios = () => Array.from(document.querySelectorAll('input[name="lang"]'));
+  const curLang = () => { const r = radios().find(x => x.checked); return r ? r.id.replace('lang-', '') : 'en'; };
+  const stored = () => { try { return window.floveStore.getRaw(LS) || window.floveStore.getRaw(LS_OLD) || window.floveStore.getRaw('translate2-lang'); } catch (_) { return null; } };
+  const urlLang = () => { try { return new URLSearchParams(location.search).get('lang'); } catch (_) { return null; } };
+  function applyLang(){
+    const li = curLang();
+    document.documentElement.lang = li;
+    document.querySelectorAll('option[data-en]').forEach(o => { if (o.dataset[li] != null) o.textContent = o.dataset[li]; });
+    document.querySelectorAll('[data-ph-en]').forEach(el => { const v = el.dataset['ph' + cap(li)]; if (v != null) el.placeholder = v; });
+    document.querySelectorAll('[data-aria-en]').forEach(el => { const v = el.dataset['aria' + cap(li)]; if (v != null) el.setAttribute('aria-label', v); });
+    try { window.floveStore.set(LS, li); } catch (_) {}
+  }
+  function init(){
+    const want = urlLang() || stored();
+    if (want){ const r = document.getElementById('lang-' + want); if (r) r.checked = true; }
+    radios().forEach(r => r.addEventListener('change', () => {
+      applyLang();
+      const d = document.querySelector('details.lang'); if (d) d.open = false;
+    }));
+    applyLang();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<script>
+(function(){
+  'use strict';
+  const MAX = 10;
+  const KEY = 'linky:rows';
+  const rowsEl = document.getElementById('rows');
+  const hintEl = document.getElementById('hint');
+  let committed = [];   // [{ word, related, num }]
+
+  /* active language + tiny picker so JS-built strings match the worldball */
+  const lang = () => { const r = document.querySelector('input[name="lang"]:checked'); return r ? r.id.replace('lang-', '') : 'en'; };
+  const T = (en, es) => lang() === 'es' ? es : en;
+
+  /* ---- persistence ------------------------------------------------ */
+  function load(){
+    try { committed = JSON.parse(window.floveStore.getRaw(KEY) || '[]'); } catch(_){ committed = []; }
+    if (!Array.isArray(committed)) committed = [];
+    committed = committed.slice(0, MAX);
+  }
+  function persist(){ try { window.floveStore.set(KEY, JSON.stringify(committed)); } catch(_){} }
+
+  /* ---- toast ------------------------------------------------------ */
+  const toastEl = document.getElementById('toast');
+  let toastT = null;
+  function toast(msg){
+    toastEl.textContent = msg; toastEl.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(()=> toastEl.classList.remove('show'), 1800);
+  }
+
+  /* ---- row building ----------------------------------------------- */
+  function numOptions(){
+    let s = '<option value="" selected disabled>0–10</option>';
+    for (let i = 0; i <= 10; i++) s += '<option value="' + i + '">' + i + '</option>';
+    return s;
+  }
+
+  function frozenRow(idx, d){
+    const row = document.createElement('div');
+    row.className = 'row is-done'; row.dataset.idx = idx;
+    row.innerHTML =
+      '<div class="pair">' +
+        '<div class="cell"><input class="f-input is-frozen" type="text" readonly></div>' +
+        '<span class="arrow" aria-hidden="true">→</span>' +
+        '<div class="cell"><input class="f-input is-frozen" type="text" readonly></div>' +
+      '</div>' +
+      '<div class="num-slot"><span class="f-num is-frozen" role="img" aria-label="' + T('link strength ' + d.num + ' of 10', 'fuerza del vínculo ' + d.num + ' de 10') + '" data-aria-en="link strength ' + d.num + ' of 10" data-aria-es="fuerza del vínculo ' + d.num + ' de 10">' + d.num + ' / 10</span></div>';
+    const inputs = row.querySelectorAll('.f-input');
+    inputs[0].value = d.word; inputs[1].value = d.related;
+    return row;
+  }
+
+  function activeRow(idx){
+    const row = document.createElement('div');
+    row.className = 'row'; row.dataset.idx = idx;
+    row.innerHTML =
+      '<div class="pair">' +
+        '<div class="cell cell-word"><input class="f-input f-word" type="text" maxlength="80" placeholder="' + T('a word','una palabra') + '" data-ph-en="a word" data-ph-es="una palabra" aria-label="' + T('word','palabra') + '" data-aria-en="word" data-aria-es="palabra"></div>' +
+        '<span class="arrow" hidden aria-hidden="true">→</span>' +
+        '<div class="cell cell-related" hidden><input class="f-input f-related" type="text" maxlength="80" placeholder="' + T('add a related word','añade una palabra relacionada') + '" data-ph-en="add a related word" data-ph-es="añade una palabra relacionada" aria-label="' + T('related word','palabra relacionada') + '" data-aria-en="related word" data-aria-es="palabra relacionada"></div>' +
+      '</div>' +
+      '<div class="num-slot" hidden><span class="rate-label"><span class="en" lang="en">Rate link</span><span class="es" lang="es">Valora el enlace</span></span><select class="f-num" aria-label="' + T('link strength, 0 to 10','fuerza del vínculo, de 0 a 10') + '" data-aria-en="link strength, 0 to 10" data-aria-es="fuerza del vínculo, de 0 a 10">' + numOptions() + '</select></div>' +
+      '<div class="btn-slot" hidden><button type="button" class="stepbtn"></button></div>';
+
+    const word    = row.querySelector('.f-word');
+    const related = row.querySelector('.f-related');
+    const relCell = row.querySelector('.cell-related');
+    const arrow   = row.querySelector('.arrow');
+    const numSlot = row.querySelector('.num-slot');
+    const numSel  = row.querySelector('.f-num');
+    const btnSlot = row.querySelector('.btn-slot');
+    const btn     = row.querySelector('.stepbtn');
+
+    let stage = 'word';
+    // two spans so CSS toggles the label with the worldball
+    function setBtn(en, es, show){ btn.innerHTML = '<span class="en" lang="en">' + en + '</span><span class="es" lang="es">' + es + '</span>'; btnSlot.hidden = !show; }
+
+    word.addEventListener('input',    ()=>{ if (stage === 'word')    setBtn('Link with','Enlazar con', word.value.trim() !== ''); });
+    related.addEventListener('input', ()=>{ if (stage === 'related') setBtn('Add','Añadir',  related.value.trim() !== ''); });
+    numSel.addEventListener('change', ()=>{ if (stage === 'number')  setBtn('Add new','Añadir nuevo', numSel.value !== ''); });
+
+    btn.addEventListener('click', ()=>{
+      if (stage === 'word'){
+        if (word.value.trim() === '') return;
+        word.readOnly = true; word.classList.add('is-frozen');
+        arrow.hidden = false; relCell.hidden = false;
+        setBtn('Add','Añadir', false); stage = 'related'; related.focus();
+      } else if (stage === 'related'){
+        if (related.value.trim() === '') return;
+        related.readOnly = true; related.classList.add('is-frozen');
+        numSlot.hidden = false;
+        setBtn('Add new','Añadir nuevo', false); stage = 'number'; numSel.focus();
+      } else if (stage === 'number'){
+        if (numSel.value === '') return;
+        numSel.disabled = true; numSel.classList.add('is-frozen');
+        btnSlot.hidden = true; row.classList.add('is-done'); stage = 'done';
+        committed.push({ word: word.value.trim(), related: related.value.trim(), num: Number(numSel.value) });
+        persist();
+        if (committed.length < MAX) spawnNext();
+        else showFull();
+      }
+    });
+    return row;
+  }
+
+  function spawnNext(){
+    const r = activeRow(committed.length);
+    rowsEl.appendChild(r);
+    const w = r.querySelector('.f-word'); if (w) w.focus();
+  }
+  function showFull(){
+    hintEl.innerHTML = '<span class="en" lang="en">All 10 links added. Save, share or publish them below.</span>' +
+                       '<span class="es" lang="es">Añadidos los 10 enlaces. Guárdalos, compártelos o publícalos abajo.</span>';
+    hintEl.hidden = false;
+  }
+
+  function render(){
+    rowsEl.innerHTML = '';
+    committed.forEach((d, i)=> rowsEl.appendChild(frozenRow(i, d)));
+    if (committed.length < MAX) spawnNext(); else showFull();
+  }
+
+  /* ================================================================
+     /summary — one summary-model, exported six ways. No results panel.
+     ================================================================ */
+  const esc = s => String(s).replace(/[&<>]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[c]));
+  const escA = s => esc(s).replace(/"/g, '&quot;');
+  const today = () => new Date().toISOString().slice(0, 10);
+
+  function buildSummaryModel(){
+    return {
+      app: 'Linky',
+      version: 1,
+      date: today(),
+      links: committed.map(d => ({ word: d.word, related: d.related, strength: d.num }))
+    };
+  }
+
+  function downloadBlob(body, mime, filename){
+    const blob = new Blob([body], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=> URL.revokeObjectURL(url), 1000);
+  }
+
+  function downloadAs(){
+    downloadBlob(JSON.stringify(portraitModel(), null, 2), 'application/json;charset=utf-8', 'linky-portrait.json');
+    toast(T('Saved as .json','Guardado como .json'));
+  }
+
+  // flove-portrait/1 — the JSON-only export
+  function portraitModel(){
+    const m = buildSummaryModel();
+    return {
+      schema: 'flove-portrait/1', app: 'linky', version: 1,
+      generatedAt: new Date().toISOString(),
+      lang: (document.documentElement.lang || 'en').slice(0, 2),
+      phrase: summaryText(),
+      rows: m.links.map((l, i) => ({ key: 'link:' + i, kind: 'link', title: l.word + ' → ' + l.related, items: [l.strength + '/10'] })),
+      words: m.links.map(l => l.word),
+      completeness: { layers: m.links.length, total: m.links.length },
+      consent: { share: 'app', purposes: ['self-reflection', 'export'] },
+      source: { url: 'https://flove.org/apps/puzzy/linky.html' }
+    };
+  }
+  window.flovePortrait = window.flovePortrait || {};
+  window.flovePortrait.get = portraitModel;
+  window.flovePortrait.validate = p => Array.isArray(p && p.rows) ? { ok: true, errors: [] } : { ok: false, errors: ['rows'] };
+  window.flovePortrait.consult = () => {
+  const __p = portraitModel();
+  return { schema: 'flove-consult/1', app: __p.app, version: __p.version, generatedAt: new Date().toISOString(), rows: __p.rows };
+};
+  window.flovePortrait.selfTest = () => ({ ok: true, errors: [] });
+
+  /* ---- Share → Web Share of the summary (HTML file + text) -------- */
+  function summaryText(){
+    const m = buildSummaryModel();
+    return 'flove · Linky\n\n' + m.links.map(l => '• ' + l.word + ' → ' + l.related + ' (' + l.strength + '/10)').join('\n');
+  }
+  const shareBtn = document.getElementById('shareBtn');
+  const shareMenu = document.getElementById('shareMenu');
+  const lkPhrase = document.getElementById('lkPhrase');
+  let lkMagic = false;
+
+  function phraseLine(){
+    const m = buildSummaryModel();
+    if (!m.links.length) return T('Add a link first','Añade primero un enlace');
+    return lkMagic
+      ? '✦ ' + m.links.length + T(' links woven: ',' enlaces tejidos: ') + m.links.slice(0,3).map(l => l.word + ' → ' + l.related).join(' · ')
+      : m.links.map(l => l.word + ' → ' + l.related + ' (' + l.strength + '/10)').join(' · ');
+  }
+  function paintPhrase(){ lkPhrase.textContent = phraseLine(); }
+
+  function closeShare(){ shareMenu.hidden = true; shareBtn.setAttribute('aria-expanded','false'); }
+  function touchDevice(){ return !!(navigator.canShare && (navigator.maxTouchPoints > 1 || window.matchMedia('(pointer: coarse)').matches)); }
+  shareBtn.addEventListener('click', async (e)=>{
+    e.stopPropagation();
+    if (!committed.length){ toast(T('Add a link first','Añade primero un enlace')); return; }
+    const text = summaryText();
+    const file = new File([JSON.stringify(portraitModel(), null, 2)], 'linky-portrait.json', { type:'application/json' });
+    if (touchDevice() && navigator.canShare({ files:[file] })){
+      try { await navigator.share({ title:'flove · Linky', text, files:[file] }); return; } catch(_){}
+    }
+    shareMenu.hidden = !shareMenu.hidden;
+    shareBtn.setAttribute('aria-expanded', String(!shareMenu.hidden));
+  });
+  shareMenu.querySelector('[data-action="save"]').addEventListener('click', ()=>{ downloadAs(); closeShare(); });
+    document.addEventListener('click', e => { if (!e.target.closest('#shareBtn') && !e.target.closest('#shareMenu')) closeShare(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeShare(); });
+  document.getElementById('magicBtn').addEventListener('click', e => {
+    lkMagic = !lkMagic; e.currentTarget.setAttribute('aria-pressed', String(lkMagic)); paintPhrase();
+  });
+  document.addEventListener('input', paintPhrase);
+  document.addEventListener('change', paintPhrase);
+  paintPhrase();
+
+  /* ---- menu (opened by the logo + title) -------------------------- */
+  const menuBtn = document.getElementById('menuBtn');
+  const menu = document.getElementById('menu');
+  function closeMenu(){ menu.hidden = true; menuBtn.setAttribute('aria-expanded', 'false'); }
+  menuBtn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    const open = menu.hidden;
+    menu.hidden = !open; menuBtn.setAttribute('aria-expanded', String(open));
+  });
+
+  /* About Linky → reveal the intro text */
+  const aboutPanel = document.getElementById('aboutPanel');
+  document.getElementById('aboutBtn').addEventListener('click', ()=>{ aboutPanel.hidden = !aboutPanel.hidden; closeMenu(); });
+  document.getElementById('aboutClose').addEventListener('click', ()=>{ aboutPanel.hidden = true; });
+
+  /* Reset / Clear all — menu item and action-bar button share one path */
+  function clearAll(){
+    if (!committed.length || confirm(T('Clear all links?','¿Borrar todos los enlaces?'))){
+      committed = []; persist(); hintEl.hidden = true; render(); toast(T('Cleared','Borrado'));
+    }
+  }
+  document.getElementById('resetBtn').addEventListener('click', ()=>{ clearAll(); closeMenu(); });
+  document.getElementById('clearBtn').addEventListener('click', clearAll);
+
+  /* global click / Escape: close menu, save popover */
+  document.addEventListener('click', (e)=>{
+    if (!menu.hidden && !menu.contains(e.target) && e.target !== menuBtn && !menuBtn.contains(e.target)) closeMenu();
+    if (!savePop.hidden && !savePop.contains(e.target) && e.target !== saveBtn && !saveBtn.contains(e.target)) hideSavePop();
+  });
+  document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape'){ closeMenu(); hideSavePop(); closeModal(); } });
+
+  /* ---- go --------------------------------------------------------- */
+  load();
+  render();
+})();
+</script>
+<!-- flove fields manifest · read by tools/extract-fields.py -->
+<script type="application/json" id="flove-fields">
+{
+  "schema": "flove-fields/1",
+  "app": "linky",
+  "status": "complete",
+  "fields": [
+    {
+      "id": "word",
+      "label": "Word",
+      "type": "text"
+    },
+    {
+      "id": "links",
+      "label": "Links",
+      "type": "repeat",
+      "min": 0,
+      "max": 10,
+      "item": {
+        "id": "link",
+        "label": "Link",
+        "fields": [
+          {
+            "id": "word",
+            "label": "Word",
+            "type": "text"
+          },
+          {
+            "id": "related",
+            "label": "Related word",
+            "type": "text"
+          },
+          {
+            "id": "strength",
+            "label": "Strength (0–10)",
+            "type": "number",
+            "min": 0,
+            "max": 10
+          }
+        ]
+      }
+    }
+  ]
+}
+</script>
+<!-- flove-conformance:start -->
+<script data-flove-conformance>
+/* Runtime conformance — dev harness: development/tools/conformance.html
+   Supersedes selfTest(); never writes user data (merge gets an empty envelope).
+   Parity vs floveFields() is advisory: rows are semantic layers, not a field
+   dump, so an app's field ids may not appear verbatim. */
+(function(){
+  var api = window.flovePortrait;
+  if (!api || typeof api.get !== 'function' || typeof api.conformance === 'function') return;
+
+  function flatFields(list, out){
+    out = out || [];
+    (list || []).forEach(function(f){
+      if (!f || !f.id) return;
+      out.push(f.id);              // leaf ids are already dotted (bonds.friendship)
+      if (f.fields) flatFields(f.fields, out);
+    });
+    return out;
+  }
+  function norm(s){
+    return String(s == null ? '' : s).toLowerCase()
+      .replace(/[\s_:.\/-]+/g, '.').replace(/^\.+|\.+$/g, '');
+  }
+  function slug(s){
+    return String(s == null ? '' : s).toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+
+  api.conformance = function(opts){
+    opts = opts || {};
+    var checks = [];
+    function check(name, ok, level, detail){
+      checks.push({ name: name, ok: !!ok, level: level || 'critical',
+                    detail: detail == null ? '' : String(detail) });
+    }
+
+    var p = null, getError = '';
+    try { p = api.get(); } catch (e) { getError = e && e.message || String(e); }
+    check('get() returns an envelope', p && typeof p === 'object', 'critical', getError);
+    if (!p || typeof p !== 'object'){
+      return { ok: false, app: null, checks: checks, errors: ['get()'], coverage: null };
+    }
+
+    var app = slug(p.app);
+    check('schema is flove-portrait/1', p.schema === 'flove-portrait/1', 'critical', p.schema);
+    check('app slug is present', !!app, 'critical', p.app);
+
+    var filename = app + '-portrait.json';
+    check('filename is <app>-portrait.json',
+          /^[a-z0-9][a-z0-9-]*-portrait\.json$/.test(filename), 'advisory', filename);
+    var json = '';
+    try { json = JSON.stringify(p); } catch (e) { json = ''; }
+    var mime = '';
+    try { mime = new Blob([json], { type: 'application/json;charset=utf-8' }).type; } catch (e) {}
+    check('blob MIME is application/json;charset=utf-8',
+          mime === 'application/json;charset=utf-8', 'advisory', mime);
+    check('envelope survives JSON.stringify', json.length > 2, 'critical', json.length + ' chars');
+
+    var v = null;
+    try { v = api.validate ? api.validate(p) : null; }
+    catch (e) { v = { ok: false, errors: [e.message] }; }
+    check('validate() accepts the envelope', v && v.ok, 'critical',
+          v && (v.errors || []).join('; '));
+
+    var rows = Array.isArray(p.rows) ? p.rows : null;
+    check('rows[] is an array', !!rows, 'critical', rows ? rows.length + ' rows' : typeof p.rows);
+    if (!rows){
+      return { ok: false, app: app, checks: checks, errors: ['rows[]'], coverage: null };
+    }
+
+    var keys = [], items = [], blank = false, untitled = false;
+    rows.forEach(function(r){
+      r = r || {};
+      var k = norm(r.key);
+      if (k) keys.push(k);
+      var list = Array.isArray(r.items) ? r.items : [];
+      if (list.length && !String(r.title || '').trim()) untitled = true;
+      list.forEach(function(it){
+        if (it === null || it === undefined) { blank = true; return; }
+        if (typeof it === 'string' && !it.trim()) { blank = true; return; }
+        items.push(typeof it === 'object' ? JSON.stringify(it) : String(it));
+      });
+    });
+    check('row keys are unique', new Set(keys).size === keys.length, 'critical',
+          keys.length + ' keys');
+    check('items are never blank', !blank, 'critical');
+    check('filled rows have a title', !untitled, 'critical');
+
+    var fieldsSource = window.floveFields, fields = [];
+    var fieldsKind = typeof fieldsSource;
+    try {
+      if (fieldsKind === 'function') fields = flatFields(fieldsSource() || []);
+      else if (Array.isArray(fieldsSource)) fields = flatFields(fieldsSource);
+    } catch (e) {}
+    check('floveFields() is callable', fieldsKind === 'function' || fieldsKind === 'undefined',
+          'advisory', fieldsKind === 'function' || fieldsKind === 'undefined' ? '' : fieldsKind);
+    var haystack = norm(keys.join(' ') + ' ' + items.join(' ') + ' ' +
+                        (p.phrase || '') + ' ' + json);
+    var mapped = fields.filter(function(id){ return haystack.indexOf(norm(id)) !== -1; });
+    check('field ids discoverable in the portrait (parity is advisory)', true, 'advisory',
+          mapped.length + '/' + fields.length + ' fields · ' +
+          Math.round(fields.length ? mapped.length / fields.length * 100 : 100) + '%');
+
+    var c = null;
+    try { c = api.consult ? api.consult(opts.consult || {}) : null; } catch (e) { c = null; }
+    var consulted = c && Array.isArray(c.rows)
+      ? c.rows.map(function(r){ return norm(r && r.key); }) : [];
+    check('consult() returns flove-consult/1',
+          c && c.schema === 'flove-consult/1' && Array.isArray(c.rows), 'critical',
+          c && c.schema);
+    check('consult() rows are a subset of get() rows',
+          consulted.every(function(k){ return keys.indexOf(k) !== -1; }), 'critical',
+          consulted.length + ' consulted');
+
+    var merged = null, mergeError = '';
+    try {
+      merged = api.merge
+        ? api.merge({
+            schema: 'flove-portrait/1', app: p.app, version: 1,
+            generatedAt: p.generatedAt, lang: p.lang,
+            rows: [{ key: '__conformance__', kind: 'probe', title: '', items: [] }],
+            consent: p.consent, source: p.source
+          })
+        : null;
+    } catch (e) { mergeError = e && e.message || String(e); }
+    check('merge() accepts a probe row without applying it',
+          merged && merged.ok === true && (merged.applied || 0) === 0, 'advisory',
+          mergeError || (merged ? 'applied ' + (merged.applied || 0) : 'no merge()'));
+
+    var errors = checks.filter(function(x){ return !x.ok && x.level === 'critical'; })
+                       .map(function(x){ return x.name; });
+    var advisories = checks.filter(function(x){ return !x.ok && x.level === 'advisory'; })
+                           .map(function(x){ return x.name; });
+    return { ok: errors.length === 0, app: app, checks: checks,
+             errors: errors, advisories: advisories,
+             coverage: fields.length ? { mapped: mapped.length, total: fields.length } : null };
+  };
+})();
+</script>
+<!-- flove-conformance:end -->
+<script data-flove-appy-standard>
+(function(){
+  if (window.floveAppyStandard) return;
+  window.floveAppyStandard = true;
+  var KEY = 'flove:appy:plays';
+  function bx(en, es){ return '<span class="en" lang="en">'+en+'</span><span class="es" lang="es">'+es+'</span>'; }
+  function storeGet(){ try { return window.floveStore ? window.floveStore.getRaw(KEY) : localStorage.getItem(KEY); } catch (_) { return null; } }
+  function storeSet(v){ try { if (window.floveStore) { window.floveStore.set(KEY, v); return true; } localStorage.setItem(KEY, v); return true; } catch (_) { return false; } }
+  function appyUrl(){ return location.href.replace(/\/(apps|projects)\/.*$/, '/apps/appy/appy-basic.html#profile'); }
+  function toast(html){
+    var el = document.getElementById('floveAppyToast');
+    if (!el){
+      el = document.createElement('div'); el.id = 'floveAppyToast';
+      el.style.cssText = 'position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9999;max-width:min(92vw,520px);background:#161623;color:#ecebf5;border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:12px 16px;font:13px/1.45 system-ui,sans-serif;box-shadow:0 18px 40px rgba(0,0,0,.45)';
+      document.body.appendChild(el);
+    }
+    el.innerHTML = html;
+    clearTimeout(el._t); el._t = setTimeout(function(){ el.remove(); }, 6000);
+  }
+  function message(html){
+    var h = document.querySelector('[data-flove-hint],#hintMessage,.hint-area,.flove-hint,[role="status"]');
+    if (h) h.innerHTML = html; else toast(html);
+  }
+  function openAppy(rec){
+    var w = null;
+    try { w = window.open(appyUrl(), '_blank'); } catch (_) {}
+    if (!w) return false;
+    var fileMode = location.protocol === 'file:' || location.origin === 'null';
+    var target = fileMode ? '*' : location.origin;
+    var same = function (o) { return o === location.origin || (fileMode && (o === 'null' || o === 'file://')); };
+    var on = function (e) {
+      if (e.source !== w || !same(e.origin)) return;
+      if (e.data && e.data.type === 'flove-appy-ready') {
+        w.postMessage({ type: 'flove-appy-play', record: rec }, target);
+        window.removeEventListener('message', on);
+      }
+    };
+    window.addEventListener('message', on);
+    setTimeout(function(){ window.removeEventListener('message', on); }, 20000);
+    return true;
+  }
+  function meta(p){
+    var raw = (p && (p.app || p.appId)) || (document.title || '').split(/[·|—]/)[0].trim() || 'App';
+    var name = String(raw).charAt(0).toUpperCase() + String(raw).slice(1);
+    var id = String((p && p.appId) || raw).toLowerCase().replace(/[^a-z0-9]+/g, '') || 'app';
+    var pth = location.pathname;
+    var cat = /\/metas\//.test(pth) ? 'inside'
+      : /\/bio\//.test(pth) ? 'inside'
+      : /\/economy\//.test(pth) ? 'economy'
+      : /\/trusty\//.test(pth) ? 'mating'
+      : /\/puzzy\//.test(pth) ? 'ling'
+      : /\/psychosocial\//.test(pth) ? 'social'
+      : 'social';
+    return { name: name, id: id, cat: cat };
+  }
+  function save(){
+    if (!window.flovePortrait || typeof window.flovePortrait.get !== 'function'){
+      message('✈ ' + bx('This app has no portrait to share yet.', 'Esta app aún no tiene un retrato para compartir.'));
+      return;
+    }
+    var p;
+    try { p = window.flovePortrait.get(); }
+    catch (_) { message('✈ ' + bx('Could not build the portrait.', 'No se pudo construir el retrato.')); return; }
+    var v = window.flovePortrait.validate ? window.flovePortrait.validate(p) : { ok: true };
+    if (!v || v.ok === false){
+      message('✈ ' + bx('Could not save to Appy — export to JSON instead.', 'No se pudo guardar en Appy — exporta el JSON.'));
+      return;
+    }
+    var m = meta(p);
+    var raw = storeGet(), list = [];
+    try { list = raw ? JSON.parse(raw) : []; } catch (_) { list = []; }
+    if (!Array.isArray(list)) list = [];
+    var entry = {
+      app: m.name, appId: m.id, category: m.cat,
+      schema: p.schema || 'flove-portrait/1', portrait: p,
+      url: (p.source && p.source.url) || location.href,
+      via: 'share', date: new Date().toISOString(),
+      id: 'a' + Date.now().toString(36), file: m.id + '-portrait.json'
+    };
+    var at = -1;
+    for (var i = 0; i < list.length; i++){
+      if (list[i] && list[i].app === entry.app && list[i].via !== 'upload'){ at = i; break; }
+    }
+    if (at >= 0){ entry.id = (list[at] && list[at].id) || entry.id; list[at] = entry; }
+    else list.push(entry);
+    if (!storeSet(JSON.stringify(list))){
+      message('✈ ' + bx('Local storage is blocked — use Save JSON and upload it in Appy.', 'El almacenamiento local está bloqueado — usa Guardar JSON y súbelo en Appy.'));
+      return;
+    }
+    message('✓ ' + bx('Saved in your Appy profile · <a href="' + appyUrl() + '" data-appy-link>See profile</a>',
+                     'Guardado en tu perfil de Appy · <a href="' + appyUrl() + '" data-appy-link>Ver perfil</a>'));
+    Array.prototype.forEach.call(document.querySelectorAll('[data-appy-link]'), function (a) {
+      a.addEventListener('click', function (e) { if (openAppy(entry)) e.preventDefault(); });
+    });
+    if (location.protocol === 'file:' || location.origin === 'null') openAppy(entry);
+  }
+  window.floveShareToAppy = save;
+  function mk(ref){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = ref.className;
+    b.setAttribute('data-appy-standard', '1');
+    b.setAttribute('aria-label', 'Send to Appy');
+    b.innerHTML = '✈ <span class="en" lang="en">Appy</span><span class="es" lang="es">Appy</span>';
+    b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); save(); });
+    return b;
+  }
+  function add(){
+    if (document.querySelector('[data-appy-standard]')) return;
+    var g = document.querySelector('[data-group="share"]');
+    if (g){
+      var par = g.parentElement;
+      var b = mk(g);
+      var save = par.querySelector('[data-group="save"],[data-action="save"]');
+      if (save && save.nextSibling) par.insertBefore(b, save.nextSibling);
+      else par.insertBefore(b, g);
+      if (window.applyLang) applyLang();
+      return;
+    }
+    var a = document.querySelector('[data-act="save"]');
+    if (a){
+      a.parentElement.insertBefore(mk(a), a.nextSibling);
+      if (window.applyLang) applyLang();
+      return;
+    }
+    var f = document.querySelector('.flove-share__item[data-action="save"]') || document.querySelector('.flove-share__item');
+    if (f){
+      f.parentElement.insertBefore(mk(f), f.nextSibling);
+      if (window.applyLang) applyLang();
+      return;
+    }
+    var fs = document.querySelector('.flove-summary__item[data-action="save"]') || document.querySelector('.flove-summary__item');
+    if (fs){
+      fs.parentElement.insertBefore(mk(fs), fs.nextSibling);
+      if (window.applyLang) applyLang();
+      return;
+    }
+    var b2 = mk({ className: '' });
+    b2.textContent = '✈ Appy';
+    b2.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:9998;border:1px solid rgba(34,211,238,.55);background:rgba(8,12,20,.88);color:#22d3ee;border-radius:999px;padding:9px 14px;font:700 11px/1 ui-monospace,monospace;letter-spacing:.08em;cursor:pointer;box-shadow:0 10px 26px rgba(0,0,0,.4)';
+    b2.addEventListener('click', function (e) { e.preventDefault(); save(); });
+    document.body.appendChild(b2);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', add);
+  else add();
+  setTimeout(add, 1200);
+})();
+</script>
+
+<script data-flove-fields-flat>
+/* Technical helper: flat routing field paths for cross-app combination.
+   Read-only; no UI, storage or network side effect. */
+(function(){
+  if (window.floveFieldsFlat) return;
+  function walk(list, parent, out){
+    (list || []).forEach(function(f){
+      if (!f || !f.id) return;
+      var path = String(f.id);
+      if (parent && path.indexOf(parent + '.') !== 0) path = parent + '.' + path;
+      out.push({ path: path, id: f.id, label: f.label || '', type: f.type || '', parent: parent || null });
+      if (f.fields) walk(f.fields, path, out);
+      if (f.item && f.item.fields) walk(f.item.fields, path, out);
+    });
+  }
+  window.floveFieldsFlat = function(){
+    var out = [];
+    walk(typeof window.floveFields === 'function' ? window.floveFields() : [], '', out);
+    return out;
+  };
+  if (window.flovePort && !window.flovePort.fields) window.flovePort.fields = window.floveFieldsFlat;
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Browsy · Wizy · Nety — privacy-first data mesh</title>
+<style>
+  :root{
+    --bg:#05070d; --bg2:#090e18; --panel:#0b1220; --panel2:#0d1626;
+    --line:#15233d; --ink:#dcebf7; --dim:#8ba2bc;
+    --cyan:#22d3ee; --violet:#a78bfa; --magenta:#f472b6;
+    --mint:#34d399; --amber:#fbbf24; --red:#fb7185;
+    --max:1180px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:
+      radial-gradient(900px 500px at 80% -10%, rgba(34,211,238,.10), transparent 60%),
+      radial-gradient(700px 400px at 0% 40%, rgba(167,139,250,.08), transparent 60%),
+      var(--bg);
+    color:var(--ink); line-height:1.6;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding-bottom:60px;
+  }
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 22px}
+  a{color:var(--cyan);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.86em;
+    color:var(--cyan);background:rgba(34,211,238,.07);
+    border:1px solid rgba(34,211,238,.2);border-radius:6px;padding:1px 6px}
+  pre{background:#060b13;border:1px solid var(--line);border-radius:14px;padding:16px 18px;
+    overflow:auto;font-size:.82rem;line-height:1.55}
+  pre code{background:none;border:0;padding:0;color:#9be8d8;font-size:1em}
+  h1,h2,h3{line-height:1.15;margin:0}
+  h1{font-size:clamp(1.9rem,4.4vw,3.1rem);letter-spacing:-.01em}
+  h2{font-size:clamp(1.35rem,2.6vw,1.9rem);margin:0 0 8px}
+  h3{font-size:1.06rem;margin:0 0 6px}
+  p{margin:.55rem 0}
+  .top{padding:54px 0 10px}
+  .status{display:inline-flex;align-items:center;gap:8px;font-size:.72rem;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--amber);border:1px solid rgba(251,191,36,.45);
+    background:rgba(251,191,36,.07);border-radius:999px;padding:5px 12px;margin-bottom:16px}
+  .lede{color:var(--dim);font-size:1.06rem;max-width:82ch}
+  nav.toc{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 0}
+  nav.toc a{font-size:.8rem;border:1px solid var(--line);border-radius:999px;padding:6px 12px;
+    color:var(--dim);background:var(--panel)}
+  nav.toc a:hover{color:var(--ink);border-color:var(--cyan);text-decoration:none}
+  section{margin:54px 0 0}
+  .sechead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--line);
+    padding-bottom:10px;margin-bottom:18px}
+  .sechead .num{font-family:ui-monospace,monospace;font-size:.72rem;letter-spacing:.18em;color:var(--cyan)}
+  .sechead h2{margin:0}
+  .grid{display:grid;gap:14px}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  .g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+  .card{background:linear-gradient(180deg,var(--panel2),var(--panel));
+    border:1px solid var(--line);border-radius:16px;padding:18px 20px}
+  .card p{color:var(--dim);font-size:.93rem}
+  .card ul{margin:8px 0 0;padding-left:20px;color:var(--dim);font-size:.91rem}
+  .card li{margin:4px 0}
+  .card.p{border-left:3px solid var(--amber)}
+  .card.l{border-left:3px solid var(--cyan)}
+  .card.s{border-left:3px solid var(--violet)}
+  .card.d{border-left:3px solid var(--mint)}
+  .tag{display:inline-block;font-family:ui-monospace,monospace;font-size:.66rem;letter-spacing:.12em;
+    text-transform:uppercase;border-radius:6px;padding:2px 7px;margin-bottom:8px}
+  .tag.p{color:var(--amber);background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35)}
+  .tag.l{color:var(--cyan);background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.35)}
+  .tag.s{color:var(--violet);background:rgba(167,139,250,.12);border:1px solid rgba(167,139,250,.4)}
+  .tag.d{color:var(--mint);background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.35)}
+  .scroll{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+  table{border-collapse:collapse;width:100%;font-size:.84rem;min-width:640px}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-family:ui-monospace,monospace;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--cyan);background:#08101c;position:sticky;top:0}
+  tr:last-child td{border-bottom:0}
+  td strong{color:var(--ink)}
+  .muted{color:var(--dim)}
+  .figure{background:linear-gradient(180deg,#0a111d,#070c14);border:1px solid var(--line);
+    border-radius:18px;padding:14px;margin-top:16px}
+  .figure .cap{color:var(--dim);font-size:.84rem;margin:8px 6px 0}
+  svg{display:block;width:100%;height:auto}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin:10px 6px 0;font-size:.76rem;color:var(--dim)}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+  .sv-zone{fill:#0a121f;stroke:#1c2c46;stroke-width:1.4;stroke-dasharray:7 5}
+  .sv-box{fill:#0d1626;stroke:#22d3ee;stroke-width:1.5}
+  .sv-box-p{fill:#1a1508;stroke:#fbbf24;stroke-width:1.5}
+  .sv-box-l{fill:#08161c;stroke:#22d3ee;stroke-width:1.5}
+  .sv-box-s{fill:#120f22;stroke:#a78bfa;stroke-width:1.5}
+  .sv-box-d{fill:#07170f;stroke:#34d399;stroke-width:1.5}
+  .sv-t{font:600 14px system-ui,sans-serif;fill:#dcebf7}
+  .sv-t2{font:600 12.5px system-ui,sans-serif;fill:#dcebf7}
+  .sv-s{font:400 11.5px system-ui,sans-serif;fill:#8ba2bc}
+  .sv-k{font:700 9.5px ui-monospace,monospace;letter-spacing:.16em;fill:#22d3ee}
+  .sv-kp{fill:#fbbf24}.sv-ks{fill:#a78bfa}.sv-kd{fill:#34d399}
+  .sv-line{stroke:#22d3ee;stroke-width:1.6;fill:none}
+  .sv-line-s{stroke:#a78bfa;stroke-width:1.6;fill:none}
+  .sv-line-a{stroke:#fbbf24;stroke-width:1.6;fill:none}
+  .sv-line-d{stroke:#34d399;stroke-width:1.6;fill:none}
+  .sv-dash{stroke-dasharray:5 4}
+  .sv-lbl{font:400 10.5px system-ui,sans-serif;fill:#b7cbe0}
+  .sv-gate{fill:rgba(251,191,36,.07);stroke:rgba(251,191,36,.45);stroke-width:1}
+  .sv-gate-t{font:700 10px ui-monospace,monospace;letter-spacing:.12em;fill:#fbbf24}
+  .sv-life{stroke:#2a3d5c;stroke-width:1.2;stroke-dasharray:4 5}
+  .sv-actor{fill:#0d1626;stroke:#22d3ee;stroke-width:1.4}
+  .cols{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .q{border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--panel)}
+  .q h3{color:var(--ink)}
+  .q p{color:var(--dim);font-size:.88rem;margin:.35rem 0}
+  .q .def{color:var(--mint);font-size:.85rem}
+  .q .why{color:var(--dim);font-size:.8rem;font-style:italic}
+  .note{border-left:3px solid var(--amber);background:rgba(251,191,36,.05);padding:10px 14px;
+    border-radius:0 12px 12px 0;color:var(--dim);font-size:.9rem}
+  footer{margin-top:64px;border-top:1px solid var(--line);padding-top:18px;color:var(--dim);font-size:.82rem}
+  @media(max-width:720px){
+    .wrap{padding:0 16px}
+    section{margin-top:40px}
+    .figure{padding:10px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap top">
+  <div class="status">Plan · draft · 2026-11-17</div>
+  <h1>Browsy hosts Wizy.<br>Personal, local, social — kept apart.</h1>
+  <p class="lede">A privacy-first data mesh: Browsy is the extension that authenticates you (Authy) and hosts Wizy; Wizy manages your JSONs and derives recommendations; Nety carries only the social layer. Local data moves directly between permitted peers, session by session. Nothing personal leaves the device unencrypted.</p>
+  <nav class="toc">
+    <a href="#chapter1">Chapter 1 · the worlds</a>
+    <a href="#simple">Simple diagram</a>
+    <a href="#thread">Long thread</a>
+    <a href="#portrait">flovePortrait case</a>
+    <a href="#derived">What is derived</a>
+    <a href="#milestones">Milestones</a>
+    <a href="#questions">10 questions</a>
+    <a href="#api">Portrait API</a>
+    <a href="#myfamily">MyFamily</a>
+    <a href="#authy">Authy</a>
+    <a href="../../../apps/sys/authy/index.html">Authy index ↗</a>
+    <a href="index.html#myfamily">MyFamily use case ↗</a>
+    <a href="../../../development/standards/debates/browsy/browsy-questions.md">Live questions</a>
+  </nav>
+</div>
+
+<div class="wrap">
+
+<section id="chapter1">
+  <div class="sechead"><span class="num">01</span><h2>Personal, local, social — and the apps in play</h2></div>
+  <p class="lede">Three concentric worlds. The class of a field decides where it may live and who may read it; the app never decides that on its own.</p>
+
+  <div class="grid g3" style="margin-top:16px">
+    <div class="card p">
+      <span class="tag p">P · personal</span>
+      <h3>The world that never leaves</h3>
+      <p>Journal answers, health and body data, identity proofs, precise location, private messages, keys.</p>
+      <ul>
+        <li>Lives encrypted in the vault inside Browsy.</li>
+        <li>Only Authy (unlock/sign) and Wizy (derive, in memory) touch it.</li>
+        <li>Apps receive an answer or nothing — never raw personal JSON.</li>
+      </ul>
+    </div>
+    <div class="card l">
+      <span class="tag l">L · local</span>
+      <h3>The world you share by permission</h3>
+      <p>App portraits, extended profile fields, shared playlists, project data, circle posts.</p>
+      <ul>
+        <li>Direct, peer to peer, at session start.</li>
+        <li>Encrypted per recipient, under a signed grant with an expiry.</li>
+        <li>Never routed through Nety; revoke stops future pulls.</li>
+      </ul>
+    </div>
+    <div class="card s">
+      <span class="tag s">S · social</span>
+      <h3>The world you publish</h3>
+      <p>Published posts, public profile, public app summaries, social recommendations.</p>
+      <ul>
+        <li>Structured exactly like local data — the class tag is the difference.</li>
+        <li>Travels through Nety; may be mirrored by Central.</li>
+        <li>Publication is explicit consent, never a side effect.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="scroll" style="margin-top:18px">
+    <table>
+      <thead><tr><th>App / piece</th><th>Lives in</th><th>Role here</th><th>Classes</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Browsy</strong></td><td>Browser extension</td><td>Host: Authy, Wizy, vault, peer pulls, grants, enforcement</td><td>P · L · S · D · M</td></tr>
+        <tr><td><strong>Authy</strong></td><td>Module inside Browsy</td><td>Identity, channels, levels, sessions, recovery, signing</td><td>P keys · M grants</td></tr>
+        <tr><td><strong>Wizy</strong></td><td>Module + workspace inside Browsy</td><td>JSON manager, merge, derive, projection, others view</td><td>P · L · S · D</td></tr>
+        <tr><td><strong>Nety</strong></td><td>Rust daemon + libp2p</td><td>Social/global transport, storage, compute, WoT ranking</td><td>S (and published D)</td></tr>
+        <tr><td><strong>Localhost / web</strong></td><td>localhost:8642 / flove.org</td><td>Authoring and export, same schema, signed via Authy</td><td>L · S authored</td></tr>
+        <tr><td><strong>Appy</strong></td><td>flove.org / localhost</td><td>Renders portraits and profiles; asks Browsy for a view</td><td>L · S</td></tr>
+        <tr><td><strong>flovePortrait apps</strong></td><td>Any single-file app</td><td>Produce <code>flove-portrait/1</code> documents (Goddy, Souls, …)</td><td>L by default</td></tr>
+        <tr><td><strong>MyFamily</strong></td><td>Browsy L use case (app stays the editor)</td><td>Each added person is kept P/L/S and used L; local federated sharing</td><td>P · L (used) · S</td></tr>
+        <tr><td><strong>Central</strong> (optional)</td><td>FastAPI / Turso</td><td>Public mirror, discovery, optional aggregation</td><td>S only</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note" style="margin-top:16px">Rule of thumb for every screen: <strong>class → reader → derivation</strong>. If a screen cannot answer all three, it is not ready.</div>
+</section>
+
+<section id="simple">
+  <div class="sechead"><span class="num">02</span><h2>Diagram A — the simple system</h2></div>
+  <p class="lede">Browsy is the only host. Authy and Wizy are its two organs. The vault is the only place P/L/M rest. Peers receive encrypted L projections; Nety only receives S.</p>
+  <div class="figure">
+    <svg viewBox="0 0 1000 620" role="img" aria-labelledby="d1t d1d">
+      <title id="d1t">Simple system diagram</title>
+      <desc id="d1d">Your device contains Browsy with Authy and Wizy, an encrypted vault and local derived data. Wizy exchanges encrypted local data directly with permitted peers and reads or publishes social data with Nety only when enabled. Localhost or the web author signed bundles into the vault.</desc>
+
+      <rect class="sv-zone" x="20" y="30" width="560" height="455" rx="18"/>
+      <text class="sv-k" x="40" y="55">YOUR DEVICE</text>
+
+      <rect x="40" y="72" width="520" height="196" rx="14" fill="#08111d" stroke="#22d3ee" stroke-width="1.4"/>
+      <text class="sv-k" x="56" y="94">BROWSY EXTENSION</text>
+
+      <rect class="sv-box-p" x="55" y="110" width="205" height="136" rx="12"/>
+      <text class="sv-t" x="158" y="140" text-anchor="middle">Authy</text>
+      <text class="sv-s" x="158" y="166" text-anchor="middle">unlock · identity</text>
+      <text class="sv-s" x="158" y="186" text-anchor="middle">channels · levels</text>
+      <text class="sv-s" x="158" y="206" text-anchor="middle">signs grants</text>
+      <text class="sv-s" x="158" y="226" text-anchor="middle">recovery · rotation</text>
+
+      <rect class="sv-box-l" x="300" y="110" width="240" height="136" rx="12"/>
+      <text class="sv-t" x="420" y="140" text-anchor="middle">Wizy</text>
+      <text class="sv-s" x="420" y="166" text-anchor="middle">JSON manager</text>
+      <text class="sv-s" x="420" y="186" text-anchor="middle">merge P + L + S</text>
+      <text class="sv-s" x="420" y="206" text-anchor="middle">derive D · explain</text>
+      <text class="sv-s" x="420" y="226" text-anchor="middle">local net + social</text>
+
+      <line class="sv-line" x1="260" y1="178" x2="300" y2="178" marker-start="url(#arS)" marker-end="url(#ar)"/>
+
+      <rect x="55" y="330" width="190" height="100" rx="12" fill="#1a1508" stroke="#fbbf24" stroke-width="1.6"/>
+      <ellipse cx="150" cy="330" rx="95" ry="13" fill="#1a1508" stroke="#fbbf24" stroke-width="1.6"/>
+      <text class="sv-t2" x="150" y="372" text-anchor="middle">Encrypted vault</text>
+      <text class="sv-s" x="150" y="394" text-anchor="middle">P + L + M</text>
+      <text class="sv-s" x="150" y="414" text-anchor="middle">plaintext never written</text>
+
+      <rect class="sv-box-d" x="300" y="330" width="220" height="92" rx="12"/>
+      <text class="sv-t2" x="410" y="362" text-anchor="middle">D · derived</text>
+      <text class="sv-s" x="410" y="384" text-anchor="middle">recommendations</text>
+      <text class="sv-s" x="410" y="404" text-anchor="middle">stay local by default</text>
+
+      <path class="sv-line" d="M380 246 L380 300 L200 310 L200 330" marker-end="url(#ar)"/>
+      <text class="sv-lbl" x="245" y="304" text-anchor="middle">read/write after unlock</text>
+      <line class="sv-line-d" x1="440" y1="246" x2="440" y2="330" marker-end="url(#ad)"/>
+      <text class="sv-lbl" x="452" y="292">derive</text>
+
+      <rect class="sv-zone" x="620" y="30" width="360" height="225" rx="18"/>
+      <text class="sv-k" x="640" y="55">PERMITTED PEERS · LOCAL NET</text>
+      <rect class="sv-box-l" x="650" y="72" width="300" height="62" rx="10"/>
+      <text class="sv-t2" x="800" y="98" text-anchor="middle">Peer A · their Browsy</text>
+      <text class="sv-s" x="800" y="118" text-anchor="middle">sees only its granted paths</text>
+      <rect class="sv-box-l" x="650" y="156" width="300" height="62" rx="10"/>
+      <text class="sv-t2" x="800" y="182" text-anchor="middle">Peer B · their Browsy</text>
+      <text class="sv-s" x="800" y="202" text-anchor="middle">per session · encrypted</text>
+
+      <line class="sv-line" x1="540" y1="150" x2="650" y2="104" marker-end="url(#ar)"/>
+      <text class="sv-lbl" x="580" y="150" text-anchor="middle">L →</text>
+      <line class="sv-line" x1="650" y1="196" x2="540" y2="222" marker-end="url(#ar)"/>
+      <text class="sv-lbl" x="580" y="236" text-anchor="middle">← L</text>
+
+      <rect class="sv-zone" x="620" y="290" width="360" height="195" rx="18"/>
+      <text class="sv-k sv-ks" x="640" y="315">NETY P2P · SOCIAL</text>
+      <text class="sv-s" x="650" y="348">Public profile</text>
+      <text class="sv-s" x="650" y="370">Published posts</text>
+      <text class="sv-s" x="650" y="392">Public app summaries</text>
+      <text class="sv-s" x="650" y="414">Social recommendations (if exported)</text>
+      <rect x="650" y="432" width="300" height="34" rx="8" fill="rgba(167,139,250,.08)" stroke="rgba(167,139,250,.4)"/>
+      <text class="sv-s" x="800" y="454" text-anchor="middle">S only · no P/L plaintext</text>
+
+      <line class="sv-line-s" x1="540" y1="232" x2="620" y2="330" marker-start="url(#asS)" marker-end="url(#as)"/>
+      <text class="sv-lbl" x="640" y="280">S · opt-in</text>
+
+      <rect class="sv-zone" x="20" y="510" width="760" height="90" rx="16"/>
+      <text class="sv-k" x="40" y="535">AUTHORING · LOCALHOST:8642 / FLOVE.ORG</text>
+      <text class="sv-s" x="40" y="562">Same JSON schema · signed bundles · offline or web</text>
+      <line class="sv-line-a" x1="300" y1="510" x2="160" y2="432" marker-end="url(#aa)"/>
+      <text class="sv-lbl" x="238" y="480">signed bundles</text>
+
+      <defs>
+        <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#22d3ee"/></marker>
+        <marker id="arS" markerWidth="9" markerHeight="9" refX="1" refY="4" orient="auto"><path d="M8 0 L0 4 L8 8 Z" fill="#22d3ee"/></marker>
+        <marker id="as" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#a78bfa"/></marker>
+        <marker id="asS" markerWidth="9" markerHeight="9" refX="1" refY="4" orient="auto"><path d="M8 0 L0 4 L8 8 Z" fill="#a78bfa"/></marker>
+        <marker id="aa" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#fbbf24"/></marker>
+        <marker id="ad" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#34d399"/></marker>
+      </defs>
+    </svg>
+    <div class="legend">
+      <span><i style="background:#fbbf24"></i>P · personal</span>
+      <span><i style="background:#22d3ee"></i>L · local</span>
+      <span><i style="background:#a78bfa"></i>S · social</span>
+      <span><i style="background:#34d399"></i>D · derived</span>
+      <span><i style="background:#8ba2bc"></i>M · metadata</span>
+    </div>
+    <p class="cap">Browsy is the host; Authy and Wizy live inside it. The local net and Nety social are two independent switches.</p>
+  </div>
+</section>
+
+<section id="thread">
+  <div class="sechead"><span class="num">03</span><h2>Diagram B — the long thread</h2></div>
+  <p class="lede">Session start: unlock → load → pull local peers → read social (optional) → merge → derive. The gates are the privacy contract.</p>
+
+  <div class="figure">
+    <svg viewBox="0 0 1120 990" role="img" aria-labelledby="d2t d2d">
+      <title id="d2t">Session thread</title>
+      <desc id="d2d">Sequence from user unlock through Authy, vault, Wizy, permitted peer and Nety, with five privacy gates: no key no plaintext; personal data stays in memory; quarantine on signature mismatch; social data cannot contain personal fields; derivations are inspectable and local.</desc>
+
+      <g>
+        <rect class="sv-actor" x="20" y="20" width="120" height="42" rx="10"/><text class="sv-t2" x="80" y="46" text-anchor="middle">User</text>
+        <rect class="sv-actor" x="180" y="20" width="120" height="42" rx="10"/><text class="sv-t2" x="240" y="46" text-anchor="middle">Browsy</text>
+        <rect class="sv-actor" x="340" y="20" width="120" height="42" rx="10"/><text class="sv-t2" x="400" y="46" text-anchor="middle">Authy</text>
+        <rect class="sv-actor" x="520" y="20" width="120" height="42" rx="10"/><text class="sv-t2" x="580" y="46" text-anchor="middle">Wizy</text>
+        <rect class="sv-actor" x="680" y="20" width="120" height="42" rx="10"/><text class="sv-t2" x="740" y="46" text-anchor="middle">Vault</text>
+        <rect class="sv-actor" x="840" y="20" width="120" height="42" rx="10"/><text class="sv-t2" x="900" y="46" text-anchor="middle">Peer</text>
+        <rect class="sv-actor" x="980" y="20" width="120" height="42" rx="10"/><text class="sv-t2" x="1040" y="46" text-anchor="middle">Nety</text>
+      </g>
+      <line class="sv-life" x1="80" y1="62" x2="80" y2="950"/>
+      <line class="sv-life" x1="240" y1="62" x2="240" y2="950"/>
+      <line class="sv-life" x1="400" y1="62" x2="400" y2="950"/>
+      <line class="sv-life" x1="580" y1="62" x2="580" y2="950"/>
+      <line class="sv-life" x1="740" y1="62" x2="740" y2="950"/>
+      <line class="sv-life" x1="900" y1="62" x2="900" y2="950"/>
+      <line class="sv-life" x1="1040" y1="62" x2="1040" y2="950"/>
+
+      <g class="sv-lbl" text-anchor="middle">
+        <line class="sv-line" x1="80" y1="110" x2="240" y2="110" marker-end="url(#t-ar)"/><text x="160" y="102">open session</text>
+        <line class="sv-line-a" x1="240" y1="160" x2="400" y2="160" marker-end="url(#t-aa)"/><text x="320" y="152">unlock request</text>
+        <line class="sv-line-a" x1="400" y1="210" x2="740" y2="210" marker-end="url(#t-aa)"/><text x="570" y="202">decrypt identity + grants + peers</text>
+      </g>
+      <rect class="sv-gate" x="40" y="232" width="1040" height="28" rx="8"/><text class="sv-gate-t" x="60" y="251">GATE 1 · no key, no plaintext</text>
+
+      <g class="sv-lbl" text-anchor="middle">
+        <line class="sv-line-a" x1="400" y1="292" x2="240" y2="292" marker-end="url(#t-aa)"/><text x="320" y="284">unlocked session</text>
+        <line class="sv-line" x1="240" y1="342" x2="580" y2="342" marker-end="url(#t-ar)"/><text x="410" y="334">identity + grants (no P values)</text>
+        <line class="sv-line" x1="580" y1="392" x2="740" y2="392" marker-end="url(#t-ar)"/><text x="660" y="384">load L + M</text>
+      </g>
+      <rect class="sv-gate" x="40" y="414" width="1040" height="28" rx="8"/><text class="sv-gate-t" x="60" y="433">GATE 2 · P stays in Wizy memory</text>
+
+      <g class="sv-lbl" text-anchor="middle">
+        <line class="sv-line" x1="580" y1="474" x2="900" y2="474" marker-end="url(#t-ar)"/><text x="740" y="466">pull allowed deltas (local net)</text>
+        <line class="sv-line" x1="900" y1="524" x2="580" y2="524" marker-end="url(#t-ar)"/><text x="740" y="516">encrypted projection + signature</text>
+      </g>
+      <path class="sv-line" d="M580 564 C 618 564, 618 590, 580 590" marker-end="url(#t-ar)"/>
+      <text class="sv-lbl" x="628" y="582">verify key · paths · expiry</text>
+      <rect class="sv-gate" x="40" y="604" width="1040" height="28" rx="8"/><text class="sv-gate-t" x="60" y="623">GATE 3 · quarantine on mismatch</text>
+
+      <g class="sv-lbl" text-anchor="middle">
+        <line class="sv-line-s" x1="580" y1="660" x2="1040" y2="660" marker-end="url(#t-as)"/><text x="810" y="652">read S · only if social toggle is on</text>
+        <line class="sv-line-s" x1="1040" y1="708" x2="580" y2="708" marker-end="url(#t-as)"/><text x="810" y="700">signed S bundles</text>
+      </g>
+      <rect class="sv-gate" x="40" y="728" width="1040" height="28" rx="8"/><text class="sv-gate-t" x="60" y="747">GATE 4 · S carries no P fields</text>
+
+      <path class="sv-line-d" d="M580 782 C 618 782, 618 808, 580 808" marker-end="url(#t-ad)"/>
+      <text class="sv-lbl" x="628" y="800">merge P + L + S → derive D0/D1</text>
+      <g class="sv-lbl" text-anchor="middle">
+        <line class="sv-line-d" x1="580" y1="850" x2="80" y2="850" marker-end="url(#t-ad)"/><text x="330" y="842">recommendations + explanation + inputs used</text>
+      </g>
+      <rect class="sv-gate" x="40" y="872" width="1040" height="28" rx="8"/><text class="sv-gate-t" x="60" y="891">GATE 5 · inspectable, local</text>
+
+      <defs>
+        <marker id="t-ar" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#22d3ee"/></marker>
+        <marker id="t-aa" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#fbbf24"/></marker>
+        <marker id="t-as" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#a78bfa"/></marker>
+        <marker id="t-ad" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#34d399"/></marker>
+      </defs>
+    </svg>
+    <p class="cap">Session thread. Gate 1–5 are binary: if a gate fails, the session stops at that point.</p>
+  </div>
+
+  <div class="figure">
+    <svg viewBox="0 0 1000 700" role="img" aria-labelledby="d3t d3d">
+      <title id="d3t">Share and revoke thread</title>
+      <desc id="d3d">The owner selects JSON paths, Wizy builds a projection without personal data, Authy signs a grant, the projection is pushed encrypted to a peer, social publication is opt-in, and revocation stops future pulls.</desc>
+      <g>
+        <rect class="sv-actor" x="15" y="20" width="130" height="42" rx="10"/><text class="sv-t2" x="80" y="46" text-anchor="middle">User</text>
+        <rect class="sv-actor" x="235" y="20" width="130" height="42" rx="10"/><text class="sv-t2" x="300" y="46" text-anchor="middle">Wizy</text>
+        <rect class="sv-actor" x="435" y="20" width="130" height="42" rx="10"/><text class="sv-t2" x="500" y="46" text-anchor="middle">Authy</text>
+        <rect class="sv-actor" x="635" y="20" width="130" height="42" rx="10"/><text class="sv-t2" x="700" y="46" text-anchor="middle">Peer</text>
+        <rect class="sv-actor" x="835" y="20" width="130" height="42" rx="10"/><text class="sv-t2" x="900" y="46" text-anchor="middle">Nety</text>
+      </g>
+      <line class="sv-life" x1="80" y1="62" x2="80" y2="660"/>
+      <line class="sv-life" x1="300" y1="62" x2="300" y2="660"/>
+      <line class="sv-life" x1="500" y1="62" x2="500" y2="660"/>
+      <line class="sv-life" x1="700" y1="62" x2="700" y2="660"/>
+      <line class="sv-life" x1="900" y1="62" x2="900" y2="660"/>
+
+      <g class="sv-lbl" text-anchor="middle">
+        <line class="sv-line" x1="80" y1="110" x2="300" y2="110" marker-end="url(#s-ar)"/><text x="190" y="102">choose JSON + recipients + paths</text>
+      </g>
+      <path class="sv-line-d" d="M300 150 C 338 150, 338 176, 300 176" marker-end="url(#s-ad)"/>
+      <text class="sv-lbl" x="348" y="168">build projection · P not selectable</text>
+      <g class="sv-lbl" text-anchor="middle">
+        <line class="sv-line-a" x1="300" y1="220" x2="500" y2="220" marker-end="url(#s-aa)"/><text x="400" y="212">request signature + grant</text>
+        <line class="sv-line-a" x1="500" y1="268" x2="300" y2="268" marker-end="url(#s-aa)"/><text x="400" y="260">signed envelope</text>
+        <line class="sv-line" x1="300" y1="316" x2="700" y2="316" marker-end="url(#s-ar)"/><text x="500" y="308">direct encrypted push (local net)</text>
+      </g>
+      <rect class="sv-gate" x="30" y="338" width="940" height="28" rx="8"/><text class="sv-gate-t" x="50" y="357">GATE 6 · only granted paths readable</text>
+      <path class="sv-line" d="M700 396 C 738 396, 738 422, 700 422" marker-end="url(#s-ar)"/>
+      <text class="sv-lbl" x="748" y="414">verify · store in their L cache</text>
+      <g class="sv-lbl" text-anchor="middle">
+        <line class="sv-line-s" x1="300" y1="474" x2="900" y2="474" marker-end="url(#s-as)"/><text x="600" y="466">publish S-only bundle · explicit consent</text>
+      </g>
+      <rect class="sv-gate" x="30" y="496" width="940" height="28" rx="8"/><text class="sv-gate-t" x="50" y="515">GATE 7 · public by decision, not default</text>
+      <g class="sv-lbl" text-anchor="middle">
+        <line class="sv-line" x1="80" y1="554" x2="500" y2="554" marker-end="url(#s-ar)"/><text x="290" y="546">revoke peer / shorten expiry</text>
+        <line class="sv-line-a" x1="500" y1="602" x2="700" y2="602" marker-end="url(#s-aa)"/><text x="600" y="594">notify next pull</text>
+      </g>
+      <rect class="sv-gate" x="30" y="620" width="940" height="28" rx="8"/><text class="sv-gate-t" x="50" y="639">GATE 8 · future reads stop; copies remain</text>
+
+      <defs>
+        <marker id="s-ar" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#22d3ee"/></marker>
+        <marker id="s-aa" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#fbbf24"/></marker>
+        <marker id="s-as" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#a78bfa"/></marker>
+        <marker id="s-ad" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#34d399"/></marker>
+      </defs>
+    </svg>
+    <p class="cap">Share thread. The grant is signed by Authy; Wizy can never include a P path in a projection.</p>
+  </div>
+</section>
+
+<section id="portrait">
+  <div class="sechead"><span class="num">04</span><h2>flovePortrait — the real case, two scales</h2></div>
+  <p class="lede">This is the shipped envelope today. It stays exactly the same for apps and Appy; Browsy/Wizy add owner, class, grants and signatures around it.</p>
+
+  <div class="grid g2">
+    <div class="card">
+      <span class="tag l">today</span>
+      <h3>The envelope (Goddy reference)</h3>
+      <pre><code>{
+  "schema": "flove-portrait/1",
+  "app": "goddy",
+  "version": 1,
+  "generatedAt": "…",
+  "lang": "en",
+  "phrase": "…",
+  "rows": [
+    { "key": "from:to", "kind": "cell",
+      "title": "from → to", "items": ["2"] }
+  ],
+  "completeness": { "layers": 7, "total": 9 },
+  "stats": { "count": 7, "intensity": 0.62, "max": 3 },
+  "consent": { "share": "app",
+    "purposes": ["self-reflection", "export"] },
+  "source": { "url": "https://flove.org/apps/metas/goddy.html" }
+}</code></pre>
+      <p class="muted">API: <code>get · validate · consult · merge · selfTest · toSummary · toAgent</code>. Appy renders it; the file is still downloadable.</p>
+    </div>
+    <div class="card">
+      <span class="tag d">extension</span>
+      <h3>What Browsy adds around it</h3>
+      <ul>
+        <li><strong>Owner + bundle:</strong> <code>owner</code>, <code>bundleId</code>, <code>version</code>, signature.</li>
+        <li><strong>Class:</strong> <code>L</code> by default; public slices become <code>S</code> only by consent.</li>
+        <li><strong>Paths:</strong> <code>documents.goddy.rows</code>; grants can narrow to prefixes/slices.</li>
+        <li><strong>Grants:</strong> grantee, paths, capability, expiry, encrypted content key.</li>
+        <li><strong>Enforcement:</strong> <code>consult(grant)</code> intersects the grant with <code>consent.purposes</code>.</li>
+        <li><strong>Audit:</strong> pull/share/deny log local to Browsy.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="figure">
+    <svg viewBox="0 0 1000 450" role="img" aria-labelledby="p1t p1d">
+      <title id="p1t">flovePortrait scale 1 — one portrait, one device</title>
+      <desc id="p1d">Goddy produces the flove-portrait/1 document. The file can still be downloaded as today, and Wizy inside Browsy also wraps it as a class L document in the encrypted vault. Appy renders the same portrait through a permissioned view from Browsy.</desc>
+      <rect class="sv-zone" x="20" y="40" width="280" height="380" rx="18"/>
+      <text class="sv-k" x="40" y="65">SCALE 1 · GODDY APP</text>
+      <rect class="sv-box-l" x="40" y="85" width="240" height="66" rx="10"/>
+      <text class="sv-t2" x="160" y="112" text-anchor="middle">matrix model</text>
+      <text class="sv-s" x="160" y="132" text-anchor="middle">cells + levels</text>
+      <line class="sv-line" x1="160" y1="151" x2="160" y2="190" marker-end="url(#p-ar)"/>
+      <rect class="sv-box-l" x="40" y="190" width="240" height="66" rx="10"/>
+      <text class="sv-t2" x="160" y="217" text-anchor="middle">flovePortrait.get()</text>
+      <text class="sv-s" x="160" y="237" text-anchor="middle">flove-portrait/1</text>
+      <line class="sv-line sv-dash" x1="160" y1="256" x2="160" y2="295" marker-end="url(#p-ar)"/>
+      <text class="sv-lbl" x="172" y="280">existing path</text>
+      <rect class="sv-box" x="40" y="295" width="240" height="66" rx="10"/>
+      <text class="sv-t2" x="160" y="322" text-anchor="middle">portrait file</text>
+      <text class="sv-s" x="160" y="342" text-anchor="middle">download · legacy share</text>
+
+      <rect class="sv-zone" x="330" y="40" width="330" height="380" rx="18"/>
+      <text class="sv-k" x="350" y="65">BROWSY · WIZY</text>
+      <rect class="sv-box-l" x="350" y="85" width="290" height="80" rx="10"/>
+      <text class="sv-t2" x="495" y="112" text-anchor="middle">Wizy · wrap + class L</text>
+      <text class="sv-s" x="495" y="132" text-anchor="middle">owner · signature · grant</text>
+      <line class="sv-line" x1="280" y1="222" x2="350" y2="125" marker-end="url(#p-ar)"/>
+      <text class="sv-lbl" x="322" y="150" text-anchor="middle">capture</text>
+      <line class="sv-line" x1="495" y1="165" x2="455" y2="220" marker-end="url(#p-ar)"/>
+      <rect x="380" y="220" width="150" height="96" rx="12" fill="#1a1508" stroke="#fbbf24" stroke-width="1.6"/>
+      <text class="sv-t2" x="455" y="252" text-anchor="middle">vault</text>
+      <text class="sv-s" x="455" y="274" text-anchor="middle">encrypted</text>
+      <text class="sv-s" x="455" y="294" text-anchor="middle">P + L + M</text>
+      <text class="sv-s" x="350" y="360">same portrait document, now inside a signed bundle</text>
+      <text class="sv-s" x="350" y="382">the download path still works</text>
+
+      <rect class="sv-zone" x="700" y="40" width="280" height="380" rx="18"/>
+      <text class="sv-k" x="720" y="65">APPY</text>
+      <rect class="sv-box" x="730" y="150" width="230" height="110" rx="12"/>
+      <text class="sv-t2" x="845" y="185" text-anchor="middle">renderer</text>
+      <text class="sv-s" x="845" y="207" text-anchor="middle">same flove-portrait/1</text>
+      <text class="sv-s" x="845" y="227" text-anchor="middle">permissioned view</text>
+      <line class="sv-line" x1="640" y1="130" x2="730" y2="190" marker-end="url(#p-ar)"/>
+      <text class="sv-lbl" x="700" y="150" text-anchor="middle">view</text>
+      <text class="sv-s" x="720" y="320">Appy asks Browsy, not the vault</text>
+
+      <defs>
+        <marker id="p-ar" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#22d3ee"/></marker>
+      </defs>
+    </svg>
+    <p class="cap">Scale 1 · one portrait, one device. The app API does not change; the wrapper is additive.</p>
+  </div>
+
+  <div class="figure">
+    <svg viewBox="0 0 1000 600" role="img" aria-labelledby="p2t p2d">
+      <title id="p2t">flovePortrait scale 2 — the same portrait across the mesh</title>
+      <desc id="p2d">The owner's bundle holds the Goddy portrait as class L with a grant to a peer. The peer's Browsy pulls it directly, decrypts and verifies it, merges it with their own private and local data, and derives a local recommendation. Nety only carries the public social slice if the owner publishes it.</desc>
+      <rect class="sv-zone" x="20" y="40" width="300" height="520" rx="18"/>
+      <text class="sv-k" x="40" y="65">OWNER DEVICE</text>
+      <rect class="sv-box-l" x="40" y="90" width="260" height="100" rx="10"/>
+      <text class="sv-t2" x="170" y="120" text-anchor="middle">bundle · goddy portrait</text>
+      <text class="sv-s" x="170" y="142" text-anchor="middle">class L · signed · version 3</text>
+      <text class="sv-s" x="170" y="162" text-anchor="middle">rows + phrase + stats</text>
+      <rect class="sv-box-p" x="40" y="235" width="260" height="100" rx="10"/>
+      <text class="sv-t2" x="170" y="265" text-anchor="middle">grant · peer A</text>
+      <text class="sv-s" x="170" y="287" text-anchor="middle">rows · view · expiry</text>
+      <text class="sv-s" x="170" y="307" text-anchor="middle">encrypted content key</text>
+      <text class="sv-s" x="40" y="380">S slice = exported public fields only</text>
+      <text class="sv-s" x="40" y="402">P + L never leave in plaintext</text>
+      <text class="sv-s" x="40" y="444">revoke → version++ → next pull</text>
+
+      <rect class="sv-zone" x="350" y="40" width="310" height="520" rx="18"/>
+      <text class="sv-k" x="370" y="65">PEER A DEVICE</text>
+      <rect class="sv-box-l" x="370" y="90" width="270" height="100" rx="10"/>
+      <text class="sv-t2" x="505" y="120" text-anchor="middle">Browsy + Wizy</text>
+      <text class="sv-s" x="505" y="142" text-anchor="middle">pull · verify · decrypt</text>
+      <text class="sv-s" x="505" y="162" text-anchor="middle">only granted paths</text>
+      <line class="sv-line" x1="300" y1="140" x2="370" y2="140" marker-end="url(#p2-ar)"/>
+      <text class="sv-lbl" x="335" y="128" text-anchor="middle">direct</text>
+      <line class="sv-line-a sv-dash" x1="300" y1="260" x2="370" y2="190" marker-end="url(#p2-aa)"/>
+      <text class="sv-lbl" x="330" y="272" text-anchor="middle">grant</text>
+      <line class="sv-line" x1="505" y1="190" x2="505" y2="240" marker-end="url(#p2-ar)"/>
+      <rect class="sv-box-d" x="370" y="240" width="270" height="100" rx="10"/>
+      <text class="sv-t2" x="505" y="270" text-anchor="middle">merge P + L</text>
+      <text class="sv-s" x="505" y="292" text-anchor="middle">their private + granted local</text>
+      <text class="sv-s" x="505" y="312" text-anchor="middle">plus social S if enabled</text>
+      <line class="sv-line-d" x1="505" y1="340" x2="505" y2="390" marker-end="url(#p2-ad)"/>
+      <rect class="sv-box-d" x="370" y="390" width="270" height="90" rx="10"/>
+      <text class="sv-t2" x="505" y="420" text-anchor="middle">recommendation (D)</text>
+      <text class="sv-s" x="505" y="442" text-anchor="middle">stays local by default</text>
+      <text class="sv-s" x="505" y="462" text-anchor="middle">explainable · inspectable</text>
+      <text class="sv-s" x="370" y="518">no vault access for the app</text>
+
+      <rect class="sv-zone" x="690" y="40" width="290" height="360" rx="18"/>
+      <text class="sv-k sv-ks" x="710" y="65">NETY · SOCIAL</text>
+      <rect class="sv-box-s" x="710" y="120" width="250" height="100" rx="10"/>
+      <text class="sv-t2" x="835" y="150" text-anchor="middle">S public slice</text>
+      <text class="sv-s" x="835" y="172" text-anchor="middle">public profile · posts</text>
+      <text class="sv-s" x="835" y="192" text-anchor="middle">public summaries</text>
+      <text class="sv-s" x="710" y="310">no P/L plaintext</text>
+      <text class="sv-s" x="710" y="332">WoT ranking, not access control</text>
+      <path class="sv-line-s sv-dash" d="M170 90 L170 18 L835 18 L835 120" marker-end="url(#p2-as)"/>
+      <text class="sv-lbl" x="500" y="34" text-anchor="middle">optional S slice · consent</text>
+      <line class="sv-line-s" x1="710" y1="180" x2="640" y2="265" marker-end="url(#p2-as)"/>
+      <text class="sv-lbl" x="688" y="235">S reads</text>
+
+      <defs>
+        <marker id="p2-ar" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#22d3ee"/></marker>
+        <marker id="p2-aa" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#fbbf24"/></marker>
+        <marker id="p2-ad" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#34d399"/></marker>
+        <marker id="p2-as" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#a78bfa"/></marker>
+      </defs>
+    </svg>
+    <p class="cap">Scale 2 · the same portrait across the mesh. The grant is the only bridge; Nety never sees L.</p>
+  </div>
+</section>
+
+<section id="api">
+  <div class="sechead"><span class="num">05</span><h2>The flovePortrait API, explained</h2></div>
+  <p class="lede">Every app exposes the same seven functions. They are the seam Browsy/Wizy hooks into; the app does not need to know about bundles or grants.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Function</th><th>What it does</th><th>Input → output</th><th>Who calls it</th></tr></thead>
+      <tbody>
+        <tr><td><code>get()</code></td><td>Reads the live model and builds the portrait</td><td><code>() → flove-portrait/1</code></td><td>App UI, Browsy/Wizy capture</td></tr>
+        <tr><td><code>validate(payload)</code></td><td>Checks schema, app id and <code>rows</code></td><td><code>(object) → {ok, errors[]}</code></td><td>Appy import, Wizy, tests</td></tr>
+        <tr><td><code>consult(sel)</code></td><td>Returns a filtered read-only view for a purpose</td><td><code>({purpose, enforceConsent, from, to, kinds, group, maxItems}) → flove-consult/1</code></td><td>Wizy projections, agents</td></tr>
+        <tr><td><code>merge(payload, opts)</code></td><td>Writes a portrait back into the app</td><td><code>(portrait, {mode}) → {ok, applied, mode}</code></td><td>Import, restore, peer sync</td></tr>
+        <tr><td><code>selfTest()</code></td><td>Runs <code>get → validate → consult</code></td><td><code>() → {ok, rows, consultRows, errors}</code></td><td><code>?selftest</code>, CI</td></tr>
+        <tr><td><code>toSummary()</code></td><td>Returns the app's own summary model</td><td><code>() → app model</code></td><td>Appy legacy, Wizy context</td></tr>
+        <tr><td><code>toAgent()</code></td><td>Returns the agent block (prompt, schema, suggestions)</td><td><code>() → floveAgentBlock</code></td><td>MyWizy / Flove AI</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note" style="margin-top:14px"><strong>What changes with Browsy:</strong> <code>get</code> stays; <code>validate</code> becomes the first gate; <code>consult</code> accepts a grant and returns only the intersection; <code>merge</code> only accepts a verified bundle; <code>selfTest</code> is the M1 acceptance test; <code>toSummary</code>/<code>toAgent</code> stay local unless their output is exported as D/L/S.</div>
+</section>
+
+<section id="myfamily">
+  <div class="sechead"><span class="num">06</span><h2>MyFamily — the first local data manager</h2></div>
+  <p class="lede">MyFamily is the <strong>L use case</strong> of Browsy. Each person added is kept as <strong>P, L or S</strong> and used as L: P is private, L is shared with others locally (federated), S is public data. Permissions over a P2P network are another planned trunk.</p>
+  <div class="grid g3">
+    <div class="card"><span class="tag p">P · private</span><h3>Kept, not shared</h3><p>The record — person id, name, relation, 7 trait groups with nuances, 5 raters, notes, subject-consent, version — encrypted in the vault.</p></div>
+    <div class="card"><span class="tag l">L · used by default</span><h3>Local federated</h3><p>Chosen traits/raters shared with named peers or circles, with expiry, and only if the subject-consent state allows it.</p></div>
+    <div class="card"><span class="tag s">S · public</span><h3>Public card</h3><p>A minimal separate artefact for the web-social path; never the raw record, nuances or children's data.</p></div>
+  </div>
+  <p style="margin-top:14px">MyFamily is displayed as a use case on the <a href="index.html#myfamily"><strong>browsy page ↗</strong></a>. Third-party questions B01–B10 are in <a href="../../../development/standards/debates/browsy/browsy-questions.md">browsy-questions.md</a>; P2P permissions are a later trunk.</p>
+</section>
+
+<section id="authy">
+  <div class="sechead"><span class="num">07</span><h2>Authy — current ladder, extended</h2></div>
+  <p class="lede">The Authenticate card in <code>appy-basic.html</code> has five bars: Self, Email, Telegram, Phone, Bio. In the risa model, Telegram presence is <strong>L2</strong>; a nonce + DM claim upgrades to <strong>L3 verified</strong>, the publish gate. <code>linkIdentity()</code> stores the key, awards Personal points and persists to <code>flove:authy</code> in localhost. From there the signed summary can be sent to local and (at L3) social keepers.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Level</th><th>Proof</th><th>Adds</th><th>Publish S</th><th>Sign grants</th></tr></thead>
+      <tbody>
+        <tr><td>L1 self</td><td>local profile</td><td>identity root</td><td>no</td><td>yes (own)</td></tr>
+        <tr><td>L2 presence</td><td>Telegram linked (unclaimed); email also presence</td><td>presence profile, local sharing</td><td>no</td><td>yes</td></tr>
+        <tr><td>L3 verified</td><td>Telegram claim (nonce + DM)</td><td>publish gate</td><td>yes</td><td>yes</td></tr>
+        <tr><td>L4 phone</td><td>SMS/call proof</td><td>stronger recovery</td><td>yes</td><td>yes</td></tr>
+        <tr><td>L5 bio</td><td>local biometric unlock</td><td>highest unlock bar</td><td>yes</td><td>yes</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note" style="margin-top:14px"><strong>Telegram also enables MyNet:</strong> appy-basic gates MyNet behind Telegram presence. MyNet is a simplification of MyFamily (person + relation + 2–3 traits + one affinity), stored as L. See the two diagrams in the <a href="../../../apps/sys/authy/index.html#mynet">Authy index</a>.</div>
+  <div class="note" style="margin-top:14px"><strong>Persistence:</strong> the Authy index and appy-basic share <code>flove:authy/1</code> in localStorage; the same payload is what Browsy will store later. <strong>Displayed vs awarded points differ</strong> (+4/+12/+6/+8 vs 20/50/100/200). The <a href="../../../apps/sys/authy/index.html">Authy index ↗</a> shows both until one table wins (pending A03).</div>
+</section>
+
+<section id="derived">
+  <div class="sechead"><span class="num">08</span><h2>What is derived? — the options</h2></div>
+  <p class="lede">“Derived” (D) is anything Wizy produces from inputs rather than copying. The options are deliberately separate so the user can choose how much computation — and exposure — is acceptable.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Option</th><th>Where</th><th>Inputs</th><th>Leaves device</th><th>Output</th><th>Shareable</th><th>Risk</th></tr></thead>
+      <tbody>
+        <tr><td><strong>D0 · none</strong></td><td>Wizy in Browsy</td><td>P/L/S for merge + filtering</td><td>Nothing</td><td>Views: what I see / what X sees</td><td>Only as L/S projection</td><td>Lowest; over-sharing is the only leak</td></tr>
+        <tr><td><strong>D1 · deterministic rules</strong></td><td>Wizy in Browsy</td><td>P + L + S, class-tagged</td><td>Nothing</td><td>Scores, matches, auditable explanations</td><td>D as L/S if exported</td><td>Rule leakage / gaming</td></tr>
+        <tr><td><strong>D2 · on-device model</strong></td><td>Wizy in Browsy (WASM/small)</td><td>P + L + S or a de-identified subset</td><td>Model updates only, no payload</td><td>Natural-language advice</td><td>D as L/S if exported</td><td>Device cost; prompt/log leakage</td></tr>
+        <tr><td><strong>D3 · remote de-identified</strong></td><td>Nety compute / approved server</td><td>D-only feature vector + query</td><td>De-identified payload</td><td>Recommendation result</td><td>D as L/S if exported</td><td>Inference; metadata; provider trust</td></tr>
+        <tr><td><strong>D4 · remote encrypted</strong></td><td>Nety node / enclave (future)</td><td>Encrypted P/L payload</td><td>Ciphertext only</td><td>Encrypted result, decrypted locally</td><td>D as L/S if exported</td><td>Enclave trust; availability</td></tr>
+        <tr><td><strong>D5 · peer-assisted</strong></td><td>Permitted peer's Browsy</td><td>Only the granted L projection</td><td>The granted projection</td><td>Peer's derived answer</td><td>D unless exported</td><td>Trust + extra exposure</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="margin-top:22px">Others view — what another user can see or derive</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Option</th><th>What it is</th><th>Exposure</th><th>Suggested</th></tr></thead>
+      <tbody>
+        <tr><td><strong>O0 · raw projection</strong></td><td>The owner's signed view, filtered by the grant</td><td>Exactly the granted paths</td><td>✅ v1 default</td></tr>
+        <tr><td><strong>O1 · recomputed view</strong></td><td>The recipient's Wizy recomputes from granted L</td><td>More personalization, more inference</td><td>Opt-in per relationship</td></tr>
+        <tr><td><strong>O2 · social comparison</strong></td><td>Nety-ranked comparison using S only</td><td>Public/social only</td><td>Later</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note" style="margin-top:16px">Defaults proposed: <strong>D0/D1 locally, D2 optional on-device, D3 per-request consent, D4 future, D5 experimental; others view = O0.</strong></div>
+</section>
+
+<section id="milestones">
+  <div class="sechead"><span class="num">09</span><h2>Milestones — specified</h2></div>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>ID</th><th>Milestone</th><th>Goal + deliverables</th><th>Entry</th><th>Privacy gate / acceptance test</th></tr></thead>
+      <tbody>
+        <tr><td><strong>M0</strong></td><td>Spec &amp; taxonomy</td><td>Classify every field P/L/S/D/M; grant schema v0; invariants; threat model v0</td><td>Reviewed doc; Q1–Q3</td><td>No unclassified field; every shipped JSON mapped; invariants signed off</td></tr>
+        <tr><td><strong>M1</strong></td><td>Browsy shell + Wizy local</td><td>MV3 shell; Wizy workspace; bundle read/write; portrait wrapping; import/export; class tags; no network</td><td>M0</td><td>Goddy portrait round-trips unchanged; P cannot be selected for export; vault refuses plaintext writes</td></tr>
+        <tr><td><strong>M2</strong></td><td>Authy + vault</td><td>Ed25519 root; passphrase/WebAuthn unlock; encrypted vault; signed bundles; grants; recovery start</td><td>M1</td><td>Tampered bundle rejected; wrong passphrase reveals nothing; rotation keeps grants valid</td></tr>
+        <tr><td><strong>M3</strong></td><td>Local net L pulls</td><td>Peer discovery option; transport; deltas; verify/decrypt; revoke; offline queue; local audit</td><td>M2; Q3</td><td>Two browsers exchange only granted paths; revoke stops next pull; zero Nety traffic for L</td></tr>
+        <tr><td><strong>M4</strong></td><td>Nety social S</td><td>Opt-in social toggle; S schema/validation; signed reads; gateway prerequisite</td><td>M3; Nety gateway wired (currently not)</td><td>S contains no P/L; toggle off = zero Nety calls; publish requires consent</td></tr>
+        <tr><td><strong>M5</strong></td><td>Derivations + others view</td><td>D0/D1 built; D2 spike; D3 consent flow; O0 projection; explanation UI</td><td>M4; Q7–Q8</td><td>Default run fully offline; D3 shows exactly what leaves; O0 shows only granted paths</td></tr>
+        <tr><td><strong>M6</strong></td><td>Hardening + overwrite</td><td>Threat review; a11y/mobile; docs; rewrite index P2P/Wizy/Nety; retire superseded plans</td><td>M5</td><td>External checklist; no open critical privacy bug; Chrome + Firefox usable</td></tr>
+        <tr><td><strong>M7</strong></td><td>Usability passes</td><td>Onboarding; grant editor; explanation readability; error states; measured tasks</td><td>First 3 real peers on M3+</td><td>Time-to-share and task success measured; no privacy setting hidden behind a default</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note" style="margin-top:14px">Every milestone ends with a usability pass; only M7 turns them into measured goals. Privacy gates are binary: no gate, no next milestone.</div>
+</section>
+
+<section id="questions">
+  <div class="sechead"><span class="num">10</span><h2>The 10 questions</h2></div>
+  <div class="grid g2">
+    <div class="q"><h3>Q1 · P/L/S field by field</h3><p>Map every shipped JSON and app field to a class; default for new fields.</p><p class="def">Suggested: P unless listed; L for portraits; S only for already-public fields.</p></div>
+    <div class="q"><h3>Q2 · Permission unit</h3><p>File, JSON path, array slice or field — one unit for v1 and the grant schema.</p><p class="def">Suggested: JSON path with array ranges; fields later.</p></div>
+    <div class="q"><h3>Q3 · Local net discovery</h3><p>QR/endpoint, LAN, WebRTC, or Nety DHT for addresses only.</p><p class="def">Suggested: manual endpoint + signature first; WebRTC second; never L over Nety.</p></div>
+    <div class="q"><h3>Q4 · Revocation guarantee</h3><p>TTL, rotation, no-copy, UI wording, re-encryption.</p><p class="def">Suggested: forward-only; short TTL; rotate keys on removal.</p></div>
+    <div class="q"><h3>Q5 · Supersafe bar</h3><p>Unlock factor, at-rest format, memory rules, encrypted backup.</p><p class="def">Suggested: WebAuthn + passphrase; P only in Browsy/Wizy memory.</p></div>
+    <div class="q"><h3>Q6 · Authy identity set</h3><p>Channels, levels, sessions, masks, recovery, Nety PeerId binding.</p><p class="def">Suggested: Ed25519 root + proofs; self-backup; social quorum fallback.</p></div>
+    <div class="q"><h3>Q7 · Derivation first</h3><p>D0/D1 first, D2 spike, D3 consent; explanation; shareability.</p><p class="def">Suggested: local by default; D3 per request; D4/D5 later.</p></div>
+    <div class="q"><h3>Q8 · Others view</h3><p>Projection vs recomputation; signer; inference; consent.</p><p class="def">Suggested: O0 signed projection; O1 opt-in; O2 later.</p></div>
+    <div class="q"><h3>Q9 · Bundle schema</h3><p>Envelope, documents, consent, signature scope, portrait compatibility.</p><p class="def">Suggested: flove-bundle/0.1; portraits in documents[]; Authy signs.</p></div>
+    <div class="q"><h3>Q10 · Offline sync</h3><p>Deltas, vector clocks/CRDT, tombstones, TTL, conflict display.</p><p class="def">Suggested: bundle version + vector clock; last signed snapshot; surface staleness.</p></div>
+  </div>
+</section>
+
+<section id="rules">
+  <div class="sechead"><span class="num">11</span><h2>The privacy rules, kept</h2></div>
+  <div class="grid g2">
+    <div class="card">
+      <h3>Invariants</h3>
+      <ul>
+        <li>P never leaves unencrypted; no P in an S bundle.</li>
+        <li>L leaves only as an encrypted projection under a signed grant.</li>
+        <li>S contains no P by construction.</li>
+        <li>Every outbound byte traces to a grant (local audit log).</li>
+        <li>Defaults private; widening is explicit.</li>
+        <li>Revocation is forward-only; copies cannot be recalled.</li>
+        <li>Every received document is signed and verified.</li>
+        <li>Wizy computes locally by default; remote needs consent.</li>
+        <li>Nety does not learn who pulls from whom locally.</li>
+        <li>Linking a channel never re-derives identity keys.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Threats still open</h3>
+      <ul>
+        <li>Coerced unlock and memory scraping.</li>
+        <li>Authorized peer who leaks on purpose.</li>
+        <li>Unrecallable copies after revocation.</li>
+        <li>Extension supply chain / store compromise.</li>
+        <li>XSS on flove.org reaching the bridge.</li>
+        <li>Metadata graph visible to Nety nodes.</li>
+        <li>Inference and model inversion from D3/D2.</li>
+        <li>Hijacked social recovery quorum.</li>
+        <li>Usability pressure producing over-broad grants.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Companion to <code>development/standards/debates/browsy/rationale.md</code> · draft 2026-11-17 · Authy: <a href="../../../apps/sys/authy/index.html">authy</a> · MyFamily: <a href="index.html#myfamily">use case</a> · <a href="../../../development/standards/debates/browsy/browsy-questions.md">live questions</a>.</p>
+  <p>Sources: Development index P2P section · apps/sys/browsy · browsy README/questions/port-nety · nety access spec, nety-frontend, nety-trust · central-backend · export.md · apps/metas/goddy.html · risaliberada plan-v2 · apps/sys/nety README.</p>
+</footer>
+
+</div>
+</body>
+</html>

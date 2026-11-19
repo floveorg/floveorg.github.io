@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Authy · index</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%2322d3ee%22%20stroke-width%3D%222.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M22%2012H14V20%22%2F%3E%3Cpath%20d%3D%22M42%2012H50V20%22%2F%3E%3Cpath%20d%3D%22M14%2044V52H22%22%2F%3E%3Cpath%20d%3D%22M50%2044V52H42%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22M26%2034l5%205%209-11%22%20fill%3D%22none%22%20stroke%3D%22%23a78bfa%22%20stroke-width%3D%222.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E">
+<style>
+  :root{
+    --bg:#05070d; --panel:#0b1220; --panel2:#0d1626; --line:#15233d;
+    --ink:#dcebf7; --dim:#8ba2bc; --cyan:#22d3ee; --violet:#a78bfa;
+    --mint:#34d399; --amber:#fbbf24; --red:#fb7185;
+    --self:#02a85f; --email:#0bb5c9; --telegram:#3a86ff; --phone:#6c5ce7; --bio:#c44ad0;
+    --max:1120px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:
+    radial-gradient(900px 480px at 80% -10%,rgba(34,211,238,.10),transparent 60%),
+    radial-gradient(700px 420px at 0% 30%,rgba(167,139,250,.09),transparent 60%),
+    var(--bg);color:var(--ink);line-height:1.6;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding-bottom:60px}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 22px}
+  a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.86em;color:var(--cyan);
+    background:rgba(34,211,238,.07);border:1px solid rgba(34,211,238,.2);border-radius:6px;padding:1px 6px}
+  h1,h2,h3{line-height:1.15;margin:0}
+  h1{font-size:clamp(1.8rem,4.2vw,2.9rem);letter-spacing:-.01em}
+  h2{font-size:clamp(1.3rem,2.4vw,1.8rem);margin:0 0 6px}
+  h3{font-size:1.04rem;margin:0 0 6px}
+  p{margin:.5rem 0}
+  .top{padding:48px 0 8px}
+  .status{display:inline-flex;gap:8px;align-items:center;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--cyan);border:1px solid rgba(34,211,238,.45);background:rgba(34,211,238,.06);border-radius:999px;padding:5px 12px;margin-bottom:14px}
+  .lede{color:var(--dim);max-width:82ch;font-size:1.03rem}
+  nav.toc{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 0}
+  nav.toc a{font-size:.78rem;border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--dim);background:var(--panel)}
+  nav.toc a:hover{color:var(--ink);border-color:var(--cyan);text-decoration:none}
+  section{margin:46px 0 0}
+  .sechead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:9px;margin-bottom:16px}
+  .sechead .num{font-family:ui-monospace,monospace;font-size:.7rem;letter-spacing:.18em;color:var(--cyan)}
+  .sechead h2{margin:0}
+  .card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;padding:18px 20px}
+  .card p{color:var(--dim);font-size:.93rem}
+  .grid{display:grid;gap:14px}.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .scroll{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+  table{border-collapse:collapse;width:100%;font-size:.84rem;min-width:660px}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-family:ui-monospace,monospace;font-size:.67rem;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);background:#08101c}
+  tr:last-child td{border-bottom:0}
+  .muted{color:var(--dim)}
+  .note{border-left:3px solid var(--amber);background:rgba(251,191,36,.05);padding:10px 14px;border-radius:0 12px 12px 0;color:var(--dim);font-size:.9rem}
+  .note strong{color:var(--ink)}
+  .pill{display:inline-block;font-family:ui-monospace,monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
+    border-radius:999px;padding:2px 8px;border:1px solid rgba(34,211,238,.4);color:var(--cyan);background:rgba(34,211,238,.08)}
+  /* current appy ladder */
+  .auth-card{background:linear-gradient(180deg,#0e1728,#0a111d);border:1px solid var(--line);border-radius:18px;padding:20px}
+  .auth-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+  .auth-head h3{font-size:1.1rem}
+  .auth-sub{color:var(--dim);font-size:.84rem;margin:0 0 16px}
+  .id5-scale{display:flex;gap:10px;align-items:flex-start;margin-top:18px}
+  .id5-bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;background:none;border:0;color:inherit;font:inherit;padding:0}
+  .id5-bar-col{width:100%;border-radius:8px 8px 5px 5px;display:flex;align-items:flex-start;justify-content:center;padding-top:5px;
+    border:1px solid transparent;opacity:.4;transition:opacity .2s,box-shadow .2s,transform .12s}
+  .id5-bar.reached .id5-bar-col{opacity:1}
+  .id5-bar.open .id5-bar-col{box-shadow:0 0 0 2px var(--ink)}
+  .id5-bar.actual .id5-bar-col{box-shadow:0 0 0 2px #8ecdf2,0 0 16px -4px #8ecdf2}
+  .id5-bar-badge{font-size:1rem}
+  .id5-bar-pts{font-size:.62rem;font-weight:700}
+  .id5-bar-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--dim);text-align:center}
+  .id5-bar-icon{display:grid;place-items:center;width:26px;height:26px;margin-top:10px}
+  .id5-bar-icon svg{width:26px;height:26px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .id5-bar-icon .fill{fill:currentColor;stroke:none}
+  .id5-bar-icon .cut{stroke:var(--bg);stroke-width:1.3;fill:none}
+  .id5-bar.actual .id5-bar-label{color:var(--ink);font-weight:700}
+  .id-form{margin-top:16px;border-top:1px solid var(--line);padding-top:14px;min-height:60px}
+  .id-form-icon{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:1.4rem;border:1.6px solid currentColor;box-shadow:0 0 18px -6px currentColor;margin:0 auto 10px}
+  .id-input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#070c14;color:var(--ink);font:inherit}
+  .id-suggest{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;font-size:.78rem;color:var(--cyan);text-decoration:none;border-bottom:1px dashed rgba(34,211,238,.45);padding-bottom:1px}
+  .id-suggest:hover{color:var(--ink);border-color:var(--ink)}
+  .id-action{width:100%;margin-top:10px;padding:10px 14px;border-radius:12px;border:1px solid rgba(16,14,24,.55);
+    color:#fff;font-family:ui-monospace,monospace;font-size:.78rem;letter-spacing:.03em;cursor:pointer}
+  .id-status{display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px dashed var(--line);
+    font-family:ui-monospace,monospace;font-size:.72rem;color:var(--dim)}
+  .id-status b{color:var(--ink)}
+  .reset-btn{margin-top:12px;background:none;border:1px solid var(--line);color:var(--dim);border-radius:999px;
+    padding:4px 12px;font:inherit;font-size:.72rem;cursor:pointer}
+  .reset-btn:hover{color:var(--ink);border-color:var(--cyan)}
+  .tag{display:inline-block;font-family:ui-monospace,monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
+    border-radius:6px;padding:2px 7px;margin:0 4px 4px 0}
+  .tag.p{color:var(--amber);background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35)}
+  .tag.m{color:var(--dim);background:rgba(139,162,188,.08);border:1px solid rgba(139,162,188,.3)}
+  .tag.l{color:var(--cyan);background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.35)}
+  .figure{background:linear-gradient(180deg,#0a111d,#070c14);border:1px solid var(--line);border-radius:18px;padding:14px;margin-top:14px}
+  svg{display:block;width:100%;height:auto}
+  .sv-zone{fill:#0a121f;stroke:#1c2c46;stroke-width:1.3;stroke-dasharray:7 5}
+  .sv-box{fill:#0d1626;stroke:#22d3ee;stroke-width:1.5}
+  .sv-box-p{fill:#1a1508;stroke:#fbbf24;stroke-width:1.5}
+  .sv-box-d{fill:#07170f;stroke:#34d399;stroke-width:1.5}
+  .sv-box-s{fill:#120f22;stroke:#a78bfa;stroke-width:1.5}
+  .sv-t{font:600 13px system-ui,sans-serif;fill:#dcebf7}
+  .sv-s{font:400 11px system-ui,sans-serif;fill:#8ba2bc}
+  .sv-k{font:700 9px ui-monospace,monospace;letter-spacing:.15em;fill:#22d3ee}
+  .sv-line{stroke:#22d3ee;stroke-width:1.5;fill:none}
+  .sv-line-a{stroke:#fbbf24;stroke-width:1.5;fill:none}
+  .sv-line-d{stroke:#34d399;stroke-width:1.5;fill:none}
+  .sv-dash{stroke-dasharray:5 4}
+  .sv-lbl{font:400 10px system-ui,sans-serif;fill:#b7cbe0}
+  footer{margin-top:56px;border-top:1px solid var(--line);padding-top:16px;color:var(--dim);font-size:.8rem}
+
+  /* brand · logo + title menu */
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  .brand-wrap{position:relative;display:inline-block;margin-bottom:12px}
+  .brand{display:flex;align-items:center;gap:12px;background:none;border:0;color:var(--ink);font:inherit;text-align:left;cursor:pointer;padding:0;border-radius:14px}
+  .brand:hover .brand-name{color:var(--cyan)}
+  .brand-logo{width:40px;height:40px;flex:none;filter:drop-shadow(0 0 8px rgba(34,211,238,.35))}
+  .brand-logo svg{display:block;width:100%;height:100%}
+  .brand-logo .brackets{stroke:var(--cyan);fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+  .brand-logo .check{stroke:var(--violet);fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+  .brand-txt{display:flex;flex-direction:column;line-height:1.1}
+  .brand-name{font-size:1.18rem;font-weight:700;letter-spacing:-.01em;transition:color .18s}
+  .brand-sub{font:600 .55rem/1 ui-monospace,monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-top:5px}
+  .brand-menu{position:absolute;top:calc(100% + 10px);left:0;z-index:100;min-width:260px;max-height:min(70vh,620px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px;box-shadow:0 24px 60px rgba(0,0,0,.6)}
+  .brand-menu[hidden]{display:none}
+  .brand-menu a{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;color:var(--dim);font-size:.82rem;text-decoration:none}
+  .brand-menu a:hover{background:rgba(34,211,238,.08);color:var(--ink)}
+  .brand-menu .sep{height:1px;background:var(--line);margin:6px 4px}
+  .brand-menu .group{font:700 .5rem/1 ui-monospace,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);padding:8px 10px 4px}
+  .brand-menu a b{color:var(--cyan);font-weight:600}
+  @media(max-width:700px){.brand-menu{width:min(280px,calc(100vw - 44px))}}
+
+  /* the 1–5 ladder uses the logo's 1–5 tick weights */
+  .id5-bar-col{width:64px;height:64px;flex:none;border-radius:14px;display:grid;place-items:center;padding:0;
+    border:1px solid currentColor;background:rgba(255,255,255,.02);opacity:.72;
+    transition:opacity .2s,box-shadow .2s,transform .12s,filter .2s}
+  .id5-bar-col .id5-tick{display:block;width:48px;height:48px;overflow:visible}
+  .id-display{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+  .id-display[hidden]{display:none}
+  .id-display .id-form{margin-top:0;border-top:0;padding-top:0}
+  .id5-bar.reached .id5-bar-col{opacity:1}
+  .id5-scale.has-open .id5-bar:not(.open) .id5-bar-col{opacity:.55}
+  .id5-bar:hover .id5-bar-col{transform:translateY(-1px);filter:brightness(1.08)}
+  .id5-bar.open .id5-bar-col{opacity:1;box-shadow:0 0 0 2px currentColor,0 0 18px -6px currentColor;filter:brightness(1.08)}
+  .id5-bar.actual .id5-bar-col{box-shadow:0 0 0 2px #8ecdf2,0 0 16px -4px #8ecdf2}
+  @media(max-width:700px){.wrap{padding:0 16px}.id5-scale{gap:5px}.id5-bar-label{font-size:.52rem}.id5-bar-col{width:52px;height:52px}.id5-bar-col .id5-tick{width:40px;height:40px}}
+</style>
+</head>
+<body>
+<div class="wrap top">
+  <div class="brand-wrap" id="authy-brand-wrap">
+    <button class="brand" id="authy-brand" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="authy-menu" aria-label="Authy · menu">
+      <span class="brand-logo" aria-hidden="true">
+        <svg viewBox="0 0 64 64">
+          <g class="brackets"><path d="M22 12H14V20"/><path d="M42 12H50V20"/><path d="M14 44V52H22"/><path d="M50 44V52H42"/></g>
+          <path class="check" d="M26 34l5 5 9-11"/>
+        </svg>
+      </span>
+      <span class="brand-txt"><span class="brand-name">Authy</span></span>
+    </button>
+    <div class="brand-menu" id="authy-menu" role="menu" aria-label="Authy sections" hidden>
+      <div class="group">This index</div>
+      <a href="#current" role="menuitem">Current ladder</a>
+      <a href="#sessions" role="menuitem">Sessions &amp; grants</a>
+      <a href="#risa" role="menuitem">Risa model · Telegram</a>
+      <a href="#risa-appy" role="menuitem">Risa → Appy · two models</a>
+      <a href="#mynet" role="menuitem">MyNet · Telegram</a>
+      <a href="#levels" role="menuitem">Levels &amp; capabilities</a>
+      <a href="#recovery" role="menuitem">Recovery</a>
+      <a href="#bridge" role="menuitem">Bridge API</a>
+      <a href="#migration" role="menuitem">Migration</a>
+      <a href="#pendings" role="menuitem">Pendings</a>
+      <div class="sep"></div>
+      <div class="group">Logos</div>
+      <a href="../../../addons/media/apps/logos/authy/authy-logos.html" role="menuitem"><b>Logo study</b></a>
+      <a href="../../../addons/media/apps/logos/authy/authy-minidiagrams.html" role="menuitem"><b>Minidiagrams</b></a>
+      <a href="../../../apps/sys/browsy/index.html" role="menuitem">Browsy</a>
+    </div>
+  </div>
+  <h1 class="sr-only">Authy</h1>
+</div>
+
+<div class="wrap">
+
+<div class="note" style="margin:14px 0">2026-11-17 spec update: <b>L1 Self (SelfAuth internally) · L2 email · L3 Telegram verified · L4 phone</b>. A bare Telegram link is L1 and enables nothing; risa or the Authy claim reaches L3. This demo still shows the older “L3 presence / L4 claim” labels; Phase 1 migrates it.</div>
+
+<section id="current">
+  <div class="auth-card" style="margin-top:14px">
+    <div class="id5-scale" id="ladder" role="group" aria-label="Authentication ladder"></div>
+    <div class="id-display" id="id-display" hidden>
+      <div class="id-form" id="id-form" aria-live="polite"></div>
+    </div>
+    <div class="id-status">
+      <span>Level <b id="st-level">L1 · self</b></span>
+      <span>Publish <b id="st-publish">locked</b></span>
+      <span>IDs <b id="st-ids">none</b></span>
+      <span>Store <b id="st-store">pending</b></span>
+    </div>
+  </div>
+
+  <div class="grid g3" style="margin-top:14px">
+    <div class="card"><h3>What the ladder says</h3><p>Self → Email → Telegram → Phone → Bio. The tick thickens with the step; the actual status gets a signal ring.</p></div>
+    <div class="card"><h3>What linking does</h3><p>Pushes the key into <code>linkedIdentities</code>, awards Personal points (20 / 50 / 100 / 200), and persists to <code>flove:authy</code>. Telegram sets <strong>L3 presence</strong>; publishing unlocks only at the <strong>L4</strong> claim.</p></div>
+    <div class="card"><h3>What the export carries</h3><p><code>flove-profile</code> includes <code>identities[]</code>, <code>socialProfiles[]</code>, trust facets, stage and played apps — see <code>exportProfile()</code>.</p></div>
+    <div class="card"><h3>More options in appy-basic</h3><p>The same Appy entry card links to <strong>MyNet</strong>, the Telegram claim here, and the rest of the profile. Appy stays the entry UI; this index owns the authy model.</p><p class="muted"><a href="../../../apps/appy/appy-basic.html">Open appy-basic ↗</a> · <a href="../../../apps/sys/browsy/index.html#usecases">Use cases ↗</a></p></div>
+  </div>
+
+  <div class="note" style="margin-top:14px"><strong>Known inconsistency (pending A03).</strong> The ticks display +5/+4/+12/+6/+8, but <code>linkIdentity()</code> awards 0/20/50/100/200 to the Personal facet until one table wins.</div>
+</section>
+
+<section id="sessions">
+  <div class="sechead"><span class="num">02</span><h2>Sessions and grants</h2></div>
+  <p class="lede">Apps get scoped tokens; the private key never leaves Browsy. Wizy asks Authy to sign bundles and grants. Peers verify with the public key.</p>
+
+  <div class="figure">
+    <svg viewBox="0 0 960 430" role="img" aria-labelledby="a1t a1d">
+      <title id="a1t">Authy session and grant flow</title>
+      <desc id="a1d">An app requests a scoped session from Browsy; Authy unlocks and returns a capability. Wizy asks Authy to sign a bundle grant; the peer verifies the signature and the grant paths before reading.</desc>
+      <rect class="sv-zone" x="20" y="30" width="300" height="360" rx="16"/>
+      <text class="sv-k" x="40" y="54">APP / WIZY</text>
+      <rect class="sv-box" x="40" y="80" width="260" height="70" rx="10"/>
+      <text class="sv-t" x="170" y="108" text-anchor="middle">App asks for a session</text>
+      <text class="sv-s" x="170" y="128" text-anchor="middle">scope · purpose · app id</text>
+      <rect class="sv-box-d" x="40" y="200" width="260" height="80" rx="10"/>
+      <text class="sv-t" x="170" y="230" text-anchor="middle">scoped capability</text>
+      <text class="sv-s" x="170" y="252" text-anchor="middle">read · share · derive</text>
+      <text class="sv-s" x="170" y="270" text-anchor="middle">expiry · no private key</text>
+      <line class="sv-line" x1="170" y1="150" x2="170" y2="200" marker-end="url(#a-ar)"/>
+
+      <rect class="sv-zone" x="350" y="30" width="290" height="360" rx="16"/>
+      <text class="sv-k" x="370" y="54">BROWSY · AUTHY</text>
+      <rect class="sv-box-p" x="370" y="80" width="250" height="80" rx="10"/>
+      <text class="sv-t" x="495" y="110" text-anchor="middle">unlock + root key</text>
+      <text class="sv-s" x="495" y="132" text-anchor="middle">Ed25519 · passphrase/WebAuthn</text>
+      <rect class="sv-box-p" x="370" y="210" width="250" height="80" rx="10"/>
+      <text class="sv-t" x="495" y="240" text-anchor="middle">sign bundle + grant</text>
+      <text class="sv-s" x="495" y="262" text-anchor="middle">paths · capability · expiry</text>
+      <line class="sv-line-a" x1="320" y1="240" x2="370" y2="240" marker-end="url(#a-aa)"/>
+      <text class="sv-lbl" x="345" y="230" text-anchor="middle">request</text>
+      <path class="sv-line-a" d="M495 160 L595 210" marker-end="url(#a-aa)"/>
+
+      <rect class="sv-zone" x="660" y="30" width="280" height="360" rx="16"/>
+      <text class="sv-k" x="680" y="54">PEER / APP</text>
+      <rect class="sv-box-l" x="680" y="120" width="240" height="90" rx="10"/>
+      <text class="sv-t" x="800" y="150" text-anchor="middle">verify + read</text>
+      <text class="sv-s" x="800" y="172" text-anchor="middle">signature · key · expiry</text>
+      <text class="sv-s" x="800" y="192" text-anchor="middle">only granted paths</text>
+      <line class="sv-line-a" x1="620" y1="250" x2="680" y2="190" marker-end="url(#a-aa)"/>
+      <text class="sv-lbl" x="648" y="232" text-anchor="middle">signed</text>
+      <text class="sv-s" x="800" y="300" text-anchor="middle">no grant → no plaintext</text>
+
+      <defs>
+        <marker id="a-ar" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#22d3ee"/></marker>
+        <marker id="a-aa" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#fbbf24"/></marker>
+      </defs>
+    </svg>
+    <p class="muted" style="margin:8px 6px 0">Session flow. Authy signs; the app only holds the capability.</p>
+  </div>
+</section>
+
+<section id="risa">
+  <div class="sechead"><span class="num">03</span><h2>Risa model — Telegram presence, level 3, claim to L4</h2></div>
+  <p class="lede">The risa authy model maps presence and verification separately: <strong>L1 self</strong>, <strong>L2 email</strong> (planned), <strong>L3 Telegram presence</strong> (linked but not claimed), <strong>L4 Telegram verified</strong> (claimed), <strong>L5 phone</strong>, <strong>L6 bio</strong>. Level 3 is the presence profile: you link Telegram, the handle never renders publicly, and claiming upgrades you to L4.</p>
+
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card">
+      <span class="tag p">L3 · presence</span>
+      <h3>How to get a level 3 profile</h3>
+      <p>Link Telegram from the ladder above (or the button here). The identity is stored locally in <code>flove:authy</code>; no @handle is published. The same button mints the one-shot claim so you can go straight to L4.</p>
+      <button type="button" class="id-action" style="background:var(--telegram);max-width:290px" id="btnPresence">Link Telegram · L3 → claim L4</button>
+      <p class="muted" id="presenceMsg" style="margin-top:8px"></p>
+      <!-- The claim appears right here, under the button that starts it. -->
+      <div id="nonceBox" class="claim-box" hidden>
+        <p class="muted">Nonce: <code id="nonceOut">—</code></p>
+        <p class="muted" style="overflow-wrap:anywhere">Deep link: <a id="deepLink" href="#" target="_blank" rel="noopener">t.me/…</a></p>
+        <p class="muted"><a id="tgDeepLink" href="#">Open in the Telegram app ↗</a></p>
+        <button type="button" class="btn-ghost" id="copyDeepLink" style="padding:7px 11px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--ink);cursor:pointer">Copy link</button>
+        <button type="button" class="btn-ghost" id="copyStart" style="padding:7px 11px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--ink);cursor:pointer">Copy /start command</button>
+        <p class="muted" style="font-size:.78rem">If Telegram Web stays loading, open the Telegram app, search <b>@AuthyTgBot</b>, and paste the /start command in the chat.</p>
+        <button type="button" class="id-action" style="background:var(--mint);max-width:280px" id="btnConfirm">Demo confirmation → L4</button>
+      </div>
+      <p class="muted" id="claimMsg" style="margin-top:8px"></p>
+    </div>
+    <div class="card">
+      <span class="tag l">L4 · verified</span>
+      <h3>What L4 unlocks</h3>
+      <p>The bot confirms your DM, Authy stores the verified level, and Appy unlocks publishing. MyNet is already available at L3. Use <b>Send to Appy</b> to hand the level over.</p>
+      <button type="button" class="id-action" style="background:var(--violet);max-width:280px;margin-top:8px" id="btnSendAppy">Send to Appy ↗</button>
+    </div>
+  </div>
+
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card">
+      <h3>Send authenticated information</h3>
+      <p>From localhost, send the signed authy summary to the keepers. Local first; social only after L4.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" class="id-action" style="background:var(--cyan);max-width:240px" id="btnLocal">Send to local keeper</button>
+        <button type="button" class="id-action" style="background:var(--violet);max-width:240px" id="btnSocial">Send to social keeper</button>
+      </div>
+      <p class="muted" id="keeperMsg" style="margin-top:8px"></p>
+    </div>
+    <div class="card">
+      <h3>Persistence</h3>
+      <p>The authy state is written to <code>localStorage</code> under <code>flove:authy</code> (works on localhost and <code>file://</code>). Appy-basic reads the same key, so the ladder survives a reload and both pages agree on the level.</p>
+      <p class="muted">A real Browsy vault replaces this store later; the schema stays <code>flove-authy/1</code>. P2P permissions are a later trunk.</p>
+    </div>
+  </div>
+
+  <div class="figure">
+    <svg viewBox="0 0 980 360" role="img" aria-labelledby="risaT risaD">
+      <title id="risaT">Risa Telegram claim thread</title>
+      <desc id="risaD">The app asks Authy for a claim, Authy mints a one-shot nonce, the user opens the bot deep link, confirms in DM, and the verified level is stored locally.</desc>
+      <rect class="sv-zone" x="20" y="24" width="230" height="300" rx="16"/>
+      <text class="sv-k" x="40" y="48">WEB · APP</text>
+      <rect class="sv-box" x="40" y="80" width="190" height="70" rx="10"/>
+      <text class="sv-t" x="135" y="108" text-anchor="middle">claim request</text>
+      <text class="sv-s" x="135" y="128" text-anchor="middle">clip / profile</text>
+      <rect class="sv-box" x="40" y="205" width="190" height="70" rx="10"/>
+      <text class="sv-t" x="135" y="233" text-anchor="middle">L3 → L4</text>
+      <text class="sv-s" x="135" y="253" text-anchor="middle">persisted in localhost</text>
+
+      <rect class="sv-zone" x="280" y="24" width="220" height="300" rx="16"/>
+      <text class="sv-k" x="300" y="48">AUTHY</text>
+      <rect class="sv-box-p" x="300" y="80" width="180" height="70" rx="10"/>
+      <text class="sv-t" x="390" y="108" text-anchor="middle">nonce</text>
+      <text class="sv-s" x="390" y="128" text-anchor="middle">one-shot · TTL</text>
+      <rect class="sv-box-p" x="300" y="205" width="180" height="70" rx="10"/>
+      <text class="sv-t" x="390" y="233" text-anchor="middle">verify id == id</text>
+      <text class="sv-s" x="390" y="253" text-anchor="middle">store L4</text>
+      <line class="sv-line-a" x1="230" y1="115" x2="300" y2="115" marker-end="url(#r-aa)"/>
+      <text class="sv-lbl" x="265" y="105" text-anchor="middle">ask</text>
+
+      <rect class="sv-zone" x="530" y="24" width="210" height="300" rx="16"/>
+      <text class="sv-k" x="550" y="48">TELEGRAM</text>
+      <rect class="sv-box" x="550" y="80" width="170" height="70" rx="10"/>
+      <text class="sv-t" x="635" y="108" text-anchor="middle">deep link</text>
+      <text class="sv-s" x="635" y="128" text-anchor="middle">t.me/bot?start=claim</text>
+      <rect class="sv-box" x="550" y="205" width="170" height="70" rx="10"/>
+      <text class="sv-t" x="635" y="233" text-anchor="middle">DM confirmation</text>
+      <text class="sv-s" x="635" y="253" text-anchor="middle">same id</text>
+      <line class="sv-line-a" x1="480" y1="115" x2="550" y2="115" marker-end="url(#r-aa)"/>
+      <text class="sv-lbl" x="515" y="105" text-anchor="middle">link</text>
+      <line class="sv-line" x1="635" y1="150" x2="635" y2="205" marker-end="url(#r-ar)"/>
+      <text class="sv-lbl" x="650" y="180">user opens</text>
+
+      <rect class="sv-zone" x="770" y="24" width="190" height="300" rx="16"/>
+      <text class="sv-k" x="790" y="48">STORE</text>
+      <rect class="sv-box-d" x="790" y="205" width="150" height="70" rx="10"/>
+      <text class="sv-t" x="865" y="233" text-anchor="middle">flove:authy</text>
+      <text class="sv-s" x="865" y="253" text-anchor="middle">L4 · verified</text>
+      <path class="sv-line-d" d="M740 240 L790 240" marker-end="url(#r-ad)"/>
+      <text class="sv-lbl" x="765" y="230" text-anchor="middle">save</text>
+      <path class="sv-line-d" d="M135 275 L135 310 L490 310 L490 275" marker-end="url(#r-ad)"/>
+      <text class="sv-lbl" x="260" y="302" text-anchor="middle">level resolved</text>
+
+      <defs>
+        <marker id="r-aa" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#fbbf24"/></marker>
+        <marker id="r-ar" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#22d3ee"/></marker>
+        <marker id="r-ad" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#34d399"/></marker>
+      </defs>
+    </svg>
+    <p class="muted" style="margin:8px 6px 0">Risa claim thread. L3 is presence; L4 is the verified claim. The real bot replaces the simulated deep link.</p>
+  </div>
+</section>
+
+<section id="risa-appy">
+  <div class="sechead"><span class="num">03b</span><h2>Risa → Appy — two models</h2></div>
+  <p class="lede">Risa already knows the Telegram account behind a clip. Authy is a different bot, so the two models below decide how that proof reaches Appy. Both grant <strong>L3 presence</strong> only; <strong>L4 publishing still needs the Authy claim</strong>.</p>
+
+  <h3>Model A — one-tap handoff <span class="tag l">implemented</span></h3>
+  <p class="muted">Risa shows a <b>Link Telegram</b> button. The user presses Start once in @AuthyTgBot; the verifier stores <code>risa_key → presence</code>; Appy polls and unlocks L3/MyNet. Two bots, one tap.</p>
+  <div class="figure">
+    <svg viewBox="0 0 960 300" role="img" aria-labelledby="a1t a1d">
+      <title id="a1t">Model A: one-tap handoff from risa to AuthyTgBot</title>
+      <desc id="a1d">Risa shows a Link Telegram button; the user starts AuthyTgBot with start=risa_key; the verifier stores presence; Appy polls and gets L3.</desc>
+      <rect class="sv-zone" x="20" y="20" width="220" height="260" rx="16"/><text class="sv-k" x="40" y="46">RISA</text>
+      <rect class="sv-box" x="40" y="72" width="180" height="70" rx="10"/><text class="sv-t" x="130" y="99" text-anchor="middle">clip / profile</text><text class="sv-s" x="130" y="119" text-anchor="middle">Telegram auth in risa</text>
+      <rect class="sv-box" x="40" y="190" width="180" height="66" rx="10"/><text class="sv-t" x="130" y="216" text-anchor="middle">Link Telegram</text><text class="sv-s" x="130" y="236" text-anchor="middle">one button</text>
+      <line class="sv-line" x1="130" y1="142" x2="130" y2="190" marker-end="url(#a1-ar)"/>
+
+      <rect class="sv-zone" x="280" y="20" width="220" height="260" rx="16"/><text class="sv-k" x="300" y="46">AUTHY BOT</text>
+      <rect class="sv-box-p" x="300" y="72" width="180" height="70" rx="10"/><text class="sv-t" x="390" y="99" text-anchor="middle">@AuthyTgBot</text><text class="sv-s" x="390" y="119" text-anchor="middle">start=risa_key</text>
+      <rect class="sv-box-p" x="300" y="190" width="180" height="66" rx="10"/><text class="sv-t" x="390" y="216" text-anchor="middle">private DM</text><text class="sv-s" x="390" y="236" text-anchor="middle">Telegram presence</text>
+      <line class="sv-line" x1="220" y1="223" x2="300" y2="223" marker-end="url(#a1-ar)"/><text class="sv-lbl" x="260" y="212" text-anchor="middle">open</text>
+      <line class="sv-line-a" x1="390" y1="142" x2="390" y2="190" marker-end="url(#a1-aa)"/>
+
+      <rect class="sv-zone" x="540" y="20" width="180" height="260" rx="16"/><text class="sv-k" x="560" y="46">VERIFIER</text>
+      <rect class="sv-box-p" x="560" y="72" width="140" height="80" rx="10"/><text class="sv-t" x="630" y="100" text-anchor="middle">/claim?risa</text><text class="sv-s" x="630" y="120" text-anchor="middle">presence + at</text><text class="sv-s" x="630" y="138" text-anchor="middle">no id exposed</text>
+      <line class="sv-line-a" x1="480" y1="112" x2="560" y2="112" marker-end="url(#a1-aa)"/><text class="sv-lbl" x="520" y="102" text-anchor="middle">store</text>
+      <rect class="sv-box" x="560" y="190" width="140" height="66" rx="10"/><text class="sv-t" x="630" y="216" text-anchor="middle">5 min poll</text><text class="sv-s" x="630" y="236" text-anchor="middle">Appy</text>
+
+      <rect class="sv-zone" x="760" y="20" width="180" height="260" rx="16"/><text class="sv-k" x="780" y="46">APPY</text>
+      <rect class="sv-box-d" x="780" y="72" width="140" height="80" rx="10"/><text class="sv-t" x="850" y="100" text-anchor="middle">poll /claim</text><text class="sv-s" x="850" y="120" text-anchor="middle">L3 presence</text><text class="sv-s" x="850" y="138" text-anchor="middle">MyNet</text>
+      <line class="sv-line-d" x1="720" y1="112" x2="780" y2="112" marker-end="url(#a1-ad)"/><text class="sv-lbl" x="750" y="102" text-anchor="middle">read</text>
+      <defs>
+        <marker id="a1-ar" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#22d3ee"/></marker>
+        <marker id="a1-aa" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#fbbf24"/></marker>
+        <marker id="a1-ad" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#34d399"/></marker>
+      </defs>
+    </svg>
+    <p class="muted" style="margin:8px 6px 0">A1 · Flow. The risa key is public; the proof is the private DM to @AuthyTgBot. This grants L3 only.</p>
+  </div>
+  <div class="figure">
+    <svg viewBox="0 0 960 240" role="img" aria-labelledby="a2t a2d">
+      <title id="a2t">Model A: sequence</title>
+      <desc id="a2d">Five steps: risa auth, link Telegram, AuthyTgBot DM, verifier presence, Appy L3.</desc>
+      <rect class="sv-box" x="18" y="64" width="168" height="86" rx="10"/><text class="sv-k" x="34" y="86">1</text><text class="sv-t" x="102" y="106" text-anchor="middle">risa auth</text><text class="sv-s" x="102" y="126" text-anchor="middle">clip / risa key</text>
+      <line class="sv-line" x1="186" y1="107" x2="214" y2="107" marker-end="url(#a2-ar)"/>
+      <rect class="sv-box" x="214" y="64" width="168" height="86" rx="10"/><text class="sv-k" x="230" y="86">2</text><text class="sv-t" x="298" y="106" text-anchor="middle">Link Telegram</text><text class="sv-s" x="298" y="126" text-anchor="middle">start=risa_key</text>
+      <line class="sv-line" x1="382" y1="107" x2="410" y2="107" marker-end="url(#a2-ar)"/>
+      <rect class="sv-box-p" x="410" y="64" width="168" height="86" rx="10"/><text class="sv-k" x="426" y="86">3</text><text class="sv-t" x="494" y="106" text-anchor="middle">AuthyTgBot</text><text class="sv-s" x="494" y="126" text-anchor="middle">DM verified</text>
+      <line class="sv-line-a" x1="578" y1="107" x2="606" y2="107" marker-end="url(#a2-aa)"/>
+      <rect class="sv-box-p" x="606" y="64" width="168" height="86" rx="10"/><text class="sv-k" x="622" y="86">4</text><text class="sv-t" x="690" y="106" text-anchor="middle">verifier</text><text class="sv-s" x="690" y="126" text-anchor="middle">presence claim</text>
+      <line class="sv-line-d" x1="774" y1="107" x2="802" y2="107" marker-end="url(#a2-ad)"/>
+      <rect class="sv-box-d" x="802" y="64" width="140" height="86" rx="10"/><text class="sv-k" x="818" y="86">5</text><text class="sv-t" x="872" y="106" text-anchor="middle">Appy</text><text class="sv-s" x="872" y="126" text-anchor="middle">L3 + MyNet</text>
+      <text class="sv-s" x="480" y="200" text-anchor="middle">L4 / publishing still requires the separate Authy claim (nonce + DM).</text>
+      <defs>
+        <marker id="a2-ar" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#22d3ee"/></marker>
+        <marker id="a2-aa" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#fbbf24"/></marker>
+        <marker id="a2-ad" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#34d399"/></marker>
+      </defs>
+    </svg>
+    <p class="muted" style="margin:8px 6px 0">A2 · Sequence. Appy can stay open and poll; no second confirmation inside Authy.</p>
+  </div>
+
+  <h3>Model B — signed risa claim + Browsy <span class="tag m">planned</span></h3>
+  <p class="muted">Risa signs a <code>flove-auth/1</code> presence claim with its key. Browsy’s web of trust carries it; Appy verifies it and grants L3 without the second bot. L4 stays Authy’s.</p>
+  <div class="figure">
+    <svg viewBox="0 0 960 320" role="img" aria-labelledby="b1t b1d">
+      <title id="b1t">Model B: signed risa claim through Browsy</title>
+      <desc id="b1d">Risa bot signs a flove-auth/1 claim; Browsy peers pull it; Wizy derives on the peer; Appy verifies and grants L3. L4 remains Authy.</desc>
+      <rect class="sv-zone" x="20" y="20" width="220" height="260" rx="16"/><text class="sv-k" x="40" y="46">RISA BOT</text>
+      <rect class="sv-box" x="40" y="80" width="180" height="90" rx="10"/><text class="sv-t" x="130" y="108" text-anchor="middle">sign claim</text><text class="sv-s" x="130" y="130" text-anchor="middle">flove-auth/1</text><text class="sv-s" x="130" y="148" text-anchor="middle">telegram presence</text>
+      <rect class="sv-zone" x="280" y="20" width="300" height="260" rx="16"/><text class="sv-k" x="300" y="46">BROWSY · WEB OF TRUST</text>
+      <rect class="sv-box-d" x="300" y="72" width="260" height="60" rx="10"/><text class="sv-t" x="430" y="98" text-anchor="middle">publish signed edge</text><text class="sv-s" x="430" y="116" text-anchor="middle">subject · level · signature</text>
+      <rect class="sv-box-d" x="300" y="160" width="260" height="60" rx="10"/><text class="sv-t" x="430" y="186" text-anchor="middle">peers pull locally</text><text class="sv-s" x="430" y="204" text-anchor="middle">Wizy derives on the peer</text>
+      <line class="sv-line" x1="220" y1="125" x2="300" y2="100" marker-end="url(#b1-ar)"/><text class="sv-lbl" x="260" y="108" text-anchor="middle">signed</text>
+      <line class="sv-line-d" x1="430" y1="132" x2="430" y2="160" marker-end="url(#b1-ad)"/>
+      <rect class="sv-zone" x="620" y="20" width="180" height="260" rx="16"/><text class="sv-k" x="640" y="46">APPY</text>
+      <rect class="sv-box-d" x="640" y="80" width="140" height="90" rx="10"/><text class="sv-t" x="710" y="108" text-anchor="middle">verify</text><text class="sv-s" x="710" y="130" text-anchor="middle">L3 presence</text><text class="sv-s" x="710" y="148" text-anchor="middle">MyNet</text>
+      <line class="sv-line-d" x1="560" y1="190" x2="640" y2="125" marker-end="url(#b1-ad)"/><text class="sv-lbl" x="600" y="166" text-anchor="middle">import</text>
+      <rect class="sv-box-p" x="800" y="80" width="140" height="90" rx="10"/><text class="sv-t" x="870" y="108" text-anchor="middle">Authy</text><text class="sv-s" x="870" y="130" text-anchor="middle">L4 claim</text><text class="sv-s" x="870" y="148" text-anchor="middle">publishing</text>
+      <line class="sv-line-a" x1="780" y1="125" x2="800" y2="125" marker-end="url(#b1-aa)"/>
+      <defs>
+        <marker id="b1-ar" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#22d3ee"/></marker>
+        <marker id="b1-ad" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#34d399"/></marker>
+        <marker id="b1-aa" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#fbbf24"/></marker>
+      </defs>
+    </svg>
+    <p class="muted" style="margin:8px 6px 0">B1 · Trust. One signature replaces the second bot for presence; Browsy owns the attestation, Appy only verifies it.</p>
+  </div>
+  <div class="figure">
+    <svg viewBox="0 0 960 240" role="img" aria-labelledby="b2t b2d">
+      <title id="b2t">Model B: sequence</title>
+      <desc id="b2d">Six steps: sign, publish, pull, derive, import, L3; L4 remains separate.</desc>
+      <rect class="sv-box" x="14" y="64" width="150" height="86" rx="10"/><text class="sv-k" x="30" y="86">1</text><text class="sv-t" x="89" y="106" text-anchor="middle">sign</text><text class="sv-s" x="89" y="126" text-anchor="middle">risa bot</text>
+      <line class="sv-line" x1="164" y1="107" x2="188" y2="107" marker-end="url(#b2-ar)"/>
+      <rect class="sv-box-d" x="188" y="64" width="150" height="86" rx="10"/><text class="sv-k" x="204" y="86">2</text><text class="sv-t" x="263" y="106" text-anchor="middle">publish</text><text class="sv-s" x="263" y="126" text-anchor="middle">Browsy edge</text>
+      <line class="sv-line-d" x1="338" y1="107" x2="362" y2="107" marker-end="url(#b2-ad)"/>
+      <rect class="sv-box-d" x="362" y="64" width="150" height="86" rx="10"/><text class="sv-k" x="378" y="86">3</text><text class="sv-t" x="437" y="106" text-anchor="middle">pull</text><text class="sv-s" x="437" y="126" text-anchor="middle">peers locally</text>
+      <line class="sv-line-d" x1="512" y1="107" x2="536" y2="107" marker-end="url(#b2-ad)"/>
+      <rect class="sv-box" x="536" y="64" width="150" height="86" rx="10"/><text class="sv-k" x="552" y="86">4</text><text class="sv-t" x="611" y="106" text-anchor="middle">derive</text><text class="sv-s" x="611" y="126" text-anchor="middle">Wizy peer</text>
+      <line class="sv-line" x1="686" y1="107" x2="710" y2="107" marker-end="url(#b2-ar)"/>
+      <rect class="sv-box-d" x="710" y="64" width="150" height="86" rx="10"/><text class="sv-k" x="726" y="86">5</text><text class="sv-t" x="785" y="106" text-anchor="middle">import</text><text class="sv-s" x="785" y="126" text-anchor="middle">Appy verifies</text>
+      <line class="sv-line-d" x1="860" y1="107" x2="884" y2="107" marker-end="url(#b2-ad)"/>
+      <rect class="sv-box-d" x="884" y="64" width="62" height="86" rx="10"/><text class="sv-k" x="896" y="86">6</text><text class="sv-t" x="915" y="106" text-anchor="middle">L3</text><text class="sv-s" x="915" y="126" text-anchor="middle">MyNet</text>
+      <text class="sv-s" x="480" y="200" text-anchor="middle">L4 / publishing is always the AuthyTgBot claim, never the risa signature.</text>
+      <defs>
+        <marker id="b2-ar" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#22d3ee"/></marker>
+        <marker id="b2-ad" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#34d399"/></marker>
+      </defs>
+    </svg>
+    <p class="muted" style="margin:8px 6px 0">B2 · Sequence. The record stays local; peers pull it; Wizy derives on the peer; Nety receives only an optional Social card.</p>
+  </div>
+</section>
+
+<section id="mynet">
+  <div class="sechead"><span class="num">04</span><h2>MyNet — enabled by Telegram, simplified from MyFamily</h2></div>
+  <p class="lede">In appy-basic, MyNet is not a social network that opens by default. <strong>Authenticating Telegram (L3 presence) enables the MyNet features</strong>: people, circles, feed and local sharing. Appy shows two lock cards: <strong>MyNet local</strong> at L3 (people, circles, local feed, invites) and <strong>Social publishing</strong> at L4 (public posts, public groups). Those features are a deliberate <strong>simplification of MyFamily</strong> — one person, a relation, a few traits and one affinity — kept as <strong>L</strong> in Browsy. L4 (the claim) is only needed when MyNet publishes to the social layer.</p>
+  <p class="muted"><a href="../../../apps/appy/appy-basic.html">Open appy-basic ↗</a> · <a href="../../../apps/trusty/myfamily.html">Open MyFamily ↗</a></p>
+
+  <div class="scroll" style="margin-top:14px">
+    <table>
+      <thead><tr><th>MyFamily — full record</th><th>MyNet — simplified record</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Friend / family name</td><td>Person / contact</td><td>Same identity anchor.</td></tr>
+        <tr><td>7 trait groups with booleans</td><td>2–3 relation traits</td><td>Enough to sort a circle, not to profile a person.</td></tr>
+        <tr><td>Free-text nuance per group</td><td>Short note (optional)</td><td>Lower leakage than a full reflection.</td></tr>
+        <tr><td>5 affinity raters (0–100)</td><td>One affinity value</td><td>Circles/feed ranking needs one signal.</td></tr>
+        <tr><td><code>friend</code>, <code>trait:*</code>, <code>nuance:*</code>, <code>rater:*</code> rows</td><td>One contact record per person</td><td>Same portrait idea, fewer rows.</td></tr>
+        <tr><td>Class P / L / S</td><td><strong>L by default</strong></td><td>Local federation is the MyNet use case.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="figure">
+    <svg viewBox="0 0 1000 330" role="img" aria-labelledby="mn1t mn1d">
+      <title id="mn1t">Telegram enables MyNet, MyNet simplifies MyFamily</title>
+      <desc id="mn1d">Authenticating Telegram gives Authy L3 presence, which enables MyNet. MyNet uses a simplified MyFamily record, kept as L in Browsy.</desc>
+      <rect class="sv-zone" x="20" y="40" width="960" height="250" rx="18"/>
+      <text class="sv-k" x="40" y="64">MODEL</text>
+      <rect class="sv-box-p" x="40" y="100" width="170" height="90" rx="12"/>
+      <text class="sv-t" x="125" y="132" text-anchor="middle">Authenticate</text>
+      <text class="sv-s" x="125" y="154" text-anchor="middle">Telegram · L3 presence</text>
+      <text class="sv-s" x="125" y="174" text-anchor="middle">claim → L4 verified</text>
+      <line class="sv-line-a" x1="210" y1="145" x2="250" y2="145" marker-end="url(#mn-a)"/>
+      <rect class="sv-box" x="250" y="100" width="160" height="90" rx="12"/>
+      <text class="sv-t" x="330" y="132" text-anchor="middle">MyNet</text>
+      <text class="sv-s" x="330" y="154" text-anchor="middle">enabled by Telegram</text>
+      <text class="sv-s" x="330" y="174" text-anchor="middle">people · circles · feed</text>
+      <line class="sv-line" x1="410" y1="145" x2="450" y2="145" marker-end="url(#mn-b)"/>
+      <rect class="sv-box" x="450" y="80" width="200" height="130" rx="12"/>
+      <text class="sv-t" x="550" y="108" text-anchor="middle">MyFamily · simplified</text>
+      <text class="sv-s" x="550" y="132" text-anchor="middle">person + relation</text>
+      <text class="sv-s" x="550" y="152" text-anchor="middle">2–3 traits</text>
+      <text class="sv-s" x="550" y="172" text-anchor="middle">one affinity</text>
+      <text class="sv-s" x="550" y="192" text-anchor="middle">one L record per contact</text>
+      <line class="sv-line" x1="650" y1="145" x2="690" y2="145" marker-end="url(#mn-b)"/>
+      <rect class="sv-box-d" x="690" y="100" width="160" height="90" rx="12"/>
+      <text class="sv-t" x="770" y="132" text-anchor="middle">Browsy</text>
+      <text class="sv-s" x="770" y="154" text-anchor="middle">class L</text>
+      <text class="sv-s" x="770" y="174" text-anchor="middle">local federation</text>
+      <text class="sv-s" x="880" y="260" text-anchor="end">L4 only adds public publishing</text>
+
+      <defs>
+        <marker id="mn-a" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#fbbf24"/></marker>
+        <marker id="mn-b" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#22d3ee"/></marker>
+      </defs>
+    </svg>
+    <p class="muted" style="margin:8px 6px 0">Diagram 1 · the model. Telegram is the switch; MyNet is the simplified MyFamily surface; Browsy keeps the record as L.</p>
+  </div>
+
+  <div class="figure">
+    <svg viewBox="0 0 980 360" role="img" aria-labelledby="mn2t mn2d">
+      <title id="mn2t">MyNet thread: Telegram to local data</title>
+      <desc id="mn2d">The appy-basic Authenticate card links Telegram, Authy enables MyNet, MyNet creates a simplified MyFamily record, and Browsy stores it as L for local peers.</desc>
+      <g font-family="system-ui,sans-serif">
+        <g fill="#0d1626" stroke="#22d3ee" stroke-width="1.3">
+          <rect x="15" y="20" width="150" height="42" rx="9"/>
+          <rect x="230" y="20" width="150" height="42" rx="9"/>
+          <rect x="445" y="20" width="150" height="42" rx="9"/>
+          <rect x="660" y="20" width="150" height="42" rx="9"/>
+          <rect x="855" y="20" width="110" height="42" rx="9"/>
+        </g>
+        <g font-size="12" font-weight="600" fill="#dcebf7" text-anchor="middle">
+          <text x="90" y="46">Appy Auth</text>
+          <text x="305" y="46">Authy</text>
+          <text x="520" y="46">MyNet</text>
+          <text x="735" y="46">MyFamily</text>
+          <text x="910" y="46">Browsy</text>
+        </g>
+        <g stroke="#2a3d5c" stroke-width="1.2" stroke-dasharray="4 5">
+          <line x1="90" y1="62" x2="90" y2="335"/>
+          <line x1="305" y1="62" x2="305" y2="335"/>
+          <line x1="520" y1="62" x2="520" y2="335"/>
+          <line x1="735" y1="62" x2="735" y2="335"/>
+          <line x1="910" y1="62" x2="910" y2="335"/>
+        </g>
+        <defs>
+          <marker id="mn-ar" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#22d3ee"/></marker>
+          <marker id="mn-aa" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#fbbf24"/></marker>
+          <marker id="mn-ad" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#34d399"/></marker>
+        </defs>
+        <g stroke="#fbbf24" stroke-width="1.5" fill="none">
+          <line x1="90" y1="105" x2="305" y2="105" marker-end="url(#mn-aa)"/>
+          <line x1="305" y1="175" x2="520" y2="175" marker-end="url(#mn-aa)"/>
+        </g>
+        <g stroke="#22d3ee" stroke-width="1.5" fill="none">
+          <line x1="520" y1="245" x2="735" y2="245" marker-end="url(#mn-ar)"/>
+        </g>
+        <g stroke="#34d399" stroke-width="1.5" fill="none">
+          <line x1="735" y1="300" x2="910" y2="300" marker-end="url(#mn-ad)"/>
+        </g>
+        <g font-size="10.5" fill="#b7cbe0" text-anchor="middle">
+          <text x="197" y="97">link Telegram · L3</text>
+          <text x="412" y="167">enable MyNet</text>
+          <text x="627" y="237">create simplified record</text>
+          <text x="822" y="292">store as L · local peers</text>
+        </g>
+        <g font-size="10" fill="#8ba2bc" text-anchor="middle">
+          <text x="90" y="125">presence</text>
+          <text x="305" y="195">grant features</text>
+          <text x="520" y="265">relation + traits + affinity</text>
+          <text x="735" y="320">P/L/S gate</text>
+        </g>
+      </g>
+    </svg>
+    <p class="muted" style="margin:8px 6px 0">Diagram 2 · the thread. Appy Auth → Authy → MyNet → simplified MyFamily record → Browsy L.</p>
+  </div>
+</section>
+
+<section id="levels">
+  <div class="sechead"><span class="num">05</span><h2>Refined levels and capabilities</h2></div>
+  <p class="lede">The ladder becomes explicit levels with a capability matrix. “Self” is not a channel; it is the default profile state. Telegram verified (L4) remains the publish gate until Q/A02 says otherwise.</p>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Level</th><th>Proof</th><th>Adds</th><th>Can publish S</th><th>Can receive L</th><th>Can sign grants</th></tr></thead>
+      <tbody>
+        <tr><td><strong>L1 · self</strong></td><td>local profile</td><td>identity root exists</td><td>no</td><td>yes (own)</td><td>yes (own)</td></tr>
+        <tr><td><strong>L2 · email</strong></td><td>email proof (planned)</td><td>email presence; no MyNet</td><td>no</td><td>yes</td><td>yes</td></tr>
+        <tr><td><strong>L3 · presence</strong></td><td>Authy-issued Telegram linked (unclaimed)</td><td>MyNet local: presence profile, local sharing</td><td>no</td><td>yes</td><td>yes</td></tr>
+        <tr><td><strong>L4 · verified</strong></td><td>Telegram claim (nonce + DM)<br><span class="muted">risa model</span></td><td>publish gate, social standing</td><td>yes</td><td>yes</td><td>yes</td></tr>
+        <tr><td><strong>L5 · phone</strong></td><td>SMS / call proof</td><td>stronger recovery</td><td>yes</td><td>yes</td><td>yes</td></tr>
+        <tr><td><strong>L6 · bio</strong></td><td>local biometric unlock</td><td>highest unlock bar</td><td>yes</td><td>yes</td><td>yes</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card">
+      <h3>Channels</h3>
+      <p>Email, Telegram, phone and biometrics are channels with proofs. A proof is signed by the channel and stored as <span class="tag p">P</span>; only a boolean/level flag is <span class="tag m">M</span>. Future OAuth drivers plug into the same interface.</p>
+      <p class="muted">Biometrics is currently a channel in the UI; the refined model treats it as a local unlock factor first (pending A09).</p>
+    </div>
+    <div class="card">
+      <h3>Root and masks</h3>
+      <p>One Ed25519 root per human. Masks (nety-frontend) become derived identities or separate keypairs under the same root; they never re-derive the root when a channel is linked (<code>D17</code>).</p>
+      <p class="muted">Multi-mask and multi-device are pending A06.</p>
+    </div>
+  </div>
+</section>
+
+
+
+<section id="recovery">
+  <div class="sechead"><span class="num">06</span><h2>Recovery and rotation</h2></div>
+  <div class="grid g3">
+    <div class="card">
+      <h3>Self-backup (primary)</h3>
+      <p>Seed phrase or offline key. The owner rotates anytime: the old key signs a rotation attestation; the network maps old → new.</p>
+      <p class="muted">No central reset, no probation.</p>
+    </div>
+    <div class="card">
+      <h3>Social quorum (fallback)</h3>
+      <p>A quorum of MyNet/vouchers co-signs a new key bound to the same identity. Standing carries forward.</p>
+      <p class="muted">Short probation window against a coerced recovery.</p>
+    </div>
+    <div class="card">
+      <h3>Compromise</h3>
+      <p>Vouchers/MyNet can flag a compromised key and authorize rotation or revocation, severing the attacker.</p>
+      <p class="muted">Quorum size and appeal are pending A07.</p>
+    </div>
+  </div>
+</section>
+
+<section id="bridge">
+  <div class="sechead"><span class="num">07</span><h2>Bridge API (proposed)</h2></div>
+  <p class="lede">What apps call from the page, and what Browsy exposes. Names are proposals; the capability shape is the important part.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Call</th><th>Returns</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>flove.authy.status()</code></td><td><code>{locked, level, identities[], publish}</code></td><td>No handles or proofs.</td></tr>
+        <tr><td><code>flove.authy.unlock(factor)</code></td><td><code>{ok}</code></td><td>Passphrase or WebAuthn; never returns the key.</td></tr>
+        <tr><td><code>flove.authy.session(scope)</code></td><td><code>{token, expires, caps[]}</code></td><td>Scoped capability for one app/purpose.</td></tr>
+        <tr><td><code>flove.authy.link(channel, proof)</code></td><td><code>{ok, level}</code></td><td>Verifies and stores the proof as P.</td></tr>
+        <tr><td><code>flove.authy.sign(payload)</code></td><td><code>{signature, keyId}</code></td><td>Bundle/grant/revocation; asks once per session.</td></tr>
+        <tr><td><code>flove.authy.rotate(attestation)</code></td><td><code>{ok, newKeyId}</code></td><td>Self-backup or quorum path.</td></tr>
+        <tr><td><code>flove.authy.recover(quorum)</code></td><td><code>{ok, probation}</code></td><td>Social fallback; enters probation.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="migration">
+  <div class="sechead"><span class="num">08</span><h2>Migration from appy-basic</h2></div>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Today in appy-basic</th><th>Becomes</th><th>Kept in the app?</th></tr></thead>
+      <tbody>
+        <tr><td><code>IDENTITY_STEPS</code> five-bar ladder</td><td>Authy level table + the same visual entry point</td><td>Yes, as UI</td></tr>
+        <tr><td><code>state.linkedIdentities[]</code></td><td>Signed channel proofs in the vault; a boolean summary for the page</td><td>Yes, as cached summary</td></tr>
+        <tr><td><code>linkIdentity()</code></td><td><code>flove.authy.link(channel, proof)</code> + Personal points</td><td>Yes, calls Authy</td></tr>
+        <tr><td><code>publishUnlocked</code></td><td>Capability from verified L4 (Telegram claim)</td><td>Yes, reads Authy</td></tr>
+        <tr><td>Export <code>identities[]</code></td><td>Public summary only; proofs stay P</td><td>Yes, redacted</td></tr>
+        <tr><td>“Self” editor on profile card</td><td>Profile fields, not a channel</td><td>Yes</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note" style="margin-top:14px">From now on this index is the reference for Authy; the appy card is the entry point. The plan links here from §12.5.</div>
+</section>
+
+<section id="pendings">
+  <div class="sechead"><span class="num">09</span><h2>Open questions</h2></div>
+  <p class="lede">Parked for a future questy survey in <a href="../../../development/standards/debates/browsy/browsy-questions.md"><code>browsy-questions.md</code></a>. The first ten are the Authy batch.</p>
+  <div class="grid g2">
+    <div class="card"><h3>A01 · Ladder order</h3><p>Keep Self → Email → Telegram → Phone → Bio, or reorder by proof strength?</p></div>
+    <div class="card"><h3>A02 · Publish gate</h3><p>Telegram only, or Telegram <em>or</em> curator approval?</p></div>
+    <div class="card"><h3>A03 · Points</h3><p>Displayed +4/+12/+6/+8 vs awarded 20/50/100/200 — which table wins?</p></div>
+    <div class="card"><h3>A04 · Self</h3><p>Is Self a level or just the default profile state?</p></div>
+    <div class="card"><h3>A05 · Session shape</h3><p>JWT, signed capability, or opaque handle?</p></div>
+    <div class="card"><h3>A06 · Masks</h3><p>How many identities per human, and how do masks relate to the root key?</p></div>
+    <div class="card"><h3>A07 · Recovery quorum</h3><p>How many peers, which circles, what probation?</p></div>
+    <div class="card"><h3>A08 · Proof storage</h3><p>Proof as P or M; can peers verify without seeing the handle?</p></div>
+    <div class="card"><h3>A09 · Biometrics</h3><p>Channel proof or local unlock factor?</p></div>
+    <div class="card"><h3>A10 · Nety binding</h3><p>Same key as the PeerId, or a separate one?</p></div>
+  </div>
+</section>
+
+<footer>
+  <p>Authy index · part of <a href="../../../apps/sys/browsy/index.html">browsy</a> · plan: <a href="../../../development/standards/debates/browsy/rationale.md">rationale.md</a> · MyFamily: <a href="../../../apps/sys/browsy/index.html#myfamily">use case</a> · questions: <a href="../../../development/standards/debates/browsy/browsy-questions.md">browsy-questions.md</a></p>
+  <p>Source of the current ladder: <a href="../../../apps/appy/appy-basic.html">apps/appy/appy-basic.html</a> §Authenticate (read 2026-11-17).</p>
+  <div class="footer-cta"><a class="footer-btn" href="../../../apps/sys/browsy/index.html">Be browsy ↗</a></div>
+</footer>
+</div>
+
+<script>
+(function(){
+  var STEPS = [
+    { key:'self', label:'Self', badge:'🪪', shown:5, award:0, h:24, color:'#2f6fa5', level:1 },
+    { key:'email', label:'Email', badge:'✉', shown:4, award:20, h:32, color:'#4181b7', level:2 },
+    { key:'telegram', label:'Telegram', badge:'✈', shown:12, award:50, h:40, color:'#5393c9', level:3 },
+    { key:'phone', label:'Phone', badge:'📱', shown:6, award:100, h:48, color:'#65a5db', level:5 },
+    { key:'biometrics', label:'Bio', badge:'👁', shown:8, award:200, h:56, color:'#77b7ed', level:6 }
+  ];
+  var ICONS = {
+    self: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle class="fill" cx="9.1" cy="10" r="1.15"/><circle class="fill" cx="14.9" cy="10" r="1.15"/><path d="M8.4 14.4c.9 1.3 2.1 1.9 3.6 1.9s2.7-.6 3.6-1.9"/></svg>',
+    email: '<svg viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="m4.5 7.5 7.5 5.6 7.5-5.6"/></svg>',
+    telegram: '<svg viewBox="0 0 24 24"><path class="fill" d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>',
+    phone: '<svg viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.6h3"/><circle class="fill" cx="12" cy="5.4" r=".55"/></svg>',
+    biometrics: '<svg viewBox="0 0 24 24"><path d="M5 12a7 7 0 0 1 14 0"/><path d="M8 12a4 4 0 0 1 8 0"/><path d="M11 12a1 1 0 0 1 2 0"/><path d="M5.5 15.4c1 1.7 2.4 2.8 4.2 3.3"/><path d="M18.5 15.4c-.5 1.2-1.2 2.2-2.2 3"/></svg>'
+  };
+  var THICKS = { self:2.6, email:4.8, telegram:7.0, phone:9.2, biometrics:11.4 };
+  var KEY = 'flove:authy';
+  // Real Telegram claim: set the bot username and the verifier endpoint.
+  // The verifier receives ?nonce=… after the bot confirms the DM and returns
+  // {ok:true, level:'verified', telegram:{id, username}, at, signature}.
+  var TELEGRAM = { bot: 'AuthyTgBot', verify: '' };
+  try {
+    var _q = new URLSearchParams(location.search);
+    if (_q.get('bot')) TELEGRAM.bot = _q.get('bot');
+    if (_q.get('verify')) TELEGRAM.verify = _q.get('verify');
+  } catch (e) {}
+  var state = { linked: [], open: null, points: 0, level: 1, telegram: { status: 'none', handle: '', claimedAt: null }, self: { browsyHash: '' }, nonce: null, nonceAt: null };
+  var ladder = document.getElementById('ladder');
+  var form = document.getElementById('id-form');
+  var displayBox = document.getElementById('id-display');
+
+  function load(){
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return;
+      var d = JSON.parse(raw);
+      if (!d || d.schema !== 'flove-authy/1') return;
+      state.linked = Array.isArray(d.identities) ? d.identities.slice() : [];
+      state.telegram = d.telegram || { status: 'none', handle: '', claimedAt: null };
+      state.self = { browsyHash: (d.self && d.self.browsyHash) || '' };
+      state.nonce = d.nonce || null;
+      state.nonceAt = d.nonceAt || null;
+      state.level = +d.level || computeLevel();
+      state.points = state.linked.reduce(function(n, k){
+        var s = STEPS.filter(function(x){ return x.key === k; })[0];
+        return n + (s ? s.award : 0);
+      }, 0);
+    } catch (e) {}
+  }
+  function save(){
+    try {
+      localStorage.setItem(KEY, JSON.stringify({
+        schema: 'flove-authy/1',
+        level: state.level,
+        identities: state.linked.slice(),
+        telegram: state.telegram.status && state.telegram.status !== 'none'
+          ? Object.assign({}, state.telegram, { issuer: 'authy-bot' })
+          : state.telegram,
+        self: state.self,
+        nonce: state.nonce,
+        nonceAt: state.nonceAt,
+        updatedAt: new Date().toISOString()
+      }));
+      try { window.dispatchEvent(new CustomEvent('flove:authy:changed', { detail: { level: state.level, identities: state.linked.slice() } })); } catch (e) {}
+    } catch (e) {}
+  }
+  function computeLevel(){
+    var max = 1;
+    state.linked.forEach(function(k){
+      var s = STEPS.filter(function(x){ return x.key === k; })[0];
+      if (s && s.level > max) max = s.level;
+    });
+    if (state.telegram && state.telegram.status === 'verified') max = Math.max(max, 4);
+    return max;
+  }
+  function levelLabel(){
+    if (state.level >= 6) return 'L6 · bio';
+    if (state.level >= 5) return 'L5 · phone';
+    if (state.level >= 4) return 'L4 · verified';
+    if (state.level >= 3) return 'L3 · presence';
+    if (state.level >= 2) return 'L2 · email';
+    return 'L1 · self';
+  }
+  function actualKey(){
+    if (state.linked.indexOf('biometrics') !== -1) return 'biometrics';
+    if (state.linked.indexOf('phone') !== -1) return 'phone';
+    if (state.linked.indexOf('telegram') !== -1) return 'telegram';
+    if (state.linked.indexOf('email') !== -1) return 'email';
+    return 'self';
+  }
+  function render(){
+    state.level = computeLevel();
+    var actual = actualKey();
+    var showActual = !state.open;
+    if (ladder) ladder.classList.toggle('has-open', !!state.open);
+    ladder.innerHTML = STEPS.map(function(s){
+      var reached = s.key === 'self' || state.linked.indexOf(s.key) !== -1;
+      var cls = 'id5-bar' + (reached ? ' reached' : '') + (showActual && s.key === actual ? ' actual' : '') + (state.open === s.key ? ' open' : '');
+      var extra = (s.key === 'telegram' && state.telegram.status === 'verified') ? ' ✓' : '';
+      return '<button type="button" class="' + cls + '" aria-expanded="' + (state.open === s.key) + '" onclick="authySelect(\'' + s.key + '\')">'
+        + '<span class="id5-bar-col" style="color:' + s.color + ';border-color:' + s.color + '">'
+        + '<svg class="id5-tick" viewBox="0 0 64 64" aria-hidden="true"><path d="M26 34l5 5 9-11" fill="none" stroke="currentColor" stroke-width="' + THICKS[s.key] + '" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        + '</span>'
+        + '<span class="id5-bar-pts" style="color:' + s.color + '">+' + s.shown + '</span>'
+        + '<span class="id5-bar-label">' + s.label + extra + '</span>'
+        + (state.open === s.key ? '<span class="id5-bar-icon" style="color:' + s.color + '" aria-hidden="true">' + ICONS[s.key] + '</span>' : '')
+        + '</button>';
+    }).join('');
+    setTxt('st-level', levelLabel());
+    setTxt('st-points', state.points);
+    setTxt('st-publish', state.level >= 4 ? 'unlocked' : 'locked');
+    setTxt('st-ids', state.linked.length ? state.linked.join(', ') : 'none');
+    setTxt('st-store', 'localhost · ' + (state.level > 1 || state.linked.length ? 'saved' : 'pending'));
+  }
+  function setTxt(id, value){ var el = document.getElementById(id); if (el) el.textContent = value; }
+  function escHtml(s){
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];
+    });
+  }
+
+  // ── SelfAuth · L1: one small Browsy hash record ─────────────────────
+  function selfAuthForm(){
+    var d = state.self || {};
+    var hash = d.browsyHash || '';
+    return '<div style="display:flex;flex-direction:column;gap:8px">'
+      + '<p class="muted" style="margin:0">L1 · SelfAuth — one small record: the Browsy hash. Name, about and links stay on the Appy username card.</p>'
+      + '<label class="muted" for="self-browsy-hash" style="font-size:.8rem">Browsy hash</label>'
+      + '<input class="id-input" id="self-browsy-hash" placeholder="paste the Browsy hash" value="' + escHtml(hash) + '">'
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      + '<button type="button" class="id-action" style="background:var(--cyan);max-width:300px" onclick="saveSelfAuth()">Save hash</button>'
+      + '<a class="id-action" style="background:var(--violet);max-width:300px;text-decoration:none" href="../../../apps/sys/browsy/index.html" target="_blank" rel="noopener">Generate Browsy key ↗</a>'
+      + '</div>'
+      + '<a class="id-suggest" href="../../../apps/appy/appy-basic.html#reg-handle">Fill your username in Appy →</a>'
+      + '<p class="muted" id="selfMsg"></p>'
+      + '</div>';
+  }
+  window.saveSelfAuth = function(){
+    var hash = ((document.getElementById('self-browsy-hash') || {}).value || '').trim();
+    state.self = { browsyHash: hash };
+    save(); render();
+    var msg = document.getElementById('selfMsg');
+    if (msg) msg.textContent = hash ? 'Browsy hash saved — L1.' : 'Browsy hash cleared.';
+  };
+
+  // ── Email · L2: Google Identity Services or a code verifier ──────────
+  function renderForm(){
+    if (!form || !displayBox) return;
+    if (!state.open) { displayBox.hidden = true; form.innerHTML = ''; return; }
+    displayBox.hidden = false;
+    var s = STEPS.filter(function(x){ return x.key === state.open; })[0];
+    if (s.key === 'self') {
+      form.innerHTML = selfAuthForm();
+      return;
+    }
+    if (s.key === 'email') {
+      form.innerHTML = '<p class="muted" style="margin:0">Email authentication (Google / email code) is <b>planned</b> — see <a href="../../../development/standards/debates/plans/2026-11-17-appy-authy-mynet.md">the Authy plan</a>. SelfAuth and Telegram are live.</p>';
+      return;
+    }
+    if (state.linked.indexOf(s.key) !== -1) {
+      var note = s.label + ' linked ✓ — +' + s.award + ' to your Personal facet. The bar label showed +' + s.shown + ' (pending A03).';
+      if (s.key === 'telegram') {
+        note = state.telegram.status === 'verified'
+          ? 'Telegram verified ✓ — L4. The handle is never published.'
+          : 'Telegram presence ✓ — L3. Claim it with a nonce to reach L4. <a href="#risa">Claim →</a>';
+      }
+      form.innerHTML = '<p class="muted" style="margin:0">' + note + '</p>';
+      return;
+    }
+    var ph = s.key === 'telegram' ? '@handle' : s.key === 'phone' ? '+34 600 …' : s.key === 'email' ? 'you@mail.org' : '';
+    var input = s.key === 'biometrics' ? '' : '<input class="id-input" type="text" placeholder="' + ph + '" aria-label="' + s.label + '">';
+    var btn = '<button type="button" class="id-action" style="background:' + s.color + '" onclick="authyLink(\'' + s.key + '\')">' + (s.key === 'biometrics' ? 'Scan biometrics' : 'Link ' + s.label) + '</button>';
+    form.innerHTML = input + btn;
+  }
+  window.authySelect = function(key){ state.open = state.open === key ? null : key; render(); renderForm(); };
+  window.authyLink = function(key){
+    if (state.linked.indexOf(key) !== -1) return;
+    state.linked.push(key);
+    var s = STEPS.filter(function(x){ return x.key === key; })[0];
+    state.points += s.award;
+    if (key === 'telegram' && state.telegram.status === 'none') state.telegram = { status: 'presence', handle: '', claimedAt: null };
+    state.level = computeLevel();
+    save(); render(); renderForm();
+    if (key === 'telegram') startClaim();
+  };
+  function setMsg(id, text){ var el = document.getElementById(id); if (el) el.textContent = text; }
+  var resetBtn = document.getElementById('reset');
+  if (resetBtn) resetBtn.addEventListener('click', function(){
+    state = { linked: [], open: null, points: 0, level: 1, telegram: { status: 'none', handle: '', claimedAt: null }, self: { browsyHash: '' }, nonce: null, nonceAt: null };
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    render(); renderForm();
+  });
+
+  // risa claim demo
+  var btnPresence = document.getElementById('btnPresence');
+  if (btnPresence) btnPresence.addEventListener('click', function(){
+    if (state.linked.indexOf('telegram') === -1) state.linked.push('telegram');
+    if (state.telegram.status === 'none') state.telegram = { status: 'presence', handle: '', claimedAt: null };
+    state.level = computeLevel(); save(); render(); renderForm();
+    setMsg('presenceMsg', 'Telegram linked — L3. Claim it below for L4.');
+    startClaim();
+  });
+  function openAppyAfterAuth(kind){
+    save();
+    var w = null;
+    try { w = window.open('../../../apps/appy/appy-basic.html?unlock=' + encodeURIComponent(kind) + '#profile', '_blank'); } catch (e) {}
+    if (!w) { setMsg('claimMsg', 'Allow pop-ups to open Appy.'); return; }
+    var fileMode = location.protocol === 'file:' || location.origin === 'null';
+    var target = fileMode ? '*' : location.origin;
+    var sameOrigin = function(o){ return o === location.origin || (fileMode && (o === 'null' || o === 'file://')); };
+    var onMsg = function(e){
+      if (e.source !== w) return;
+      if (!sameOrigin(e.origin)) return;
+      if (e.data && e.data.type === 'flove-appy-ready'){
+        w.postMessage({ type: 'flove-appy-auth', auth: summary() }, target);
+        window.removeEventListener('message', onMsg);
+      }
+    };
+    window.addEventListener('message', onMsg);
+    setTimeout(function(){ window.removeEventListener('message', onMsg); }, 20000);
+    setMsg('claimMsg', 'Opening Appy — your new level is highlighted there.');
+  }
+  function goToAppyAfterAuth(kind){
+    if (location.protocol === 'file:') {
+      setMsg('claimMsg', 'Verified. Open Appy to see the new level.');
+      return;
+    }
+    setTimeout(function(){
+      location.href = '../../../apps/appy/appy-basic.html?unlock=' + encodeURIComponent(kind) + '#profile';
+    }, 700);
+  }
+  function markTelegramVerified(handle){
+    if (state.linked.indexOf('telegram') === -1) state.linked.push('telegram');
+    state.telegram = { status: 'verified', handle: handle || '', claimedAt: new Date().toISOString() };
+    state.level = computeLevel();
+    state.nonce = null; state.nonceAt = null;
+    save(); render(); renderForm();
+    setMsg('claimMsg', 'Telegram verified — L4. The nonce is spent.');
+    goToAppyAfterAuth('telegram');
+  }
+  function pollClaim(nonce){
+    if (!TELEGRAM.verify) return;
+    var started = Date.now();
+    var timer = setInterval(function(){
+      if (Date.now() - started > 10 * 60 * 1000){
+        clearInterval(timer);
+        setMsg('claimMsg', 'Claim window expired — generate a new nonce.');
+        return;
+      }
+      var url = TELEGRAM.verify + (TELEGRAM.verify.indexOf('?') >= 0 ? '&' : '?')
+        + 'nonce=' + encodeURIComponent(nonce);
+      fetch(url, { cache: 'no-store' })
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(d){
+          if (!d || !d.ok || d.level !== 'verified') return;
+          clearInterval(timer);
+          markTelegramVerified(d.telegram && d.telegram.username);
+        })
+        .catch(function(){});
+    }, 3000);
+  }
+  function startClaim(){
+    var bytes = new Uint8Array(8);
+    if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(bytes);
+    else for (var i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+    state.nonce = Array.prototype.map.call(bytes, function(b){ return ('0' + b.toString(16)).slice(-2); }).join('');
+    state.nonceAt = Date.now();
+    save();
+    var box = document.getElementById('nonceBox');
+    if (box) box.hidden = false;
+    document.getElementById('nonceOut').textContent = state.nonce;
+    var link = document.getElementById('deepLink');
+    link.href = 'https://t.me/' + encodeURIComponent(TELEGRAM.bot) + '?start=claim_' + state.nonce;
+    link.textContent = 't.me/' + TELEGRAM.bot + '?start=claim_' + state.nonce;
+    var tg = document.getElementById('tgDeepLink');
+    if (tg) tg.href = 'tg://resolve?domain=' + encodeURIComponent(TELEGRAM.bot) + '&start=claim_' + state.nonce;
+    if (TELEGRAM.verify) {
+      setMsg('claimMsg', 'Open the deep link and confirm in DM. Waiting for the verifier…');
+      pollClaim(state.nonce);
+    } else {
+      setMsg('claimMsg', 'Verifier not configured — use the demo confirmation for now.');
+    }
+    if (box) {
+      setTimeout(function(){
+        try { box.scrollIntoView({ block: 'center' }); } catch (e) {}
+        try {
+          var y = box.getBoundingClientRect().top + window.scrollY - 120;
+          window.scrollTo({ top: y, behavior: 'smooth' });
+        } catch (e) {}
+        try { link.focus({ preventScroll: true }); } catch (e) {}
+      }, 60);
+    }
+  }
+  var btnNonce = document.getElementById('btnNonce');
+  if (btnNonce) btnNonce.addEventListener('click', startClaim);
+  function copyToClipboard(text, done){
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(function(){
+        var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); done(); } catch (e) {}
+        ta.remove();
+      });
+    } else {
+      var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      ta.remove();
+    }
+  }
+  var copyStart = document.getElementById('copyStart');
+  if (copyStart) copyStart.addEventListener('click', function(){
+    if (!state.nonce) { setMsg('claimMsg', 'Generate the claim first.'); return; }
+    copyToClipboard('/start claim_' + state.nonce, function(){
+      setMsg('claimMsg', 'Command copied — paste it in the @' + TELEGRAM.bot + ' chat.');
+    });
+  });
+  var copyDeepLink = document.getElementById('copyDeepLink');
+  if (copyDeepLink) copyDeepLink.addEventListener('click', function(){
+    var url = document.getElementById('deepLink').href;
+    var done = function(){ setMsg('claimMsg', 'Deep link copied — open it in Telegram.'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(done).catch(function(){
+        var ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); done(); } catch (e) {}
+        ta.remove();
+      });
+    } else {
+      var ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      ta.remove();
+    }
+  });
+  var btnConfirm = document.getElementById('btnConfirm');
+  if (btnConfirm) {
+    btnConfirm.hidden = !!TELEGRAM.verify;
+    btnConfirm.addEventListener('click', function(){
+      if (!state.nonce) { setMsg('claimMsg', 'Generate a nonce first.'); return; }
+      markTelegramVerified('');
+    });
+  }
+
+  // Send the auth state to Appy. Same origin uses flove:authy; file:// and
+  // blocked storage use the postMessage handoff the Appy page already accepts.
+  var btnSendAppy = document.getElementById('btnSendAppy');
+  if (btnSendAppy) btnSendAppy.addEventListener('click', function(){
+    openAppyAfterAuth('auth');
+  });
+
+  // send to keepers
+  function summary(){
+    return {
+      schema: 'flove-authy/1',
+      level: state.level,
+      identities: state.linked.slice(),
+      telegram: { status: state.telegram.status, verified: state.telegram.status === 'verified' },
+      updatedAt: new Date().toISOString()
+    };
+  }
+  var btnLocal = document.getElementById('btnLocal');
+  if (btnLocal) btnLocal.addEventListener('click', function(){
+    var payload = Object.assign({ audience: 'local' }, summary());
+    try { localStorage.setItem('flove:authy:local', JSON.stringify(payload)); } catch (e) {}
+    var b = window.floveBrowsy || (window.flove && window.flove.browsy);
+    if (b && typeof b.saveAuthy === 'function') {
+      try { b.saveAuthy(payload); } catch (e) {}
+      setMsg('keeperMsg', 'Sent to local keeper (Browsy/Wizy) — ' + levelLabel() + '.');
+    } else {
+      setMsg('keeperMsg', 'Stored for the local keeper in localStorage — ' + levelLabel() + '. Browsy bridge not detected.');
+    }
+  });
+  var btnSocial = document.getElementById('btnSocial');
+  if (btnSocial) btnSocial.addEventListener('click', function(){
+    if (state.level < 4) { setMsg('keeperMsg', 'Social keeper needs L4. Claim Telegram first.'); return; }
+    var payload = Object.assign({ audience: 'social', verified: true }, summary());
+    try { localStorage.setItem('flove:authy:social', JSON.stringify(payload)); } catch (e) {}
+    var n = window.floveNety || (window.flove && window.flove.nety);
+    if (n && typeof n.publishAuthy === 'function') {
+      try { n.publishAuthy(payload); } catch (e) {}
+      setMsg('keeperMsg', 'Published to the social keeper (Nety).');
+    } else {
+      setMsg('keeperMsg', 'Queued for the social keeper locally — Nety is not connected yet.');
+    }
+  });
+
+  load(); render(); renderForm();
+  window.addEventListener('storage', function(e){ if (e.key === KEY) { load(); render(); renderForm(); } });
+  window.addEventListener('flove:authy:changed', function(){ load(); render(); renderForm(); });
+})();
+</script>
+<script>
+  (function(){
+    var brand = document.getElementById('authy-brand');
+    var menu = document.getElementById('authy-menu');
+    if (!brand || !menu) return;
+    function setOpen(open){
+      brand.setAttribute('aria-expanded', String(open));
+      menu.hidden = !open;
+    }
+    brand.addEventListener('click', function(e){ e.stopPropagation(); setOpen(menu.hidden); });
+    menu.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', function(){ setOpen(false); }); });
+    document.addEventListener('click', function(e){
+      if (!menu.hidden && !menu.contains(e.target) && !brand.contains(e.target)) setOpen(false);
+    });
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape') setOpen(false); });
+  })();
+</script>
+</body>
+</html>

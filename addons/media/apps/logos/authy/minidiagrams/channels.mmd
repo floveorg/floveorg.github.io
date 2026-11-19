@@ -1,0 +1,25 @@
+sequenceDiagram
+    autonumber
+    participant A as Person
+    participant B as Authy
+    participant C as Channel
+    participant L as Level
+    participant G as Grant
+    A->>B: open Authy
+    B-->>A: ask for a proof
+    A->>C: choose email
+    C-->>A: one-time link
+    A->>B: confirm the link
+    B->>L: record L2 · email
+    A->>C: choose Telegram
+    C-->>A: bot challenge
+    A->>B: confirm the code
+    alt wrong code
+      B-->>A: retry · level unchanged
+    else correct code
+      B->>L: record L3 · Telegram
+    end
+    Note over B,L: publishing unlocks at L3
+    A->>B: add phone and bio later
+    B->>G: sign the identity bundle
+    G-->>A: levels and grant ready

@@ -1,0 +1,137 @@
+---
+name: jsony
+description: >-
+  Keep the JSON backbone aligned after `apps/` commits: `flove-fields`,
+  `routing.json`, `APP_ROUTING` and the export envelopes. Queues findings;
+  never edits canonical files unasked. Use for /jsony.
+---
+
+# jsony — the JSON backbone checker
+
+The shared JSON files that connect apps, routing, Appy and the export envelopes.
+Not a replacement for `exporty`: **exporty audits one app's export surface**;
+**jsony checks the shared backbone** and says which app needs aligning.
+
+## The backbone
+
+| File | Role | Owner |
+|---|---|---|
+| `tools/routing.json` | canonical registry: id, name, category, URL, field tree, cross links, consumers | canonical; update after review |
+| `tools/puzzy.json` | puzzy family registry (`apps{}`, copied from routing) + showcase lexicon (`words{}`) | `words` hand-authored; `apps{}` sync **pending** |
+| `apps/appy/appy-basic.html` | Appy import/export + `APP_ROUTING` offline snapshot | checked; snapshot follows routing |
+| `apps/**/*.html` `flove-fields` | each app's embedded field manifest | app source |
+| app `flove-portrait/1` / Appy `flove-profile` | the extractive export envelopes | app + Appy |
+
+## The routine
+
+**When a commit touches `apps/`**, the post-commit hook only **queues** the
+changed files. It never runs the checker, never blocks the commit, never edits the
+canonical files. Processing is opt-in, scheduled, or manual.
+
+```bash
+ln -sf ../../development/scripts/jsony-post-commit .git/hooks/post-commit
+chmod +x development/scripts/jsony-post-commit
+```
+
+The hook runs `jsony_check.py --record --soft`, which appends the changed files to
+`tools/jsony-state.json` (`lastCommit`, `lastRun`, `queue[]`) — a watermark so the
+hook stays cheap.
+
+```bash
+python3 development/scripts/jsony_check.py --changed --soft  # process the queue
+python3 development/scripts/jsony_check.py                   # full check
+python3 development/scripts/jsony_check.py --strict          # CI / final, fails on drift
+python3 development/scripts/jsony_check.py --app goddy        # one app's export audit
+python3 development/scripts/jsony_check.py --summary         # summary-standard worklist (CSS-narrowed apps count as compliant)
+```
+
+`--changed` writes the pending report, records the processed commit in
+`lastCommit` and clears the queue. Remove the hook with `rm .git/hooks/post-commit`.
+
+Outputs: `tools/jsony-pending.{md,json}` (human review, proposed entries, apply order;
+the JSON twin for a later tool pass),
+`tools/jsony-state.json` (queue + watermark).
+
+## Per-app export audit
+
+`--app <id|name>` resolves the app through `tools/routing.json` and checks its
+file against the export standard — Goddy is the reference model: portrait API,
+`flove-portrait/1`, `<app>-portrait.json`, `phrase`, `rows[]`, no legacy
+serializers or Publish bridge, `canShare` around `navigator.share`. Missing
+API/schema/filename are critical; the rest is advisory. A page in
+`EXPORT_EXCEPTIONS` is reported as a documented exception and not audited —
+`exporty` owns those apps' surfaces.
+
+Summaries follow [`frontend/summary.md`](https://flove.org/development/standards/frontend/summary.md) — the Goddy model: **Magic · Share**, with
+Save as Share's first option (JSON), never a separate Save button.
+
+`--summary` also enforces the two-button shape: an app whose markup still has a
+standalone Save, or no Magic/Share pair, is reported until it is converted.
+
+`--app` is static: it greps the file and cannot prove the export runs. The
+runtime twin is `development/tools/conformance.html` — one dev page that loads
+each app in an iframe and calls `window.flovePortrait.conformance()`: validate,
+row integrity, blob name/MIME, probe-row merge. It is a smoke test, not a
+replacement for `exporty` (renderer and real round-trip stay there). The inline
+block is generated: `python3 development/scripts/inject-conformance.py --check` reports drift,
+`--apply` rewrites it. Do not hand-edit the block inside an app.
+
+### Exceptions — one set, variants in the docs
+
+`jsony_check.py` carries a single `EXPORT_EXCEPTIONS` set; the code holds no
+variants and no second list. The variants — an app that keeps its own HTML
+export, an app without the standard summary, a page outside the export
+contract — are documented only in [`frontend/export.md`](https://flove.org/development/standards/frontend/export.md) (§ Exceptions and
+§ Pages outside the export contract) and [`frontend/summary.md`](https://flove.org/development/standards/frontend/summary.md) (§ Exceptions).
+Each page's type is in the development index's app table:
+`development/index.html` → **Web → Apps** (`#web-apps`). To change an exception,
+edit those docs first, then the set.
+
+## What it checks
+
+| Check | Severity |
+|---|---|
+| app `flove-fields` id exists in `routing.json` | critical |
+| every `routing.json` app URL resolves on disk | critical |
+| `APP_ROUTING` has every routing id with the same category | critical |
+| `APP_ROUTING` has no extra ids | critical |
+| appy-basic still exports `flove-profile`, `flove-routing/3`, `appsPlayed`, `flove-portrait/1`, `flovePort` | critical |
+| apps with fields have a `flovePortrait` / `flovePort` envelope | advisory |
+| the inlined Publish bridge copies across apps agree | advisory |
+
+CSS-pure apps are not flagged for a missing export — that call is `exporty`'s.
+The bridge comparison never fails a build: it groups the embedded copies by
+variant and lists them in the pending report; copying one variant into the others
+is a routine cleanup, not a gate.
+
+### Pending — the puzzy registry
+
+`apps{}` is parked (no runtime consumer; the sync script moved to
+`tools/pending/sync-puzzy.py`); `words{}` is hand-authored and live via
+`development/scripts/build-puzzy-demo.py`. Do not hand-edit either; the registry copy is stale by
+design.
+
+## Apply order
+
+1. Read `tools/jsony-pending.{md,json}`; decide each critical item.
+2. Add or fix the `routing.json` entry. For field trees run
+   `python3 tools/extract-fields.py --apply`.
+3. Update the `APP_ROUTING` snapshot in `apps/appy/appy-basic.html` (`id` +
+   `category` only; colours stay Appy's own).
+4. Run `exporty` on the changed app(s) to align the per-app export surface.
+5. Re-run `jsony_check.py --strict` until clean; delete the pending files.
+
+## Boundaries
+
+- **No silent edits.** The routine writes pendings; canonical files change after
+  review or an explicit `--apply`.
+- **No app UI changes** — the backbone and the Appy snapshot, not app markup.
+- **No secrets** in routing URLs.
+- **Exporty alignment** after any routing/Appy change: same ids, same categories.
+- **Reverse handoff:** when an `exporty` repair changes an app's `flove-fields`,
+  its `flove-profile` / `flove-portrait/1` envelope or its `floveStore` keys, run
+  `jsony_check.py --strict` — an envelope change is backbone drift too.
+- **New categories are an owner decision** — the pending entry says
+  `category: "TODO"` rather than guessing.
+
+Standing rules: `https://flove.org/development/standards/skills/standing.md`.

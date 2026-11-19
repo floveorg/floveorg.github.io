@@ -1,0 +1,26 @@
+sequenceDiagram
+    autonumber
+    actor P as Person
+    participant F as MyFamily
+    participant B as Browsy
+    participant R as Peer
+    participant W as Wizy
+    participant N as Nety
+    P->>F: reflect on a person
+    F-->>B: save record class L
+    B->>B: sign grant · paths · expiry
+    R->>B: pull allowed deltas
+    B-->>R: encrypted projection
+    R->>R: verify + decrypt
+    R->>W: merge with their P/L
+    W-->>R: local recommendation D0/D1
+    Note over W: explanation · local only
+    alt owner publishes S
+        B->>N: public card · consent
+        N-->>R: S reads
+    else no consent
+        B-->>R: only L cached
+    end
+    P->>B: revoke / shorten expiry
+    B-->>R: version++ next pull
+    Note over R: copies remain · forward-only
