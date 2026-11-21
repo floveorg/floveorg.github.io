@@ -38,7 +38,7 @@ Type=Application
 Name=flove · dev
 Comment=Serve the flove repo root on localhost with the same routes as flove.org
 Exec=$ROOT/tools/serve-dev.sh
-Icon=$ROOT/addons/media/dev-icon.png
+Icon=$ROOT/development/addons/media/dev-icon.png
 Terminal=true
 Categories=Development;Documentation;
 EOF

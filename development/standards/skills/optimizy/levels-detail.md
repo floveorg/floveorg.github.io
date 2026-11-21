@@ -51,7 +51,7 @@ canonical row — it only measures and reports.
 
 ## Usability (levels 3–5)
 
-Read [§13.18](https://flove.org/development/standards/frontend/frontend.md#1318--usability-levels--3-minimum--4-function--5-craft)
+Read [§13.18](https://flove.org/development/standards/frontend/frontend.md#1318-usability-levels-3-minimum-4-function-5-craft)
 and [`contract.md#the-floor`](https://flove.org/development/standards/contract.md#the-floor)
 before judging. Level 3 marks every applicable row **present / missing / N/A**;
 a missing minimum fails. Level 4 implements the concrete level-4 features;

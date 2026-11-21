@@ -8,16 +8,16 @@ and `data-*` attributes), not arbitrary prose, and skips `<script>`, `<style>`,
 
 ```bash
 # one file: structural gate + every marked group has the base language
-node development/scripts/check.js app.html
+node tools/dev/check.js app.html
 
 # translaty0: missing base, coverage, orphan spans (read-only)
-node development/scripts/check.js --audit app.html
-node development/scripts/check.js --audit app.html --json
+node tools/dev/check.js --audit app.html
+node tools/dev/check.js --audit app.html --json
 
 # portfolio ledger for check-distro
-node development/scripts/check.js --all --json --out tools/i18n-ledger.json
-node development/scripts/check.js --all --md
-node development/scripts/check.js --all --strict   # exit 1 if anything lacks the base
+node tools/dev/check.js --all --json --out tools/i18n-ledger.json
+node tools/dev/check.js --all --md
+node tools/dev/check.js --all --strict   # exit 1 if anything lacks the base
 ```
 
 `--base` defaults to `en`. A single-language page with no spans passes.
@@ -33,8 +33,8 @@ Run `check.js --base es`.
 ## `--strip`
 
 ```bash
-node development/scripts/strip.js app.html --lang es          # dry-run
-node development/scripts/strip.js app.html --lang es --write
+node tools/dev/strip.js app.html --lang es          # dry-run
+node tools/dev/strip.js app.html --lang es --write
 ```
 
 Removes `span.es`, `data-es`/`data-ph-es`/`data-aria-es`/`data-title-es`, the

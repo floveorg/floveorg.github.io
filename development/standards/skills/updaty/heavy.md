@@ -17,50 +17,45 @@ now.
 1. **Vocabulary.** Refresh `development/standards/vocabulary.html` from the latest
    slot texts (titles, taglines, entry labels, about bodies); commit
    `Sync vocabulary index (updaty4)`.
-2. **Whole table.** `python3 development/scripts/build-whole-md.py` regenerates the
-   33-row taxonomy in `development/standards/worldview.md`; `--check` reports
-   drift. Commit `Sync Whole table (updaty4)` if changed.
-3. **Data depth.** `python3 development/scripts/build-depth-md.py` regenerates the
-   five-level table in `development/standards/backend.md`; `--check` reports
-   drift. Commit `Sync Data depth (updaty4)` if changed.
+2. **Retired generators.** `build-whole-md.py` / `build-depth-md.py` and their
+   `worldview.md` / `backend.md` chapters were retired together (N16, 2026-11-21);
+   there is no Whole/Data-depth sync step in heavy.
 
 ## Rebuild
 
 1. **Service worker.** `node tools/build-sw.mjs`. This is the only place `sw.js`
    is refreshed. Commit it if changed.
 2. **Packages.** `bash tools/build-flove-zip.sh`; it reports the zip size. A build
-   failure is a STOP. Commit only the changed artifacts.
+   failure is a STOP. The zip is untracked (latest only): do not commit it;
+   `publish-web-files.sh` copies it into the public tree.
 
 ## Gitea compaction (level 4)
 
 - **Local:** `git gc --prune=now` before the push; report
   `git count-objects -vH`.
 - **Gitea:** Admin → Repositories → `marc/flove` → Git GC, or wait for the
-  `[cron.git_gc_repos]` schedule. Never run raw `git gc` on the live bare repo
-  while Gitea is serving.
+  `[cron.git_gc_repos]` schedule. Run it after the push and before the GitHub
+  publish. Never run raw `git gc` on the live bare repo while Gitea is serving.
 - GC consolidates packs and drops prune-packable objects; it cannot remove
   reachable zip blobs. Report before/after. Bare repo inside the Gitea
   container: `/data/git/repositories/marc/flove.git`.
 
-## Zip growth (pending decision)
+## Zip growth (latest only)
 
-`tools/flove-localhost.zip` (~12 MB) is committed on every release and stays in
-history; `git gc` cannot drop reachable blobs. This is level 3's main repo growth.
-
-- **Clean:** stop versioning the zip — upload it as a Gitea release asset (or R2)
-  and keep only the latest local copy; add `tools/flove-localhost.zip` to
-  `.gitignore`.
-- **Deterministic:** if it stays tracked, fix the mtimes (e.g. `SOURCE_DATE_EPOCH`
-  via `touch -d`) and keep `zip -X` so an unchanged tree yields an identical zip
-  and the commit becomes a no-op. Today the mtime changes every release.
+The zip is untracked: `tools/flove-localhost.zip` is in `.gitignore` and
+`git rm --cached`. `publish-web-files.sh` copies the latest local build into the
+public tree, so the site keeps one zip without adding a 12 MB blob per release.
+History still holds the old zips; only a history rewrite would remove them.
+Optional: upload the zip as a Gitea release asset (or R2) instead of publishing it.
 
 ## Targets (level 5)
 
-- **Main site:** `bash development/scripts/publish-web.sh`
+- **Main site:** `bash tools/dev/publish-web-files.sh <changed paths>`
+  (incremental); `publish-web.sh` only for a full resync.
 - **Subdomains:** run each from the repo root:
-  `bash development/standards/scripts/publish-risa.sh`,
-  `bash development/standards/scripts/publish-ama.sh`,
-  `bash development/standards/scripts/publish-liberada.sh`, and
+  `bash tools/dev/publish-risa.sh`,
+  `bash tools/dev/publish-ama.sh`,
+  `bash tools/dev/publish-liberada.sh`, and
   `bash projects/lowai/publish-lowai.sh`.
   Each clones its target, rsyncs the source working tree and force-pushes; they
   are idempotent and print "sin cambios que publicar" when unchanged. Never
@@ -76,6 +71,13 @@ history; `git gc` cannot drop reachable blobs. This is level 3's main repo growt
 `docs/` (without `docs/docs-files/`) and root `sw.js`. Audio and
 `tools/flove-apk/` never ship; paths match the live site, so no href is rewritten.
 
+**Next zip rebuild (2026-11-21):** the live site serves `community/index.html`, but
+the downloaded package does not — `community/` is absent from the `git archive`
+pathspec in `tools/build-flove-zip.sh`, and the bundled `sw.js` precaches that
+missing path. Add `community/` to the pathspec and to the list above, rebuild, and
+confirm `unzip -Z1 tools/flove-localhost.zip | grep -q community/index.html`
+before publishing.
+
 Tokens by target (name the file, never the value): main site
 `~/agents/token-github-flove.md`; risa `…-risa.md`; ama `…-ama.md`; liberada
 `…-liberada.md`; lowai `…-lowai.md`. A missing token for a requested target is a
@@ -84,8 +86,8 @@ STOP, not a skip.
 ## Guardrails
 
 - **Only build artifacts may be committed at this level:** `sw.js`, the vocabulary
-  index, `tools/flove-localhost.zip` and other configured package artifacts.
-  Never source files, never `git add -A`.
+  index and other configured package artifacts. The zip is untracked. Never source
+  files, never `git add -A`.
 - **Never print a PAT.** Mask it in echoed commands and URLs.
 - **A hard distro-check failure aborts publishing** — no bypass for a full
   release.

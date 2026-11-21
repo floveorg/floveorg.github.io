@@ -56,7 +56,7 @@ a reload restores the state and clearing removes it everywhere.
 
 → https://flove.org/development/standards/frontend/frontend.md (§13.20)
 → https://flove.org/development/standards/frontend/export.md
-→ https://flove.org/development/standards/adoption.md
+→ https://flove.org/development/standards/apps.md (offline floor)
 
 ### Honest exchange
 
@@ -68,10 +68,12 @@ private; every figure traces to a source; labels match the matrix; the language
 switch flips every string.
 
 → https://flove.org/development/standards/frontend/export.md
-→ https://flove.org/development/standards/adoption.md
+→ https://flove.org/development/standards/experience.md
 → https://flove.org/development/standards/frontend/frontend.md (§13.17 · §13.2)
 → https://flove.org/development/standards/vocabulary.md
-→ https://flove.org/development/standards/worldview.md
+→ https://flove.org/development/standards/language.md
+→ https://flove.org/development/standards/experience.md (honest exchange)
+→ https://flove.org/development/wiki/INDEX.md (whole map)
 
 ### Scalability
 
@@ -84,7 +86,8 @@ switch flips every string.
 - **History stays visible.** Every page carries a changelog link, and the archive
   keeps old versions readable.
 
-→ https://flove.org/development/standards/apps/README.md
+→ https://flove.org/development/standards/apps.md
+→ https://flove.org/development/standards/scripts.md
 
 ### UX principles
 
@@ -107,9 +110,26 @@ switch flips every string.
 
 - **Accessibility** — contrast 4.5:1, visible focus, 40×40 touch targets,
   reduced motion.
-  → https://flove.org/development/standards/skills/validaty/fix-catalog.md
+  → https://flove.org/development/standards/accessibility.md
 - **Tokens** — defined in §13.19; `flove.css` implements them.
 - **One file** — the skeleton is §13.20.
 - **Export** — `flove-portrait/1`; share guarded by `canShare`.
   → https://flove.org/development/standards/frontend/export.md
 - **Language** — §13.2.
+
+## Worldview
+
+> Source: `development/wiki/archive/old/root/worldview.md#1-what-flove-is` (archived 2026-11-21).
+
+**flove = flow + love.** It is an integrative project — a worldview, a
+documentation archive and a constellation of small client-side apps — weaving
+science, philosophy, linguistics, biology, psychology and sociology under one
+relational vocabulary expressed as playable experiences.
+
+Every level of reality (atoms, cells, people, societies) is a **confluence** of
+complementary opposites; **love** is the relational name for whatever holds
+those confluences together. The stance is **slow it, flow it, love it**:
+low-tech, relational, gift-economic, decentralized, no-flashy-AI.
+
+The whole map (fields, paradigms, apps) lives in `whole/` and the 33-row table
+is exported from `docs/index.html`; it is not duplicated here.

@@ -4,6 +4,11 @@ description: >-
   Polish a flove app's copy and align its internal names with what the UI shows,
   at five data-depth levels. Use for /texty, /texty1–/texty5, "fix the copy",
   "smooth the prose", "make the names match the labels".
+category: sys
+checker_of:
+  - https://flove.org/development/standards/vocabulary.html
+  - https://flove.org/development/standards/experience.md#onboarding-copy
+
 ---
 
 # texty — copy and names at five depths
@@ -51,7 +56,7 @@ or surface it for review.
    `:has(`, `:target`), `tKey(` / i18n tables, `querySelector` by string, a
    "VOCABULARY — locked terms" contract. Anything a selector keys on is a wall.
 2. **Extract with the scanner.**
-   `python development/scripts/extract_vocab.py <file> --out inv.json`
+   `python tools/dev/extract_vocab.py <file> --out inv.json`
    (`--labeled`, `--deep-json`, `--no-display`). It returns the machine layer
    (classes/ids/names/data/i18n keys + `load_bearing` sites) and the display layer
    (visible text and `data-aria-*`/`placeholder`/`title`). A term can sit at

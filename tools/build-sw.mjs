@@ -3,7 +3,7 @@
 //
 // Full-offline PWA: the worker is registered at the site/package ROOT (/sw.js)
 // so its scope is "/" and it can precache the home, every app, the shared images
-// (addons/media) and the tools entry. Source of truth = the
+// (development/addons/media) and the tools entry. Source of truth = the
 // tracked tree (`git ls-files`), so the precache list always matches what
 // flove.org serves and what the download ships. Run before publishing (and from
 // build-flove-zip.sh) whenever site files change, then commit sw.js.
@@ -43,7 +43,7 @@ const R2_AUDIO = ['Docs.mp3', 'simplex-song.mp3', 'simplex-talk.mp3', 'More.mp3'
 
 // The runnable site: home + community + apps + shared images + tools + docs + whole.
 const tracked = execSync(
-  'git ls-files index.html community apps addons/media docs tools whole',
+  'git ls-files index.html community apps development/addons/media docs tools whole',
   { cwd: REPO, encoding: 'utf8' },
 ).split('\n').map(s => s.trim()).filter(Boolean);
 
@@ -59,7 +59,7 @@ const files = tracked.filter(p => {
   if (DENY_EXACT.has(p)) return false;
   if (DENY_DIRS.some(d => p.startsWith(d))) return false;
   // Brand-study pages live beside the artwork but are dev docs, not runtime.
-  if (p.startsWith('addons/media/') && ext === 'html') return false;
+  if (p.startsWith('development/addons/media/') && ext === 'html') return false;
   // Ignore deletions not yet staged: git ls-files still lists them in the index.
   if (!existsSync(join(REPO, p))) return false;
   return true;
@@ -161,7 +161,7 @@ self.addEventListener('fetch', (e) => {
 });
 `;
 
-// `--check` (used by development/scripts/check-distro.sh) verifies without writing: exit 1 if
+// `--check` (used by tools/dev/check-distro.sh) verifies without writing: exit 1 if
 // the committed sw.js does not match what the tracked tree would generate.
 if (process.argv.includes('--check')) {
   let current = '';

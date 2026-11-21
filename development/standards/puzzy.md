@@ -1,8 +1,13 @@
 # flove · Puzzy — extended definitions, thesaurus & polysemic dictionary
 
-**Status:** normative draft **v1** · 2026-11-15 · ships in roadmap phase **F5**
-(`backend.md` §9). Promoted out of `backend.md`; the `§8.x` labels below are
-self-contained to this chapter. Shallower view: `README.md`.
+**Status:** normative draft **v1** · 2026-11-15 · ships in Work phase
+**F4 · Full** (`backend.md` §9). F5 is retired.
+Promoted out of `backend.md`; the `§8.x` labels below are self-contained to this
+chapter. Shallower view: `README.md`.
+
+**Work:** open items PZ04–PZ06 live in
+[`work/pendings.md` §Puzzy](../wiki/work/pendings.md); Work filter:
+[docs · work](https://flove.org/development/index.html#work?tab=docs&view=r2&subtab=work&category=docs&section=work).
 
 This is the **one standard behind the whole puzzy family**: not a folder of
 separate tools, but a family of *views* over one model. It defines how flove stores
@@ -145,7 +150,7 @@ dictionary that collapses them is a list of homonyms pretending to be a word.
 | `primary` | boolean? | True for at most one sense; the UI orders it first. |
 | `pos` | enum? | Part of speech for this sense when it differs from the entry's. |
 | `register` | enum? | `neutral · formal · informal · slang · technical · poetic · archaic`. |
-| `domain` | string? | Free label or a Whole `field` path (`worldview.md` §2). |
+| `domain` | string? | Free label or a Whole `field` path (`../contract.md#worldview`). |
 | `definition` | `Definition` | The extended definition (§8.4). |
 | `examples` | string[]? | Usage examples, in the entry's language. |
 | `relations` | `Relation[]?` | Meaning-bearing edges (§8.5). |
@@ -494,7 +499,7 @@ Annotation JSON:
 ### 8.12 · Aggregation and compute
 
 - **Aggregation across raters** → **mean + dispersion** (statistical summary:
-  average + spread), resolved in `debates/plans/puzzy.md`. Never a "winner".
+  average + spread), resolved in `../wiki/archive/old/plans/puzzy.md`. Never a "winner".
   Display example: `4.2 ± 0.8` or `★★★☆☆ (±1.2)`.
 - **Where the compute lives** → **hybrid with offline cache**: client-first,
   server fallback, cache invalidated on a new rating.
@@ -673,7 +678,7 @@ P0 and P1.
 **State at v1:** the wings author definitions (Wisy, Raty, Linky, Poly,
 Confluenty, Fivy, Comby, Keys) and the puzzy launcher declares its 44 fields, but
 no app yet writes a `flove-puzzy/1` bundle. P0 is therefore the current ceiling
-across the distro; the P0→P4 path is tracked in `debates/pendings.md` (§ Puzzy).
+across the distro; the P0→P4 path is tracked in `../wiki/work/pendings.md` (§ Puzzy).
 
 ### 8.16 · The wings — one model, many views
 
@@ -716,6 +721,8 @@ the Music field).
 - **Deliberately out of scope:** combos as an inter-app type; tiers; the Whole
   taxonomy itself (puzzy references it, never duplicates it); central sync and
   moderation (backend concerns, not the dictionary model).
+
+<a id="aggregation-and-compute-decisions"></a>
 
 **Open questions**
 

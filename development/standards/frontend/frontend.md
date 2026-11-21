@@ -6,16 +6,16 @@ implementation conventions. Promoted here out of `backend.md`.
 
 - **Mandatory contract:** `contract.md` (the values and the floor) — the
   non-negotiable core; tokens §13.19 and the file skeleton §13.20 live here.
-- **At-a-glance index / matrix:** `README.md`. **Adoption per app:** `adoption.md`.
-- **Index:** `README.md`. **Philosophy:** `worldview.md`.
-  **Architecture / backend:** `backend.md`.
+- **At-a-glance index / matrix:** `README.md`. **Adoption per app:** `../experience.md`.
+- **Index:** `README.md`. **Philosophy:** `../contract.md#worldview`.
+  **Architecture / backend:** `../systems.md`.
 
 The `§13.x` labels are canonical and unchanged; references elsewhere resolve
 here. **Trunk apps** (`apps/`) are the canonical spec — new patterns
 mature there first, then other apps adopt them (each standard is opt-in per app
 except Onboarding §13.6, which is mandatory family-wide). The **Solo** distro
 (`apps/`) is the local-first fallback reference — see
-[`../apps/README.md`](../apps/README.md). If a standard outgrows this file, split it to
+[`../apps/README.md`](../../wiki/archive/old/apps/README.md). If a standard outgrows this file, split it to
 `frontend/<topic>.md` and leave a pointer here + in `README.md`.
 
 ## Three axes of a frontend
@@ -37,7 +37,7 @@ The **Central** apps are the canonical spec and the primary reference
 implementation for reusable patterns. This section catalogues those patterns so
 they can be adopted by other apps without re-deriving them. Where a pattern
 matured first in the **Solo** distro, the Solo app remains the fallback
-reference (see [`../apps/README.md`](../apps/README.md)).
+reference (see [`../apps/README.md`](../../wiki/archive/old/apps/README.md)).
 
 The list grows as new patterns mature and get extracted.
 
@@ -105,7 +105,7 @@ key, so a single choice is the default across the whole family.
     the first-run language picker + global changers; on upgrade the landing
     moves to **`appy-basic`** (Go-home button + features intro). Same §13.2
     `flove:lang` + `?lang=` contract, different host. Spec:
-    `flove/development/standards/debates/archive/making-of/superpowers/specs/2026-06-24-appy-intros-rainbow-roadmap-design.md`.
+    `flove/../../wiki/archive/old/archive/making-of/superpowers/specs/2026-06-24-appy-intros-rainbow-roadmap-design.md`.
 - **Cross-app reach — origin vs `file://`.** localStorage is per-origin.
   Served from **one origin** (`flove.org`, §10.5) the key is shared →
   pick-once-applies-everywhere. As **separate `file://` files** the
@@ -447,7 +447,7 @@ mini→super roadmap from the diagonal:
 advanced+; Vizy stays the `super` capstone). Locked rainbow cards stay **opacity-dimmed
 and keep advertising their "upgrade Navigation" affordance** (not hidden; §13.8/§13.13).
 This supersedes the standalone diagonal taxonomy for card UI.
-Spec: `flove/development/standards/debates/archive/making-of/superpowers/specs/2026-06-24-appy-intros-rainbow-roadmap-design.md`.
+Spec: `flove/../../wiki/archive/old/archive/making-of/superpowers/specs/2026-06-24-appy-intros-rainbow-roadmap-design.md`.
 
 ### 13.7 · Canonical vocabulary → [`vocabulary.md`](../vocabulary.md)
 
@@ -532,7 +532,7 @@ free-as-in-freedom criterion: WebXR (A-Frame / Three.js / Babylon) for
 browser 3D·AR·VR, Godot + Monado for native VR, glTF as the art bridge,
 CC0 assets, libre hardware (Relativty / libsurvive / DIY ODT). The full
 technology survey, incompatibilities and hardware notes live in the
-flove repo at [`debates/research/vr_interfaces.md`](../debates/research/vr_interfaces.md)
+flove repo at [`debates/research/vr_interfaces.md`](../../wiki/archive/old/research/vr_interfaces.md)
 (moved here 2026-07-31 when the context repo was retired).
 
 **blogy is the reference demo for this axis too** (Solo fallback reference —
@@ -670,7 +670,7 @@ applies, may show progress toward the unlock.
 **High demo add-on — `Enable login` (F0/F1, recovery + multiuser).** The
 reference implementation of this **High** path ships as the optional
 **private add-on** to F0/F1 — design spec
-`flove/development/standards/debates/archive/making-of/superpowers/specs/2026-06-25-flove-private-addon-login-encryption-design.md`. It is the one-button surface the simplification asks for
+`flove/../../wiki/archive/old/archive/making-of/superpowers/specs/2026-06-25-flove-private-addon-login-encryption-design.md`. It is the one-button surface the simplification asks for
 (`lock-enable` "Enable login" + `lock-crypt-exit` + `lock-crypter-pass`),
 **pinned to appy's Privacy tab** (`#tab-privacy` / `switchTab('privacy')` in
 `appy-mini`/`appy-basic`, today a hidden placeholder it un-hides + fills),
@@ -894,7 +894,7 @@ minimum. A dash means the section is not required at that level; if the app ship
 it, it must still be usable.
 
 **Status queue:** the level 4–5 per-app confirmation pass is UX01 in
-[`../debates/pendings.md`](../debates/pendings.md); Work filter:
+[`../debates/pendings.md`](../../wiki/archive/old/pendings.md); Work filter:
 [ux · levels](https://flove.org/development/index.html#work?tab=frontend&view=r2&subtab=levels&category=frontend&section=levels).
 
 | Section | 3 · Minimum | 4 · Function | 5 · Craft |
@@ -962,10 +962,10 @@ Small, smart ideas that recur and define the family's usability identity:
 
 These are framed by a shared header/footer (`.flove-bar`), not replaced.
 
-## 14 · Frontend adoption gates → `adoption.md`
+## 14 · Frontend adoption gates → `../experience.md`
 
 The per-page gates that prove the standards hold. The old per-app adoption table
-drifted and is retired; the enforceable list lives in **`adoption.md`**.
+drifted and is retired; the enforceable list lives in **`../experience.md`**.
 
 ---
 
@@ -1069,7 +1069,7 @@ Two apps (`blogy`, `keys`) build their UI in JS — the gate notes them and leav
 their checks to a runtime pass.
 
 **Runtime sweep.** `python3 tools/check-a11y-axe.py --md
-development/standards/debates/a11y-report.md` runs axe 4.10.2 in Chrome per
+../../wiki/archive/old/a11y-report.md` runs axe 4.10.2 in Chrome per
 app. It measures the settled UI (animations are jumped to their end state) and
 audits a sibling copy with remote requests neutralised, so pages that pull
 fonts or images still reach axe offline. Report: `debates/a11y-report.md`.

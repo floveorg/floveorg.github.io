@@ -5,6 +5,11 @@ description: >-
   SKILL.md size caps, dead links and paragraphs copied across skills. Use for
   /skilly, after editing a skill, or when a polish pass touched the library;
   never for an app page.
+category: sys
+checker_of:
+  - https://flove.org/development/standards/skills/README.md
+  - https://flove.org/development/standards/skills/standing.md
+
 ---
 
 # skilly
@@ -25,7 +30,7 @@ JSON backbone to `/jsony`; neither is a page stage.
 ## Run it
 
 ```bash
-python3 development/standards/scripts/check-skills.py
+python3 tools/dev/check-skills.py
 ```
 
 Exit 0 = no errors. Warnings do not fail the script but must be resolved or
@@ -36,6 +41,8 @@ explained in the report.
 | Finding | Remedy |
 |---|---|
 | ERROR frontmatter / duplicate `name` | fix the `---` YAML: non-empty `name` + `description` |
+| ERROR missing / invalid `category` | use `sys`, `authoring`, `planning` or `utility` |
+| ERROR bad `checker_of` URL or duplicate standard | use an existing flove.org standards URL; one checker per standard |
 | ERROR secret-looking string | remove it; name the file that holds the secret instead |
 | WARN backticked path does not resolve | fix the repo path, or drop the backticks if illustrative |
 | WARN body over 1,000 words / 150 lines | move detail into a flat file in that skill, link it once |
@@ -47,7 +54,7 @@ explained in the report.
 | WARN retired skill or file name | use the current name (the warning says which) |
 | WARN skill folder over 512 KB or 60 files | media goes to `central/shared/media`, a dump goes to a flat file |
 | WARN unreferenced asset | link it or delete it |
-| WARN bare `scripts/…` in a command | use `development/scripts/…`; skill assets stay under `assets/` |
+| WARN bare `scripts/…` in a command | use `tools/dev/…`; skill assets stay under `assets/` |
 | WARN missing H1, H1 ≠ `name`, no `Use for` | open with `# <name>`; state the trigger in the description |
 
 Never "fix" a warning by deleting content the skill still needs.
@@ -57,6 +64,6 @@ Never "fix" a warning by deleting content the skill still needs.
 - It validates and reports; it does not rewrite skills. Fix what the finding names.
 - Zero errors is the gate. Warnings may be explained (for example a deliberate
   duplicate inside an eval fixture) but not ignored.
-- The same script is the distro gate: `development/scripts/check-distro.sh` runs it too.
+- The same script is the distro gate: `tools/dev/check-distro.sh` runs it too.
 
 Standing rules: `https://flove.org/development/standards/skills/standing.md`.

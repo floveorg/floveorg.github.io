@@ -7,7 +7,7 @@
 **Web en vivo:** [risa.liberada.net](https://risa.liberada.net) · **Réplica del sistema:** sección «Replica Nuestro Sistema» de la web (pestaña **Ciencia**), con *Introducción* (flujo paso a paso + **Agentes** plegable + **features ya hechas** plegable) y *Desarrollo* (v2 + v3)
 **Estado:** estándar v1 — **estable** (base de recuperación; el polish llega después de flove v2, D20)
 **Plan v2:** [`plan-v2.md`](plan-v2.md) — todos los planes para la v2 centralizados (repo de risa + flove central)
-**Diagramas:** fuentes `.mmd` versionadas en `mermaid/` (risaliberada-v1-thread · risaliberada-v1-flow · risaliberada-v1-subdomain · liberada-v2-flow · risa-v2-subdomain-request · risa-v2-subdomain-create · flove-v2-thread) — renders `.png`/`.svg` centralizados en `addons/media/development/`
+**Diagramas:** fuentes `.mmd` versionadas en `mermaid/` (risaliberada-v1-thread · risaliberada-v1-flow · risaliberada-v1-subdomain · liberada-v2-flow · risa-v2-subdomain-request · risa-v2-subdomain-create · flove-v2-thread) — renders `.png`/`.svg` centralizados en `development/addons/media/development/`
 
 ---
 

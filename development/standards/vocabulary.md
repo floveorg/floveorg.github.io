@@ -10,7 +10,7 @@ interactive matrix: [`vocabulary.html`](vocabulary.html).
 
 blogy is the **reference implementation** for the project's CSS class
 vocabulary (Solo distro — local-first fallback reference; the **Central** apps are
-the canonical spec, see [`apps/README.md`](apps/README.md)). The names
+the canonical spec, see [`apps/README.md`](../wiki/archive/old/apps/README.md)). The names
 below are the canonical prefixes/families; other
 apps should reuse them rather than invent synonyms. When a blogy file
 and another app disagree on a name for the same concept, blogy wins
@@ -97,7 +97,7 @@ right-side controls). Everything below sits inside `.topbar-inner`.
 > and Buttons (alternative).*
 
 > **Mark propagation (2026-07-18).** An app's mark is drawn in its
-> `addons/media/apps/logos/<app>/<app>-logos.html` showcase (the master — see the
+> `development/addons/media/apps/logos/<app>/<app>-logos.html` showcase (the master — see the
 > logos-folder rule below), but because a mark is **inlined per file** — no
 > cross-document `<use>` on `file://`, contract.md · The person owns it — the same mark lives as
 > a *copy* everywhere it is shown. When an app's mark is added or changed,
@@ -119,13 +119,13 @@ right-side controls). Everything below sits inside `.topbar-inner`.
 > drawing.)
 
 > **App image assets — the logos folder (2026-07-18).** App image assets
-> live under **`addons/media/apps/`** (beside `addons/media/apps/captions/`, the demos-
+> live under **`development/addons/media/apps/`** (beside `development/addons/media/apps/captions/`, the demos-
 > index screenshots). Each app's visual identity is its own folder,
-> **`addons/media/apps/logos/<app>/`** — one showcase file plus category
+> **`development/addons/media/apps/logos/<app>/`** — one showcase file plus category
 > subfolders:
 >
 > ```
-> addons/media/apps/logos/<app>/
+> development/addons/media/apps/logos/<app>/
 >   <app>-logos.html   · the showcase — master drawing of the mark
 >   imagotipo/         · ADVANCED logo: figurative / mascot / character
 >                        (nety = katana · keys = pandas)
@@ -150,7 +150,7 @@ right-side controls). Everything below sits inside `.topbar-inner`.
 >   truth for the mark; every inlined copy (flove-bar, `apps/index` cube,
 >   launcher index, appy) derives from it — see *Mark propagation* above.
 > - Shared flove-level assets (the PWA icons) live under
->   **`addons/media/apps/logos/flove/icons/`** — flove's own app entry.
+>   **`development/addons/media/apps/logos/flove/icons/`** — flove's own app entry.
 
 ### Buttons — topbar trigger buttons (each opens content documented elsewhere)
 

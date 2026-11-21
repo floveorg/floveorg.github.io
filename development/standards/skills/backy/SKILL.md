@@ -4,6 +4,10 @@ description: >-
   Light local backup of flove: bare repo mirrors plus the R2 buckets, with
   manifest, checksums and restore notes. Read-only. Use for "backy",
   "back up flove", "copia de seguridad".
+category: sys
+checker_of:
+  - https://flove.org/development/standards/storage.md#strategic-persistence
+
 ---
 
 # backy — light snapshot of flove's repositories and media
@@ -24,12 +28,12 @@ Not part of this skill — don't promise them here.
 Run the script; never hand-roll the steps.
 
 ```bash
-development/scripts/backy.sh                      # everything
-development/scripts/backy.sh --skip r2            # repositories only
-development/scripts/backy.sh --skip flove,extra   # subset
-development/scripts/backy.sh --buckets "all ama"  # subset of media
-development/scripts/backy.sh --dry-run            # plan only
-development/scripts/backy.sh --verify --verify-r2 # check latest
+tools/dev/backy.sh                      # everything
+tools/dev/backy.sh --skip r2            # repositories only
+tools/dev/backy.sh --skip flove,extra   # subset
+tools/dev/backy.sh --buckets "all ama"  # subset of media
+tools/dev/backy.sh --dry-run            # plan only
+tools/dev/backy.sh --verify --verify-r2 # check latest
 ```
 
 It runs preflight (tools, free space, credentials, buckets), hardlinks the previous
@@ -55,8 +59,8 @@ Override the credential file with `BACKY_CF_TOKEN_FILE`, or pass
 Do it after the first run, and periodically:
 
 ```bash
-development/scripts/backy.sh --verify                 # SHA256SUMS + git fsck on every mirror
-development/scripts/backy.sh --verify --verify-r2     # also re-list every bucket and diff
+tools/dev/backy.sh --verify                 # SHA256SUMS + git fsck on every mirror
+tools/dev/backy.sh --verify --verify-r2     # also re-list every bucket and diff
 ```
 
 `--verify-r2` re-reads object *listings*, not bodies, so it is cheap enough to run

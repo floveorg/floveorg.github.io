@@ -4,6 +4,7 @@ description: >-
   Write one flove development-log article in the blog's Tech category — gathered
   from real recent work — then draft, preview, and publish on the owner's OK. Use
   for /blogy, "write a blogy", "do the monthly flove update", "milestone post".
+category: authoring
 ---
 
 # blogy — write a flove development-log post

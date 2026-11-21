@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Marc (marcflove)">
+<meta name="description" content="Sys — the layer under every screen. The switch mark: gama, motion gama and six behaviours.">
+<title>🌱 Sys · the layer under every screen</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%238d89ff' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M10 23h17M37 23h17M10 41h17M37 41h17'/%3E%3Ccircle cx='32' cy='23' r='5'/%3E%3C/g%3E%3Ccircle cx='32' cy='41' r='5' fill='%2300f7a7'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --studio:#0d0d13;--panel:#15151d;--line:#262633;--ink:#f2f2f5;--mut:#8f8fa3;
+    --acc:#8d89ff;--sig:#00f7a7;--day:#f6f5f2;
+  }
+  .theme--light{--studio:#f6f5f2;--panel:#fff;--line:#e3e1db;--ink:#1b1b20;--mut:#6a6a75;--acc:#6c5ce7;--sig:#0b8f78}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--studio);color:var(--ink);
+    font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:clamp(24px,5vw,64px) clamp(20px,5vw,56px)}
+  .wrap{max-width:1120px;margin:0 auto}
+  .tgl{position:fixed;top:18px;right:18px;z-index:9;border:1px solid var(--line);
+    background:var(--panel);color:var(--ink);border-radius:999px;padding:8px 14px;cursor:pointer}
+  h1{font-family:'Inter',ui-sans-serif,system-ui,sans-serif;font-weight:600;letter-spacing:-.03em}
+  .hero{display:flex;align-items:center;gap:clamp(20px,4vw,44px);flex-wrap:wrap;margin:10px 0 10px}
+  .hero .mk{color:var(--ink)}
+  .wm{font-family:'Inter',ui-sans-serif,system-ui,sans-serif;font-size:clamp(46px,8vw,84px);line-height:.95;letter-spacing:-.06em;font-weight:800}
+  .wm em{font-style:normal;color:var(--sig)}
+  .slogan{margin:0;color:var(--mut);font-size:clamp(15px,2vw,19px);max-width:46ch}
+  .slogan b{color:var(--ink);font-weight:600}
+  .novelty{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin:18px 0 0}
+  .novelty .diagram{flex:none;width:min(240px,60vw);height:auto;color:var(--ink)}
+  .novelty p{margin:0;color:var(--mut);font-size:13px;max-width:42ch}
+  .novelty p b{color:var(--ink)}
+  section{margin-top:clamp(40px,7vh,72px)}
+  h2{font-family:'Inter',ui-sans-serif,system-ui,sans-serif;font-weight:500;font-size:15px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--acc);margin:0 0 16px}
+  .row{display:flex;flex-wrap:wrap;gap:14px}
+  .cell{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:14px;display:flex;flex-direction:column;align-items:center;gap:10px;min-width:104px}
+  .cell .in{display:grid;place-items:center;min-height:86px}
+  figcaption{font:500 10px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--mut);text-align:center}
+  .anim figcaption b{display:block;color:var(--ink);font-size:11px;letter-spacing:.08em}
+  .anim figcaption span{display:block;text-transform:none;letter-spacing:0;font:400 11.5px/1.4 system-ui;color:var(--mut);max-width:22ch}
+  .pair{display:flex;align-items:center;gap:16px}
+  .mk{stroke:var(--ink);fill:none;stroke-width:2.4;stroke-linecap:round}
+  .mk .rails{stroke:var(--ink)}
+  .mk .top{stroke:var(--acc)}
+  .mk .live{fill:var(--sig);stroke:none}
+
+  @media (prefers-reduced-motion:no-preference){
+    .a-flip .live{animation:flip 3.4s ease-in-out infinite}
+    .a-flip .top{animation:topFade 3.4s ease-in-out infinite}
+    .a-lights .top,.a-lights .live{animation:lights 2.8s ease-in-out infinite;transform-origin:center;transform-box:fill-box}
+    .a-lights .live{animation-delay:-1.4s}
+    .a-trace .rails{stroke-dasharray:18;animation:trace 3.2s ease-in-out infinite}
+    .a-pulse .live{animation:livePulse 2.2s ease-in-out infinite;transform-origin:center;transform-box:fill-box}
+    .a-glow{animation:glow 3.8s ease-in-out infinite}
+    .a-drift{animation:drift 4.2s ease-in-out infinite}
+  }
+  @keyframes flip{0%,18%,82%,100%{transform:translateY(0)}44%,56%{transform:translateY(-18px)}}
+  @keyframes topFade{0%,18%,82%,100%{opacity:1}44%,56%{opacity:.3}}
+  @keyframes lights{0%,100%{transform:scale(1)}50%{transform:scale(1.28)}}
+  @keyframes trace{0%{stroke-dashoffset:18;opacity:.35}45%,100%{stroke-dashoffset:0;opacity:1}}
+  @keyframes livePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.45)}}
+  @keyframes glow{0%,100%{filter:drop-shadow(0 0 0 rgba(0,247,167,0))}50%{filter:drop-shadow(0 0 8px rgba(0,247,167,.55))}}
+  @keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+  .grid-fmt{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end}
+  .png .in{min-height:auto}
+  .dl{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:10px 14px;
+    border:1px solid var(--line);border-radius:10px;color:var(--ink);text-decoration:none;font-size:13px;cursor:pointer;background:none}
+  .dl:hover{border-color:var(--acc)}
+  .fav{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .fav code{font:11px/1.5 ui-monospace,Menlo,monospace;color:var(--mut);word-break:break-all;max-width:72ch}
+  .meta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .meta-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+  .meta-card.wide{grid-column:1/-1}
+  .meta-card h3{font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--acc);margin:0 0 8px}
+  .meta-card p{margin:0;color:var(--mut);font-size:13px}
+  .meta-card p b{color:var(--ink)}
+  .meta-card ol{margin:0;padding-left:1.2rem;color:var(--mut);font-size:12.5px;line-height:1.55;columns:2;column-gap:24px}
+  .note{color:var(--mut);font-size:13px;max-width:70ch}
+  .mt-16{margin-top:16px}.mt-26{margin-top:26px}.sprite{position:absolute;width:0;height:0;overflow:hidden}
+  @media(max-width:700px){.meta-grid{grid-template-columns:1fr}.meta-card ol{columns:1}}
+  @media (prefers-reduced-motion:reduce){ *{animation:none !important} }
+</style>
+</head>
+<body>
+<button class="tgl" type="button" id="tgl">☀️ Day</button>
+<div class="wrap">
+  <section class="hero" aria-labelledby="heroTitle">
+    <svg class="mk live a-flip" width="96" height="96" viewBox="0 0 64 64" role="img" aria-label="Sys switch mark">
+      <path class="rails" d="M10 23h17M37 23h17M10 41h17M37 41h17"/>
+      <circle class="top" cx="32" cy="23" r="5"/>
+      <circle class="live" cx="32" cy="41" r="5"/>
+    </svg>
+    <div>
+      <h1 id="heroTitle"><span class="wm">s<em>y</em>s</span></h1>
+      <p class="slogan"><b>EN ·</b> The layer under every screen.<br><b>ES ·</b> La capa bajo cada pantalla.</p>
+    </div>
+  </section>
+
+  <div class="novelty">
+    <svg class="diagram" viewBox="0 0 240 100" role="img" aria-label="Four app surfaces sit on one shared rail with a central switch node">
+      <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <rect x="16" y="14" width="38" height="26" rx="5"/>
+        <rect x="70" y="14" width="38" height="26" rx="5"/>
+        <rect x="124" y="14" width="38" height="26" rx="5"/>
+        <rect x="178" y="14" width="38" height="26" rx="5"/>
+        <path d="M35 40v22M89 40v22M143 40v22M197 40v22"/>
+        <path d="M12 72h196"/>
+        <path d="M104 72h12M124 72h12"/>
+        <circle cx="120" cy="72" r="9"/>
+        <path d="M120 63v-7M120 81v7M111 72h-7M129 72h7"/>
+      </g>
+      <circle cx="120" cy="72" r="3" fill="var(--sig)"/>
+    </svg>
+    <p><b>The novelty:</b> one shared layer sits under every app. The switch is where identity, suggestions, network and settings meet — without becoming another app.</p>
+  </div>
+
+  <section aria-labelledby="gamaTitle"><h2 id="gamaTitle">Gama</h2>
+    <div class="row">
+      <figure class="cell"><div class="in"><svg class="mk" width="16" height="16" viewBox="0 0 64 64" aria-hidden="true"><use href="#mark-sys"/></svg></div><figcaption>16</figcaption></figure>
+      <figure class="cell"><div class="in"><svg class="mk" width="24" height="24" viewBox="0 0 64 64" aria-hidden="true"><use href="#mark-sys"/></svg></div><figcaption>24</figcaption></figure>
+      <figure class="cell"><div class="in"><svg class="mk" width="44" height="44" viewBox="0 0 64 64" aria-hidden="true"><use href="#mark-sys"/></svg></div><figcaption>44</figcaption></figure>
+      <figure class="cell"><div class="in"><svg class="mk" width="80" height="80" viewBox="0 0 64 64" aria-hidden="true"><use href="#mark-sys"/></svg></div><figcaption>80</figcaption></figure>
+      <figure class="cell"><div class="in"><svg class="mk a-flip" width="80" height="80" viewBox="0 0 64 64" aria-hidden="true"><path class="rails" d="M10 23h17M37 23h17M10 41h17M37 41h17"/><circle class="top" cx="32" cy="23" r="5"/><circle class="live" cx="32" cy="41" r="5"/></svg></div><figcaption>80 · live</figcaption></figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="motionTitle"><h2 id="motionTitle">Motion gama · flip</h2>
+    <div class="row">
+      <figure class="cell"><div class="in"><svg class="mk a-flip" width="16" height="16" viewBox="0 0 64 64" aria-hidden="true"><path class="rails" d="M10 23h17M37 23h17M10 41h17M37 41h17"/><circle class="top" cx="32" cy="23" r="5"/><circle class="live" cx="32" cy="41" r="5"/></svg></div><figcaption>16</figcaption></figure>
+      <figure class="cell"><div class="in"><svg class="mk a-flip" width="24" height="24" viewBox="0 0 64 64" aria-hidden="true"><path class="rails" d="M10 23h17M37 23h17M10 41h17M37 41h17"/><circle class="top" cx="32" cy="23" r="5"/><circle class="live" cx="32" cy="41" r="5"/></svg></div><figcaption>24</figcaption></figure>
+      <figure class="cell"><div class="in"><svg class="mk a-flip" width="44" height="44" viewBox="0 0 64 64" aria-hidden="true"><path class="rails" d="M10 23h17M37 23h17M10 41h17M37 41h17"/><circle class="top" cx="32" cy="23" r="5"/><circle class="live" cx="32" cy="41" r="5"/></svg></div><figcaption>44</figcaption></figure>
+      <figure class="cell"><div class="in"><svg class="mk a-flip" width="80" height="80" viewBox="0 0 64 64" aria-hidden="true"><path class="rails" d="M10 23h17M37 23h17M10 41h17M37 41h17"/><circle class="top" cx="32" cy="23" r="5"/><circle class="live" cx="32" cy="41" r="5"/></svg></div><figcaption>80</figcaption></figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="animTitle"><h2 id="animTitle">Animations · six behaviours</h2>
+    <div class="row">
+      <figure class="cell anim"><div class="pair"><svg class="mk a-flip" width="44" height="44" viewBox="0 0 64 64" aria-hidden="true"><path class="rails" d="M10 23h17M37 23h17M10 41h17M37 41h17"/><circle class="top" cx="32" cy="23" r="5"/><circle class="live" cx="32" cy="41" r="5"/></svg><svg class="mk a-flip" width="80" height="80" viewBox="0 0 64 64" aria-hidden="true"><path class="rails" d="M10 23h17M37 23h17M10 41h17M37 41h17"/><circle class="top" cx="32" cy="23" r="5"/><circle class="live" cx="32" cy="41" r="5"/></svg></div><figcaption><b>flip</b><span>the live node travels between the rails; the top waits</span></figcaption></figure>
+      <figure class="cell anim"><div class="pair"><svg class="mk a-lights" width="44" height="44" viewBox="0 0 64 64" aria-hidden="true"><path class="rails" d="M10 23h17M37 23h17M10 41h17M37 41h17"/><circle class="top" cx="32" cy="23" r="5"/><circle class="live" cx="32" cy="41" r="5"/></svg><svg class="mk a-lights" width="80" height="80" viewBox="0 0 64 64" aria-hidden="true"><path class="rails" d="M10 23h17M37 23h17M10 41h17M37 41h17"/><circle class="top" cx="32" cy="23" r="5"/><circle class="live" cx="32" cy="41" r="5"/></svg></div><figcaption><b>lights</b><span>the two nodes alternate their breath, out of phase</span></figcaption></figure>
+      <figure class="cell anim"><div class="pair"><svg class="mk a-trace" width="44" height="44" viewBox="0 0 64 64" aria-hidden="true"><path class="rails" d="M10 23h17M37 23h17M10 41h17M37 41h17"/><circle class="top" cx="32" cy="23" r="5"/><circle class="live" cx="32" cy="41" r="5"/></svg><svg class="mk a-trace" width="80" height="80" viewBox="0 0 64 64" aria-hidden="true"><path class="rails" d="M10 23h17M37 23h17M10 41h17M37 41h17"/><circle class="top" cx="32" cy="23" r="5"/><circle class="live" cx="32" cy="41" r="5"/></svg></div><figcaption><b>trace</b><span>the four rails draw themselves toward the switch</span></figcaption></figure>
+      <figure class="cell anim"><div class="pair"><svg class="mk a-pulse" width="44" height="44" viewBox="0 0 64 64" aria-hidden="true"><path class="rails" d="M10 23h17M37 23h17M10 41h17M37 41h17"/><circle class="top" cx="32" cy="23" r="5"/><circle class="live" cx="32" cy="41" r="5"/></svg><svg class="mk a-pulse" width="80" height="80" viewBox="0 0 64 64" aria-hidden="true"><path class="rails" d="M10 23h17M37 23h17M10 41h17M37 41h17"/><circle class="top" cx="32" cy="23" r="5"/><circle class="live" cx="32" cy="41" r="5"/></svg></div><figcaption><b>pulse</b><span>the live node swells around itself</span></figcaption></figure>
+      <figure class="cell anim"><div class="pair"><svg class="mk a-glow" width="44" height="44" viewBox="0 0 64 64" aria-hidden="true"><path class="rails" d="M10 23h17M37 23h17M10 41h17M37 41h17"/><circle class="top" cx="32" cy="23" r="5"/><circle class="live" cx="32" cy="41" r="5"/></svg><svg class="mk a-glow" width="80" height="80" viewBox="0 0 64 64" aria-hidden="true"><path class="rails" d="M10 23h17M37 23h17M10 41h17M37 41h17"/><circle class="top" cx="32" cy="23" r="5"/><circle class="live" cx="32" cy="41" r="5"/></svg></div><figcaption><b>glow</b><span>a signal halo breathes; the geometry holds</span></figcaption></figure>
+      <figure class="cell anim"><div class="pair"><svg class="mk a-drift" width="44" height="44" viewBox="0 0 64 64" aria-hidden="true"><path class="rails" d="M10 23h17M37 23h17M10 41h17M37 41h17"/><circle class="top" cx="32" cy="23" r="5"/><circle class="live" cx="32" cy="41" r="5"/></svg><svg class="mk a-drift" width="80" height="80" viewBox="0 0 64 64" aria-hidden="true"><path class="rails" d="M10 23h17M37 23h17M10 41h17M37 41h17"/><circle class="top" cx="32" cy="23" r="5"/><circle class="live" cx="32" cy="41" r="5"/></svg></div><figcaption><b>drift</b><span>the whole switch floats a few pixels, unhurried</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="fmtTitle"><h2 id="fmtTitle">Formats</h2>
+    <p class="note">The SVG is the master; the PNGs are rendered from it in the browser on a transparent ground. The favicon is already in this page's <code>&lt;head&gt;</code>.</p>
+    <div class="grid-fmt">
+      <figure class="cell png"><div class="in" data-png="16"></div><figcaption>16 px</figcaption></figure>
+      <figure class="cell png"><div class="in" data-png="32"></div><figcaption>32 px</figcaption></figure>
+      <figure class="cell png"><div class="in" data-png="48"></div><figcaption>48 px</figcaption></figure>
+      <figure class="cell png"><div class="in" data-png="64"></div><figcaption>64 px</figcaption></figure>
+      <figure class="cell png"><div class="in" data-png="128"></div><figcaption>128 px</figcaption></figure>
+      <figure class="cell png"><div class="in" data-png="256"></div><figcaption>256 px</figcaption></figure>
+      <figure class="cell png"><div class="in" data-png="512"></div><figcaption>512 px</figcaption></figure>
+    </div>
+    <a class="dl" id="dlSvg" href="#" download="sys.svg">⬇ sys.svg</a>
+    <div class="fav">
+      <code id="favCode">&lt;link rel="icon" href="data:image/svg+xml,…"&gt;</code>
+      <button class="dl" type="button" id="copyFav">Copy favicon</button>
+    </div>
+    <p class="note mt-16">Legacy <code>.ico</code> (32×32) and <code>apple-touch-icon</code> (180×180, opaque) are raster siblings. The catalogue caption at <code>development/addons/media/apps/captions/sys.png</code> is regenerated by the presentation flow, not this study.</p>
+  </section>
+
+  <section aria-labelledby="metaTitle"><h2 id="metaTitle">Metadata</h2>
+    <div class="meta-grid">
+      <article class="meta-card"><h3>Slogan</h3><p><b>EN ·</b> The layer under every screen.<br><b>ES ·</b> La capa bajo cada pantalla.</p></article>
+      <article class="meta-card"><h3>About</h3><p>Sys is the system cluster: identity, trust, suggestions, network, settings and the database home, held in one shared layer beneath the apps.</p></article>
+      <article class="meta-card wide"><h3>Tour · 10 slides</h3>
+        <ol>
+          <li>The mark — two rails and one travelling signal.</li>
+          <li>What Sys is — the shared layer under every flove screen.</li>
+          <li>The homes — Authy, Browsy, Wizy, Nety, Sety and Central.</li>
+          <li>The switch — identity hands a session to an app.</li>
+          <li>The network — Nety carries only what is meant to travel.</li>
+          <li>The suggestions — Wizy reads, never instructs.</li>
+          <li>The settings — Sety holds language, scales and defaults.</li>
+          <li>The database — Central keeps the records and the index.</li>
+          <li>The boundary — P stays local; L by grant; S by consent.</li>
+          <li>The layer — quiet enough to disappear, strong enough to hold.</li>
+        </ol>
+      </article>
+    </div>
+  </section>
+
+  <p class="note mt-26">Stage 3 · the mini-diagram gallery will be built by <code>/diagramy</code>.</p>
+</div>
+
+<svg class="sprite" width="0" height="0" aria-hidden="true">
+  <symbol id="mark-sys" viewBox="0 0 64 64">
+    <path class="rails" d="M10 23h17M37 23h17M10 41h17M37 41h17"/>
+    <circle class="top" cx="32" cy="23" r="5"/>
+    <circle class="live" cx="32" cy="41" r="5"/>
+  </symbol>
+</svg>
+
+<script>
+  const MASTER = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><g fill="none" stroke="#8d89ff" stroke-width="2.4" stroke-linecap="round"><path d="M10 23h17M37 23h17M10 41h17M37 41h17"/><circle cx="32" cy="23" r="5"/></g><circle cx="32" cy="41" r="5" fill="#00f7a7"/></svg>`;
+  const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(MASTER);
+  document.getElementById('dlSvg').href = url;
+  document.querySelectorAll('[data-png]').forEach(box => {
+    const size = +box.dataset.png, img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas'); c.width = c.height = size * 2;
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      const out = document.createElement('img'); out.src = c.toDataURL('image/png');
+      out.width = Math.min(size, 96); out.alt = 'Sys ' + size + 'px';
+      const a = document.createElement('a'); a.href = out.src; a.download = 'sys-' + size + '.png';
+      a.appendChild(out); a.style.display = 'block'; box.innerHTML = ''; box.appendChild(a);
+    };
+    img.src = url;
+  });
+  const root = document.documentElement, tgl = document.getElementById('tgl');
+  tgl.addEventListener('click', () => {
+    root.classList.toggle('theme--light');
+    tgl.textContent = root.classList.contains('theme--light') ? '🌙 Night' : '☀️ Day';
+  });
+  if (new URLSearchParams(location.search).get('theme') === 'light') {
+    root.classList.add('theme--light'); tgl.textContent = '🌙 Night';
+  }
+  const copy = document.getElementById('copyFav');
+  const fav = document.querySelector('link[rel="icon"]').href;
+  copy.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(fav); copy.textContent = 'Copied'; }
+    catch (e) { copy.textContent = 'Copy failed'; setTimeout(() => { copy.textContent = 'Copy favicon'; }, 1600); }
+  });
+</script>
+</body>
+</html>

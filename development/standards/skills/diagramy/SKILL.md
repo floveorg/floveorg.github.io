@@ -4,6 +4,7 @@ description: >-
   Build a compact Excalidraw mini-diagram that expands on click into a
   ×3-detailed threaded Mermaid diagram, as one self-contained page. Use for
   /diagramy, "mini diagram", "excalidraw + mermaid", "zoomable diagram".
+category: authoring
 ---
 
 # diagramy — one story, two zoom levels
@@ -28,10 +29,10 @@ Budget: mini **5–7 nodes**; thread **15–21 messages/notes** (≈3×).
 ## Files
 
 Diagrams live with the app page they explain, inside that app's addons logos
-folder — never in `development/diagrams/`:
+folder — never loose in `development/`:
 
-- `addons/media/apps/logos/<app>/minidiagrams/` — masters and rendered artifacts
-- `addons/media/apps/logos/<app>/<app>-minidiagrams.html` — the gallery page,
+- `development/addons/media/apps/logos/<app>/minidiagrams/` — masters and rendered artifacts
+- `development/addons/media/apps/logos/<app>/<app>-minidiagrams.html` — the gallery page,
   one card per move. A **brandy stage-5 gallery** (`/brandy` → `/diagramy`)
   uses this same pattern.
 
@@ -45,7 +46,7 @@ folder — never in `development/diagrams/`:
 | `<app>-minidiagrams.html` | self-contained page, both states |
 
 The `.excalidraw` and `.mmd` are the masters; the SVGs are artifacts. Keep the
-page in sync with both. `development/diagrams/` is not a diagram home — do not
+page in sync with both. A loose `diagrams/` folder is not a diagram home — do not
 write new diagram sets there.
 
 ## Mini — one frame, no branches

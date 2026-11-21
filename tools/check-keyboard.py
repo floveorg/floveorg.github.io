@@ -24,7 +24,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-HARNESS = ROOT / "development/standards/scripts/keyboard-harness.html"
+HARNESS = ROOT / "tools/dev/keyboard-harness.html"
 CHROME = "google-chrome"
 RESULT_RE = re.compile(r'<pre id="result">(.*?)</pre>', re.S)
 

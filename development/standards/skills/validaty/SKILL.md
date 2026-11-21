@@ -7,7 +7,7 @@ description: >-
   /validaty, "fix the errors", "check my a11y", "make it mobile-friendly".
 category: sys
 checker_of:
-  - https://flove.org/development/standards/adoption.md
+  - https://flove.org/development/standards/accessibility.md
   - https://flove.org/development/standards/contract.md#the-floor
 
 ---

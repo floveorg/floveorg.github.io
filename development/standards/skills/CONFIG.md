@@ -4,6 +4,12 @@ Every skill ships with **built-in defaults**. To reuse / fork a skill for
 another project you do **not** edit the skill itself — you create a **personal
 config** that overrides the defaults it reads.
 
+## Taxonomy keys (not overridable)
+
+`category` and `checker_of` live in `SKILL.md` frontmatter and are validated by
+`check-skills.py`. A personal config never changes them: they are published to
+Work · AI → Skills; the checker map is owned by `standards/README.md`.
+
 ## How the override works
 
 Each skill looks for a config file in this order and uses the **first match**:
@@ -93,7 +99,7 @@ keys, not the extension:
 - per-type: 5
 
 ## paths
-- doc-roots: …/development/standards/, …/development/standards/debates/plans/
+- doc-roots: …/development/standards/, …/development/wiki/plans/
 - extra-files: …/debates/pendings.md, …/debates/proposals.md,
   …/debates/questy-docs/, …/debates/plans/conflicts.md,
   …/debates/questy-proposals.md

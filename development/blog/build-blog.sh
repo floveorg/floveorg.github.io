@@ -44,7 +44,7 @@ case "${1:-build}" in
     git -C "$REPO_ROOT" add "$ROOT"
     git -C "$REPO_ROOT" commit -m "blog: publish built output"
     git -C "$REPO_ROOT" push origin main
-    bash "$REPO_ROOT/development/scripts/publish-web.sh"
+    bash "$REPO_ROOT/tools/dev/publish-web.sh"
     echo "published → https://flove.org/development/blog/" ;;
   *)
     echo "usage: build-blog.sh [serve|build|publish]"; exit 1 ;;

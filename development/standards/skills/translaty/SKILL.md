@@ -4,6 +4,10 @@ description: >-
   Make a single-file HTML app multilingual: per-language spans plus the 🌐
   worldball switcher. English is the base, Spanish the default target. Use for
   "translate this page", "add Spanish", or `/translatyN` for depth levels 1–N.
+category: sys
+checker_of:
+  - https://flove.org/development/standards/frontend/frontend.md
+
 ---
 
 # translaty
@@ -92,7 +96,7 @@ languages follow the usual list. Default `/translaty` = 2 (surface + labels).
 
 5. **Verify — valid HTML, CSS and JS is non-negotiable.** A translation that breaks
    the page is worse than none.
-   - `node development/scripts/check.js <file>`: span balance and legal
+   - `node tools/dev/check.js <file>`: span balance and legal
      placement, `lang` attrs, unique ids, escaped `data-*`, CSS brace/comment
      balance, every inline `<script>` compiles. Fix and re-run until it prints OK.
    - If `html-validate`/`stylelint` are installed, run them too — they catch more.

@@ -8,15 +8,15 @@
 #   - index.html   the flove home, at the package root — the same file, verbatim
 #   - apps/        the app, kept under apps/ (NOT flattened). Every relative
 #                  link (`apps/`, `tools/start.html`,
-#                  `addons/media/…`) is therefore valid in the
+#                  `development/addons/media/…`) is therefore valid in the
 #                  download and on the live site, so the build never rewrites an
-#                  href. The canonical artwork (addons/media/)
+#                  href. The canonical artwork (development/addons/media/)
 #                  ships at the same path; audio/ stays out (web-only).
 #                  The Android build dir tools/flove-apk/ never ships — apk-only.
 #   - whole/       the wiki of fields + their apps (plain HTML, no build).
 #   - docs/        the reading library (index.html + paradigms + papers, ~1 MB).
 #                  docs/docs-files/ (an embedded packs/backups repo) never ships.
-# Nothing else in the repo (development/, root 404) lands
+# Nothing else in the repo (development/ tools beyond addons/media, root 404) lands
 # in the download; apps/sys and apps/sys/central are inside apps/ and do ship. The package-only launchers (START-FLOVE-LINUX.sh /
 # -MAC.command / -WINDOWS.bat / -ANDROID.sh) are NOT tracked — they're GENERATED
 # here and sit at the ZIP ROOT beside flove-localhost/. They serve flove-localhost/ at
@@ -40,19 +40,19 @@ mkdir -p "$TARGET"
 git archive --format=tar HEAD \
   index.html \
   apps \
-  addons/media \
+  development/addons/media \
   tools \
   docs \
   whole \
   sw.js \
   | tar -x -C "$TARGET"
 
-# Audio is web-only (~22 MB) and lives in addons/media/audio; the
+# Audio is web-only (~22 MB) and lives in development/addons/media/audio; the
 # download does not ship it, and the Audio() calls fail silently there.
 
 # The canonical artwork ships, but the dev-only brand studies that live beside
-# it (addons/media/**/*.html) stay out of the download.
-find "$TARGET/addons/media" -name '*.html' -delete 2>/dev/null || true
+# it (development/addons/media/**/*.html) stay out of the download.
+find "$TARGET/development/addons/media" -name '*.html' -delete 2>/dev/null || true
 
 # JSON distro (§10.3e): routing.json is discoverable at the package root, with
 # the canonical copy still under tools/.

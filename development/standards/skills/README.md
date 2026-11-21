@@ -18,7 +18,7 @@ is Work · AI → Skills in `development/index.html`; this table is its mirror.
 |----------|--------|
 | `sys` | backy · exporty · jsony · optimizy · skilly · texty · translaty · validaty |
 | `authoring` | blogy · brandy · diagramy · narraty |
-| `planning` | questy · questy-all · questy-flove · questy-html |
+| `planning` | questy · questy-all · questy-flove · questy-html · questy-tasky-flove |
 | `utility` | jev · tasky · updaty · updaty-apk |
 
 ## Standard → owning checker
@@ -41,6 +41,7 @@ or `blogy`) is an authoring, planning or utility skill, not a checker.
 - https://flove.org/development/standards/skills/questy-all/SKILL.md
 - https://flove.org/development/standards/skills/questy-flove/SKILL.md
 - https://flove.org/development/standards/skills/questy-html/SKILL.md
+- https://flove.org/development/standards/skills/questy-tasky-flove/SKILL.md
 - https://flove.org/development/standards/skills/skilly/SKILL.md
 - https://flove.org/development/standards/skills/tasky/SKILL.md
 - https://flove.org/development/standards/skills/texty/SKILL.md

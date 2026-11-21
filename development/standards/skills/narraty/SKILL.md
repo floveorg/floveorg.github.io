@@ -4,6 +4,7 @@ description: >-
   Turn any text into a narrated MP3 with local offline tools — a short music
   opener, then the full text in a chosen voice (Piper + numpy + ffmpeg). Use for
   "narrate this", "make an audiobook", "hazme el audio", "léemelo en voz alta".
+category: authoring
 ---
 
 # narraty
@@ -36,7 +37,7 @@ reuse `questy-intro.mp3` for them.
 ## Quick path
 
 ```bash
-development/scripts/narrate.sh clean-text.txt
+tools/dev/narrate.sh clean-text.txt
 # -o out.mp3 · -v es_ES-davefx-medium · -s 1 · --no-music
 ```
 
@@ -67,7 +68,7 @@ self-labels "Voz número N"), let them choose, then narrate. Confirm language
 ```bash
 command -v piper && command -v ffmpeg && command -v python3
 ls ~/.local/share/piper/voices/*.onnx 2>/dev/null | head
-test -f development/scripts/mkmusic.py
+test -f tools/dev/mkmusic.py
 ```
 
 Missing `piper`/`ffmpeg` → stop and say what to install. Empty voices folder →
@@ -80,7 +81,7 @@ fetch the chosen model first. Missing `mkmusic.py` → run from the repo root.
    paragraphs get natural pauses). **Omit foreign-language epigraphs** (e.g.
    Latin) that the voice would mangle — keep the translation — and **say what you
    dropped**. Never cut content silently.
-2. **Generate the music** with `development/scripts/mkmusic.py` → `musicA.wav`, 22050 Hz mono.
+2. **Generate the music** with `tools/dev/mkmusic.py` → `musicA.wav`, 22050 Hz mono.
    Tweak key/mood in the script to fit the text's tone.
 3. **Synthesise:**
    `echo/‹file› | piper -q -m "$V/<voice>.onnx" -s <spk> --sentence_silence 0.35 -f out.raw.wav`.

@@ -4,6 +4,7 @@ description: >-
   The recommended questy bundle: all of questy's perspectives and addons added —
   30 questions, batches of 3, A/B/C with ★, the Context tree and Git sync. Use
   for /questy-all or when you want the easy default.
+category: planning
 ---
 
 # questy-all — the recommended questy bundle

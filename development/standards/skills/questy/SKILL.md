@@ -4,6 +4,7 @@ description: >-
   Structured Q&A planning: scan a project's docs for gaps and conflicts, then
   ask typed batches of questions turning what you know into what you haven't
   thought about yet. Use for /questy or a project review.
+category: planning
 ---
 
 # questy
@@ -42,13 +43,12 @@ Name one to activate it; each is weighted ×2 and combinable.
 `vision`/`arch`/`trust`/`data`/`integration` are shorthand areas leaning on a hat:
 `more vision` → 🟨, `more trust` → ⬛, `more make` → 🟦; `ux`→🟥, `docs`→🟨,
 `design`→🟩, `threats`→⬛, `strategy`→🟨, `integration`→🟦, `data`→⬜. In
-one-at-a-time console mode hats are titles only; they count as the question's
-`type`.
+console-mode hats are titles only; they count as the question's `type`.
 
 ## Knobs
 
-- **Mode** — `simple` (numbered, short A/B/C), the default; `explained` (each
-  option gets a one-line reason and the ★).
+- **Mode** — `simple` (short options), the default; `explained` (one-line reason
+  + con + ★ per option). Numbering follows the Answers rule, not the mode.
 - **Focus** — `easy` (warm-up), `deep` (roots, second-order effects), `hard`
   (commitment), `concise` (no filler).
 
@@ -57,32 +57,28 @@ one-at-a-time console mode hats are titles only; they count as the question's
 Ask with the runtime's structured question tool (OpenCode: `question`) by
 default. The same prompt shows the options and accepts a typed answer: click,
 type A/B/C, or write freely (“A — a note”). Both are always allowed. Never ask
-which UI; fall back to text silently if the tool is absent.
+which UI; use text silently if the tool is absent.
 
-- **Batch** — one call with all (3 by default); **single** — one call per question.
-- **★** — first option, labelled “(Recommended)”; include Neutral/Other.
+- **Batch** — one call with all (3 by default); **single** — one per question.
+- **★** — first option, labelled “(Recommended)”; state its con beside its reason.
+  No downside, no recommendation. Include Neutral/Other.
 - **Conditional** — a question that depends on an earlier answer goes next call.
+
+**Terminal text is always numeric.** Number every option 1–N across the whole
+survey — never A/B/C, never reset per batch; ★ is each triplet's first. `Q001+`
+are question IDs, not answers. A shown selector keeps A/B/C; never mix them.
+Print `Ref:`/`Affects:` per question, numbers once at end.
 
 ## First questions
 
-Ask this opening questionnaire once, in order. Its answers configure the session;
-do not re-ask them per batch.
+Ask once, never re-ask.
 
-1. **Project** — Which project? Apply it as `/questy-<project>`; give the name,
-   root and data references.
-2. **Questions** — How many? ★ **30 total**, split across the hats in play.
-3. **Batch** — How many per time? ★ **3**.
-4. **Mode** — ★ **Simple options with a one-line ★ reason**, or explained
-   options (every option reasoned).
-5. **Focus** — ★ **None**; or easy / deep / hard / concise.
-6. **Hats** — ★ **All six** — ⬜ facts, 🟥 heart, ⬛ risk, 🟡 optimism, 🟢 creative,
-   🔵 make. Say one twice for ×2.
-7. **More perspectives** — ★ **Hats are enough**; or *why*, *what*, *how* / *all*,
-   offered after this questionnaire.
-8. **Next step** — **Do you want this interview to continue in audio?**
-   ★ **Neither yet**; or **audio** (a narraty recap).
-
-Then start the first mixed batch.
+1. **Project + start** — name, root, refs; resume (what changed?) or fresh.
+   Show ★ tuning: 30 total · batch 3 (or config) · numbered text · no focus ·
+   all six hats · no extra lens · audio off; or **tune it** → ask 2 and 3.
+2. **Shape** — total, batch, mode, focus, hats, lens; default as above.
+3. **Audio** — neither by default, or narraty recap; last option: **set up a
+   decisions manager** (questy-all).
 
 ## The loop
 
@@ -101,32 +97,40 @@ Then start the first mixed batch.
    its hat? re-home or drop. (d) ★ defensible, or is Neutral honest? (e) One line?
    tighten. (f) Changes a decision? if not, it is trivia.
 6. **Present one mixed batch.** Hat order ⬛ > 🟩 > 🟦 > 🟨 > 🟥 > ⬜; present
-   mixed, abstract→concrete inside each hat, as selector options with ★/Neutral.
-   Global Q001+; `Ref:`/`Affects:` when there is doc context.
+   mixed, abstract→concrete inside each hat, with ★/Neutral. Selector options
+   use A/B/C; terminal text uses continuous 1–N (see Answers). Global Q001+;
+   `Ref:`/`Affects:` when there is doc context.
 7. **Fold the answers.** Decisions, resolved items, skips, new conflicts and
    workflow changes → the project's decision log (Context tree) or session summary.
-8. **Regenerate, never repeat.** Build the next batch from updated docs; carry
-   unresolved forward; never re-ask a settled question. After each batch offer
-   `(c)ontinue / (t)une {hat} / (u)pdate / (s)top`; default `c` after
-   three idle rounds. One session at a time.
-9. **Close.** Summarize decisions, confirmed plans and open items; offer export
-   (markdown · JSON · HTML) and a narraty recap. The HTML is a **share** artifact
-   others can answer and re-share — never a substitute for the terminal selector.
-   Carry the open items forward.
+8. **Regenerate, never repeat.** Build the next batch from docs; carry unresolved
+   forward; never re-ask settled. After each batch offer `(c)ontinue`, `(u)pdate`,
+   `(f)inish` (default `c` after three idle rounds). `(u)` writes the replied
+   questions into all related docs, proposes easy follow-up tasks tied to those
+   decisions and updates, then offers `(c)` / `(f)`. `(f)` = quit/stop/end.
+   One session at a time.
+9. **Close.** Print the end-of-survey readout once; carry its open items forward.
 
 ## End of survey
 
-When all batches are answered: `(c)ontinue` keeps asking; `(r)esume` synthesizes
-all replies into one readout; `(s)et up a decisions manager` suggests the
-questy-all options, whole or per part. These are end keys; per-batch `s` = stop.
+One readout when the last batch is folded:
+
+1. **Decisions** — Q IDs + chosen option; conflicts settled this run.
+2. **Open items** — skips and unresolved with `Ref:`/owner; carry forward, never
+   re-ask.
+3. **Export** — into the owning doc, never a new file: markdown · JSON · HTML.
+   HTML is a share artifact, not the terminal selector.
+4. **Recap** — offer narraty here, once.
+
+Keys: `(c)ontinue` · `(u)pdate` (see loop 8) · `(f)inish` ends the session ·
+`(r)esume` gives one readout · `(s)et up a decisions manager` suggests questy-all.
 
 ## Answer grammar
 
-`0` = every ★ · `1a 3c` = Q001=a, Q003=c · `0 7a` = all ★ except Q007=a ·
-`-` = skip (recorded as an open item).
+Terminal text: `0` = all ★ · `1 4 7` = one per question · `-` = skip (open) ·
+`Q007=20` = override · `0 Q007=20` = all ★ but that. Selector: `A`/`B`/`C`,
+`0` = all ★, `-` = skip; notes kept.
 
-Global numbering `Q001+`, never reset. `Ref:` (triggering doc section) and
-`Affects:` (what the decision touches) are optional with doc context.
+`Q001+` global; answers are a separate 1–N survey run. `Ref:`/`Affects:` optional.
 
 ## Personal config
 

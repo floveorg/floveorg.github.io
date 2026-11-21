@@ -4,6 +4,7 @@ description: >-
   Rebuild and publish flove's Android TWA app (APK/AAB) to GitHub Releases. The
   wrapper loads flove.org live, so rebuild only when manifest settings, icons,
   colours or version change. Use for "updaty-apk", "recompile apk", "subir apk".
+category: utility
 ---
 
 # updaty-apk — rebuild & publish the flove TWA

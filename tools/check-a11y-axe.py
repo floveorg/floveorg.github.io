@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """check-a11y-axe.py — real axe-core audit per app (Chrome headless).
 
-Runs the shared harness (development/standards/scripts/a11y-harness.html) once
+Runs the shared harness (tools/dev/a11y-harness.html) once
 per routing app and collects axe violations. This is the A11Y02 pass: the
 static checks in check-a11y.py stay the cheap gate; this one needs a browser.
 
@@ -23,7 +23,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-HARNESS = ROOT / "development/standards/scripts/a11y-harness.html"
+HARNESS = ROOT / "tools/dev/a11y-harness.html"
 CHROME = "google-chrome"
 RESULT_RE = re.compile(r'<pre id="result">(.*?)</pre>', re.S)
 
@@ -133,7 +133,7 @@ def main() -> int:
                 c["nodes"] += v["nodes"]
                 c["apps"].add(r["app"])
         lines = [f"# Accessibility — axe-core audit ({len(ok)} apps)", "",
-                 "Regenerate: `python3 tools/check-a11y-axe.py --md development/standards/debates/a11y-report.md`. "
+                 "Regenerate: `python3 tools/check-a11y-axe.py --md development/wiki/work/a11y-report.md`. "
                  "Chrome headless + axe 4.10.2; the static gate stays `tools/check-a11y.py`.", "",
                  f"{total} violation nodes across {len(counts)} rules."
                  + (f" Skipped (timeout): {', '.join(skipped)}." if skipped else "")]

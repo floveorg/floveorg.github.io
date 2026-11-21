@@ -42,7 +42,7 @@ cumulative and skip what the kind doesn't need.
 2. **Data & Words** — `export` + `texty` + `translaty`: the portrait round-trips,
    save/share/import work, then copy, names and languages are reviewed where applicable.
 3. **Usability** — meet every minimum in the
-   [usability matrix](https://flove.org/development/standards/frontend/frontend.md#1318--usability-levels--3-minimum--4-function--5-craft);
+   [usability matrix](https://flove.org/development/standards/frontend/frontend.md#1318-usability-levels-3-minimum-4-function-5-craft);
    a missing minimum fails the level. Menu, tour, metadata and transparent stats
    are the shell rows; every other section is audited the same way. Improve
    motion, keyboard, timers and stale feedback.
@@ -50,6 +50,14 @@ cumulative and skip what the kind doesn't need.
    card/group `pct`, 100 % to close.
 5. **Craft** — the level-5 features: locking/tiers, trends, migration, motion
    and the rest, plus a prioritized recommendation list (impact × effort).
+   Include an **asset-weight audit**: count the chars held by inlined fonts,
+   inline `<svg>`/`<symbol>` blobs and `data:` images, and flag duplicates of a
+   blob already shipped elsewhere. For each heavy asset name the cheap
+   substitute — subset or drop a font weight, reuse the canonical sprite or
+   `development/addons/media` path, replace a decorative SVG with CSS — and the small design
+   or function cost. Recommend only swaps whose loss is minor. Inlining is not
+   itself a saving: measure before and after. Report the list in the level-5
+   recommendation table (impact × effort), never as a silent rewrite.
 
 Extra modules: [detail](levels-detail.md).
 

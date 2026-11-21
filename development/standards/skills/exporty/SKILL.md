@@ -5,6 +5,10 @@ description: >-
   from the same rows, and the shared Appy renderer that turns any such JSON into
   the flove card. Covers parity and share. Use for /exporty, "is the JSON
   complete?", "does the export render?".
+category: sys
+checker_of:
+  - https://flove.org/development/standards/frontend/export.md
+
 ---
 
 # exporty
@@ -111,11 +115,13 @@ the JSON attached. Flag any app that still shows a separate Save button.
 no portrait and are skipped — the documented list is [`frontend/export.md`](https://flove.org/development/standards/frontend/export.md) § Pages
 outside the export contract.
 
-**Exceptions.** Fivy and Blogy still ship their own card/ZIP exporter; their JSON
-shape stays identical. Souls and Keys are **standard targets**: JSON plus the
-same Save HTML card, no exception and no "advanced" category. Worthing saves its
+**Exceptions.** Fivy is the only app still shipping its own card/ZIP exporter;
+its JSON shape stays identical. Blogy, Souls and Keys are **standard targets**:
+a single `flove-portrait/1` JSON download — Souls and Keys also ship a Save HTML
+card from the same rows, Blogy is JSON-only — no exception and no "advanced"
+category. Worthing saves its
 axial view as the HTML card — a display choice, not an exception. The live view
-is the shared renderer at `addons/rendery/index.html`. The exception
+is the shared renderer at `development/addons/rendery/index.html`. The exception
 set is single (`EXPORT_EXCEPTIONS` in `jsony_check.py`); its variants — these
 apps, the summary notes, the pages outside the contract — live in
 [`frontend/export.md`](https://flove.org/development/standards/frontend/export.md) and [`frontend/summary.md`](https://flove.org/development/standards/frontend/summary.md), with each page's type in

@@ -4,6 +4,7 @@ description: >-
   Render a Q&A session as an interactive HTML form with live preview: batches of
   click-to-answer questions, ★ highlights, a compiled summary and markdown export.
   Use for /questy-html or when a session should become a browser form.
+category: planning
 ---
 
 # questy-html

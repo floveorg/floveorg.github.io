@@ -5,6 +5,10 @@
 > Flat index: `tools/routing-index.json`; validator: `tools/check-routing.py`.
 > Every app now exposes `window.floveFieldsFlat()` for technical combination.
 
+**Tracked work:** RC01 (consumer colour map) and RDB01 (future DB) are rows in
+[`../debates/pendings.md` §Browsy pre-build](../../wiki/archive/old/pendings.md); Work filter:
+[data · json](https://flove.org/development/index.html#work?tab=docs&view=r2&subtab=work&category=data&section=json).
+
 ## Current state
 
 - `tools/routing.json` (`flove-routing/3`) has **no colour** by design: categories

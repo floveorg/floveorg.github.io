@@ -37,30 +37,23 @@ cons even when they outnumber pros.
 - Read the PAT from `~/agents/token-github-flove.md`; absent or placeholder →
   STOP. Never print it.
 - Show `git log --oneline -3` and `git status -sb`.
-- Run `bash development/scripts/check-distro.sh`; hard errors → STOP.
-- If `apps/` or manifests changed: `python3 development/scripts/jsony_check.py`.
+- Run `bash tools/dev/check-distro.sh`; hard errors → STOP.
+- If `apps/` or manifests changed: `python3 tools/dev/jsony_check.py`.
 - If `milestones.json` or the Work block changed:
-  `python3 development/scripts/build-common.py --build` then `--check`.
+  `python3 tools/dev/build-common.py --build` then `--check`.
 - If `work-moves.json` exists: STOP — a reviewed Work export is pending; run
-  `python3 development/scripts/build-work-tracker.py --apply-moves` first.
-- If vocabulary/routing changed: `python3 development/standards/scripts/check-drift.py`.
+  `python3 tools/dev/build-work-tracker.py --apply-moves` first.
+- If vocabulary/routing changed: `python3 tools/dev/check-drift.py`.
 - If HTML changed: `python3 tools/check-a11y.py`.
-- If the diff touches `docs/index.html`: `python3 development/scripts/build-whole-md.py --check`;
-  drift → STOP and flag `development/standards/worldview.md`.
-- If the diff touches `development/index.html`: `python3 development/scripts/build-depth-md.py --check`;
-  drift → STOP and flag `development/standards/backend.md`.
+- The `build-whole-md.py` / `build-depth-md.py` index-drift checks were retired
+  with their `worldview.md` / `backend.md` chapters (N16, 2026-11-21).
 - Report warnings, the level chosen and the next one. Do not commit, push or
   publish.
-
-Mappings: `docs/index.html` → `worldview.md`; `development/index.html` →
-`backend.md`.
 
 ### 2. Commit
 - Clean tree → continue.
 - Pending edits → list the source paths and **ask for confirmation**.
 - On a yes: stage only those named paths (never `-A`) and commit.
-- If level 1 flagged index drift, run `build-whole-md.py` / `build-depth-md.py`
-  and include `worldview.md` / `backend.md` in the commit.
 - Never stage `sw.js`, `tools/flove-localhost.zip` or the vocabulary index.
 - Stop before push.
 
@@ -69,7 +62,7 @@ Mappings: `docs/index.html` → `worldview.md`; `development/index.html` →
   `merge --ff-only`; a non-fast-forward → STOP.
 - `git push origin main`.
 - Do not repeat `jsony` or `check-distro`: level 1 is the gate.
-- Push only the changed paths with `development/scripts/publish-web-files.sh`
+- Push only the changed paths with `tools/dev/publish-web-files.sh`
   (explicit paths, or `--diff <last Flove-Source>`); never the full tree.
 - Report the GitHub SHA/subject; Pages takes ~1 min.
 
@@ -87,7 +80,7 @@ Mappings: `docs/index.html` → `worldview.md`; `development/index.html` →
 
 ### 5. Full release
 - Complete level 4.
-- Publish `development/standards/scripts/publish-risa.sh`,
+- Publish `tools/dev/publish-risa.sh`,
   `publish-ama.sh`, `publish-liberada.sh`, and
   `projects/lowai/publish-lowai.sh`.
 - APK → `updaty-apk`. Report each target, including "sin cambios".

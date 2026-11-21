@@ -99,7 +99,7 @@ category pill, one line, `▶ Open`. Long copy is stage 4.
 Launchers get `tnode file launcher`. Recount `N apps` from the `tnode file` rows
 (launchers excluded) — a lazy count is the commonest defect.
 
-**Types** — a row in [Web → Types](https://flove.org/development/index.html#web-types)
+**Types** — a row in [Web → Types](https://flove.org/development/index.html#work?tab=frontend&view=r2&subtab=types)
 with the matching `data-type`; bump `Launcher · N` and `All · N`.
 
 **Launcher** — a tile in the category launcher (`apps/language`, `psychosocial`,

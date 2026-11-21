@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# jsony post-commit routine — only runs when HEAD touched apps/.
+# Never blocks the commit; only appends changed apps/ files to the queue.
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+changed="$(git diff-tree --no-commit-id --name-only -r HEAD -- apps/ 2>/dev/null || true)"
+if [ -z "$changed" ]; then
+  exit 0
+fi
+
+python3 "$ROOT/tools/dev/jsony_check.py" --record --soft

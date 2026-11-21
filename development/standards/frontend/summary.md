@@ -9,11 +9,12 @@ Part of the flove frontend standards catalogue. Index / matrix: `../README.md` �
 The **last** step-panel of every app (the one users arrive at after
 filling in their fields) aggregates the user's input into a single
 **live phrase**, then exposes the full action surface for sending that
-phrase out (copy, save, share, publish, download). Reference impl:
-`.step-panel.is-summary` in `apps/blogy/index.html`
-(line ~7178; inline-copy in `apps/blogy/blogy-advanced-one.html`).
-blogy is the Solo fallback reference — the Central apps are the
-canonical spec ([`../apps/README.md`](../apps/README.md)).
+phrase out (Magic · Share, with Save JSON inside Share). Reference impl:
+`.step-panel.is-summary` in `apps/metas/goddy.html`; the canonical rule is
+§13.12 ([`export.md`](export.md)). Blogy (`apps/psychosocial/blogy/index.html`)
+is now a standard target — its layered display stays, its multi-format Save
+menu and Publish row are gone. The Central apps remain the canonical spec
+([`../apps/README.md`](../../wiki/archive/old/apps/README.md)).
 
 **Phrase presentation — one italic line, no verse formatting.** The live phrase
 is a single sentence set in *italic*, wrapping normally: no `<pre>`, no manual
@@ -31,7 +32,7 @@ visit; survey behavior changes.
 >
 > 1. **Magic first, Share second**; JSON-only Save inside Share.
 > 2. **Magic has two types:** **General** (the app’s insights / reflections)
->    and **Custom** (Wizy-influenced; see [`frontend-wizy.md`](../debates/proposals/frontend-wizy.md)). The separate
+>    and **Custom** (Wizy-influenced; see [`frontend-wizy.md`](../../wiki/archive/old/proposals/frontend-wizy.md)). The separate
 >    Insight button disappears.
 > 3. **One global Copy**, at the bottom-right of the exposed summary box.
 > 4. **The summary box is editable in place.** It shows every selection; any
@@ -57,17 +58,16 @@ Copy** (revision above).
 
 | App | Exception |
 |---|---|
-| `blogy/index.html` | keeps its summary display **and** its multi-format Save menu |
 | `metas/souls.html` | keeps its layered display; standard buttons |
 | `economy/worthing.html` | keeps its axial view; standard buttons |
 | `economy/dealy/rewardy.html` | axial rating playground — keeps its display; no export surface |
 
 Exceptions keep their **summary displays** fully featured (views, raters, HTML
-portrait). `blogy` keeps its full multi-format Save menu and Publish controls;
-`souls` and `worthing` keep their layered/axial displays with the standard
-buttons; `rewardy` is a rating playground with no export surface. **`keys` left
-this table on 2026-11-17**: it is a standard target — the display stays, the
-legacy Save menu and Publish row are being removed. In every exception the
+portrait). `souls` and `worthing` keep their layered/axial displays with the
+standard buttons; `rewardy` is a rating playground with no export surface.
+**`keys` left this table on 2026-11-17** and **`blogy` on 2026-11-21**: both
+are standard targets — the display stays, the legacy Save menu and Publish row
+are gone. In every exception the
 **JSON export follows the common standard** — `flove-portrait/1`,
 `<app>-portrait.json`, a `phrase`, `rows[]` — and JSON is the first item in the
 Save menu (where the exception has one). Insight/Copy controls may be hidden in
@@ -88,7 +88,7 @@ save the file from the sheet if they want; on desktop Share opens the small menu
 > **Standalone Magic is different.** Appy and Browsy have a `✨ Magic` button
 > that opens the Wizy Love/Joy/Wisdom panel (Myself / With others). That is not
 > the summary’s Magic menu; its contract lives in
-> [`frontend-wizy.md`](../debates/proposals/frontend-wizy.md).
+> [`frontend-wizy.md`](../../wiki/archive/old/proposals/frontend-wizy.md).
 
 Axial views only work in those apps; everywhere else remove the view toggles and
 the legacy summary buttons. `jsony --summary` audits the list.
