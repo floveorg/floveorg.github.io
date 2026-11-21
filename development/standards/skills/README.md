@@ -5,8 +5,27 @@ disk: `~/.agents/skills` symlinks here
 (`development/standards/skills/`).
 
 **Index:** the verified table is
-`https://flove.org/development/index.html` (Web → Skills). Do not copy it into
-markdown.
+`https://flove.org/development/index.html` (Apps → Types → Skill filter). Do not
+copy it into markdown.
+
+## Categories
+
+`category` is required in every `SKILL.md`; `checker_of` is present only when a
+skill actually judges conformance to a named standard. The canonical registry
+is Work · AI → Skills in `development/index.html`; this table is its mirror.
+
+| Category | Skills |
+|----------|--------|
+| `sys` | backy · exporty · jsony · optimizy · skilly · texty · translaty · validaty |
+| `authoring` | blogy · brandy · diagramy · narraty |
+| `planning` | questy · questy-all · questy-flove · questy-html |
+| `utility` | jev · tasky · updaty · updaty-apk |
+
+## Standard → owning checker
+
+Canonical map: [standards/README.md → Checker map](https://flove.org/development/standards/README.md#checker-map).
+This file does not copy it. A skill without `checker_of` (for example `narraty`
+or `blogy`) is an authoring, planning or utility skill, not a checker.
 
 ## Skills
 
@@ -23,9 +42,11 @@ markdown.
 - https://flove.org/development/standards/skills/questy-flove/SKILL.md
 - https://flove.org/development/standards/skills/questy-html/SKILL.md
 - https://flove.org/development/standards/skills/skilly/SKILL.md
+- https://flove.org/development/standards/skills/tasky/SKILL.md
 - https://flove.org/development/standards/skills/texty/SKILL.md
 - https://flove.org/development/standards/skills/translaty/SKILL.md
 - https://flove.org/development/standards/skills/updaty/SKILL.md
+- https://flove.org/development/standards/skills/jev/SKILL.md
 - https://flove.org/development/standards/skills/updaty-apk/SKILL.md
 - https://flove.org/development/standards/skills/validaty/SKILL.md
 

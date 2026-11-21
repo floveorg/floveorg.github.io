@@ -4,8 +4,9 @@
 Checks:
   - apps/**/*.html flove-fields manifests against tools/routing.json
   - tools/routing.json app URLs against the filesystem
-  - apps/appy/appy-basic.html APP_ROUTING snapshot against routing
+  - apps/appy/index.html APP_ROUTING snapshot against routing
   - the flove-portrait/flove-profile envelope in appy-basic
+  - debates/common.json against milestones.json (every live and archived task)
 
 Pending, not checked: tools/puzzy.json apps{} vs routing. The registry has no
 runtime consumer and its sync script is parked.
@@ -30,12 +31,20 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import register_projection as projection
+import procedures_source
+
 ROOT = Path(__file__).resolve().parents[2]
 ROUTING = ROOT / "tools/routing.json"
-APPY = ROOT / "apps/appy/appy-basic.html"
+APPY = ROOT / "apps/appy/index.html"
 PENDING_MD = ROOT / "tools/jsony-pending.md"
 PENDING_JSON = ROOT / "tools/jsony-pending.json"
 STATE = ROOT / "tools/jsony-state.json"
+MILESTONES = ROOT / "development/standards/debates/milestones.json"
+COMMON = ROOT / "development/standards/debates/common.json"
+INDEX = ROOT / "development/index.html"
+MOVES = ROOT / "development/standards/debates/work-moves.json"
 
 # Documented exceptions to the export contract — one set, no variants here.
 # The variants (own HTML export · no standard summary · page outside the
@@ -170,6 +179,138 @@ SUMMARY_PATTERNS = {
     "copy": (r'data-action="copy"|class="[^"]*\bcopy-btn\b',),
     "formats": (r'save-fmt-(?!json)|data-fmt="(?!json)|data-flove-save="(?!json)',),
 }
+
+
+def check_moves(register: dict, live: set, archived: set) -> list[str]:
+    """A committed export is a review item: it must be applicable, not stale."""
+    if not MOVES.exists():
+        return []
+    try:
+        patch = read_json(MOVES)
+    except (OSError, json.JSONDecodeError) as exc:
+        return [f"{rel(MOVES)}: cannot read the export: {exc}"]
+    errors = []
+    if patch.get("schema") != "flove-work-moves/1":
+        errors.append(f"{rel(MOVES)}: schema {patch.get('schema')!r}, expected 'flove-work-moves/1'")
+    moves = patch.get("moves") or []
+    ids = [m.get("id") for m in moves]
+    if not ids or len(ids) != len(set(ids)):
+        errors.append(f"{rel(MOVES)}: moves must be a non-empty list of unique ids")
+    owner = {t.get("id"): t.get("hito_id")
+             for m in register.get("sections", [])
+             for b in m.get("subsections", [])
+             for h in b.get("milestones", [])
+             for t in (h.get("tasks") or [])}
+    for m in moves:
+        tid = m.get("id")
+        if tid in archived or tid not in live:
+            errors.append(f"{rel(MOVES)}: {tid} is not a live task (already applied?)")
+        elif m.get("hito_id") and m["hito_id"] != owner.get(tid):
+            errors.append(f"{rel(MOVES)}: {tid} has the wrong hito_id")
+    for r in patch.get("replacements") or []:
+        if r.get("id") in live or r.get("id") in archived:
+            errors.append(f"{rel(MOVES)}: replacement {r.get('id')} already exists")
+        if not (r.get("en") or "").strip() or not (r.get("es") or "").strip():
+            errors.append(f"{rel(MOVES)}: replacement {r.get('id')} needs en/es titles")
+        if not ((r.get("evidence") or {}).get("gaps") or [""])[0].strip():
+            errors.append(f"{rel(MOVES)}: replacement {r.get('id')} needs a done criterion")
+        if (r.get("evidence") or {}).get("by") != "optimizy":
+            errors.append(f"{rel(MOVES)}: replacement {r.get('id')} needs evidence.by = optimizy")
+    moves_by_hito: dict[str, int] = {}
+    for m in moves:
+        moves_by_hito[m.get("hito_id")] = moves_by_hito.get(m.get("hito_id"), 0) + 1
+    repl_by_hito: dict[str, int] = {}
+    for r in patch.get("replacements") or []:
+        repl_by_hito[r.get("hito_id")] = repl_by_hito.get(r.get("hito_id"), 0) + 1
+    if moves_by_hito != repl_by_hito:
+        errors.append(f"{rel(MOVES)}: PROC-09 needs one replacement per move, per hito")
+    return errors
+
+
+def check_common() -> dict:
+    """Join + embedded Work block must list every live/archived task in the register."""
+    if not COMMON.exists():
+        return {"errors": [f"missing {rel(COMMON)}"], "counts": {}, "moves": []}
+    try:
+        common = read_json(COMMON)
+        register = read_json(MILESTONES)
+    except (OSError, json.JSONDecodeError) as exc:
+        return {"errors": [f"cannot read the join or register: {exc}"], "counts": {}, "moves": []}
+    hitos = projection.hitos(register)
+    live = set(projection.live_tasks(register))
+    archived = {t.get("id") for t in (register.get("tasks_archive") or [])}
+    counts = projection.counts(register)
+    errors = []
+    task_set = register.get("taskSet") or {}
+    if task_set.get("live") != counts["live_tasks"] or task_set.get("archived") != counts["archived_tasks"]:
+        errors.append(f"taskSet counts {task_set.get('live')}/{task_set.get('archived')} "
+                      f"!= register {counts['live_tasks']}/{counts['archived_tasks']}")
+    moves = check_moves(register, live, archived)
+    if common.get("schema") != "flove-common/1":
+        errors.append(f"{rel(COMMON)}: schema {common.get('schema')!r}, expected 'flove-common/1'")
+    if common.get("counts") != counts:
+        errors.append(f"{rel(COMMON)}: counts {common.get('counts')} != {counts}")
+    by_id = {h.get("id"): h for h in (common.get("hitos") or [])}
+    if set(by_id) != {m.get("id") for m in hitos}:
+        errors.append(f"{rel(COMMON)}: hito ids differ from the register")
+    for m in hitos:
+        h = by_id.get(m.get("id"))
+        if not h:
+            continue
+        want = {t.get("id") for t in (m.get("tasks") or [])}
+        got = {t.get("id") for t in (h.get("tasks") or [])}
+        if want != got:
+            errors.append(f"{m.get('id')}: task ids differ "
+                          f"(missing {sorted(want - got)}, extra {sorted(got - want)})")
+        spec = h.get("spec") or {}
+        for key in ("deliverable", "done", "decision"):
+            if not str(spec.get(key) or "").strip():
+                errors.append(f"{m.get('id')}: empty spec.{key}")
+    if set(common.get("tasks") or {}) != live:
+        missing = sorted(live - set(common.get("tasks") or {}))
+        extra = sorted(set(common.get("tasks") or {}) - live)
+        errors.append(f"{rel(COMMON)}: task index differs "
+                      f"(missing {missing[:5]}, extra {extra[:5]})")
+    if {a.get("id") for a in (common.get("archive") or [])} != archived:
+        errors.append(f"{rel(COMMON)}: archive summary differs from tasks_archive")
+    # The embedded Work block is the offline fallback for the same archive and
+    # queue policy; it must not drift from the register either.
+    try:
+        page = INDEX.read_text(encoding="utf-8")
+        m = re.search(r'<script type="application/json" id="work-data">(.*?)</script>',
+                      page, re.S)
+        embedded = json.loads(m.group(1)) if m else {}
+    except (OSError, json.JSONDecodeError) as exc:
+        embedded = {}
+        errors.append(f"{rel(INDEX)}: cannot read embedded Work data: {exc}")
+    if embedded:
+        if {a.get("id") for a in (embedded.get("archive") or [])} != archived:
+            errors.append(f"{rel(INDEX)}: embedded Work archive differs from tasks_archive")
+        want_policy = projection.queue_policy(register)
+        if (embedded.get("queuePolicy") or {}) != want_policy:
+            errors.append(f"{rel(INDEX)}: embedded queuePolicy differs from taskSet")
+    # The PROC policy has one source: AGENTS.md. Both projections must match it.
+    want_procs = procedures_source.load()
+    if register.get("procedures"):
+        errors.append(f"{rel(MILESTONES)}: procedures block must live in AGENTS.md")
+    if (common.get("procedures") or []) != want_procs:
+        errors.append(f"{rel(COMMON)}: procedures differ from AGENTS.md")
+    if embedded and (embedded.get("procedures") or []) != want_procs:
+        errors.append(f"{rel(INDEX)}: embedded procedures differ from AGENTS.md")
+    # PROC-08: a state move needs a machine-readable evidence pointer.
+    for section in register.get("sections", []):
+        for box in section.get("subsections", []):
+            for h in box.get("milestones", []):
+                for t in (h.get("tasks") or []):
+                    if t.get("state") not in ("hecha", "parcial"):
+                        continue
+                    ptr = (t.get("evidence") or {}).get("pointer") or {}
+                    if (ptr.get("kind") not in ("command", "anchor", "state")
+                            or not str(ptr.get("value") or "").strip()):
+                        errors.append(
+                            f"{rel(MILESTONES)}: {t.get('id')} needs evidence.pointer "
+                            f"{{kind, value}} for state {t.get('state')}")
+    return {"errors": errors, "counts": counts, "moves": moves}
 
 
 def markup_only(text: str) -> str:
@@ -454,6 +595,7 @@ def build_findings(changed: list[str]) -> dict:
 
     routing_by_id = {str(a.get("id")): a for a in routing.get("apps", []) if a.get("id")}
     bridge = check_appy_bridge()
+    common = check_common()
 
     manifest_by_id = {}
     for app in apps:
@@ -524,6 +666,7 @@ def build_findings(changed: list[str]) -> dict:
     critical = (
         len(routing_missing) + len(routing_url_missing) + len(appy_missing)
         + len(appy_extra) + len(appy_mismatch) + len(export_appy_missing)
+        + len(common["errors"]) + len(common["moves"])
     )
     advisory = len(apps_without_portrait) + (1 if bridge["drift"] else 0)
 
@@ -538,6 +681,9 @@ def build_findings(changed: list[str]) -> dict:
         "exportAppyMissing": export_appy_missing,
         "appsWithoutPortrait": apps_without_portrait,
         "appyBridge": bridge,
+        "commonDrift": common["errors"],
+        "movesDrift": common["moves"],
+        "commonCounts": common["counts"],
         "critical": critical,
         "advisory": advisory,
     }
@@ -623,6 +769,27 @@ def markdown_report(f: dict) -> str:
         lines += [f"- missing: `{key}`" for key in f["exportAppyMissing"]]
         lines.append("")
 
+    if f.get("commonDrift"):
+        lines += [
+            "## Critical — common.json drift",
+            "",
+            f"`common.json` must list the actual {f.get('commonCounts', {}).get('live_tasks', '?')} live "
+            f"tasks and {f.get('commonCounts', {}).get('archived_tasks', '?')} archived tasks.",
+            "",
+        ]
+        lines += [f"- {e}" for e in f["commonDrift"]]
+        lines += ["", "Rebuild with `python3 development/scripts/build-common.py --build`.", ""]
+
+    if f.get("movesDrift"):
+        lines += [
+            "## Critical — exported Work moves",
+            "",
+            f"`{rel(MOVES)}` is a review item; apply or discard it before publishing.",
+            "",
+        ]
+        lines += [f"- {e}" for e in f["movesDrift"]]
+        lines.append("")
+
     if f["appsWithoutPortrait"]:
         lines += [
             "## Advisory — apps without a flovePortrait envelope",
@@ -650,10 +817,11 @@ def markdown_report(f: dict) -> str:
         "## Apply, in order",
         "",
         "1. Review every critical item; add routing entries or fix URLs.",
-        "2. Run `python3 tools/extract-fields.py --apply` for field-tree updates.",
-        "3. Update the appy-basic `APP_ROUTING` snapshot (id + category).",
-        "4. Run `/exporty <app>` on the changed apps.",
-        "5. Re-run `jsony_check.py --strict` until clean; delete the pending files.",
+        "2. Run `python3 development/scripts/build-common.py --build` after any register change.",
+        "3. Run `python3 tools/extract-fields.py --apply` for field-tree updates.",
+        "4. Update the appy-basic `APP_ROUTING` snapshot (id + category).",
+        "5. Run `/exporty <app>` on the changed apps.",
+        "6. Re-run `jsony_check.py --strict` until clean; delete the pending files.",
         "",
     ]
     return "\n".join(lines)
@@ -730,6 +898,10 @@ def main() -> int:
             print("  appy envelope missing:", ", ".join(findings["exportAppyMissing"]))
         if findings["appsWithoutPortrait"]:
             print("  apps without portrait:", len(findings["appsWithoutPortrait"]))
+        if findings.get("commonDrift"):
+            print("  common.json drift:", len(findings["commonDrift"]))
+        if findings.get("movesDrift"):
+            print("  exported moves:", len(findings["movesDrift"]))
 
     if not args.no_write:
         PENDING_MD.write_text(markdown_report(findings), encoding="utf-8")

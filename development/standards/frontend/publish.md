@@ -48,13 +48,13 @@ Optional richer agent payload: `window.floveAgentBlock = (portrait) => ({
 prompt, schema, context, suggestions })` — used when Appy hands a portrait to an
 agent.
 
-**Reader (Appy).** `apps/appy/appy-basic.html` renders any uploaded portrait,
+**Reader (Appy).** `apps/appy/index.html` renders any uploaded portrait,
 stores every play in `flove:appy:plays`, and shows the profile. A play opens as
 the **rendered flove card** (auto-render), not as raw JSON; the bridge API
 (`window.floveAppy.read/played/publish/clear`) remains for pages that include
 it, and auto-sync is a convenience over the upload — never the only path.
 Downloads stay current by re-downloading; the stored profile updates on upload.
 
-**Reference:** `apps/appy/appy-basic.html` (the reader + profile store) ·
+**Reference:** `apps/appy/index.html` (the reader + profile store) ·
 `apps/appy/appy-mini.html` (the compact reader) · `apps/metas/goddy.html` (a
 working portrait exporter).

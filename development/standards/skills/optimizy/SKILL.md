@@ -4,6 +4,10 @@ description: >-
   Polish one file or page with only the stages it needs, in the order that
   avoids rework. Use for /optimizy <file|page> or /optimizy1–/optimizy5; an app
   is one run per page.
+category: sys
+checker_of:
+  - https://flove.org/development/standards/frontend/frontend.md#1318-usability-levels-3-minimum-4-function-5-craft
+
 ---
 
 # optimizy
@@ -16,6 +20,17 @@ nothing reads the file after it.
 For an app, run `/optimizyN` per page; `/skilly`/`/jsony` are separate; packages
 are `updaty4`.
 
+## Frontend milestone contract
+
+See [Frontend milestone contract](https://flove.org/development/standards/README.md#frontend-milestone-contract):
+`/optimizy` closes matching Frontend tasks; it adds no ladder.
+
+### Level 4 · flove standards only
+
+Level 4 is flove-only: canonical matrix, six cards × 1–5, milestone groups and
+their `pct` (100 % closes). See [level detail](levels-detail.md). Bug/improvement
+probes sit in levels 1 and 3.
+
 ## Depth
 
 `/optimizyN` runs levels 1 → N and stops; default `/optimizy` = 5. Levels are
@@ -23,20 +38,20 @@ cumulative and skip what the kind doesn't need.
 
 1. **Clean** — `simplify` + `validaty` + `code-review`, plus privacy/security:
    no dead code or bugs, valid HTML/CSS/JS/JSON, a11y · mobile · i18n readiness,
-   the least data, no third-party leak, clear consent. UX flags are noted.
+   the least data, no third-party leak, clear consent; artifact/selector probes.
 2. **Data & Words** — `export` + `texty` + `translaty`: the portrait round-trips,
-   save/share/import work, then copy, names and languages are final.
+   save/share/import work, then copy, names and languages are reviewed where applicable.
 3. **Usability** — meet every minimum in the
    [usability matrix](https://flove.org/development/standards/frontend/frontend.md#1318--usability-levels--3-minimum--4-function--5-craft);
    a missing minimum fails the level. Menu, tour, metadata and transparent stats
-   are the shell rows; every other section is audited the same way.
-4. **Function** — the concrete level-4 features: compass, counters,
-   publish/database and the deeper per-section jobs.
+   are the shell rows; every other section is audited the same way. Improve
+   motion, keyboard, timers and stale feedback.
+4. **Function** — compass, counters, publish/database and deeper jobs; flove-only
+   card/group `pct`, 100 % to close.
 5. **Craft** — the level-5 features: locking/tiers, trends, migration, motion
    and the rest, plus a prioritized recommendation list (impact × effort).
 
-Extra modules when needed, at any level: docs/help, tests/QA, PWA/install,
-share/OG card, print/export, migration.
+Extra modules: [detail](levels-detail.md).
 
 ## Pick the file and its kind
 
@@ -97,19 +112,12 @@ halt before translaty and report the gate.
 
 ## Levels 3–5 · usability
 
-Read [§13.18](https://flove.org/development/standards/frontend/frontend.md#1318--usability-levels--3-minimum--4-function--5-craft)
-and [`contract.md`](https://flove.org/development/standards/contract.md) §6 before judging. Level 3 marks every applicable row
-**present / missing / N/A**; a missing minimum fails. Level 4 implements the
-concrete level-4 features; level 5 the level-5 ones.
-
-The shell rows are menu (§13.5), ten-slide tour (§13.6), metadata (§13.10 +
-head / Open Graph / `flove-fields`) and transparent stats (§13.17). They are
-examples: every section the app has is audited by the same matrix. Report gaps;
-never silently redesign.
+§13.18 scoring, shell rows, improving probes: [level detail](levels-detail.md);
+report gaps, no redesign.
 
 ## Survey
 
-Safe fixes are silent. Batch Nav-risk / Divergence findings into one inline survey
+Batch Nav-risk / Divergence findings into one inline survey
 (`https://flove.org/development/standards/skills/standing.md` 3): finding, why,
 recommendation, alternatives, default; ask once. Stages return findings; the
 orchestrator batches. Apply the chosen rows, record refusals. Headless:
@@ -122,6 +130,8 @@ recommendation, labelled pending (rule 4).
 - No inline `style=`; each helper exists once; navigation still resolves.
 - The three canonical signals hold (§13.10 · §13.6 · §13.14).
 - At level 3+: no applicable row in §13.18 is missing its minimum.
+- Probes ran at 1/3; at 4 each flove card/group has `pct` (100 % closes, IDs of
+  gaps named).
 - Report honestly: what ran, what was skipped, what was surveyed.
 
 ## Boundaries

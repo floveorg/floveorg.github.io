@@ -52,11 +52,11 @@ for (const m of idx.matchAll(/href="([^"]+\.html)(?:#[^"]*)?"/g)) {
 
 // 2) extras: tiers canónicos que el índice no cubre + alias "desnudos" cómodos
 const EXTRAS = {
-  'appy-basic': '/apps/appy/appy-basic.html',   // el índice no lo enlaza; lo pidió Marc
-  'appy':       '/apps/appy/appy-basic.html',   // /appy  -> tier canónico
-  'blogy':      '/apps/blogy/blogy-advanced.html',
+  'appy-basic': '/apps/appy/index.html',   // legacy alias -> canonical app route
+  'appy':       '/apps/appy/index.html',   // /appy  -> canonical app route
+  'blogy':      '/apps/psychosocial/blogy/index.html',
   'keys':       '/apps/puzzy/keys/keys-advanced.html',
-  'dealy':      '/apps/economy/dealy/dealy-advanced.html',
+  'dealy':      '/apps/economy/dealy/index.html',
   'decentral':  '/decentral/',                  // área decentral (hermana de apps/)
   // whole wiki — fields live under /whole/<slug>/ and stay reachable by mote
   'whole':       '/whole/',

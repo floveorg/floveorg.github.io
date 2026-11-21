@@ -75,7 +75,12 @@ body {
 }
 .bubble:hover { transform: scale(1.07); }
 .bubble:active { transform: scale(.92); }
-.bubble svg { width:62%; height:62%; display:block; pointer-events:none; }
+/* paradigm name inside each bubble — sized by the JS from the name's length */
+.bubble .pname {
+  width:88%; font-weight:700; line-height:1.06; letter-spacing:-.02em;
+  font-size:var(--fs,15px); overflow-wrap:anywhere; hyphens:auto;
+  text-shadow:0 1px 0 rgba(255,255,255,.7);
+}
 @keyframes bubble-pop { from{opacity:0; transform:scale(.4)} to{opacity:1; transform:scale(1)} }
 
 /* chrome: home link + caption */
@@ -131,44 +136,82 @@ body.exit { pointer-events:none; }
   <div class="dream-blob b5"></div>
 </div>
 
-<div class="bubble-cloud" id="cloud" aria-label="floating app bubbles"></div>
+<div class="bubble-cloud" id="cloud" aria-label="floating paradigm bubbles"></div>
 
 <script>
 (function(){
   const cloud = document.getElementById('cloud');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // flove app family — each bubble floats a DIFFERENT app's logo and, when tapped,
-  // splashes + fades out over 5s and goes straight to that app.
-  const APPS = [
-    { t:'flove',      href:'../index.html',                    c:'#ff8a3a', m:floveSVG() },
-    { t:'appy',       href:'appy/appy-basic.html',            c:'#ff9d6b', m:houseSVG() },
-    { t:'comby',      href:'puzzy/comby.html',                 c:'#25c39e', m:combySVG() },
-    { t:'confluenty', href:'puzzy/confluenty.html',            c:'#25c39e', m:confluentySVG() },
-    { t:'fivy',       href:'puzzy/fivy.html',                  c:'#8d89ff', m:fivySVG() },
-    { t:'linky',      href:'puzzy/linky.html',                 c:'#25c39e', m:linkySVG() },
-    { t:'poly',       href:'puzzy/poly.html',                  c:'#8d89ff', m:polySVG() },
-    { t:'raty',       href:'puzzy/raty.html',                  c:'#8d89ff', m:ratySVG() },
-    { t:'wisy',       href:'puzzy/wisy.html',                  c:'#f5a623', m:wisySVG() },
-    { t:'trusty',     href:'trusty/trusty.html',               c:'#4fd6cc', m:trustySVG() },
-    { t:'sensy',      href:'bio/sensy.html',                   c:'#ff5fd1', m:sensySVG() },
-    { t:'souls',      href:'metas/souls.html',                 c:'#b48aff', m:soulsSVG() },
-    { t:'socy',       href:'psychosocial/socy.html',            c:'#5ea4e6', m:socySVG() },
-    { t:'lovy',       href:'psychosocial/lovy.html',            c:'#ff8aae', m:lovySVG() },
-    { t:'lowai',      href:'lowai/index.html',                 c:'#6c5ce7', m:lowaiSVG() },
-    { t:'pracsys',    href:'bio/pracsys.html',                 c:'#33d97a', m:pracsysSVG() },
-    { t:'willy',      href:'metas/willy.html',                 c:'#ffce3a', m:willySVG() },
-    { t:'varyy',      href:'bio/varyy.html',                   c:'#4fd6cc', m:varyySVG() },
-    { t:'crafty',     href:'economy/crafty.html',              c:'#ff9648', m:craftySVG() },
-    { t:'worthing',   href:'economy/worthing.html',            c:'#ffce3a', m:worthingSVG() },
+  // paradigm names + links taken from the docs index (docs/index.html).
+  // Each bubble floats a name and, when tapped, splashes + fades out over 5s
+  // and goes to that paradigm's own #section on its whole/ category page.
+  // Colour follows the category page: metaphysics, science, biology, linguistics,
+  // psychosocial, economy (the two non-whole links keep their own colour).
+  function parName(name){
+    const fs = name.length <= 7 ? 19 : name.length <= 11 ? 16 : name.length <= 15 ? 13 : 11;
+    return '<span class="pname" style="--fs:' + fs + 'px">' + name + '</span>';
+  }
+  const PARADIGMS = [
+    { t:'Simplex',         href:'https://flove.org/whole/metaphysics/#simplex',          c:'#a78bfa', m:parName('Simplex') },
+    { t:'PanBitheism',     href:'https://flove.org/whole/metaphysics/#panbitheism',      c:'#a78bfa', m:parName('PanBitheism') },
+    { t:'Compatibilism',   href:'https://flove.org/whole/metaphysics/#compatibilism',    c:'#a78bfa', m:parName('Compatibilism') },
+    { t:'Cathy',           href:'https://flove.org/whole/metaphysics/#doctrine',         c:'#a78bfa', m:parName('Cathy') },
+    { t:'Confluentism',    href:'https://flove.org/whole/metaphysics/#confluentism',     c:'#a78bfa', m:parName('Confluentism') },
+    { t:'Cyclon',          href:'https://flove.org/whole/metaphysics/#cyclon',           c:'#a78bfa', m:parName('Cyclon') },
+    { t:'Intuitionism',    href:'https://flove.org/whole/metaphysics/#intuitionism',     c:'#a78bfa', m:parName('Intuitionism') },
+    { t:'Zygoton',         href:'https://flove.org/whole/metaphysics/#zygoton',          c:'#a78bfa', m:parName('Zygoton') },
+    { t:'Polon',           href:'https://flove.org/whole/science/#polon',                c:'#4fd6cc', m:parName('Polon') },
+    { t:'NucleoFunctors',  href:'https://flove.org/whole/science/#nucleofunctors',       c:'#4fd6cc', m:parName('NucleoFunctors') },
+    { t:'CarboSilicon',    href:'https://flove.org/whole/science/#carbosilicon',         c:'#4fd6cc', m:parName('CarboSilicon') },
+    { t:'2nD',             href:'https://flove.org/whole/science/#2nd',                  c:'#4fd6cc', m:parName('2nD') },
+    { t:'GynoPrimarism',   href:'https://flove.org/whole/biology/#gynoprimarism',        c:'#33d97a', m:parName('GynoPrimarism') },
+    { t:'Bactirus',        href:'https://flove.org/whole/biology/#bactirus',             c:'#33d97a', m:parName('Bactirus') },
+    { t:'Fits',            href:'https://flove.org/whole/biology/#fits',                 c:'#33d97a', m:parName('Fits') },
+    { t:'PreMortem',       href:'https://flove.org/whole/biology/#premortem',            c:'#33d97a', m:parName('PreMortem') },
+    { t:'Midterm',         href:'https://flove.org/whole/biology/#midterm',              c:'#33d97a', m:parName('Midterm') },
+    { t:'YDissipatest',    href:'https://flove.org/whole/biology/#ydissipatest',         c:'#33d97a', m:parName('YDissipatest') },
+    { t:'Sexy',            href:'https://flove.org/whole/biology/#sexy',                 c:'#33d97a', m:parName('Sexy') },
+    { t:'Matrifocality',   href:'https://flove.org/whole/biology/#matrifocality',        c:'#33d97a', m:parName('Matrifocality') },
+    { t:'EmbryoGrief',     href:'https://flove.org/whole/biology/#embryogrief',          c:'#33d97a', m:parName('EmbryoGrief') },
+    { t:'RetrofetalPeak',  href:'https://flove.org/whole/biology/#fetalpeak',            c:'#33d97a', m:parName('RetrofetalPeak') },
+    { t:'EndocrineGender', href:'https://flove.org/whole/biology/#endocrinegender',      c:'#33d97a', m:parName('EndocrineGender') },
+    { t:'BioNumbers',      href:'https://flove.org/whole/biology/#bionumbers',           c:'#33d97a', m:parName('BioNumbers') },
+    { t:'BiSystem',        href:'https://flove.org/whole/biology/#bisystem',             c:'#33d97a', m:parName('BiSystem') },
+    { t:'SystemBridge',    href:'https://flove.org/whole/biology/#systembridge',         c:'#33d97a', m:parName('SystemBridge') },
+    { t:'Dremagine',       href:'https://flove.org/whole/biology/#dremagine',            c:'#33d97a', m:parName('Dremagine') },
+    { t:'ORIGINAL',        href:'https://flove.org/whole/psychosocial/#original',        c:'#ff5fd1', m:parName('ORIGINAL') },
+    { t:'Outher',          href:'https://flove.org/whole/linguistics/#outher',           c:'#ff9d6b', m:parName('Outher') },
+    { t:'OuterSystems',    href:'https://flove.org/whole/linguistics/#outersystems',     c:'#ff9d6b', m:parName('OuterSystems') },
+    { t:'proSODY',         href:'https://flove.org/whole/linguistics/#prosody',          c:'#ff9d6b', m:parName('proSODY') },
+    { t:'Symbionimity',    href:'https://flove.org/whole/linguistics/#symbionim',        c:'#ff9d6b', m:parName('Symbionimity') },
+    { t:'Intensonim',      href:'https://flove.org/whole/linguistics/#intensonim',       c:'#ff9d6b', m:parName('Intensonim') },
+    { t:'Foxyholon',       href:'https://flove.org/whole/linguistics/#foxyholon',        c:'#ff9d6b', m:parName('Foxyholon') },
+    { t:'Verbon',          href:'https://flove.org/whole/linguistics/#verbon',           c:'#ff9d6b', m:parName('Verbon') },
+    { t:'HyperGraph',      href:'https://flove.org/whole/linguistics/#hypergraph',       c:'#ff9d6b', m:parName('HyperGraph') },
+    { t:'Wise',            href:'https://flove.org/whole/linguistics/#wise',             c:'#ff9d6b', m:parName('Wise') },
+    { t:'DarkSquare',      href:'https://flove.org/whole/psychosocial/#psychology',      c:'#ff5fd1', m:parName('DarkSquare') },
+    { t:'Freedom',         href:'https://flove.org/whole/psychosocial/#sociology',       c:'#ff5fd1', m:parName('Freedom') },
+    { t:'Art',             href:'https://flove.org/whole/linguistics/#art',              c:'#ff9d6b', m:parName('Art') },
+    { t:'FreeData',        href:'https://flove.org/whole/psychosocial/#freedata',        c:'#ff5fd1', m:parName('FreeData') },
+    { t:'ProportionalGov', href:'https://flove.org/whole/psychosocial/#proportionalgov', c:'#ff5fd1', m:parName('ProportionalGov') },
+    { t:'LowAI',           href:'https://lowai.org',                                     c:'#6c5ce7', m:parName('LowAI') },
+    { t:'CoComputing',     href:'https://lowai.org',                                     c:'#6c5ce7', m:parName('CoComputing') },
+    { t:'Chain',           href:'https://flove.org/whole/economy/#chain',                c:'#ffce3a', m:parName('Chain') },
+    { t:'Ecology',         href:'https://flove.org/whole/economy/#ecology',              c:'#ffce3a', m:parName('Ecology') },
+    { t:'CrowdCrafting',   href:'https://flove.org/whole/economy/#app-crafty',            c:'#ffce3a', m:parName('CrowdCrafting') },
+    { t:'Offer',           href:'https://demos.flove.org/PsychoSocial/Freedom/Offer/Many/index.html', c:'#5ea4e6', m:parName('Offer') },
+    { t:'Wish',            href:'https://flove.org/whole/economy/#wish',                 c:'#ffce3a', m:parName('Wish') },
+    { t:'Shary',           href:'https://flove.org/whole/economy/#shary',                c:'#ffce3a', m:parName('Shary') },
+    { t:'Credit',          href:'https://flove.org/whole/economy/#credit',               c:'#ffce3a', m:parName('Credit') },
   ];
 
   const rnd = (a,b) => a + Math.random()*(b-a);
   const vel = () => (Math.random()<.5?-1:1) * rnd(.05,.16);
   const physics = new Map();
 
-  // ── route to an app: splash at the click, then fade the interface to white
-  //    over 5s, then navigate straight to the app. ──
+  // ── route to a paradigm section: splash at the click, then fade the interface
+  //    to white over 5s, then navigate straight to its #section. ──
   function splash(x, y, c){
     const wrap = document.createElement('div');
     wrap.className = 'splash';
@@ -199,7 +242,7 @@ body.exit { pointer-events:none; }
     document.body.appendChild(veil);
     document.body.classList.add('exit');
     requestAnimationFrame(() => requestAnimationFrame(() => veil.classList.add('on')));
-    setTimeout(() => { window.location.href = href; }, 5000);   // 5s fade, then the app
+    setTimeout(() => { window.location.href = href; }, 5000);   // 5s fade, then the paradigm
   }
   function leave(w, el){
     const b = el.getBoundingClientRect();
@@ -217,7 +260,7 @@ body.exit { pointer-events:none; }
   // ── constant flow: a fixed, limited number of bubbles float up at once ──
   const CAP = 6;                       // max bubbles on screen at any one time
   const active = [];                   // the live bubbles rising now
-  const bank = APPS.slice();           // shuffled pool — new bubbles are drawn from it
+  const bank = PARADIGMS.slice();      // shuffled pool — new bubbles are drawn from it
   for (let i = bank.length - 1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); [bank[i], bank[j]] = [bank[j], bank[i]]; }
   let bankIndex = 0;
   function takeNext(){ const w = bank[bankIndex % bank.length]; bankIndex++; return w; }
@@ -236,13 +279,13 @@ body.exit { pointer-events:none; }
     el.className = 'bubble';
     el.setAttribute('role', 'button');
     el.setAttribute('tabindex', '0');
-    el.setAttribute('aria-label', 'Open ' + w.t);
+    el.setAttribute('aria-label', 'Read paradigm ' + w.t);
     el.title = w.t;
     el.style.setProperty('--bub', w.c);
     const size = Math.round(rnd(76, 138));
     el.style.width = size+'px'; el.style.height = size+'px';
     el.style.animationDelay = (fromBelow ? Math.random()*0.2 : Math.random()*0.5).toFixed(2)+'s';
-    el._w = w;                                            // current app identity (re-rollable)
+    el._w = w;                                            // current paradigm (re-rollable)
     el.innerHTML = w.m;
     el.addEventListener('click', (e) => { e.stopPropagation(); leave(el._w, el); });
     el.addEventListener('keydown', (e) => {
@@ -257,17 +300,17 @@ body.exit { pointer-events:none; }
   function replenish() {
     while (active.length < CAP) makeBubble(takeNext());
   }
-  // a background click re-rolls up to n existing bubbles — each swaps app (logo,
-  // colour, link) to a different one.
+  // a background click re-rolls up to n existing bubbles — each swaps paradigm
+  // (name, colour, link) to a different one.
   function rollSome(n) {
     const count = Math.min(n, active.length);
     for (let k = 0; k < count; k++){
       const el = active[Math.floor(Math.random()*active.length)];
       let w;
-      do { w = APPS[Math.floor(Math.random()*APPS.length)]; } while (APPS.length > 1 && w === el._w);
+      do { w = PARADIGMS[Math.floor(Math.random()*PARADIGMS.length)]; } while (PARADIGMS.length > 1 && w === el._w);
       el._w = w;
       el.style.setProperty('--bub', w.c);
-      el.setAttribute('aria-label', 'Open ' + w.t);
+      el.setAttribute('aria-label', 'Read paradigm ' + w.t);
       el.title = w.t;
       el.innerHTML = w.m;
     }
@@ -310,7 +353,7 @@ body.exit { pointer-events:none; }
   // start the constant flow — only CAP bubbles on screen at once
   replenish();
 
-  // click the blank background: change the links + logos on 3 bubbles, and
+  // click the blank background: change the names + links on 3 bubbles, and
   // brim a fresh wave up from below
   document.addEventListener('click', function(e){
     if (e.target.closest('.bubble')) return;
@@ -318,67 +361,6 @@ body.exit { pointer-events:none; }
     makeBubble(takeNext(), true);      // one more rises from the bottom
   });
 
-  // ── app logo marks (compact, self-contained inline SVG) ──
-  function floveSVG(){
-    return '<svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="fbg" x1="12" y1="0" x2="88" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff3344"/><stop offset=".5" stop-color="#ff8a3a"/><stop offset="1" stop-color="#ffd633"/></linearGradient></defs><path d="M50 62 C 24 62 13 42 17 21 C 39 25 55 41 50 62 Z" fill="url(#fbg)"/><path d="M50 62 C 76 62 87 42 83 21 C 61 25 45 41 50 62 Z" fill="url(#fbg)"/><path d="M50 60 C 50 74 50 85 50 92" stroke="url(#fbg)" stroke-width="6" stroke-linecap="round" fill="none"/></svg>';
-  }
-  function houseSVG(){
-    return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M22 48 H78 V84 H22 Z" fill="#ffd9a8" stroke="#241f36" stroke-width="5" stroke-linejoin="round"/><path d="M50 15 L88 50 H12 Z" fill="#ff9d6b" stroke="#241f36" stroke-width="5" stroke-linejoin="round"/><rect x="43" y="61" width="15" height="23" rx="2" fill="#241f36"/></svg>';
-  }
-  function combySVG(){
-    return '<svg viewBox="0 0 32 32" aria-hidden="true"><g fill="none" stroke="#25c39e" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="11" r="4.6"/><circle cx="16" cy="21" r="4.6"/><circle cx="23" cy="11" r="4.6"/></g></svg>';
-  }
-  function confluentySVG(){
-    return '<svg viewBox="0 0 32 32" aria-hidden="true"><g fill="none" stroke="#25c39e" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h8"/><path d="M9 10 13 14 9 18"/><path d="M28 14h-8"/><path d="M23 10l-4 4 4 4"/><circle fill="#25c39e" stroke="none" cx="16" cy="14" r="1.2"/></g></svg>';
-  }
-  function fivySVG(){
-    return '<svg viewBox="0 0 32 32" aria-hidden="true"><g fill="none" stroke="#8d89ff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M16 22V7"/><path d="M16 22 9 10M16 22 23 10M16 22 6.5 15M16 22 25.5 15"/><circle fill="#8d89ff" stroke="none" cx="16" cy="22" r="2"/></g></svg>';
-  }
-  function linkySVG(){
-    return '<svg viewBox="0 0 32 32" aria-hidden="true"><g fill="none" stroke="#25c39e" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="3.6"/><circle cx="22" cy="22" r="3.6"/><path d="M13 13l6 6"/></g></svg>';
-  }
-  function polySVG(){
-    return '<svg viewBox="0 0 32 32" aria-hidden="true"><g fill="none" stroke="#8d89ff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="16" r="8.5"/><path d="M16 7.5a4.2 4.2 0 0 0 0 8.5 4.2 4.2 0 0 1 0 8.5"/><circle fill="#8d89ff" stroke="none" cx="16" cy="11.7" r="1.6"/><circle fill="#8d89ff" stroke="none" cx="16" cy="21.6" r="1.6"/></g></svg>';
-  }
-  function ratySVG(){
-    return '<svg viewBox="0 0 32 32" aria-hidden="true"><g fill="none" stroke="#8d89ff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20a8 8 0 0 1 22 0"/><path d="M9.5 20a6.5 6.5 0 0 1 13 0"/><path d="M13 20a3 3 0 0 1 6 0"/><circle fill="#8d89ff" stroke="none" cx="16" cy="20" r="1.6"/></g></svg>';
-  }
-  function wisySVG(){
-    return '<svg viewBox="0 0 32 32" aria-hidden="true"><g fill="none" stroke="#f5a623" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l5 3.6L17 7"/><path d="M9 13 13 16l4.4-3"/><path d="M11 19l3 2 2.6-1.6"/><circle fill="#f5a623" stroke="none" cx="16" cy="24" r="1.5"/></g></svg>';
-  }
-  function trustySVG(){
-    return '<svg viewBox="0 0 100 100" aria-hidden="true"><rect x="28" y="46" width="44" height="34" rx="8" fill="#4fd6cc" stroke="#241f36" stroke-width="5"/><path d="M36 46 v-8 a14 14 0 0 1 28 0 v8" fill="none" stroke="#241f36" stroke-width="5"/><circle cx="50" cy="63" r="4" fill="#241f36"/></svg>';
-  }
-  function sensySVG(){
-    return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 38 c-9-12-24-11-27 2 -3 15 8 22 27 32 19-10 30-17 27-32 -3-13-18-14-27-2 Z" fill="#ff5fd1" stroke="#241f36" stroke-width="4" stroke-linejoin="round"/><circle cx="50" cy="50" r="6" fill="#fff"/></svg>';
-  }
-  function soulsSVG(){
-    return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 22 C 30 22 20 34 28 46 C 36 58 50 56 50 72 C 50 56 64 58 72 46 C 80 34 70 22 50 22 Z" fill="none" stroke="#b48aff" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/></svg>';
-  }
-  function socySVG(){
-    return '<svg viewBox="0 0 100 100" aria-hidden="true"><g stroke="#5ea4e6" stroke-width="5" stroke-linecap="round"><path d="M50 26l26 16M50 26L24 42M50 74l26-16M50 74L24 58M50 50l0-24M50 74V50"/></g><circle cx="50" cy="26" r="9" fill="#8d89ff"/><circle cx="76" cy="58" r="9" fill="#4fd6cc"/><circle cx="24" cy="58" r="9" fill="#ff8a3a"/><circle cx="50" cy="74" r="9" fill="#b48aff"/></svg>';
-  }
-  function lovySVG(){
-    return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 78 C 22 60 10 42 18 28 C 26 14 44 15 50 24 C 56 15 74 14 82 28 C 90 42 78 60 50 78 Z" fill="#ff8aae" stroke="#241f36" stroke-width="4" stroke-linejoin="round"/></svg>';
-  }
-  function lowaiSVG(){
-    return '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#6c5ce7"/><text x="52" y="70" text-anchor="middle" font-family="system-ui" font-size="46" font-weight="800" fill="#fff">LA</text></svg>';
-  }
-  function pracsysSVG(){
-    return '<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="32" fill="none" stroke="#33d97a" stroke-width="7"/><path d="M38 50 l9 9 16-16" fill="none" stroke="#33d97a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="50" r="6" fill="#241f36"/></svg>';
-  }
-  function willySVG(){
-    return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 18 l9 19 21 3 -15 15 4 21 -19 -10 -19 10 4 -21 -15 -15 21 -3 Z" fill="#ffce3a" stroke="#241f36" stroke-width="4" stroke-linejoin="round"/></svg>';
-  }
-  function varyySVG(){
-    return '<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="#4fd6cc" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M24 30h30a18 18 0 0 1 0 36H52"/><path d="M30 42l-6-6 6-6"/><path d="M72 24l6 6-6 6"/><path d="M72 64l6 6-6 6"/></g></svg>';
-  }
-  function craftySVG(){
-    return '<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="38" cy="42" r="22" fill="#ff9648" stroke="#241f36" stroke-width="5"/><circle cx="61" cy="58" r="22" fill="#ffd28a" stroke="#241f36" stroke-width="5"/><circle cx="38" cy="42" r="8" fill="#241f36" opacity=".8"/><circle cx="61" cy="58" r="8" fill="#241f36" opacity=".8"/></svg>';
-  }
-  function worthingSVG(){
-    return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M34 26 L18 50 34 26 66 26 L82 50 L66 74 L34 50 Z" fill="none" stroke="#ffce3a" stroke-width="6" stroke-linejoin="round"/><path d="M50 26 V74" stroke="#ffce3a" stroke-width="4"/></svg>';
-  }
 })();
 </script>
 

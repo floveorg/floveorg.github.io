@@ -56,7 +56,7 @@ to something that just happens.) Seven apps are wired in so far, from
 [souls](https://flove.org/apps/metas/souls.html) to
 [goddy](https://flove.org/apps/metas/goddy.html) to
 [pracsys](https://flove.org/apps/bio/pracsys.html); the
-[profile](https://flove.org/apps/appy/appy-basic.html) is where they collect.
+[profile](https://flove.org/apps/appy/index.html) is where they collect.
 
 ## Staying light enough to keep
 

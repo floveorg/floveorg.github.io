@@ -1,5 +1,7 @@
 # Pendings
 
+> **Scope / Ámbito:** EN: Live issue register — a fallback referral mirroring the 76 pendings rows of the 425-item canonical register in Docs · Plan/Work; the other 349 items are 312 milestones, each under its own section\'s field (28 fields in total), plus 37 debate tickets. Milestone tasks and their `depends_on` chains live in `milestones.json`, ordered by the 6 canonical sections; the per-field task breakdown is in [`hitos-audit.md`](hitos-audit.md#fields-and-their-tasks) and is filterable in Work via `State` (`archived · fácil · difícil · muy difícil`). Historical decisions are in `plans/` and the archive. · ES: Registro vivo de incidencias — referencia de fallback que refleja las 76 filas de pendings del registro canónico de 425 ítems en Docs · Plan/Work; los otros 349 son 312 hitos, cada uno bajo el campo propio de su sección (28 campos en total), más 37 tickets de debate. Las tareas y sus dependencias viven en `milestones.json`, ordenadas por las 6 secciones canónicas; el desglose campo→tasks está en [`hitos-audit.md`](hitos-audit.md#fields-and-their-tasks) y se filtra en Work con `Estado / State` (`archived · fácil · difícil · muy difícil`). Las decisiones históricas están en `plans/` y el archivo.
+
 Punteros desde los docs: `↗ pendings:#N` (donde N es el ID).
 
 **Interview de decisiones:** entrada "Various — Design Decisions", reciclada abajo como `VARIOUS_Q01`–`VARIOUS_Q50`; el registro completo está en `archive/making-of/making-of.html`.
@@ -9,6 +11,14 @@ Punteros desde los docs: `↗ pendings:#N` (donde N es el ID).
 ---
 
 ## Pending Items
+
+### Hot
+
+Optimize `development/index.html` (Plan/Work) load without risking navigation or filters (on-demand, externalized).
+
+- Work data: runtime payload `flove-work/1` is compiled by `development/scripts/build-work-tracker.py` from `development/standards/debates/milestones.json` + `pendings.md` and currently inlined as `#work-data` (~lines 1211–57050). Extract to a static asset (e.g. `development/data/work.json`, same schema), fetch + `JSON.parse` + init tracker only on `#work` / Work entry, then apply hash/filter state (`tab`, `subtab`, `q`, view/phase/type…). `milestones.json` stays the canonical source (not runtime-fetched); `--build/--check` must emit/validate the external artifact to avoid drift.
+- Plan SVGs: `#dy-decentral-model` thread (~48 KB, line ~1177, inside hidden “See more”) duplicates `development/diagrams/decentral-model/decentral-model.thread.svg` — load/inject on panel open (or externalize) and consider SVGO. Tall `.seq` thread (~18 KB, ~line 100659) is a good lazy/external + SVGO candidate; other inline diagrams are smaller. Plan markup/fragments can be fetched on demand.
+- Rollout/fallback: clone `development/index.html` → `development/index.legacy.html` (known-good inline). New slim `index.html` loads externals on demand; on fetch/parse/init failure fall back/link to `index.legacy.html` preserving `location.search + location.hash`. Phase 1: externalize + lazy-init Work; Phase 2: lazy-load heavy Plan SVG/fragments.
 
 ### Making-of open decisions (recycled 2026-11-19)
 
@@ -20,29 +30,20 @@ Punteros desde los docs: `↗ pendings:#N` (donde N es el ID).
 - **VARIOUS_Q04** What engagement ranking and anti-gaming mechanics does nety need? · nety, ranking — ◇ Defer
 - **VARIOUS_Q05** How should nety curators be selected and held accountable? · nety, curators — ◇ Defer
 - **VARIOUS_Q06** How should abuse adjudication work in nety? · nety, moderation — ◇ Defer
-- **VARIOUS_Q07** Is the social app standalone or integrated into MyNet? · social, architecture — ◇ Profily-integrated MyNet
+- **VARIOUS_Q07** ~~Is the social app standalone or integrated into MyNet?~~ → ✅ Integrated into MyNet (2026-11-20): Social is the MyNet tab (tab 3 of 5), not a standalone app; owner `browsy/spec.md` §3.4 / BSP-M16.
 - **VARIOUS_Q08** Should vizy recover its XR/VR direction? · vizy, direction — ◇ Abandon VR
 - **VARIOUS_Q09** Should trusty implement crumbly granular mode? · trusty, features — ◇ Defer
 - **VARIOUS_Q10** What theming/branding approach for docs? · docs, theme — ◇ Always dark
-- **VARIOUS_Q11** How should docs search work? · docs, search — ◇ None (just nav)
-- **VARIOUS_Q12** Should docs include code examples? · docs, content — ◇ Copy-paste snippets
 - **VARIOUS_Q13** What theming/branding approach for docs? · docs, theme — ◇ Always dark
   - options: • Dark theme (manual toggle) — Default dark, user can switch to light. Standard approach, moderate code. · • Auto-detect system theme — Follow OS dark/light setting. No toggle needed, less user control. · • Both (toggle + auto) — Auto-detect with manual override. Most flexible, most code. · • Always light — No theming — always light. Simplest, but mismatches flove's dark aesthetic. · • Always dark — No theming — always dark. Matches flove, simplest, no toggle.
-- **VARIOUS_Q14** How should docs search work? · docs, search — ◇ None (just nav)
   - options: • Client-side full-text (lunr.js) — Self-contained search, works offline, adds ~50KB JS. Flove-first approach. · • Algolia DocSearch — Fast, hosted, free for OSS. External service dependency. · • Google site search — Easy to set up, external, requires internet. Simple but not flove-first. · • None (just nav) — No search — rely on good navigation and cross-links. Simplest.
 - **VARIOUS_Q15** Should docs have cross-links between pages? · docs, navigation — ◇ Inline links in text
   - options: • Inline links in text — Natural hyperlinks within content. Best UX, organic discovery. · • Related-docs section — Explicit 'Related' block at the bottom of each page. Structured but rigid. · • Both — Inline + related section. Maximum discoverability, maximum maintenance. · • None — No cross-links — each page is standalone. Simplest.
-- **VARIOUS_Q16** What navigation pattern for docs? · docs, navigation — ◇ Sidebar
   - options: • Sidebar — Persistent left sidebar with section links. Standard docs pattern, always visible. · • Top nav bar — Horizontal nav at the top. Cleaner, less space, but limited depth. · • Breadcrumbs — Path-based breadcrumbs at the top. Good for deep hierarchies, less for flat ones. · • None needed — No dedicated nav — just links in content. Simplest.
-- **VARIOUS_Q17** Should docs include code examples? · docs, content — ◇ Copy-paste snippets
   - options: • Copy-paste snippets — Short, focused code blocks. Easy to scan, easy to copy. · • Full file examples — Complete HTML files users can download. More complete, heavier. · • None — No code examples — just prose. Simplest.
-- **VARIOUS_Q18** Should docs have a contribution guide? · docs, contributing — ◇ No, Marc-only
   - options: • Yes, contribution guide — Explain how to contribute — structure, style, PR process. Encourages community. · • No, Marc-only — Keep docs editing to Marc only. Simpler, more control.
-- **VARIOUS_Q19** How should users get help or contact support? · docs, support — ◇ None
   - options: • Email link — Simple contact form or mailto link. Direct, personal. · • GitHub issues — Public issue tracker. Transparent, searchable, but requires GitHub account. · • Both — Email for private, GitHub for public. Most flexible. · • None — No explicit support channel — users find Marc through the community.
-- **VARIOUS_Q20** How should docs be maintained over time? · docs, maintenance — ◇ On-demand only
   - options: • Scheduled reviews — Regular audits (quarterly). Proactive, catches drift early. · • On-demand only — Update when something breaks or changes. Reactive, less work. · • Both — Scheduled audits + on-demand fixes. Most thorough.
-- **VARIOUS_Q21** Should docs support extensibility (plugins)? · docs, extensibility — ◇ Just standards
   - options: • Plugin system — Document how to build plugins/modules. Useful for developers, adds scope. · • Just standards — Document the standards only — no extensibility docs. Focused. · • Both — Standards + extensibility. Comprehensive but more work.
 - **VARIOUS_Q22** How should routing.json be authored? · backend, routing — ◇ Marc-only
   - options: • Community wiki — Anyone can edit. Democratic, fast updates, risk of vandalism. · • Curator-only — Only curators can edit. Safe, slow, controlled. · • Automated (AI) — AI generates/maintains routing. Fast, unpredictable, hard to audit. · • Marc-only — Only Marc edits. Simplest, most control.
@@ -62,9 +63,7 @@ Punteros desde los docs: `↗ pendings:#N` (donde N es el ID).
   - options: • Yes, in-app button — Custom 'Install flove' button using beforeinstallprompt. More discoverable, more code. · • No, browser-only — Rely on browser's install prompt. Simpler, less discoverable. · • Defer — Don't implement yet — revisit after core apps ship.
 - **VARIOUS_Q30** How should the multiuser-pack work? · multiuser, pack — ◇ Defer
   - options: • 2 copies default — Default 2 packs — personal + work. Simple, covers most use cases. · • Unlimited — No limit — user creates as many as needed. More flexible, more complexity. · • Defer — Don't design yet — wait until the encryption layer is closer to shipping.
-- **VARIOUS_Q31** What is the primary audience for flove docs? · docs, audience — ◇ Developers
   - options: • Developers — Technical docs — API references, code examples, architecture. Detailed, code-heavy. · • Users — End-user docs — how to use flove apps. Practical, less technical. · • Contributors — How to contribute to flove — standards, workflows, PR process. Community-focused. · • All equally — No primary audience — serve everyone equally. Broad, less focused.
-- **VARIOUS_Q32** How should docs handle versioning? · docs, versioning — ◇ Single 'latest'
   - options: • Single 'latest' — One set of docs, always current. Simplest, no version sprawl. · • Version per release — Snapshot docs per version. Accurate, but maintenance heavy. · • Inline version markers — Tag sections with 'available since FloveX26-3'. Lightweight, informative.
 - **VARIOUS_Q33** Should flove apps have a standardized footer? · apps, design — ◇ Minimal footer
   - options: • Standardized footer — All apps share the same footer component. Consistent, less individuality. · • App-specific footer — Each app designs its own footer. More creative, less consistent. · • Minimal footer — Just version + license, no links. Clean, unobtrusive.
@@ -129,6 +128,32 @@ Punteros desde los docs: `↗ pendings:#N` (donde N es el ID).
 
 - **A11Y02** axe-core pass — lo estático sigue en `tools/check-a11y.py`; la pasada real usa **`tools/check-a11y-axe.py`** (Chrome headless + axe 4.10.2 vía `development/standards/scripts/a11y-harness.html`), por app, con `--md`/`--json`; el teclado lo cubre **`tools/check-keyboard.py`** (`development/standards/scripts/keyboard-harness.html`). Informe: [`a11y-report.md`](a11y-report.md) — **49 apps, 0 nodos, 0 páginas saltadas** (2026-11-19). **Hecho 2026-11-19:** las 46 apps con nodos bajaron a **0**; nety, sety y vizy2 ya se auditan (copia con recursos remotos neutralizados y espera de 120 s); nety y sety inlinean Fredoka + Space Mono; teclado **49 apps · 72 controles · 0 fallos**; estático **54 archivos · 0**. Sin timeouts ignorados.
 - **UX01** Niveles 4–5 de §13.18 — la norma está en [`frontend.md` §13.18](../frontend/frontend.md) y la tabla de estado vive en `development/index.html` (Data → UX levels). 2026-11-19: **6/18 filas de nivel 4** y **1/18 de nivel 5** con ✓; el resto lleva `+`. **Pendiente:** pasada `optimizy` app por app para confirmar el nivel 4 de cada sección que la app tenga y anotar su hueco de nivel 5 — la foto actual es una encuesta estática de las 49 apps, no una pasada por app. Una app sin esa sección queda exenta (§13.18) y no entra en la cola.
+
+  **Evidence template (2026-11-20)** — the 18 §13.18 rows, seeded from the static survey in `development/index.html` → Data → UX levels. Leave the last two columns empty until the per-app `optimizy` pass records an app with the section; an app without that section is exempt (§13.18). Static totals stay **6/18** at level 4 and **1/18** at level 5; Frontend Advanced/Super milestone states stay `todo` until this table has evidence (Q088).
+
+  | §13.18 section | 4 · static | 5 · static | apps with evidence | gap noted |
+  |---|---|---|---|---|
+  | Identity & tokens | ✓ | + |  |  |
+  | Self-contained | ✓ | ✓ |  |  |
+  | Persistence | + | + |  |  |
+  | Menu | + | + |  |  |
+  | Tour | + | + |  |  |
+  | Metadata | + | + |  |  |
+  | Stats | + | + |  |  |
+  | Summary | ✓ | + |  |  |
+  | Export/share | + | + |  |  |
+  | Forms | + | + |  |  |
+  | Theme | + | + |  |  |
+  | Language | + | + |  |  |
+  | States | + | + |  |  |
+  | Navigation | ✓ | + |  |  |
+  | Compass | + | + |  |  |
+  | Counters | ✓ | + |  |  |
+  | Publish (database) | ✓ | + |  |  |
+  | Locking / tiers | — | + |  |  |
+
+  **Next pass:** 2026-11-21 · owner kdeneon · `optimizy` writes app · section · gap into the **task** (Q108/Q110); this table is its mirror, and the last two columns fill from it. Then flip Frontend Advanced/Super from `todo` (Q088).
+
 - **VOCAB02** ~~Deriva de la matriz de vocabulario~~ → ✅ Hecho (2026-11-19): `scripts/check-drift.py` da **ALIGNED** con **54/54 apps** y **0 notas**. Las 19 apps que faltaban están en la matriz: 12 con `slotKinds` (media importación), browsy/fity/wizy y chacrikun/electrorchestra/frotis/loly sin campos (`displayOnly`), todas con los 4 slots compartidos. La columna Spanish está poblada para las 19.
 
 ### Worldview
@@ -199,8 +224,8 @@ Punteros desde los docs: `↗ pendings:#N` (donde N es el ID).
 ### Designs Pendientes
 - **DS01** ~~`flove-pwa-installable-design.md` — pendiente plan de implementación~~ → ✅ Simple install prompt
 - **DS02** ~~`flove-private-addon-login-encryption-design.md` — pendiente plan de implementación~~ → ✅ OAuth integration
-- **DS03** `appy-advanced-athenea-desk.md` — Tasks 6 (wizy.html), 7 (sety.html); task 8 retired 2026-11-19
-- **DS04** `appy-intros-rainbow-roadmap-design.md` — features-intro stubbed, nav location TBD
+- **DS03** `appy-advanced-athenea-desk.md` *(no localizado en el árbol; histórico)* — Tasks 6 (wizy.html), 7 (sety.html); task 8 retired 2026-11-19
+- **DS04** `appy-intros-rainbow-roadmap-design.md` *(no localizado en el árbol; histórico)* — features-intro stubbed, nav location TBD
 
 ### Android / APK
 - **APK01** Android SDK no instalado — necesario para `bubblewrap build`

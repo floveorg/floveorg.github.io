@@ -20,7 +20,7 @@ Until now, saving what you'd made to your profile was a **choice you had to
 remember**: finish in an app, then press a button to send it over. That worked,
 but it leaned on you to bother. As of today it's **automatic** — every time you
 update an app's summary, that result lands in your
-[profile](https://flove.org/apps/appy/appy-basic.html) on its own. No button to
+[profile](https://flove.org/apps/appy/index.html) on its own. No button to
 find, nothing to remember. In flove's plan this is the step from *F0* (publish by
 hand) to *F1* (publish always, quietly) — and it's live.
 

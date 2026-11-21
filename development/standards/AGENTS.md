@@ -17,7 +17,7 @@ folders (e.g. `flove-apk`).
    3.3 Nombres canónicos: Data Depth, Apps, Tree/Types, whole/; no sinónimos
 4. Niveles
    4.1 `<skill>N` = 1 → N, acumulativos, para en N
-   4.2 Sin número → multiselect
+   4.2 Sin número → el default documentado de cada skill; N corre 1→N
    4.3 Separar mínimo / función / craft
 5. Tablas
    5.1 Una tabla vive en su fuente
@@ -50,12 +50,12 @@ folders (e.g. `flove-apk`).
 12. Formato
    12.1 Tablas para matrices y comparaciones
    12.2 En documentos, numerar con IDs únicos y jerárquicos: 1, 1.1, 1.2 — no listas planas
-   12.3 Sugerencias: cuando pidas ideas o yo te ofrezca acciones concretas (siguientes pasos, opciones, alternativas), presentarlas en el terminal con este formato exacto:
-        12.3.1 Numeración continua 1–N; los títulos de sección también llevan número (1, 5, 9…)
-        12.3.2 Título de sección: encabezado Markdown `### N. Título` — negrita y color
-        12.3.3 Ideas: lista ordenada que continúa la numeración (2, 3, 4…), una por línea
-        12.3.4 Una línea en blanco entre secciones
-        12.3.5 Al final, aparte del listado, ofréceme una encuesta multiselect como opción adicional si lo ves conveniente
+   12.3 Numbered suggestions and questions (terminal): when you ask for ideas, I offer concrete actions (next steps, options, alternatives), or I present questions for you to answer, use one numbered batch with this format:
+        12.3.1 Continuous sequence per batch (1–N): assign a unique number to every numbered element in the batch in one continuous sequence. Never restart numbering per section or category.
+        12.3.2 Titles included: each titled block (section, question, or group) is a numbered element in that same sequence — include its number in the heading (e.g. `### 1. Title`) so titles are addressable, not outside the count.
+        12.3.3 Items continue the sequence: list every suggestion, next step, or selectable option as a numbered item that continues the same sequence (one per line, concise). This applies to both direct action suggestions and questions with reply options.
+        12.3.4 Replies (for questions/options): make each answer option uniquely numbered within the batch and state the reply format (e.g. "reply with one option number per question, in order" or "reply with the numbers you choose"), so answers map unambiguously to numbers.
+        12.3.5 Layout: separate blocks with a blank line; keep blocks scannable. When useful, also offer a multiselect prompt as an additional way to choose. For multi-batch sessions, keep numbering continuous across batches when practical and label the range (e.g. Q001–Q030) so references stay unique.
 13. Idioma
    13.1 Todo el contenido de `flove/` (apps, webs, docs y código) va en inglés
    13.2 Excepciones en español: `liberada`, `futbolia` y `dinámicas electrónicas`
@@ -64,8 +64,12 @@ folders (e.g. `flove-apk`).
 
 **Standards index:** `README.md` — what exists and where it is specified.
 
-**Vocabulary:** [`vocabulary/index.html`](vocabulary/index.html) — canonical names,
+**Vocabulary:** [`vocabulary.html`](vocabulary.html) — canonical names,
 the field data model and the interactive matrix.
+
+**Task procedure:** [`../AGENTS.md`](../AGENTS.md) — canonical source of how
+ongoing tasks are executed (all nine PROCs); `debates/milestones.json` owns only
+hitos and tasks.
 
 ## Editing rule
 

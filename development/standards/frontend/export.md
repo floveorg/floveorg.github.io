@@ -9,6 +9,10 @@ Part of the flove frontend standards catalogue. Index / matrix: `../README.md` �
 Part of the flove frontend standards catalogue. The `/exporty` and `/jsony`
 skills audit an app against this contract; Goddy is the reference.
 
+**Tracked work:** the open export/share items EXP03–EXP08 are in
+[`../debates/pendings.md` §Export / Share / Appy](../debates/pendings.md); Work
+filter: [data · json](https://flove.org/development/index.html#work?tab=docs&view=r2&subtab=work&category=data&section=json).
+
 **The current model is JSON-only.** Every app exports **one file**,
 `<app>-portrait.json`, a `flove-portrait/1` envelope built from its summary
 section. Appy renders that portrait into the human HTML view. The former
@@ -146,7 +150,7 @@ stay the source of truth for the data. Goddy is the reference.
 **One live profile.** Appy’s **Profile** tab is the single live profile: it
 already carries Authy data, played apps, Play apps, Upload played app and the
 topbar. There is no second in-Appy “See” page; Share → Appy and Authy →
-Telegram land on `appy-basic.html#profile`, with the unlock tour. **View &
+Telegram land on `index.html#profile`, with the unlock tour. **View &
 Export** (next to Upload, 33%) generates a self-contained HTML snapshot of the
 whole profile with a **Share** button (`navigator.share` files) and Save HTML;
 **Export JSON** lives in **Privacy → Export**. Appy play cards use its own

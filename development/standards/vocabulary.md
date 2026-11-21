@@ -20,7 +20,7 @@ Each row gives the prefix, what it means semantically, and the most
 common derived names. Specific variants are documented in blogy's own
 CSS (`apps/blogy/blogy-advanced-one.html` is the most vocabulary-rich file
 — the self-contained variant — grep there first when unsure how a
-prefix is used; the canonical modular `blogy-advanced.html` uses the same
+prefix is used; the canonical modular `index.html` uses the same
 vocabulary but is leaner).
 
 **App frame (corporate chrome — shared across all apps):**
@@ -396,7 +396,7 @@ in the menu where the structural role calls for them.
 #### 13.7.13 · Topbar collapse + menu via logo/title
 
 Adopted 2026-05-28 in `apps/blogy/blogy-advanced-one.html`,
-`apps/blogy/blogy-advanced.html`, `apps/blogy/blogy-basic-css.html`. Three
+`apps/blogy/index.html`, `apps/blogy/blogy-basic-css.html`. Three
 small but cumulative changes to the topbar surface (§13.7 Brand
 / Buttons / Menu rows):
 

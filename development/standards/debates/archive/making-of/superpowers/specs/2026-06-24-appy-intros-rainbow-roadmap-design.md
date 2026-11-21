@@ -1,11 +1,13 @@
 # appy — first-run intros + unified rainbow-card roadmap design
 
+> **Scope / Ámbito:** EN: Archived design for Appy onboarding cards and the rainbow roadmap; historical. · ES: Diseño archivado de las tarjetas de bienvenida y el arcoíris de roadmap de Appy; histórico.
+>
 > **Status:** design (brainstorm output, 2026-06-24).
 > **Implements:** `backend_plan.md` §13.6 (onboarding, *mandatory*) + §13.2 (i18n /
 > `flove:lang` entrance picker), applied to the `appy` tier files.
 > **Relates to / evolves:** `2026-06-19-appy-five-apps-tier-ladders-design.md` (the
 > profily·social·sety·wizy·vizy *diagonal*, now merged into the rainbow cards below).
-> **Touches:** `apps/appy/appy-mini.html`, `apps/appy/appy-basic.html`,
+> **Touches:** `apps/appy/appy-mini.html`, `apps/appy/index.html`,
 > `context/flove/backend_plan.md` (§13.2 + §13.6 notes).
 
 ---
@@ -23,7 +25,7 @@ Two moments, one shared pattern — **loud once → then permanently re-openable
    changers (language first) + the rainbow feature roadmap, loud. Picking a language
    stores it and the intro goes quiet forever after; it stays reachable from appy's nav.
 2. **Upgrade → landing = `appy-basic` intro.** Tapping "Upgrade to basic" still jumps
-   to `appy-basic.html` (state via `appyTransfer`, unchanged). On arrival appy-basic
+   to `index.html` (state via `appyTransfer`, unchanged). On arrival appy-basic
    greets the user with the features they just reached + a **"Go home →"** button; loud
    once, then reachable from appy-basic's nav.
 
@@ -32,7 +34,7 @@ Two moments, one shared pattern — **loud once → then permanently re-openable
 **Build now (this spec → plan):**
 - `appy-mini.html`: first-run **global-changer + intro** moment (language via `flove:lang`),
   loud once, with a permanent re-openable home in appy's nav.
-- `appy-basic.html`: upgrade-arrival **intro** moment, loud once, carrying the **Go home →**
+- `index.html`: upgrade-arrival **intro** moment, loud once, carrying the **Go home →**
   button and a permanent re-openable home in appy-basic's nav.
 - Migrate appy-mini's language storage from `translaty-lang` → **`flove:lang`** (+ honor a
   `?lang=<code>` URL handoff), per §13.2.
@@ -59,7 +61,7 @@ instead of `index.html`. The big launcher entrance on `index.html` (full rainbow
   syncs `<html lang>`, and closes the `<details class="lang">` worldball (~L1974) on change.
   **No first-run loud behaviour exists yet.**
 - **Upgrade:** `upgradeToBasic()` (~L3396) writes `localStorage['appyTransfer']` then
-  `location.href = 'appy-basic.html'`. No arrival celebration on appy-basic.
+  `location.href = 'index.html'`. No arrival celebration on appy-basic.
 - **Nav host for the permanent intro:** appy-mini already has a top-bar dropdown menu
   (`#top-dropdown`, `toggleTopMenu()`) whose "About" item (`#menu-about-btn` → `toggleAbout()`)
   opens an `#about-reveal` panel. This reveal-panel pattern is the natural host to reuse.

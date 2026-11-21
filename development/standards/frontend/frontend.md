@@ -80,7 +80,7 @@ form must be added in the same change (see §13.3 sync rule).
 Reference impl: `apps/blogy/blogy-advanced-one.html` lines ~2955 (CSS)
 and ~8754 (radios), `apps/blogy/blogy-newlanguage.html` for the form.
 (The line numbers cited are from the self-contained variant; the
-canonical modular `blogy-advanced.html` uses the same pattern but its
+canonical modular `index.html` uses the same pattern but its
 line numbers will drift as the shared `flove.js` evolves.)
 
 **Default language — pick once, applies family-wide.** The chosen
@@ -347,32 +347,51 @@ the bar, it does **not** open the menu.
 Like the compass (§13.4), the menu has its *own* mini→super ladder,
 chosen separately from the app's overall tier.
 
-**Three canonical subsections — the same in EVERY menu tier.** A menu is
-always organized into these three; higher levels add *content within*
-them, never new top-level sections:
+**Four canonical blocks — the same in EVERY menu tier.** A menu is always
+organized into these four; higher levels add *content within* them, never
+new top-level sections:
 
-1. **App** — this app + you: **About · 🌐 Language ball · Profile**.
+1. **App** — this app + you: **About** (modal) with a **Tour** button that
+   reopens the page tour (§13.6) · **🌐 Language ball** (§13.2) ·
+   **◐ Theme** (§13.14) · **Profile** (`apps/appy/profily.html`, the canonical
+   profile app in `tools/routing.json`; appy's launcher is
+   `apps/appy/index.html`).
 2. **Related Apps** — **3** related apps (from the family / close ones).
    **Every app carries this section** (Related is de-facto standard alongside
    the mandatory Main). Each related app is shown with its **real inlined
    mark** — the app's isotipo SVG, **not** an initial badge; a wordmark-only
    app (no isotipo, e.g. lowy) shows its wordmark scaled instead. These badge
    marks are a **mark-propagation surface** — see §13.7 *Mark propagation*.
-3. **Flove** — the ecosystem: **About · Apps · Home**.
+3. **Flove** — the ecosystem: **About · Apps · Home** (`https://flove.org`),
+   then the **Parent sections** breadcrumb (family hub → Apps hub →
+   `flove.org`), then **Standards · theme & contrast proof** (§13.14).
+4. **Common tree (Tree/Types)** — the shared app tree, embedded in *all*
+   menus and **expanded by default** (the inverse of a collapsed submenu).
+
+   4.1. **Source.** Nodes come from the **Tree/Types** view in
+        `development/index.html` (app paths and types from `tools/routing.json`);
+        a page never hand-writes the tree.
+   4.2. **Selection.** On load, match the current route to the node path and
+        set `aria-current="page"` plus `.is-active` on that node **and on every
+        ancestor up to the root**, so the app title and its parents highlight.
+   4.3. **State.** Render open (`<details open>` / `aria-expanded="true"`);
+        no extra click is needed to reveal it.
+   4.4. **Self-contained.** Inline the generated nodes in the page (same rule
+        as the menu), so the tree works on `file://` without a runtime fetch.
 
 *(These correspond to the §13.7 Menu-sections taxonomy: App ≈ Main,
-Related Apps ≈ Related, Flove ≈ Core. The Search row joins at
-`menu-advanced`.)*
+Related Apps ≈ Related, Flove ≈ Core; the common tree is shared navigation.
+The Search row joins at `menu-advanced`.)*
 
 **What each level carries (structure constant, content grows):**
 
-| menu level | App | Related Apps | Flove |
-|---|---|---|---|
-| **menu-mini** | About · Language · Profile | 3 related apps | About · Apps · Home |
-| **menu-basic** | + a setting or two | 3 | (same) |
-| **menu-normal** | + the app's own sub-views + basic settings | 3 (+ browse) | + community · blog |
-| **menu-advanced** | + full system settings (sound · visibility · language) + a **Search** row | 3 (+ browse all) | + design system |
-| **menu-super** | + backend: certify · publish targets · web-of-trust | 3 | (same) |
+| menu level | App | Related Apps | Flove | Common tree |
+|---|---|---|---|---|
+| **menu-mini** | About · Tour · Language · Theme · Profile | 3 related apps | About · Apps · Home · Parent sections | expanded, auto-selected |
+| **menu-basic** | + a setting or two | 3 | (same) | (same) |
+| **menu-normal** | + the app's own sub-views + basic settings | 3 (+ browse) | + community · blog | (same) |
+| **menu-advanced** | + full system settings (sound · visibility · language) + a **Search** row | 3 (+ browse all) | + design system | (same) |
+| **menu-super** | + backend: certify · publish targets · web-of-trust | 3 | (same) | (same) |
 
 *(menu-mini's content is fixed by Marc as the baseline; the basic→super
 additions above are the proposed growth — refine per element as needed.)*
@@ -870,9 +889,13 @@ row's minimum is missing, the app does not pass. Level 4 adds a concrete deeper
 job per section; level 5 is the finished craft. Skip sections the app does not
 have, and say so.
 
-The a11y floor in `contract.md` §6 and the stats in §13.17 are part of every
+The a11y floor in [`contract.md#the-floor`](https://flove.org/development/standards/contract.md#the-floor) and the stats in §13.17 are part of every
 minimum. A dash means the section is not required at that level; if the app ships
 it, it must still be usable.
+
+**Status queue:** the level 4–5 per-app confirmation pass is UX01 in
+[`../debates/pendings.md`](../debates/pendings.md); Work filter:
+[ux · levels](https://flove.org/development/index.html#work?tab=frontend&view=r2&subtab=levels&category=frontend&section=levels).
 
 | Section | 3 · Minimum | 4 · Function | 5 · Craft |
 |---|---|---|---|

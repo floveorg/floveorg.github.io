@@ -13,25 +13,22 @@ of the local feature set that opens at Authy L3.
 |---|---|---|
 | **L1** | self | local profile; MyNet read-only + MyFamily JSON export |
 | **L2** | email (planned) | email presence; still no MyNet features |
-| **L3** | Telegram **presence** via @AuthyTgBot (risa handoff included) | **MyNet local features**: people, circles, feed, local sharing, MyFamily, local invites |
-| **L4** | Telegram **verified** (nonce + private DM) | **publishing / social layer** (Nety/Wizy/platforms); trust-graph writes |
-| **L5** | phone | recovery and higher-trust actions |
-| **L6** | bio | strongest local unlock |
+| **L3** | Telegram **verified**: risa signed claim or Authy nonce + private DM | **MyNet local + publishing/social**: people, circles, feed, local sharing, MyFamily, invites, Public posts/groups/grants |
+| **L4** | phone (planned) | recovery and higher-trust actions |
+| **L5** | bio | strongest local unlock; no new content surface |
 
 Rules:
 
 - **L1/L2 are the versions without AuthyTg or risa bot.** MyNet shows its
   functions in read-only and exports the MyFamily JSON; no people, circles,
   feed or sharing.
-- **L3 opens MyNet.** It is presence, not permission: the bot records a
-  private `/start` (including the risa handoff `/start risa_<key>`), but the
-  account is not bound to the Authy profile with a challenge.
-- **L4 opens publishing.** Authy generates a one-time nonce, the user sends
-  `/start claim_<nonce>` in a private DM, and the verifier matches it to the
-  profile. Fresh, one-use, replay-resistant — the only level that can sign
-  Social cards.
-- **L5/L6** never unlock new *content* surfaces by themselves; they raise
-  recovery and co-signing weight.
+- **L3 opens MyNet and publishing.** It requires proof: a risa signed claim,
+  or Authy's one-time nonce sent as `/start claim_<nonce>` in a private DM and
+  matched to the profile by the verifier. Fresh, one-use, replay-resistant.
+  A bare `/start` (including the risa handoff `/start risa_<key>`) is only a
+  channel state and stays L1.
+- **L4/L5** never unlock new *content* surfaces by themselves; phone adds
+  recovery and co-signing weight, bio completes the profile.
 - A level without its claim is presence, not permission: `telegram:present`
   ≠ `telegram:verified`.
 
@@ -66,7 +63,7 @@ Rules:
 
 ### A. Web (today, local-first)
 
-1. Authy page links Telegram (L3 presence) or claims the bot DM (L4).
+1. Authy page verifies Telegram with the risa claim or the bot DM (L3); a bare link stays L1.
 2. Authy writes `flove:authy` and offers **Send to Appy**.
 3. The handoff is the same one used by Share → Appy:
    - same origin: write `flove:appy:auth` (or `flove:authy`) and let Appy
@@ -94,15 +91,16 @@ owns the web of trust, the peer graph and the P2P permissions variant
 
 - Appy Profile title → **See · Export · Render** (current).
 - Authenticate card shows the level (`L1 · self`, `L2 · email`,
-  `L3 · presence`, `L4 · verified`) and a **Send to Appy / Sync from Browsy**
-  action when the Authy page is open.
-- MyNet gate at L3: people, circles, feed, local sharing. L4 adds the publish
-  button; do not show a publish control before L4.
+  `L3 · verified`, `L4 · phone`, `L5 · bio`) and a **Send to Appy / Sync from
+  Browsy** action when the Authy page is open.
+- MyNet and publish gate at L3: people, circles, feed, local sharing and
+  Public posts. A bare Telegram link stays L1; do not show a publish control
+  before L3 verification.
 - A small “attested by Browsy · 2 peers” line when the record came from Browsy.
 
 ## 5. Security checklist
 
-- One-time nonce for the L4 claim; expire it.
+- One-time nonce for the L3 claim; expire it.
 - Never store Telegram tokens, phone numbers or raw handles in the portable
   record.
 - Appy validates the signature and the claim level before unlocking.
@@ -113,7 +111,7 @@ owns the web of trust, the peer graph and the P2P permissions variant
 
 ## 6. Open questions
 
-1. Does L3 presence alone unlock *local sharing*, or only people/circles/feed?
+1. Does a risa signed claim open Public/S in v1? L3 is the gate; S bundles stay deferred (Browsy spec §3.3).
 2. Who signs `flove-auth/1` on `file://` where there is no key store?
 3. Does Browsy attest the level or only the claim hash?
 4. Is `flove:appy:auth` a copy of `flove:authy`, or a cache of Browsy facts?
@@ -125,11 +123,11 @@ owns the web of trust, the peer graph and the P2P permissions variant
 | Phase | Spec / contract | Acceptance test | State |
 |---|---|---|---|
 | **A0** Authy store | `flove:authy` = `flove-authy/1` with `level`, `identities`, `telegram`, `nonce`/`nonceAt` | Authy writes it; reload keeps the level | ✅ |
-| **A1** Telegram claim client | nonce (crypto, 10 min TTL) → `https://t.me/<bot>?start=claim_<nonce>` → poll verifier | with a verifier, L4 only after a signed `{ok, level:'verified'}` | ✅ client; verifier URL configurable |
+| **A1** Telegram claim client | nonce (crypto, 10 min TTL) → `https://t.me/<bot>?start=claim_<nonce>` → poll verifier | with a verifier, L3 only after a signed `{ok, level:'verified'}` | ✅ client; verifier URL configurable |
 | **A2** Telegram verifier | `GET {verify}?nonce=…` → `{ok, level:'verified', at}`; bot accepts `/start claim_<nonce>` | a DM to the bot releases exactly one nonce; replay is rejected | ✅ code + tests; ⏳ BotFather token/deploy |
-| **A3** Appy status sync | `storage` + `focus` + `visibilitychange` re-read `flove:authy`; L3 unlocks MyNet, L4 unlocks publish | changing the level in Authy updates Appy without reload | ✅ |
+| **A3** Appy status sync | `storage` + `focus` + `visibilitychange` re-read `flove:authy`; L3 unlocks MyNet and publish | changing the level in Authy updates Appy without reload | ✅ |
 | **A4** Authy → Appy handoff | `postMessage {type:'flove-appy-auth', auth}` + `flove:authy` on same origin | `file://` and blocked storage still update Appy | ✅ |
-| **A5** Send to Appy UI | button in the L4 card; opens Appy `#profile` | level and MyNet gate follow on the next screen | ✅ |
+| **A5** Send to Appy UI | button in the L3 card; opens Appy `#profile` | level and MyNet gate follow on the next screen | ✅ |
 | **A9** SelfAuth (L1) | `flove:authy.self = { browsyHash }`; Authy self form + **Open Browsy** link; Appy keeps name/about/links/social on its username card, no SelfAuth mirror | save the hash; Appy username card stays the profile data | ✅ |
 | **A11** Canonical card | Appy play cards use its internal card renderer; **View & Export** builds the full profile HTML with Share; Rendery is a standalone dev addon | every play renders; the profile HTML carries the whole profile | ✅ |
 | **A10** Email (L2) | Google ID token + email code; L2 email presence, no MyNet | Google or code → L2 email; MyNet stays closed | ⏳ **planned only — not implemented** |
@@ -142,9 +140,9 @@ owns the web of trust, the peer graph and the P2P permissions variant
 - `apps/sys/authy/index.html` — ladder, claim nonce, verifier polling, Send to Appy.
 - `apps/sys/authy/bot/` — `server.mjs` (polling bot + `/claim` verifier), `logic.mjs`
   (pure claim/TTL), `test/logic.test.mjs`, `README.md` (BotFather + deploy).
-- `apps/appy/appy-basic.html` — `authyLevel()`, `refreshAuthyStatus()`, MyNet gate, auth handoff.
+- `apps/appy/index.html` — `authyLevel()`, `refreshAuthyStatus()`, MyNet gate, auth handoff.
 - `debates/proposals/frontend-wizy.md` — Wizy areas that consume the same auth (custom magic, MyNet influence).
-- `frontend/publish.md` — the play handoff pattern reused for auth.
+- [`../../frontend/publish.md` §13.15](../../frontend/publish.md) — the play handoff pattern reused for auth (publish plan consolidated 2026-11-17).
 
 ## 7b. Email authentication — planned, not implemented
 
@@ -182,7 +180,7 @@ portable presence claim.
   "iss": "risa-bot",
   "risaKey": "<public risa key>",
   "telegram": { "idHash": "sha256:…", "username": "…" },
-  "level": "presence",
+  "level": "verified",
   "iat": "…",
   "exp": "…",
   "signature": "…"
@@ -196,10 +194,10 @@ Flow:
 2. The claim is published as a **Browsy web-of-trust edge**; peers pull it
    locally; Wizy derives on the peer; Nety receives only an optional Social
    card.
-3. Appy verifies the signature and grants **presence**. **MyNet still needs
-   Authy L3**; a risa signature alone is not an Authy claim.
-4. **L4 / publishing** remains the separate `@AuthyTgBot` claim. A risa
-   signature never unlocks publishing.
+3. Appy verifies the signature and grants **L3 verified**; MyNet and publish
+   open at L3. A risa redirect without a signed claim is not proof.
+4. The `@AuthyTgBot` nonce + DM is the fallback path to the same L3. Only a
+   signed claim — risa or Authy — unlocks publishing.
 
 Trust requirements: issuer public key, audience/expiry, replay cache, revocation
 (Browsy edge), and no raw Telegram ids. The diagrams live in
@@ -208,17 +206,17 @@ Trust requirements: issuer public key, audience/expiry, replay cache, revocation
 ## 7d. MyNet feature flags and Browsy identity
 
 MyNet is not a second ladder. It is the name of the local feature set that
-opens with **Authy L3 · Telegram presence**. Publishing is a separate
-**Social** section at **Authy L4 · Telegram verified**; it shares the tab but
-is not a MyNet tier. L1/L2 (the versions without AuthyTg or risa bot) see the
-MyNet functions in read-only and can export the MyFamily JSON.
+opens with **Authy L3 · Telegram verified**. The same L3 opens the **Social**
+publishing surface; it shares the tab but is not a MyNet tier. L1/L2 (the
+versions without a verified Telegram claim) see the MyNet functions in
+read-only and can export the MyFamily JSON. L4 phone and L5 bio add assurance
+and profile completeness, not new content surfaces.
 
-L3 is **presence**: the bot records a private `/start` (including the risa
-handoff `/start risa_<key>`), but the Telegram account is not bound to the
-Authy profile with a challenge. L4 is **verified**: Authy generates a one-time
-nonce, the user sends `/start claim_<nonce>` in a private DM, and the verifier
-matches it to the profile. That is a fresh, one-use, replay-resistant binding;
-only L4 can sign Social cards or publish.
+L3 is **verified**: either a risa signed presence claim or Authy's one-time
+nonce sent as `/start claim_<nonce>` in a private DM and matched to the profile
+by the verifier. A bare `/start` (including the risa handoff
+`/start risa_<key>`) records presence only and stays L1. That signed binding is
+fresh, one-use and replay-resistant; only L3 can sign Social cards or publish.
 
 | Flag | Requires | Surface | When locked |
 |---|---|---|---|
@@ -235,23 +233,24 @@ only L4 can sign Social cards or publish.
 | `mynet.follow` | L3 | follow/support | disabled |
 | `mynet.family.record` | L3 | simplified MyFamily record | hidden |
 | `social.feed.read` | L3 | read public posts (no groups) | visible, read-only |
-| `social.publish.post` | L4 | publish Public / queue | disabled + “Verify Telegram” |
-| `social.groups` | L4 | read/join/create public groups | hidden |
-| `social.grants.public` | L4 | public grants | disabled |
-| `social.moderation` | L4 + role | curator queue | hidden |
-| `mynet.trust.weight` | L5/L6 | invite quota, co-sign weight | unchanged |
+| `social.publish.post` | L3 | publish Public / queue | disabled + “Verify Telegram” |
+| `social.groups` | L3 | read/join/create public groups | hidden |
+| `social.grants.public` | L3 | public grants | disabled |
+| `social.moderation` | L3 + role | curator queue | hidden |
+| `mynet.trust.weight` | L4/L5 | invite quota, co-sign weight | unchanged |
 
-**Two lock cards, not one gate.** The tab shows a **MyNet local** card (L3) and
-a **Social publishing** card (L4). The public feed is read-only at L3 and sits
-outside the L4 card. `mynet.invite.redeem` and `manage` live inside the MyNet
-local card; there is no anonymous redeem. The current single `mynet-locked`
-class hides almost everything; it must become per-feature.
+**One gate, two surfaces.** The tab shows a single **Verify Telegram (L3)**
+lock card covering MyNet local and Social publishing. Both open with the same
+signed proof; the public feed is read-only below L3. `mynet.invite.redeem` and
+`manage` live inside the MyNet local surface; there is no anonymous redeem.
+The current single `mynet-locked` class hides almost everything; it must
+become per-feature.
 
 **Transitions.**
 
-- L1/L2 → L3: local flags on; social still off.
-- L3 → L4: social on; local unchanged.
-- L4 → L3: social off; local on; queued posts stay.
+- L1/L2 → L3: local and social flags on.
+- L3 → L4/L5: extra assurance only; no content-surface change.
+- L4/L5 → L3: no content-surface change.
 - L3 → L1/L2: local and social off; preview/export on; stored data stays.
 - `issuer:"risa-bot"` or email-only: no flags; show “Link Telegram via Authy”.
 - A verified claim never downgrades to presence automatically; only revoke or
@@ -261,8 +260,9 @@ class hides almost everything; it must become per-feature.
 
 - `mynetFlags()` returns the Set; `applyMyNetFlags()` toggles `hidden`,
   `disabled` and `aria-disabled` on `[data-mynet]` elements.
-- `mynetEnabled()` = Authy-issued Telegram presence; `socialEnabled()` = L4
-  verified. `publishUnlocked` reads `socialEnabled()`, not `level >= 3`.
+- `verifiedL3()` = Authy-issued Telegram verification (risa claim or nonce+DM);
+  `mynetEnabled()` and `socialEnabled()` both read it. `publishUnlocked` reads
+  `verifiedL3()`, not `level >= 3`.
 - `refreshAuthyStatus()` calls `applyMyNetFlags()`; `storage`/`focus` re-check.
 - `renderMyNet()` must not render local lists when the local flag is off; show
   placeholders, not stale data.
@@ -272,7 +272,7 @@ class hides almost everything; it must become per-feature.
 
 - Invite redeem requires L3; no anonymous redeem.
 - Public feed is read-only at L3.
-- Public groups are all L4: read, join, create.
+- Public groups are all L3: read, join, create.
 
 **Flag resolution.**
 
@@ -281,10 +281,9 @@ function authyFacts() {
   const a = readAuthy() || {};
   const tg = a.telegram || {};
   const issuerOk = !tg.issuer || tg.issuer === 'authy-bot';
-  const presence = !!tg.status && tg.status !== 'none' && issuerOk;
+  const verified = !!tg.status && tg.status === 'verified' && issuerOk;
   return {
-    presence,
-    verified: presence && tg.status === 'verified',
+    verified,
     email: !!(a.email && a.email.status === 'verified'),
     issuer: tg.issuer || null
   };
@@ -293,14 +292,12 @@ function authyFacts() {
 function mynetFlags() {
   const f = authyFacts();
   const flags = new Set(['mynet.preview', 'mynet.family.export']);
-  if (f.presence) {
+  if (f.verified) {
     ['mynet.invite.redeem', 'mynet.invite.manage', 'mynet.people',
      'mynet.people.add', 'mynet.circles', 'mynet.circles.join',
      'mynet.feed.local', 'mynet.post.local', 'mynet.follow',
-     'mynet.family.record', 'social.feed.read'].forEach(x => flags.add(x));
-  }
-  if (f.verified) {
-    ['social.publish.post', 'social.groups', 'social.grants.public']
+     'mynet.family.record', 'social.feed.read',
+     'social.publish.post', 'social.groups', 'social.grants.public']
       .forEach(x => flags.add(x));
   }
   return flags;
@@ -330,12 +327,12 @@ function mynetFlags() {
 
 **Copy (bilingual).**
 
-- Local lock: “Link Telegram with @AuthyTgBot to unlock MyNet: people, circles,
-  local feed and sharing.” / “Vincula Telegram con @AuthyTgBot para activar
-  MyNet: personas, círculos, feed local y compartir.”
-- Social lock: “Verify Telegram in Authy to publish and join public groups.
-  MyNet local stays available.” / “Verifica Telegram en Authy para publicar y
-  unirte a grupos públicos. MyNet local sigue disponible.”
+- Local lock: “Verify Telegram in Authy (risa claim or @AuthyTgBot DM) to
+  unlock MyNet: people, circles, local feed and sharing.” / “Verifica Telegram
+  en Authy (claim de risa o DM de @AuthyTgBot) para activar MyNet: personas,
+  círculos, feed local y compartir.”
+- Social lock: “The same L3 verification opens publishing and public groups.”
+  / “La misma verificación L3 abre publicaciones y grupos públicos.”
 - Risa issuer: “Telegram is linked to risa, not Authy. Link it with
   @AuthyTgBot.” / “Telegram está vinculado a risa, no a Authy. Vincúlalo con
   @AuthyTgBot.”
@@ -350,19 +347,19 @@ function mynetFlags() {
    no data lists; invites hidden.
 2. Risa-only: same as (1) plus the risa message.
 3. Email L2: same as (1) plus the email message.
-4. L3: local flags on; public feed read-only; `Public` option absent or
-   disabled; groups, grants and moderation hidden; invites redeem/manage on.
-5. L4: social flags on; `Public` option visible; groups and grants visible;
-   moderation only for curators.
-6. L4→L3: social off; local on; queued posts remain; `Public` disappears.
-7. L3→L1: local off; preview/export on; stored data remains; no stale lists.
+4. L3 verified: local and social flags on; `Public` option visible; groups and
+   grants visible; moderation only for curators; invites redeem/manage on.
+5. L4 phone / L5 bio: no flag change; only recovery, weight and profile data.
+6. L3→L1/L2: local and social off; queued posts remain but `Public` disappears;
+   preview/export on; no stale lists.
+7. Bare Telegram link or risa redirect without signature: stays L1; no flags.
 8. Storage blocked: flags derive from in-memory authy; show an “unknown” state
    if authy cannot be read.
 9. `file://` and mobile: same flags; no extension required.
 10. Keyboard: locked actions use `aria-disabled` with a reason; lock cards are
     focusable; no hidden focus traps.
 
-**Out of scope.** L5/L6 trust-weighted quotas and curator roles beyond
+**Out of scope.** L4/L5 trust-weighted quotas and curator roles beyond
 `isCurator()` are not in v1.
 
 **No MyNet hash.** Browsy has its own user hash; MyNet is only a name for the
@@ -435,7 +432,7 @@ attested by the Browsy root) remains the v2 path for multi-device.
 
 **Goal.** Persist the local MyNet record across reloads and lock changes without
 ever deleting it on downgrade. Local data is L; public posts are S and only
-exist after L4.
+exist after L3 verification.
 
 **Key and schema.** `flove:mynet` (`flove-mynet/1`):
 
@@ -472,7 +469,8 @@ exist after L4.
   `seeded:true`. Never re-seed after the user edits.
 - Write on mutation with a 250 ms debounce; immediate on publish or invite.
 - Locking (L3 off) hides UI but never clears storage.
-- `L4→L3`: local posts stay; social posts become read-only; no new public posts.
+- `L3→L1/L2`: local and social posts stay but become read-only/hidden; no new
+  public posts.
 - `owner` mismatch (new Browsy hash): prompt **Keep local / Export / Start
   fresh**; never merge silently.
 - Storage blocked: keep an in-memory copy and show a warning; do not pretend it
@@ -504,7 +502,7 @@ Event: `flove:mynet:changed` with `{ schema, counts }`; a `storage` listener on
 
 1. Add a person, reload, it survives.
 2. Lock L3, reload: data survives; lists are empty until unlock.
-3. L4→L3: social posts remain but are read-only.
+3. L3→L1/L2: social posts remain but are read-only.
 4. New owner: prompt, no silent merge.
 5. Storage blocked: memory warning, no false “saved”.
 6. Corrupt JSON: does not crash; recovery note.
@@ -512,7 +510,7 @@ Event: `flove:mynet:changed` with `{ schema, counts }`; a `storage` listener on
 
 ## 8. Status
 
-SelfAuth (L1), the Telegram claim (L3→L4) and the Appy unlock tour are live. **Email authentication is moved to the plan below and is not implemented** — the Authy email step says so.
+SelfAuth (L1), Telegram verification at L3 and the Appy unlock tour are live. **Email authentication is moved to the plan below and is not implemented** — the Authy email step says so.
 
 The client, the bot/verifier code, Appy sync and the handoff are live. The only
 human step left is **BotFather**: create `@AuthyTgBot`, put its token in

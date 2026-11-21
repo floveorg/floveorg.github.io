@@ -43,7 +43,7 @@ is which tells you more about flove than any single app could.
   *single-file* apps live, each one readable, saveable, and workable offline
   through a service worker. The whole shelf is gathered on the
   [apps catalogue](https://flove.org/apps/), with drawers like
-  [appy](https://flove.org/apps/appy/appy-basic.html),
+  [appy](https://flove.org/apps/appy/index.html),
   [trusty](https://flove.org/apps/trusty/trusty.html),
   [blogy](https://flove.org/apps/blogy/),
   [economy](https://flove.org/apps/economy/),
@@ -58,8 +58,8 @@ is which tells you more about flove than any single app could.
   flove.js sound and wizard engine, the i18n layer, the loader and settings —
   the low-code core that every app can draw on instead of reinventing. It also
   grows a *different branch of apps* than solo, the hub-facing builds:
-  [appy](https://flove.org/apps/appy/appy-basic.html),
-  [blogy](https://flove.org/apps/blogy/blogy-advanced.html),
+  [appy](https://flove.org/apps/appy/index.html),
+  [blogy](https://flove.org/apps/blogy/index.html),
   [gody](https://flove.org/apps/metas/goddy.html),
   [sety](https://flove.org/apps/sys/sety/), and
   [questy](https://flove.org/development/standards/skills/questy/), the planning ritual. The hub

@@ -637,7 +637,7 @@ the next session. No background sync of P.
 
 ### 12.5 Authy index and refined model
 
-The current authentication UI lives in `apps/appy/appy-basic.html` as the
+The current authentication UI lives in `apps/appy/index.html` as the
 **Authenticate** card (was "Extend profile"): a five-bar ladder — Self, Email,
 Telegram, Phone, Bio — with badges, point labels and per-step forms. A bare
 Telegram link is **SelfAuth L1**; a **risa signed claim** or the **Authy
@@ -664,7 +664,7 @@ Refined model:
 |---|---|---|
 | Root | device state + optional ids | Ed25519 identity, one per human; masks later |
 | Channels | email, telegram, phone, bio (self is not a channel) | same + future OAuth; each proof is signed and stored as P |
-| Levels | ladder position = highest linked id | risa model: **L1 SelfAuth · L2 verified email · L3 Telegram verified · L4 verified phone**; bio is profile completeness, not a level |
+| Levels | ladder position = highest linked id | risa model: **L1 SelfAuth · L2 verified email · L3 Telegram verified · L4 verified phone · L5 bio**; L3 opens MyNet and publish |
 | Telegram | link → `publishUnlocked` | bare link → **L1 SelfAuth**; risa signed claim or claim (nonce + DM) → **L3 verified**; publish only at L3 |
 | Persistence | none | `flove:authy/1` in `localStorage` on localhost; appy-basic and the Authy index share it |
 | Sessions | none (the app holds state) | scoped tokens/attestations; the private key never leaves Browsy |
@@ -758,7 +758,7 @@ measured goals. Privacy gates are binary: no gate, no next milestone.
 | old appy-normal plan (removed 2026-11-17) | Wizy mini at normal; MyNet managed by Browsy |
 | `development/standards/frontend/export.md` | `flove-portrait/1` envelope, consent field, Appy as renderer |
 | `apps/metas/goddy.html` §portraitBridge | Real `flovePortrait` fields and API (`get`, `consult`, `merge`) |
-| `apps/appy/appy-basic.html` §Authenticate | Current 5-step ladder, `linkIdentity`, points, `identities[]` export |
+| `apps/appy/index.html` §Authenticate | Current 5-step ladder, `linkIdentity`, points, `identities[]` export |
 | `apps/trusty/myfamily.html` §portraitBridge | Third-party portrait model: friend, 7 trait groups, nuances, 5 raters |
 | `development/standards/risaliberada/plan-v2.md` §A5, D17 | Authy levels/claims, channel-agnostic core, no re-key on link |
 | `apps/sys/nety/README.md` | Real Nety state: libp2p/Rust/Wasmtime, daemon and gateway not connected |

@@ -5,6 +5,7 @@ description: >-
   place the mark in the product, present it, then add section icons,
   mini-diagrams and the tour. Use for "brandy", logo ideas, rebranding, or
   `/brandyN` to run stages 1–N.
+category: authoring
 ---
 
 # brandy — from sketch to shipped identity
@@ -23,9 +24,9 @@ study before the pick.
 | **2 · Study** | the same file becomes the full study |
 | **3 · Placement** | card, tree, Types row, launcher tile, app tab |
 | **4 · Presentation** | long copy, values, slides, downloads (planned) |
-| **5 · Sections & tour** | section icons, mini-diagrams, the 10-slide tour |
+| **5 · Sections & tour** | SVG icon set, click-to-open minidiagrams, the 10-slide tour |
 
-**One file per app:** `addons/media/apps/logos/<app>/<app>-logos.html`. Stage 1
+**One file per app:** `development/addons/media/apps/logos/<app>/<app>-logos.html`. Stage 1
 fills its sketch section; stage 2 replaces that section in place. Never create a
 second logo or sketch file.
 
@@ -51,7 +52,7 @@ pick.
 ## 2 · Study
 
 The chosen mark becomes the study; alternates stay in a compact row. Use the reference page
-`https://flove.org/addons/media/apps/logos/central/central-logos.html` — copy its
+`https://flove.org/development/addons/media/apps/logos/central/central-logos.html` — copy its
 anatomy:
 
 - **hero lockup** — living mark + wordmark + bilingual slogan;
@@ -77,6 +78,10 @@ Verify both themes at 2×. Commit the study alone; placement is a separate commi
 
 **Ask the type; never infer it from the path.** It sets the Types row, the tree
 treatment, whether it counts in `N apps`, and whether it needs a launcher tile.
+Offer that choice as a **clicky interface**: one picker whose options are the
+types below as buttons/chips, using the host's question or quick-reply tool when
+one exists. Fall back to a numbered terminal batch only when no clicky surface
+is available.
 
 | Type | `data-type` | Tree row | Counted | Launcher tile |
 |---|---|---|---|---|
@@ -106,7 +111,7 @@ don't travel (use a solid accent); never anchor the insert on the first
 (`apps/appy/`) and `apps/bubbles.html` keep their own `#mark-<app>`; swap that
 body too, same `id`.
 
-The caption PNG (`addons/media/apps/captions/<app>.png`) is regenerated on
+The caption PNG (`development/addons/media/apps/captions/<app>.png`) is regenerated on
 request, not here.
 
 Render the four surfaces: card, tree row, Types row, launcher tile.
@@ -118,12 +123,22 @@ then the card stays deliberately minimal; never fill it with placeholder prose.
 
 ## 5 · Sections and tour
 
-1. **Section icons** — one monoline icon per section of the app's index, drawn
-   like the mark (same grid, stroke, two colours). When a section expands, give
-   it a **mini-diagram**: one Excalidraw frame that opens into a ×3 Mermaid
-   thread, via [`diagramy`](https://flove.org/development/standards/skills/diagramy/SKILL.md).
-2. **The tour** — the 10-slide outline: logo, what it is, how it starts, core
-   interaction, what you keep, privacy, share, tiers, limits, docs.
+Everything lives on the app's **logo study page** (`<app>-logos.html`); no second
+gallery file and no separate diagram folder.
+
+1. **SVG set (default view)** — one monoline icon per section of the app's
+   index, drawn like the mark: same 64×64 grid, 2–2.8 stroke, accent + signal
+   taken from the page. Show the whole set as the default, labelled, with no
+   build step and no external source file.
+2. **Minidiagram on second click** — clicking a section icon opens one simple
+   inline SVG minidiagram for that section, in the same page: one frame, one
+   happy path, a few nodes and arcs in the mark's two colours. Each section gets
+   its own composition, not the same boxes-and-arrows template. Clicking the
+   icon again (or ×) closes it; only one panel is open at a time; Escape closes.
+   **No Excalidraw, no Mermaid, no ×3 threading, no `diagramy` dependency.**
+3. **The tour** — the 10-slide outline: logo, what it is, how it starts, core
+   interaction, what you keep, privacy, share, tiers, limits, docs. Keep it in
+   the study's metadata and link to it; never duplicate it.
 
 ## Rebrand
 

@@ -75,7 +75,7 @@
   .id5-bar-icon .cut{stroke:var(--bg);stroke-width:1.3;fill:none}
   .id5-bar.actual .id5-bar-label{color:var(--ink);font-weight:700}
   .id-form{margin-top:16px;border-top:1px solid var(--line);padding-top:14px;min-height:60px}
-  .id-form-icon{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  .id-form-icon{width:46px;height:46px;margin:.35rem auto .6rem;border-radius:50%;display:flex;align-items:center;justify-content:center;
     font-size:1.4rem;border:1.6px solid currentColor;box-shadow:0 0 18px -6px currentColor;margin:0 auto 10px}
   .id-input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#070c14;color:var(--ink);font:inherit}
   .id-suggest{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;font-size:.78rem;color:var(--cyan);text-decoration:none;border-bottom:1px dashed rgba(34,211,238,.45);padding-bottom:1px}
@@ -144,6 +144,29 @@
   .id5-bar:hover .id5-bar-col{transform:translateY(-1px);filter:brightness(1.08)}
   .id5-bar.open .id5-bar-col{opacity:1;box-shadow:0 0 0 2px currentColor,0 0 18px -6px currentColor;filter:brightness(1.08)}
   .id5-bar.actual .id5-bar-col{box-shadow:0 0 0 2px #8ecdf2,0 0 16px -4px #8ecdf2}
+  /* Try it there button + Telegram claim modal */
+  .cta-row{display:flex;justify-content:center;margin-top:16px}
+  .try-btn{background:var(--telegram);color:#fff;border:1px solid rgba(58,134,255,.6);border-radius:999px;
+    padding:.55rem 1.2rem;font:700 .85rem ui-monospace,monospace;cursor:pointer}
+  .try-btn:hover{filter:brightness(1.1)}
+  .modal-panel{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;
+    padding:1rem;background:rgba(3,6,12,.72)}
+  .modal-panel[hidden]{display:none}
+  .modal-dialog{width:min(560px,100%);max-height:86vh;overflow:auto;background:var(--panel);
+    border:1px solid var(--line);border-radius:18px;padding:18px 20px;box-shadow:0 24px 60px rgba(0,0,0,.6)}
+  .modal-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .modal-head h2{margin:0}
+  .modal-close{margin-left:auto;background:transparent;border:1px solid var(--line);color:var(--dim);
+    border-radius:10px;padding:5px 12px;cursor:pointer;font:inherit;font-size:.8rem}
+  .modal-close:hover{color:var(--ink);border-color:var(--cyan)}
+  .modal-body p{color:var(--dim);font-size:.92rem}
+  .modal-body .id-action{max-width:100%}
+  .detail-block{margin-top:14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;
+    background:rgba(34,211,238,.04)}
+  .detail-block h4{margin:0 0 6px;text-align:center;font-weight:700;font:700 .7rem ui-monospace,monospace;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--cyan)}
+  .detail-block p{color:var(--dim);font-size:.82rem;margin:.35rem 0;text-align:center}
+  .detail-block b{color:var(--ink)}
   @media(max-width:700px){.wrap{padding:0 16px}.id5-scale{gap:5px}.id5-bar-label{font-size:.52rem}.id5-bar-col{width:52px;height:52px}.id5-bar-col .id5-tick{width:40px;height:40px}}
 </style>
 </head>
@@ -161,16 +184,14 @@
     </button>
     <div class="brand-menu" id="authy-menu" role="menu" aria-label="Authy sections" hidden>
       <div class="group">This index</div>
-      <a href="#current" role="menuitem">Current ladder</a>
+      <a href="#current" role="menuitem">1–5 ladder</a>
       <a href="#sessions" role="menuitem">Sessions &amp; grants</a>
-      <a href="#risa" role="menuitem">Risa model · Telegram</a>
-      <a href="#risa-appy" role="menuitem">Risa → Appy · two models</a>
+      <a href="#risa" role="menuitem">Data → Telegram → Authy</a>
+      <a href="#risa-appy" role="menuitem">Authy → Appy</a>
       <a href="#mynet" role="menuitem">MyNet · Telegram</a>
-      <a href="#levels" role="menuitem">Levels &amp; capabilities</a>
-      <a href="#recovery" role="menuitem">Recovery</a>
       <a href="#bridge" role="menuitem">Bridge API</a>
       <a href="#migration" role="menuitem">Migration</a>
-      <a href="#pendings" role="menuitem">Pendings</a>
+      <a href="../../../development/standards/debates/plans/2026-11-19-authy-open-questions.md" role="menuitem">Open questions</a>
       <div class="sep"></div>
       <div class="group">Logos</div>
       <a href="../../../addons/media/apps/logos/authy/authy-logos.html" role="menuitem"><b>Logo study</b></a>
@@ -182,8 +203,6 @@
 </div>
 
 <div class="wrap">
-
-<div class="note" style="margin:14px 0">2026-11-17 spec update: <b>L1 Self (SelfAuth internally) · L2 email · L3 Telegram verified · L4 phone</b>. A bare Telegram link is L1 and enables nothing; risa or the Authy claim reaches L3. This demo still shows the older “L3 presence / L4 claim” labels; Phase 1 migrates it.</div>
 
 <section id="current">
   <div class="auth-card" style="margin-top:14px">
@@ -198,15 +217,6 @@
       <span>Store <b id="st-store">pending</b></span>
     </div>
   </div>
-
-  <div class="grid g3" style="margin-top:14px">
-    <div class="card"><h3>What the ladder says</h3><p>Self → Email → Telegram → Phone → Bio. The tick thickens with the step; the actual status gets a signal ring.</p></div>
-    <div class="card"><h3>What linking does</h3><p>Pushes the key into <code>linkedIdentities</code>, awards Personal points (20 / 50 / 100 / 200), and persists to <code>flove:authy</code>. Telegram sets <strong>L3 presence</strong>; publishing unlocks only at the <strong>L4</strong> claim.</p></div>
-    <div class="card"><h3>What the export carries</h3><p><code>flove-profile</code> includes <code>identities[]</code>, <code>socialProfiles[]</code>, trust facets, stage and played apps — see <code>exportProfile()</code>.</p></div>
-    <div class="card"><h3>More options in appy-basic</h3><p>The same Appy entry card links to <strong>MyNet</strong>, the Telegram claim here, and the rest of the profile. Appy stays the entry UI; this index owns the authy model.</p><p class="muted"><a href="../../../apps/appy/appy-basic.html">Open appy-basic ↗</a> · <a href="../../../apps/sys/browsy/index.html#usecases">Use cases ↗</a></p></div>
-  </div>
-
-  <div class="note" style="margin-top:14px"><strong>Known inconsistency (pending A03).</strong> The ticks display +5/+4/+12/+6/+8, but <code>linkIdentity()</code> awards 0/20/50/100/200 to the Personal facet until one table wins.</div>
 </section>
 
 <section id="sessions">
@@ -260,56 +270,10 @@
 </section>
 
 <section id="risa">
-  <div class="sechead"><span class="num">03</span><h2>Risa model — Telegram presence, level 3, claim to L4</h2></div>
-  <p class="lede">The risa authy model maps presence and verification separately: <strong>L1 self</strong>, <strong>L2 email</strong> (planned), <strong>L3 Telegram presence</strong> (linked but not claimed), <strong>L4 Telegram verified</strong> (claimed), <strong>L5 phone</strong>, <strong>L6 bio</strong>. Level 3 is the presence profile: you link Telegram, the handle never renders publicly, and claiming upgrades you to L4.</p>
-
-  <div class="grid g2" style="margin-top:14px">
-    <div class="card">
-      <span class="tag p">L3 · presence</span>
-      <h3>How to get a level 3 profile</h3>
-      <p>Link Telegram from the ladder above (or the button here). The identity is stored locally in <code>flove:authy</code>; no @handle is published. The same button mints the one-shot claim so you can go straight to L4.</p>
-      <button type="button" class="id-action" style="background:var(--telegram);max-width:290px" id="btnPresence">Link Telegram · L3 → claim L4</button>
-      <p class="muted" id="presenceMsg" style="margin-top:8px"></p>
-      <!-- The claim appears right here, under the button that starts it. -->
-      <div id="nonceBox" class="claim-box" hidden>
-        <p class="muted">Nonce: <code id="nonceOut">—</code></p>
-        <p class="muted" style="overflow-wrap:anywhere">Deep link: <a id="deepLink" href="#" target="_blank" rel="noopener">t.me/…</a></p>
-        <p class="muted"><a id="tgDeepLink" href="#">Open in the Telegram app ↗</a></p>
-        <button type="button" class="btn-ghost" id="copyDeepLink" style="padding:7px 11px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--ink);cursor:pointer">Copy link</button>
-        <button type="button" class="btn-ghost" id="copyStart" style="padding:7px 11px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--ink);cursor:pointer">Copy /start command</button>
-        <p class="muted" style="font-size:.78rem">If Telegram Web stays loading, open the Telegram app, search <b>@AuthyTgBot</b>, and paste the /start command in the chat.</p>
-        <button type="button" class="id-action" style="background:var(--mint);max-width:280px" id="btnConfirm">Demo confirmation → L4</button>
-      </div>
-      <p class="muted" id="claimMsg" style="margin-top:8px"></p>
-    </div>
-    <div class="card">
-      <span class="tag l">L4 · verified</span>
-      <h3>What L4 unlocks</h3>
-      <p>The bot confirms your DM, Authy stores the verified level, and Appy unlocks publishing. MyNet is already available at L3. Use <b>Send to Appy</b> to hand the level over.</p>
-      <button type="button" class="id-action" style="background:var(--violet);max-width:280px;margin-top:8px" id="btnSendAppy">Send to Appy ↗</button>
-    </div>
-  </div>
-
-  <div class="grid g2" style="margin-top:14px">
-    <div class="card">
-      <h3>Send authenticated information</h3>
-      <p>From localhost, send the signed authy summary to the keepers. Local first; social only after L4.</p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button type="button" class="id-action" style="background:var(--cyan);max-width:240px" id="btnLocal">Send to local keeper</button>
-        <button type="button" class="id-action" style="background:var(--violet);max-width:240px" id="btnSocial">Send to social keeper</button>
-      </div>
-      <p class="muted" id="keeperMsg" style="margin-top:8px"></p>
-    </div>
-    <div class="card">
-      <h3>Persistence</h3>
-      <p>The authy state is written to <code>localStorage</code> under <code>flove:authy</code> (works on localhost and <code>file://</code>). Appy-basic reads the same key, so the ladder survives a reload and both pages agree on the level.</p>
-      <p class="muted">A real Browsy vault replaces this store later; the schema stays <code>flove-authy/1</code>. P2P permissions are a later trunk.</p>
-    </div>
-  </div>
-
+  <div class="sechead"><span class="num">03</span><h2>Data to Telegram to Authy</h2></div>
   <div class="figure">
     <svg viewBox="0 0 980 360" role="img" aria-labelledby="risaT risaD">
-      <title id="risaT">Risa Telegram claim thread</title>
+      <title id="risaT">Data to Telegram to Authy claim thread</title>
       <desc id="risaD">The app asks Authy for a claim, Authy mints a one-shot nonce, the user opens the bot deep link, confirms in DM, and the verified level is stored locally.</desc>
       <rect class="sv-zone" x="20" y="24" width="230" height="300" rx="16"/>
       <text class="sv-k" x="40" y="48">WEB · APP</text>
@@ -360,16 +324,39 @@
         <marker id="r-ad" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#34d399"/></marker>
       </defs>
     </svg>
-    <p class="muted" style="margin:8px 6px 0">Risa claim thread. L3 is presence; L4 is the verified claim. The real bot replaces the simulated deep link.</p>
+    <p class="muted" style="margin:8px 6px 0">Data → Telegram → Authy. L3 is presence; L4 is the verified claim. The real bot replaces the simulated deep link.</p>
+  </div>
+  <div class="cta-row">
+    <button type="button" class="try-btn" id="btnPresence" aria-haspopup="dialog" aria-controls="telegramModal">Try it there →</button>
+  </div>
+
+  <div class="modal-panel" id="telegramModal" aria-hidden="true" hidden>
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="telegramModalTitle">
+      <div class="modal-head">
+        <h2 id="telegramModalTitle">Link Telegram · L3 → claim L4</h2>
+        <button type="button" class="modal-close" id="telegramModalClose">Close</button>
+      </div>
+      <div class="modal-body">
+        <p>Link Telegram for <strong>L3 presence</strong>, then claim with a one-shot nonce to reach <strong>L4</strong>. The @handle is never published.</p>
+        <p class="muted" id="presenceMsg"></p>
+        <div id="nonceBox" class="claim-box">
+          <p class="muted">Nonce: <code id="nonceOut">—</code></p>
+          <p class="muted" style="overflow-wrap:anywhere">Deep link: <a id="deepLink" href="#" target="_blank" rel="noopener">t.me/…</a></p>
+          <p class="muted"><a id="tgDeepLink" href="#">Open in the Telegram app ↗</a></p>
+          <button type="button" class="btn-ghost" id="copyDeepLink" style="padding:7px 11px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--ink);cursor:pointer">Copy link</button>
+          <button type="button" class="btn-ghost" id="copyStart" style="padding:7px 11px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--ink);cursor:pointer">Copy /start command</button>
+          <p class="muted" style="font-size:.78rem">If Telegram Web stays loading, open the Telegram app, search <b>@AuthyTgBot</b>, and paste the /start command in the chat.</p>
+          <button type="button" class="id-action" style="background:var(--mint);max-width:280px" id="btnConfirm">Demo confirmation → L4</button>
+        </div>
+        <p class="muted" id="claimMsg"></p>
+        <button type="button" class="id-action" style="background:var(--violet);max-width:280px;margin-top:8px" id="btnSendAppy">Send to Appy ↗</button>
+      </div>
+    </div>
   </div>
 </section>
 
 <section id="risa-appy">
-  <div class="sechead"><span class="num">03b</span><h2>Risa → Appy — two models</h2></div>
-  <p class="lede">Risa already knows the Telegram account behind a clip. Authy is a different bot, so the two models below decide how that proof reaches Appy. Both grant <strong>L3 presence</strong> only; <strong>L4 publishing still needs the Authy claim</strong>.</p>
-
-  <h3>Model A — one-tap handoff <span class="tag l">implemented</span></h3>
-  <p class="muted">Risa shows a <b>Link Telegram</b> button. The user presses Start once in @AuthyTgBot; the verifier stores <code>risa_key → presence</code>; Appy polls and unlocks L3/MyNet. Two bots, one tap.</p>
+  <div class="sechead"><span class="num">03b</span><h2>Authy → Appy</h2></div>
   <div class="figure">
     <svg viewBox="0 0 960 300" role="img" aria-labelledby="a1t a1d">
       <title id="a1t">Model A: one-tap handoff from risa to AuthyTgBot</title>
@@ -399,7 +386,6 @@
         <marker id="a1-ad" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#34d399"/></marker>
       </defs>
     </svg>
-    <p class="muted" style="margin:8px 6px 0">A1 · Flow. The risa key is public; the proof is the private DM to @AuthyTgBot. This grants L3 only.</p>
   </div>
   <div class="figure">
     <svg viewBox="0 0 960 240" role="img" aria-labelledby="a2t a2d">
@@ -421,11 +407,7 @@
         <marker id="a2-ad" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#34d399"/></marker>
       </defs>
     </svg>
-    <p class="muted" style="margin:8px 6px 0">A2 · Sequence. Appy can stay open and poll; no second confirmation inside Authy.</p>
   </div>
-
-  <h3>Model B — signed risa claim + Browsy <span class="tag m">planned</span></h3>
-  <p class="muted">Risa signs a <code>flove-auth/1</code> presence claim with its key. Browsy’s web of trust carries it; Appy verifies it and grants L3 without the second bot. L4 stays Authy’s.</p>
   <div class="figure">
     <svg viewBox="0 0 960 320" role="img" aria-labelledby="b1t b1d">
       <title id="b1t">Model B: signed risa claim through Browsy</title>
@@ -448,7 +430,6 @@
         <marker id="b1-aa" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#fbbf24"/></marker>
       </defs>
     </svg>
-    <p class="muted" style="margin:8px 6px 0">B1 · Trust. One signature replaces the second bot for presence; Browsy owns the attestation, Appy only verifies it.</p>
   </div>
   <div class="figure">
     <svg viewBox="0 0 960 240" role="img" aria-labelledby="b2t b2d">
@@ -471,28 +452,12 @@
         <marker id="b2-ad" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#34d399"/></marker>
       </defs>
     </svg>
-    <p class="muted" style="margin:8px 6px 0">B2 · Sequence. The record stays local; peers pull it; Wizy derives on the peer; Nety receives only an optional Social card.</p>
   </div>
 </section>
 
 <section id="mynet">
   <div class="sechead"><span class="num">04</span><h2>MyNet — enabled by Telegram, simplified from MyFamily</h2></div>
-  <p class="lede">In appy-basic, MyNet is not a social network that opens by default. <strong>Authenticating Telegram (L3 presence) enables the MyNet features</strong>: people, circles, feed and local sharing. Appy shows two lock cards: <strong>MyNet local</strong> at L3 (people, circles, local feed, invites) and <strong>Social publishing</strong> at L4 (public posts, public groups). Those features are a deliberate <strong>simplification of MyFamily</strong> — one person, a relation, a few traits and one affinity — kept as <strong>L</strong> in Browsy. L4 (the claim) is only needed when MyNet publishes to the social layer.</p>
-  <p class="muted"><a href="../../../apps/appy/appy-basic.html">Open appy-basic ↗</a> · <a href="../../../apps/trusty/myfamily.html">Open MyFamily ↗</a></p>
-
-  <div class="scroll" style="margin-top:14px">
-    <table>
-      <thead><tr><th>MyFamily — full record</th><th>MyNet — simplified record</th><th>Why</th></tr></thead>
-      <tbody>
-        <tr><td>Friend / family name</td><td>Person / contact</td><td>Same identity anchor.</td></tr>
-        <tr><td>7 trait groups with booleans</td><td>2–3 relation traits</td><td>Enough to sort a circle, not to profile a person.</td></tr>
-        <tr><td>Free-text nuance per group</td><td>Short note (optional)</td><td>Lower leakage than a full reflection.</td></tr>
-        <tr><td>5 affinity raters (0–100)</td><td>One affinity value</td><td>Circles/feed ranking needs one signal.</td></tr>
-        <tr><td><code>friend</code>, <code>trait:*</code>, <code>nuance:*</code>, <code>rater:*</code> rows</td><td>One contact record per person</td><td>Same portrait idea, fewer rows.</td></tr>
-        <tr><td>Class P / L / S</td><td><strong>L by default</strong></td><td>Local federation is the MyNet use case.</td></tr>
-      </tbody>
-    </table>
-  </div>
+  <p class="lede">Authenticating Telegram (L3 presence) enables the MyNet features: people, circles, feed and local sharing. Appy shows two lock cards: <strong>MyNet local</strong> at L3 (people, circles, local feed, invites) and <strong>Social publishing</strong> at L4 (public posts, public groups).</p>
 
   <div class="figure">
     <svg viewBox="0 0 1000 330" role="img" aria-labelledby="mn1t mn1d">
@@ -590,60 +555,7 @@
   </div>
 </section>
 
-<section id="levels">
-  <div class="sechead"><span class="num">05</span><h2>Refined levels and capabilities</h2></div>
-  <p class="lede">The ladder becomes explicit levels with a capability matrix. “Self” is not a channel; it is the default profile state. Telegram verified (L4) remains the publish gate until Q/A02 says otherwise.</p>
 
-  <div class="scroll">
-    <table>
-      <thead><tr><th>Level</th><th>Proof</th><th>Adds</th><th>Can publish S</th><th>Can receive L</th><th>Can sign grants</th></tr></thead>
-      <tbody>
-        <tr><td><strong>L1 · self</strong></td><td>local profile</td><td>identity root exists</td><td>no</td><td>yes (own)</td><td>yes (own)</td></tr>
-        <tr><td><strong>L2 · email</strong></td><td>email proof (planned)</td><td>email presence; no MyNet</td><td>no</td><td>yes</td><td>yes</td></tr>
-        <tr><td><strong>L3 · presence</strong></td><td>Authy-issued Telegram linked (unclaimed)</td><td>MyNet local: presence profile, local sharing</td><td>no</td><td>yes</td><td>yes</td></tr>
-        <tr><td><strong>L4 · verified</strong></td><td>Telegram claim (nonce + DM)<br><span class="muted">risa model</span></td><td>publish gate, social standing</td><td>yes</td><td>yes</td><td>yes</td></tr>
-        <tr><td><strong>L5 · phone</strong></td><td>SMS / call proof</td><td>stronger recovery</td><td>yes</td><td>yes</td><td>yes</td></tr>
-        <tr><td><strong>L6 · bio</strong></td><td>local biometric unlock</td><td>highest unlock bar</td><td>yes</td><td>yes</td><td>yes</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="grid g2" style="margin-top:14px">
-    <div class="card">
-      <h3>Channels</h3>
-      <p>Email, Telegram, phone and biometrics are channels with proofs. A proof is signed by the channel and stored as <span class="tag p">P</span>; only a boolean/level flag is <span class="tag m">M</span>. Future OAuth drivers plug into the same interface.</p>
-      <p class="muted">Biometrics is currently a channel in the UI; the refined model treats it as a local unlock factor first (pending A09).</p>
-    </div>
-    <div class="card">
-      <h3>Root and masks</h3>
-      <p>One Ed25519 root per human. Masks (nety-frontend) become derived identities or separate keypairs under the same root; they never re-derive the root when a channel is linked (<code>D17</code>).</p>
-      <p class="muted">Multi-mask and multi-device are pending A06.</p>
-    </div>
-  </div>
-</section>
-
-
-
-<section id="recovery">
-  <div class="sechead"><span class="num">06</span><h2>Recovery and rotation</h2></div>
-  <div class="grid g3">
-    <div class="card">
-      <h3>Self-backup (primary)</h3>
-      <p>Seed phrase or offline key. The owner rotates anytime: the old key signs a rotation attestation; the network maps old → new.</p>
-      <p class="muted">No central reset, no probation.</p>
-    </div>
-    <div class="card">
-      <h3>Social quorum (fallback)</h3>
-      <p>A quorum of MyNet/vouchers co-signs a new key bound to the same identity. Standing carries forward.</p>
-      <p class="muted">Short probation window against a coerced recovery.</p>
-    </div>
-    <div class="card">
-      <h3>Compromise</h3>
-      <p>Vouchers/MyNet can flag a compromised key and authorize rotation or revocation, severing the attacker.</p>
-      <p class="muted">Quorum size and appeal are pending A07.</p>
-    </div>
-  </div>
-</section>
 
 <section id="bridge">
   <div class="sechead"><span class="num">07</span><h2>Bridge API (proposed)</h2></div>
@@ -682,26 +594,9 @@
   <div class="note" style="margin-top:14px">From now on this index is the reference for Authy; the appy card is the entry point. The plan links here from §12.5.</div>
 </section>
 
-<section id="pendings">
-  <div class="sechead"><span class="num">09</span><h2>Open questions</h2></div>
-  <p class="lede">Parked for a future questy survey in <a href="../../../development/standards/debates/browsy/browsy-questions.md"><code>browsy-questions.md</code></a>. The first ten are the Authy batch.</p>
-  <div class="grid g2">
-    <div class="card"><h3>A01 · Ladder order</h3><p>Keep Self → Email → Telegram → Phone → Bio, or reorder by proof strength?</p></div>
-    <div class="card"><h3>A02 · Publish gate</h3><p>Telegram only, or Telegram <em>or</em> curator approval?</p></div>
-    <div class="card"><h3>A03 · Points</h3><p>Displayed +4/+12/+6/+8 vs awarded 20/50/100/200 — which table wins?</p></div>
-    <div class="card"><h3>A04 · Self</h3><p>Is Self a level or just the default profile state?</p></div>
-    <div class="card"><h3>A05 · Session shape</h3><p>JWT, signed capability, or opaque handle?</p></div>
-    <div class="card"><h3>A06 · Masks</h3><p>How many identities per human, and how do masks relate to the root key?</p></div>
-    <div class="card"><h3>A07 · Recovery quorum</h3><p>How many peers, which circles, what probation?</p></div>
-    <div class="card"><h3>A08 · Proof storage</h3><p>Proof as P or M; can peers verify without seeing the handle?</p></div>
-    <div class="card"><h3>A09 · Biometrics</h3><p>Channel proof or local unlock factor?</p></div>
-    <div class="card"><h3>A10 · Nety binding</h3><p>Same key as the PeerId, or a separate one?</p></div>
-  </div>
-</section>
-
 <footer>
-  <p>Authy index · part of <a href="../../../apps/sys/browsy/index.html">browsy</a> · plan: <a href="../../../development/standards/debates/browsy/rationale.md">rationale.md</a> · MyFamily: <a href="../../../apps/sys/browsy/index.html#myfamily">use case</a> · questions: <a href="../../../development/standards/debates/browsy/browsy-questions.md">browsy-questions.md</a></p>
-  <p>Source of the current ladder: <a href="../../../apps/appy/appy-basic.html">apps/appy/appy-basic.html</a> §Authenticate (read 2026-11-17).</p>
+  <p>Authy index · part of <a href="../../../apps/sys/browsy/index.html">browsy</a> · plan: <a href="../../../development/standards/debates/browsy/rationale.md">rationale.md</a> · MyFamily: <a href="../../../apps/sys/browsy/index.html#myfamily">use case</a> · open questions: <a href="../../../development/standards/debates/plans/2026-11-19-authy-open-questions.md">authy-open-questions.md</a> · register: <a href="../../../development/standards/debates/browsy/browsy-questions.md">browsy-questions.md</a></p>
+  <p>Source of the current ladder: <a href="../../../apps/appy/index.html">apps/appy/index.html</a> §Authenticate (read 2026-11-17).</p>
   <div class="footer-cta"><a class="footer-btn" href="../../../apps/sys/browsy/index.html">Be browsy ↗</a></div>
 </footer>
 </div>
@@ -840,7 +735,7 @@
       + '<button type="button" class="id-action" style="background:var(--cyan);max-width:300px" onclick="saveSelfAuth()">Save hash</button>'
       + '<a class="id-action" style="background:var(--violet);max-width:300px;text-decoration:none" href="../../../apps/sys/browsy/index.html" target="_blank" rel="noopener">Generate Browsy key ↗</a>'
       + '</div>'
-      + '<a class="id-suggest" href="../../../apps/appy/appy-basic.html#reg-handle">Fill your username in Appy →</a>'
+      + '<a class="id-suggest" href="../../../apps/appy/index.html#reg-handle">Fill your username in Appy →</a>'
       + '<p class="muted" id="selfMsg"></p>'
       + '</div>';
   }
@@ -853,33 +748,63 @@
   };
 
   // ── Email · L2: Google Identity Services or a code verifier ──────────
+  // benefit values, moved from the removed section 05 table and section 06 recovery
+  var BENEFITS = {
+    3: 'MyNet local: presence profile, local sharing',
+    4: 'publish gate, social standing',
+    5: 'stronger recovery',
+    6: 'highest unlock bar'
+  };
+  // only positive capabilities are shown — never the "no" ones
+  var CAPS_BY_LEVEL = {
+    1: 'Can Add P',
+    2: 'Can receive L · Can add L',
+    3: 'Can Add/receive L',
+    4: 'Can Add/receive S · Can Add/receive L',
+    5: 'Can Add/receive S · Can Add/receive L',
+    6: 'Can Add/receive S · Can Add/receive L'
+  };
+  var RECOVERY = '<div class="detail-block"><h4>Recovery &amp; rotation · Level 4</h4>'
+    + '<p><b>Self-backup (primary).</b> Seed phrase or offline key; the owner rotates anytime, the old key signs a rotation attestation and the network maps old → new. No central reset, no probation.</p>'
+    + '<p><b>Social quorum (fallback).</b> A quorum of MyNet/vouchers co-signs a new key bound to the same identity; standing carries forward after a short probation.</p>'
+    + '<p><b>Compromise.</b> Vouchers/MyNet can flag a compromised key and authorize rotation or revocation, severing the attacker.</p>'
+    + '</div>';
+  function levelExtras(s){
+    // A verified Telegram claim turns the L3 card into the L4 card.
+    var lvl = (s.key === 'telegram' && state.telegram.status === 'verified') ? 4 : s.level;
+    var h = '<div class="detail-block"><h4><b>Level ' + lvl + ' · ' + s.label + ' benefits</b></h4>'
+      + (BENEFITS[lvl] ? '<p>' + BENEFITS[lvl] + '</p>' : '')
+      + '<p><b>' + (CAPS_BY_LEVEL[lvl] || '') + '</b></p>'
+      + '</div>';
+    // Recovery & rotation belongs to Level 4 benefits only.
+    if (lvl === 4) h += RECOVERY;
+    return h;
+  }
   function renderForm(){
     if (!form || !displayBox) return;
     if (!state.open) { displayBox.hidden = true; form.innerHTML = ''; return; }
     displayBox.hidden = false;
     var s = STEPS.filter(function(x){ return x.key === state.open; })[0];
+    var html = '';
     if (s.key === 'self') {
-      form.innerHTML = selfAuthForm();
-      return;
-    }
-    if (s.key === 'email') {
-      form.innerHTML = '<p class="muted" style="margin:0">Email authentication (Google / email code) is <b>planned</b> — see <a href="../../../development/standards/debates/plans/2026-11-17-appy-authy-mynet.md">the Authy plan</a>. SelfAuth and Telegram are live.</p>';
-      return;
-    }
-    if (state.linked.indexOf(s.key) !== -1) {
+      html = selfAuthForm();
+    } else if (s.key === 'email') {
+      html = '<p class="muted" style="margin:0">Email authentication (Google / email code) is <b>planned</b> — see <a href="../../../development/standards/debates/plans/2026-11-17-appy-authy-mynet.md">the Authy plan</a>. SelfAuth and Telegram are live.</p>';
+    } else if (state.linked.indexOf(s.key) !== -1) {
       var note = s.label + ' linked ✓ — +' + s.award + ' to your Personal facet. The bar label showed +' + s.shown + ' (pending A03).';
       if (s.key === 'telegram') {
         note = state.telegram.status === 'verified'
           ? 'Telegram verified ✓ — L4. The handle is never published.'
           : 'Telegram presence ✓ — L3. Claim it with a nonce to reach L4. <a href="#risa">Claim →</a>';
       }
-      form.innerHTML = '<p class="muted" style="margin:0">' + note + '</p>';
-      return;
+      html = '<p class="muted" style="margin:0">' + note + '</p>';
+    } else {
+      var ph = s.key === 'telegram' ? '@handle' : s.key === 'phone' ? '+34 600 …' : s.key === 'email' ? 'you@mail.org' : '';
+      var input = s.key === 'biometrics' ? '' : '<input class="id-input" type="text" placeholder="' + ph + '" aria-label="' + s.label + '">';
+      var btn = '<button type="button" class="id-action" style="background:' + s.color + '" onclick="authyLink(\'' + s.key + '\')">' + (s.key === 'biometrics' ? 'Scan biometrics' : 'Link ' + s.label) + '</button>';
+      html = input + btn;
     }
-    var ph = s.key === 'telegram' ? '@handle' : s.key === 'phone' ? '+34 600 …' : s.key === 'email' ? 'you@mail.org' : '';
-    var input = s.key === 'biometrics' ? '' : '<input class="id-input" type="text" placeholder="' + ph + '" aria-label="' + s.label + '">';
-    var btn = '<button type="button" class="id-action" style="background:' + s.color + '" onclick="authyLink(\'' + s.key + '\')">' + (s.key === 'biometrics' ? 'Scan biometrics' : 'Link ' + s.label) + '</button>';
-    form.innerHTML = input + btn;
+    form.innerHTML = levelExtras(s) + html;
   }
   window.authySelect = function(key){ state.open = state.open === key ? null : key; render(); renderForm(); };
   window.authyLink = function(key){
@@ -900,19 +825,43 @@
     render(); renderForm();
   });
 
+  // Telegram claim modal (reused by "Try it there")
+  var tgModal = document.getElementById('telegramModal');
+  var lastFocus = null;
+  function openTgModal(){
+    if (!tgModal) return;
+    lastFocus = document.activeElement;
+    tgModal.hidden = false;
+    tgModal.setAttribute('aria-hidden', 'false');
+    var c = document.getElementById('telegramModalClose');
+    if (c) c.focus();
+  }
+  function closeTgModal(){
+    if (!tgModal) return;
+    tgModal.hidden = true;
+    tgModal.setAttribute('aria-hidden', 'true');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  window.authyOpenTelegram = openTgModal;
+  var tgCloseBtn = document.getElementById('telegramModalClose');
+  if (tgCloseBtn) tgCloseBtn.addEventListener('click', closeTgModal);
+  if (tgModal) tgModal.addEventListener('click', function(e){ if (e.target === tgModal) closeTgModal(); });
+  document.addEventListener('keydown', function(e){ if (!tgModal.hidden && e.key === 'Escape') closeTgModal(); });
+
   // risa claim demo
   var btnPresence = document.getElementById('btnPresence');
   if (btnPresence) btnPresence.addEventListener('click', function(){
+    openTgModal();
     if (state.linked.indexOf('telegram') === -1) state.linked.push('telegram');
     if (state.telegram.status === 'none') state.telegram = { status: 'presence', handle: '', claimedAt: null };
     state.level = computeLevel(); save(); render(); renderForm();
-    setMsg('presenceMsg', 'Telegram linked — L3. Claim it below for L4.');
+    setMsg('presenceMsg', 'Telegram linked — L3. Claim it here for L4.');
     startClaim();
   });
   function openAppyAfterAuth(kind){
     save();
     var w = null;
-    try { w = window.open('../../../apps/appy/appy-basic.html?unlock=' + encodeURIComponent(kind) + '#profile', '_blank'); } catch (e) {}
+    try { w = window.open('../../../apps/appy/index.html?unlock=' + encodeURIComponent(kind) + '#profile', '_blank'); } catch (e) {}
     if (!w) { setMsg('claimMsg', 'Allow pop-ups to open Appy.'); return; }
     var fileMode = location.protocol === 'file:' || location.origin === 'null';
     var target = fileMode ? '*' : location.origin;
@@ -935,7 +884,7 @@
       return;
     }
     setTimeout(function(){
-      location.href = '../../../apps/appy/appy-basic.html?unlock=' + encodeURIComponent(kind) + '#profile';
+      location.href = '../../../apps/appy/index.html?unlock=' + encodeURIComponent(kind) + '#profile';
     }, 700);
   }
   function markTelegramVerified(handle){

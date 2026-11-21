@@ -84,7 +84,12 @@ def parse_kinds(text):
 
 
 def parse_slot_kinds(text):
-    start = text.index("const slotKinds =")
+    # slotKinds was retired from vocabulary.html; this survey is advisory only,
+    # so degrade to an empty matrix instead of crashing the gate with a traceback.
+    marker = text.find("const slotKinds =")
+    if marker < 0:
+        return {}
+    start = marker
     block = brace_block(text, text.index("{", start))
     i = 0
     kinds = {}

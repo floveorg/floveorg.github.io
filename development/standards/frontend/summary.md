@@ -10,7 +10,7 @@ The **last** step-panel of every app (the one users arrive at after
 filling in their fields) aggregates the user's input into a single
 **live phrase**, then exposes the full action surface for sending that
 phrase out (copy, save, share, publish, download). Reference impl:
-`.step-panel.is-summary` in `apps/blogy/blogy-advanced.html`
+`.step-panel.is-summary` in `apps/blogy/index.html`
 (line ~7178; inline-copy in `apps/blogy/blogy-advanced-one.html`).
 blogy is the Solo fallback reference — the Central apps are the
 canonical spec ([`../apps/README.md`](../apps/README.md)).
@@ -57,7 +57,7 @@ Copy** (revision above).
 
 | App | Exception |
 |---|---|
-| `blogy/blogy-advanced.html` | keeps its summary display **and** its multi-format Save menu |
+| `blogy/index.html` | keeps its summary display **and** its multi-format Save menu |
 | `metas/souls.html` | keeps its layered display; standard buttons |
 | `economy/worthing.html` | keeps its axial view; standard buttons |
 | `economy/dealy/rewardy.html` | axial rating playground — keeps its display; no export surface |

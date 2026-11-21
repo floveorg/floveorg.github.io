@@ -105,16 +105,16 @@ Invariants:
 ### 3.3 Authy
 
 - **Levels:** **L1 Self (SelfAuth internally) · L2 verified email (optional) ·
-  L3 Telegram verified · L4 verified phone**. **Bio is profile completeness,
-  not a level.**
+  L3 Telegram verified · L4 verified phone · L5 bio**. L3 is the owner of the
+  ladder (CR26 resolved 2026-11-20); a bare Telegram link stays L1.
 - **Self (L1; SelfAuth internally):** anything self-asserted — self, bio, a bare Telegram link.
   A bare link is a channel state; it does **not** raise the level and does not
   open MyNet.
 - **Telegram verified (L3):** either a **risa signed presence claim** or the
   **Authy nonce + DM** flow. Both prove control; the handle is not published.
   L3 is the MyNet local gate and the Social/Public publishing gate in v1.
-- **Email/phone:** L2/L4 are optional verified channels; they add assurance,
-  not a different identity.
+- **Email/phone/bio:** L2/L4 are optional verified channels and L5 is profile
+  completeness; none is a different identity or a new content surface.
 - **Invites as authentication.** An invite code can travel as a Telegram deep
   link; clicking it can start Authy authentication for the invitee. The invitee
   gets an identity hash and can join MyFamily/Invitees. **risa is a redirect to
@@ -132,6 +132,12 @@ Invariants:
 
 ### 3.4 MyNet and MyFamily
 
+- **Social ships inside MyNet, not as a standalone app.** The archived choice
+  (`VARIOUS_Q07`, “Profily-integrated MyNet”) makes Social the MyNet tab of the
+  tabbed Nety app — prominent at tab 3 of 5 — with social features as its
+  headline content. There is no standalone Social entry point or duplicate
+  card; Social publishing remains the L3 surface and is not a second MyNet
+  tier. See BSP-M16.
 - **Telegram verified enables MyNet.** A bare presence link does not. Once L3
   is verified, MyNet exposes people, favourites, flat local groups, feed,
   invites + lineage and local sharing.
@@ -410,7 +416,7 @@ release, logging, masks, sync and the test matrix: see `browsy-questions.md` K01
 | **BSP-A03** | Central is optional. | Disabling Central leaves Local/Social flows working. |
 | **BSP-D01** | P/L/S/D/M classes apply to every bundle and field. | Every shipped JSON maps to a class; export refuses P paths. |
 | **BSP-D02** | Defaults are private. | New record/field starts P or L by explicit choice; no public default. |
-| **BSP-I01** | Authy implements L1–L4: Self (SelfAuth internally), verified email (optional), Telegram verified, verified phone. Bio is profile completeness, not a level. | Ladder shows L1–L4; a bare Telegram link stays Self/L1; L3 is the MyNet/publish gate. |
+| **BSP-I01** | Authy implements L1–L5: Self (SelfAuth internally), verified email (optional), Telegram verified, verified phone, bio. | Ladder shows L1–L5; a bare Telegram link stays Self/L1; L3 is the MyNet/publish gate. |
 | **BSP-I02** | Telegram verification is either a risa redirect to the Authy ID or Authy nonce → deep link → DM. | Both paths persist L3; risa does not create a second root; a bare link does not. |
 | **BSP-I03** | Authy state persists in `flove:authy/1`; `flove:authy` is legacy and migrated once. | Reload appy-basic/Authy index; `/1` survives; the legacy read flag is set. |
 | **BSP-I04** | Local keeper before social keeper; social keeper only at L3. | Social send is rejected below L3; local payload is stored first. |
@@ -431,6 +437,7 @@ release, logging, masks, sync and the test matrix: see `browsy-questions.md` K01
 | **BSP-M13** | An owner can grant a member’s Wizy a scoped consult agreement over selected MyFamily data. | Agreement is signed, revocable, scoped to person/group/paths, and returns derived answers only. |
 | **BSP-M14** | Groups are one owner list with free names and optional labels; `Invitees` is invite-only and each code admits one person who joins themselves. | A group can be freely named and labelled; an Invitees code is single-use; the invitee self-joins. |
 | **BSP-M15** | The owner can publish an S stats card (invitee count/activity) while members, roles, posts and lineage stay L. | The S card contains only counts/stats; full details require an L grant. |
+| **BSP-M16** | Social is the MyNet tab of the tabbed app, not a standalone Social app. | MyNet is tab 3 of 5; no standalone Social entry point or card; Social publishing still requires L3 and is not a MyNet tier. |
 | **BSP-W01** | Wizy derives locally by default. | D0/D1 work offline; D3 requires explicit consent. |
 | **BSP-W02** | Wizy explains what it used. | A recommendation shows its input classes and paths. |
 | **BSP-P01** | Grants are signed and travel with bundles. | A tampered/grant-mismatched bundle is rejected. |
@@ -489,7 +496,7 @@ from a bundle; derives without network; no separate keys.
 
 ### Phase 3 — MyFamily records and flat local groups
 
-**Spec:** BSP-M02–M08, BSP-M12, BSP-D01–D02.
+**Spec:** BSP-M02–M08, BSP-M12, BSP-M16, BSP-D01–D02.
 **Tasks:** person list/personId; the **7 areas × 5 replies** profile and the
 **5 type percentages** (Cousin · Sibling · Grandparent · Parent · Partner);
 class P/L/S with **P as the new-person default**; Wizy reads P locally on the
@@ -559,6 +566,7 @@ bundle signing review; release package; overwrite old landing copy. **Gate:**
 |---|---|
 | Authy | bare link stays L1; risa/claim reaches L3; reload persistence; L1 cannot publish; keeper local/social rules |
 | MyFamily | 7 areas × 5 replies; 5 percentages sum to 100; new person defaults P; Wizy reads P locally; P export refusal; no-Browsy fallback; reload |
+| MyNet surface | Social is the MyNet tab (tab 3 of 5); no standalone Social app or card; Social publishing still requires L3 and is not a MyNet tier |
 | MyNet groups | one free-named list; optional `Invitees` label; single-use invitee self-join; create from MyFamily; one `personId`; projection = display name + 5 percentages, no raw areas; flat groups; two groups per person; lineage visible; no public group join/nesting; S stats card counts only; details L |
 | Consult | owner→member Wizy agreement; scope only; derived answers only; revoke stops the next consult |
 | Wizy | D0/D1 offline; explanation; projection cannot include P |
@@ -580,7 +588,8 @@ Highlights: group defaults (F3), subject consent (F6), app sessions, offline
 queue, bridge/security, grant defaults, DPIA and erasure.
 **Decided:** L01 local group, L02 owner/member, L04 flat groups, L05 MyFamily
 7×5 profile, P as the new-person default, no group moderation, consult
-agreements, native host transport, Nety/Public postponed.
+agreements, native host transport, Nety/Public postponed, Social integrated as
+the MyNet tab (not a standalone app, `VARIOUS_Q07`).
 
 Out of scope for v1: browser P2P transport, a real Telegram bot, Nety
 gateway/daemon, public groups/moderation, and replacing the public P2P
@@ -606,3 +615,4 @@ slice. The **closed answer log** is
 | 2026-11-17 | Integrates the MyNet surface (people, favourites, groups, feed, invites, visibility, moderation) and adds the MyFamily-based local-group model (BSP-M05–M12, Phase 3–6, group tests, pendings L01–L14). |
 | 2026-11-17 | Refines before build: SelfAuth/verified Telegram ladder (no presence level), MyFamily 7×5 profile + 5 type percentages, flat groups/no public groups, native-host transport, Nety/Public postponed, `flove:authy/1` canonical. |
 | 2026-11-18 | Owner answers: P default + local Wizy read, owner-only membership, single free-named group list + `Invitees` label, S stats card vs L details, no group moderation, consult agreements, invite code + Telegram/Authy auth, risa redirect; Self label, Rust host, WebSocket+JSON, entry/host labels, retire Else. |
+| 2026-11-20 | Integrates `VARIOUS_Q07`: Social ships as the MyNet tab, not a standalone app (BSP-M16); closes the mirrored pendings row. |

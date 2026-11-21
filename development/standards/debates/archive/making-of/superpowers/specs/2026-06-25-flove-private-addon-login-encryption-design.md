@@ -1,7 +1,9 @@
 # flove private add-on — the §13.13 **High** locking demo (F0/F1)
 
+> **Scope / Ámbito:** EN: Archived locking/encryption add-on design; implemented as OAuth integration (DS02), no plan pending. · ES: Diseño archivado del add-on de bloqueo/cifrado; implementado como integración OAuth (DS02), sin plan pendiente.
+
 - **Date:** 2026-06-25
-- **Status:** design approved (brainstorming) — pending implementation plan
+- **Status (archived):** ✅ implemented — OAuth integration (DS02 in `pendings.md`)
 <!-- ↗ pendings:#DS02 -->
 - **Anchors:** `context/flove/backend_plan.md` **§13.13 · Locking** (this add-on
   is the canonical **demo of the High method**) and the **F0/F1** strands of
@@ -28,7 +30,7 @@ session close — so at rest the F0/F1 data is **real AES-GCM ciphertext**.
 
 It is a **variant/mode** (a `-private` quality), **not a tier**: the tier
 ladder and its upgrade routing are untouched — *upgrade → basic* opens
-`appy-basic.html`, *upgrade → normal* opens the flove.org root index.
+`index.html`, *upgrade → normal* opens the flove.org root index.
 
 ## 2. Goals & non-goals
 
@@ -120,7 +122,7 @@ recovery phrase ──derive──▶ recovery-KEK ─────────�
 
 **Home: appy's account → Privacy tab.** appy already ships a **Privacy tab**
 (`#tab-privacy`, `switchTab('privacy')`) in `appy-mini.html` (~line 1967) and
-`appy-basic.html`, today a **hidden placeholder** (`d-none`) next to the
+`index.html`, today a **hidden placeholder** (`d-none`) next to the
 existing **Settings** export (`getSettings()`). The add-on **un-hides and
 populates that tab** with the controls below — no new surface invented. appy is
 the F0/F1 account hub, so this carries through the tiers (mini = F0, basic =

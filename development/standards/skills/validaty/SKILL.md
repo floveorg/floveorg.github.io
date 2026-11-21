@@ -5,6 +5,11 @@ description: >-
   HTML, CSS, JS and embedded JSON — plus accessibility, mobile and i18n
   readiness, protecting its navigation; then suggest UX improvements. Use for
   /validaty, "fix the errors", "check my a11y", "make it mobile-friendly".
+category: sys
+checker_of:
+  - https://flove.org/development/standards/adoption.md
+  - https://flove.org/development/standards/contract.md#the-floor
+
 ---
 
 # validaty
@@ -34,6 +39,9 @@ The last step is advice, not edits.
    - JSON: parse every embedded block — `<script type="application/json">`,
      `flove-fields`, JSON-LD, seeded state. See **JSON compliance** below.
    - i18n: `node <translaty>/scripts/check.js <file>` when the app is translated.
+   - Local artifacts: every `href`, `src`, `fetch()` path, audio base and path
+     cited in a comment resolves relative to the repo; CSS selector lists end
+     in a body (no trailing comma).
 
    The catalog axes are HTML validity, a11y, CSS, JS, mobile and i18n; each fix is
    **Safe** unless it touches the navigation map — `label for=`, a stateful `id`,
@@ -72,7 +80,7 @@ The last step is advice, not edits.
 | Axis | Basic compliance means |
 |---|---|
 | HTML | valid nesting, unique `id`, every `for=`/`aria-controls`/`:has(#…)` resolves, `lang`, a `title` |
-| CSS | balanced braces and comments, every rule has a selector and a body, no dead duplicate |
+| CSS | balanced braces and comments, every rule has a selector **and a body** (no trailing comma), no dead duplicate |
 | JS | every inline script passes `node --check`; no unreachable handler, no selector that matches nothing |
 | JSON | every embedded block parses, no duplicate keys, no unescaped `</script>`, the schema/version string is present |
 | a11y | alt text, labels, heading order, focus visible, ARIA used as intended — never deleted to silence a warning |

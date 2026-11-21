@@ -69,7 +69,7 @@ here, so the concept was stripped out of the app code:
 - **Shared code** — `addons/code/js/flove.js` lost the same module, and
   `flove-loader.js` describes its browsy gift gate without tier language.
 - **Catalog** — `apps/apps-full.html` and `central/apps/apps-full.html`: the
-  Blogy tile is a normal app tile pointing at `blogy/blogy-advanced.html`; the
+  Blogy tile is a normal app tile pointing at `blogy/index.html`; the
   seven-variant child list, the "Blogy · Launcher" cube, the "by tier"
   explainer and the "the flove tiers" tags are gone.
 - **Distro pages** — `central/apps/{sety,wizy,gody}/index.html` lost their

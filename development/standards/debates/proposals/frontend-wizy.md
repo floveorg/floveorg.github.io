@@ -56,8 +56,9 @@ wizy.custom(portrait) -> {
 
 ## Relationship to the summary standard
 
-`frontend/summary.md` (revision 2026-11-17): **Magic → General** is the app’s
-own insight/reflection text; **Magic → Custom** is this contract. The separate
+[`../../frontend/summary.md` §13.9](../../frontend/summary.md) (revision
+2026-11-17; summary plan consolidated): **Magic → General** is the app’s own
+insight/reflection text; **Magic → Custom** is this contract. The separate
 Insight button retires.
 
 ## Open questions
@@ -70,6 +71,14 @@ Insight button retires.
 4. What is the Wizy standard’s owner file — this draft, or a section in
    `frontend/frontend.md`?
 
+Not yet in the issue register; flagged here for the owner (Work filter:
+[ai · models](https://flove.org/development/index.html#work?tab=docs&view=r2&subtab=work&category=ai&section=models)):
+
+- [debate] Wizy engine canonical home — Work: https://flove.org/development/index.html#work?tab=docs&view=r2&subtab=work&category=ai&section=models
+- [debate] Custom magic on demand vs cached per play — Work: https://flove.org/development/index.html#work?tab=docs&view=r2&subtab=work&category=ai&section=models
+- [debate] Shared consent model for Browsy and NetyBrowsy permissions — Work: https://flove.org/development/index.html#work?tab=docs&view=r2&subtab=work&category=ai&section=models
+- [debate] Wizy standard owner file — Work: https://flove.org/development/index.html#work?tab=docs&view=r2&subtab=work&category=ai&section=models
+
 ## Magic button — Appy, Browsy (Nety later)
 
 **Placement.** Appy: inside the upload section, directly below the
@@ -77,7 +86,7 @@ Insight button retires.
 Browsy: directly below the hero. Nety: same component later; not part of this
 pass.
 
-**Status (2026-11-18).** Implemented in [`apps/appy/appy-basic.html`](../../../../apps/appy/appy-basic.html)
+**Status (2026-11-18).** Implemented in [`apps/appy/index.html`](../../../../apps/appy/index.html)
 and [`apps/sys/browsy/index.html`](../../../../apps/sys/browsy/index.html).
 Nety is pending.
 
