@@ -35,7 +35,6 @@ SKIP = {
     "development/standards/debates",
     "development/standards/apps",
     "development/docs-wiki-migration-plan.md",
-    "development/docs-wiki-migration-plan.backup-2026-11-21.md",
     "development/docs-migration-baseline.md",
     "development/wiki/register-path-inventory.json",
     "development/wiki/register-path-inventory.md",

@@ -6,6 +6,10 @@ Status: **proposal v2 — third view applied** (register reshaped; gate green)
 Source: `archive/old/task-set-plan.md` + `archive/old/hitos-audit.md` · register: `wiki/work/milestones.json` · page join: `wiki/work/common.json` · mirror: `standards/README.md` · gate: `tools/dev/build-work-tracker.py`
 Date: 2026-11-20
 
+> **Historical target.** §4 records the 2026-11-20 reshape to 1,455 live
+tasks. The current register is 1,559 live after the 2026-11-21 increase; use
+`common.json` / Work for current counts, not this historical target.
+
 ## 1. Inputs and constraints
 
 Three things set the shape of this plan:

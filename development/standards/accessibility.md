@@ -21,11 +21,6 @@ CONTEXT:END -->
 > **Stable page.** Migrated from the pre-cutover sources on 2026-11-21.
 > The chapters below are the only owners; the child plan records source history.
 
-## Migration
-
-- Registered as `frontend/accessibility` in `development/wiki/wiki.json`.
-- Source rows: `development/wiki/port-ledger.skeleton.json`.
-- Child plan: see `development/wiki/plans/`.
 
 ## Accessibility audit
 
@@ -72,8 +67,8 @@ The report lists axe and keyboard results for every in-scope page. Regenerate wi
 
 | Archived source | Date | Stable home |
 |---|---|---|
-| `a11y-report.md` | undated | development/standards/accessibility.md |
-| `browsy/spec.md` | undated | development/standards/accessibility.md |
+| `archive/old/a11y-report.md` | 2026-11-19 | development/standards/accessibility.md |
+| `archive/old/browsy/spec.md` | 2026-11-17 | development/standards/accessibility.md |
 
 Chapters without a separate source row are `milestone-only`: they are
 specified from the register (hitos and tasks) and remain owned here.

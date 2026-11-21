@@ -7,7 +7,7 @@ topic: skills
 kind: topic
 status: stable
 html_place: ["#ai"]
-owns: ["Skill library", "questy decisions"]
+owns: ["Skill procedures and decisions", "questy decisions"]
 updated: 2026-11-21
 read_next: ["#skill-skills-02", "#skill-skills-03", "#skill-skills-05", "#skill-skills-06", "#skill-skills-07", "#skill-skills-08", "#skill-skills-09", "#skill-skills-11", "#skill-skills-14", "#skill-skills-15", "#skill-skills-16", "#skill-skills-17", "#skill-skills-18", "#skill-skills-19", "#skill-skills-20", "#skill-skills-21", "#skill-skills-22", "#skill-skills-23", "#skill-skills-24"]
 supersedes:
@@ -15,6 +15,7 @@ supersedes:
   - development/wiki/archive/old/proposals/frontend-wizy.md
   - development/wiki/archive/old/questy-proposals.md
   - development/wiki/archive/old/standards.md
+  - development/wiki/archive/old/skills-library.md
 heavy: false
 CONTEXT:END -->
 
@@ -23,11 +24,6 @@ CONTEXT:END -->
 > **Stable page.** Migrated from the pre-cutover sources on 2026-11-21.
 > The chapters below are the only owners; the child plan records source history.
 
-## Migration
-
-- Registered as `ai/skills` in `development/wiki/wiki.json`.
-- Source rows: `development/wiki/port-ledger.skeleton.json`.
-- Child plan: see `development/wiki/plans/`.
 
 ## Solo-scoped skills
 
@@ -37,7 +33,7 @@ These skills live in `skills/` and build, audit or ship the local-first distro:
 
 | Skill | Path | Scope |
 |---|---|---|
-| `skills-library.md` | undated | development/standards/skills.md |
+| `archive/old/skills-library.md` | 2026-11-19 | development/standards/skills.md |
 | **updaty4** | `skills/updaty/heavy.md` | heavy release: packages (`flove-localhost.zip`), `sw.js`, vocabulary, all-repo checks; `updaty5` adds subdomains |
 | **exporty** | `skills/exporty/SKILL.md` | audit an app's export: `flove-portrait/1` JSON + Appy renderer |
 | **updaty-apk** | `skills/updaty-apk/SKILL.md` | recompile and publish the Android TWA to GitHub Releases |
@@ -199,10 +195,10 @@ push; `git push` pushes refs only, never `--mirror`.
 
 | Archived source | Date | Stable home |
 |---|---|---|
-| `apps/README.md` | undated | development/standards/skills.md |
-| `proposals/frontend-wizy.md` | undated | development/standards/skills.md |
-| `questy-proposals.md` | undated | development/standards/skills.md |
-| `standards.md` | undated | development/standards/skills.md |
+| `archive/old/apps/README.md` | 2026-11-09 | development/standards/skills.md |
+| `archive/old/proposals/frontend-wizy.md` | 2026-11-19 | development/standards/skills.md |
+| `archive/old/questy-proposals.md` | 2026-11-15 | development/standards/skills.md |
+| `archive/old/standards.md` | 2026-08-01 | development/standards/skills.md |
 
 Chapters without a separate source row are `milestone-only`: they are
 specified from the register (hitos and tasks) and remain owned here.

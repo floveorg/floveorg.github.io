@@ -20,7 +20,7 @@ CONTEXT:END -->
 
 # Channels
 
-> **Pilot migration (phase 2).** This page imports `backend.md` §14.
+> **Migrated 2026-11-21.** This page imports the archived `root/backend.md` §14.
 
 ## Chatland cross-axis hitos
 
@@ -103,10 +103,10 @@ level and therefore no hito.
 
 | Archived source | Date | Stable home |
 |---|---|---|
-| `browsy/browsy-questions.md` | undated | development/standards/channels.md |
-| `plans/2026-11-21-app-database-stages.md` | 2026-11-21 | development/standards/channels.md |
-| `root/backend.md` | undated | development/standards/channels.md |
-| `standards.md` | undated | development/standards/channels.md |
+| `archive/old/browsy/browsy-questions.md` | 2026-08-01 | development/standards/channels.md |
+| `archive/old/plans/2026-11-21-app-database-stages.md` | 2026-11-21 | development/standards/channels.md |
+| `archive/old/root/backend.md` | 2026-08-01 | development/standards/channels.md |
+| `archive/old/standards.md` | 2026-08-01 | development/standards/channels.md |
 
 Chapters without a separate source row are `milestone-only`: they are
 specified from the register (hitos and tasks) and remain owned here.

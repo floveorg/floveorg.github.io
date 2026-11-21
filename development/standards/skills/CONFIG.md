@@ -100,9 +100,8 @@ keys, not the extension:
 
 ## paths
 - doc-roots: …/development/standards/, …/development/wiki/plans/
-- extra-files: …/debates/pendings.md, …/debates/proposals.md,
-  …/debates/questy-docs/, …/debates/plans/conflicts.md,
-  …/debates/questy-proposals.md
+- extra-files: …/development/wiki/work/pendings.md, …/development/wiki/archive/old/proposals.md,
+  …/development/wiki/plans/conflicts.md, …/development/wiki/archive/old/questy-proposals.md
 - frontend: https://flove.org/development/standards/skills/questy/
 
 ## addons

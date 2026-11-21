@@ -2614,25 +2614,25 @@ These were postponed during the design sessions and can be decided later:
 
 ## Source index
 
-### apps/README.md — undated
+### apps/README.md — 2026-11-09
 
 - Archive: `development/wiki/archive/old/apps/README.md`
 - Stable home: `development/standards/plan.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/pre-build/README.md — undated
+### browsy/pre-build/README.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/pre-build/README.md`
 - Stable home: `development/standards/plan.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/rationale.md — undated
+### browsy/rationale.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/rationale.md`
 - Stable home: `development/standards/plan.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/spec.md — undated
+### browsy/spec.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/spec.md`
 - Stable home: `development/standards/plan.md`
@@ -2662,31 +2662,31 @@ These were postponed during the design sessions and can be decided later:
 - Stable home: `development/standards/plan.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### plans/index.md — undated
+### plans/index.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/plans/index.md`
 - Stable home: `development/standards/plan.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### proposals.md — undated
+### proposals.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/proposals.md`
 - Stable home: `development/standards/plan.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### roadmap-2026-06.md — undated
+### roadmap-2026-06.md — 2026-11-19
 
 - Archive: `development/wiki/archive/old/roadmap-2026-06.md`
 - Stable home: `development/standards/plan.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### root/backend.md — undated
+### root/backend.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/root/backend.md`
 - Stable home: `development/standards/plan.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### root/worldview.md — undated
+### root/worldview.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/root/worldview.md`
 - Stable home: `development/standards/plan.md`

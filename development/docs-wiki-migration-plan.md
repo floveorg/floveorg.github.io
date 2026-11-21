@@ -1,6 +1,6 @@
 # Docs → wiki migration — spec-driven implementation plan
 
-> **Status:** v2.9 · 2026-11-21 · **migration complete; 15 gates green; pushed; backy verified.**
+> **Status:** v3.0 · 2026-11-21 · **migration + consistency repair complete; 15 gates green.**
 > v2.4 records the applied task-owner migration: all 1,559 live tasks now point
 > to the 19 new pages (984 old owners changed; 0 still queued `respec`, 1,559
 > carry an `evidence.pointer`).
@@ -17,7 +17,7 @@
 > canonical execution policy remains `development/AGENTS.md` (PROC blocks) — this
 > plan does not replace it.
 > **Backup:** the complete v1 planning structure is preserved verbatim at
-> `development/docs-wiki-migration-plan.backup-2026-11-21.md`. Nothing in v1 was
+> `development/wiki/archive/old/docs-wiki-migration-plan.backup-2026-11-21.md`. Nothing in v1 was
 > discarded; v2 reorganises it into specs + routing + recommendation.
 > **Commit policy:** no push is part of this plan. The earlier applied fixes were
 > landed in commit `14b0e07` (not uncommitted); see R06. Before execution: commit
@@ -1005,7 +1005,7 @@ amended rows are marked “in force, amended/corrected”.
 | ID | Decision | Status |
 |---|---|---|
 | D01 | Plan executed through cutover. No push/publish without the owner asking; the local cutover commit/tag awaits owner approval (§4.6, R39). | in force, amended |
-| D02 | This file's v1 structure preserved at `…-plan.backup-2026-11-21.md`; at cutover the historical plan moves to `development/wiki/archive/old/`. | planned |
+| D02 | This file's v1 structure is preserved at `development/wiki/archive/old/docs-wiki-migration-plan.backup-2026-11-21.md`; the historical plan moved to the archive. | applied |
 | D03 | `tasky` stays exactly one `SKILL.md`; no `PLAYBOOK.md`, `CARD.md` or third doc. | in force |
 | D04 | Free work uses `tasky.py` without loading the skill. Strict run only for a cold-queue pick, state move, procedure edit or red gate. | in force |
 | D05 | `/tasky` picks **and** works; clicky intro form shows the first question. | in force |
@@ -1507,3 +1507,49 @@ owner. The gate set is now **15 commands**.
   its SHA-256, `status: archived`, `live: false` and `owner: null`.
 - `check-archive.py` now verifies the manifest against the tree, the checksums
   and the non-live markers, in addition to the ledger coverage.
+
+---
+
+## 15. Post-migration consistency repair (2026-11-21)
+
+The audit after phase 2 found index/navigation drift that the gates did not
+cover. All items are now fixed:
+
+- `INDEX.md` plan statuses match the manifest; §7 restores the **33 historical
+  rows** as archive links; §8 states the 15-gate set.
+- `standards/README.md` counts are 326 / 37 / 1,559 / 7 / 438; the authority
+  paragraph now says the topic pages own standards facts and `index.html` is the
+  generated Work/Plan surface.
+- `standards/_sidebar.md` lists all **19 topic pages**, the standing books, the
+  plan index, conflicts and the archive.
+- The seven `## Migration` scaffolding blocks and twelve “Pilot migration”
+  notes are gone from stable pages.
+- Ownership conflicts are resolved: `ai/skills` owns skill procedures,
+  `standing/skills` owns the library; distro strategy (`plan.md`) and release
+  mechanics (`scripts.md`) now name separate owners.
+- `wiki.json` matches the two plan exceptions (`conflicts.md` active,
+  `plans/debates/README.md` draft); the optional `work-moves.json` redirect/alias
+  is removed.
+- Every child-plan source section now has a real date derived from the archived
+  file's earliest git commit; `undated` is gone.
+- Gates strengthened:
+  - `check-docs-manifest.py` verifies status, ownership uniqueness, `read_next`
+    anchors, `supersedes` files, INDEX topic/plan tables, 33 historical rows,
+    sidebar coverage and plan dates.
+  - `check-counts.py` catches 312 / 424 / 1,455 / 1455 in addition to phrase
+    forms.
+  - `check-page-status.py` rejects `## Migration` and “Pilot migration” on
+    stable pages.
+
+### 15.1 Deeper sweep
+
+- Source-map rows now use full `archive/old/...` paths and every row is also in
+  the page's `supersedes` frontmatter.
+- Standing books (`frontend/*`, `skills/CONFIG.md`) no longer cite
+  `debates/…` or bare `backend.md` as live; they point at the archive.
+- PROC-01 advice no longer calls MDs “fallback referrals”; stable topic pages own
+  the detail.
+- `work/measures.md` labels its 1,455 target as historical and points current
+  counts at `common.json`.
+- `check-docs-manifest.py` now also verifies sidebar coverage for standing books
+  and source-map rows against `supersedes`.

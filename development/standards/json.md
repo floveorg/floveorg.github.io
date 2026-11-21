@@ -23,7 +23,7 @@ CONTEXT:END -->
 
 # JSON
 
-> **Pilot migration (phase 2).** This page imports `backend.md` §5, §6 and §7.
+> **Migrated 2026-11-21.** This page imports the archived `root/backend.md` §5, §6 and §7.
 
 ## Routing
 
@@ -139,13 +139,13 @@ All four read the unified index: published elements + `asterism_path` +
 
 | Archived source | Date | Stable home |
 |---|---|---|
-| `bridges/oasis.md` | undated | development/standards/json.md |
-| `browsy/pre-build/03-schemas.md` | undated | development/standards/json.md |
-| `browsy/rationale.md` | undated | development/standards/json.md |
-| `plans/2026-11-20-appy-dashboard-redesign.md` | 2026-11-20 | development/standards/json.md |
-| `plans/2026-11-21-app-database-stages.md` | 2026-11-21 | development/standards/json.md |
-| `proposals/frontend-wizy.md` | undated | development/standards/json.md |
-| `root/backend.md` | undated | development/standards/json.md |
+| `archive/old/bridges/oasis.md` | 2026-08-01 | development/standards/json.md |
+| `archive/old/browsy/pre-build/03-schemas.md` | 2026-11-17 | development/standards/json.md |
+| `archive/old/browsy/rationale.md` | 2026-11-17 | development/standards/json.md |
+| `archive/old/plans/2026-11-20-appy-dashboard-redesign.md` | 2026-11-20 | development/standards/json.md |
+| `archive/old/plans/2026-11-21-app-database-stages.md` | 2026-11-21 | development/standards/json.md |
+| `archive/old/proposals/frontend-wizy.md` | 2026-11-19 | development/standards/json.md |
+| `archive/old/root/backend.md` | 2026-08-01 | development/standards/json.md |
 
 Chapters without a separate source row are `milestone-only`: they are
 specified from the register (hitos and tasks) and remain owned here.

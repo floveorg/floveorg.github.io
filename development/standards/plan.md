@@ -29,7 +29,7 @@ CONTEXT:END -->
 
 # Plan
 
-> **Pilot migration (phase 2).** This page imports `browsy/spec.md` §1, §2 and
+> **Migrated 2026-11-21.** This page imports `browsy/spec.md` §1, §2 and
 > the §6 phase summary. Reconciliation detail, full phases and changelog live in
 > the child plan `plans/docs/plan.md`.
 
@@ -206,9 +206,9 @@ The stable pages carry the accepted facts; this link is the evidence trail.
 > Owner: plan. The Browsy spec phases and acceptance are the canonical plan.
 
 <a id="distro-strategy"></a>
-## Distro and release strategy
+## Distro strategy
 
-> Owner: plan. SD18 branches and release gates are named and reachable.
+> Owner: plan (distro strategy). Release mechanics live in `scripts.md#distro-and-release-strategy`.
 
 ## Sources
 
@@ -221,19 +221,19 @@ The stable pages carry the accepted facts; this link is the evidence trail.
 
 | Archived source | Date | Stable home |
 |---|---|---|
-| `apps/README.md` | undated | development/standards/plan.md |
-| `browsy/pre-build/README.md` | undated | development/standards/plan.md |
-| `browsy/rationale.md` | undated | development/standards/plan.md |
-| `browsy/spec.md` | undated | development/standards/plan.md |
-| `plans/2026-06-18-nety-frontend-build.md` | 2026-06-18 | development/standards/plan.md |
-| `plans/2026-11-17-appy-authy-mynet.md` | 2026-11-17 | development/standards/plan.md |
-| `plans/2026-11-20-appy-dashboard-redesign.md` | 2026-11-20 | development/standards/plan.md |
-| `plans/2026-11-21-app-database-stages.md` | 2026-11-21 | development/standards/plan.md |
-| `plans/index.md` | undated | development/standards/plan.md |
-| `proposals.md` | undated | development/standards/plan.md |
-| `roadmap-2026-06.md` | undated | development/standards/plan.md |
-| `root/backend.md` | undated | development/standards/plan.md |
-| `root/worldview.md` | undated | development/standards/plan.md |
+| `archive/old/apps/README.md` | 2026-11-09 | development/standards/plan.md |
+| `archive/old/browsy/pre-build/README.md` | 2026-11-17 | development/standards/plan.md |
+| `archive/old/browsy/rationale.md` | 2026-11-17 | development/standards/plan.md |
+| `archive/old/browsy/spec.md` | 2026-11-17 | development/standards/plan.md |
+| `archive/old/plans/2026-06-18-nety-frontend-build.md` | 2026-06-18 | development/standards/plan.md |
+| `archive/old/plans/2026-11-17-appy-authy-mynet.md` | 2026-11-17 | development/standards/plan.md |
+| `archive/old/plans/2026-11-20-appy-dashboard-redesign.md` | 2026-11-20 | development/standards/plan.md |
+| `archive/old/plans/2026-11-21-app-database-stages.md` | 2026-11-21 | development/standards/plan.md |
+| `archive/old/plans/index.md` | 2026-08-01 | development/standards/plan.md |
+| `archive/old/proposals.md` | 2026-08-01 | development/standards/plan.md |
+| `archive/old/roadmap-2026-06.md` | 2026-11-19 | development/standards/plan.md |
+| `archive/old/root/backend.md` | 2026-08-01 | development/standards/plan.md |
+| `archive/old/root/worldview.md` | 2026-08-01 | development/standards/plan.md |
 
 Chapters without a separate source row are `milestone-only`: they are
 specified from the register (hitos and tasks) and remain owned here.

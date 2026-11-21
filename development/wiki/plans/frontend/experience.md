@@ -487,49 +487,49 @@ cinta — pero es lo más libre y lo más "flove".
 
 ## Source index
 
-### UseCase-adv.md — undated
+### UseCase-adv.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/UseCase-adv.md`
 - Stable home: `development/standards/experience.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### apps/onboarding-copy.md — undated
+### apps/onboarding-copy.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/apps/onboarding-copy.md`
 - Stable home: `development/standards/experience.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/TESTING.md — undated
+### browsy/TESTING.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/browsy/TESTING.md`
 - Stable home: `development/standards/experience.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/browsy-questions.md — undated
+### browsy/browsy-questions.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/browsy/browsy-questions.md`
 - Stable home: `development/standards/experience.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/pre-build/04-myfamily-profile.md — undated
+### browsy/pre-build/04-myfamily-profile.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/pre-build/04-myfamily-profile.md`
 - Stable home: `development/standards/experience.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/pre-build/08-model-labels.md — undated
+### browsy/pre-build/08-model-labels.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/pre-build/08-model-labels.md`
 - Stable home: `development/standards/experience.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/pre-build/11-ui-pending.md — undated
+### browsy/pre-build/11-ui-pending.md — 2026-11-18
 
 - Archive: `development/wiki/archive/old/browsy/pre-build/11-ui-pending.md`
 - Stable home: `development/standards/experience.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/spec.md — undated
+### browsy/spec.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/spec.md`
 - Stable home: `development/standards/experience.md`
@@ -553,25 +553,25 @@ cinta — pero es lo más libre y lo más "flove".
 - Stable home: `development/standards/experience.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### plans/central-backend.md — undated
+### plans/central-backend.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/plans/central-backend.md`
 - Stable home: `development/standards/experience.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### proposals/frontend-wizy.md — undated
+### proposals/frontend-wizy.md — 2026-11-19
 
 - Archive: `development/wiki/archive/old/proposals/frontend-wizy.md`
 - Stable home: `development/standards/experience.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### research/vr_interfaces.md — undated
+### research/vr_interfaces.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/research/vr_interfaces.md`
 - Stable home: `development/standards/experience.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### root/adoption.md — undated
+### root/adoption.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/root/adoption.md`
 - Stable home: `development/standards/experience.md`

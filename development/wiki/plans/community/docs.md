@@ -12,25 +12,25 @@ also: []
 
 ## Source index
 
-### apps/onboarding-copy.md — undated
+### apps/onboarding-copy.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/apps/onboarding-copy.md`
 - Stable home: `development/standards/docs.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/browsy-questions.md — undated
+### browsy/browsy-questions.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/browsy/browsy-questions.md`
 - Stable home: `development/standards/docs.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/rationale.md — undated
+### browsy/rationale.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/rationale.md`
 - Stable home: `development/standards/docs.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### standards.md — undated
+### standards.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/standards.md`
 - Stable home: `development/standards/docs.md`

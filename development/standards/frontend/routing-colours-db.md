@@ -6,7 +6,7 @@
 > Every app now exposes `window.floveFieldsFlat()` for technical combination.
 
 **Tracked work:** RC01 (consumer colour map) and RDB01 (future DB) are rows in
-[`../debates/pendings.md` §Browsy pre-build](../../wiki/archive/old/pendings.md); Work filter:
+[`archive/old/pendings.md` §Browsy pre-build](../../wiki/archive/old/pendings.md); Work filter:
 [data · json](https://flove.org/development/index.html#work?tab=docs&view=r2&subtab=work&category=data&section=json).
 
 ## Current state

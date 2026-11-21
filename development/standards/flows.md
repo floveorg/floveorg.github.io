@@ -23,7 +23,7 @@ CONTEXT:END -->
 
 # Flows
 
-> **Pilot migration (phase 2).** This page imports `browsy/spec.md` §3.5.
+> **Migrated 2026-11-21.** This page imports `browsy/spec.md` §3.5.
 
 ## Wizy and derivation
 
@@ -122,13 +122,13 @@ owned by [`plans/ai/flows.md#wizy-operating-areas`](../wiki/plans/ai/flows.md#wi
 
 | Archived source | Date | Stable home |
 |---|---|---|
-| `UseCase-adv.md` | undated | development/standards/flows.md |
-| `browsy/browsy-questions.md` | undated | development/standards/flows.md |
-| `browsy/rationale.md` | undated | development/standards/flows.md |
-| `browsy/spec.md` | undated | development/standards/flows.md |
-| `proposals/frontend-wizy.md` | undated | development/standards/flows.md |
-| `questy-proposals.md` | undated | development/standards/flows.md |
-| `standards.md` | undated | development/standards/flows.md |
+| `archive/old/UseCase-adv.md` | 2026-08-01 | development/standards/flows.md |
+| `archive/old/browsy/browsy-questions.md` | 2026-08-01 | development/standards/flows.md |
+| `archive/old/browsy/rationale.md` | 2026-11-17 | development/standards/flows.md |
+| `archive/old/browsy/spec.md` | 2026-11-17 | development/standards/flows.md |
+| `archive/old/proposals/frontend-wizy.md` | 2026-11-19 | development/standards/flows.md |
+| `archive/old/questy-proposals.md` | 2026-11-15 | development/standards/flows.md |
+| `archive/old/standards.md` | 2026-08-01 | development/standards/flows.md |
 
 Chapters without a separate source row are `milestone-only`: they are
 specified from the register (hitos and tasks) and remain owned here.

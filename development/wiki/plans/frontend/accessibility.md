@@ -12,13 +12,13 @@ also: []
 
 ## Source index
 
-### a11y-report.md — undated
+### a11y-report.md — 2026-11-19
 
 - Archive: `development/wiki/archive/old/a11y-report.md`
 - Stable home: `development/standards/accessibility.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/spec.md — undated
+### browsy/spec.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/spec.md`
 - Stable home: `development/standards/accessibility.md`

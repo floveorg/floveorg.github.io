@@ -1,32 +1,47 @@
 - [Design contract (agents)](../AGENTS.md)
-- [Backend plan (deep spec)](systems.md)
-- [Puzzy · extended definitions](puzzy.md)
-- [Oasis (0asis adaptation)](../wiki/archive/old/bridges/oasis.md)
-- [Worldview](contract.md#worldview)
-- [Vocabulary matrix · interactive tool](/vocabulary.html ':ignore')
+- [Wiki index](../wiki/INDEX.md)
 
-- **standards**
+- **Topic pages**
+  - [Plan](plan.md)
+  - [Work](work.md)
+  - [Scripts](scripts.md)
+  - [Systems](systems.md)
+  - [MyNet](mynet.md)
+  - [Storage](storage.md)
+  - [Apps](apps.md)
+  - [Accessibility](accessibility.md)
+  - [Experience](experience.md)
+  - [Models](models.md)
+  - [Skills](skills.md)
+  - [Flows](flows.md)
+  - [MDS](mds.md)
+  - [JSON](json.md)
+  - [Schemas](schemas.md)
+  - [Docs](docs.md)
+  - [Feedback](feedback.md)
+  - [Language](language.md)
+  - [Channels](channels.md)
+
+- **Standing books**
   - [Standards — readme](README.md)
-  - [Design contract](contract.md)
-  - [Frontend standards](frontend/frontend.md)
-  - [Adoption](experience.md)
-  - [· Vocabulary](vocabulary.md)
+  - [The contract](contract.md)
+  - [Puzzy](puzzy.md)
+  - [Frontend](frontend/frontend.md)
   - [· Counters](frontend/counters.md)
   - [· Publish](frontend/publish.md)
   - [· Summary](frontend/summary.md)
   - [· Export](frontend/export.md)
   - [· Routing colours DB](frontend/routing-colours-db.md)
-
-- **skills**
-  - [Library](skills/README.md)
+  - [Skills library](skills/README.md)
   - [Standing rules](skills/standing.md)
+  - [Risa / Liberada](risaliberada/risaliberada.md)
+  - [Workflow](workflow/workflow.html)
+  - [Vocabulary](vocabulary.md)
+  - [Vocabulary matrix · interactive tool](vocabulary.html ':ignore')
 
-- **debates**
-  - [Plans](../wiki/INDEX.md)
-  - [Browsy docs](../wiki/archive/old/browsy/README.md)
-  - [Proposals](../wiki/archive/old/proposals.md)
-  - [Pendings](../wiki/work/pendings.md)
-  - [Questy standards](../wiki/archive/old/standards.md)
+- **Plans**
+  - [Plans map](../wiki/INDEX.md#4-plans-19)
+  - [Conflicts](../wiki/plans/conflicts.md)
 
-- **solo**
-  - [Solo status & distro](../wiki/archive/old/apps/README.md)
+- **Archive**
+  - [Opaque pre-cutover archive](../wiki/archive/README.md)

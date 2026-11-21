@@ -17,6 +17,7 @@ WIKI = ROOT / "development/wiki/wiki.json"
 REGISTER = ROOT / "development/wiki/work/milestones.json"
 STATUS = re.compile(r"^status:\s*(\w+)", re.M)
 SKELETON = re.compile(r"Phase 1 skeleton|Do not cite it as an owner yet", re.I)
+SCAFFOLD = re.compile(r"^## Migration$|Pilot migration \(phase 2\)", re.M)
 ARCHIVE_LINK = re.compile(r"\]\([^)]*archive/old")
 
 
@@ -54,7 +55,9 @@ def main() -> int:
         text = path.read_text(encoding="utf-8", errors="replace")
         if SKELETON.search(text):
             errors.append(f"{entry['path']}: still carries a Phase 1 skeleton banner")
-        if entry.get("kind") in {"topic", "map"} and not entry["path"].endswith("plans/conflicts.md") and ARCHIVE_LINK.search(text):
+        if entry.get("kind") in {"topic", "map"} and SCAFFOLD.search(text):
+            errors.append(f"{entry['path']}: still carries migration scaffolding")
+        if entry.get("kind") == "topic" and ARCHIVE_LINK.search(text):
             errors.append(f"{entry['path']}: stable page links to archive/old")
 
     draft_owners: dict[str, int] = {}
@@ -77,7 +80,7 @@ def main() -> int:
         for error in errors[:40]:
             print(f"  - {error}")
         return 1
-    print(f"OK: {len(pages)} live pages and {len(plans)} plans are stable; no task owns a draft page")
+    print(f"OK: {len(pages)} live pages and {len(plans)} plans checked; no task owns a draft page")
     return 0
 
 

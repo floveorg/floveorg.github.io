@@ -22,11 +22,6 @@ CONTEXT:END -->
 > **Stable page.** Migrated from the pre-cutover sources on 2026-11-21.
 > The chapters below are the only owners; the child plan records source history.
 
-## Migration
-
-- Registered as `community/language` in `development/wiki/wiki.json`.
-- Source rows: `development/wiki/port-ledger.skeleton.json`.
-- Child plan: see `development/wiki/plans/`.
 
 ## Onboarding copy
 
@@ -106,9 +101,9 @@ style choice.
 
 | Archived source | Date | Stable home |
 |---|---|---|
-| `apps/onboarding-copy.md` | undated | development/standards/language.md |
-| `browsy/rationale.md` | undated | development/standards/language.md |
-| `browsy/spec.md` | undated | development/standards/language.md |
+| `archive/old/apps/onboarding-copy.md` | 2026-11-17 | development/standards/language.md |
+| `archive/old/browsy/rationale.md` | 2026-11-17 | development/standards/language.md |
+| `archive/old/browsy/spec.md` | 2026-11-17 | development/standards/language.md |
 
 Chapters without a separate source row are `milestone-only`: they are
 specified from the register (hitos and tasks) and remain owned here.

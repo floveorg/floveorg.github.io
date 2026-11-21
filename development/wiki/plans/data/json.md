@@ -12,19 +12,19 @@ also: []
 
 ## Source index
 
-### bridges/oasis.md — undated
+### bridges/oasis.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/bridges/oasis.md`
 - Stable home: `development/standards/json.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/pre-build/03-schemas.md — undated
+### browsy/pre-build/03-schemas.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/pre-build/03-schemas.md`
 - Stable home: `development/standards/json.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/rationale.md — undated
+### browsy/rationale.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/rationale.md`
 - Stable home: `development/standards/json.md`
@@ -42,13 +42,13 @@ also: []
 - Stable home: `development/standards/json.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### proposals/frontend-wizy.md — undated
+### proposals/frontend-wizy.md — 2026-11-19
 
 - Archive: `development/wiki/archive/old/proposals/frontend-wizy.md`
 - Stable home: `development/standards/json.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### root/backend.md — undated
+### root/backend.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/root/backend.md`
 - Stable home: `development/standards/json.md`

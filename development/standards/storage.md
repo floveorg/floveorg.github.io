@@ -21,7 +21,7 @@ CONTEXT:END -->
 
 # Storage
 
-> **Pilot migration (phase 2).** This page imports `backend.md` §10.
+> **Migrated 2026-11-21.** This page imports the archived `root/backend.md` §10.
 
 ## Strategic persistence
 
@@ -130,11 +130,11 @@ no development hitos/tasks, `milestones.json`, `common.json`, `development/**`,
 
 | Archived source | Date | Stable home |
 |---|---|---|
-| `plans/2026-11-17-appy-authy-mynet.md` | 2026-11-17 | development/standards/storage.md |
-| `plans/2026-11-21-app-database-stages.md` | 2026-11-21 | development/standards/storage.md |
-| `plans/central-backend.md` | undated | development/standards/storage.md |
-| `root/adoption.md` | undated | development/standards/storage.md |
-| `root/backend.md` | undated | development/standards/storage.md |
+| `archive/old/plans/2026-11-17-appy-authy-mynet.md` | 2026-11-17 | development/standards/storage.md |
+| `archive/old/plans/2026-11-21-app-database-stages.md` | 2026-11-21 | development/standards/storage.md |
+| `archive/old/plans/central-backend.md` | 2026-08-01 | development/standards/storage.md |
+| `archive/old/root/adoption.md` | 2026-08-01 | development/standards/storage.md |
+| `archive/old/root/backend.md` | 2026-08-01 | development/standards/storage.md |
 
 Chapters without a separate source row are `milestone-only`: they are
 specified from the register (hitos and tasks) and remain owned here.

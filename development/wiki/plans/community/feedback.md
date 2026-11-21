@@ -12,7 +12,7 @@ also: []
 
 ## Source index
 
-### apps/onboarding-copy.md — undated
+### apps/onboarding-copy.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/apps/onboarding-copy.md`
 - Stable home: `development/standards/feedback.md`

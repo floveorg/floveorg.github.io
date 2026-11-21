@@ -1,8 +1,8 @@
 # flove · Puzzy — extended definitions, thesaurus & polysemic dictionary
 
 **Status:** normative draft **v1** · 2026-11-15 · ships in Work phase
-**F4 · Full** (`backend.md` §9). F5 is retired.
-Promoted out of `backend.md`; the `§8.x` labels below are self-contained to this
+**F4 · Full** (archived `root/backend.md` §9). F5 is retired.
+Promoted out of the archived `root/backend.md`; the `§8.x` labels below are self-contained to this
 chapter. Shallower view: `README.md`.
 
 **Work:** open items PZ04–PZ06 live in

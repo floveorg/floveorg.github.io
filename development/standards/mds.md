@@ -26,7 +26,7 @@ CONTEXT:END -->
 
 # MD sources
 
-> **Pilot migration (phase 2).** This page imports `backend.md` §3.1–§3.4 and
+> **Migrated 2026-11-21.** This page imports the archived `root/backend.md` §3.1–§3.4 and
 > §12.
 
 ## Upper ontology
@@ -169,16 +169,16 @@ and lets cross-link search hit the right granularity.
 
 | Archived source | Date | Stable home |
 |---|---|---|
-| `bridges/oasis.md` | undated | development/standards/mds.md |
-| `browsy/browsy-questions.md` | undated | development/standards/mds.md |
-| `browsy/pre-build/README.md` | undated | development/standards/mds.md |
-| `browsy/rationale.md` | undated | development/standards/mds.md |
-| `others/flove-libs-insights.md` | undated | development/standards/mds.md |
-| `plans/central-backend.md` | undated | development/standards/mds.md |
-| `questy-proposals.md` | undated | development/standards/mds.md |
-| `root/adoption.md` | undated | development/standards/mds.md |
-| `root/backend.md` | undated | development/standards/mds.md |
-| `standards.md` | undated | development/standards/mds.md |
+| `archive/old/bridges/oasis.md` | 2026-08-01 | development/standards/mds.md |
+| `archive/old/browsy/browsy-questions.md` | 2026-08-01 | development/standards/mds.md |
+| `archive/old/browsy/pre-build/README.md` | 2026-11-17 | development/standards/mds.md |
+| `archive/old/browsy/rationale.md` | 2026-11-17 | development/standards/mds.md |
+| `archive/old/others/flove-libs-insights.md` | 2026-08-01 | development/standards/mds.md |
+| `archive/old/plans/central-backend.md` | 2026-08-01 | development/standards/mds.md |
+| `archive/old/questy-proposals.md` | 2026-11-15 | development/standards/mds.md |
+| `archive/old/root/adoption.md` | 2026-08-01 | development/standards/mds.md |
+| `archive/old/root/backend.md` | 2026-08-01 | development/standards/mds.md |
+| `archive/old/standards.md` | 2026-08-01 | development/standards/mds.md |
 
 Chapters without a separate source row are `milestone-only`: they are
 specified from the register (hitos and tasks) and remain owned here.

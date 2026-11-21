@@ -34,11 +34,6 @@ CONTEXT:END -->
 > **Stable page.** Migrated from the pre-cutover sources on 2026-11-21.
 > The chapters below are the only owners; the child plan records source history.
 
-## Migration
-
-- Registered as `frontend/experience` in `development/wiki/wiki.json`.
-- Source rows: `development/wiki/port-ledger.skeleton.json`.
-- Child plan: see `development/wiki/plans/`.
 
 <a id="css-abstraction-checklist"></a>
 ## CSS abstraction checklist (§13.16)
@@ -220,21 +215,21 @@ They are historical evidence, not current build targets.
 
 | Archived source | Date | Stable home |
 |---|---|---|
-| `UseCase-adv.md` | undated | development/standards/experience.md |
-| `apps/onboarding-copy.md` | undated | development/standards/experience.md |
-| `browsy/TESTING.md` | undated | development/standards/experience.md |
-| `browsy/browsy-questions.md` | undated | development/standards/experience.md |
-| `browsy/pre-build/04-myfamily-profile.md` | undated | development/standards/experience.md |
-| `browsy/pre-build/08-model-labels.md` | undated | development/standards/experience.md |
-| `browsy/pre-build/11-ui-pending.md` | undated | development/standards/experience.md |
-| `browsy/spec.md` | undated | development/standards/experience.md |
-| `plans/2026-06-18-nety-frontend-build.md` | 2026-06-18 | development/standards/experience.md |
-| `plans/2026-11-17-appy-authy-mynet.md` | 2026-11-17 | development/standards/experience.md |
-| `plans/2026-11-20-appy-dashboard-redesign.md` | 2026-11-20 | development/standards/experience.md |
-| `plans/central-backend.md` | undated | development/standards/experience.md |
-| `proposals/frontend-wizy.md` | undated | development/standards/experience.md |
-| `research/vr_interfaces.md` | undated | development/standards/experience.md |
-| `root/adoption.md` | undated | development/standards/experience.md |
+| `archive/old/UseCase-adv.md` | 2026-08-01 | development/standards/experience.md |
+| `archive/old/apps/onboarding-copy.md` | 2026-11-17 | development/standards/experience.md |
+| `archive/old/browsy/TESTING.md` | 2026-08-01 | development/standards/experience.md |
+| `archive/old/browsy/browsy-questions.md` | 2026-08-01 | development/standards/experience.md |
+| `archive/old/browsy/pre-build/04-myfamily-profile.md` | 2026-11-17 | development/standards/experience.md |
+| `archive/old/browsy/pre-build/08-model-labels.md` | 2026-11-17 | development/standards/experience.md |
+| `archive/old/browsy/pre-build/11-ui-pending.md` | 2026-11-18 | development/standards/experience.md |
+| `archive/old/browsy/spec.md` | 2026-11-17 | development/standards/experience.md |
+| `archive/old/plans/2026-06-18-nety-frontend-build.md` | 2026-06-18 | development/standards/experience.md |
+| `archive/old/plans/2026-11-17-appy-authy-mynet.md` | 2026-11-17 | development/standards/experience.md |
+| `archive/old/plans/2026-11-20-appy-dashboard-redesign.md` | 2026-11-20 | development/standards/experience.md |
+| `archive/old/plans/central-backend.md` | 2026-08-01 | development/standards/experience.md |
+| `archive/old/proposals/frontend-wizy.md` | 2026-11-19 | development/standards/experience.md |
+| `archive/old/research/vr_interfaces.md` | 2026-08-01 | development/standards/experience.md |
+| `archive/old/root/adoption.md` | 2026-08-01 | development/standards/experience.md |
 
 Chapters without a separate source row are `milestone-only`: they are
 specified from the register (hitos and tasks) and remain owned here.

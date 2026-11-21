@@ -33,7 +33,7 @@ CONTEXT:END -->
 
 # Systems
 
-> **Pilot migration (phase 2).** This page imports `browsy/spec.md` §3.1, §3.6
+> **Migrated 2026-11-21.** This page imports `browsy/spec.md` §3.1, §3.6
 > and §3.7. The rest of the systems source set is still pending.
 
 ## Architecture
@@ -416,23 +416,23 @@ and [`.md#performance-review`](../wiki/plans/backend/systems.md#performance-revi
 
 | Archived source | Date | Stable home |
 |---|---|---|
-| `apps/README.md` | undated | development/standards/systems.md |
-| `bridges/oasis.md` | undated | development/standards/systems.md |
-| `browsy/README.md` | undated | development/standards/systems.md |
-| `browsy/TESTING.md` | undated | development/standards/systems.md |
-| `browsy/browsy-questions.md` | undated | development/standards/systems.md |
-| `browsy/port-nety.md` | undated | development/standards/systems.md |
-| `browsy/pre-build/05-native-host.md` | undated | development/standards/systems.md |
-| `browsy/pre-build/06-bridge-threat-model.md` | undated | development/standards/systems.md |
-| `browsy/rationale.md` | undated | development/standards/systems.md |
-| `browsy/spec.md` | undated | development/standards/systems.md |
-| `plans/2026-11-17-appy-authy-mynet.md` | 2026-11-17 | development/standards/systems.md |
-| `plans/2026-11-21-app-database-stages.md` | 2026-11-21 | development/standards/systems.md |
-| `plans/central-backend.md` | undated | development/standards/systems.md |
-| `reviews/2026-07-25-browsy-fastapi-libsql-performance-review.md` | 2026-07-25 | development/standards/systems.md |
-| `root/adoption.md` | undated | development/standards/systems.md |
-| `root/backend.md` | undated | development/standards/systems.md |
-| `root/worldview.md` | undated | development/standards/systems.md |
+| `archive/old/apps/README.md` | 2026-11-09 | development/standards/systems.md |
+| `archive/old/bridges/oasis.md` | 2026-08-01 | development/standards/systems.md |
+| `archive/old/browsy/README.md` | 2026-08-01 | development/standards/systems.md |
+| `archive/old/browsy/TESTING.md` | 2026-08-01 | development/standards/systems.md |
+| `archive/old/browsy/browsy-questions.md` | 2026-08-01 | development/standards/systems.md |
+| `archive/old/browsy/port-nety.md` | 2026-08-01 | development/standards/systems.md |
+| `archive/old/browsy/pre-build/05-native-host.md` | 2026-11-17 | development/standards/systems.md |
+| `archive/old/browsy/pre-build/06-bridge-threat-model.md` | 2026-11-17 | development/standards/systems.md |
+| `archive/old/browsy/rationale.md` | 2026-11-17 | development/standards/systems.md |
+| `archive/old/browsy/spec.md` | 2026-11-17 | development/standards/systems.md |
+| `archive/old/plans/2026-11-17-appy-authy-mynet.md` | 2026-11-17 | development/standards/systems.md |
+| `archive/old/plans/2026-11-21-app-database-stages.md` | 2026-11-21 | development/standards/systems.md |
+| `archive/old/plans/central-backend.md` | 2026-08-01 | development/standards/systems.md |
+| `archive/old/reviews/2026-07-25-browsy-fastapi-libsql-performance-review.md` | 2026-07-25 | development/standards/systems.md |
+| `archive/old/root/adoption.md` | 2026-08-01 | development/standards/systems.md |
+| `archive/old/root/backend.md` | 2026-08-01 | development/standards/systems.md |
+| `archive/old/root/worldview.md` | 2026-08-01 | development/standards/systems.md |
 
 Chapters without a separate source row are `milestone-only`: they are
 specified from the register (hitos and tasks) and remain owned here.

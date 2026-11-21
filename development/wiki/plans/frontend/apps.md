@@ -289,31 +289,31 @@ Tasks 1–7 were realized instead as the `miniappy.html` prototype and now feed 
 
 ## Source index
 
-### apps/README.md — undated
+### apps/README.md — 2026-11-09
 
 - Archive: `development/wiki/archive/old/apps/README.md`
 - Stable home: `development/standards/apps.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### apps/onboarding-copy.md — undated
+### apps/onboarding-copy.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/apps/onboarding-copy.md`
 - Stable home: `development/standards/apps.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/TESTING.md — undated
+### browsy/TESTING.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/browsy/TESTING.md`
 - Stable home: `development/standards/apps.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/rationale.md — undated
+### browsy/rationale.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/rationale.md`
 - Stable home: `development/standards/apps.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/spec.md — undated
+### browsy/spec.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/spec.md`
 - Stable home: `development/standards/apps.md`
@@ -349,31 +349,31 @@ Tasks 1–7 were realized instead as the `miniappy.html` prototype and now feed 
 - Stable home: `development/standards/apps.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### plans/puzzy.md — undated
+### plans/puzzy.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/plans/puzzy.md`
 - Stable home: `development/standards/apps.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### proposals/frontend-tiers.md — undated
+### proposals/frontend-tiers.md — 2026-11-19
 
 - Archive: `development/wiki/archive/old/proposals/frontend-tiers.md`
 - Stable home: `development/standards/apps.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### proposals/frontend-wizy.md — undated
+### proposals/frontend-wizy.md — 2026-11-19
 
 - Archive: `development/wiki/archive/old/proposals/frontend-wizy.md`
 - Stable home: `development/standards/apps.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### root/adoption.md — undated
+### root/adoption.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/root/adoption.md`
 - Stable home: `development/standards/apps.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### root/backend.md — undated
+### root/backend.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/root/backend.md`
 - Stable home: `development/standards/apps.md`

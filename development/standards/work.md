@@ -26,7 +26,7 @@ CONTEXT:END -->
 
 # Work
 
-> **Pilot migration (phase 2).** This page imports `browsy/spec.md` §4, §7 and
+> **Migrated 2026-11-21.** This page imports `browsy/spec.md` §4, §7 and
 > §8. The live question log stays in the archive; open questions are linked.
 
 ## BSP requirements
@@ -246,16 +246,16 @@ the question table.
 
 | Archived source | Date | Stable home |
 |---|---|---|
-| `bridges/oasis.md` | undated | development/standards/work.md |
-| `browsy/browsy-questions.md` | undated | development/standards/work.md |
-| `browsy/pre-build/README.md` | undated | development/standards/work.md |
-| `browsy/rationale.md` | undated | development/standards/work.md |
-| `browsy/spec.md` | undated | development/standards/work.md |
-| `plans/2026-11-17-appy-authy-mynet.md` | 2026-11-17 | development/standards/work.md |
-| `plans/2026-11-19-authy-open-questions.md` | 2026-11-19 | development/standards/work.md |
-| `plans/2026-11-21-app-database-stages.md` | 2026-11-21 | development/standards/work.md |
-| `plans/puzzy.md` | undated | development/standards/work.md |
-| `proposals/frontend-wizy.md` | undated | development/standards/work.md |
+| `archive/old/bridges/oasis.md` | 2026-08-01 | development/standards/work.md |
+| `archive/old/browsy/browsy-questions.md` | 2026-08-01 | development/standards/work.md |
+| `archive/old/browsy/pre-build/README.md` | 2026-11-17 | development/standards/work.md |
+| `archive/old/browsy/rationale.md` | 2026-11-17 | development/standards/work.md |
+| `archive/old/browsy/spec.md` | 2026-11-17 | development/standards/work.md |
+| `archive/old/plans/2026-11-17-appy-authy-mynet.md` | 2026-11-17 | development/standards/work.md |
+| `archive/old/plans/2026-11-19-authy-open-questions.md` | 2026-11-19 | development/standards/work.md |
+| `archive/old/plans/2026-11-21-app-database-stages.md` | 2026-11-21 | development/standards/work.md |
+| `archive/old/plans/puzzy.md` | 2026-08-01 | development/standards/work.md |
+| `archive/old/proposals/frontend-wizy.md` | 2026-11-19 | development/standards/work.md |
 
 Chapters without a separate source row are `milestone-only`: they are
 specified from the register (hitos and tasks) and remain owned here.

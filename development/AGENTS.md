@@ -30,7 +30,7 @@ an indented line continues the field above it.
 - Checker: jsony
 - Standard: https://flove.org/development/wiki/INDEX.md
 - Definition of done: Every plan row has one section and one subsection, and each deliverable names one owner doc; jsony reports no parallel copy.
-- Advice: One section and one subsection per row; MDs stay fallback referrals. Each deliverable names one owner doc or section; other docs refer to it instead of restating it.
+- Advice: One section and one subsection per row; the stable topic pages own the detail. Each deliverable names one owner doc or section; other docs refer to it instead of restating it.
 - Inputs: a plan or debate row without an owner, or a deliverable without one owner doc
 - Outputs: one owner per plan in wiki/INDEX.md and one owner doc per deliverable
 - Gates: jsony: one section and one subsection per row; task and index point to the same owner; no parallel copy
@@ -203,9 +203,27 @@ embedded Work block. Never hand-edit a generated projection. A `procedures` key
 in `milestones.json` is a gate error.
 
 7.2 After any change here run `python3 tools/dev/build-work-tracker.py --build`,
-then `--check`, `build-common.py --check`, `jsony_check.py`, `check-restore.py`
-`tools/dev/check-skills.py`, `tools/dev/check-page-status.py` and
-`tools/dev/check-links.py`. No commit or push unless asked.
+then the full gate set:
+
+```sh
+python3 tools/dev/build-work-tracker.py --check
+python3 tools/dev/build-common.py --check
+python3 tools/dev/jsony_check.py --no-write
+python3 tools/dev/check-restore.py
+python3 tools/dev/check-skills.py
+python3 tools/check-routing.py
+python3 tools/dev/wiki-resolve.py --check
+python3 tools/dev/check-docs-manifest.py --check
+python3 tools/dev/check-archive.py --check
+python3 tools/dev/check-counts.py --check
+python3 tools/dev/check-plan-tray.py --check
+python3 tools/dev/check-content.py --check
+python3 tools/dev/check-retired-paths.py --check
+python3 tools/dev/check-links.py --check
+python3 tools/dev/check-page-status.py --check
+```
+
+No commit or push unless asked.
 
 ## 8. Work-style rules (merged from the old standards policy, 2026-11-21)
 

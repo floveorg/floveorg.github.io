@@ -24,8 +24,8 @@ interactive, navigable **vocabulary matrix** (labelers × slots, filled by
 
 **Canonical register:** 438 items — 326 milestones (6 sections × 5 stages × every
 titled subsection, `seed · infant · mature · grown · full`; **1,559 live tasks**,
-with **805 archived** under `tasks_archive`), 37 debate tickets, plus 75 rows mirrored from [`../wiki/work/pendings.md`](../wiki/work/pendings.md). Docs · Plan and Work in
-[`development/index.html`](https://flove.org/development/index.html) are the authority; these MDs are fallback referrals. The filters are in
+with **805 archived** under `tasks_archive`), 37 debate tickets, plus 75 rows mirrored from [`../wiki/work/pendings.md`](../wiki/work/pendings.md). The generated Work/Plan surface is
+[`development/index.html`](https://flove.org/development/index.html); the 19 topic pages under `development/standards/` own the standards facts. The filters are in
 [Work](https://flove.org/development/index.html#work?tab=docs&view=r2&subtab=work&category=data&section=index);
 which file holds standards detail is stated in [`../wiki/INDEX.md`](../wiki/INDEX.md).
 The page-facing join of hito info boxes and tasks is
@@ -59,7 +59,7 @@ hito, specified spec-driven from its owning MD with a section-specific
 acceptance sentence generated from it. `depends_on` records a real dependency
 where one exists and is absent where a hito stands alone. Closed (`on`) hitos
 keep their hito row and move their tasks to `tasks_archive`; the live queue is
-1,455 tasks. Frontend level 4–5 hitos stay `todo` until the per-app evidence
+1,559 tasks. Frontend level 4–5 hitos stay `todo` until the per-app evidence
 pass closes UX01.
 Milestone sources are live MDs plus `build-work-tracker.py` (seed traceability);
 historical files are pointers only.
@@ -70,8 +70,8 @@ The canonical roadmap execution policy lives in
 [`development/AGENTS.md`](https://flove.org/development/AGENTS.md) as ten
 `### PROC-nn` blocks; `tools/dev/procedures_source.py` parses them for
 `tasky`, `common.json` and the Work block. `milestones.json` owns only hitos and
-tasks. This section is the standards index only; MDs stay fallback referrals,
-never a second register. Work one ongoing task strictly by that chapter with the
+tasks. This section is the standards index only; the topic pages own the facts
+and never form a second register. Work one ongoing task strictly by that chapter with the
 [`tasky` skill](https://flove.org/development/standards/skills/tasky/SKILL.md);
 routine free work uses `python3 tools/dev/tasky.py next` and needs no
 loaded skill.
@@ -251,7 +251,15 @@ python3 tools/dev/check-skills.py
 python3 tools/check-a11y.py development/index.html
 ```
 
-`--check` vigila los conteos 312 / 37 / 1,455 / 7 / 424 y las 805 archivadas,
+**Gate completo (15):** además de los seis comandos base, correr
+`wiki-resolve.py --check`, `check-docs-manifest.py --check`,
+`check-archive.py --check`, `check-counts.py --check`,
+`check-plan-tray.py --check`, `check-content.py --check`,
+`check-retired-paths.py --check`, `check-links.py --check` y
+`check-page-status.py --check`. El bloque canónico está en
+`development/AGENTS.md` §7.2.
+
+`--check` vigila los conteos 326 / 37 / 1,559 / 7 / 438 y las 805 archivadas,
 que el archivo incrustado en Work y `queuePolicy` coincidan con el registro,
 el código de razón de cada fila archivada y los movimientos exportados pendientes,
 el vocabulario de esfuerzo, las referencias task→task, `state_mirror`,

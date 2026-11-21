@@ -10,7 +10,7 @@ Part of the flove frontend standards catalogue. The `/exporty` and `/jsony`
 skills audit an app against this contract; Goddy is the reference.
 
 **Tracked work:** the open export/share items EXP03–EXP08 are in
-[`../debates/pendings.md` §Export / Share / Appy](../../wiki/archive/old/pendings.md); Work
+[`archive/old/pendings.md` §Export / Share / Appy](../../wiki/archive/old/pendings.md); Work
 filter: [data · json](https://flove.org/development/index.html#work?tab=docs&view=r2&subtab=work&category=data&section=json).
 
 **The current model is JSON-only.** Every app exports **one file**,

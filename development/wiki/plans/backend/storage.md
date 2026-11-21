@@ -24,19 +24,19 @@ also: []
 - Stable home: `development/standards/storage.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### plans/central-backend.md — undated
+### plans/central-backend.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/plans/central-backend.md`
 - Stable home: `development/standards/storage.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### root/adoption.md — undated
+### root/adoption.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/root/adoption.md`
 - Stable home: `development/standards/storage.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### root/backend.md — undated
+### root/backend.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/root/backend.md`
 - Stable home: `development/standards/storage.md`

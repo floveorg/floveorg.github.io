@@ -12,73 +12,73 @@ also: []
 
 ## Source index
 
-### bridges/oasis.md — undated
+### bridges/oasis.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/bridges/oasis.md`
 - Stable home: `development/standards/mynet.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/README.md — undated
+### browsy/README.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/browsy/README.md`
 - Stable home: `development/standards/mynet.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/TESTING.md — undated
+### browsy/TESTING.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/browsy/TESTING.md`
 - Stable home: `development/standards/mynet.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/browsy-questions.md — undated
+### browsy/browsy-questions.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/browsy/browsy-questions.md`
 - Stable home: `development/standards/mynet.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/port-nety.md — undated
+### browsy/port-nety.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/browsy/port-nety.md`
 - Stable home: `development/standards/mynet.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/pre-build/01-mvp.md — undated
+### browsy/pre-build/01-mvp.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/pre-build/01-mvp.md`
 - Stable home: `development/standards/mynet.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/pre-build/02-authy-levels.md — undated
+### browsy/pre-build/02-authy-levels.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/pre-build/02-authy-levels.md`
 - Stable home: `development/standards/mynet.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/pre-build/04-myfamily-profile.md — undated
+### browsy/pre-build/04-myfamily-profile.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/pre-build/04-myfamily-profile.md`
 - Stable home: `development/standards/mynet.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/pre-build/07-lineage-tests.md — undated
+### browsy/pre-build/07-lineage-tests.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/pre-build/07-lineage-tests.md`
 - Stable home: `development/standards/mynet.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/pre-build/09-consult-agreements.md — undated
+### browsy/pre-build/09-consult-agreements.md — 2026-11-18
 
 - Archive: `development/wiki/archive/old/browsy/pre-build/09-consult-agreements.md`
 - Stable home: `development/standards/mynet.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/rationale.md — undated
+### browsy/rationale.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/rationale.md`
 - Stable home: `development/standards/mynet.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/spec.md — undated
+### browsy/spec.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/spec.md`
 - Stable home: `development/standards/mynet.md`
@@ -96,13 +96,13 @@ also: []
 - Stable home: `development/standards/mynet.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### plans/central-backend.md — undated
+### plans/central-backend.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/plans/central-backend.md`
 - Stable home: `development/standards/mynet.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### root/backend.md — undated
+### root/backend.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/root/backend.md`
 - Stable home: `development/standards/mynet.md`

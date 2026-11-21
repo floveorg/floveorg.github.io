@@ -20,11 +20,6 @@ CONTEXT:END -->
 > **Stable page.** Migrated from the pre-cutover sources on 2026-11-21.
 > The chapters below are the only owners; the child plan records source history.
 
-## Migration
-
-- Registered as `community/feedback` in `development/wiki/wiki.json`.
-- Source rows: `development/wiki/port-ledger.skeleton.json`.
-- Child plan: see `development/wiki/plans/`.
 
 <a id="voice-note-policy"></a>
 ## Voice-note policy
@@ -71,7 +66,7 @@ design track; no new backend is implied.
 
 | Archived source | Date | Stable home |
 |---|---|---|
-| `apps/onboarding-copy.md` | undated | development/standards/feedback.md |
+| `archive/old/apps/onboarding-copy.md` | 2026-11-17 | development/standards/feedback.md |
 
 Chapters without a separate source row are `milestone-only`: they are
 specified from the register (hitos and tasks) and remain owned here.

@@ -23,11 +23,6 @@ CONTEXT:END -->
 > **Stable page.** Migrated from the pre-cutover sources on 2026-11-21.
 > The chapters below are the only owners; the child plan records source history.
 
-## Migration
-
-- Registered as `community/docs` in `development/wiki/wiki.json`.
-- Source rows: `development/wiki/port-ledger.skeleton.json`.
-- Child plan: see `development/wiki/plans/`.
 
 <a id="access-convention"></a>
 ## ACCESS / COM / IDEA convention
@@ -79,10 +74,10 @@ skipped with one warning, not an error.
 
 | Archived source | Date | Stable home |
 |---|---|---|
-| `apps/onboarding-copy.md` | undated | development/standards/docs.md |
-| `browsy/browsy-questions.md` | undated | development/standards/docs.md |
-| `browsy/rationale.md` | undated | development/standards/docs.md |
-| `standards.md` | undated | development/standards/docs.md |
+| `archive/old/apps/onboarding-copy.md` | 2026-11-17 | development/standards/docs.md |
+| `archive/old/browsy/browsy-questions.md` | 2026-08-01 | development/standards/docs.md |
+| `archive/old/browsy/rationale.md` | 2026-11-17 | development/standards/docs.md |
+| `archive/old/standards.md` | 2026-08-01 | development/standards/docs.md |
 
 Chapters without a separate source row are `milestone-only`: they are
 specified from the register (hitos and tasks) and remain owned here.

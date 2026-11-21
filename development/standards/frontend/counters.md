@@ -154,4 +154,4 @@ removed from `addons/code/js/flove.js` and from every inlined copy.
 
 The counters themselves stay: they count and paint, nothing more. The gated
 variant survives only in the demo sketch `apps/blogy/`, which is not part of
-the trunk. See `debates/plans/2026-11-14-app-tier-planned.md`.
+the trunk. See `development/wiki/archive/old/plans/2026-11-14-app-tier-planned.md`.

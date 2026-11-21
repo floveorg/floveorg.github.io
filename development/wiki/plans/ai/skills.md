@@ -12,25 +12,25 @@ also: []
 
 ## Source index
 
-### apps/README.md — undated
+### apps/README.md — 2026-11-09
 
 - Archive: `development/wiki/archive/old/apps/README.md`
 - Stable home: `development/standards/skills.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### proposals/frontend-wizy.md — undated
+### proposals/frontend-wizy.md — 2026-11-19
 
 - Archive: `development/wiki/archive/old/proposals/frontend-wizy.md`
 - Stable home: `development/standards/skills.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### questy-proposals.md — undated
+### questy-proposals.md — 2026-11-15
 
 - Archive: `development/wiki/archive/old/questy-proposals.md`
 - Stable home: `development/standards/skills.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### standards.md — undated
+### standards.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/standards.md`
 - Stable home: `development/standards/skills.md`

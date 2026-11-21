@@ -1409,31 +1409,31 @@ For each step: what questy does, what it asks, and how the user responds.
 
 ## Source index
 
-### bridges/oasis.md — undated
+### bridges/oasis.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/bridges/oasis.md`
 - Stable home: `development/standards/work.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/browsy-questions.md — undated
+### browsy/browsy-questions.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/browsy/browsy-questions.md`
 - Stable home: `development/standards/work.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/pre-build/README.md — undated
+### browsy/pre-build/README.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/pre-build/README.md`
 - Stable home: `development/standards/work.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/rationale.md — undated
+### browsy/rationale.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/rationale.md`
 - Stable home: `development/standards/work.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/spec.md — undated
+### browsy/spec.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/spec.md`
 - Stable home: `development/standards/work.md`
@@ -1457,13 +1457,13 @@ For each step: what questy does, what it asks, and how the user responds.
 - Stable home: `development/standards/work.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### plans/puzzy.md — undated
+### plans/puzzy.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/plans/puzzy.md`
 - Stable home: `development/standards/work.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### proposals/frontend-wizy.md — undated
+### proposals/frontend-wizy.md — 2026-11-19
 
 - Archive: `development/wiki/archive/old/proposals/frontend-wizy.md`
 - Stable home: `development/standards/work.md`

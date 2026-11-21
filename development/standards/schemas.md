@@ -30,7 +30,7 @@ CONTEXT:END -->
 
 # Schemas
 
-> **Pilot migration (phase 2).** This page imports `browsy/spec.md` §3.2, the
+> **Migrated 2026-11-21.** This page imports `browsy/spec.md` §3.2, the
 > schema half of §3.7 and the identity record from §3.8.
 
 ## Data classes and privacy invariants
@@ -187,20 +187,20 @@ the upper-class mapping and the per-sub-field `asterism_path`.
 
 | Archived source | Date | Stable home |
 |---|---|---|
-| `apps/README.md` | undated | development/standards/schemas.md |
-| `bridges/oasis.md` | undated | development/standards/schemas.md |
-| `browsy/browsy-questions.md` | undated | development/standards/schemas.md |
-| `browsy/pre-build/02-authy-levels.md` | undated | development/standards/schemas.md |
-| `browsy/pre-build/03-schemas.md` | undated | development/standards/schemas.md |
-| `browsy/pre-build/04-myfamily-profile.md` | undated | development/standards/schemas.md |
-| `browsy/pre-build/09-consult-agreements.md` | undated | development/standards/schemas.md |
-| `browsy/rationale.md` | undated | development/standards/schemas.md |
-| `browsy/spec.md` | undated | development/standards/schemas.md |
-| `plans/2026-11-17-appy-authy-mynet.md` | 2026-11-17 | development/standards/schemas.md |
-| `plans/2026-11-21-app-database-stages.md` | 2026-11-21 | development/standards/schemas.md |
-| `plans/central-backend.md` | undated | development/standards/schemas.md |
-| `plans/puzzy.md` | undated | development/standards/schemas.md |
-| `root/backend.md` | undated | development/standards/schemas.md |
+| `archive/old/apps/README.md` | 2026-11-09 | development/standards/schemas.md |
+| `archive/old/bridges/oasis.md` | 2026-08-01 | development/standards/schemas.md |
+| `archive/old/browsy/browsy-questions.md` | 2026-08-01 | development/standards/schemas.md |
+| `archive/old/browsy/pre-build/02-authy-levels.md` | 2026-11-17 | development/standards/schemas.md |
+| `archive/old/browsy/pre-build/03-schemas.md` | 2026-11-17 | development/standards/schemas.md |
+| `archive/old/browsy/pre-build/04-myfamily-profile.md` | 2026-11-17 | development/standards/schemas.md |
+| `archive/old/browsy/pre-build/09-consult-agreements.md` | 2026-11-18 | development/standards/schemas.md |
+| `archive/old/browsy/rationale.md` | 2026-11-17 | development/standards/schemas.md |
+| `archive/old/browsy/spec.md` | 2026-11-17 | development/standards/schemas.md |
+| `archive/old/plans/2026-11-17-appy-authy-mynet.md` | 2026-11-17 | development/standards/schemas.md |
+| `archive/old/plans/2026-11-21-app-database-stages.md` | 2026-11-21 | development/standards/schemas.md |
+| `archive/old/plans/central-backend.md` | 2026-08-01 | development/standards/schemas.md |
+| `archive/old/plans/puzzy.md` | 2026-08-01 | development/standards/schemas.md |
+| `archive/old/root/backend.md` | 2026-08-01 | development/standards/schemas.md |
 
 Chapters without a separate source row are `milestone-only`: they are
 specified from the register (hitos and tasks) and remain owned here.

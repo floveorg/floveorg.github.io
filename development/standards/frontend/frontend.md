@@ -2,7 +2,7 @@
 
 The **single source of truth** for the *opt-in* patterns that flove frontends
 adopt — the full harvested catalogue (§13), plus regions, elements and
-implementation conventions. Promoted here out of `backend.md`.
+implementation conventions. Promoted here out of the archived `root/backend.md`.
 
 - **Mandatory contract:** `contract.md` (the values and the floor) — the
   non-negotiable core; tokens §13.19 and the file skeleton §13.20 live here.
@@ -41,15 +41,15 @@ reference (see [`../apps/README.md`](../../wiki/archive/old/apps/README.md)).
 
 The list grows as new patterns mature and get extracted.
 
-### 13.1 · Tier model → `debates/proposals/frontend-tiers.md`
+### 13.1 · Tier model → `development/wiki/archive/old/proposals/frontend-tiers.md`
 
-> Design sketch moved to **`debates/proposals/frontend-tiers.md`**; it is not part of this trunk. The `§13.1` label is unchanged.
+> Design sketch moved to **`development/wiki/archive/old/proposals/frontend-tiers.md`**; it is not part of this trunk. The `§13.1` label is unchanged.
 
 > **Trunk status (2026-11-15): not implemented here.** The tier model is a design
 > sketch only. No app in this trunk carries a tier attribute, a tier switcher, a
 > tier gate or a tier field; the mini → super variants survive as demos under
 > `apps/blogy/`, `apps/economy/dealy/`, `apps/puzzy/keys/` and `apps/appy/`.
-> See `debates/plans/2026-11-14-app-tier-planned.md`.
+> See `development/wiki/archive/old/plans/2026-11-14-app-tier-planned.md`.
 
 ### 13.2 · i18n — `.t-en` / `.t-es` + `#ui-lang-es`
 
@@ -532,7 +532,7 @@ free-as-in-freedom criterion: WebXR (A-Frame / Three.js / Babylon) for
 browser 3D·AR·VR, Godot + Monado for native VR, glTF as the art bridge,
 CC0 assets, libre hardware (Relativty / libsurvive / DIY ODT). The full
 technology survey, incompatibilities and hardware notes live in the
-flove repo at [`debates/research/vr_interfaces.md`](../../wiki/archive/old/research/vr_interfaces.md)
+flove repo at [`archive/old/research/vr_interfaces.md`](../../wiki/archive/old/research/vr_interfaces.md)
 (moved here 2026-07-31 when the context repo was retired).
 
 **blogy is the reference demo for this axis too** (Solo fallback reference —
@@ -894,7 +894,7 @@ minimum. A dash means the section is not required at that level; if the app ship
 it, it must still be usable.
 
 **Status queue:** the level 4–5 per-app confirmation pass is UX01 in
-[`../debates/pendings.md`](../../wiki/archive/old/pendings.md); Work filter:
+[`archive/old/pendings.md`](../../wiki/archive/old/pendings.md); Work filter:
 [ux · levels](https://flove.org/development/index.html#work?tab=frontend&view=r2&subtab=levels&category=frontend&section=levels).
 
 | Section | 3 · Minimum | 4 · Function | 5 · Craft |
@@ -1072,7 +1072,7 @@ their checks to a runtime pass.
 ../../wiki/archive/old/a11y-report.md` runs axe 4.10.2 in Chrome per
 app. It measures the settled UI (animations are jumped to their end state) and
 audits a sibling copy with remote requests neutralised, so pages that pull
-fonts or images still reach axe offline. Report: `debates/a11y-report.md`.
+fonts or images still reach axe offline. Report: `development/wiki/archive/old/a11y-report.md`.
 
 **Keyboard walk-through.** `python3 tools/check-keyboard.py` focuses every
 `label[for][tabindex]` and every non-button `role=button/menuitem/tab`, sends
@@ -1244,4 +1244,4 @@ close (canonical → keep):
 ---
 
 *Source of truth for the flove frontend. Contract: `contract.md`. Map:
-`README.md`. §13/§14 promoted here from `backend.md` on 2026-07-20. *
+`README.md`. §13/§14 promoted here from the archived `root/backend.md` on 2026-07-20. *

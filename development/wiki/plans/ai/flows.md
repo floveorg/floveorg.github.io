@@ -151,43 +151,43 @@ Nety is pending.
 
 ## Source index
 
-### UseCase-adv.md — undated
+### UseCase-adv.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/UseCase-adv.md`
 - Stable home: `development/standards/flows.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/browsy-questions.md — undated
+### browsy/browsy-questions.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/browsy/browsy-questions.md`
 - Stable home: `development/standards/flows.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/rationale.md — undated
+### browsy/rationale.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/rationale.md`
 - Stable home: `development/standards/flows.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### browsy/spec.md — undated
+### browsy/spec.md — 2026-11-17
 
 - Archive: `development/wiki/archive/old/browsy/spec.md`
 - Stable home: `development/standards/flows.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### proposals/frontend-wizy.md — undated
+### proposals/frontend-wizy.md — 2026-11-19
 
 - Archive: `development/wiki/archive/old/proposals/frontend-wizy.md`
 - Stable home: `development/standards/flows.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### questy-proposals.md — undated
+### questy-proposals.md — 2026-11-15
 
 - Archive: `development/wiki/archive/old/questy-proposals.md`
 - Stable home: `development/standards/flows.md`
 - Status: summarised in the stable page; no open decision is recorded here.
 
-### standards.md — undated
+### standards.md — 2026-08-01
 
 - Archive: `development/wiki/archive/old/standards.md`
 - Stable home: `development/standards/flows.md`

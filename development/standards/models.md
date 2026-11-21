@@ -16,6 +16,7 @@ supersedes:
   - development/wiki/archive/old/proposals/frontend-wizy.md
   - development/wiki/archive/old/root/adoption.md
   - development/wiki/archive/old/root/backend.md
+  - development/wiki/archive/old/roadmap-2026-06.md
 heavy: false
 CONTEXT:END -->
 
@@ -24,11 +25,6 @@ CONTEXT:END -->
 > **Stable page.** Migrated from the pre-cutover sources on 2026-11-21.
 > The chapters below are the only owners; the child plan records source history.
 
-## Migration
-
-- Registered as `ai/models` in `development/wiki/wiki.json`.
-- Source rows: `development/wiki/port-ledger.skeleton.json`.
-- Child plan: see `development/wiki/plans/`.
 
 <a id="model-selection"></a>
 ## Model selection
@@ -100,7 +96,7 @@ Do not conflate the three: local enrichment (`MyWizy`), corporate community AI
 
 | Tier | Where it runs | What it does |
 |---|---|---|
-| `roadmap-2026-06.md` | undated | development/standards/models.md |
+| `archive/old/roadmap-2026-06.md` | 2026-11-19 | development/standards/models.md |
 | F0 · `mini` / `minifull` | JS distro, fully offline | local persistence, summary, Update and export |
 | F1 · `basic` + `MyWizy` | JS distro, opt-in network | local AI insights, on-demand reference pulls |
 | F4 · `wizy` | nety (corporate) | global AI over the community corpus |
@@ -110,11 +106,11 @@ Do not conflate the three: local enrichment (`MyWizy`), corporate community AI
 
 | Archived source | Date | Stable home |
 |---|---|---|
-| `UseCase-adv.md` | undated | development/standards/models.md |
-| `browsy/spec.md` | undated | development/standards/models.md |
-| `proposals/frontend-wizy.md` | undated | development/standards/models.md |
-| `root/adoption.md` | undated | development/standards/models.md |
-| `root/backend.md` | undated | development/standards/models.md |
+| `archive/old/UseCase-adv.md` | 2026-08-01 | development/standards/models.md |
+| `archive/old/browsy/spec.md` | 2026-11-17 | development/standards/models.md |
+| `archive/old/proposals/frontend-wizy.md` | 2026-11-19 | development/standards/models.md |
+| `archive/old/root/adoption.md` | 2026-08-01 | development/standards/models.md |
+| `archive/old/root/backend.md` | 2026-08-01 | development/standards/models.md |
 
 Chapters without a separate source row are `milestone-only`: they are
 specified from the register (hitos and tasks) and remain owned here.

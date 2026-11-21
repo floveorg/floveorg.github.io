@@ -32,7 +32,7 @@ CONTEXT:END -->
 
 # MyNet
 
-> **Pilot migration (phase 2).** The Authy, MyNet/MyFamily and local-group
+> **Migrated 2026-11-21.** The Authy, MyNet/MyFamily and local-group
 > sections below are imported from `browsy/spec.md` §3.3–§3.4.1. The rest of
 > MyNet’s source set is still pending.
 
@@ -312,22 +312,22 @@ revoke; member sees the agreement, not the raw record.
 
 | Archived source | Date | Stable home |
 |---|---|---|
-| `bridges/oasis.md` | undated | development/standards/mynet.md |
-| `browsy/README.md` | undated | development/standards/mynet.md |
-| `browsy/TESTING.md` | undated | development/standards/mynet.md |
-| `browsy/browsy-questions.md` | undated | development/standards/mynet.md |
-| `browsy/port-nety.md` | undated | development/standards/mynet.md |
-| `browsy/pre-build/01-mvp.md` | undated | development/standards/mynet.md |
-| `browsy/pre-build/02-authy-levels.md` | undated | development/standards/mynet.md |
-| `browsy/pre-build/04-myfamily-profile.md` | undated | development/standards/mynet.md |
-| `browsy/pre-build/07-lineage-tests.md` | undated | development/standards/mynet.md |
-| `browsy/pre-build/09-consult-agreements.md` | undated | development/standards/mynet.md |
-| `browsy/rationale.md` | undated | development/standards/mynet.md |
-| `browsy/spec.md` | undated | development/standards/mynet.md |
-| `plans/2026-11-17-appy-authy-mynet.md` | 2026-11-17 | development/standards/mynet.md |
-| `plans/2026-11-21-app-database-stages.md` | 2026-11-21 | development/standards/mynet.md |
-| `plans/central-backend.md` | undated | development/standards/mynet.md |
-| `root/backend.md` | undated | development/standards/mynet.md |
+| `archive/old/bridges/oasis.md` | 2026-08-01 | development/standards/mynet.md |
+| `archive/old/browsy/README.md` | 2026-08-01 | development/standards/mynet.md |
+| `archive/old/browsy/TESTING.md` | 2026-08-01 | development/standards/mynet.md |
+| `archive/old/browsy/browsy-questions.md` | 2026-08-01 | development/standards/mynet.md |
+| `archive/old/browsy/port-nety.md` | 2026-08-01 | development/standards/mynet.md |
+| `archive/old/browsy/pre-build/01-mvp.md` | 2026-11-17 | development/standards/mynet.md |
+| `archive/old/browsy/pre-build/02-authy-levels.md` | 2026-11-17 | development/standards/mynet.md |
+| `archive/old/browsy/pre-build/04-myfamily-profile.md` | 2026-11-17 | development/standards/mynet.md |
+| `archive/old/browsy/pre-build/07-lineage-tests.md` | 2026-11-17 | development/standards/mynet.md |
+| `archive/old/browsy/pre-build/09-consult-agreements.md` | 2026-11-18 | development/standards/mynet.md |
+| `archive/old/browsy/rationale.md` | 2026-11-17 | development/standards/mynet.md |
+| `archive/old/browsy/spec.md` | 2026-11-17 | development/standards/mynet.md |
+| `archive/old/plans/2026-11-17-appy-authy-mynet.md` | 2026-11-17 | development/standards/mynet.md |
+| `archive/old/plans/2026-11-21-app-database-stages.md` | 2026-11-21 | development/standards/mynet.md |
+| `archive/old/plans/central-backend.md` | 2026-08-01 | development/standards/mynet.md |
+| `archive/old/root/backend.md` | 2026-08-01 | development/standards/mynet.md |
 
 Chapters without a separate source row are `milestone-only`: they are
 specified from the register (hitos and tasks) and remain owned here.

@@ -31,7 +31,7 @@ CONTEXT:END -->
 
 # Apps
 
-> **Pilot migration (phase 2).** This page imports `browsy/spec.md` §3.8 and the
+> **Migrated 2026-11-21.** This page imports `browsy/spec.md` §3.8 and the
 > app-facing parts of the Browsy surface.
 
 ## Browsy extension standards (draft)
@@ -389,21 +389,21 @@ This section is the owner for the app-type catalogue and its consumer list.
 
 | Archived source | Date | Stable home |
 |---|---|---|
-| `apps/README.md` | undated | development/standards/apps.md |
-| `apps/onboarding-copy.md` | undated | development/standards/apps.md |
-| `browsy/TESTING.md` | undated | development/standards/apps.md |
-| `browsy/rationale.md` | undated | development/standards/apps.md |
-| `browsy/spec.md` | undated | development/standards/apps.md |
-| `plans/2026-06-18-nety-frontend-build.md` | 2026-06-18 | development/standards/apps.md |
-| `plans/2026-11-14-app-tier-planned.md` | 2026-11-14 | development/standards/apps.md |
-| `plans/2026-11-17-appy-authy-mynet.md` | 2026-11-17 | development/standards/apps.md |
-| `plans/2026-11-20-appy-dashboard-redesign.md` | 2026-11-20 | development/standards/apps.md |
-| `plans/2026-11-21-app-database-stages.md` | 2026-11-21 | development/standards/apps.md |
-| `plans/puzzy.md` | undated | development/standards/apps.md |
-| `proposals/frontend-tiers.md` | undated | development/standards/apps.md |
-| `proposals/frontend-wizy.md` | undated | development/standards/apps.md |
-| `root/adoption.md` | undated | development/standards/apps.md |
-| `root/backend.md` | undated | development/standards/apps.md |
+| `archive/old/apps/README.md` | 2026-11-09 | development/standards/apps.md |
+| `archive/old/apps/onboarding-copy.md` | 2026-11-17 | development/standards/apps.md |
+| `archive/old/browsy/TESTING.md` | 2026-08-01 | development/standards/apps.md |
+| `archive/old/browsy/rationale.md` | 2026-11-17 | development/standards/apps.md |
+| `archive/old/browsy/spec.md` | 2026-11-17 | development/standards/apps.md |
+| `archive/old/plans/2026-06-18-nety-frontend-build.md` | 2026-06-18 | development/standards/apps.md |
+| `archive/old/plans/2026-11-14-app-tier-planned.md` | 2026-11-14 | development/standards/apps.md |
+| `archive/old/plans/2026-11-17-appy-authy-mynet.md` | 2026-11-17 | development/standards/apps.md |
+| `archive/old/plans/2026-11-20-appy-dashboard-redesign.md` | 2026-11-20 | development/standards/apps.md |
+| `archive/old/plans/2026-11-21-app-database-stages.md` | 2026-11-21 | development/standards/apps.md |
+| `archive/old/plans/puzzy.md` | 2026-08-01 | development/standards/apps.md |
+| `archive/old/proposals/frontend-tiers.md` | 2026-11-19 | development/standards/apps.md |
+| `archive/old/proposals/frontend-wizy.md` | 2026-11-19 | development/standards/apps.md |
+| `archive/old/root/adoption.md` | 2026-08-01 | development/standards/apps.md |
+| `archive/old/root/backend.md` | 2026-08-01 | development/standards/apps.md |
 
 Chapters without a separate source row are `milestone-only`: they are
 specified from the register (hitos and tasks) and remain owned here.

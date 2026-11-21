@@ -21,7 +21,7 @@ CONTEXT:END -->
 
 # Scripts
 
-> **Pilot migration (phase 2).** This page imports `backend.md` §11.
+> **Migrated 2026-11-21.** This page imports the archived `root/backend.md` §11.
 
 ## Central distro
 
@@ -148,8 +148,7 @@ zip to prove packaging.
 <a id="distro-release"></a>
 ## Distro and release strategy
 
-> Owner: scripts. SD18 distro branches and release gates, reachable from the plan
-> index.
+> Owner: scripts (release mechanics). Distro direction lives in `plan.md#distro-strategy`.
 
 ## Sources
 
@@ -161,11 +160,11 @@ zip to prove packaging.
 
 | Archived source | Date | Stable home |
 |---|---|---|
-| `apps/README.md` | undated | development/standards/scripts.md |
-| `plans/2026-06-18-nety-frontend-build.md` | 2026-06-18 | development/standards/scripts.md |
-| `plans/central-backend.md` | undated | development/standards/scripts.md |
-| `root/adoption.md` | undated | development/standards/scripts.md |
-| `root/backend.md` | undated | development/standards/scripts.md |
+| `archive/old/apps/README.md` | 2026-11-09 | development/standards/scripts.md |
+| `archive/old/plans/2026-06-18-nety-frontend-build.md` | 2026-06-18 | development/standards/scripts.md |
+| `archive/old/plans/central-backend.md` | 2026-08-01 | development/standards/scripts.md |
+| `archive/old/root/adoption.md` | 2026-08-01 | development/standards/scripts.md |
+| `archive/old/root/backend.md` | 2026-08-01 | development/standards/scripts.md |
 
 Chapters without a separate source row are `milestone-only`: they are
 specified from the register (hitos and tasks) and remain owned here.

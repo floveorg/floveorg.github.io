@@ -737,3 +737,25 @@ now verifies tree coverage, checksums and the non-live markers.
   listings (`all` 484 · `ama` 8 · `banco-risa` 182 objects).
 - The pre-migration baseline snapshot `Flove-docs-migration-before26-11-21`
   remains alongside the new snapshot.
+
+## Post-migration consistency repair
+
+Fixed the index/navigation drift found after phase 2:
+
+- INDEX plan statuses, 33 historical rows, and the 15-gate note.
+- README counts (326 / 37 / 1,559 / 7 / 438) and authority wording.
+- Sidebar rebuilt with all 19 topics, standing books, plans and archive.
+- Removed 7 `## Migration` scaffolds and 12 “Pilot migration” notes.
+- Resolved skill-library and distro ownership conflicts.
+- Aligned `wiki.json` plan statuses; removed the optional work-moves redirect.
+- Dated every child-plan source from the archived file's earliest git commit.
+- Extended the manifest, counts and page-status gates to catch these drifts.
+
+### Deeper consistency sweep
+
+- Normalised all source-map paths to `archive/old/...` and synced every topic
+  page's `supersedes` with its source map.
+- Repointed standing-book references (`frontend/*`, `skills/CONFIG.md`) from
+  `debates/…` / bare `backend.md` to the archive.
+- Removed the last “fallback referrals” wording from PROC-01.
+- Marked the 1,455 target in `work/measures.md` as historical.

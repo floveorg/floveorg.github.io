@@ -19,6 +19,7 @@ FILES = [
     ROOT / "development/wiki/INDEX.md",
 ]
 STALE = ["424 items", "312 milestones", "1,455 live", "76 rows", "425-item", "425 items"]
+STALE_RX = [r"\b312\b", r"\b424\b", r"\b1,455\b", r"\b1455\b"]
 
 
 def main() -> int:
@@ -43,6 +44,9 @@ def main() -> int:
         for s in STALE:
             if s in text:
                 hits.append((path.relative_to(ROOT).as_posix(), s))
+        for rx in STALE_RX:
+            if re.search(rx, text):
+                hits.append((path.relative_to(ROOT).as_posix(), rx))
     print("expected:", expected)
     if hits:
         print(f"FAIL: {len(hits)} stale narrative count(s)")
