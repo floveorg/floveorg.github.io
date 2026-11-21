@@ -759,3 +759,9 @@ Fixed the index/navigation drift found after phase 2:
   `debates/…` / bare `backend.md` to the archive.
 - Removed the last “fallback referrals” wording from PROC-01.
 - Marked the 1,455 target in `work/measures.md` as historical.
+
+### Dependency weighting
+
+PROC-07 now names `u` (open-hito unlock) and the exact `u → effort → id` order;
+the questy-tasky-flove flow states the same ranking and points `weight` at the
+declared dependency graph.

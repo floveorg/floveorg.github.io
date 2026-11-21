@@ -83,8 +83,8 @@ an indented line continues the field above it.
 ### PROC-07 — Order tasks by unblocking, then ease
 - Checker: jsony
 - Standard: https://flove.org/development/wiki/INDEX.md
-- Definition of done: A recommended order exists for every stage, changes no stage or state, records loops and C6 exceptions, and never blocks the queue.
-- Advice: Advisory only: rank open hitos by how many open hitos depend on them, then sort tasks by their OWN effort very easy (1) → easy (2) → medium (3) → hard (4) → very hard (5), then stable ids, within stages 1–5 (seed · infant · mature · grown · full). Loops warn and continue; record C6 exceptions; never block.
+- Definition of done: A recommended order exists for every stage, every candidate shows its `u` unlock count, changes no stage or state, records loops and C6 exceptions, and never blocks the queue.
+- Advice: Advisory only. Let `u` be the number of **open hitos that depend on this hito** (open-hito unlock); rank by `u` descending, then sort tasks by their OWN effort very easy (1) → easy (2) → medium (3) → hard (4) → very hard (5), then stable ids, within stages 1–5 (seed · infant · mature · grown · full). `tasky.py next`, `easy`, `rewindow` and `show` print `u=`; the task-level `depends_on` graph supplies the blockers. Loops warn and continue; record C6 exceptions; never block.
 - Inputs: the task queue with stage, effort, hito- and task-level depends_on graph, and the open-hito set
 - Outputs: a recommended order for every stage that changes no stage and no state, printing the exact sort key
 - Gates: recommendation only: check prerequisites before starting, record C6 exceptions and any loop, never block the queue
@@ -113,7 +113,7 @@ an indented line continues the field above it.
 - Definition of done: Every live task has an advisory choice_weight class (`directo` · `ramificado` · `estructurante`) with a score and a question depth; the class is orthogonal to effort, changes no stage or state, and is filterable in Work and mirrored in common.json.
 - Advice: Classify from the declared graph: `estructurante` when u ≥ 3, or fan-out ≥ 10, or the owner is a canonical schema/envelope/route/index, or g ≥ 2 declared dependencies; `ramificado` when u = 2, or fan-out 3–9, or the `Decision:` clause contains vs / or / which / who; `directo` otherwise. Offer A/B/C solutions with ★ on the owner default; ask 0, 1 or 3 questions, the last as a questy-all batch. A task may tune its class with `choice_override` + `choice_reason`; the gate keeps the override and shows the reason. Hard-register a new dependency only after the answer, in `depends_on` with `choice_reason`; no new envelope and no flag outside the row.
 - Inputs: hito and task `depends_on` graph, the open-hito set, owner paths, the `Decision:` clause and any `choice_override` on the task
-- Outputs: a class and score per task in tasky and common.json, a `choice` filter in Work, and an A/B/C solution batch for the tasks that need a decision
+- Outputs: a class and score per task in tasky and common.json, the `Dependencias / Dependencies` filter in Work (keyed `choice`), and an A/B/C solution batch for the tasks that need a decision
 - Gates: jsony: `choice` is one of the three canonical classes in Work and common.json; `tasky.py weight` / `options` read the same projection; no stage or state changed by the classification
   Every ★ recommendation states its reason and its con in the same line (questy ★ rule); `options` prints both, and the survey never offers a bare default.
 

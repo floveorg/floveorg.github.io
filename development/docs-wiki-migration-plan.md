@@ -1553,3 +1553,12 @@ cover. All items are now fixed:
   counts at `common.json`.
 - `check-docs-manifest.py` now also verifies sidebar coverage for standing books
   and source-map rows against `supersedes`.
+
+### 15.2 Dependency weighting in the procedure
+
+- PROC-07 now defines `u` = number of open hitos that depend on the hito, and
+  states the exact order: `u` descending → task effort → stable id.
+- `tasky.py next|easy|rewindow|show` print `u=`; the task-level `depends_on`
+  graph supplies blockers.
+- `questy-tasky-flove` step 2 states the same ranking and step 4 says `weight`
+  prints `u`, declared dependencies and fan-out.

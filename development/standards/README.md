@@ -42,6 +42,12 @@ block below the live table; the old S1–S5 state category is no longer a filter
 Each section owns different fields — see the per-field table in
 [`../wiki/work/measures.md`](../wiki/work/measures.md).
 
+**Work Dependencias / Dependencies filter (PROC-10).** The filter keyed
+`choice` labels every live task `directa · ramificada · estructurante` from the
+declared dependency graph — unlock count, fan-out, generated dependencies and
+the canonical owner. It carries the class and the count only; the question
+depth stays in `tasky` / PROC-10 and is no longer printed on the chip.
+
 **Canonical order of Work.** The six sections keep this order everywhere — in the
 page, in [`../wiki/work/milestones.json`](../wiki/work/milestones.json) and in the indexes:
 **docs** (Map · Plan · Work), **backend** (Scripts & API [Contracts · Delivery] ·
