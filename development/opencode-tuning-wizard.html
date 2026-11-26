@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Marc (marcflove)">
+<meta name="copyright" content="© 2026 Marc · CC BY-SA 4.0">
+<link rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23070c16'/><path d='M50 70 C24 70 14 46 20 22 C42 27 56 43 50 70 Z' fill='%2322d3ee'/><path d='M50 70 C76 70 86 46 80 22 C58 27 44 43 50 70 Z' fill='%23a78bfa'/><path d='M50 66 V88' stroke='%23f472b6' stroke-width='6' stroke-linecap='round'/></svg>">
+<title>flove · OpenCode Tuning Wizard</title>
+<meta name="description" content="A progressive, offline wizard for tuning AGENTS.md, instructions, skills, commands, agents and permissions in OpenCode.">
+<meta name="color-scheme" content="dark light">
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('flove:theme');
+      var light = saved ? saved === 'light' : !!(window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches);
+      if (light) document.documentElement.classList.add('light');
+      var meta = document.querySelector('meta[name="color-scheme"]');
+      if (meta && light) meta.setAttribute('content', 'dark light');
+    } catch (_) {}
+  })();
+</script>
+<style>
+:root{
+  --bg:#05070d; --bg2:#080d17; --panel:#0b1220; --panel2:#0e1728;
+  --line:#172642; --ink:#dcebf7; --dim:#8ba2bc; --faint:#5f7894;
+  --cyan:#22d3ee; --violet:#a78bfa; --magenta:#f472b6;
+  --mint:#34d399; --amber:#fbbf24; --red:#fb7185;
+  --r:18px; --rs:12px; --maxw:1180px;
+  --disp:'Chakra Petch','Segoe UI',system-ui,sans-serif;
+  --body:'Figtree','Segoe UI',system-ui,sans-serif;
+  --mono:'Space Mono',ui-monospace,'SFMono-Regular',Consolas,monospace;
+  --shadow:0 18px 48px rgba(0,0,0,.46);
+}
+:root.light{
+  --bg:#f3f7fc; --bg2:#e8eff8; --panel:#fff; --panel2:#f8fbff;
+  --line:#cbd8e8; --ink:#102033; --dim:#4d6480; --faint:#7089a4;
+  --cyan:#087e95; --violet:#6d4dd1; --magenta:#b83b7d;
+  --mint:#0b8a61; --amber:#a76b00; --red:#c33e59;
+  --shadow:0 16px 42px rgba(24,48,80,.14);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:96px}
+body{
+  margin:0; min-height:100vh; padding-top:76px;
+  font-family:var(--body); line-height:1.55; color:var(--ink); background:var(--bg);
+  overflow-x:hidden;
+}
+a{color:var(--cyan)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:9px;box-shadow:0 0 0 5px rgba(34,211,238,.16)}
+.skip{position:fixed;left:-9999px;top:10px;z-index:100;padding:10px 16px;border-radius:10px;background:var(--cyan);color:#04121a;font-weight:700}
+.skip:focus{left:12px}
+
+.bgfx{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:var(--bg)}
+.bgfx .grid{position:absolute;inset:-60% -80%;opacity:.48;background-image:linear-gradient(rgba(34,211,238,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.05) 1px,transparent 1px);background-size:44px 44px;transform:perspective(680px) rotateX(64deg);animation:gridMove 28s linear infinite}
+.bgfx .orb{position:absolute;border-radius:50%;filter:blur(78px);opacity:.34}
+.bgfx .o1{width:430px;height:430px;right:-110px;top:-150px;background:radial-gradient(circle,var(--cyan),transparent 66%)}
+.bgfx .o2{width:390px;height:390px;left:-120px;bottom:-170px;background:radial-gradient(circle,var(--magenta),transparent 66%)}
+.bgfx .o3{width:320px;height:320px;left:48%;top:34%;background:radial-gradient(circle,var(--violet),transparent 68%)}
+@keyframes gridMove{to{transform:perspective(680px) rotateX(64deg) translateY(-42%)}}
+@media(prefers-reduced-motion:reduce){.bgfx *{animation:none!important}}
+
+.topbar{position:fixed;top:0;left:0;right:0;z-index:60;background:rgba(6,10,18,.84);border-bottom:1px solid var(--line);backdrop-filter:blur(14px)}
+:root.light .topbar{background:rgba(243,247,252,.88)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:68px;padding-top:9px;padding-bottom:9px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink)}
+.brand svg{width:38px;height:38px;filter:drop-shadow(0 0 8px rgba(34,211,238,.5))}
+.brand b{font-family:var(--disp);letter-spacing:.14em;font-size:1.05rem}
+.brand small{display:block;font-family:var(--mono);font-size:.6rem;letter-spacing:.2em;color:var(--cyan)}
+.top-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.pill{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:6px 11px;color:var(--dim);background:rgba(255,255,255,.025)}
+.theme-btn{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:7px 12px;font-size:.78rem}
+.theme-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+.hero{padding:44px 0 26px}
+.kicker{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);margin:0 0 10px}
+.hero h1{font-family:var(--disp);font-size:clamp(2rem,5.2vw,3.5rem);line-height:1.02;margin:0;letter-spacing:-.02em}
+.hero h1 span{background:linear-gradient(92deg,var(--cyan),var(--violet),var(--magenta));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{max-width:74ch;margin:15px 0 0;color:var(--dim);font-size:1.05rem}
+.hero-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.hero-links a{font-family:var(--mono);font-size:.72rem;text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:7px 12px;color:var(--dim)}
+.hero-links a:hover{color:var(--cyan);border-color:var(--cyan)}
+
+.layout{display:grid;grid-template-columns:264px minmax(0,1fr);gap:22px;align-items:start}
+.rail{position:sticky;top:94px;display:grid;gap:16px}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.rail .card{padding:16px}
+.card-title{font-family:var(--disp);font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin:0 0 12px}
+.steps{display:grid;gap:8px}
+.step-nav{display:grid;grid-template-columns:34px 1fr;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid transparent;background:transparent;color:var(--dim);border-radius:var(--rs);padding:9px 10px}
+.step-nav:hover{border-color:var(--line);color:var(--ink)}
+.step-nav .n{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;font-family:var(--mono);font-size:.72rem;border:1px solid var(--line);color:var(--cyan)}
+.step-nav .t{font-family:var(--disp);font-size:.88rem;font-weight:600}
+.step-nav .d{display:block;font-family:var(--body);font-size:.72rem;color:var(--faint)}
+.step-nav[aria-current="step"]{background:rgba(34,211,238,.08);border-color:rgba(34,211,238,.36);color:var(--ink)}
+.step-nav[aria-current="step"] .n{background:linear-gradient(135deg,var(--cyan),var(--violet));color:#04121a;border-color:transparent}
+.meter{padding-top:4px}
+.meter-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:7px}
+.meter-top strong{font-family:var(--disp);font-size:1rem}
+.meter-top span{font-family:var(--mono);font-size:.66rem;color:var(--dim)}
+.meter-track{height:9px;border-radius:999px;background:rgba(125,155,190,.17);overflow:hidden}
+.meter-fill{height:100%;width:30%;border-radius:999px;background:linear-gradient(90deg,var(--mint),var(--cyan),var(--amber));transition:width .3s ease}
+.meter-note{margin:9px 0 0;font-family:var(--mono);font-size:.65rem;line-height:1.6;color:var(--faint)}
+.meter-note.warn{color:var(--amber)}
+
+.wizard{padding:22px;min-height:620px}
+.wizard-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:20px}
+.wizard-head h2{font-family:var(--disp);font-size:1.45rem;margin:0}
+.wizard-head p{margin:5px 0 0;color:var(--dim);font-size:.88rem;max-width:66ch}
+.step-count{font-family:var(--mono);font-size:.66rem;letter-spacing:.12em;color:var(--cyan);white-space:nowrap;border:1px solid rgba(34,211,238,.35);border-radius:999px;padding:5px 10px}
+.step[hidden]{display:none}
+.step h3{font-family:var(--disp);font-size:1.05rem;margin:0 0 4px}
+.step .hint{margin:0 0 18px;color:var(--faint);font-size:.82rem}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media(max-width:780px){.grid2,.grid3{grid-template-columns:1fr}}
+.field{display:grid;gap:6px;margin-bottom:14px}
+.mt16{margin-top:16px}
+.mb12{margin-bottom:12px}
+.hint-tight{margin:4px 0 0}
+.field label,.field .label{font-family:var(--disp);font-size:.78rem;letter-spacing:.04em;color:var(--dim)}
+.field .sub{font-size:.72rem;color:var(--faint)}
+input[type="text"],input[type="number"],select,textarea{
+  width:100%;border:1px solid var(--line);border-radius:10px;background:rgba(5,9,16,.5);color:var(--ink);
+  padding:10px 12px;font-size:.86rem;
+}
+:root.light input[type="text"],:root.light input[type="number"],:root.light select,:root.light textarea{background:#fff}
+textarea{min-height:96px;resize:vertical;font-family:var(--mono);font-size:.76rem;line-height:1.6}
+fieldset{border:1px solid var(--line);border-radius:var(--rs);padding:14px;margin:0 0 16px}
+legend{font-family:var(--disp);font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);padding:0 7px}
+.choice{display:grid;grid-template-columns:18px 1fr;gap:10px;align-items:start;border:1px solid var(--line);border-radius:var(--rs);padding:12px;background:rgba(255,255,255,.018)}
+.choice:hover{border-color:rgba(34,211,238,.5)}
+.choice input{margin-top:4px;accent-color:var(--cyan)}
+.choice b{display:block;font-family:var(--disp);font-size:.88rem}
+.choice span{display:block;color:var(--faint);font-size:.74rem;line-height:1.45}
+.choice.is-on{border-color:rgba(34,211,238,.55);background:rgba(34,211,238,.06)}
+.toggles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media(max-width:680px){.toggles{grid-template-columns:1fr}}
+.toggle{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:11px;padding:11px 12px;background:rgba(255,255,255,.018)}
+.toggle input{accent-color:var(--cyan);margin-top:3px}
+.toggle b{display:block;font-family:var(--disp);font-size:.83rem}
+.toggle small{display:block;color:var(--faint);font-size:.7rem;line-height:1.4}
+.rules{display:grid;gap:8px}
+.rule-row{display:grid;grid-template-columns:auto minmax(0,1fr) 132px;gap:10px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:9px 11px;background:rgba(255,255,255,.018)}
+@media(max-width:680px){.rule-row{grid-template-columns:auto minmax(0,1fr)}.rule-row select{grid-column:2}}
+.rule-row input[type="checkbox"]{accent-color:var(--cyan)}
+.rule-row input[type="text"]{padding:7px 9px;font-size:.78rem}
+.rule-row select{padding:7px 8px;font-size:.74rem}
+.add-rule{display:flex;gap:9px;margin-top:10px}
+.add-rule input{flex:1}
+
+.actions{display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding-top:16px;margin-top:22px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:9px 17px;background:transparent;color:var(--ink);font-family:var(--disp);font-size:.82rem;font-weight:600}
+.btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.btn.primary{border-color:transparent;background:linear-gradient(92deg,var(--cyan),var(--violet));color:#04121a;box-shadow:0 0 20px rgba(34,211,238,.28)}
+.btn.primary:hover{color:#04121a;filter:brightness(1.08)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.subtle{padding:7px 12px;font-size:.73rem}
+
+.out-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.out-head h3{margin:0;font-family:var(--disp);font-size:1rem}
+.out-tools{display:flex;gap:8px;flex-wrap:wrap}
+.tabs{display:flex;gap:7px;overflow-x:auto;padding-bottom:8px;margin-bottom:10px;scrollbar-width:thin}
+.tab{white-space:nowrap;border:1px solid var(--line);background:transparent;color:var(--dim);border-radius:999px;padding:7px 12px;font-family:var(--mono);font-size:.69rem}
+.tab:hover{color:var(--ink);border-color:var(--cyan)}
+.tab[aria-selected="true"]{color:#04121a;background:linear-gradient(92deg,var(--cyan),var(--violet));border-color:transparent}
+.output-shell{border:1px solid var(--line);border-radius:var(--rs);overflow:hidden;background:#060b14}
+:root.light .output-shell{background:#f6f9fd}
+.output-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 12px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:.67rem;color:var(--dim)}
+.output-bar .dots{display:flex;gap:5px}
+.output-bar .dots i{width:9px;height:9px;border-radius:50%;display:block}
+.output-bar .dots i:nth-child(1){background:var(--red)}
+.output-bar .dots i:nth-child(2){background:var(--amber)}
+.output-bar .dots i:nth-child(3){background:var(--mint)}
+pre{margin:0;padding:16px;max-height:420px;overflow:auto;font-family:var(--mono);font-size:.73rem;line-height:1.68;color:var(--ink);tab-size:2;white-space:pre-wrap;word-break:break-word}
+.check-list{display:grid;gap:9px;margin:0;padding:0;list-style:none}
+.check-list li{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:start;border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:rgba(255,255,255,.018);font-size:.8rem}
+.check-list li span:first-child{color:var(--mint);font-family:var(--mono)}
+.code-inline{font-family:var(--mono);font-size:.72rem;color:var(--cyan);background:rgba(34,211,238,.07);border:1px solid rgba(34,211,238,.2);border-radius:6px;padding:1px 5px}
+.toast{position:fixed;right:18px;bottom:18px;z-index:90;max-width:min(360px,calc(100vw - 36px));border:1px solid rgba(34,211,238,.5);border-radius:12px;background:var(--panel);color:var(--ink);padding:11px 15px;box-shadow:var(--shadow);font-size:.8rem;opacity:0;transform:translateY(12px);pointer-events:none;transition:.22s ease}
+.toast.show{opacity:1;transform:translateY(0)}
+.foot{border-top:1px solid var(--line);margin-top:38px;padding:22px 0 46px;color:var(--faint);font-size:.76rem}
+.foot .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.foot a{color:var(--dim)}
+</style>
+</head>
+<body>
+<a class="skip" href="#wizard">Skip to wizard</a>
+<div class="bgfx" aria-hidden="true"><div class="grid"></div><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="flove development home">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 70 C24 70 14 46 20 22 C42 27 56 43 50 70 Z" fill="#22d3ee"/><path d="M50 70 C76 70 86 46 80 22 C58 27 44 43 50 70 Z" fill="#a78bfa"/><path d="M50 66 V88" stroke="#f472b6" stroke-width="6" stroke-linecap="round"/></svg>
+      <span><b>FLOVE</b><small>development tools</small></span>
+    </a>
+    <div class="top-actions">
+      <span class="pill">OpenCode V2</span>
+      <button class="theme-btn" type="button" id="themeBtn" aria-label="Toggle light and dark theme">◐ theme</button>
+    </div>
+  </div>
+</header>
+
+<main id="wizard" class="wrap">
+  <section class="hero">
+    <p class="kicker">progressive instruction design · local only</p>
+    <h1>OpenCode <span>Tuning Wizard</span></h1>
+    <p>Shape <code>AGENTS.md</code>, instructions, skills, commands, agents and permissions into clean layers: always-on, path-scoped, relevance-scoped, on-demand and enforced. Nothing is uploaded; outputs are generated in this page.</p>
+    <div class="hero-links">
+      <a href="https://opencode.ai/docs/instructions/">instructions docs</a>
+      <a href="https://opencode.ai/docs/commands/">commands docs</a>
+      <a href="https://opencode.ai/docs/skills/">skills docs</a>
+      <a href="https://opencode.ai/docs/permissions/">permissions docs</a>
+    </div>
+  </section>
+
+  <div class="layout">
+    <aside class="rail" aria-label="Wizard status">
+      <section class="card">
+        <p class="card-title">Path</p>
+        <nav class="steps" aria-label="Wizard steps">
+          <button class="step-nav" type="button" data-goto="0" aria-current="step"><span class="n">01</span><span class="t">Target<span class="d">scope + depth</span></span></button>
+          <button class="step-nav" type="button" data-goto="1"><span class="n">02</span><span class="t">Layers<span class="d">what loads when</span></span></button>
+          <button class="step-nav" type="button" data-goto="2"><span class="n">03</span><span class="t">Rules<span class="d">progressive scope</span></span></button>
+          <button class="step-nav" type="button" data-goto="3"><span class="n">04</span><span class="t">Files<span class="d">copy or download</span></span></button>
+          <button class="step-nav" type="button" data-goto="4"><span class="n">05</span><span class="t">Apply<span class="d">prompt + gates</span></span></button>
+        </nav>
+      </section>
+      <section class="card">
+        <p class="card-title">Load budget</p>
+        <div class="meter">
+          <div class="meter-top"><strong id="meterLabel">Lean</strong><span id="meterScore">0 / 100</span></div>
+          <div class="meter-track"><div class="meter-fill" id="meterFill"></div></div>
+          <p class="meter-note" id="meterNote">Calculating…</p>
+        </div>
+      </section>
+    </aside>
+
+    <section class="card wizard">
+      <form id="wizForm" autocomplete="off">
+        <div class="wizard-head">
+          <div><h2 id="stepTitle">Choose the target</h2><p id="stepSub">Start with a scope and a progressive depth. Presets fill safe defaults you can edit.</p></div>
+          <span class="step-count" id="stepCount">01 / 05</span>
+        </div>
+
+        <section class="step" data-step="0">
+          <div class="grid2">
+            <div class="field">
+              <label for="projectName">Project name</label>
+              <input id="projectName" name="projectName" type="text" value="flove" spellcheck="false">
+              <span class="sub">Used in generated headings and the review prompt.</span>
+            </div>
+            <div class="field">
+              <label for="scope">Config scope</label>
+              <select id="scope" name="scope">
+                <option value="project">Project · .opencode/</option>
+                <option value="global">Global · ~/.config/opencode/</option>
+                <option value="both">Both · project first, global note</option>
+              </select>
+              <span class="sub">Project scope is the default; global applies to every repository.</span>
+            </div>
+          </div>
+
+          <fieldset>
+            <legend>Progressive depth</legend>
+            <div class="grid3">
+              <label class="choice" data-choice="depth"><input type="radio" name="depth" value="A"><span><b>A · Router</b><span>One thin always-on file. Fewest tokens, fastest to judge.</span></span></label>
+              <label class="choice" data-choice="depth"><input type="radio" name="depth" value="B" checked><span><b>B · Scoped</b><span>Router plus path/relevance owners and on-demand skills.</span></span></label>
+              <label class="choice" data-choice="depth"><input type="radio" name="depth" value="C"><span><b>C · Enforced</b><span>Scoped layers plus permissions and checkable gates.</span></span></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Quick presets</legend>
+            <div class="out-tools">
+              <button class="btn subtle" type="button" data-preset="flove">★ flove preset</button>
+              <button class="btn subtle" type="button" data-preset="minimal">minimal</button>
+              <button class="btn subtle" type="button" data-preset="strict">strict</button>
+              <button class="btn subtle" type="button" data-preset="reset">reset</button>
+            </div>
+          </fieldset>
+        </section>
+
+        <section class="step" data-step="1" hidden>
+          <p class="hint">Choose the OpenCode surfaces this wizard should generate. Each one is a separate owner; the root file only routes to it.</p>
+          <div class="toggles">
+            <label class="toggle"><input type="checkbox" name="layer" value="agents" checked><span><b>Root AGENTS.md</b><small>Always loaded router and always-true rules.</small></span></label>
+            <label class="toggle"><input type="checkbox" name="layer" value="instructions" checked><span><b>Configured instructions</b><small>Extra files and globs loaded after AGENTS.md.</small></span></label>
+            <label class="toggle"><input type="checkbox" name="layer" value="skills" checked><span><b>Skill + references</b><small>On-demand workflow with detail split into references.</small></span></label>
+            <label class="toggle"><input type="checkbox" name="layer" value="commands" checked><span><b>/tune-agents command</b><small>Reusable prompt template with $ARGUMENTS.</small></span></label>
+            <label class="toggle"><input type="checkbox" name="layer" value="subagent" checked><span><b>Read-only tuner agent</b><small>Subagent that reviews without editing.</small></span></label>
+            <label class="toggle"><input type="checkbox" name="layer" value="permissions" checked><span><b>Permissions</b><small>Ordered allow / ask / deny rules in opencode.jsonc.</small></span></label>
+          </div>
+
+          <div class="grid2 mt16">
+            <div class="field">
+              <label for="workStylePath">Work-style owner</label>
+              <input id="workStylePath" name="workStylePath" type="text" value="development/standards/AGENTS.md" spellcheck="false">
+            </div>
+            <div class="field">
+              <label for="contractPath">Contract owner</label>
+              <input id="contractPath" name="contractPath" type="text" value="development/standards/contract.md" spellcheck="false">
+            </div>
+          </div>
+          <div class="field">
+            <label for="instructions">Instruction files / globs</label>
+            <textarea id="instructions" name="instructions" spellcheck="false">development/standards/README.md
+development/standards/frontend/frontend.md</textarea>
+            <span class="sub">One per line or comma-separated. OpenCode loads these after AGENTS.md.</span>
+          </div>
+          <div class="grid2">
+            <div class="field">
+              <label for="maxLines">Skill body cap · lines</label>
+              <input id="maxLines" name="maxLines" type="number" min="60" max="500" value="150">
+            </div>
+            <div class="field">
+              <label for="maxWords">Skill body cap · words</label>
+              <input id="maxWords" name="maxWords" type="number" min="200" max="4000" value="1000">
+            </div>
+          </div>
+        </section>
+
+        <section class="step" data-step="2" hidden>
+          <p class="hint">Every rule gets one scope. Keep the always list short; move detail to path, relevance, on-demand or enforcement.</p>
+          <fieldset>
+            <legend>Permission posture</legend>
+            <div class="grid3">
+              <label class="choice" data-choice="perm"><input type="radio" name="perm" value="open"><span><b>Open</b><small>Defaults only. Least friction, least enforcement.</small></span></label>
+              <label class="choice" data-choice="perm"><input type="radio" name="perm" value="ask" checked><span><b>Ask + block push</b><small>Review shell commands; allow git inspection; deny push.</small></span></label>
+              <label class="choice" data-choice="perm"><input type="radio" name="perm" value="locked"><span><b>Locked</b><small>Ask outside the project, block push, gate skills.</small></span></label>
+            </div>
+          </fieldset>
+
+          <p class="card-title">Rule scope board</p>
+          <div class="rules" id="rules"></div>
+          <div class="add-rule">
+            <input id="newRule" type="text" placeholder="Add a custom rule…" aria-label="New rule text">
+            <button class="btn subtle" type="button" id="addRuleBtn">+ add</button>
+          </div>
+
+          <div class="field mt16">
+            <label for="verifyCommands">Verification commands</label>
+            <textarea id="verifyCommands" name="verifyCommands" spellcheck="false">python3 tools/dev/checks/check-links.py --check
+python3 tools/dev/checks/check-archived-paths.py --check
+python3 tools/dev/tasks/build-work-tracker.py --check</textarea>
+          </div>
+        </section>
+
+        <section class="step" data-step="3" hidden>
+          <div class="out-head">
+            <div><h3>Generated files</h3><p class="hint hint-tight">Paths are relative to the project root unless you chose global scope.</p></div>
+            <div class="out-tools">
+              <button class="btn subtle" type="button" id="copyFileBtn">copy file</button>
+              <button class="btn subtle" type="button" id="downloadFileBtn">download file</button>
+              <button class="btn subtle" type="button" id="downloadBundleBtn">download bundle</button>
+            </div>
+          </div>
+          <div class="tabs" id="tabs" role="tablist" aria-label="Generated file tabs"></div>
+          <div class="output-shell">
+            <div class="output-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span id="outputPath">AGENTS.md</span><span id="outputSize">0 lines</span></div>
+            <div id="outputPanel" role="tabpanel" tabindex="0"><pre><code id="outputCode"></code></pre></div>
+          </div>
+        </section>
+
+        <section class="step" data-step="4" hidden>
+          <p class="hint">Paste this into OpenCode after saving the files. It asks for a proposal first and keeps commit/push out of scope.</p>
+          <div class="out-tools mb12">
+            <button class="btn subtle" type="button" id="copyPromptBtn">copy prompt</button>
+            <button class="btn subtle" type="button" id="copyGatesBtn">copy gates</button>
+          </div>
+          <div class="field">
+            <label for="promptOut">OpenCode review prompt</label>
+            <textarea id="promptOut" rows="12" readonly spellcheck="false"></textarea>
+          </div>
+          <div class="field">
+            <label for="gatesOut">Gates to run before reporting done</label>
+            <textarea id="gatesOut" rows="7" readonly spellcheck="false"></textarea>
+          </div>
+          <ul class="check-list">
+            <li><span>✓</span><span>Root router stays one screen; every pointer resolves to a real owner or anchor.</span></li>
+            <li><span>✓</span><span>No rule text is duplicated between <span class="code-inline">AGENTS.md</span>, <span class="code-inline">standards/AGENTS.md</span> and <span class="code-inline">contract.md</span>.</span></li>
+            <li><span>✓</span><span>Skill bodies stay under the chosen caps; detail lives in <span class="code-inline">references/</span>.</span></li>
+            <li><span>✓</span><span>No commit or push unless explicitly asked.</span></li>
+          </ul>
+        </section>
+
+        <div class="actions">
+          <button class="btn" type="button" id="prevBtn" disabled>← back</button>
+          <button class="btn primary" type="submit" id="nextBtn">next →</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <footer class="foot">
+    <div class="wrap"><span>Generated locally · nothing leaves this browser · state saved under <span class="code-inline">flove:opencode-tuning-wizard</span></span><span><a href="AGENTS.md">development/AGENTS.md</a> · <a href="https://opencode.ai/docs/">OpenCode V2 docs</a></span></div>
+  </footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var STORE = 'flove:opencode-tuning-wizard';
+  var $ = function (sel, root) { return (root || document).querySelector(sel); };
+  var $$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
+  var form = $('#wizForm');
+  var step = 0;
+  var currentFile = 'AGENTS.md';
+  var files = {};
+  var toastTimer = null;
+
+  var DEFAULT_RULES = [
+    { id: 'router', text: 'Root AGENTS.md is a router: read the owner, never a copy.', scope: 'always', on: true },
+    { id: 'owner', text: 'One owner per fact; link instead of duplicating prose.', scope: 'always', on: true },
+    { id: 'contract', text: 'Binding rules live in the contract; advisory choices live in AGENTS.md.', scope: 'relevance', on: true },
+    { id: 'privacy', text: 'Private by default; ask before sharing data or moving it off this machine.', scope: 'enforce', on: true },
+    { id: 'verify', text: 'Run the named verification command before reporting done.', scope: 'enforce', on: true },
+    { id: 'archived', text: 'Archived-away paths belong in the archived-path checker, not in live prose.', scope: 'path', on: true }
+  ];
+
+  var SCOPES = [
+    ['always', 'Always'],
+    ['path', 'Path'],
+    ['relevance', 'Relevance'],
+    ['ondemand', 'On demand'],
+    ['enforce', 'Enforce'],
+    ['skip', 'Skip']
+  ];
+
+  function el(tag, attrs, text) {
+    var node = document.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (key) {
+      if (key === 'class') node.className = attrs[key];
+      else if (key === 'checked') node.checked = !!attrs[key];
+      else node.setAttribute(key, attrs[key]);
+    });
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function flash(message) {
+    var box = $('#toast');
+    box.textContent = message;
+    box.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { box.classList.remove('show'); }, 2200);
+  }
+
+  function baseDir(scope) {
+    if (scope === 'global') return '~/.config/opencode';
+    return '.opencode';
+  }
+
+  function splitList(value) {
+    return String(value || '').split(/[\n,]/).map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+
+  function lines(value) {
+    return String(value || '').split(/\r?\n/).filter(function (l) { return l.trim(); });
+  }
+
+  function dirOf(path) {
+    var clean = String(path || '').replace(/^\.\//, '');
+    var slash = clean.lastIndexOf('/');
+    return slash >= 0 ? clean.slice(0, slash) : '.';
+  }
+
+  function loadRules(saved) {
+    var host = $('#rules');
+    host.innerHTML = '';
+    var list = (saved && saved.rules) || DEFAULT_RULES;
+    list.forEach(function (rule) { host.appendChild(makeRuleRow(rule)); });
+  }
+
+  function makeRuleRow(rule) {
+    var row = el('div', { class: 'rule-row', 'data-id': rule.id });
+    var box = el('input', { type: 'checkbox', 'aria-label': 'Enable rule: ' + rule.text });
+    box.className = 'rule-on';
+    box.checked = rule.on !== false;
+    var text = el('input', { type: 'text', value: rule.text, 'aria-label': 'Rule text' });
+    text.className = 'rule-text';
+    var select = el('select', { 'aria-label': 'Scope for rule: ' + rule.text });
+    select.className = 'rule-scope';
+    SCOPES.forEach(function (pair) {
+      var opt = el('option', { value: pair[0] }, pair[1]);
+      if (pair[0] === rule.scope) opt.selected = true;
+      select.appendChild(opt);
+    });
+    row.appendChild(box);
+    row.appendChild(text);
+    row.appendChild(select);
+    return row;
+  }
+
+  function readState() {
+    var checked = function (name) {
+      return $$('input[name="' + name + '"]:checked', form).map(function (n) { return n.value; })[0] || '';
+    };
+    var layers = $$('input[name="layer"]', form).filter(function (n) { return n.checked; }).map(function (n) { return n.value; });
+    var rules = $$('.rule-row', form).map(function (row) {
+      return {
+        id: row.getAttribute('data-id'),
+        text: $('.rule-text', row).value.trim(),
+        scope: $('.rule-scope', row).value,
+        on: $('.rule-on', row).checked
+      };
+    }).filter(function (r) { return r.text || r.on; });
+    return {
+      project: $('#projectName').value.trim() || 'project',
+      scope: $('#scope').value,
+      depth: checked('depth') || 'B',
+      layers: layers,
+      workStyle: $('#workStylePath').value.trim() || 'standards/AGENTS.md',
+      contract: $('#contractPath').value.trim() || 'standards/contract.md',
+      instructions: splitList($('#instructions').value),
+      maxLines: Math.max(60, Number($('#maxLines').value) || 150),
+      maxWords: Math.max(200, Number($('#maxWords').value) || 1000),
+      perm: checked('perm') || 'ask',
+      rules: rules,
+      verify: lines($('#verifyCommands').value)
+    };
+  }
+
+  function save() {
+    try { localStorage.setItem(STORE, JSON.stringify(readState())); } catch (_) {}
+  }
+
+  function load() {
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch (_) {}
+    if (saved) {
+      $('#projectName').value = saved.project || 'flove';
+      $('#scope').value = saved.scope || 'project';
+      setRadio('depth', saved.depth || 'B');
+      setRadio('perm', saved.perm || 'ask');
+      $$('input[name="layer"]', form).forEach(function (n) { n.checked = (saved.layers || []).indexOf(n.value) >= 0; });
+      $('#workStylePath').value = saved.workStyle || 'development/standards/AGENTS.md';
+      $('#contractPath').value = saved.contract || 'development/standards/contract.md';
+      $('#instructions').value = (saved.instructions || []).join('\n');
+      $('#maxLines').value = saved.maxLines || 150;
+      $('#maxWords').value = saved.maxWords || 1000;
+      $('#verifyCommands').value = (saved.verify || lines($('#verifyCommands').value)).join('\n');
+    }
+    loadRules(saved);
+  }
+
+  function setRadio(name, value) {
+    var node = $('input[name="' + name + '"][value="' + value + '"]', form);
+    if (node) node.checked = true;
+  }
+
+  function ruleGroups(s) {
+    var on = s.rules.filter(function (r) { return r.on !== false && r.text; });
+    return {
+      always: on.filter(function (r) { return r.scope === 'always'; }),
+      path: on.filter(function (r) { return r.scope === 'path'; }),
+      relevance: on.filter(function (r) { return r.scope === 'relevance'; }),
+      ondemand: on.filter(function (r) { return r.scope === 'ondemand'; }),
+      enforce: on.filter(function (r) { return r.scope === 'enforce'; })
+    };
+  }
+
+  function bullets(items) {
+    return items.map(function (r) { return '- ' + r.text; }).join('\n');
+  }
+
+  function buildAgents(s, groups) {
+    var out = '# ' + s.project + ' — agent router\n\n';
+    out += '**Scope:** ' + (s.scope === 'global' ? 'every project for this user' : s.scope === 'both' ? 'this project, with a global companion note' : 'this project') + '.\n\n';
+    out += 'This file routes. Read the owner, not a copy. Nothing here duplicates a binding rule.\n\n';
+    out += '| Need | Owner |\n|---|---|\n';
+    if (s.layers.indexOf('agents') >= 0) out += '| How I work | [' + s.workStyle + '](' + s.workStyle + ') |\n';
+    out += '| Binding rules and the floor | [' + s.contract + '](' + s.contract + ') |\n';
+    if (s.project.toLowerCase() === 'flove') out += '| Advisory decision preferences | [#decision-preferences](#decision-preferences) |\n';
+    if (s.layers.indexOf('instructions') >= 0) out += '| Extra always-load guidance | [`opencode.jsonc` → `instructions`](.opencode/opencode.jsonc) |\n';
+    if (s.layers.indexOf('skills') >= 0) out += '| On-demand workflows | [`.opencode/skills/`](.opencode/skills/) |\n';
+    if (s.layers.indexOf('commands') >= 0) out += '| Reusable prompts | [`.opencode/commands/`](.opencode/commands/) |\n';
+    if (s.layers.indexOf('permissions') >= 0) out += '| Enforcement | [`opencode.jsonc` → `permissions`](.opencode/opencode.jsonc) |\n';
+
+    if (groups.always.length) {
+      out += '\n## Always true\n\n' + bullets(groups.always) + '\n';
+    }
+    if (s.depth !== 'A' && groups.path.length) {
+      out += '\n## Loaded by path\n\n' + bullets(groups.path) + '\n';
+    }
+    if (s.depth !== 'A' && groups.relevance.length) {
+      out += '\n## Loaded when relevant\n\n' + bullets(groups.relevance) + '\n';
+    }
+    if (s.depth !== 'A' && groups.ondemand.length) {
+      out += '\n## On demand\n\n' + bullets(groups.ondemand) + '\n';
+    }
+    if (s.depth === 'C' && (groups.enforce.length || s.verify.length)) {
+      out += '\n## Gates\n\n';
+      out += groups.enforce.length ? bullets(groups.enforce) + '\n\n' : '';
+      out += 'Verification:\n\n' + s.verify.map(function (v) { return '- `' + v + '`'; }).join('\n') + '\n';
+    }
+    return out;
+  }
+
+  function buildConfig(s) {
+    var cfg = { $schema: 'https://opencode.ai/config.json' };
+    if (s.layers.indexOf('instructions') >= 0 && s.instructions.length) cfg.instructions = s.instructions;
+    if (s.layers.indexOf('skills') >= 0) {
+      cfg.skills = s.scope === 'global' ? ['~/.config/opencode/skills'] :
+        s.scope === 'both' ? ['./.opencode/skills', '~/.config/opencode/skills'] : ['./.opencode/skills'];
+    }
+    if (s.layers.indexOf('permissions') >= 0 && s.perm !== 'open') {
+      if (s.perm === 'ask') {
+        cfg.permissions = [
+          { action: 'shell', resource: '*', effect: 'ask' },
+          { action: 'shell', resource: 'git status *', effect: 'allow' },
+          { action: 'shell', resource: 'git diff *', effect: 'allow' },
+          { action: 'shell', resource: 'git push *', effect: 'deny' }
+        ];
+      } else {
+        cfg.permissions = [
+          { action: 'external_directory', resource: '*', effect: 'ask' },
+          { action: 'shell', resource: '*', effect: 'ask' },
+          { action: 'shell', resource: 'git status *', effect: 'allow' },
+          { action: 'shell', resource: 'git diff *', effect: 'allow' },
+          { action: 'shell', resource: 'git push *', effect: 'deny' },
+          { action: 'skill', resource: '*', effect: 'ask' },
+          { action: 'skill', resource: 'opencode-tuning', effect: 'allow' }
+        ];
+      }
+    }
+    return JSON.stringify(cfg, null, 2) + '\n';
+  }
+
+  function buildCommand(s) {
+    var agent = s.layers.indexOf('subagent') >= 0 ? 'agents-tuner' : 'plan';
+    var targets = ['AGENTS.md', s.workStyle, s.contract].join(' ');
+    var body = '---\ndescription: Audit and progressively tune agent instruction files\nagent: ' + agent + '\n---\n\n';
+    body += 'Audit $ARGUMENTS for instruction design. Do not edit files unless asked.\n\n';
+    body += 'Targets: ' + targets + '\n\n';
+    body += 'Report:\n';
+    body += '1. What must load in every session.\n';
+    body += '2. What should load only by path, relevance, or explicit request.\n';
+    body += '3. Duplicates, contradictions, stale paths, and rules that belong in a checker instead of prose.\n';
+    body += '4. Three options: A router, B scoped, C enforced.\n';
+    body += '5. A minimal patch plan and exact verification commands.\n';
+    return body;
+  }
+
+  function buildSkill(s, groups) {
+    var body = '---\nname: opencode-tuning\ndescription: Audit and tune AGENTS.md routers, instruction scope, OpenCode options, and AI-development contracts with progressive detail. Use when asked to simplify, split, lint, or tune agent instructions.\n---\n\n';
+    body += 'Use this workflow only when asked to tune agent guidance.\n\n';
+    body += '1. Read the root router and the named owner files.\n';
+    body += '2. Keep the root file as a router; never duplicate a fact.\n';
+    body += '3. Move detail to the nearest owner: path, relevance, on-demand, or enforced.\n';
+    body += '4. Check the body cap: under ' + s.maxLines + ' non-blank lines and ' + s.maxWords + ' words.\n';
+    body += '5. Verify links, archived paths and the named gates before reporting done.\n\n';
+    body += 'References (read on demand):\n';
+    body += '- references/agent-options.md\n- references/router-rules.md\n- references/verification.md\n\n';
+    body += 'Always-on rules in this project:\n' + (groups.always.length ? bullets(groups.always) : '- none') + '\n';
+    return body;
+  }
+
+  function buildAgent(s) {
+    var body = '---\ndescription: Reviews AGENTS.md, OpenCode options and contract design without editing files\nmode: subagent\npermissions:\n  - action: edit\n    resource: "*"\n    effect: deny\n---\n\n';
+    body += 'Review the named instruction files. Report duplication, bad scoping, stale links,\n';
+    body += 'contradiction, and missing verification. Suggest the smallest safe change.\n';
+    body += 'Do not edit files and do not commit or push.\n';
+    return body;
+  }
+
+  function buildRefs(s, groups) {
+    var options = '# OpenCode options covered\n\n';
+    options += '- `AGENTS.md`: always-loaded project and nested guidance.\n';
+    options += '- `instructions`: extra files, globs, and URLs loaded after AGENTS.md.\n';
+    options += '- `skills`: `SKILL.md` plus on-demand `references/`, `scripts/` and `assets/`.\n';
+    options += '- `commands`: reusable prompt templates with `$ARGUMENTS`.\n';
+    options += '- `agents`: named primary or subagent profiles with their own permissions.\n';
+    options += '- `permissions`: ordered `allow`, `ask`, `deny` rules; last match wins.\n';
+    options += '- `references`: named local or Git context attached by the client.\n\n';
+    options += 'Docs: https://opencode.ai/docs/instructions/ · https://opencode.ai/docs/commands/ · ';
+    options += 'https://opencode.ai/docs/skills/ · https://opencode.ai/docs/agents/ · ';
+    options += 'https://opencode.ai/docs/permissions/\n';
+
+    var router = '# Router rules\n\n';
+    router += '## Always\n\n' + (groups.always.length ? bullets(groups.always) : '- none') + '\n\n';
+    router += '## Path\n\n' + (groups.path.length ? bullets(groups.path) : '- none') + '\n\n';
+    router += '## Relevance\n\n' + (groups.relevance.length ? bullets(groups.relevance) : '- none') + '\n\n';
+    router += '## On demand\n\n' + (groups.ondemand.length ? bullets(groups.ondemand) : '- none') + '\n\n';
+    router += '## Enforced\n\n' + (groups.enforce.length ? bullets(groups.enforce) : '- none') + '\n';
+
+    var verify = '# Verification\n\nRun before reporting done:\n\n';
+    verify += s.verify.length ? s.verify.map(function (v) { return '- `' + v + '`'; }).join('\n') + '\n' : '- none configured\n';
+    verify += '\nAlso confirm: root router is thin, pointers resolve, no duplicated rule text, no commit or push.\n';
+    return { options: options, router: router, verify: verify };
+  }
+
+  function buildCursor(s) {
+    var out = '# Cursor bridge (optional)\n\n';
+    out += 'Plain `AGENTS.md` works in Cursor. Use `.mdc` only when you need activation metadata.\n\n';
+    out += '## `.cursor/rules/00-always.mdc`\n\n```md\n---\nalwaysApply: true\n---\n\n';
+    out += '- ' + (groupsOr(s, 'always')[0] || 'Keep AGENTS.md as a router; link to the owner.') + '\n';
+    out += '- Keep rule bodies under 500 lines and reference files instead of copying them.\n```\n\n';
+    out += '## `.cursor/rules/10-scoped.mdc`\n\n```md\n---\nglobs: ' + dirOf(s.workStyle) + '/**/*.md\nalwaysApply: false\n---\n\n';
+    out += '- Bind advisory work style to the nearest owner.\n- Preserve anchors when rewording headings.\n```\n\n';
+    out += '## `.cursor/rules/20-smart.mdc`\n\n```md\n---\ndescription: Rules for tuning agent instructions and high-level AI-development contracts\nalwaysApply: false\n---\n\n';
+    out += '- When asked to tune guidance, propose always, scoped, on-demand and enforced options before editing.\n```\n\n';
+    out += '## `.cursor/rules/30-manual.mdc`\n\n```md\n---\nalwaysApply: false\n---\n\n';
+    out += '- Use this only when @mentioned. Keep it out of ordinary sessions.\n```\n';
+    return out;
+  }
+
+  function groupsOr(s, key) {
+    return ruleGroups(s)[key].map(function (r) { return r.text; });
+  }
+
+  function buildPrompt(s) {
+    var out = 'Use the generated OpenCode tuning forms for ' + s.project + '.\n\n';
+    out += '1. Read AGENTS.md, ' + s.workStyle + ' and ' + s.contract + '.\n';
+    out += '2. Treat the root file as a router; do not duplicate owner prose.\n';
+    out += '3. Classify every rule as always, path, relevance, on-demand or enforced.\n';
+    out += '4. Keep the chosen skill body cap (' + s.maxLines + ' lines / ' + s.maxWords + ' words).\n';
+    out += '5. Propose a minimal patch first. Do not edit until I approve it.\n';
+    out += '6. Run the verification commands after any edit. Do not commit or push.\n\n';
+    out += 'Config scope: ' + s.scope + '. Depth: ' + s.depth + '. Permission posture: ' + s.perm + '.\n';
+    return out;
+  }
+
+  function buildBundle() {
+    var keys = Object.keys(files);
+    var out = '# ' + $('#projectName').value + ' · OpenCode tuning bundle\n\n';
+    out += 'Generated locally by opencode-tuning-wizard.html. Apply each file at its path.\n\n';
+    keys.forEach(function (key) {
+      var ext = key.indexOf('.jsonc') >= 0 ? 'jsonc' : key.indexOf('.md') >= 0 ? 'md' : 'text';
+      out += '## ' + key + '\n\n```' + ext + '\n' + files[key] + '\n```\n\n';
+    });
+    return out;
+  }
+
+  function buildFiles(s) {
+    var groups = ruleGroups(s);
+    var refs = buildRefs(s, groups);
+    var base = baseDir(s.scope);
+    var out = {};
+    out['AGENTS.md'] = buildAgents(s, groups);
+    out[base + '/opencode.jsonc'] = buildConfig(s);
+    if (s.layers.indexOf('commands') >= 0) out[base + '/commands/tune-agents.md'] = buildCommand(s);
+    if (s.layers.indexOf('skills') >= 0) {
+      out[base + '/skills/opencode-tuning/SKILL.md'] = buildSkill(s, groups);
+      out[base + '/skills/opencode-tuning/references/agent-options.md'] = refs.options;
+      out[base + '/skills/opencode-tuning/references/router-rules.md'] = refs.router;
+      out[base + '/skills/opencode-tuning/references/verification.md'] = refs.verify;
+    }
+    if (s.layers.indexOf('subagent') >= 0) out[base + '/agents/agents-tuner.md'] = buildAgent(s);
+    out['opencode-prompt.md'] = buildPrompt(s);
+    out['cursor-rules.md'] = buildCursor(s);
+    out['README-tuning.md'] = '# OpenCode tuning bundle\n\n' +
+      '1. Copy `AGENTS.md` to the project root.\n' +
+      '2. Copy the `.opencode/` files under ' + base + ' (use `~/.config/opencode/` for global scope).\n' +
+      '3. Paste `opencode-prompt.md` into OpenCode and approve the patch before edits.\n' +
+      '4. Use `cursor-rules.md` only if you also use Cursor and need activation metadata.\n\n' +
+      'No commit or push unless explicitly asked.\n';
+    return out;
+  }
+
+  function renderTabs() {
+    var host = $('#tabs');
+    host.innerHTML = '';
+    Object.keys(files).forEach(function (key, i) {
+      var btn = el('button', {
+        type: 'button', class: 'tab', role: 'tab', id: 'tab-' + i,
+        'aria-controls': 'outputPanel', 'aria-selected': key === currentFile ? 'true' : 'false'
+      }, key);
+      btn.setAttribute('data-file', key);
+      btn.addEventListener('click', function () { currentFile = key; renderOutput(); });
+      host.appendChild(btn);
+    });
+  }
+
+  function renderOutput() {
+    var text = files[currentFile] || '';
+    $('#outputCode').textContent = text;
+    $('#outputPath').textContent = currentFile;
+    $('#outputSize').textContent = text.split('\n').length + ' lines';
+    $$('.tab', $('#tabs')).forEach(function (tab) {
+      tab.setAttribute('aria-selected', tab.getAttribute('data-file') === currentFile ? 'true' : 'false');
+    });
+    var active = $$('.tab', $('#tabs')).filter(function (t) { return t.getAttribute('data-file') === currentFile; })[0];
+    if (active) $('#outputPanel').setAttribute('aria-labelledby', active.id);
+  }
+
+  function renderMeter(s, groups) {
+    var always = groups.always.length;
+    var scoped = groups.path.length + groups.relevance.length;
+    var ondemand = groups.ondemand.length;
+    var enforced = groups.enforce.length;
+    var rootLines = (files['AGENTS.md'] || '').split('\n').length;
+    var score = Math.min(100, always * 16 + enforced * 9 + Math.max(0, rootLines - 70) / 2);
+    $('#meterFill').style.width = score + '%';
+    $('#meterScore').textContent = Math.round(score) + ' / 100';
+    var label = always > 5 || rootLines > 110 ? 'Heavy' : always <= 3 && rootLines <= 80 ? 'Lean' : 'Balanced';
+    $('#meterLabel').textContent = label;
+    var note = always + ' always · ' + scoped + ' scoped · ' + ondemand + ' on demand · ' + enforced + ' enforced · root ' + rootLines + ' lines';
+    $('#meterNote').textContent = note;
+    $('#meterNote').classList.toggle('warn', label === 'Heavy');
+  }
+
+  function render() {
+    var s = readState();
+    var groups = ruleGroups(s);
+    files = buildFiles(s);
+    if (!files[currentFile]) currentFile = Object.keys(files)[0];
+    renderTabs();
+    renderOutput();
+    renderMeter(s, groups);
+    $('#promptOut').value = files['opencode-prompt.md'] || '';
+    $('#gatesOut').value = s.verify.map(function (v) { return '$ ' + v; }).join('\n');
+    $$('.choice[data-choice="depth"]').forEach(function (n) {
+      n.classList.toggle('is-on', $('input', n).checked);
+    });
+    $$('.choice[data-choice="perm"]').forEach(function (n) {
+      n.classList.toggle('is-on', $('input', n).checked);
+    });
+    save();
+  }
+
+  function gotoStep(n) {
+    step = Math.max(0, Math.min(4, n));
+    $$('.step', form).forEach(function (sec, i) { sec.hidden = i !== step; });
+    $$('.step-nav').forEach(function (btn, i) {
+      if (i === step) btn.setAttribute('aria-current', 'step'); else btn.removeAttribute('aria-current');
+    });
+    var titles = ['Choose the target', 'Choose instruction layers', 'Set rule scope', 'Generated files', 'Apply in OpenCode'];
+    var subs = [
+      'Start with a scope and a progressive depth. Presets fill safe defaults you can edit.',
+      'Each surface is a separate owner. The root file only routes to it.',
+      'Give each rule one home: always, path, relevance, on-demand or enforced.',
+      'Copy a single file or download the whole bundle with its paths.',
+      'Review first, edit after approval, verify before done.'
+    ];
+    $('#stepTitle').textContent = titles[step];
+    $('#stepSub').textContent = subs[step];
+    $('#stepCount').textContent = String(step + 1).padStart(2, '0') + ' / 05';
+    $('#prevBtn').disabled = step === 0;
+    $('#nextBtn').textContent = step === 4 ? 'done ✓' : 'next →';
+    if (step === 3) render();
+    $('.wizard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async function copyText(text, message) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(text);
+      else throw new Error('clipboard unavailable');
+    } catch (_) {
+      var temp = el('textarea', { 'aria-label': 'Copy fallback' });
+      temp.value = text;
+      temp.style.position = 'fixed';
+      temp.style.opacity = '0';
+      document.body.appendChild(temp);
+      temp.select();
+      try { document.execCommand('copy'); } catch (_) {}
+      document.body.removeChild(temp);
+    }
+    flash(message || 'Copied');
+  }
+
+  function download(name, text) {
+    var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = el('a', { href: url, download: name });
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    flash('Downloaded ' + name);
+  }
+
+  function applyPreset(name) {
+    var presets = {
+      flove: {
+        project: 'flove', scope: 'project', depth: 'C', perm: 'ask',
+        layers: ['agents', 'instructions', 'skills', 'commands', 'subagent', 'permissions'],
+        workStyle: 'development/standards/AGENTS.md',
+        contract: 'development/standards/contract.md',
+        instructions: ['development/standards/README.md', 'development/standards/frontend/frontend.md'],
+        verify: ['python3 tools/dev/checks/check-links.py --check', 'python3 tools/dev/checks/check-archived-paths.py --check', 'python3 tools/dev/tasks/build-work-tracker.py --check']
+      },
+      minimal: {
+        project: $('#projectName').value || 'project', scope: 'project', depth: 'A', perm: 'open',
+        layers: ['agents'], workStyle: 'standards/AGENTS.md', contract: 'standards/contract.md',
+        instructions: [], verify: []
+      },
+      strict: {
+        project: $('#projectName').value || 'project', scope: 'project', depth: 'C', perm: 'locked',
+        layers: ['agents', 'instructions', 'skills', 'commands', 'subagent', 'permissions'],
+        workStyle: 'standards/AGENTS.md', contract: 'standards/contract.md',
+        instructions: ['CONTRIBUTING.md'], verify: ['npm test', 'npm run lint']
+      }
+    };
+    if (name === 'reset') {
+      try { localStorage.removeItem(STORE); } catch (_) {}
+      location.reload();
+      return;
+    }
+    var p = presets[name];
+    if (!p) return;
+    $('#projectName').value = p.project;
+    $('#scope').value = p.scope;
+    setRadio('depth', p.depth);
+    setRadio('perm', p.perm);
+    $$('input[name="layer"]', form).forEach(function (n) { n.checked = p.layers.indexOf(n.value) >= 0; });
+    $('#workStylePath').value = p.workStyle;
+    $('#contractPath').value = p.contract;
+    $('#instructions').value = p.instructions.join('\n');
+    $('#verifyCommands').value = p.verify.join('\n');
+    render();
+    flash(name + ' preset loaded');
+  }
+
+  form.addEventListener('input', render);
+  form.addEventListener('change', render);
+  form.addEventListener('submit', function (event) { event.preventDefault(); });
+
+  $('#addRuleBtn').addEventListener('click', function () {
+    var input = $('#newRule');
+    var text = input.value.trim();
+    if (!text) return;
+    $('#rules').appendChild(makeRuleRow({ id: 'custom-' + Date.now(), text: text, scope: 'relevance', on: true }));
+    input.value = '';
+    render();
+    flash('Rule added');
+  });
+
+  $$('.step-nav').forEach(function (btn) {
+    btn.addEventListener('click', function () { gotoStep(Number(btn.getAttribute('data-goto'))); });
+  });
+  $('#prevBtn').addEventListener('click', function () { gotoStep(step - 1); });
+  $('#nextBtn').addEventListener('click', function (event) {
+    event.preventDefault();
+    gotoStep(step === 4 ? 4 : step + 1);
+  });
+  $$('[data-preset]').forEach(function (btn) {
+    btn.addEventListener('click', function () { applyPreset(btn.getAttribute('data-preset')); });
+  });
+  $('#copyFileBtn').addEventListener('click', function () { copyText(files[currentFile] || '', 'File copied'); });
+  $('#downloadFileBtn').addEventListener('click', function () { download(currentFile, files[currentFile] || ''); });
+  $('#downloadBundleBtn').addEventListener('click', function () { download('opencode-tuning-bundle.md', buildBundle()); });
+  $('#copyPromptBtn').addEventListener('click', function () { copyText($('#promptOut').value, 'Prompt copied'); });
+  $('#copyGatesBtn').addEventListener('click', function () { copyText($('#gatesOut').value, 'Gates copied'); });
+
+  $('#themeBtn').addEventListener('click', function () {
+    var light = document.documentElement.classList.toggle('light');
+    try { localStorage.setItem('flove:theme', light ? 'light' : 'dark'); } catch (_) {}
+    var meta = $('meta[name="color-scheme"]');
+    if (meta) meta.setAttribute('content', light ? 'dark light' : 'dark');
+    flash(light ? 'Light theme' : 'Dark theme');
+  });
+
+  load();
+  render();
+  gotoStep(0);
+})();
+</script>
+</body>
+</html>

@@ -1,8 +1,20 @@
 # flove · Canonical vocabulary — §13.7
 
+```text
+standards/
+├─ README.md · AGENTS.md · contract.md · vocabulary.md · wiki.md  ★ YOU
+├─ plans/plans.md · tasks/tasks.md
+├─ backend/ · frontend/ · data/ · community/
+See also: ↑ ../AGENTS.md · ↓ frontend/frontend.md · → frontend/frontend.md#1320-data-depth-levels
+```
+
 Part of the flove standards catalogue. Index: [`README.md`](README.md) · contract:
-[`contract.md`](contract.md) · catalogue: [`frontend/frontend.md`](frontend/frontend.md) ·
-interactive matrix: [`vocabulary.html`](vocabulary.html).
+[`contract.md`](contract.md) · catalogue: [`Frontend/frontend.md`](frontend/frontend.md) ·
+interactive matrix: [`vocabulary.html`](vocabulary.html). Its Dev view is a
+read-only snapshot of the development envelopes catalogued in
+[schemas.md#development-workflow-schemas](https://flove.org/development/standards/data/schemas/schemas.md#development-workflow-schemas);
+the app-type mirror contract lives in
+[apps.md#app-types](https://flove.org/development/standards/frontend/apps/apps.md#app-types).
 
 ---
 
@@ -10,7 +22,7 @@ interactive matrix: [`vocabulary.html`](vocabulary.html).
 
 blogy is the **reference implementation** for the project's CSS class
 vocabulary (Solo distro — local-first fallback reference; the **Central** apps are
-the canonical spec, see [`apps/README.md`](../wiki/archive/old/apps/README.md)). The names
+the canonical spec, see the Apps standard). The names
 below are the canonical prefixes/families; other
 apps should reuse them rather than invent synonyms. When a blogy file
 and another app disagree on a name for the same concept, blogy wins
@@ -385,7 +397,7 @@ in the menu where the structural role calls for them.
    redo).
    **The 2026-05 migration is complete:** `ray-*` → `labeler-*` and
    `bot-*` → `wizard-*` (modals, sound keys and the JS API included). The old
-   prefixes are retired; the canonical names are the ones above.
+   prefixes are archived; the canonical names are the ones above.
 
    See [[project-blogy-vocabulary-renames]] for the full log including
    backup paths and verification counts.
@@ -487,17 +499,17 @@ Every slot in the vocabulary matrix wears exactly one **kind**:
   design** (content, hub and viewer pages). `check-routing.py` reports them as
   complete instead of warning about missing extraction.
 
-### The `kind:input` contract (what questy-flove reads)
+### The `kind:input` contract (what flovy reads)
 
 `kind:input` is the **user-data field list** — the exact slots to gather texts
-about through questioning. It is a target contract for a future questy-flove
+about through questioning. It is a target contract for a future flovy
 consumer, not a live dependency. The tool's export with the kind filter set to
 `input` yields it directly.
 
 ### Hats & colours
 
 **Hats belong to Questy; category colours are the standard flove palette.**
-`fields-colours.json` / `fields-colours.ods` are retired; there is no separate
+`fields-colours.json` / `fields-colours.ods` are archived; there is no separate
 per-slot hat catalog.
 
 | category | colour | Questy hat |
@@ -510,7 +522,7 @@ per-slot hat catalog.
 
 Use the table only as the **hat → category-colour analogy**, and only when
 influence > 0 and hats are selected. `risk` is the black counterpart of heart
-and shares **Inside**. App/field data comes from `tools/routing.json`
+and shares **Inside**. App/field data comes from `tools/apps/routing.json`
 (`apps[].fields`); do not derive a second field catalog.
 
 ### Flat field index (technical)
@@ -519,18 +531,18 @@ and shares **Inside**. App/field data comes from `tools/routing.json`
   a read-only list of `{path, id, label, type, parent}` for cross-app lookups.
   It is added by a `data-flove-fields-flat` script; no UI, storage or network
   change.
-- [`tools/routing-index.json`](../../tools/routing-index.json) is the generated
+- [`tools/apps/routing-index.json`](../../tools/apps/routing-index.json) is the generated
   flat index for all routed apps (currently **1,288 fields**). Rebuild with
-  `python3 tools/build-routing-index.py`; verify with `--check`.
-- [`tools/check-routing.py`](../../tools/check-routing.py) validates app ids,
+  `python3 tools/apps/v1/build-routing-index.py`; verify with `--check`.
+- [`tools/dev/checks/check-routing.py`](../../tools/dev/checks/check-routing.py) validates app ids,
   field trees, `fieldCount`, cross links and the colour-free rule.
-- Colours are **not** in the router or the index yet; see
-  [`frontend/routing-colours-db.md`](frontend/routing-colours-db.md).
+- Colours are **not** in the router or the index yet; the pending contract lives
+  in [`§13.24`](frontend/frontend.md#routing-colours-optimisation-and-future-databases).
 
-### Cross-app routing — `tools/routing.json`
+### Cross-app routing — `tools/apps/routing.json`
 
 The app registry and cross-app graph live in
-[`tools/routing.json`](../../tools/routing.json) — the canonical registry
+[`tools/apps/routing.json`](../../tools/apps/routing.json) — the canonical registry
 (do not recreate a `addons/routing.json` mirror):
 
 - `apps[]` — id, name, url, description, tags, category, optional `field`
@@ -546,7 +558,7 @@ The app registry and cross-app graph live in
 - `consumers{}` — extractive readers (questy) and what they read;
 - `pending[]` — the `field-export` / `extractor` / `metadata` / `cross` gaps.
 - **Field manifests** — each imported app embeds `flove-fields/1`; run
-  `python3 tools/extract-fields.py --apply` to refresh `apps[].fields` from the
+  `python3 tools/apps/v1/extract-fields.py --apply` to refresh `apps[].fields` from the
   apps themselves (`--check` for drift).
 
 Questy's **Flove influence** ladder uses the app's category: all fields of all
